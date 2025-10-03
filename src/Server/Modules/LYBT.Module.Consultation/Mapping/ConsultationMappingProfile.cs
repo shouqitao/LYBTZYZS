@@ -53,6 +53,10 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
 
+                // 映射关联ID（通过 MedicalCase 导航属性获取，服务层填充）
+                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
@@ -72,6 +76,10 @@ namespace LYBT.Module.Consultation.Mapping
                 // 映射时间字段
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
+
+                // 映射关联ID（通过 MedicalCase 导航属性获取，服务层填充）
+                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
 
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
