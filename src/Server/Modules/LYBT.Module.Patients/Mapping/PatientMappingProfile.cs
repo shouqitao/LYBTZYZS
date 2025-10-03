@@ -18,6 +18,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // 患者实体转PatientDto（API响应）
             CreateMap<Patient, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性，由DTO自己计算
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber))
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
@@ -25,6 +26,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // PatientCreateDto转患者实体
             CreateMap<PatientCreateDto, Patient>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
@@ -41,6 +43,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // PatientUpdateDto转患者实体
             CreateMap<PatientUpdateDto, Patient>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
@@ -58,6 +61,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // PatientDto转患者实体（用于新增/更新）
             CreateMap<PatientDto, Patient>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
