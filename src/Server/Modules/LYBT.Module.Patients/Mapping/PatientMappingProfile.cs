@@ -18,6 +18,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // 患者实体转PatientDto（API响应）
             CreateMap<Patient, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age 是计算属性，各自计算
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber))
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
@@ -75,6 +76,7 @@ namespace LYBT.Module.Patients.Mapping
             // UltraThink修复：添加缺失的DTO间映射配置
             // PatientCreateDto -> PatientDto（用于验证服务）
             CreateMap<PatientCreateDto, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age 是计算属性，各自计算
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
@@ -85,6 +87,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // PatientUpdateDto -> PatientDto（用于验证服务）
             CreateMap<PatientUpdateDto, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age 是计算属性，各自计算
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
