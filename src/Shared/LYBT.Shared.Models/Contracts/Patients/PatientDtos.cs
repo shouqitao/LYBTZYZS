@@ -28,13 +28,13 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>年龄（基于出生日期的计算属性）</summary>
         [DisplayName("年龄")]
-        public int Age
+        public int? Age
         {
             get
             {
                 if (BirthDate == null)
                 {
-                    return 0;
+                    return null;
                 }
 
                 var today = DateTime.Today;
@@ -44,7 +44,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
                     age--;
                 }
 
-                return Math.Max(0, age);
+                return age;
             }
         }
 
@@ -127,13 +127,13 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>年龄（计算属性，基于出生日期）</summary>
         [DisplayName("年龄")]
-        public int Age
+        public int? Age
         {
             get
             {
                 if (BirthDate == null)
                 {
-                    return 0;
+                    return null;
                 }
 
                 var today = DateTime.Today;
@@ -143,7 +143,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
                     age--;
                 }
 
-                return Math.Max(0, age);
+                return age;
             }
         }
 
