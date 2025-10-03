@@ -306,22 +306,33 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                 Logger.LogInformation($"根据角色 {role} 导航到 {targetView}");
 
-                // 导航到主窗口并设置内容区域（添加回调验证）
-                _regionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
-                {
-                    if (navigationResult.Result != true)
-                    {
-                        Logger.LogError("导航失败: {Error}", navigationResult.Error?.Message);
-                        ErrorMessage = $"导航失败：{navigationResult.Error?.Message}";
-                    }
-                    else
-                    {
-                        Logger.LogInformation("导航成功到 {TargetView}", targetView);
-                    }
-                });
-
-                // 发布登录成功事件 - 修复 Issue #848：使用 LoginSuccessEvent 触发主窗口 UI 更新
+                // Issue #877 修复步骤2: 先发布登录成功事件，让 Shell 更新 UI 状态
+                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发 Shell UI 更新");
                 EventAggregator.GetEvent<LoginSuccessEvent>().Publish(user);
+
+                // Issue #877 修复步骤3: 延迟导航，等待 UI 绑定生效
+                // 延迟 100ms 确保 MainWindow.IsLoggedIn 更新后，ContentRegion 已变为可见
+                _ = Task.Delay(100).ContinueWith(_ =>
+                {
+                    Logger.LogInformation("⏰ 延迟完成，开始导航到 {TargetView}", targetView);
+
+                    // 在 UI 线程上执行导航
+                    System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        _regionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
+                        {
+                            if (navigationResult.Result != true)
+                            {
+                                Logger.LogError("❌ 导航失败: {Error}", navigationResult.Error?.Message);
+                                ErrorMessage = $"导航失败：{navigationResult.Error?.Message}";
+                            }
+                            else
+                            {
+                                Logger.LogInformation("✅ 导航成功到 {TargetView}", targetView);
+                            }
+                        });
+                    });
+                });
             }
             catch (Exception ex)
             {

@@ -229,6 +229,17 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 原因：Task.Run在100ms延迟后执行可能早于MainWindow.Loaded，此时ContentRegion尚未注册
         // 解决：改为在MainWindow.Loaded事件中触发CheckLoginStatusAsync，确保所有Region已就绪
         // 详见：MainWindow.xaml.cs OnWindowLoaded事件处理器
+
+        // Issue #877 修复步骤4: 添加 Region 导航监控
+        _regionManager.Regions.CollectionChanged += OnRegionsCollectionChanged;
+
+        // 如果已有 Region，订阅导航事件
+        foreach (var region in _regionManager.Regions)
+        {
+            SubscribeToRegionNavigationEvents(region);
+        }
+
+        Logger.LogDebug("Region 导航监控已启用");
     }
 
     /// <summary>
@@ -402,12 +413,26 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
-    /// 登录成功事件处理
+    /// 登录成功事件处理 - Issue #877 修复
+    /// 立即更新 UI 状态，确保 ContentRegion 可见后再进行导航
     /// </summary>
     private void OnLoginSuccess(UserDto user)
     {
-        // 重新检查登录状态
-        _ = CheckLoginStatusAsync();
+        System.Diagnostics.Debug.WriteLine($"📢 OnLoginSuccess 收到事件: {user.UserName}");
+
+        // Issue #877 修复步骤1: 立即更新登录状态
+        // 这会触发 MainWindow.xaml 中的 Visibility 绑定，使 ContentRegion 变为可见
+        IsLoggedIn = true;
+        CurrentUser = user;
+
+        System.Diagnostics.Debug.WriteLine($"✅ IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
+
+        // 后台加载模块并切换界面
+        _ = Task.Run(async () =>
+        {
+            await EnsureWorkstationModulesLoaded(user);
+            await Application.Current.Dispatcher.InvokeAsync(() => LoadMainContent());
+        });
     }
 
     /// <summary>
@@ -750,6 +775,49 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     #endregion 私有转换方法
 
+    #region Issue #877 Region 导航监控
+
+    /// <summary>
+    /// Region 集合变化事件处理 - Issue #877
+    /// 当新 Region 添加时，自动订阅其导航事件
+    /// </summary>
+    private void OnRegionsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (IRegion region in e.NewItems)
+            {
+                SubscribeToRegionNavigationEvents(region);
+                System.Diagnostics.Debug.WriteLine($"🔔 新 Region 已注册并监控: {region.Name}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 订阅 Region 导航事件 - Issue #877
+    /// 用于调试和诊断导航问题
+    /// </summary>
+    private void SubscribeToRegionNavigationEvents(IRegion region)
+    {
+        region.NavigationService.Navigating += (s, e) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"🚀 导航中: Region={region.Name}, Target={e.Uri}");
+        };
+
+        region.NavigationService.Navigated += (s, e) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"✅ 导航完成: Region={region.Name}, Uri={e.Uri}");
+        };
+
+        region.NavigationService.NavigationFailed += (s, e) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ 导航失败: Region={region.Name}, Uri={e.Uri}, Error={e.Error?.Message}");
+            Logger.LogError(e.Error, "Region 导航失败: {RegionName} -> {Uri}", region.Name, e.Uri);
+        };
+    }
+
+    #endregion Issue #877 Region 导航监控
+
     #region IDisposable实现 - DT-013内存泄漏修复
 
     /// <summary>
@@ -778,6 +846,17 @@ public class MainWindowViewModel : UnifiedViewModelBase
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
+            }
+
+            // Issue #877: 取消 Region 导航监控
+            try
+            {
+                _regionManager.Regions.CollectionChanged -= OnRegionsCollectionChanged;
+                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] Region 导航监控已取消");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消Region监控失败: {ex.Message}");
             }
 
             System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
