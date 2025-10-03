@@ -62,8 +62,9 @@ namespace LYBT.Module.Users.Tests
                 options.EnableOnlineStatusTracking = true;
             });
 
-            // 添加空配置
+            // 添加空配置并注册到服务容器
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
+            services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
 
             // Act
             services.AddUsersModule(configuration);
@@ -75,7 +76,7 @@ namespace LYBT.Module.Users.Tests
 
             // Assert - 验证Service注册
 
-            serviceProvider.GetService<LYBT.Shared.Interfaces.Services.IUserService>()
+            serviceProvider.GetService<IUserService>()
                 .Should().NotBeNull("IUserService should be registered");
 
             // Assert - 验证Options注册
@@ -103,7 +104,7 @@ namespace LYBT.Module.Users.Tests
 
 
             services.Should().Contain(x =>
-                x.ServiceType == typeof(LYBT.Shared.Interfaces.Services.IUserService) &&
+                x.ServiceType == typeof(IUserService) &&
                 x.Lifetime == ServiceLifetime.Scoped);
         }
 
