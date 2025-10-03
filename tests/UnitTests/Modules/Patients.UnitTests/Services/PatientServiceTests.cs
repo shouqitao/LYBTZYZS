@@ -179,5 +179,229 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeFalse();
             result.Message.Should().Be("删除失败");
         }
+
+
+        // ==================== SearchAsync 测试 ====================
+
+        [Fact]
+        public async Task SearchAsync_Should_Return_Empty_List_When_Keyword_Is_Empty()
+        {
+            // Arrange
+            var keyword = "";
+
+            // Act
+            var result = await _patientService.SearchAsync(keyword);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchAsync_Should_Return_Empty_List_When_Keyword_Is_Whitespace()
+        {
+            // Arrange
+            var keyword = "   ";
+
+            // Act
+            var result = await _patientService.SearchAsync(keyword);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchAsync_Should_Return_Matched_Patients_When_Keyword_Exists()
+        {
+            // Arrange
+            var keyword = "张";
+            var entities = new List<Patient>
+            {
+                new Patient { Id = Guid.NewGuid(), Name = "张三" },
+                new Patient { Id = Guid.NewGuid(), Name = "张四" },
+                new Patient { Id = Guid.NewGuid(), Name = "李五" }
+            };
+            var matchedEntities = entities.Where(p => p.Name.Contains(keyword)).ToList();
+            var dtos = matchedEntities.Select(e => new PatientDto { Id = e.Id, Name = e.Name }).ToList();
+
+            _mockRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(entities);
+            _mockMapper.Setup(x => x.Map<List<PatientDto>>(It.IsAny<List<Patient>>())).Returns(dtos);
+
+            // Act
+            var result = await _patientService.SearchAsync(keyword);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().HaveCount(2);
+            result.Data!.All(d => d.Name.Contains(keyword)).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SearchAsync_Should_Return_Empty_List_When_No_Match()
+        {
+            // Arrange
+            var keyword = "王";
+            var entities = new List<Patient>
+            {
+                new Patient { Id = Guid.NewGuid(), Name = "张三" },
+                new Patient { Id = Guid.NewGuid(), Name = "李四" }
+            };
+
+            _mockRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(entities);
+            _mockMapper.Setup(x => x.Map<List<PatientDto>>(It.IsAny<List<Patient>>())).Returns(new List<PatientDto>());
+
+            // Act
+            var result = await _patientService.SearchAsync(keyword);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchAsync_Should_Return_Failure_When_Repository_Throws_Exception()
+        {
+            // Arrange
+            var keyword = "张三";
+            _mockRepository.Setup(x => x.GetAllAsync()).ThrowsAsync(new Exception("数据库连接失败"));
+
+            // Act
+            var result = await _patientService.SearchAsync(keyword);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("搜索患者失败");
+        }
+
+        // ==================== 边界条件与异常场景测试 ====================
+
+        [Fact]
+        public async Task GetPagedAsync_Should_Return_Empty_List_When_No_Patients()
+        {
+            // Arrange
+            var pagedResult = new PagedResult<Patient>
+            {
+                Items = new List<Patient>(),
+                TotalCount = 0,
+                CurrentPage = 1,
+                PageSize = 20
+            };
+
+            _mockRepository.Setup(x => x.GetPagedAsync(1, 20)).ReturnsAsync(pagedResult);
+            _mockMapper.Setup(x => x.Map<List<PatientDto>>(It.IsAny<List<Patient>>())).Returns(new List<PatientDto>());
+
+            // Act
+            var result = await _patientService.GetPagedAsync(1, 20);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().BeEmpty();
+            result.Data!.TotalCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_Should_Return_Failure_When_Repository_Throws_Exception()
+        {
+            // Arrange
+            _mockRepository.Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .ThrowsAsync(new Exception("数据库查询失败"));
+
+            // Act
+            var result = await _patientService.GetPagedAsync(1, 20);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("获取患者列表失败");
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_Should_Return_Failure_When_Repository_Throws_Exception()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _mockRepository.Setup(x => x.GetByIdAsync(id)).ThrowsAsync(new Exception("数据库查询失败"));
+
+            // Act
+            var result = await _patientService.GetByIdAsync(id);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("获取患者详情失败");
+        }
+
+        [Fact]
+        public async Task CreateAsync_Should_Return_Failure_When_Repository_Throws_Exception()
+        {
+            // Arrange
+            var createDto = new PatientCreateDto { Name = "张三", Gender = LYBT.Shared.Models.Enums.Gender.Male };
+            var entity = new Patient { Name = "张三" };
+
+            _mockMapper.Setup(x => x.Map<Patient>(createDto)).Returns(entity);
+            _mockRepository.Setup(x => x.AddAsync(entity)).ThrowsAsync(new Exception("数据库插入失败"));
+
+            // Act
+            var result = await _patientService.CreateAsync(createDto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("创建患者失败");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_Should_Return_Failure_When_Repository_Throws_Exception_On_Get()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var updateDto = new PatientUpdateDto { Name = "李四" };
+            _mockRepository.Setup(x => x.GetByIdAsync(id)).ThrowsAsync(new Exception("数据库查询失败"));
+
+            // Act
+            var result = await _patientService.UpdateAsync(id, updateDto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("更新患者失败");
+        }
+
+        [Fact]
+        public async Task UpdateAsync_Should_Return_Failure_When_Repository_Throws_Exception_On_Update()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var updateDto = new PatientUpdateDto { Name = "李四" };
+            var entity = new Patient { Id = id, Name = "张三" };
+
+            _mockRepository.Setup(x => x.GetByIdAsync(id)).ReturnsAsync(entity);
+            _mockMapper.Setup(x => x.Map(updateDto, entity)).Returns(entity);
+            _mockRepository.Setup(x => x.UpdateAsync(entity)).ThrowsAsync(new Exception("数据库更新失败"));
+
+            // Act
+            var result = await _patientService.UpdateAsync(id, updateDto);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("更新患者失败");
+        }
+
+        [Fact]
+        public async Task DeleteAsync_Should_Return_Failure_When_Repository_Throws_Exception()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _mockRepository.Setup(x => x.DeleteAsync(id)).ThrowsAsync(new Exception("数据库删除失败"));
+
+            // Act
+            var result = await _patientService.DeleteAsync(id);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("删除患者失败");
+        }
     }
 }

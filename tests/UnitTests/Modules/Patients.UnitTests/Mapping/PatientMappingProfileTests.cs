@@ -66,7 +66,8 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patientDto.Id.Should().Be(patient.Id);
             patientDto.Name.Should().Be(patient.Name);
             patientDto.Gender.Should().Be(patient.Gender);
-            patientDto.Age.Should().Be(patient.Age);
+            // Age: PatientDto.Age 是 int（非空），Patient.Age 是 int?（可空）
+            patientDto.Age.Should().Be(patient.Age ?? 0);
             patientDto.PhoneNumber.Should().Be(patient.PhoneNumber);
             patientDto.IdNumber.Should().Be(patient.IdNumber);
             patientDto.Address.Should().Be(patient.Address);
@@ -95,14 +96,16 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(createDto.Name);
             patient.Gender.Should().Be(createDto.Gender);
-            patient.Age.Should().Be(createDto.Age);
+            // Age: Patient.Age 是 int?（计算属性），CreateDto.Age 是 int（计算属性）
+            // 由于 BirthDate 为 null，Patient.Age 返回 null
+            patient.Age.Should().BeNull();
             patient.PhoneNumber.Should().Be(createDto.PhoneNumber);
             patient.IdNumber.Should().Be(createDto.IdNumber);
             patient.Address.Should().Be(createDto.Address);
             // Occupation和MedicalHistory不存在于实体中
 
-            // 验证忽略字段
-            patient.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段（Id 由 BaseEntity 自动生成新 Guid）
+            patient.Id.Should().NotBe(Guid.Empty); // BaseEntity 默认生成新 Guid
             patient.LastVisitTime.Should().BeNull();
             patient.VisitCount.Should().Be(0);
             patient.DisableReason.Should().BeNull();
@@ -130,7 +133,9 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(updateDto.Name);
             patient.Gender.Should().Be(updateDto.Gender);
-            patient.Age.Should().Be(updateDto.Age);
+            // Age: Patient.Age 是 int?（计算属性），UpdateDto.Age 是 int（计算属性）
+            // 由于 BirthDate 为 null，Patient.Age 返回 null
+            patient.Age.Should().BeNull();
             patient.PhoneNumber.Should().Be(updateDto.PhoneNumber);
             patient.Address.Should().Be(updateDto.Address);
             // Occupation和MedicalHistory不存在于实体中
@@ -164,14 +169,16 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(patientDto.Name);
             patient.Gender.Should().Be(patientDto.Gender);
-            patient.Age.Should().Be(patientDto.Age);
+            // Age: Patient.Age 是 int?（计算属性），PatientDto.Age 是 int（计算属性）
+            // 由于 BirthDate 为 null，Patient.Age 返回 null
+            patient.Age.Should().BeNull();
             patient.PhoneNumber.Should().Be(patientDto.PhoneNumber);
             patient.IdNumber.Should().Be(patientDto.IdNumber);
             patient.Address.Should().Be(patientDto.Address);
             patient.PinYinCode.Should().Be(patientDto.PinYinCode);
 
-            // 验证忽略字段
-            patient.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段（Id 被忽略，但 BaseEntity 生成了新 Guid）
+            patient.Id.Should().NotBe(Guid.Empty).And.NotBe(patientDto.Id); // 忽略源 Id，使用 BaseEntity 生成的新 Guid
             patient.LastVisitTime.Should().BeNull();
             patient.VisitCount.Should().Be(0);
             patient.DisableReason.Should().BeNull();
