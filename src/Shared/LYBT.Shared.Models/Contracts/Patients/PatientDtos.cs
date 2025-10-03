@@ -44,7 +44,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
                     age--;
                 }
 
-                return Math.Max(0, age);
+                return age;
             }
         }
 
@@ -143,7 +143,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
                     age--;
                 }
 
-                return Math.Max(0, age);
+                return age;
             }
         }
 
