@@ -28,13 +28,13 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>年龄（基于出生日期的计算属性）</summary>
         [DisplayName("年龄")]
-        public int Age
+        public int? Age
         {
             get
             {
                 if (BirthDate == null)
                 {
-                    return 0;
+                    return null;
                 }
 
                 var today = DateTime.Today;
@@ -127,13 +127,13 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
         /// <summary>年龄（计算属性，基于出生日期）</summary>
         [DisplayName("年龄")]
-        public int Age
+        public int? Age
         {
             get
             {
                 if (BirthDate == null)
                 {
-                    return 0;
+                    return null;
                 }
 
                 var today = DateTime.Today;
@@ -235,19 +235,29 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;
 
-        /// <summary>年龄（用于估算出生日期）</summary>
-        [Range(ValidationConstants.AgeMinValue, ValidationConstants.AgeMaxValue, ErrorMessage = "年龄必须在{1}-{2}之间")]
-        [DisplayName("年龄")]
-        public int Age { get; set; }
+        /// <summary>出生日期</summary>
+        [DisplayName("出生日期")]
+        public DateTime? BirthDate { get; set; }
 
-        /// <summary>推算出生日期（基于年龄）</summary>
-        [DisplayName("推算出生日期")]
-        public DateTime? BirthDate
+        /// <summary>年龄（基于出生日期的只读计算属性）</summary>
+        [DisplayName("年龄")]
+        public int? Age
         {
             get
             {
-                if (Age <= 0) return null;
-                return DateTime.Today.AddYears(-Age);
+                if (BirthDate == null)
+                {
+                    return null;
+                }
+
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Value.Year;
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
+                return Math.Max(0, age);
             }
         }
 
