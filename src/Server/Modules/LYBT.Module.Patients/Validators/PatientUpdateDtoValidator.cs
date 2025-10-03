@@ -19,7 +19,7 @@ namespace LYBT.Module.Patients.Validators
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
 
             RuleFor(x => x.IdNumber)
-                .Matches(@"^\d{15}|\d{18}|\d{17}[xX]$").WithMessage("身份证号格式不正确")
+                .Matches(@"^(\d{15}|\d{18}|\d{17}[xX])$").WithMessage("身份证号格式不正确")
                 .When(x => !string.IsNullOrEmpty(x.IdNumber));
         }
     }
