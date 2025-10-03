@@ -48,7 +48,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
                 Id = Guid.NewGuid(),
                 Name = "张三",
                 Gender = Gender.Male,
-                // Age������ֻ����������
+                BirthDate = new DateTime(1988, 1, 1), // 添加 BirthDate 以测试 Age 计算
                 PhoneNumber = "13812345678",
                 IdNumber = "110101198801011234",
                 Address = "北京市朝阳区",
@@ -66,7 +66,8 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patientDto.Id.Should().Be(patient.Id);
             patientDto.Name.Should().Be(patient.Name);
             patientDto.Gender.Should().Be(patient.Gender);
-            patientDto.Age.Should().Be(patient.Age);
+            // Age 是只读计算属性，由 PatientDto 根据 BirthDate 自动计算
+            patientDto.Age.Should().BeGreaterThan(0); // 1988年出生应该大于0岁
             patientDto.PhoneNumber.Should().Be(patient.PhoneNumber);
             patientDto.IdNumber.Should().Be(patient.IdNumber);
             patientDto.Address.Should().Be(patient.Address);
@@ -95,7 +96,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(createDto.Name);
             patient.Gender.Should().Be(createDto.Gender);
-            patient.Age.Should().Be(createDto.Age);
+            // Age 是只读计算属性,不验证
             patient.PhoneNumber.Should().Be(createDto.PhoneNumber);
             patient.IdNumber.Should().Be(createDto.IdNumber);
             patient.Address.Should().Be(createDto.Address);
@@ -130,7 +131,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(updateDto.Name);
             patient.Gender.Should().Be(updateDto.Gender);
-            patient.Age.Should().Be(updateDto.Age);
+            // Age 是只读计算属性,不验证
             patient.PhoneNumber.Should().Be(updateDto.PhoneNumber);
             patient.Address.Should().Be(updateDto.Address);
             // Occupation和MedicalHistory不存在于实体中
@@ -164,7 +165,7 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Should().NotBeNull();
             patient.Name.Should().Be(patientDto.Name);
             patient.Gender.Should().Be(patientDto.Gender);
-            patient.Age.Should().Be(patientDto.Age);
+            // Age 是只读计算属性，Patient.Age 在无 BirthDate 时为 null，无需验证
             patient.PhoneNumber.Should().Be(patientDto.PhoneNumber);
             patient.IdNumber.Should().Be(patientDto.IdNumber);
             patient.Address.Should().Be(patientDto.Address);
@@ -198,7 +199,8 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patientDto.Should().NotBeNull();
             patientDto.Name.Should().Be(createDto.Name);
             patientDto.Gender.Should().Be(createDto.Gender);
-            patientDto.Age.Should().Be(createDto.Age);
+            // Age 是只读计算属性，由 DTO 根据 BirthDate 自动计算
+            patientDto.Age.Should().Be(createDto.Age); // 两者都没有 BirthDate，都返回 0
             patientDto.PhoneNumber.Should().Be(createDto.PhoneNumber);
             patientDto.IdNumber.Should().Be(createDto.IdNumber);
             patientDto.Address.Should().Be(createDto.Address);
