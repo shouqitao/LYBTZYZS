@@ -114,10 +114,21 @@
   <!-- Resource Files -->
   <ItemGroup Label="Application Resources">
     <Resource Include="Assets\Icons\App\app.ico" />
-    <Resource Include="..\Themes\Design\*.xaml" />
-    <Resource Include="..\Themes\Controls\*.xaml" />
-    <Resource Include="..\Resources\*.xaml" />
-    <!-- Resources目录中的XAML文件由.NET SDK自动包含为Page项 -->
+    <!-- UltraThink修复 Issue #856: XAML资源字典需要用Page而非Resource -->
+    <!-- Page会编译为.baml并支持StaticResource查找，Resource只嵌入不编译 -->
+    <!-- 使用 Link 将外部文件链接到项目内部的虚拟路径 -->
+    <Page Include="..\Resources\UnifiedDesignSystem.xaml">
+      <Link>Resources\UnifiedDesignSystem.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="..\Themes\Design\*.xaml">
+      <Link>Themes\Design\%(Filename)%(Extension)</Link>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="..\Themes\Controls\*.xaml">
+      <Link>Themes\Controls\%(Filename)%(Extension)</Link>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!-- Documentation -->

@@ -173,22 +173,22 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 保存命令
         /// </summary>
-        public DelegateCommand SaveCommand { get; private set; }
+        public DelegateCommand SaveCommand { get; private set; } = null!;
 
         /// <summary>
         /// 取消命令
         /// </summary>
-        public DelegateCommand CancelCommand { get; private set; }
+        public DelegateCommand CancelCommand { get; private set; } = null!;
 
         /// <summary>
         /// 重置命令
         /// </summary>
-        public DelegateCommand ResetCommand { get; private set; }
+        public DelegateCommand ResetCommand { get; private set; } = null!;
 
         /// <summary>
         /// 重置密码命令
         /// </summary>
-        public DelegateCommand ResetPasswordCommand { get; private set; }
+        public DelegateCommand ResetPasswordCommand { get; private set; } = null!;
 
         #endregion
 

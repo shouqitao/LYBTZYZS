@@ -33,7 +33,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (id == Guid.Empty)
                 throw new ArgumentException("ID不能为空", nameof(id));
 
-            return await _apiService.GetAsync<T>($"{_endpoint}/{id}");
+            return (await _apiService.GetAsync<T>($"{_endpoint}/{id}"))!;
         }
 
         public virtual async Task<T> CreateAsync(T entity)
@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            return await _apiService.PostAsync<T, T>(_endpoint, entity);
+            return (await _apiService.PostAsync<T, T>(_endpoint, entity))!;
         }
 
         public virtual async Task<T> UpdateAsync(Guid id, T entity)
@@ -51,7 +51,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            return await _apiService.PutAsync<T, T>($"{_endpoint}/{id}", entity);
+            return (await _apiService.PutAsync<T, T>($"{_endpoint}/{id}", entity))!;
         }
 
         public virtual async Task<bool> DeleteAsync(Guid id)

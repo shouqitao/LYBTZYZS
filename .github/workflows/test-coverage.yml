@@ -36,10 +36,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
     - name: 📦 还原依赖
-      run: dotnet restore
-      
+      run: dotnet restore LYBT.All.sln
+
     - name: 🔨 构建项目
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore
       
     - name: 🧪 运行测试 (关键模块)
       run: |

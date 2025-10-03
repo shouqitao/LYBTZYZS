@@ -92,11 +92,14 @@ namespace LYBT.Desktop.Infrastructure.Converters
 
             // 支持多值输入：第一个是状态，第二个可以是输出格式
             var outputFormat = values.Length > 1 && values[1] is string fmt ? fmt : parameter as string;
-            return Convert(values[0], targetType, outputFormat, culture);
+            return Convert(values[0], targetType, outputFormat, culture) ?? DependencyProperty.UnsetValue;
         }
 
         public object?[] ConvertBack(object value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
+#pragma warning disable CS8603 // Possible null reference return
+            return null!;
+#pragma warning restore CS8603
             throw new NotImplementedException();
         }
 

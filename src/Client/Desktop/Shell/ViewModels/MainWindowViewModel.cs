@@ -139,7 +139,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     public DelegateCommand ShowSettingsCommand { get; set; } = null!;
 
     /// <summary>主题切换命令</summary>
-    public DelegateCommand ToggleThemeCommand { get; set; }
+    public DelegateCommand ToggleThemeCommand { get; set; } = null!;
 
     #endregion 命令属性
 
@@ -225,12 +225,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 订阅登录成功事件
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
 
-        // 延迟检查登录状态，等待主窗口完全加载
-        Application.Current.Dispatcher.BeginInvoke(
-            new Action(() =>
-            {
-                _ = CheckLoginStatusAsync();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        // UltraThink修复 Issue #856: 移除构造函数中的自动登录检查
+        // 原因：Task.Run在100ms延迟后执行可能早于MainWindow.Loaded，此时ContentRegion尚未注册
+        // 解决：改为在MainWindow.Loaded事件中触发CheckLoginStatusAsync，确保所有Region已就绪
+        // 详见：MainWindow.xaml.cs OnWindowLoaded事件处理器
     }
 
     /// <summary>
@@ -388,8 +386,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             // UltraThink修复: 使用AuthenticationService进行状态检查，确保与登录流程一致
-            var isLoggedIn = _servicesFacade.AuthenticationService.IsLoggedIn;
-            System.Diagnostics.Debug.WriteLine($" AuthenticationService.IsLoggedIn = {isLoggedIn}");
+            var isLoggedIn = await _servicesFacade.AuthenticationService.IsLoggedInAsync();
+            System.Diagnostics.Debug.WriteLine($" AuthenticationService.IsLoggedInAsync = {isLoggedIn}");
 
             if (isLoggedIn)
             {
@@ -445,15 +443,32 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
+    /// 窗口加载完成回调 - UltraThink修复 Issue #856
+    /// 在MainWindow.Loaded事件中调用，确保所有Region已注册后再检查登录状态
+    /// </summary>
+    public async Task OnWindowLoadedAsync()
+    {
+        // UltraThink修复：增加延迟确保 Prism Region 完全注册
+        // Loaded 事件后 Region 注册仍是异步的，需要额外等待时间
+        await Task.Delay(500);
+        await CheckLoginStatusAsync();
+    }
+
+    /// <summary>
     /// 显示登录界面
     /// </summary>
     private void ShowLoginDialog()
     {
-        // 在单窗口模式下，导航到登录视图
-        if (_regionManager != null)
+        // UltraThink修复 Issue #858: 确保在 UI 线程上执行导航
+        // 原因：此方法可能从后台线程（Task.Run）调用，需要 marshal 到 UI 线程
+        Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
-        }
+            if (_regionManager != null)
+            {
+                System.Diagnostics.Debug.WriteLine(" ShowLoginDialog: 导航到登录视图");
+                _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
+            }
+        });
     }
 
     /// <summary>
@@ -476,7 +491,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         if (isAdmin)
         {
-            workbenchView = "SystemWorkstationMainView";
+            workbenchView = "AdminWorkstationView";
             roleDisplay = "管理员";
         }
         else
@@ -496,27 +511,43 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
         }
 
-        // 导航到对应的工作台
-        System.Diagnostics.Debug.WriteLine($" 导航到 {workbenchView}");
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
+        // UltraThink修复 Issue #858: 使用 Dispatcher.InvokeAsync 确保 UI 绑定更新后再导航
+        // 原因：IsLoggedIn 属性变化后，UI 绑定不会立即生效，ContentRegion 可能仍处于 Collapsed 状态
+        // 解决：延迟导航到下一个 UI 帧，确保 ContentRegion 已经可见
+        System.Diagnostics.Debug.WriteLine($" 准备导航到 {workbenchView}（延迟到下一帧）");
+        Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            if (navigationResult.Result != true)
+            System.Diagnostics.Debug.WriteLine($" UI更新完成，开始导航到 {workbenchView}");
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
             {
-                // 导航失败时显示错误信息
-                var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
-                System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
+                if (navigationResult.Result != true)
+                {
+                    // 导航失败时显示错误信息
+                    var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
+                    System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
 
-                // 异步显示错误对话框
-                _ = Task.Run(async () =>
-        {
-            await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
-        });
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
-            }
-        });
+                    // UltraThink修复：导航失败时，清除登录状态并回退到登录界面
+                    IsLoggedIn = false;
+                    CurrentUser = null;
+                    Title = "凌隐宝堂中医诊所诊疗系统 - 系统超级管理员 (管理员)";
+
+                    // 异步显示错误对话框
+                    _ = Task.Run(async () =>
+                    {
+                        await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
+                        // 错误对话框关闭后，显示登录界面
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            ShowLoginDialog();
+                        });
+                    });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
+                }
+            });
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle); // UltraThink修复 Issue #856: 使用 ApplicationIdle 确保所有初始化完成
     }
 
     /// <summary>
@@ -572,6 +603,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 管理员需要所有模块
         await _moduleLoadingService.LoadModulesAsync(new[]
         {
+            "AdminWorkstationModule",  // UltraThink修复 Issue #856: 工作台模块必须加载才能注册视图
+            "UsersModule",             // 管理员需要用户管理功能
             "HerbsModule",
             "FormulaModule",
             "ConsultationModule",

@@ -165,11 +165,12 @@
         </Configuration>
       </Logger>
 
-      <Logger friendlyName="junit" enabled="True">
+      <!-- JUnit logger requires additional package - disabled for CI compatibility -->
+      <!-- <Logger friendlyName="junit" enabled="True">
         <Configuration>
           <LogFilePath>tests\TestResults\junit-results.xml</LogFilePath>
         </Configuration>
-      </Logger>
+      </Logger> -->
     </Loggers>
   </LoggerRunSettings>
 

@@ -32,10 +32,12 @@ namespace LYBT.Module.Auth.Tests.Security
         public void JwtOptions_ShouldRejectWeakSecrets(string? secretKey)
         {
             // Arrange
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new JwtOptions { Secret = secretKey! };
 
             // Act
             var isValid = IsSecretValid(options.Secret);
+#pragma warning restore CS0618
 
             // Assert
             isValid.Should().BeFalse("密钥必须至少32个字符");
@@ -46,10 +48,12 @@ namespace LYBT.Module.Auth.Tests.Security
         {
             // Arrange
             var strongKey = "ThisIsAVeryStrongSecretThatIsAtLeast32CharactersLong!@#$%";
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new JwtOptions { Secret = strongKey };
 
             // Act
             var isValid = IsSecretValid(options.Secret);
+#pragma warning restore CS0618
 
             // Assert
             isValid.Should().BeTrue();

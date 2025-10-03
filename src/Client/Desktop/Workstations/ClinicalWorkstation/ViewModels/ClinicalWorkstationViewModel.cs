@@ -220,14 +220,14 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("ѡ����");
-                // TODO: ��������ѡ��Ի���
-                CurrentPatientName = "���������ԣ�";
+                Logger.LogInformation("Select patient");
+                // TODO: 打开患者选择对话框
+                CurrentPatientName = "张三（测试）";
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "ѡ����ʧ��");
-                ShowErrorMessage($"ѡ����ʧ�ܣ�{ex.Message}");
+                Logger.LogError(ex, "Failed to select patient");
+                ShowErrorMessage($"选择患者失败：{ex.Message}");
             }
         }
 
@@ -235,18 +235,18 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("ҽ�������˳���¼");
+                Logger.LogInformation("Doctor logged out successfully");
 
-                // �����ǳ��¼�
+                // 发布退出登录事件
                 EventAggregator.GetEvent<UserLoggedOutEvent>().Publish();
 
-                // �����ص�¼����
+                // 导航回登录界面
                 _regionManager.RequestNavigate("ContentRegion", "LoginView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "�˳���¼ʧ��");
-                ShowErrorMessage($"�˳���¼ʧ�ܣ�{ex.Message}");
+                Logger.LogError(ex, "Failed to logout");
+                ShowErrorMessage($"退出登录失败：{ex.Message}");
             }
         }
 
@@ -254,42 +254,42 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             if (item == null) return;
 
-            Logger.LogInformation($"������ʷ��ϣ�{item.Date:yyyy-MM-dd} - {item.ChiefComplaint}");
+            Logger.LogInformation($"Import diagnosis history: {item.Date:yyyy-MM-dd} - {item.ChiefComplaint}");
 
-            // ����������ݵ���ǰ���
+            // 导入历史数据到当前诊断
             Diagnosis.ChiefComplaint = item.ChiefComplaint;
             Diagnosis.DiagnosisResult = item.Diagnosis;
         }
 
         private void ExecuteSearchHerb()
         {
-            Logger.LogInformation("��ҩ������");
-            // TODO: ����ҩ�������Ի���
+            Logger.LogInformation("Search herbs");
+            // TODO: 打开药材搜索对话框
         }
 
         private void ExecuteImportFormula()
         {
             if (SelectedFormula == null)
             {
-                SetStatus("����ѡ��һ���鷽");
+                SetStatus("请先选择一个验方");
                 return;
             }
 
-            Logger.LogInformation($"�����鷽��{SelectedFormula.Name}");
-            // TODO: �����鷽����������
+            Logger.LogInformation($"Import formula: {SelectedFormula.Name}");
+            // TODO: 导入验方到处方网格
         }
 
         private void ExecuteShowHistory()
         {
-            Logger.LogInformation("��ʾ��ʷ����");
-            // TODO: ������ʷ�����Ի���
+            Logger.LogInformation("Show prescription history");
+            // TODO: 打开历史处方对话框
         }
 
         private void ExecuteClearPrescription()
         {
-            Logger.LogInformation("��մ���");
+            Logger.LogInformation("Clear prescription");
 
-            // ������д�������
+            // 清空处方网格内容
             foreach (var item in PrescriptionGrid)
             {
                 item.HerbName = string.Empty;
@@ -302,16 +302,16 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         private void ExecuteSavePrescription()
         {
-            Logger.LogInformation("���洦��");
-            // TODO: ���洦�������ݿ�
-            SetStatus("�����ѱ���");
+            Logger.LogInformation("Save prescription");
+            // TODO: 保存处方到数据库
+            SetStatus("处方已保存");
         }
 
         private void ExecutePrintPrescription()
         {
-            Logger.LogInformation("��ӡ����");
-            // TODO: ���ô�ӡ����
-            SetStatus("���ڴ�ӡ����...");
+            Logger.LogInformation("Print prescription");
+            // TODO: 调用打印功能
+            SetStatus("正在打印处方...");
         }
 
         private void CalculateTotalPrice()
@@ -323,7 +323,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         private void OnUserLoggedIn(UserLoggedInEventArgs args)
         {
             CurrentUserName = args.Username;
-            Logger.LogInformation($"ҽ�� {args.Username} �ѵ�¼���ƹ���̨");
+            Logger.LogInformation($"Doctor {args.Username} logged in to clinical workstation");
         }
 
         #endregion

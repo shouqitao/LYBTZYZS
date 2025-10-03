@@ -17,8 +17,8 @@ namespace LYBT.Tests.Common
     /// </summary>
     public static class AutoMapperTestConfiguration
     {
-        private static MapperConfiguration _configuration;
-        private static IMapper _mapper;
+        private static MapperConfiguration _configuration = null!;
+        private static IMapper _mapper = null!;
         private static readonly object _lock = new object();
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace LYBT.Tests.Common
                     }
                 }
             }
-            return _mapper;
+            return _mapper!;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace LYBT.Tests.Common
                     }
                 }
             }
-            return _configuration;
+            return _configuration!;
         }
 
         /// <summary>
@@ -142,6 +142,7 @@ namespace LYBT.Tests.Common
                 // 获取所有已加载的程序集
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies()
                     .Where(a => !a.IsDynamic &&
+                               a.FullName != null &&
                                !a.FullName.StartsWith("System") &&
                                !a.FullName.StartsWith("Microsoft") &&
                                a.FullName.Contains("LYBT"))
@@ -178,7 +179,7 @@ namespace LYBT.Tests.Common
                         if (profile != null)
                         {
                             cfg.AddProfile(profile);
-                            Console.WriteLine($"[AutoMapper Info] Registered profile: {profileType.FullName}");
+                            Console.WriteLine($"[AutoMapper Info] Registered profile: {profileType!.FullName}");
                         }
                     }
                     catch (Exception ex)
@@ -200,15 +201,15 @@ namespace LYBT.Tests.Common
         {
             lock (_lock)
             {
-                _configuration = null;
-                _mapper = null;
+                _configuration = null!;
+                _mapper = null!;
             }
         }
 
         /// <summary>
         /// 创建一个隔离的Mapper实例（用于特殊测试场景）
         /// </summary>
-        public static IMapper CreateIsolatedMapper(Action<IMapperConfigurationExpression> configure = null)
+        public static IMapper CreateIsolatedMapper(Action<IMapperConfigurationExpression>? configure = null)
         {
             var config = new MapperConfiguration(cfg =>
             {

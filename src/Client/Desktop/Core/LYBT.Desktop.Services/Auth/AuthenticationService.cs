@@ -28,15 +28,12 @@ namespace LYBT.Desktop.Services.Auth
         }
 
         /// <summary>
-        /// 用户是否已登录
+        /// 异步检查用户是否已登录
         /// </summary>
-        public bool IsLoggedIn
+        public async Task<bool> IsLoggedInAsync()
         {
-            get
-            {
-                var token = _tokenStorage.GetTokenAsync().GetAwaiter().GetResult();
-                return !string.IsNullOrEmpty(token);
-            }
+            var token = await _tokenStorage.GetTokenAsync();
+            return !string.IsNullOrEmpty(token);
         }
 
         /// <summary>

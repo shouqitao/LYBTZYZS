@@ -13,7 +13,7 @@ namespace LYBT.Tests.Common
         protected readonly IServiceProvider ServiceProvider;
         protected readonly IServiceCollection Services;
         protected readonly Mock<ILogger> MockLogger;
-        protected IMapper Mapper { get; private set; }
+        protected IMapper Mapper { get; private set; } = null!;
 
         protected TestBase()
         {
@@ -33,7 +33,7 @@ namespace LYBT.Tests.Common
             ServiceProvider = Services.BuildServiceProvider();
 
             // 初始化Mapper
-            Mapper = ServiceProvider.GetService<IMapper>();
+            Mapper = ServiceProvider.GetService<IMapper>()!;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace LYBT.Tests.Common
         /// <summary>
         /// 获取服务实例
         /// </summary>
-        protected T GetService<T>()
+        protected T? GetService<T>()
         {
             return ServiceProvider.GetService<T>();
         }
@@ -100,7 +100,7 @@ namespace LYBT.Tests.Common
         /// <summary>
         /// 获取必需的服务实例
         /// </summary>
-        protected T GetRequiredService<T>()
+        protected T GetRequiredService<T>() where T : notnull
         {
             return ServiceProvider.GetRequiredService<T>();
         }

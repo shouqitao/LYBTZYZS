@@ -335,6 +335,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterScoped<IConsultationRepository,
                 LYBT.Desktop.Services.Repositories.ConsultationRepository>();
 
+            // UltraThink修复 Issue #856: 注册异常处理服务(业务服务依赖)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Exceptions.IExceptionHandler,
+                LYBT.Desktop.Services.Exceptions.StandardExceptionHandler>();
+
             // Issue #835: 注册认证服务(使用 Shared.Interfaces)
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Services.Business.AuthService>();
@@ -370,6 +374,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 主窗口服务门面 - 简化MainWindowViewModel的依赖注入
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade,
                 LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>();
+
+            // Issue #856: WebAPI 健康检查服务 - 登录界面状态指示器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Interfaces.IApiHealthCheckService,
+                LYBT.Desktop.Services.HealthCheck.ApiHealthCheckService>();
 
             // P7-03: 处方打印服务 - UltraThink标准打印系统
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IPrescriptionPrintService,

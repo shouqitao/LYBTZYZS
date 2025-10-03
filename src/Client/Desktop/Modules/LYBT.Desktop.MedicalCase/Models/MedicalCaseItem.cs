@@ -208,7 +208,7 @@ public class MedicalCaseItem : BindableBase
         PatientGender = "未知"; // DTO中没有此属性，使用默认值
         PatientAge = null; // DTO中没有此属性
         CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(); // 使用ID前8位作为案例编号
-        ChiefComplaint = dto.ChiefComplaint;
+        ChiefComplaint = dto.ChiefComplaint!;
         PresentIllness = dto.PresentIllness;
         Diagnosis = dto.DiagnosisResult;
         TreatmentPlan = dto.TreatmentPlan;
@@ -227,7 +227,9 @@ public class MedicalCaseItem : BindableBase
     {
         MedicalCaseStatus.Active => "进行中",
         MedicalCaseStatus.Closed => "已完成",
+#pragma warning disable CS0618 // Type or member is obsolete
         MedicalCaseStatus.Cancelled => "已取消",
+#pragma warning restore CS0618
         _ => "未知"
     };
 
@@ -238,7 +240,9 @@ public class MedicalCaseItem : BindableBase
     {
         MedicalCaseStatus.Active => "#4CAF50",
         MedicalCaseStatus.Closed => "#9E9E9E",
+#pragma warning disable CS0618 // Type or member is obsolete
         MedicalCaseStatus.Cancelled => "#F44336",
+#pragma warning restore CS0618
         _ => "#757575"
     };
 

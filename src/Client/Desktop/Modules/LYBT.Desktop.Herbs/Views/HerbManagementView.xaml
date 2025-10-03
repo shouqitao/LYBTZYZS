@@ -84,40 +84,40 @@
                 <!-- 药材名称 -->
                 <DataGridTextColumn Header="药材名称"
                                     Binding="{Binding Name}"
-                                    Width="{StaticResource DataGridColumnWidthLarge}" />
+                                    Width="150" />
 
                 <!-- 拼音码 -->
                 <DataGridTextColumn Header="拼音码"
                                     Binding="{Binding PinYinCode}"
-                                    Width="{StaticResource DataGridStatusColumnWidth}" />
+                                    Width="80" />
 
                 <!-- 产地 -->
                 <DataGridTextColumn Header="产地"
                                     Binding="{Binding Origin}"
-                                    Width="{StaticResource DataGridColumnWidthNormal}" />
+                                    Width="100" />
 
                 <!-- 规格 -->
                 <DataGridTextColumn Header="规格"
                                     Binding="{Binding Spec}"
-                                    Width="{StaticResource DataGridStatusColumnWidth}" />
+                                    Width="80" />
 
                 <!-- 单位 -->
                 <DataGridTextColumn Header="单位"
                                     Binding="{Binding Unit}"
-                                    Width="{StaticResource DataGridColumnWidthSmall}" />
+                                    Width="60" />
 
                 <!-- 单价 -->
                 <DataGridTextColumn Header="单价(元)"
                                     Binding="{Binding Price, StringFormat='{}{0:F2}'}"
-                                    Width="{StaticResource DataGridStatusColumnWidth}" />
+                                    Width="80" />
 
                 <!-- 功效 -->
                 <DataGridTextColumn Header="功效"
                                     Binding="{Binding Effect}"
-                                    Width="{StaticResource DataGridColumnWidthXLarge}" />
+                                    Width="200" />
 
                 <!-- 状态 -->
-                <DataGridTemplateColumn Header="状态" Width="{StaticResource DataGridStatusColumnWidth}">
+                <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border Background="{Binding StatusColor}"
@@ -133,7 +133,7 @@
                 </DataGridTemplateColumn>
 
                 <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="{StaticResource DataGridActionColumnWidth}">
+                <DataGridTemplateColumn Header="操作" Width="240">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

@@ -28,12 +28,11 @@ jobs:
     strategy:
       matrix:
         test-project: [
-          'tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj',
-          'tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj',
-          'tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj',
-          'tests/Backend/LYBT.Module.Consultation.Tests/LYBT.Module.Consultation.Tests.csproj',
-          'tests/Backend/LYBT.WebAPI.Tests/LYBT.WebAPI.Tests.csproj',
-          'tests/Frontend/LYBT.WPF.Client.Tests/LYBT.WPF.Client.Tests.csproj'
+          'tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj',
+          'tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj',
+          'tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj',
+          'tests/UnitTests/Modules/Consultation.UnitTests/LYBT.Module.Consultation.Tests.csproj',
+          'tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.Tests.csproj'
         ]
     
     steps:

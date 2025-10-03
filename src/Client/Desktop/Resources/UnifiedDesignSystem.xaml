@@ -222,6 +222,20 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
+    <!-- 信息按钮 -->
+    <Style x:Key="InfoButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource InfoBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource InfoBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- 警告按钮 -->
+    <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+
     <!-- 危险按钮 -->
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
         <Setter Property="Background" Value="{StaticResource DangerBrush}" />
@@ -383,7 +397,7 @@
     <!-- 基础DataGrid列标题样式 -->
     <Style x:Key="BaseDataGridColumnHeader" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
         <Setter Property="Height" Value="{StaticResource ControlHeightLarge}" />
@@ -427,7 +441,27 @@
     <!-- 状态标签样式 -->
     <Style x:Key="StatusLabel" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
-        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ==================== 容器样式 ==================== -->
+
+    <!-- 工具栏容器 -->
+    <Style x:Key="ToolBarContainer" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!-- 状态栏容器 -->
+    <Style x:Key="StatusBarContainer" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 </ResourceDictionary>

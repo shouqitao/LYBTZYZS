@@ -147,12 +147,24 @@
   - `sequential-thinking`：在复杂任务或需要严密推理时生成逐步思考记录；调用后按返回的步骤逐一落实，可作为方案/复盘的附件引用。
   - `time`：获取标准化时间信息（UTC、本地时区、倒计时等）；用于安排截止日期、记录操作时间戳或在文档中标记时间。
 - **容错策略**：调用失败时解析错误 → 修正参数重试一次；仍失败即报告阻塞及报错信息。
-- **文档/库查询**：涉及外部依赖或 API 时优先通过 `context7__resolve-library-id`、`context7__get-library-docs` 获取权威说明。
+ - **文档/库查询**：涉及外部依赖或 API 时优先通过 `context7__resolve-library-id`、`context7__get-library-docs` 获取权威说明。
  - **AI 辅助协同逻辑（优先使用 MCP 工具）**：Serena（语义代码操作）、sequential-thinking（步骤化推理）、Context7（代码/库文档检索）需协调工作：
    1) 先用 Context7 获取权威资料与代码片段（契约/接口/最佳实践）；
    2) 用 sequential-thinking 拆解任务，形成最小闭环步骤与验收点；
    3) 涉及精确代码修改时，用 Serena 的符号搜索（`find_symbol`/`find_referencing_symbols`）定位目标，再用符号级编辑工具（`replace_symbol_body`/`insert_after_symbol`）执行语义安全的修改；
    4) 执行阶段全程用 MCP 工具（serena/filesystem/git/context7）记录操作，保证"代码即日志"。
+
+### 3.1 代码修复后的后台清理（Run-to-Completion Hygiene）
+
+为避免测试通过后遗留的运行中后台进程或临时环境状态影响后续验证，完成修复并通过测试后，必须执行以下清理：
+
+- 终止临时进程与守护：停止为本次验证启动的 WebAPI/桌面端/脚本（如 `dotnet run`）。
+- 释放资源与缓存：清理内存缓存/临时文件/本地数据沙箱（如 `BIN/`, `logs/`, `TestResults/` 等，禁止入库）。
+- 还原配置与环境变量：移除测试期设置的临时变量（如 `ASPNETCORE_URLS`）、测试密钥/连接串，防止污染后续运行。
+- 关闭外部连接：断开数据库连接、HTTP 调试代理、自动化会话，避免后台会话滞留。
+- 证据归档：将需要保留的日志片段/截图/命令输出收敛到 PR 或 Issue 评论；不要长时间保留大体量日志在工作目录。
+- 端口检查：确认 5001 等端口未被占用；必要时提供释放命令（Windows `netstat -ano`/`taskkill`，Linux `lsof`/`kill`）。
+- 文档同步：如清理步骤依赖脚本或特定命令，在 `docs/development/minimal-practice.md` 或相关 README 中补充最小指引。
 - **使用指引**：
   - 处理跨模块或高风险任务时，优先调用 `sequential-thinking` 输出结构化步骤，再据此安排 `filesystem`/`git` 操作，并在 Issue/文档中引用该步骤列表。
   - 需要记录或比较截止时间、部署窗口、执行耗时时，调用 `time` 获取标准化时间戳（UTC 与本地）并写入 Issue、报告或日志。

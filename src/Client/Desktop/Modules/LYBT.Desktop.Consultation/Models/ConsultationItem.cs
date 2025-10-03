@@ -212,7 +212,7 @@ public class ConsultationItem : BindableBase
             PatientName = dto.PatientName ?? string.Empty,
             PatientGender = string.Empty, // ConsultationDto中没有此属性
             PatientAge = null, // ConsultationDto中没有此属性
-            ChiefComplaint = dto.ChiefComplaint,
+            ChiefComplaint = dto.ChiefComplaint!,
             PresentIllness = dto.PresentIllness,
             PastHistory = null, // ConsultationDto中没有此属性
             PersonalHistory = null, // ConsultationDto中没有此属性

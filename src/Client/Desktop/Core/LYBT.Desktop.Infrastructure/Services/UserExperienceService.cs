@@ -12,7 +12,9 @@ namespace LYBT.Desktop.Infrastructure.Services
         private readonly ILogger<UserExperienceService> _logger;
         private readonly ConcurrentDictionary<string, object> _userPreferences;
         private readonly List<string> _userActions;
+#pragma warning disable CS0414 // Field is assigned but never used
         private bool _isInitialized;
+#pragma warning restore CS0414
 
         public UserExperienceService(ILogger<UserExperienceService> logger)
         {
@@ -103,11 +105,11 @@ namespace LYBT.Desktop.Infrastructure.Services
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "转换用户偏好值失败: {PreferenceName}", preferenceName);
-                    return default(T);
+                    return default(T)!;
                 }
             }
 
-            return default(T);
+            return default(T)!;
         }
 
         /// <summary>

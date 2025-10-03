@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -16,6 +18,7 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
     {
         private readonly IRegionManager _regionManager;
         private string _currentUserName = string.Empty;
+        private bool _isInitialized = false;
 
         // ����ѡ��״̬
         private bool _isUserManagementSelected = true;
@@ -40,9 +43,6 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
 
             // ���ĵ�¼�ɹ��¼�
             EventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
-
-            // Ĭ�ϵ������û�����
-            ExecuteNavigate("UserManagement");
         }
 
         #region Properties
@@ -104,12 +104,12 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation($"����������ģ�飺{targetView}");
+                Logger.LogInformation($"Navigating to admin module: {targetView}");
 
-                // ����ѡ��״̬
+                // 更新选择状态
                 UpdateSelectionState(targetView);
 
-                // ��������Ӧ����ͼ
+                // 根据参数映射视图
                 string viewName = targetView switch
                 {
                     "UserManagement" => "UserManagementView",
@@ -125,8 +125,8 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"������{targetView}ʧ��");
-                ShowErrorMessage($"����ʧ�ܣ�{ex.Message}");
+                Logger.LogError(ex, $"Failed to navigate to {targetView}");
+                ShowErrorMessage($"导航失败：{ex.Message}");
             }
         }
 
@@ -168,25 +168,40 @@ namespace LYBT.Desktop.AdminWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("�û������˳���¼");
+                Logger.LogInformation("User logged out successfully");
 
-                // �����ǳ��¼�
+                // 发布退出登录事件
                 EventAggregator.GetEvent<UserLoggedOutEvent>().Publish();
 
-                // �����ص�¼����
+                // 导航回登录界面
                 _regionManager.RequestNavigate("ContentRegion", "LoginView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "�˳���¼ʧ��");
-                ShowErrorMessage($"�˳���¼ʧ�ܣ�{ex.Message}");
+                Logger.LogError(ex, "Failed to logout");
+                ShowErrorMessage($"退出登录失败：{ex.Message}");
             }
         }
 
         private void OnUserLoggedIn(UserLoggedInEventArgs args)
         {
             CurrentUserName = args.Username;
-            Logger.LogInformation($"����Ա {args.Username} �ѵ�¼");
+            Logger.LogInformation($"Admin {args.Username} logged in");
+        }
+
+        public override void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            base.OnNavigatedTo(navigationContext);
+
+            // UltraThink�޸���ʹ�� Dispatcher �ӳٵ���ȷ�� Region ��ȫע��
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    ExecuteNavigate("UserManagement");
+                }, DispatcherPriority.ApplicationIdle);
+            }
         }
 
         #endregion

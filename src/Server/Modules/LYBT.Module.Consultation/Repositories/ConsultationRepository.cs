@@ -13,17 +13,13 @@ namespace LYBT.Module.Consultation.Repositories
     /// </summary>
     public class ConsultationRepository : BaseRepository<ConsultationEntity>, IConsultationRepository
     {
-        private readonly ILogger<ConsultationRepository> _logger;
-
         public ConsultationRepository(AppDbContext context) : base(context)
         {
-            _logger = null; // 暂时设为null，后续可通过DI注入
         }
 
         public ConsultationRepository(AppDbContext context, ILogger<ConsultationRepository> logger)
             : base(context, logger)
         {
-            _logger = logger;
         }
 
         /// <summary>
@@ -57,8 +53,8 @@ namespace LYBT.Module.Consultation.Repositories
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(c =>
-                    c.ChiefComplaint.Contains(keyword) ||
-                    c.TCMDiagnosis.Contains(keyword) ||
+                    (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
+                    (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
                     c.MedicalCase.PatientName.Contains(keyword) ||
                     c.MedicalCase.DoctorName.Contains(keyword));
             }
@@ -85,11 +81,11 @@ namespace LYBT.Module.Consultation.Repositories
         /// </summary>
         public async Task<ConsultationEntity> GetByIdWithDetailsAsync(Guid id)
         {
-            return await _dbSet
+            return (await _dbSet
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == id && !c.IsDeleted)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync())!;
         }
 
         /// <summary>
@@ -97,11 +93,11 @@ namespace LYBT.Module.Consultation.Repositories
         /// </summary>
         public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            return await _dbSet
+            return (await _dbSet
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == medicalCaseId && !c.IsDeleted)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync())!;
         }
     }
 }

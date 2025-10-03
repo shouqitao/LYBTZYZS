@@ -93,7 +93,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 错误消息
         /// </summary>
-        public string ErrorMessage
+        public new string ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 是否有错误
         /// </summary>
-        public bool HasError
+        public new bool HasError
         {
             get => _hasError;
             set => SetProperty(ref _hasError, value);
@@ -332,7 +332,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 清除错误
         /// </summary>
-        private void ClearError()
+        private new void ClearError()
         {
             ErrorMessage = string.Empty;
             HasError = false;

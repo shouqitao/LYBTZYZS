@@ -68,30 +68,30 @@
                 <!-- 用户名 -->
                 <DataGridTextColumn Header="用户名"
                                     Binding="{Binding Username}"
-                                    Width="{StaticResource DataGridColumnWidthLarge}" />
+                                    Width="150" />
 
                 <!-- 真实姓名 -->
                 <DataGridTextColumn Header="真实姓名"
                                     Binding="{Binding RealName}"
-                                    Width="{StaticResource DataGridColumnWidthLarge}" />
+                                    Width="150" />
 
                 <!-- 角色 -->
                 <DataGridTextColumn Header="角色"
                                     Binding="{Binding Role}"
-                                    Width="{StaticResource DataGridPhoneColumnWidth}" />
+                                    Width="120" />
 
                 <!-- 手机号 -->
                 <DataGridTextColumn Header="手机号"
                                     Binding="{Binding PhoneNumber}"
-                                    Width="{StaticResource DataGridPhoneColumnWidth}" />
+                                    Width="120" />
 
                 <!-- 邮箱 -->
                 <DataGridTextColumn Header="邮箱"
                                     Binding="{Binding Email}"
-                                    Width="{StaticResource DataGridColumnWidthXLarge}" />
+                                    Width="200" />
 
                 <!-- 状态 -->
-                <DataGridTemplateColumn Header="状态" Width="{StaticResource DataGridStatusColumnWidth}">
+                <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border CornerRadius="3"
@@ -125,7 +125,7 @@
                 </DataGridTemplateColumn>
 
                 <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="{StaticResource DataGridActionColumnWidth}">
+                <DataGridTemplateColumn Header="操作" Width="240">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

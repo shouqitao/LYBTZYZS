@@ -75,9 +75,9 @@ namespace LYBT.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().HaveCount(1);
-            result.Data[0].MedicalCaseId.Should().Be(medicalCaseId);
-            result.Data[0].ChiefComplaint.Should().Be("测试主诉");
+            result.Data!.Should().HaveCount(1);
+            result.Data![0].MedicalCaseId.Should().Be(medicalCaseId);
+            result.Data![0].ChiefComplaint.Should().Be("测试主诉");
         }
 
         [Fact]
@@ -86,8 +86,10 @@ namespace LYBT.UnitTests.Core.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in nullability
             _repositoryMock.Setup(x => x.GetByMedicalCaseIdAsync(medicalCaseId))
-                .ReturnsAsync((Consultation)null);
+                .ReturnsAsync((Consultation?)null);
+#pragma warning restore CS8620
 
             // Act
             var result = await _service.GetByMedicalCaseIdAsync(medicalCaseId);
@@ -164,8 +166,8 @@ namespace LYBT.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(consultationId);
-            result.Data.ChiefComplaint.Should().Be("测试主诉");
+            result.Data!.Id.Should().Be(consultationId);
+            result.Data!.ChiefComplaint.Should().Be("测试主诉");
         }
 
         [Fact]
@@ -174,8 +176,10 @@ namespace LYBT.UnitTests.Core.Services
             // Arrange
             var consultationId = Guid.NewGuid();
 
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in nullability
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
-                .ReturnsAsync((Consultation)null);
+                .ReturnsAsync((Consultation?)null);
+#pragma warning restore CS8620
 
             // Act
             var result = await _service.GetByIdAsync(consultationId);
@@ -236,7 +240,7 @@ namespace LYBT.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.ChiefComplaint.Should().Be("更新后的主诉");
+            result.Data!.ChiefComplaint.Should().Be("更新后的主诉");
         }
 
         #endregion
@@ -320,8 +324,8 @@ namespace LYBT.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().HaveCount(1);
-            result.Data[0].ChiefComplaint.Should().Contain(keyword);
+            result.Data!.Should().HaveCount(1);
+            result.Data![0].ChiefComplaint.Should().Contain(keyword);
         }
 
         #endregion
@@ -377,8 +381,8 @@ namespace LYBT.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(1);
-            result.Data.TotalCount.Should().Be(1);
+            result.Data!.Items.Should().HaveCount(1);
+            result.Data!.TotalCount.Should().Be(1);
         }
 
         #endregion

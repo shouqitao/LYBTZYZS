@@ -70,12 +70,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>
         /// 确认命令
         /// </summary>
-        public ICommand ConfirmCommand { get; protected set; }
+        public ICommand ConfirmCommand { get; protected set; } = null!;
 
         /// <summary>
         /// 取消命令
         /// </summary>
-        public ICommand CancelCommand { get; protected set; }
+        public ICommand CancelCommand { get; protected set; } = null!;
 
         #endregion
 

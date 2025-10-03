@@ -15,11 +15,6 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <returns>服务集合</returns>
-    /// <summary>
-    /// 添加内存事件总线服务
-    /// </summary>
-    /// <param name="services">服务集合</param>
-    /// <returns>服务集合</returns>
     public static IServiceCollection AddInMemoryEventBus(this IServiceCollection services)
     {
         // 注册事件总线为单例

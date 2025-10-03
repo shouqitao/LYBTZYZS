@@ -5,15 +5,20 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="http://prismlibrary.com/"
+    xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
     mc:Ignorable="d">
     <Application.Resources>
         <ResourceDictionary>
             <!--  合并统一设计系统资源  -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/UnifiedDesignSystem.xaml" />
+                <ResourceDictionary Source="Styles/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!--  简化的资源字典 - 仅包含基础转换器  -->
+            <!--  基础转换器 - 引用 Infrastructure 中的统一定义  -->
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
 
 
             <!--  应用级全局样式覆盖  -->

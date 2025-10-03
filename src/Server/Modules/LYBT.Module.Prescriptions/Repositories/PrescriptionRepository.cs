@@ -13,17 +13,13 @@ namespace LYBT.Module.Prescriptions.Repositories
     /// </summary>
     public class PrescriptionRepository : BaseRepository<PrescriptionEntity>, IPrescriptionRepository
     {
-        private readonly ILogger<PrescriptionRepository> _logger;
-
         public PrescriptionRepository(AppDbContext context) : base(context)
         {
-            _logger = null; // 暂时设为null，后续可通过DI注入
         }
 
         public PrescriptionRepository(AppDbContext context, ILogger<PrescriptionRepository> logger)
             : base(context, logger)
         {
-            _logger = logger;
         }
 
         /// <summary>
@@ -31,11 +27,11 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// </summary>
         public async Task<PrescriptionEntity> GetByIdWithItemsAsync(Guid id)
         {
-            return await _dbSet
+            return (await _dbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.Id == id && !p.IsDeleted)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync())!;
         }
 
         /// <summary>
@@ -56,8 +52,8 @@ namespace LYBT.Module.Prescriptions.Repositories
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(p =>
-                    p.Indication.Contains(keyword) ||
-                    p.FormulaSource.Contains(keyword) ||
+                    (p.Indication != null && p.Indication.Contains(keyword)) ||
+                    (p.FormulaSource != null && p.FormulaSource.Contains(keyword)) ||
                     p.Items.Any(i => i.HerbName.Contains(keyword)));
             }
 

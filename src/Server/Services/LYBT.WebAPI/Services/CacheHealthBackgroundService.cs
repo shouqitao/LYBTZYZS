@@ -12,7 +12,7 @@ namespace LYBT.WebAPI.Services
         private readonly ICacheDiagnosticsService _diagnosticsService;
         private readonly ILogger<CacheHealthBackgroundService> _logger;
         private readonly CacheOptions _cacheOptions;
-        private Timer _timer;
+        private Timer _timer = null!;
         private bool _isRunning;
 
         public CacheHealthBackgroundService(

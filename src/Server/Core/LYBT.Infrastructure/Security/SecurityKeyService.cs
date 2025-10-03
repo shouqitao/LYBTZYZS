@@ -73,8 +73,10 @@ namespace LYBT.Infrastructure.Security
                 else
                 {
                     // 测试或其他环境
+#pragma warning disable CS0618 // 类型或成员已过时
                     secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"]
                         ?? _jwtOptions.Secret;
+#pragma warning restore CS0618 // 类型或成员已过时
                 }
 
                 // 验证密钥强度

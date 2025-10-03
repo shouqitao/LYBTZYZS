@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (herb?.Id == null)
             {
                 _logger.LogError("Cannot update herb with null or invalid id");
-                return Task.FromResult<HerbDto>(null);
+                return Task.FromResult<HerbDto>(null!);
             }
             return base.UpdateAsync(herb.Id, herb);
         }

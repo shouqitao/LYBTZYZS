@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Services.Repositories
             if (medicalCase?.Id == null)
             {
                 _logger.LogError("Cannot update medical case with null or invalid id");
-                return Task.FromResult<MedicalCaseDto>(null);
+                return Task.FromResult<MedicalCaseDto>(null!);
             }
             return base.UpdateAsync(medicalCase.Id, medicalCase);
         }
@@ -85,7 +85,7 @@ namespace LYBT.Desktop.Services.Repositories
         {
             try
             {
-                return await _apiService.GetAsync<MedicalCaseDto>($"{_endpoint}/patient/{patientId}/latest");
+                return (await _apiService.GetAsync<MedicalCaseDto>($"{_endpoint}/patient/{patientId}/latest"))!;
             }
             catch (Exception ex)
             {
