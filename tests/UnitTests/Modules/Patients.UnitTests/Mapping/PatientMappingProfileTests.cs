@@ -324,5 +324,132 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patientDto.Address.Should().Be("北京市朝阳区建国门23号");
             patientDto.PhoneNumber.Should().Be("+86-138-1234-5678");
         }
+
+
+        // ==================== Age 计算属性测试 ====================
+
+        [Fact]
+        public void Map_Patient_With_BirthDate_Should_Calculate_Age_Correctly()
+        {
+            // Arrange - 创建一个30岁的患者（假设今天是2025-10-03）
+            var birthDate = DateTime.Today.AddYears(-30);
+            var patient = new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = "测试年龄计算",
+                BirthDate = birthDate
+            };
+
+            // Act
+            var patientDto = _mapper.Map<PatientDto>(patient);
+
+            // Assert
+            patientDto.Should().NotBeNull();
+            patientDto.Age.Should().Be(30);
+            patient.Age.Should().Be(30);
+        }
+
+        [Fact]
+        public void Map_Patient_Without_BirthDate_Should_Have_Null_Age()
+        {
+            // Arrange
+            var patient = new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = "无出生日期",
+                BirthDate = null
+            };
+
+            // Act
+            var patientDto = _mapper.Map<PatientDto>(patient);
+
+            // Assert
+            patient.Age.Should().BeNull();
+            patientDto.Age.Should().Be(0); // PatientDto.Age 是 int，默认为 0
+        }
+
+        [Fact]
+        public void Map_Patient_Born_Today_Should_Have_Zero_Age()
+        {
+            // Arrange
+            var patient = new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = "今日出生",
+                BirthDate = DateTime.Today
+            };
+
+            // Act
+            var patientDto = _mapper.Map<PatientDto>(patient);
+
+            // Assert
+            patient.Age.Should().Be(0);
+            patientDto.Age.Should().Be(0);
+        }
+
+        [Fact]
+        public void Map_Patient_With_Birthday_Not_Yet_This_Year_Should_Calculate_Correctly()
+        {
+            // Arrange - 出生日期在今天之后（今年还没过生日）
+            var today = DateTime.Today;
+            var birthDate = new DateTime(today.Year - 25, today.Month, today.Day).AddDays(1);
+            var patient = new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = "今年未过生日",
+                BirthDate = birthDate
+            };
+
+            // Act
+            var patientDto = _mapper.Map<PatientDto>(patient);
+
+            // Assert
+            // 由于今年还没过生日，年龄应该是 24 岁
+            patient.Age.Should().Be(24);
+            patientDto.Age.Should().Be(24);
+        }
+
+        [Fact]
+        public void Map_PatientCreateDto_With_BirthDate_Should_Calculate_Age()
+        {
+            // Arrange
+            var birthDate = DateTime.Today.AddYears(-35);
+            var createDto = new PatientCreateDto
+            {
+                Name = "创建DTO年龄测试",
+                Gender = Gender.Male,
+                BirthDate = birthDate
+            };
+
+            // Act
+            var patient = _mapper.Map<Patient>(createDto);
+
+            // Assert
+            patient.BirthDate.Should().Be(birthDate);
+            patient.Age.Should().Be(35);
+            createDto.Age.Should().Be(35);
+        }
+
+        [Fact]
+        public void Map_PatientUpdateDto_With_BirthDate_Should_Calculate_Age()
+        {
+            // Arrange
+            var birthDate = DateTime.Today.AddYears(-40);
+            var updateDto = new PatientUpdateDto
+            {
+                Id = Guid.NewGuid(),
+                Name = "更新DTO年龄测试",
+                Gender = Gender.Female,
+                BirthDate = birthDate
+            };
+
+            // Act
+            var patient = _mapper.Map<Patient>(updateDto);
+
+            // Assert
+            patient.BirthDate.Should().Be(birthDate);
+            patient.Age.Should().Be(40);
+            updateDto.Age.Should().Be(40);
+        }
     }
 }
