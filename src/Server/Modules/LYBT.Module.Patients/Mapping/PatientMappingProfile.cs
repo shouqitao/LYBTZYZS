@@ -26,6 +26,7 @@ namespace LYBT.Module.Patients.Mapping
             // PatientCreateDto转患者实体
             CreateMap<PatientCreateDto, Patient>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())  // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
                 .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
@@ -41,6 +42,7 @@ namespace LYBT.Module.Patients.Mapping
             // PatientUpdateDto转患者实体
             CreateMap<PatientUpdateDto, Patient>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())  // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
                 .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
@@ -74,11 +76,21 @@ namespace LYBT.Module.Patients.Mapping
             // PatientCreateDto -> PatientDto（用于验证服务）
             CreateMap<PatientCreateDto, PatientDto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())  // 拼音码由系统生成
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())  // 审计字段
+                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore());  // 审计字段
 
             // PatientUpdateDto -> PatientDto（用于验证服务）
             CreateMap<PatientUpdateDto, PatientDto>()
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()); // 拼音码由系统生成
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())  // 拼音码由系统生成
+                .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
+                .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
+                .ForMember(dest => dest.DisableReason, opt => opt.Ignore())
+                .ForMember(dest => dest.CreateTime, opt => opt.Ignore())  // 审计字段
+                .ForMember(dest => dest.UpdateTime, opt => opt.Ignore());  // 审计字段
         }
     }
 }

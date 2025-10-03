@@ -273,7 +273,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
         public string Name { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
         public string? IDNumber { get; set; }
-        public int Age { get; set; }
+        public int? Age { get; set; }
         public Gender Gender { get; set; }
         public DateTime? LastVisitDate { get; set; }
         public int VisitCount { get; set; }

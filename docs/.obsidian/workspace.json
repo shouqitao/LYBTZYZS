@@ -20,8 +20,22 @@
               "icon": "lucide-file",
               "title": "OverEngineeredCodeCleanupReport"
             }
+          },
+          {
+            "id": "83ca165d17d0d37a",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "未命名 1.base",
+                "viewName": "表格"
+              },
+              "icon": "lucide-table",
+              "title": "未命名 1"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -150,13 +164,23 @@
               "icon": "lucide-list",
               "title": "OverEngineeredCodeCleanupReport 的大纲"
             }
+          },
+          {
+            "id": "31bb215fb4b6f5fb",
+            "type": "leaf",
+            "state": {
+              "type": "deepseek-ai-assistant-itemview",
+              "state": {},
+              "icon": "bot",
+              "title": "Deepseek AI assistant"
+            }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -166,11 +190,23 @@
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
-      "bases:创建新数据库": false
+      "bases:创建新数据库": false,
+      "deepseek-ai-assistant:Open deepseek AI assistant": false
     }
   },
-  "active": "dc4dd32996aa7a1c",
+  "active": "83ca165d17d0d37a",
   "lastOpenFiles": [
+    "未命名.base",
+    "未命名 1.base",
+    "index.md",
+    "reports/phase2-step2-skeleton-generation-report.md",
+    "reports/test-plan-consultation.md",
+    "reports/test-plan-auth.md",
+    "reports/test-plan-users.md",
+    "reports/test-plan-patients.md",
+    "reports/test-coverage-analysis-2025-10-03.md",
+    "reports/issue-847-config-audit-phase1.md",
+    "reports/INDEX.md.tmp.7076.1759369025852",
     "development/ef-migrations-guide.md",
     "reports/desktop-architecture-audit-2025-10-01.md"
   ]

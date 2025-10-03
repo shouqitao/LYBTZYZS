@@ -21,3 +21,5 @@ dotnet restore LYBT.All.sln && dotnet build LYBT.All.sln -c Release
 - 风险：
 - 回滚方案：
 
+## 环境说明（默认）
+- 本地开发：Windows + PowerShell（pwsh）。如需 Linux/Mac，请在此说明并提供对应命令。

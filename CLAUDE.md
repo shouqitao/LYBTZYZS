@@ -69,6 +69,28 @@
 8. **并行优先**：适用于所有任务类型（代码实现、代码分析、文档整理、测试等）。当 Issue 含多个相互独立的子任务时，优先规划并行执行；在模块化清单中标注可并行项，结合 `sequential-thinking` 评估依赖，再同时发起所需的 MCP 调用，以提升整体效率。
 9. **思考强度分级**：根据任务复杂度选择适当的思考模式——常规任务默认 `think`，中等复杂场景使用 `think hard`，复杂跨模块需求使用 `think harder`，涉及系统级影响或高度不确定性时启用 `ultrathink`。确保在进入实现前完成相应级别的分析与记录。
 
+### 3.0 环境约束（Windows + PowerShell 优先）
+- 本地开发默认平台：Windows；默认 Shell：PowerShell（`pwsh`）。
+- 本地命令方言：优先使用 PowerShell 语法与脚本（`.ps1`）。
+- 跨平台命令：优先使用 `.NET CLI`（如 `dotnet build/test/run`）或 Node scripts；仅在 CI/容器指定 Linux/Mac Runner 时使用 bash。
+- 常用命令对照：
+  - 列目录：`Get-ChildItem -Path . -Recurse`（代替 `ls -R`）
+  - 搜索文本：`Select-String -Path 'src/**/*.cs' -Pattern 'keyword'`（代替 `grep -R`）
+  - 读取文件：`Get-Content .\file.txt`（代替 `cat`）
+  - 文本替换：`(Get-Content file) -replace 'old','new' | Set-Content file`（代替 `sed -i`）
+  - 环境变量：`$env:ASPNETCORE_URLS = 'http://localhost:5001'`（代替 `export`）
+  - 端口占用：`netstat -ano | findstr 5001`；结束进程：`taskkill /PID <pid> /F`
+- 若运行器不支持 PowerShell，则降级到跨平台 .NET CLI 或小型 C#/Node 脚本替代。
+
+#### 3.0.1 启动时环境探测与持久化（env-hints）
+- 启动任务前的固定步骤：
+  1) 优先读取 `.ai/env-hints.json`（若存在），作为本次任务的环境基准（如 `{ "os": "windows", "shell": "pwsh" }`）。
+  2) 若文件不存在或键缺失，则运行 `scripts/os-detect.ps1` 获取 `{ os, shell, name }`；
+  3) 将探测结果写回 `.ai/env-hints.json`，后续任务直接复用；
+  4) 依据 `os/shell` 选择命令方言：本地默认 Windows+PowerShell，CI 由 Runner 决定；
+  5) 仅当 Issue/PR 明确声明目标环境与默认不同时，才切换方言并记录原因。
+- 任何需要跨平台执行的命令，优先用 `.NET CLI` 或 Node scripts 表达；确需文本处理操作时提供 PowerShell 等价写法。
+
 ### 3.1 输入模式与自动化（简明解释）
 
 - 输入模式 A（轻量）：你只给“一句话问题”。

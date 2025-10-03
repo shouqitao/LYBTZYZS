@@ -69,6 +69,15 @@ body:
         - Shared
         - Infra/CI
         - Docs
+  - type:dropdown
+    id: env
+    attributes:
+      label: 运行环境（默认 Windows + PowerShell）
+      options:
+        - Windows + PowerShell（默认）
+        - Linux + bash
+        - macOS + zsh
+      description: 如与默认不同，请在此选择并在正文中提供对应命令/脚本。
   - type:textarea
     id: risks
     attributes:
@@ -78,4 +87,3 @@ body:
     attributes:
       label: 参考/证据链接
       description: 相关 Issue/PR、日志、行号证据等
-
