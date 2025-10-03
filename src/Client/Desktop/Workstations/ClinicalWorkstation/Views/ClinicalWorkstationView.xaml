@@ -4,382 +4,110 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- Issue #879: 移除重复标题栏，统一为侧边栏导航模式 -->
+    <UserControl.Resources>
+        <!-- 菜单按钮样式 -->
+        <Style x:Key="MenuRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Margin" Value="10,2"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E8F4F8"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2E86AB"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
-        <!-- 顶部工具栏 -->
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="#2E86AB">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- 左侧导航菜单 -->
+        <Border Grid.Column="0" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="诊疗功能" FontSize="16" FontWeight="Bold"
+                               Foreground="#333" Margin="15,15,15,10"/>
 
-                <!-- 系统标题 -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
-                    <TextBlock Text="诊疗工作台" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text=" - 凌隐宝堂中医诊所" FontSize="16" Foreground="#E0E0E0" VerticalAlignment="Bottom" Margin="10,0,0,2"/>
+                    <!-- 诊断录入 -->
+                    <RadioButton GroupName="ClinicalMenu"
+                                 IsChecked="{Binding IsDiagnosisSelected}"
+                                 Command="{Binding NavigateCommand}"
+                                 CommandParameter="Diagnosis"
+                                 Style="{StaticResource MenuRadioButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="诊断录入" FontSize="14"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- 处方开具 -->
+                    <RadioButton GroupName="ClinicalMenu"
+                                 IsChecked="{Binding IsPrescriptionSelected}"
+                                 Command="{Binding NavigateCommand}"
+                                 CommandParameter="Prescription"
+                                 Style="{StaticResource MenuRadioButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💊" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="处方开具" FontSize="14"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- 患者管理 -->
+                    <Separator Margin="10,10"/>
+                    <RadioButton GroupName="ClinicalMenu"
+                                 IsChecked="{Binding IsPatientManagementSelected}"
+                                 Command="{Binding NavigateCommand}"
+                                 CommandParameter="PatientManagement"
+                                 Style="{StaticResource MenuRadioButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🏥" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="患者管理" FontSize="14"/>
+                        </StackPanel>
+                    </RadioButton>
+
+                    <!-- 历史记录 -->
+                    <RadioButton GroupName="ClinicalMenu"
+                                 IsChecked="{Binding IsHistorySelected}"
+                                 Command="{Binding NavigateCommand}"
+                                 CommandParameter="History"
+                                 Style="{StaticResource MenuRadioButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📚" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="历史记录" FontSize="14"/>
+                        </StackPanel>
+                    </RadioButton>
                 </StackPanel>
-
-                <!-- 当前患者信息 -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="当前患者：" Foreground="#E0E0E0" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentPatientName}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" Margin="5,0"/>
-                    <Button Content="选择患者"
-                            Command="{Binding SelectPatientCommand}"
-                            Margin="20,0,0,0"
-                            Padding="10,5"
-                            Background="#5BA3CC"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}"
-                                        CornerRadius="3"
-                                        Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </StackPanel>
-
-                <!-- 用户信息 -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
-                    <TextBlock Text="医生：" Foreground="#E0E0E0" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding CurrentUserName}" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" Margin="5,0"/>
-                    <Button Content="退出登录"
-                            Command="{Binding LogoutCommand}"
-                            Margin="20,0,0,0"
-                            Padding="10,5"
-                            Background="#FF6B6B"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}"
-                                        CornerRadius="3"
-                                        Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </StackPanel>
-            </Grid>
+            </ScrollViewer>
         </Border>
 
-        <!-- 主内容区 - Tab切换模式 -->
-        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="Height" Value="45"/>
-                    <Setter Property="MinWidth" Value="150"/>
-                    <Setter Property="FontSize" Value="14"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border Name="Border"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="#DDDDDD"
-                                        BorderThickness="1,1,1,0"
-                                        Margin="0,0,2,0"
-                                        CornerRadius="5,5,0,0">
-                                    <ContentPresenter x:Name="ContentSite"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Center"
-                                                      ContentSource="Header"
-                                                      Margin="15,10"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Panel.ZIndex" Value="100"/>
-                                        <Setter TargetName="Border" Property="Background" Value="White"/>
-                                        <Setter TargetName="Border" Property="BorderBrush" Value="#2E86AB"/>
-                                        <Setter TargetName="Border" Property="BorderThickness" Value="2,2,2,0"/>
-                                        <Setter Property="Foreground" Value="#2E86AB"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                    </Trigger>
-                                    <Trigger Property="IsSelected" Value="False">
-                                        <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
-                                        <Setter Property="Foreground" Value="#666666"/>
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Border" Property="Background" Value="#E8F4F8"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.Resources>
-
-            <!-- 诊断Tab -->
-            <TabItem Header="📋 诊断录入">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- 四诊信息 -->
-                        <GroupBox Grid.Row="0" Header="四诊信息" Margin="0,0,0,15">
-                            <Grid Margin="10">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="80"/>
-                                    <RowDefinition Height="80"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="15"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- 望诊 -->
-                                <DockPanel Grid.Row="0" Grid.Column="0">
-                                    <Label Content="望诊：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.WangZhen}"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-
-                                <!-- 闻诊 -->
-                                <DockPanel Grid.Row="0" Grid.Column="2">
-                                    <Label Content="闻诊：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.WenZhen}"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-
-                                <!-- 问诊 -->
-                                <DockPanel Grid.Row="1" Grid.Column="0">
-                                    <Label Content="问诊：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.WenZhen2}"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-
-                                <!-- 切诊 -->
-                                <DockPanel Grid.Row="1" Grid.Column="2">
-                                    <Label Content="切诊：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.QieZhen}"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-                            </Grid>
-                        </GroupBox>
-
-                        <!-- 主诉与现病史 -->
-                        <GroupBox Grid.Row="1" Header="主诉与现病史" Margin="0,0,0,15">
-                            <Grid Margin="10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="15"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- 主诉 -->
-                                <DockPanel Grid.Column="0">
-                                    <Label Content="主诉：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.ChiefComplaint}"
-                                             Height="60"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-
-                                <!-- 现病史 -->
-                                <DockPanel Grid.Column="2">
-                                    <Label Content="现病史：" Width="60" VerticalAlignment="Top" FontWeight="Bold"/>
-                                    <TextBox Text="{Binding Diagnosis.PresentIllness}"
-                                             Height="60"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"/>
-                                </DockPanel>
-                            </Grid>
-                        </GroupBox>
-
-                        <!-- 诊断结果 -->
-                        <GroupBox Grid.Row="2" Header="诊断结果" Margin="0,0,0,15">
-                            <TextBox Text="{Binding Diagnosis.DiagnosisResult}"
-                                     Margin="10"
-                                     Height="100"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"
-                                     FontSize="14"/>
-                        </GroupBox>
-
-                        <!-- 医嘱备注 -->
-                        <GroupBox Grid.Row="3" Header="医嘱/备注" Margin="0,0,0,15">
-                            <TextBox Text="{Binding Diagnosis.Remarks}"
-                                     Margin="10"
-                                     Height="60"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"/>
-                        </GroupBox>
-
-                        <!-- 历史诊断 -->
-                        <GroupBox Grid.Row="4" Header="历史诊断记录">
-                            <DataGrid ItemsSource="{Binding DiagnosisHistory}"
-                                      SelectedItem="{Binding SelectedHistoryDiagnosis}"
-                                      Height="200"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="False">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="日期" Binding="{Binding Date, StringFormat=yyyy-MM-dd}" Width="100"/>
-                                    <DataGridTextColumn Header="主诉" Binding="{Binding ChiefComplaint}" Width="200"/>
-                                    <DataGridTextColumn Header="诊断" Binding="{Binding Diagnosis}" Width="*"/>
-                                    <DataGridTextColumn Header="医生" Binding="{Binding DoctorName}" Width="80"/>
-                                    <DataGridTemplateColumn Header="操作" Width="100">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Content="导入"
-                                                        Command="{Binding DataContext.ImportDiagnosisCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding}"
-                                                        Padding="5,2"
-                                                        Background="#2E86AB"
-                                                        Foreground="White"/>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </GroupBox>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
-
-            <!-- 处方Tab -->
-            <TabItem Header="💊 处方开具">
-                <Grid Margin="20">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- 工具栏 -->
-                    <ToolBar Grid.Row="0" Height="40">
-                        <Button Content="🔍 搜索药材" Command="{Binding SearchHerbCommand}" Padding="10,5" Margin="2"/>
-                        <Separator/>
-                        <ComboBox Width="150" Margin="2"
-                                  ItemsSource="{Binding FormulaTemplates}"
-                                  SelectedItem="{Binding SelectedFormula}"
-                                  DisplayMemberPath="Name">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem">
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                        </ComboBox>
-                        <Button Content="导入验方" Command="{Binding ImportFormulaCommand}" Padding="10,5" Margin="2"/>
-                        <Separator/>
-                        <Button Content="历史处方" Command="{Binding ShowHistoryCommand}" Padding="10,5" Margin="2"/>
-                        <Separator/>
-                        <Button Content="清空处方" Command="{Binding ClearPrescriptionCommand}" Padding="10,5" Margin="2" Foreground="Red"/>
-                    </ToolBar>
-
-                    <!-- 处方网格 - 4×6可编辑网格 -->
-                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" Margin="0,10">
-                        <ItemsControl ItemsSource="{Binding PrescriptionGrid}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border BorderBrush="#DDDDDD" BorderThickness="0.5" Height="60">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="60"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <TextBox Grid.Column="0"
-                                                     Text="{Binding HerbName}"
-                                                     VerticalAlignment="Center"
-                                                     HorizontalAlignment="Center"
-                                                     BorderThickness="0"
-                                                     FontSize="14"
-                                                     TextAlignment="Center"/>
-
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <TextBox Text="{Binding Dosage}"
-                                                         Width="30"
-                                                         VerticalAlignment="Center"
-                                                         BorderThickness="0"
-                                                         FontSize="14"
-                                                         TextAlignment="Right"/>
-                                                <TextBlock Text="g" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
-
-                    <!-- 煎煮说明 -->
-                    <GroupBox Grid.Row="2" Header="煎煮说明" Margin="0,10">
-                        <TextBox Text="{Binding CookingInstructions}"
-                                 Height="50"
-                                 TextWrapping="Wrap"
-                                 Margin="5"/>
-                    </GroupBox>
-
-                    <!-- 底部操作按钮 -->
-                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
-                            <TextBlock Text="剂数：" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding PrescriptionCount}" Width="40" Margin="5,0" TextAlignment="Center"/>
-                            <TextBlock Text="剂" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
-                            <TextBlock Text="单价：￥" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding UnitPrice}" VerticalAlignment="Center"/>
-                            <TextBlock Text="  总价：￥" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                            <TextBlock Text="{Binding TotalPrice}" VerticalAlignment="Center" FontWeight="Bold" Foreground="Red"/>
-                        </StackPanel>
-
-                        <Button Content="保存处方"
-                                Command="{Binding SavePrescriptionCommand}"
-                                Padding="15,8"
-                                Margin="5,0"
-                                Background="#4CAF50"
-                                Foreground="White"
-                                FontWeight="Bold"/>
-
-                        <Button Content="打印处方"
-                                Command="{Binding PrintPrescriptionCommand}"
-                                Padding="15,8"
-                                Margin="5,0"
-                                Background="#2196F3"
-                                Foreground="White"
-                                FontWeight="Bold"/>
-                    </StackPanel>
-                </Grid>
-            </TabItem>
-        </TabControl>
+        <!-- 右侧内容区 -->
+        <Border Grid.Column="1" Background="White">
+            <ContentControl prism:RegionManager.RegionName="ClinicalContentRegion"
+                            Margin="20"/>
+        </Border>
     </Grid>
 </UserControl>
