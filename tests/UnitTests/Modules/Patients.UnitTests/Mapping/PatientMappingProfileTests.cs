@@ -451,5 +451,141 @@ namespace LYBT.Module.Patients.Tests.Mapping
             patient.Age.Should().Be(40);
             updateDto.Age.Should().Be(40);
         }
+
+
+        // ==================== 集合映射测试 ====================
+
+        [Fact]
+        public void Map_Patient_List_To_PatientDto_List_Should_Success()
+        {
+            // Arrange
+            var patients = new List<Patient>
+            {
+                new Patient { Id = Guid.NewGuid(), Name = "张三", Gender = Gender.Male, BirthDate = DateTime.Today.AddYears(-30) },
+                new Patient { Id = Guid.NewGuid(), Name = "李四", Gender = Gender.Female, BirthDate = DateTime.Today.AddYears(-25) },
+                new Patient { Id = Guid.NewGuid(), Name = "王五", Gender = Gender.Unknown, BirthDate = null }
+            };
+
+            // Act
+            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+            // Assert
+            patientDtos.Should().NotBeNull();
+            patientDtos.Should().HaveCount(3);
+            patientDtos[0].Name.Should().Be("张三");
+            patientDtos[0].Age.Should().Be(30);
+            patientDtos[1].Name.Should().Be("李四");
+            patientDtos[1].Age.Should().Be(25);
+            patientDtos[2].Name.Should().Be("王五");
+            patientDtos[2].Age.Should().Be(0); // null BirthDate -> Age = 0
+        }
+
+        [Fact]
+        public void Map_Empty_Patient_List_Should_Return_Empty_Dto_List()
+        {
+            // Arrange
+            var patients = new List<Patient>();
+
+            // Act
+            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+            // Assert
+            patientDtos.Should().NotBeNull();
+            patientDtos.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Map_Large_Patient_Collection_Should_Success()
+        {
+            // Arrange
+            var patients = Enumerable.Range(1, 100).Select(i => new Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = $"患者{i}",
+                Gender = (Gender)(i % 3),
+                BirthDate = DateTime.Today.AddYears(-20 - i)
+            }).ToList();
+
+            // Act
+            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+            // Assert
+            patientDtos.Should().NotBeNull();
+            patientDtos.Should().HaveCount(100);
+            patientDtos.All(dto => dto.Id != Guid.Empty).Should().BeTrue();
+            patientDtos.All(dto => !string.IsNullOrEmpty(dto.Name)).Should().BeTrue();
+        }
+
+        [Fact]
+        public void Map_PatientCreateDto_List_To_Patient_List_Should_Success()
+        {
+            // Arrange
+            var createDtos = new List<PatientCreateDto>
+            {
+                new PatientCreateDto { Name = "新患者1", Gender = Gender.Male, PhoneNumber = "13800138001" },
+                new PatientCreateDto { Name = "新患者2", Gender = Gender.Female, PhoneNumber = "13800138002" }
+            };
+
+            // Act
+            var patients = _mapper.Map<List<Patient>>(createDtos);
+
+            // Assert
+            patients.Should().NotBeNull();
+            patients.Should().HaveCount(2);
+            patients[0].Name.Should().Be("新患者1");
+            patients[0].PhoneNumber.Should().Be("13800138001");
+            patients[1].Name.Should().Be("新患者2");
+            patients[1].PhoneNumber.Should().Be("13800138002");
+            patients.All(p => p.Id != Guid.Empty).Should().BeTrue(); // BaseEntity 自动生成 Id
+        }
+
+        [Fact]
+        public void Map_PatientUpdateDto_List_To_Patient_List_Should_Success()
+        {
+            // Arrange
+            var updateDtos = new List<PatientUpdateDto>
+            {
+                new PatientUpdateDto { Id = Guid.NewGuid(), Name = "更新患者1", Gender = Gender.Male },
+                new PatientUpdateDto { Id = Guid.NewGuid(), Name = "更新患者2", Gender = Gender.Female }
+            };
+
+            // Act
+            var patients = _mapper.Map<List<Patient>>(updateDtos);
+
+            // Assert
+            patients.Should().NotBeNull();
+            patients.Should().HaveCount(2);
+            patients[0].Name.Should().Be("更新患者1");
+            patients[1].Name.Should().Be("更新患者2");
+        }
+
+        [Fact]
+        public void Map_Mixed_Dto_Collection_Should_Preserve_Individual_Mappings()
+        {
+            // Arrange
+            var createDtos = new List<PatientCreateDto>
+            {
+                new PatientCreateDto { Name = "创建DTO", Gender = Gender.Male, BirthDate = DateTime.Today.AddYears(-20) }
+            };
+            var updateDtos = new List<PatientUpdateDto>
+            {
+                new PatientUpdateDto { Id = Guid.NewGuid(), Name = "更新DTO", Gender = Gender.Female, BirthDate = DateTime.Today.AddYears(-30) }
+            };
+
+            // Act
+            var createdPatients = _mapper.Map<List<Patient>>(createDtos);
+            var updatedPatients = _mapper.Map<List<Patient>>(updateDtos);
+            var createdDtos = _mapper.Map<List<PatientDto>>(createdPatients);
+            var updatedDtos = _mapper.Map<List<PatientDto>>(updatedPatients);
+
+            // Assert
+            createdDtos.Should().HaveCount(1);
+            createdDtos[0].Name.Should().Be("创建DTO");
+            createdDtos[0].Age.Should().Be(20);
+
+            updatedDtos.Should().HaveCount(1);
+            updatedDtos[0].Name.Should().Be("更新DTO");
+            updatedDtos[0].Age.Should().Be(30);
+        }
     }
 }
