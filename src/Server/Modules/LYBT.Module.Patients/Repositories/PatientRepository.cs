@@ -147,6 +147,7 @@ namespace LYBT.Module.Patients.Repositories
             var today = DateTime.Today;
             var thisMonth = new DateTime(today.Year, today.Month, 1);
 
+            // 基本统计信息（数据库端聚合）
             var stats = await _dbSet
                 .AsNoTracking()
                 .Where(p => !p.IsDeleted)
@@ -157,9 +158,20 @@ namespace LYBT.Module.Patients.Repositories
                     MaleCount = g.Count(p => p.Gender == Gender.Male),
                     FemaleCount = g.Count(p => p.Gender == Gender.Female),
                     NewPatientsThisMonth = g.Count(p => p.CreatedAt >= thisMonth),
-                    AverageAge = g.Average(p => p.Age.HasValue ? (double)p.Age.Value : 0.0)
+                    AverageAge = 0 // Age 计算属性无法在 SQL 中翻译，需单独计算
                 })
                 .FirstOrDefaultAsync() ?? new PatientStatistics();
+
+            // 平均年龄需要在内存中计算（Age 是计算属性）
+            var patientsWithAge = await _dbSet
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted && p.BirthDate.HasValue)
+                .ToListAsync();
+
+            if (patientsWithAge.Any())
+            {
+                stats.AverageAge = patientsWithAge.Average(p => p.Age ?? 0);
+            }
 
             return stats;
         }
