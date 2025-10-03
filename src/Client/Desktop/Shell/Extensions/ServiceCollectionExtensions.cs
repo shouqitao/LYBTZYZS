@@ -345,6 +345,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ITokenStorageService,
                 LYBT.Desktop.Services.Business.TokenStorageService>();
 
+            // Issue #861: 注册用户名存储服务（记住用户名功能）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.IUsernameStorageService,
+                LYBT.Desktop.Services.Business.UsernameStorageService>();
+
             // Issue #835: 注册 IAuthenticationService 适配器(供 MainWindowViewModel 使用)
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Auth.IAuthenticationService,
                 LYBT.Desktop.Services.Auth.AuthenticationService>();

@@ -19,6 +19,7 @@
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
 
 
             <!--  应用级全局样式覆盖  -->

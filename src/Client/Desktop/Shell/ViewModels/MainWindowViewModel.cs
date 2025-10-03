@@ -378,57 +378,25 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
-    /// 检查登录状态 - UltraThink性能优化版
+    /// 检查登录状态 - Issue #861 修复: 始终显示登录窗口
+    /// 原因: 安全性考虑，不再根据保存的 Token 自动登录
+    /// 用户必须手动输入密码才能进入系统
     /// </summary>
     private async Task CheckLoginStatusAsync()
     {
-        System.Diagnostics.Debug.WriteLine(" CheckLoginStatusAsync 开始");
+        System.Diagnostics.Debug.WriteLine(" CheckLoginStatusAsync 开始 - Issue #861: 始终显示登录窗口");
         try
         {
-            // UltraThink修复: 使用AuthenticationService进行状态检查，确保与登录流程一致
-            var isLoggedIn = await _servicesFacade.AuthenticationService.IsLoggedInAsync();
-            System.Diagnostics.Debug.WriteLine($" AuthenticationService.IsLoggedInAsync = {isLoggedIn}");
-
-            if (isLoggedIn)
-            {
-                System.Diagnostics.Debug.WriteLine(" 尝试通过AuthenticationService获取当前用户...");
-                var user = await _servicesFacade.AuthenticationService.GetCurrentUserAsync();
-
-                if (user != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($" 获取到当前用户 {user.UserName} - {user.RealName}");
-                    CurrentUser = user;
-                    IsLoggedIn = true;
-
-                    // 更新命令状态
-                    TestApiCommand.RaiseCanExecuteChanged();
-                    ShowControlExamplesCommand.RaiseCanExecuteChanged();
-                    UpdateKeyboardShortcutCommands();
-
-                    System.Diagnostics.Debug.WriteLine(" 准备加载主界面内容..");
-
-                    // 加载工作台模块
-                    await EnsureWorkstationModulesLoaded(user);
-
-                    LoadMainContent();
-                    return;
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($" AuthenticationService.GetCurrentUserAsync 返回null");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine(" 用户未登录，显示登录界面");
-            }
-
+            // Issue #861 修复: 移除自动登录逻辑
+            // 即使有保存的 Token，也不自动登录，确保安全性
+            // 用户名会在 LoginViewModel 中自动填充（如果启用了"记住用户名"）
+            System.Diagnostics.Debug.WriteLine(" 显示登录界面，等待用户手动登录");
             ShowLoginDialog();
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($" CheckLoginStatusAsync 异常: {ex.Message}");
-            await ShowErrorMessageAsync($"检查登录状态失败:{ex.Message}");
+            await ShowErrorMessageAsync($"初始化登录界面失败:{ex.Message}");
             ShowLoginDialog();
         }
     }

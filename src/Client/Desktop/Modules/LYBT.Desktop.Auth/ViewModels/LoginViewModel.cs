@@ -22,6 +22,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IAuthService _authService;
         private readonly IRegionManager _regionManager;
         private readonly IApiHealthCheckService? _apiHealthCheckService;
+        private readonly LYBT.Desktop.Services.Business.IUsernameStorageService? _usernameStorage;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -38,19 +39,22 @@ namespace LYBT.Desktop.Auth.ViewModels
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
-            IApiHealthCheckService? apiHealthCheckService = null)
+            IApiHealthCheckService? apiHealthCheckService = null,
+            LYBT.Desktop.Services.Business.IUsernameStorageService? usernameStorage = null)
             : base(eventAggregator, loggerFactory)
         {
             _authService = authService;
             _regionManager = regionManager;
             _apiHealthCheckService = apiHealthCheckService;
+            _usernameStorage = usernameStorage;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
-            // 在后台线程启动健康检查,避免阻塞 UI 线程
+            // Issue #861: 在后台线程加载保存的用户名
             _ = Task.Run(async () =>
             {
                 await Task.Delay(100); // 短暂延迟,让 UI 先完成初始化
+                await LoadSavedUsernameAsync();
                 await CheckApiHealthAsyncSafe();
             });
         }
@@ -72,6 +76,37 @@ namespace LYBT.Desktop.Auth.ViewModels
                     ApiStatus = ApiHealthStatus.Unhealthy;
                     ApiStatusMessage = $"健康检查失败: {ex.Message}";
                 });
+            }
+        }
+
+        /// <summary>
+        /// 加载保存的用户名 - Issue #861
+        /// </summary>
+        private async Task LoadSavedUsernameAsync()
+        {
+            try
+            {
+                if (_usernameStorage == null)
+                {
+                    return;
+                }
+
+                var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
+                var isRememberMeEnabled = await _usernameStorage.IsRememberMeEnabledAsync();
+
+                if (!string.IsNullOrEmpty(savedUsername))
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        Username = savedUsername;
+                        RememberMe = isRememberMeEnabled;
+                        Logger.LogInformation("已自动填充用户名: {Username}", savedUsername);
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载保存的用户名失败");
             }
         }
 
@@ -229,6 +264,12 @@ namespace LYBT.Desktop.Auth.ViewModels
 
                     // 保存Token和用户信息
                     await _authService.SaveAuthenticationAsync(response.Data);
+
+                    // Issue #861: 保存用户名（如果勾选了"记住用户名"）
+                    if (_usernameStorage != null)
+                    {
+                        await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
+                    }
 
                     // 根据角色导航到对应的工作台
                     NavigateBasedOnRole(response.Data.User.Role, response.Data.User, response.Data.Token);
