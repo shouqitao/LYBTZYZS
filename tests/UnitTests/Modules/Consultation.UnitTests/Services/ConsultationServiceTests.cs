@@ -103,25 +103,47 @@ namespace LYBT.UnitTests.Core.Services
 
         #endregion
 
-        #region Create Tests (Obsolete)
+        #region Create Tests
 
         [Fact]
-        public async Task CreateAsync_ShouldReturnFailure_BecauseObsolete()
+        public async Task CreateAsync_WithValidData_ShouldReturnSuccess()
         {
             // Arrange
+            var medicalCaseId = Guid.NewGuid();
             var createDto = new ConsultationCreateDto
             {
-                MedicalCaseId = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉"
             };
+
+            var consultation = new Consultation
+            {
+                Id = Guid.NewGuid(),
+                ChiefComplaint = "测试主诉"
+            };
+
+            var consultationDto = new ConsultationDto
+            {
+                Id = consultation.Id,
+                ChiefComplaint = "测试主诉",
+                MedicalCaseId = medicalCaseId
+            };
+
+            _mapperMock.Setup(x => x.Map<Consultation>(createDto))
+                .Returns(consultation);
+            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<Consultation>()))
+                .ReturnsAsync(consultation);
+            _mapperMock.Setup(x => x.Map<ConsultationDto>(consultation))
+                .Returns(consultationDto);
 
             // Act
             var result = await _service.CreateAsync(createDto);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("必须通过医疗案例(MedicalCase)创建");
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.ChiefComplaint.Should().Be("测试主诉");
         }
 
         #endregion

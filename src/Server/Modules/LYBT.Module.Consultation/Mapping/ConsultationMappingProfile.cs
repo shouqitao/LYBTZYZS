@@ -56,6 +56,8 @@ namespace LYBT.Module.Consultation.Mapping
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
 
                 // 映射诊疗时间字段（这些在实体中不存在，使用默认值）
                 .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.CreatedAt))
@@ -76,6 +78,8 @@ namespace LYBT.Module.Consultation.Mapping
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
 
                 // 映射诊疗时间字段
                 .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.CreatedAt))

@@ -512,14 +512,26 @@ namespace LYBT.Infrastructure.Data
 
                 if (entry.State == EntityState.Added)
                 {
-                    entity.CreatedAt = timestamp;
-                    entity.CreatedBy = userId;
+                    // 只在未手动设置时自动填充 CreatedAt（允许测试环境手动设置）
+                    if (entity.CreatedAt == default || entity.CreatedAt == DateTime.MinValue)
+                    {
+                        entity.CreatedAt = timestamp;
+                    }
+                    // 只在有用户上下文时设置 CreatedBy，允许测试环境手动设置
+                    if (userId.HasValue)
+                    {
+                        entity.CreatedBy = userId;
+                    }
                 }
 
                 if (entry.State == EntityState.Modified)
                 {
                     entity.UpdatedAt = timestamp;
-                    entity.UpdatedBy = userId;
+                    // 只在有用户上下文时设置 UpdatedBy
+                    if (userId.HasValue)
+                    {
+                        entity.UpdatedBy = userId;
+                    }
                 }
             }
         }
