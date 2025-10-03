@@ -103,29 +103,6 @@ namespace LYBT.UnitTests.Core.Services
 
         #endregion
 
-        #region Create Tests (Obsolete)
-
-        [Fact]
-        public async Task CreateAsync_ShouldReturnFailure_BecauseObsolete()
-        {
-            // Arrange
-            var createDto = new ConsultationCreateDto
-            {
-                MedicalCaseId = Guid.NewGuid(),
-                ChiefComplaint = "测试主诉"
-            };
-
-            // Act
-            var result = await _service.CreateAsync(createDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.Message.Should().Contain("必须通过医疗案例(MedicalCase)创建");
-        }
-
-        #endregion
-
         #region Get Tests
 
         [Fact]
