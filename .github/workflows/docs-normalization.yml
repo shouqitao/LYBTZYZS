@@ -47,8 +47,16 @@ jobs:
             pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m"
           }
           # Fill API/Refs only for changed modules
-          $mods = @(); if ($server) { $mods += $server.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries) }; if ($client) { $mods += $client.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries) }
-          if ($mods.Count -gt 0) { pwsh -NoLogo -NoProfile -File scripts/fill-module-readme-api.ps1 -Modules $mods }
+          $mods = @()
+          if ($server) {
+            $mods += $server.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_ -replace '^LYBT\.Module\.', '' }
+          }
+          if ($client) {
+            $mods += $client.Split(' ',[System.StringSplitOptions]::RemoveEmptyEntries)
+          }
+          if ($mods.Count -gt 0) {
+            pwsh -NoLogo -NoProfile -File scripts/fill-module-readme-api.ps1 -Root "." -Modules $mods
+          }
 
       - name: Check for changes
         id: diff
