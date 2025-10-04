@@ -183,7 +183,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 编辑药材
         /// </summary>
-        public DelegateCommand<HerbDto> EditHerbCommand =>
+        public DelegateCommand<HerbDto> EditCommand =>
             new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
 
         /// <summary>
@@ -260,6 +260,146 @@ namespace LYBT.Desktop.Herbs.ViewModels
             return herb != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
         }
 
+        /// <summary>
+        /// 切换状态命令
+        /// </summary>
+        public DelegateCommand<HerbDto> ToggleStatusCommand =>
+            new DelegateCommand<HerbDto>(async item => await ToggleStatus(item), CanToggleStatus);
+
+        /// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand =>
+            new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand =>
+            new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
+
+        /// <summary>
+        /// 导入药材命令
+        /// </summary>
+        public DelegateCommand ImportHerbsCommand =>
+            new DelegateCommand(async () => await ExecuteImportHerbsAsync(), () => !IsLoading);
+
+        /// <summary>
+        /// 导出模板命令
+        /// </summary>
+        public DelegateCommand ExportTemplateCommand =>
+            new DelegateCommand(async () => await ExecuteExportTemplateAsync(), () => !IsLoading);
+
+        /// <summary>
+        /// 导出药材命令
+        /// </summary>
+        public DelegateCommand ExportHerbsCommand =>
+            new DelegateCommand(async () => await ExecuteExportHerbsAsync(), () => Items.Count > 0 && !IsLoading);
+
+        /// <summary>
+        /// 切换状态
+        /// </summary>
+        private async Task ToggleStatus(HerbDto herb)
+        {
+            if (herb == null) return;
+
+            try
+            {
+                // TODO: 调用服务切换状态 (假设服务接口需要扩展)
+                await ShowSuccessMessageAsync($"切换药材 '{herb.Name}' 状态功能开发中");
+                // var result = await _herbService.ToggleStatusAsync(herb.Id);
+                // if (result.IsSuccess)
+                // {
+                //     await ShowSuccessMessageAsync($"药材 '{herb.Name}' 状态已更新");
+                //     await LoadPageAsync();
+                // }
+                // else
+                // {
+                //     await ShowErrorMessageAsync(result.ErrorMessage ?? "切换状态失败");
+                // }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "切换药材状态时发生异常");
+                await ShowErrorMessageAsync("切换状态时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以切换状态
+        /// </summary>
+        private bool CanToggleStatus(HerbDto herb)
+        {
+            return herb != null && !IsBusy;
+        }
+
+        /// <summary>
+        /// 跳转首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            CurrentPage = 1;
+        }
+
+        /// <summary>
+        /// 跳转末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            CurrentPage = TotalPages;
+        }
+
+        /// <summary>
+        /// 导入药材
+        /// </summary>
+        private async Task ExecuteImportHerbsAsync()
+        {
+            try
+            {
+                // TODO: 实现导入逻辑
+                await ShowSuccessMessageAsync("导入药材功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入药材时发生异常");
+                await ShowErrorMessageAsync("导入药材时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 导出模板
+        /// </summary>
+        private async Task ExecuteExportTemplateAsync()
+        {
+            try
+            {
+                // TODO: 实现导出模板逻辑
+                await ShowSuccessMessageAsync("导出模板功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出模板时发生异常");
+                await ShowErrorMessageAsync("导出模板时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 导出药材
+        /// </summary>
+        private async Task ExecuteExportHerbsAsync()
+        {
+            try
+            {
+                // TODO: 实现导出逻辑
+                await ShowSuccessMessageAsync("导出药材功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出药材时发生异常");
+                await ShowErrorMessageAsync("导出药材时发生系统错误");
+            }
+        }
+
         #endregion
 
         #region 搜索功能增强
@@ -279,6 +419,29 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             SearchText = $"分类:{category}";
             await LoadPageAsync();
+        }
+
+        #endregion
+
+        #region 命令刷新
+
+        /// <summary>
+        /// 刷新所有命令的可执行状态
+        /// </summary>
+        protected override void RefreshCanExecuteChanged()
+        {
+            base.RefreshCanExecuteChanged();
+
+            EditCommand?.RaiseCanExecuteChanged();
+            ToggleStatusCommand?.RaiseCanExecuteChanged();
+            FirstPageCommand?.RaiseCanExecuteChanged();
+            LastPageCommand?.RaiseCanExecuteChanged();
+            ImportHerbsCommand?.RaiseCanExecuteChanged();
+            ExportTemplateCommand?.RaiseCanExecuteChanged();
+            ExportHerbsCommand?.RaiseCanExecuteChanged();
+            ViewDetailCommand?.RaiseCanExecuteChanged();
+            CopyHerbCommand?.RaiseCanExecuteChanged();
+            SearchByCategoryCommand?.RaiseCanExecuteChanged();
         }
 
         #endregion
