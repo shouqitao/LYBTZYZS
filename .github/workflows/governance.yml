@@ -55,7 +55,7 @@ jobs:
       shell: bash
       run: |
         echo "🎨 Running dotnet format check..."
-        if dotnet format LYBT.All.sln --verify-no-changes --verbosity diagnostic; then
+        if dotnet format LYBT.Server.sln --verify-no-changes --verbosity diagnostic; then
           echo "✅ Code formatting is compliant"
         else
           echo "❌ Code formatting issues detected"
@@ -69,14 +69,14 @@ jobs:
       shell: bash
       run: |
         echo "🔨 Running dotnet build..."
-        if dotnet build LYBT.All.sln --verbosity minimal --no-restore; then
+        if dotnet build LYBT.Server.sln --verbosity minimal --no-restore; then
           echo "✅ Build successful"
           echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
         else
           echo "⚠️ Build issues detected - analyzing error type..."
-          
+
           # 检查是否是CCPM相关错误
-          if dotnet build LYBT.All.sln --verbosity minimal --no-restore 2>&1 | grep -i "NU1107\|package.*version.*conflict\|Central Package Management"; then
+          if dotnet build LYBT.Server.sln --verbosity minimal --no-restore 2>&1 | grep -i "NU1107\|package.*version.*conflict\|Central Package Management"; then
             echo "⚠️ CCPM version conflicts detected (expected during Pass4)"
             echo "::warning::Central Package Management conflicts - will be resolved in Task 4"
             echo "BUILD_SUCCESS=ccmp_issues" >> $GITHUB_ENV
