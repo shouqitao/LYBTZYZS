@@ -1,7 +1,6 @@
-using FluentAssertions;
-using LYBT.Module.Consultation.Repositories;
-using LYBT.Entities.Consultation;
+﻿using FluentAssertions;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Consultation.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
