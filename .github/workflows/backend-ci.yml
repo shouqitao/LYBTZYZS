@@ -4,16 +4,16 @@ on:
   push:
     branches: [ main, master, develop ]
     paths:
-      - 'src/Backend/**'
+      - 'src/Server/**'
       - 'src/Shared/**'
-      - 'tests/Backend/**'
+      - 'tests/UnitTests/Modules/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, master, develop ]
     paths:
-      - 'src/Backend/**'
+      - 'src/Server/**'
       - 'src/Shared/**'
-      - 'tests/Backend/**'
+      - 'tests/UnitTests/Modules/**'
       - '.github/workflows/backend-ci.yml'
 
 env:
@@ -43,28 +43,28 @@ jobs:
           ${{ runner.os }}-nuget-
           
     - name: 还原依赖
-      run: dotnet restore LYBT.Backend.sln
+      run: dotnet restore LYBT.Server.sln
       
     - name: 构建后端
-      run: dotnet build LYBT.Backend.sln --configuration ${{ env.CONFIGURATION }} --no-restore
+      run: dotnet build LYBT.Server.sln --configuration ${{ env.CONFIGURATION }} --no-restore
       
     - name: 运行单元测试
       run: |
-        dotnet test tests/Backend/LYBT.Module.Users.Tests/LYBT.Module.Users.Tests.csproj \
+        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
           --settings .runsettings \
           --logger "trx;LogFileName=users-tests.trx" \
           --collect:"XPlat Code Coverage"
           
-        dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj \
+        dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
           --settings .runsettings \
           --logger "trx;LogFileName=patients-tests.trx" \
           --collect:"XPlat Code Coverage"
           
-        dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj \
+        dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
           --settings .runsettings \
@@ -80,7 +80,7 @@ jobs:
         reporter: dotnet-trx
         
     - name: 上传覆盖率报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: coverage-reports
@@ -89,13 +89,13 @@ jobs:
     - name: 发布 Web API
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        dotnet publish src/Backend/Services/LYBT.WebAPI/LYBT.WebAPI.csproj \
+        dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --output ./publish/api
           
     - name: 上传发布产物
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: webapi-${{ github.sha }}
         path: ./publish/api
@@ -120,8 +120,8 @@ jobs:
         dotnet tool install -g dotnet-reportgenerator-globaltool
         
     - name: 检查代码格式
-      run: dotnet format LYBT.Backend.sln --verify-no-changes --verbosity diagnostic
+      run: dotnet format LYBT.Server.sln --verify-no-changes --verbosity diagnostic
       continue-on-error: true
       
     - name: 运行代码分析
-      run: dotnet build LYBT.Backend.sln /p:TreatWarningsAsErrors=true /p:WarningLevel=4
+      run: dotnet build LYBT.Server.sln /p:TreatWarningsAsErrors=true /p:WarningLevel=4
