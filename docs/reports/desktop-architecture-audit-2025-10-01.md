@@ -1,4 +1,4 @@
-# Desktop 层架构审查报告
+﻿# Desktop 层架构审查报告
 
 **审查日期**: 2025-10-01
 **审查范围**: `src/Client/Desktop/` 完整目录

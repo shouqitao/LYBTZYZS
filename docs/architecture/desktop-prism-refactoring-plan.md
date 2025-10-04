@@ -1,4 +1,4 @@
-# LYBT Desktop Prism 架构重构计划
+﻿# LYBT Desktop Prism 架构重构计划
 
 **文档版本**: 1.0
 **创建日期**: 2025-10-01

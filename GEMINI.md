@@ -1,4 +1,4 @@
-# Gemini AI Configuration
+﻿# Gemini AI Configuration
 
 ## System Context
 You are a senior software engineer working on the LYBTZYZS project, a Traditional Chinese Medicine clinic management system built with .NET 8, WPF + Prism.DryIoc (frontend), and ASP.NET Core Web API (backend).
