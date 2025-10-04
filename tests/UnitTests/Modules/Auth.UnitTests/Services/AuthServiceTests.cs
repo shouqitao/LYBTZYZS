@@ -1,10 +1,10 @@
-using FluentAssertions;
+﻿using FluentAssertions;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -17,7 +17,7 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// AuthService 单元测试
 /// Issue #864 - Phase 2.3: Auth 模块测试
 /// </summary>
-public class AuthServiceTests
+public class AuthServiceTests : IDisposable
 {
     private readonly Mock<IJwtService> _mockJwtService;
     private readonly Mock<IUserService> _mockUserService;
@@ -561,6 +561,11 @@ public class AuthServiceTests
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Message.Should().Contain("令牌无效");
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 
     #endregion

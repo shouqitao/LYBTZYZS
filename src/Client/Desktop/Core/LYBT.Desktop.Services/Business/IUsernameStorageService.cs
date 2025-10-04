@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Services.Business
+﻿namespace LYBT.Desktop.Services.Business
 {
     /// <summary>
     /// 用户名存储服务接口 - Issue #861

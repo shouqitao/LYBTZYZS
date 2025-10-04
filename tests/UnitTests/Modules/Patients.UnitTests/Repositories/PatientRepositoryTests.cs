@@ -1,7 +1,7 @@
-using FluentAssertions;
-using LYBT.Module.Patients.Repositories;
+﻿using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
+using LYBT.Module.Patients.Repositories;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
