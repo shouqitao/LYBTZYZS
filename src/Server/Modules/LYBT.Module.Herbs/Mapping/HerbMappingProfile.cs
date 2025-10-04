@@ -24,7 +24,6 @@ namespace LYBT.Module.Herbs.Mapping
             // HerbCreateDto转药材实体
             CreateMap<HerbCreateDto, Herb>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 // 忽略BaseEntity的审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
@@ -57,7 +56,6 @@ namespace LYBT.Module.Herbs.Mapping
             // HerbImportDto转药材实体
             CreateMap<HerbImportDto, Herb>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
                 .ForMember(dest => dest.CostPrice, opt => opt.Ignore())
                 // 忽略BaseEntity的审计字段
