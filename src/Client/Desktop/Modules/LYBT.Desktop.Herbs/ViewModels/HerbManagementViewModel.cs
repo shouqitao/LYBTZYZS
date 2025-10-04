@@ -259,32 +259,32 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 切换状态命令
         /// </summary>
-        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; }
+        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; } = null!;
 
         /// <summary>
         /// 导入药材命令
         /// </summary>
-        public DelegateCommand ImportHerbsCommand { get; private set; }
+        public DelegateCommand ImportHerbsCommand { get; private set; } = null!;
 
         /// <summary>
         /// 导出模板命令
         /// </summary>
-        public DelegateCommand ExportTemplateCommand { get; private set; }
+        public DelegateCommand ExportTemplateCommand { get; private set; } = null!;
 
         /// <summary>
         /// 导出药材命令
         /// </summary>
-        public DelegateCommand ExportHerbsCommand { get; private set; }
+        public DelegateCommand ExportHerbsCommand { get; private set; } = null!;
 
         /// <summary>
         /// 首页命令
         /// </summary>
-        public DelegateCommand FirstPageCommand { get; private set; }
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
 
         /// <summary>
         /// 末页命令
         /// </summary>
-        public DelegateCommand LastPageCommand { get; private set; }
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
 
         #endregion
 
