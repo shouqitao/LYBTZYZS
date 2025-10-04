@@ -50,12 +50,16 @@ namespace LYBT.Module.Herbs.Mapping
             // 药材实体转HerbDto（列表显示）
             CreateMap<Herb, HerbDto>()
                 .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt));
+                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.Category, opt => opt.Ignore())
+                .ForMember(dest => dest.Properties, opt => opt.Ignore());
 
             // HerbImportDto转药材实体
             CreateMap<HerbImportDto, Herb>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Usage, opt => opt.Ignore())
+                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
+                .ForMember(dest => dest.CostPrice, opt => opt.Ignore())
                 // 忽略BaseEntity的审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
