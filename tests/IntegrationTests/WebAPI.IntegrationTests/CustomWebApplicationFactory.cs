@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
+using Serilog;
+using Serilog.Events;
 
 namespace LYBT.WebAPI.Tests;
 
@@ -16,8 +19,19 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // 配置测试用 Serilog - 仅使用控制台输出
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .WriteTo.Console()
+            .CreateLogger();
+
         builder.ConfigureAppConfiguration((context, config) =>
         {
+            // 清除默认配置源(避免加载 appsettings.json 中的 Serilog MSSqlServer 配置)
+            config.Sources.Clear();
+
             // 添加测试配置
             var testConfig = new Dictionary<string, string?>
             {
