@@ -50,29 +50,11 @@ jobs:
       
     - name: 运行单元测试
       run: |
-        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj \
-          --configuration ${{ env.CONFIGURATION }} \
-          --no-build \
-          --settings .runsettings \
-          --logger "trx;LogFileName=users-tests.trx" \
-          --collect:"XPlat Code Coverage" \
-          -- xUnit.ParallelizeTestCollections=false
-          
-        dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj \
-          --configuration ${{ env.CONFIGURATION }} \
-          --no-build \
-          --settings .runsettings \
-          --logger "trx;LogFileName=patients-tests.trx" \
-          --collect:"XPlat Code Coverage" \
-          -- xUnit.ParallelizeTestCollections=false
-          
-        dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj \
-          --configuration ${{ env.CONFIGURATION }} \
-          --no-build \
-          --settings .runsettings \
-          --logger "trx;LogFileName=herbs-tests.trx" \
-          --collect:"XPlat Code Coverage" \
-          -- xUnit.ParallelizeTestCollections=false
+        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj --configuration ${{ env.CONFIGURATION }} --no-build --settings .runsettings --logger "trx;LogFileName=users-tests.trx" --collect:"XPlat Code Coverage" -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj --configuration ${{ env.CONFIGURATION }} --no-build --settings .runsettings --logger "trx;LogFileName=patients-tests.trx" --collect:"XPlat Code Coverage" -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj --configuration ${{ env.CONFIGURATION }} --no-build --settings .runsettings --logger "trx;LogFileName=herbs-tests.trx" --collect:"XPlat Code Coverage" -- xUnit.ParallelizeTestCollections=false
           
     - name: 生成测试报告
       uses: dorny/test-reporter@v1
@@ -92,9 +74,7 @@ jobs:
     - name: 发布 Web API
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj \
-          --configuration ${{ env.CONFIGURATION }} \
-          --output ./publish/api
+        dotnet publish src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --configuration ${{ env.CONFIGURATION }} --output ./publish/api
           
     - name: 上传发布产物
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
