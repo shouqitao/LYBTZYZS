@@ -1,4 +1,4 @@
-# LYBT.Desktop.Patients - 患者管理模块
+﻿# LYBT.Desktop.Patients - 患者管理模块
 
 ## 🎯 项目概述
 

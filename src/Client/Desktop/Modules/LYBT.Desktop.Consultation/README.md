@@ -1,4 +1,4 @@
-# LYBT.Desktop.Consultation - 诊疗管理模块
+﻿# LYBT.Desktop.Consultation - 诊疗管理模块
 
 ## 🎯 项目概述
 

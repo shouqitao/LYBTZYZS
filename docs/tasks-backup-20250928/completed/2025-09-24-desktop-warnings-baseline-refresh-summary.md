@@ -1,4 +1,4 @@
-# 2025-09-24 Desktop 警告基线刷新任务总结
+﻿# 2025-09-24 Desktop 警告基线刷新任务总结
 
 ## 任务背景
 原phase1总结文档使用推测数据，显示潜在警告超过500个。实际构建（`dotnet build LYBT.Desktop.sln -c Release`）显示0警告，需要获取真实基线并修正总结。

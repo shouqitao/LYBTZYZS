@@ -1,4 +1,4 @@
-# 2025-09-24 Desktop 解决方案构建优化总结
+﻿# 2025-09-24 Desktop 解决方案构建优化总结
 
 ## 任务概述
 基于 `docs/reports/review-2025-09-24-desktop-build-analysis.md` 的分析结果，对 Desktop 解决方案进行重构优化，解决构建警告和文件锁定问题。

@@ -1,4 +1,4 @@
-# Issue: [Desktop] Phase 2 - 增强导航系统实现NavigationJournal
+﻿# Issue: [Desktop] Phase 2 - 增强导航系统实现NavigationJournal
 
 ## 问题描述
 

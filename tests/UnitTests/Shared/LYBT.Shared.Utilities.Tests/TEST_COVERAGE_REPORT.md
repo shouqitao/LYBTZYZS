@@ -1,4 +1,4 @@
-# LYBT.Shared.Utilities 单元测试覆盖率报告
+﻿# LYBT.Shared.Utilities 单元测试覆盖率报告
 
 ## 项目概述
 为LYBT.Shared.Utilities项目创建了完整的单元测试套件，覆盖所有核心工具类和扩展方法。

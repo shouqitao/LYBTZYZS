@@ -1,4 +1,4 @@
-# 2025-09-24 Server层查询重构任务完成总结
+﻿# 2025-09-24 Server层查询重构任务完成总结
 
 ## 任务背景
 根据Serena架构分析报告，Server层存在严重的架构违规问题：多个QueryService直接注入`AppDbContext`，违反了三层架构原则，导致模块耦合度高、单元测试困难。本任务旨在完成查询层的基本重构，恢复"Controller → Service → Repository"的标准路径。

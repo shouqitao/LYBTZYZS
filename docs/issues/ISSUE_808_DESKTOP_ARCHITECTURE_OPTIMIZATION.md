@@ -1,4 +1,4 @@
-# Issue #815: Desktop架构适度优化 - 降低复杂度提升可维护性
+﻿# Issue #815: Desktop架构适度优化 - 降低复杂度提升可维护性
 
 **GitHub Issue**: https://github.com/shouqitao/LYBTZYZS/issues/815
 

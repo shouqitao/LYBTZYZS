@@ -1,4 +1,4 @@
-# Issue #828 Epic 完成报告 - Desktop Prism 架构重构
+﻿# Issue #828 Epic 完成报告 - Desktop Prism 架构重构
 
 **Epic**: #828 Desktop Prism Refactoring
 **完成时间**: 2025-10-01

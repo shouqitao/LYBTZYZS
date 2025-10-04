@@ -1,4 +1,4 @@
-# Issue #828 Phase 3 - Prism Dialog 标准化迁移总结报告
+﻿# Issue #828 Phase 3 - Prism Dialog 标准化迁移总结报告
 
 **Issue**: #828
 **分支**: `feature/prism-phase3`

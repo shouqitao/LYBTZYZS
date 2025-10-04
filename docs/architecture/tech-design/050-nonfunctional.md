@@ -1,4 +1,4 @@
-# 050-非功能约束（守门标准）
+﻿# 050-非功能约束（守门标准）
 
 ## 编译守门
 - 要求：`dotnet build LYBT.All.sln` 成功（或分别构建 Server/Desktop）

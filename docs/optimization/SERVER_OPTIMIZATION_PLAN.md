@@ -1,4 +1,4 @@
-# LYBT Server端性能优化方案（MVP范围）
+﻿# LYBT Server端性能优化方案（MVP范围）
 
 ## 📋 执行摘要
 

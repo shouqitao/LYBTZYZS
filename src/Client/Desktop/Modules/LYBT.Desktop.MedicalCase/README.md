@@ -1,4 +1,4 @@
-# LYBT.Desktop.MedicalCase - 医案管理模块
+﻿# LYBT.Desktop.MedicalCase - 医案管理模块
 
 ## 🎯 项目概述
 

@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite 基础设施稳定化任务
+﻿# 2025-09-24 Users 模块 SQLite 基础设施稳定化任务
 
 ## 背景问题
 - `2025-09-24-users-SQLite兼容推广-summary.md` 显示虽然解决了 RowVersion 约束，但 SQLite 测试仍有 31 个失败，集中在事务、并发及原始 SQL 场景。

@@ -1,4 +1,4 @@
-# 2025-09-24 server-phase1-query-layer-refactor-task
+﻿# 2025-09-24 server-phase1-query-layer-refactor-task
 
 ## 任务背景
 - Serena 架构分析指出多个 QueryService 直接注入 `AppDbContext`（Consultation、Prescription、Users 等），违反 Server 层分层原则，也导致后续测试难以 Mock。

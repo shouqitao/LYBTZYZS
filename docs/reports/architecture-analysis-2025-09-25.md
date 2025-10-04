@@ -1,4 +1,4 @@
-# 架构深度分析报告
+﻿# 架构深度分析报告
 
 生成时间：2025-09-25
 分析工具：Serena MCP Architecture Analyzer

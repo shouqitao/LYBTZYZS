@@ -1,4 +1,4 @@
-# 服务器端BusinessService重构与术语统一 - 完成总结
+﻿# 服务器端BusinessService重构与术语统一 - 完成总结
 
 - **完成日期**: 2025-09-24
 - **执行人**: Assistant

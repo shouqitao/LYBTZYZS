@@ -1,4 +1,4 @@
-# LYBT.Module.Auth - 身份认证与授权模块
+﻿# LYBT.Module.Auth - 身份认证与授权模块
 
 ## 🎯 项目概述
 

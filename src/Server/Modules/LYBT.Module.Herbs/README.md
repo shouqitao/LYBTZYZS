@@ -1,4 +1,4 @@
-# LYBT.Module.Herbs - 中药材管理模块
+﻿# LYBT.Module.Herbs - 中药材管理模块
 
 ## 🎯 项目概述
 

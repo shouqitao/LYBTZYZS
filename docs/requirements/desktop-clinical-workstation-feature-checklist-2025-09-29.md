@@ -1,4 +1,4 @@
-# 诊疗台功能清单（Feature Checklist）
+﻿# 诊疗台功能清单（Feature Checklist）
 
 ## 生成时间：2025-09-29
 ## 基于文档：desktop-clinical-workstation-ui-requirements-v2-2025-09-29.md

@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite In-Memory 评估总结
+﻿# 2025-09-24 Users 模块 SQLite In-Memory 评估总结
 
 ## 任务概述
 本任务旨在评估将 Users 模块单元测试从 EF Core InMemory Provider 迁移到 SQLite In-Memory 的可行性，以更好地支持批量操作、事务和并发测试场景。

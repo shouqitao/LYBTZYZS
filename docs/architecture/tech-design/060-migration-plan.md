@@ -1,4 +1,4 @@
-# 060-迁移计划（最小改动）
+﻿# 060-迁移计划（最小改动）
 
 ## M1：最小闭环（本轮）
 - Server：默认端口改 5001；/api/health；/api/auth/login；sysadmin 播种（Dev 打印一次）。

@@ -1,4 +1,4 @@
-# Issue #828 Phase 3.1 完成报告 - Prescriptions 模块 Dialog 标准化
+﻿# Issue #828 Phase 3.1 完成报告 - Prescriptions 模块 Dialog 标准化
 
 **维护人**: Claude (UltraThink)
 **完成日期**: 2025-10-01

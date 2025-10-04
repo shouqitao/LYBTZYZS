@@ -1,4 +1,4 @@
-# MedicalWorkstation 工作台职责拆分方案
+﻿# MedicalWorkstation 工作台职责拆分方案
 
 ## 1. 当前问题
 - MedicalWorkstationMainView 混合了诊疗流程和管理功能

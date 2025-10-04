@@ -1,4 +1,4 @@
-# 030-Shared 契约（最小集合）
+﻿# 030-Shared 契约（最小集合）
 
 ## DTO
 - LoginRequest: `{ username: string, password: string }`

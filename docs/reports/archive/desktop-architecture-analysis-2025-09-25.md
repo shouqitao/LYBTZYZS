@@ -1,4 +1,4 @@
-# LYBTZYZS Desktop层架构深度分析报告
+﻿# LYBTZYZS Desktop层架构深度分析报告
 
 **分析时间**: 2025年9月25日  
 **分析工具**: Serena Code Analyzer  

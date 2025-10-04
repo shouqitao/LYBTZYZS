@@ -1,4 +1,4 @@
-# LYBT.Shared.Models项目分析报告
+﻿# LYBT.Shared.Models项目分析报告
 
 **报告生成时间**: 2025-01-19  
 **分析项目**: LYBT.Shared.Models (.NET 8 共享数据模型库)  

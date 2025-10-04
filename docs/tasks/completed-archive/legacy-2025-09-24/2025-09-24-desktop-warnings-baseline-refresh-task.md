@@ -1,4 +1,4 @@
-# 2025-09-24 Desktop 警告基线回归任务
+﻿# 2025-09-24 Desktop 警告基线回归任务
 
 ## 背景
 `2025-09-24-desktop-warnings-phase1-summary.md` 以推测数据为主，实际构建 (`dotnet build LYBT.Desktop.sln -c Release`) 仍输出 2,090 条警告（CS1591/CS0067 为主）。需重新获取真实基线并修正总结。

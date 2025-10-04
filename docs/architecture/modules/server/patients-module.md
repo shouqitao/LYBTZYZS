@@ -1,4 +1,4 @@
-# Patients模块设计 - Server端
+﻿# Patients模块设计 - Server端
 
 ## 📋 模块概述
 **职责**：患者档案管理、基本信息维护、病历关联

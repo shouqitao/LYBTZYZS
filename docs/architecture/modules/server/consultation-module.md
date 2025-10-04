@@ -1,4 +1,4 @@
-# Consultation模块设计 - Server端
+﻿# Consultation模块设计 - Server端
 
 ## 📋 模块概述
 **职责**：中医诊疗记录管理、四诊信息记录、辨证论治、医嘱管理

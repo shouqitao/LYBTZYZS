@@ -1,4 +1,4 @@
-# LYBT.Entities 项目深度分析报告
+﻿# LYBT.Entities 项目深度分析报告
 
 > **项目分析日期**: 2025-01-19  
 > **执行人**: Claude Code Assistant  

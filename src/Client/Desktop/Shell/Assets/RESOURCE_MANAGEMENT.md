@@ -1,4 +1,4 @@
-# Resource Management Guidelines
+﻿# Resource Management Guidelines
 # 资源管理规范
 
 ## 1. Directory Structure / 目录结构

@@ -1,4 +1,4 @@
-# StyleCop 版本评估报告
+﻿# StyleCop 版本评估报告
 
 ## 当前状态
 - **当前版本**: StyleCop.Analyzers 1.2.0-beta.556
