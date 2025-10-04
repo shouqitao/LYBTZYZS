@@ -15,36 +15,31 @@ using Prism.Regions;
 namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
-    /// 登录视图模型 - 实现基于角色的导航
+    /// 登录视图模型 - 实现基于角色的导航（已统一架构）
     /// </summary>
-    public class LoginViewModel : ViewModelBase
+    public class LoginViewModel : UnifiedViewModelBase
     {
         private readonly IAuthService _authService;
-        private readonly IRegionManager _regionManager;
         private readonly IApiHealthCheckService? _apiHealthCheckService;
         private readonly LYBT.Desktop.Services.Business.IUsernameStorageService? _usernameStorage;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _rememberMe;
-        private bool _isLoading;
-        private string _statusMessage = string.Empty;
-        private string _errorMessage = string.Empty;
         private bool _hasSavedPassword;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
 
         public LoginViewModel(
             IAuthService authService,
-            IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
             IApiHealthCheckService? apiHealthCheckService = null,
             LYBT.Desktop.Services.Business.IUsernameStorageService? usernameStorage = null)
-            : base(eventAggregator, loggerFactory)
+            : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
             _authService = authService;
-            _regionManager = regionManager;
             _apiHealthCheckService = apiHealthCheckService;
             _usernameStorage = usernameStorage;
 
@@ -136,32 +131,6 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             get => _rememberMe;
             set => SetProperty(ref _rememberMe, value);
-        }
-
-        public new bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public new string StatusMessage
-        {
-            get => _statusMessage;
-            set
-            {
-                SetProperty(ref _statusMessage, value);
-                RaisePropertyChanged(nameof(HasMessage));
-            }
-        }
-
-        public new string ErrorMessage
-        {
-            get => _errorMessage;
-            set
-            {
-                SetProperty(ref _errorMessage, value);
-                RaisePropertyChanged(nameof(HasMessage));
-            }
         }
 
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -319,7 +288,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     // 在 UI 线程上执行导航
                     System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        _regionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
+                        RegionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
                         {
                             if (navigationResult.Result != true)
                             {

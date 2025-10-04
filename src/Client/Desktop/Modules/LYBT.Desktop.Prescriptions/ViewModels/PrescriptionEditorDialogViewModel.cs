@@ -236,6 +236,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand ValidateCommand { get; }
 
+        /// <summary>
+        /// 添加药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand AddHerbCommand { get; }
+
+        /// <summary>
+        /// 编辑药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand EditHerbCommand { get; }
+
+        /// <summary>
+        /// 移除药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand RemoveHerbCommand { get; }
+
+        /// <summary>
+        /// 加载验方模板命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand LoadFormulaTemplateCommand { get; }
+
+        /// <summary>
+        /// 预览命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand PreviewCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -256,6 +281,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             CancelCommand = new DelegateCommand(Cancel);
             ResetCommand = new DelegateCommand(Reset, CanReset);
             ValidateCommand = new DelegateCommand(ValidateAllWrapper);
+
+            // Phase 4B 骨架命令
+            AddHerbCommand = new DelegateCommand(() => Logger.LogInformation("PrescriptionEditorDialog - 添加药材命令（骨架实现）"));
+            EditHerbCommand = new DelegateCommand(() => Logger.LogInformation("PrescriptionEditorDialog - 编辑药材命令（骨架实现）"));
+            RemoveHerbCommand = new DelegateCommand(() => Logger.LogInformation("PrescriptionEditorDialog - 移除药材命令（骨架实现）"));
+            LoadFormulaTemplateCommand = new DelegateCommand(() => Logger.LogInformation("PrescriptionEditorDialog - 加载验方模板命令（骨架实现）"));
+            PreviewCommand = new DelegateCommand(() => Logger.LogInformation("PrescriptionEditorDialog - 预览命令（骨架实现）"));
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) =>

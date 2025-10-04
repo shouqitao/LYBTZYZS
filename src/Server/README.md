@@ -40,7 +40,7 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 
 ## 🎯 项目概述
 
-**LYBT Server 后端解决方案**是凌隐宝堂中医诊所管理系统的核心后端服务，基于ASP.NET Core 8.0构建的企业级微服务架构。提供完整的中医诊所管理功能，支持从患者接诊到处方开具的完整诊疗流程。
+**LYBT Server 后端解决方案**是凌隐宝堂中医诊所管理系统的核心后端服务，基于ASP.NET Core 8.0构建的微服务架构。提供完整的中医诊所管理功能，支持从患者接诊到处方开具的完整诊疗流程。
 
 **核心职责**：
 - 提供RESTful API服务，支持8个核心业务模块（Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula）
@@ -94,7 +94,7 @@ src/Server/
 
 **各层职责说明**：
 - **Core/Entities**: 领域实体定义，包含业务规则和数据结构
-- **Core/Infrastructure**: 基础设施实现，提供数据访问、安全、配置等核心服务  
+- **Core/Infrastructure**: 基础设施实现，提供数据访问、安全、配置等核心服务 
 - **Modules**: 业务模块实现，每个模块包含Services、Repositories、Mapping等
 - **Services/WebAPI**: 统一API服务，负责请求路由、认证授权、响应格式化
 
@@ -106,7 +106,7 @@ src/Server/
 - **Entity Framework Core 8.0**: ORM框架，支持Code First和数据库迁移
 - **SQL Server**: 关系型数据库，适合结构化诊疗数据存储
 
-### 架构组件  
+### 架构组件 
 - **AutoMapper 13.0.1**: 对象映射，实现Entity到DTO的自动转换
 - **Serilog 8.0**: 结构化日志记录，支持文件、控制台、数据库多种输出
 - **Swashbuckle.AspNetCore 6.9.0**: API文档生成，提供Swagger UI交互界面
@@ -184,7 +184,7 @@ curl https://localhost:7001/health
 
 ### 开发调试
 - **API文档**: https://localhost:7001/swagger/index.html
-- **健康检查**: https://localhost:7001/health  
+- **健康检查**: https://localhost:7001/health 
 - **缓存状态**: https://localhost:7001/cache/health
 - **日志文件**: src/Server/Services/LYBT.WebAPI/logs/
 

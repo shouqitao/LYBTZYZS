@@ -124,6 +124,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand RefreshCommand { get; }
 
+        /// <summary>
+        /// 选择命令 - Phase 4B 补充（别名 ConfirmCommand）
+        /// </summary>
+        public DelegateCommand SelectCommand { get; }
+
+        /// <summary>
+        /// 查看详情命令 - Phase 4B 补充（别名 PreviewCommand）
+        /// </summary>
+        public DelegateCommand ViewDetailsCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -145,6 +155,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             CancelCommand = new DelegateCommand(Cancel);
             PreviewCommand = new DelegateCommand(Preview, CanPreview);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+
+            // Phase 4B 别名命令
+            SelectCommand = ConfirmCommand;
+            ViewDetailsCommand = PreviewCommand;
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();

@@ -367,6 +367,6 @@ services.AddScoped<IUserRepository, UserRepository>();
 - [待补充] 基本操作：dotnet restore/build/test；如何运行/调试当前模块。
 
 ## 🔌 API 接口
-- 控制器:   路由前缀: /api/v1/Users
-- 控制器:   路由前缀: /api/v1/users/operation
+- 控制器: 路由前缀: /api/v1/Users
+- 控制器: 路由前缀: /api/v1/users/operation
 

@@ -560,4 +560,4 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, (result) =>
 - docs/api/README.md
 - docs/modules/index.md
 - `docs/reports/prism-8x-desktop-refactor-plan-2025-09-24.md`: 桌面端基于Prism 8.x的重构计划。
-- `docs/architecture/Desktop-UltraThink-Implementation-Guide.md`: 桌面端 UltraThink 架构实施指南。
+- `docs/architecture/Desktop-分层架构实施指南。

@@ -298,7 +298,7 @@ public class UserModuleService : IUserService
 - [Refit客户端配置](../../../docs/client/refit-configuration.md) - HTTP客户端配置和使用指南
 - [认证流程设计](../../../docs/client/authentication-flow.md) - JWT认证和会话管理流程
 
-### 模块文档  
+### 模块文档 
 - [模块索引](../../../docs/modules/index.md) - 8个业务模块的功能说明
 - [工作台系统设计](../../../docs/client/workbench-system.md) - 角色驱动的工作台架构
 - [导航系统文档](../../../docs/client/navigation-system.md) - 模块导航和路由机制
@@ -332,6 +332,6 @@ public class UserModuleService : IUserService
 
 ### 共享组件
 - [Shared层文档](../../../src/Shared/README.md) - 前后端共享组件和DTO模型
-- [模块化架构标准](TWO_LAYER_ARCHITECTURE_STANDARD.md) - 双层架构设计标准
+- [模块化架构标准](TWO_LAYER_ARCHITECTURE_STANDARD.md) - 分层架构设计标准
 - [Prism框架集成](../../../docs/client/prism-integration.md) - Prism MVVM框架使用指南
 
