@@ -51,7 +51,7 @@ jobs:
         dotnet tool install -g dotnet-reportgenerator-globaltool
 
         # 运行所有测试项目并收集覆盖率
-        dotnet test --configuration Release --no-build --verbosity normal --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=TestResults.trx" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" -- xUnit.ParallelizeTestCollections=false
+        dotnet test LYBT.All.sln --configuration Release --no-build --verbosity normal --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=TestResults.trx" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" -- xUnit.ParallelizeTestCollections=false
 
     - name: 📊 生成覆盖率报告
       run: |
