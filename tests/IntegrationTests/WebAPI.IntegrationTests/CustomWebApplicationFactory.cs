@@ -29,15 +29,17 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            // 清除默认配置源(避免加载 appsettings.json 中的 Serilog MSSqlServer 配置)
-            config.Sources.Clear();
-
-            // 添加测试配置
+            // 添加测试配置 (覆盖 Serilog MSSqlServer 连接字符串)
             var testConfig = new Dictionary<string, string?>
             {
                 // 数据库连接字符串 (用于 InMemory 提供程序名称)
                 ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:",
                 ["Lybt:Infrastructure:Database:ConnectionString"] = "DataSource=:memory:",
+
+                // 禁用 Serilog MSSqlServer Sink (通过移除配置)
+                ["Serilog:WriteTo:1:Name"] = null, // 移除 MSSqlServer Sink
+                ["Serilog:WriteTo:1:Args:connectionString"] = null,
+                ["Serilog:WriteTo:1:Args:sinkOptionsSection:tableName"] = null,
 
                 // JWT 配置
                 ["Lybt:Authentication:Jwt:SecretKey"] = "TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789",
