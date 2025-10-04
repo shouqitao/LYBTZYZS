@@ -54,7 +54,8 @@ jobs:
           --collect:"XPlat Code Coverage" \
           --logger "trx;LogFileName=users-test-results.trx" \
           --logger "console;verbosity=detailed" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura || true
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura \
+          -- xUnit.ParallelizeTestCollections=false || true
     
     - name: 🔧 安装 ReportGenerator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool

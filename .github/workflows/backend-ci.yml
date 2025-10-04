@@ -55,21 +55,24 @@ jobs:
           --no-build \
           --settings .runsettings \
           --logger "trx;LogFileName=users-tests.trx" \
-          --collect:"XPlat Code Coverage"
+          --collect:"XPlat Code Coverage" \
+          -- xUnit.ParallelizeTestCollections=false
           
         dotnet test tests/Backend/LYBT.Module.Patients.Tests/LYBT.Module.Patients.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
           --settings .runsettings \
           --logger "trx;LogFileName=patients-tests.trx" \
-          --collect:"XPlat Code Coverage"
+          --collect:"XPlat Code Coverage" \
+          -- xUnit.ParallelizeTestCollections=false
           
         dotnet test tests/Backend/LYBT.Module.Herbs.Tests/LYBT.Module.Herbs.Tests.csproj \
           --configuration ${{ env.CONFIGURATION }} \
           --no-build \
           --settings .runsettings \
           --logger "trx;LogFileName=herbs-tests.trx" \
-          --collect:"XPlat Code Coverage"
+          --collect:"XPlat Code Coverage" \
+          -- xUnit.ParallelizeTestCollections=false
           
     - name: 生成测试报告
       uses: dorny/test-reporter@v1

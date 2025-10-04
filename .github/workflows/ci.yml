@@ -66,42 +66,50 @@ jobs:
         echo "运行Users模块测试..."
         dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Patients模块测试..."
         dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Prescriptions模块测试..."
         dotnet test tests/UnitTests/Modules/Prescriptions.UnitTests/LYBT.Module.Prescriptions.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Consultation模块测试..."
         dotnet test tests/UnitTests/Modules/Consultation.UnitTests/LYBT.Module.Consultation.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Herbs模块测试..."
         dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Formula模块测试..."
         dotnet test tests/UnitTests/Modules/Formula.UnitTests/LYBT.Module.Formula.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行MedicalCase模块测试..."
         dotnet test tests/UnitTests/Modules/MedicalCase.UnitTests/LYBT.Module.MedicalCase.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
         
         echo "运行Auth模块测试..."
         dotnet test tests/UnitTests/Modules/Auth.UnitTests/LYBT.Module.Auth.Tests.csproj `
           --configuration Release --no-build --verbosity minimal `
-          --settings .runsettings
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
 
     # 强制门禁：架构测试必须全部通过  
     - name: 🚨 强制门禁 - 架构合规测试
