@@ -1,11 +1,23 @@
 {
   "projectRules": {
     "version": "v1.0",
-    "type": "record-only-governance-baseline",
+    "type": "record-only-system",
     "description": "凌隐宝堂中医诊所系统 - Pass 7 治理基线机器可读规则",
     "lastUpdated": "2025-09-12",
     "enforcement": "ArchTests + CI门禁",
     "strictMode": true
+  },
+  "prohibitions": {
+    "frameworks": [
+      "MediatR", "NServiceBus", "Workflow Foundation", "Elsa",
+      "Rules Engine", "Stateless", "Automatonymous",
+      "Pipeline Patterns", "Session State Providers",
+      "ML.NET", "TensorFlow.NET", "Saga Pattern", "Step Functions"
+    ],
+    "naming": [
+      "Pipeline", "Workflow", "Saga", "Orchestrator", "Coordinator",
+      "EventHandler", "CommandHandler", "QueryHandler", "StateTransition"
+    ]
   },
   "recordOnlyConstraints": {
     "functionalMode": "record-only",
