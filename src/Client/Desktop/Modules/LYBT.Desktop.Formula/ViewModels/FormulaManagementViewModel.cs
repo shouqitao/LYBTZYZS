@@ -183,13 +183,13 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 编辑配方
         /// </summary>
-        public DelegateCommand<FormulaDto> EditFormulaCommand =>
+        public DelegateCommand<FormulaDto> EditCommand =>
             new DelegateCommand<FormulaDto>(EditFormula, CanEditFormula);
 
         /// <summary>
         /// 复制配方
         /// </summary>
-        public DelegateCommand<FormulaDto> CopyFormulaCommand =>
+        public DelegateCommand<FormulaDto> CopyCommand =>
             new DelegateCommand<FormulaDto>(CopyFormula, CanCopyFormula);
 
         /// <summary>
@@ -260,6 +260,117 @@ namespace LYBT.Desktop.Formula.ViewModels
             return formula != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
         }
 
+/// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand =>
+            new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand =>
+            new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
+
+        /// <summary>
+        /// 导入配方命令
+        /// </summary>
+        public DelegateCommand ImportFormulasCommand =>
+            new DelegateCommand(async () => await ExecuteImportFormulasAsync(), () => !IsLoading);
+
+        /// <summary>
+        /// 导出模板命令
+        /// </summary>
+        public DelegateCommand ExportTemplateCommand =>
+            new DelegateCommand(async () => await ExecuteExportTemplateAsync(), () => !IsLoading);
+
+        /// <summary>
+        /// 导出配方命令
+        /// </summary>
+        public DelegateCommand ExportFormulasCommand =>
+            new DelegateCommand(async () => await ExecuteExportFormulasAsync(), () => Items.Count > 0 && !IsLoading);
+
+        /// <summary>
+        /// 清除筛选命令
+        /// </summary>
+        public DelegateCommand ClearFiltersCommand =>
+            new DelegateCommand(ExecuteClearFilters, () => !string.IsNullOrEmpty(SearchText));
+
+        /// <summary>
+        /// 跳转首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            CurrentPage = 1;
+        }
+
+        /// <summary>
+        /// 跳转末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            CurrentPage = TotalPages;
+        }
+
+        /// <summary>
+        /// 导入配方
+        /// </summary>
+        private async Task ExecuteImportFormulasAsync()
+        {
+            try
+            {
+                // TODO: 实现导入逻辑
+                await ShowSuccessMessageAsync("导入配方功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入配方时发生异常");
+                await ShowErrorMessageAsync("导入配方时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 导出模板
+        /// </summary>
+        private async Task ExecuteExportTemplateAsync()
+        {
+            try
+            {
+                // TODO: 实现导出模板逻辑
+                await ShowSuccessMessageAsync("导出模板功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出模板时发生异常");
+                await ShowErrorMessageAsync("导出模板时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 导出配方
+        /// </summary>
+        private async Task ExecuteExportFormulasAsync()
+        {
+            try
+            {
+                // TODO: 实现导出逻辑
+                await ShowSuccessMessageAsync("导出配方功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出配方时发生异常");
+                await ShowErrorMessageAsync("导出配方时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 清除筛选条件
+        /// </summary>
+        private void ExecuteClearFilters()
+        {
+            SearchText = string.Empty;
+        }
+
         #endregion
 
         #region 搜索功能增强
@@ -279,6 +390,30 @@ namespace LYBT.Desktop.Formula.ViewModels
 
             SearchText = $"分类:{category}";
             await LoadPageAsync();
+        }
+
+        #endregion
+
+        #region 命令刷新
+
+        /// <summary>
+        /// 刷新所有命令的可执行状态
+        /// </summary>
+        protected override void RefreshCanExecuteChanged()
+        {
+            base.RefreshCanExecuteChanged();
+
+            ViewDetailCommand?.RaiseCanExecuteChanged();
+            EditCommand?.RaiseCanExecuteChanged();
+            CopyCommand?.RaiseCanExecuteChanged();
+            DeleteCommand?.RaiseCanExecuteChanged();
+            FirstPageCommand?.RaiseCanExecuteChanged();
+            LastPageCommand?.RaiseCanExecuteChanged();
+            ImportFormulasCommand?.RaiseCanExecuteChanged();
+            ExportTemplateCommand?.RaiseCanExecuteChanged();
+            ExportFormulasCommand?.RaiseCanExecuteChanged();
+            ClearFiltersCommand?.RaiseCanExecuteChanged();
+            SearchByCategoryCommand?.RaiseCanExecuteChanged();
         }
 
         #endregion

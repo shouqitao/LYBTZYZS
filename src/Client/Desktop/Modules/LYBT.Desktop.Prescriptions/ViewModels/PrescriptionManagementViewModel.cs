@@ -165,6 +165,47 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand NextPageCommand { get; }
 
+
+        /// <summary>
+        /// 添加处方命令（别名）
+        /// </summary>
+        public DelegateCommand AddPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 清除筛选命令
+        /// </summary>
+        public DelegateCommand ClearFiltersCommand { get; }
+
+        /// <summary>
+        /// 导出处方命令
+        /// </summary>
+        public DelegateCommand ExportPrescriptionsCommand { get; }
+
+        /// <summary>
+        /// 查看处方命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionDto> ViewPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 查看患者历史命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionDto> ViewPatientHistoryCommand { get; }
+
+        /// <summary>
+        /// 编辑处方命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionDto> EditPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 复制处方命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionDto> CopyPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 删除处方命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionDto> DeletePrescriptionCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -184,6 +225,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             CreateCommand = new DelegateCommand(Create);
+            AddPrescriptionCommand = CreateCommand; // 别名
             EditCommand = new DelegateCommand(Edit, CanEdit);
             DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), CanDelete);
             ViewDetailCommand = new DelegateCommand(ViewDetail, CanViewDetail);
@@ -191,6 +233,17 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), CanPreviousPage);
             NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), CanNextPage);
+
+            // DataGrid 行命令
+            ViewPrescriptionCommand = new DelegateCommand<PrescriptionDto>(ViewPrescriptionItem, item => item != null);
+            ViewPatientHistoryCommand = new DelegateCommand<PrescriptionDto>(ViewPatientHistory, item => item != null);
+            EditPrescriptionCommand = new DelegateCommand<PrescriptionDto>(EditPrescriptionItem, item => item != null && !IsBusy);
+            CopyPrescriptionCommand = new DelegateCommand<PrescriptionDto>(CopyPrescription, item => item != null && !IsBusy);
+            DeletePrescriptionCommand = new DelegateCommand<PrescriptionDto>(async item => await DeletePrescriptionItemAsync(item), item => item != null && !IsBusy);
+
+            // 其他命令
+            ClearFiltersCommand = new DelegateCommand(ClearFilters, () => !string.IsNullOrEmpty(SearchText) || StartDate.HasValue || EndDate.HasValue);
+            ExportPrescriptionsCommand = new DelegateCommand(async () => await ExportPrescriptionsAsync(), () => Prescriptions.Count > 0 && !IsBusy);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -382,6 +435,99 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #region 命令状态检查
 
+        /// <summary>
+        /// 查看处方项
+        /// </summary>
+        private void ViewPrescriptionItem(PrescriptionDto prescription)
+        {
+            if (prescription != null)
+            {
+                SelectedPrescription = prescription;
+                ViewDetail();
+            }
+        }
+
+        /// <summary>
+        /// 查看患者历史
+        /// </summary>
+        private void ViewPatientHistory(PrescriptionDto prescription)
+        {
+            if (prescription != null)
+            {
+                Logger.LogInformation("查看患者历史功能开发中: PatientId={PatientId}", prescription.PatientId);
+                ShowInfoMessage("查看患者历史功能开发中");
+            }
+        }
+
+        /// <summary>
+        /// 编辑处方项
+        /// </summary>
+        private void EditPrescriptionItem(PrescriptionDto prescription)
+        {
+            if (prescription != null)
+            {
+                SelectedPrescription = prescription;
+                Edit();
+            }
+        }
+
+        /// <summary>
+        /// 复制处方
+        /// </summary>
+        private void CopyPrescription(PrescriptionDto prescription)
+        {
+            if (prescription != null)
+            {
+                Logger.LogInformation("复制处方功能开发中: {PrescriptionId}", prescription.Id);
+                ShowInfoMessage("复制处方功能开发中");
+            }
+        }
+
+        /// <summary>
+        /// 删除处方项
+        /// </summary>
+        private async Task DeletePrescriptionItemAsync(PrescriptionDto prescription)
+        {
+            if (prescription != null)
+            {
+                SelectedPrescription = prescription;
+                await DeleteAsync();
+            }
+        }
+
+        /// <summary>
+        /// 清除筛选
+        /// </summary>
+        private void ClearFilters()
+        {
+            SearchText = string.Empty;
+            StartDate = null;
+            EndDate = null;
+            _ = SearchAsync();
+        }
+
+        /// <summary>
+        /// 导出处方
+        /// </summary>
+        private async Task ExportPrescriptionsAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在导出处方...");
+                Logger.LogInformation("导出处方功能开发中");
+                await ShowSuccessMessageAsync("导出处方功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出处方时发生异常");
+                await ShowErrorMessageAsync("导出处方时发生系统错误");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
         private bool CanEdit() => SelectedPrescription != null && !IsBusy;
         private bool CanDelete() => SelectedPrescription != null && !IsBusy;
         private bool CanViewDetail() => SelectedPrescription != null;
@@ -401,6 +547,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             PrintCommand.RaiseCanExecuteChanged();
             PreviousPageCommand.RaiseCanExecuteChanged();
             NextPageCommand.RaiseCanExecuteChanged();
+            ViewPrescriptionCommand?.RaiseCanExecuteChanged();
+            ViewPatientHistoryCommand?.RaiseCanExecuteChanged();
+            EditPrescriptionCommand?.RaiseCanExecuteChanged();
+            CopyPrescriptionCommand?.RaiseCanExecuteChanged();
+            DeletePrescriptionCommand?.RaiseCanExecuteChanged();
+            ClearFiltersCommand?.RaiseCanExecuteChanged();
+            ExportPrescriptionsCommand?.RaiseCanExecuteChanged();
         }
 
         #endregion

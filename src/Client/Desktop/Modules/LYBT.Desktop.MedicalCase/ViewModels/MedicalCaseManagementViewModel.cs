@@ -57,6 +57,67 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand BackToHomeCommand { get; }
 
+
+        /// <summary>
+        /// 搜索命令
+        /// </summary>
+        public DelegateCommand SearchCommand { get; }
+
+        /// <summary>
+        /// 添加命令
+        /// </summary>
+        public DelegateCommand AddCommand { get; }
+
+        /// <summary>
+        /// 查看详情命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> ViewDetailsCommand { get; }
+
+        /// <summary>
+        /// 编辑命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> EditCommand { get; }
+
+        /// <summary>
+        /// 查看诊疗命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> ViewConsultationCommand { get; }
+
+        /// <summary>
+        /// 创建处方命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> CreatePrescriptionCommand { get; }
+
+        /// <summary>
+        /// 打印命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> PrintCommand { get; }
+
+        /// <summary>
+        /// 删除命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> DeleteCommand { get; }
+
+        /// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; }
+
+        /// <summary>
+        /// 上一页命令
+        /// </summary>
+        public DelegateCommand PreviousPageCommand { get; }
+
+        /// <summary>
+        /// 下一页命令
+        /// </summary>
+        public DelegateCommand NextPageCommand { get; }
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -77,6 +138,24 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             CreateNewCommand = new DelegateCommand(CreateNew);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             BackToHomeCommand = new DelegateCommand(BackToHome);
+
+            // 列表管理命令
+            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
+            AddCommand = new DelegateCommand(CreateNew); // 重用 CreateNew
+
+            // DataGrid 行命令
+            ViewDetailsCommand = new DelegateCommand<object>(ExecuteViewDetails);
+            EditCommand = new DelegateCommand<object>(ExecuteEdit);
+            ViewConsultationCommand = new DelegateCommand<object>(ExecuteViewConsultation);
+            CreatePrescriptionCommand = new DelegateCommand<object>(ExecuteCreatePrescription);
+            PrintCommand = new DelegateCommand<object>(ExecutePrint);
+            DeleteCommand = new DelegateCommand<object>(async item => await ExecuteDeleteAsync(item));
+
+            // 分页命令
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
+            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
+            NextPageCommand = new DelegateCommand(ExecuteNextPage);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage);
         }
 
         #endregion
@@ -182,6 +261,101 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         /// </summary>
         /// <param name="medicalCaseId">病历ID</param>
         /// <param name="isReadOnly">是否只读模式</param>
+        /// <summary>
+        /// 执行搜索
+        /// </summary>
+        private async Task ExecuteSearchAsync()
+        {
+            // TODO: 实现搜索逻辑或转发到子视图
+            await ShowSuccessMessageAsync("搜索功能由子视图处理");
+        }
+
+        /// <summary>
+        /// 查看详情
+        /// </summary>
+        private void ExecuteViewDetails(object item)
+        {
+            Logger.LogInformation("查看病历详情功能开发中");
+            ShowInfoMessage("查看详情功能开发中");
+        }
+
+        /// <summary>
+        /// 编辑病历
+        /// </summary>
+        private void ExecuteEdit(object item)
+        {
+            Logger.LogInformation("编辑病历功能开发中");
+            ShowInfoMessage("编辑功能开发中");
+        }
+
+        /// <summary>
+        /// 查看诊疗记录
+        /// </summary>
+        private void ExecuteViewConsultation(object item)
+        {
+            Logger.LogInformation("查看诊疗记录功能开发中");
+            ShowInfoMessage("查看诊疗记录功能开发中");
+        }
+
+        /// <summary>
+        /// 创建处方
+        /// </summary>
+        private void ExecuteCreatePrescription(object item)
+        {
+            Logger.LogInformation("创建处方功能开发中");
+            ShowInfoMessage("创建处方功能开发中");
+        }
+
+        /// <summary>
+        /// 打印病历
+        /// </summary>
+        private void ExecutePrint(object item)
+        {
+            Logger.LogInformation("打印病历功能开发中");
+            ShowInfoMessage("打印功能开发中");
+        }
+
+        /// <summary>
+        /// 删除病历
+        /// </summary>
+        private async Task ExecuteDeleteAsync(object item)
+        {
+            Logger.LogInformation("删除病历功能开发中");
+            await ShowSuccessMessageAsync("删除功能开发中");
+        }
+
+        /// <summary>
+        /// 首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            Logger.LogDebug("首页命令由子视图处理");
+        }
+
+        /// <summary>
+        /// 上一页
+        /// </summary>
+        private void ExecutePreviousPage()
+        {
+            Logger.LogDebug("上一页命令由子视图处理");
+        }
+
+        /// <summary>
+        /// 下一页
+        /// </summary>
+        private void ExecuteNextPage()
+        {
+            Logger.LogDebug("下一页命令由子视图处理");
+        }
+
+        /// <summary>
+        /// 末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            Logger.LogDebug("末页命令由子视图处理");
+        }
+
         public void NavigateToDetail(Guid medicalCaseId, bool isReadOnly = false)
         {
             try

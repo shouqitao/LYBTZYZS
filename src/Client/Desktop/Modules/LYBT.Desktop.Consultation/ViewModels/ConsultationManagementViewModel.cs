@@ -68,6 +68,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ICommand RefreshCommand { get; }
         public ICommand ViewDetailsCommand { get; }
 
+        public ICommand ViewPrescriptionCommand { get; }
+        public ICommand PrintCommand { get; }
+        public ICommand CopyRecordCommand { get; }
+        public ICommand StatisticsCommand { get; }
+        public ICommand FirstPageCommand { get; }
+        public ICommand LastPageCommand { get; }
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
+
         #endregion ����
 
         #region ���캯��
@@ -87,6 +96,19 @@ namespace LYBT.Desktop.Consultation.ViewModels
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             ViewDetailsCommand = new DelegateCommand(ViewDetails, () => SelectedConsultation != null)
             .ObservesProperty(() => SelectedConsultation);
+
+            ViewPrescriptionCommand = new DelegateCommand(ViewPrescription, () => SelectedConsultation != null)
+            .ObservesProperty(() => SelectedConsultation);
+            PrintCommand = new DelegateCommand(Print, () => SelectedConsultation != null)
+            .ObservesProperty(() => SelectedConsultation);
+            CopyRecordCommand = new DelegateCommand(CopyRecord, () => SelectedConsultation != null)
+            .ObservesProperty(() => SelectedConsultation);
+            StatisticsCommand = new DelegateCommand(ShowStatistics);
+            
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage);
+            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
+            NextPageCommand = new DelegateCommand(ExecuteNextPage);
 
             // �޸�: ʹ��Task.Run��ȫ��ʼ������ֹδ�����쳣
             _ = Task.Run(async () => await InitializeAsync());
@@ -171,6 +193,60 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 // �򵥵�������ʾ�����漰���ӵ���
                 Logger.LogInformation("�鿴���Ƽ�¼����: {ConsultationId}", SelectedConsultation.Id);
             }
+        }
+
+
+        private void ViewPrescription()
+        {
+            if (SelectedConsultation != null)
+            {
+                Logger.LogInformation("查看处方功能开发中: {ConsultationId}", SelectedConsultation.Id);
+                ShowInfoMessage("查看处方功能开发中");
+            }
+        }
+
+        private void Print()
+        {
+            if (SelectedConsultation != null)
+            {
+                Logger.LogInformation("打印诊疗记录功能开发中: {ConsultationId}", SelectedConsultation.Id);
+                ShowInfoMessage("打印功能开发中");
+            }
+        }
+
+        private void CopyRecord()
+        {
+            if (SelectedConsultation != null)
+            {
+                Logger.LogInformation("复制诊疗记录功能开发中: {ConsultationId}", SelectedConsultation.Id);
+                ShowInfoMessage("复制记录功能开发中");
+            }
+        }
+
+        private void ShowStatistics()
+        {
+            Logger.LogInformation("统计功能开发中");
+            ShowInfoMessage("统计功能开发中");
+        }
+
+        private void ExecuteFirstPage()
+        {
+            Logger.LogDebug("首页命令 - 功能开发中");
+        }
+
+        private void ExecuteLastPage()
+        {
+            Logger.LogDebug("末页命令 - 功能开发中");
+        }
+
+        private void ExecutePreviousPage()
+        {
+            Logger.LogDebug("上一页命令 - 功能开发中");
+        }
+
+        private void ExecuteNextPage()
+        {
+            Logger.LogDebug("下一页命令 - 功能开发中");
         }
 
         #endregion ���ݲ���

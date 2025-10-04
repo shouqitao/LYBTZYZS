@@ -90,7 +90,10 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// �༭�û�����
         /// </summary>
-        public DelegateCommand<UserDto> EditUserCommand { get; private set; } = null!;
+        /// <summary>
+        /// 编辑用户命令
+        /// </summary>
+        public DelegateCommand<UserDto> EditCommand { get; private set; } = null!;
 
         /// <summary>
         /// ������������
@@ -111,6 +114,16 @@ namespace LYBT.Desktop.Users.ViewModels
         /// ���ɸѡ����
         /// </summary>
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
+
+/// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
 
         #endregion
 
@@ -147,7 +160,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private void InitializeUserCommands()
         {
-            EditUserCommand = new DelegateCommand<UserDto>(ExecuteEditUser, CanExecuteEditUser);
+            EditCommand = new DelegateCommand<UserDto>(ExecuteEditUser, CanExecuteEditUser);
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
             ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ExecuteResetPasswordAsync(user), CanExecuteResetPassword);
             ToggleUserStatusCommand = new DelegateCommand<UserDto>(async user => await ExecuteToggleUserStatusAsync(user), CanExecuteToggleUserStatus);
             ViewDetailsCommand = new DelegateCommand<UserDto>(ExecuteViewDetails, user => user != null);
@@ -432,15 +447,34 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region ����ˢ��
 
+        /// <summary>
+        /// 跳转首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            CurrentPage = 1;
+        }
+
+        /// <summary>
+        /// 跳转末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            CurrentPage = TotalPages;
+        }
+
         protected override void RefreshCanExecuteChanged()
         {
             base.RefreshCanExecuteChanged();
 
-            EditUserCommand?.RaiseCanExecuteChanged();
+            EditCommand?.RaiseCanExecuteChanged();
+            DeleteCommand?.RaiseCanExecuteChanged();
             ResetPasswordCommand?.RaiseCanExecuteChanged();
             ToggleUserStatusCommand?.RaiseCanExecuteChanged();
             ViewDetailsCommand?.RaiseCanExecuteChanged();
             ClearFiltersCommand?.RaiseCanExecuteChanged();
+            FirstPageCommand?.RaiseCanExecuteChanged();
+            LastPageCommand?.RaiseCanExecuteChanged();
         }
 
         #endregion
