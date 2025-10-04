@@ -353,14 +353,15 @@ public class ArchTests
     }
 
     /// <summary>
-    /// 用户字段命名测试 - 用户相关字段必须使用Username命名
+    /// 用户字段命名测试 - 用户相关字段必须统一使用 UserName 命名（PascalCase，大写N）
+    /// 禁止使用其他变体如 userName, user_name, loginName 等
     /// </summary>
     [Fact]
-    public void UserFieldNamingTests_Should_Use_Username_Convention()
+    public void UserFieldNamingTests_Should_Use_UserName_Convention()
     {
         var prohibitedUserFieldNames = new[]
         {
-            "UserName", "user_name", "userName", "loginName"
+            "userName", "user_name", "UserNam", "username", "loginName", "LoginName"
         };
 
         var violatingProperties = new List<string>();

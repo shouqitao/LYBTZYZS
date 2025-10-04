@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Infrastructure.Data;
-using Serilog;
-using Serilog.Events;
 
 namespace LYBT.WebAPI.Tests;
 
@@ -17,51 +14,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // 配置测试用 Serilog - 直接配置，替换全局 Logger
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-            .MinimumLevel.Override("System", LogEventLevel.Warning)
-            .WriteTo.Console()
-            .CreateLogger();
-
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            // 添加测试配置 (覆盖默认配置，包括 Serilog 配置)
-            var testConfig = new Dictionary<string, string?>
-            {
-                // 数据库连接字符串 (用于 InMemory 提供程序名称)
-                ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:",
-                ["Lybt:Infrastructure:Database:ConnectionString"] = "DataSource=:memory:",
-
-                // JWT 配置
-                ["Lybt:Authentication:Jwt:SecretKey"] = "TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789",
-                ["Lybt:Authentication:Jwt:Issuer"] = "LYBT.WebAPI.Tests",
-                ["Lybt:Authentication:Jwt:Audience"] = "LYBT.Client.Tests",
-                ["Lybt:Authentication:Jwt:AccessTokenExpirationMinutes"] = "30",
-                ["Lybt:Authentication:Jwt:RefreshTokenExpirationDays"] = "7",
-
-                // 默认密码配置
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123456",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123456",
-
-                // 系统管理员配置
-                ["Lybt:Business:SystemAdmin:Username"] = "sysadmin",
-                ["Lybt:Business:SystemAdmin:Email"] = "admin@test.com",
-                ["Lybt:Business:SystemAdmin:AutoCreateOnStartup"] = "true",
-
-                // 禁用自动迁移
-                ["Lybt:Infrastructure:Database:Migration:AutoMigrate"] = "false",
-                ["Lybt:Infrastructure:Database:Migration:EnsureCreatedInDevelopment"] = "false",
-
-                // Serilog 配置 - 提供假连接字符串避免 null 异常
-                // MSSqlServer Sink 需要一个有效的连接字符串格式（即使实际不使用）
-                ["Serilog:WriteTo:2:Args:connectionString"] = "Server=(localdb)\\mssqllocaldb;Database=TestDb;Trusted_Connection=True;"
-            };
-
-            config.AddInMemoryCollection(testConfig);
-        });
+        // 使用测试环境（会自动加载 appsettings.Test.json）
+        builder.UseEnvironment("Test");
 
         builder.ConfigureServices(services =>
         {
@@ -89,8 +43,5 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             db.Database.EnsureCreated();
         });
-
-        // 使用测试环境
-        builder.UseEnvironment("Test");
     }
 }
