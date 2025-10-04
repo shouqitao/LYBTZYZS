@@ -166,7 +166,7 @@ jobs:
 
   create-release:
     name: 创建 GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build-release
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     
@@ -239,7 +239,7 @@ jobs:
 
   deploy-notification:
     name: 部署通知
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build-release, create-release]
     if: always()
     

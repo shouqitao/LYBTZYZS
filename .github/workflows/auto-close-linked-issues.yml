@@ -12,7 +12,7 @@ permissions:
 jobs:
   close_linked_issues:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Close referenced issues if not auto-closed
         uses: actions/github-script@v7

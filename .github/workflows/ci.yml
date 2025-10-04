@@ -257,7 +257,7 @@ jobs:
   # 治理基线验证完成通知
   governance-baseline-passed:
     name: ✅ Pass 7 治理基线验证通过
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [code-quality-gate, test-quality-gate, coverage-quality-gate, architecture-compliance-gate]
     if: success()
     
@@ -288,7 +288,7 @@ jobs:
   # 门禁失败处理
   governance-baseline-failed:
     name: ❌ Pass 7 治理基线验证失败
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [code-quality-gate, test-quality-gate, coverage-quality-gate, architecture-compliance-gate]
     if: failure()
     

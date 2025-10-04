@@ -18,7 +18,7 @@ jobs:
   # ==================== 代码安全扫描 ====================
   code-security:
     name: 代码安全扫描
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -51,7 +51,7 @@ jobs:
   # ==================== 依赖漏洞扫描 ====================
   dependency-scan:
     name: 依赖漏洞扫描
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -97,7 +97,7 @@ jobs:
   # ==================== 容器镜像扫描 ====================
   container-scan:
     name: 容器镜像扫描
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -134,7 +134,7 @@ jobs:
   # ==================== 基础设施安全扫描 ====================
   infrastructure-scan:
     name: 基础设施安全扫描
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -180,7 +180,7 @@ jobs:
   # ==================== SAST静态应用安全测试 ====================
   sast-scan:
     name: SAST静态安全测试
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -205,7 +205,7 @@ jobs:
   # ==================== 许可证合规性检查 ====================
   license-check:
     name: 许可证合规性检查
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: 📥 检出代码
@@ -236,7 +236,7 @@ jobs:
   # ==================== 安全报告汇总 ====================
   security-report:
     name: 安全报告汇总
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [code-security, dependency-scan, container-scan, infrastructure-scan, sast-scan, license-check]
     if: always()
     
