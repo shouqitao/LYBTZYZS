@@ -1,7 +1,4 @@
-using FluentAssertions;
-using FluentValidation.TestHelper;
-using LYBT.Module.Patients.Validators;
-using LYBT.Shared.Models.Contracts.Patients;
+﻿using LYBT.Module.Patients.Validators;
 using Xunit;
 
 namespace LYBT.Module.Patients.Tests.Validators;

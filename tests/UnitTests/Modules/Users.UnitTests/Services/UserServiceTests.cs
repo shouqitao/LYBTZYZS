@@ -1,9 +1,6 @@
-using AutoMapper;
-using FluentAssertions;
+﻿using AutoMapper;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Entities.Users;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;

@@ -1,5 +1,4 @@
-using FluentAssertions;
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using LYBT.Module.Users.Validators;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

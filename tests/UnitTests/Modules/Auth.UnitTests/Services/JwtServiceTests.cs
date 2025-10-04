@@ -1,11 +1,10 @@
+﻿using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Security.Claims;
 using Xunit;
 
 namespace LYBT.Module.Auth.Tests.Services;
@@ -37,7 +36,7 @@ public class JwtServiceTests
                 }
             }
         });
-        
+
         _configuration = CreateMockConfiguration();
         _sut = new JwtService(_mockOptions.Object, _configuration);
     }

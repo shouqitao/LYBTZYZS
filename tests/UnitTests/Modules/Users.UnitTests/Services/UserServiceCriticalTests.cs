@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
@@ -182,7 +182,7 @@ public class UserServiceCriticalTests
         var userId1 = Guid.NewGuid();
         var userId2 = Guid.NewGuid();
         var userIds = new List<Guid> { userId1, userId2 };
-        
+
         var user1 = new User { Id = userId1, Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled };
         var user2 = new User { Id = userId2, Status = LYBT.Shared.Models.Enums.CommonStatus.Disabled };
 
@@ -207,7 +207,7 @@ public class UserServiceCriticalTests
         var userId1 = Guid.NewGuid();
         var userId2 = Guid.NewGuid();
         var userIds = new List<Guid> { userId1, userId2 };
-        
+
         var user1 = new User { Id = userId1, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
         var user2 = new User { Id = userId2, Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled };
 
