@@ -219,7 +219,7 @@ jobs:
   # ==================== 版本发布 ====================
   release:
     name: 创建版本发布
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [wpf-build, create-installer]
     if: startsWith(github.ref, 'refs/tags/v')
     
@@ -252,7 +252,7 @@ jobs:
   # ==================== 通知 ====================
   notify:
     name: 发送通知
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [wpf-build, code-quality]
     if: always()
     
