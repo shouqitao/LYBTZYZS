@@ -1,4 +1,4 @@
-# Repository Guidelines
+﻿# Repository Guidelines
 
 ## Project Structure & Modules
 - App code: `src/` (controllers, services, domain, infra)

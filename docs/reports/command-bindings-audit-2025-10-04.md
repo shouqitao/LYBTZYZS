@@ -1,559 +1,228 @@
-﻿# XAML Command 绑定检查报告
+﻿# 命令绑定审计报告 v2
 
-**生成时间**: 2025-10-04 10:21:02
-**相关 Issue**: #884
-**检查范围**: Desktop 所有模块
+**生成时间**: 2025-10-04 16:18:39
+**扫描路径**: `D:\source\repos\LYBTZYZS\src\Client\Desktop`
+**相关Issue**: #884
 
-## 概述
+## 📊 审计摘要
 
-| 指标 | 数量 |
+| 指标 | 数值 |
 |------|------|
-| 总 View 数 | 36 |
-| 总绑定数 | 242 |
-| ✅ 正常绑定 | 213 |
-| ❌ 缺失绑定 | 29 |
-| ⚠️ 有问题的 View | 8 |
+| 扫描的XAML文件数 | 51 |
+| 检查的命令总数 | 162 |
+| 缺失的命令数 | **0** |
+| 警告数 | 22 |
 
-## 检查结果
+## 🔴 缺失的命令
 
-### 模块: Modules
+✅ **未发现缺失的命令绑定！**
 
-#### ✅ ChangePasswordDialog
+## ⚠️ 警告
 
-| 命令 | 状态 |
+| View | 问题 |
 |------|------|
-| `CancelCommand` | ✅ 存在 |
-| `ConfirmCommand` | ✅ 存在 |
-
-#### ✅ ConsultationMainView
-
-| 命令 | 状态 |
-|------|------|
-| `DecreaseQuantityCommand` | ✅ 存在 |
-| `IncreaseQuantityCommand` | ✅ 存在 |
-| `NewConsultationCommand` | ✅ 存在 |
-| `PrintPrescriptionCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `RemovePrescriptionItemCommand` | ✅ 存在 |
-| `SaveConsultationCommand` | ✅ 存在 |
-| `ShowTemplateMenuCommand` | ✅ 存在 |
-| `ViewPatientHistoryCommand` | ✅ 存在 |
-
-#### ✅ ConsultationManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `CopyRecordCommand` | ✅ 存在 |
-| `FirstPageCommand` | ✅ 存在 |
-| `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `StatisticsCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ✅ 存在 |
-| `ViewPrescriptionCommand` | ✅ 存在 |
-
-#### ✅ CreateMedicalCaseDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `SaveCommand` | ✅ 存在 |
-
-#### ❌ EditFormulaDialog
-
-| 命令 | 状态 |
-|------|------|
-| `AddHerbCommand` | ❌ 缺失 |
-| `CancelCommand` | ✅ 存在 |
-| `EditHerbCommand` | ❌ 缺失 |
-| `RemoveHerbCommand` | ❌ 缺失 |
-| `SaveCommand` | ✅ 存在 |
-
-#### ✅ FormulaDetailView
-
-| 命令 | 状态 |
-|------|------|
-| `BackCommand` | ✅ 存在 |
-| `CancelEditCommand` | ✅ 存在 |
-| `CopyFormulaCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `SaveCommand` | ✅ 存在 |
-| `ViewUsageHistoryCommand` | ✅ 存在 |
-
-#### ✅ FormulaManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `AddFormulaCommand` | ✅ 存在 |
-| `ClearFiltersCommand` | ✅ 存在 |
-| `CopyCommand` | ✅ 存在 |
-| `DeleteCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `ExportFormulasCommand` | ✅ 存在 |
-| `ExportTemplateCommand` | ✅ 存在 |
-| `FirstPageCommand` | ✅ 存在 |
-| `ImportFormulasCommand` | ✅ 存在 |
-| `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ✅ 存在 |
-
-#### ❌ FormulaTemplateDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SelectCommand` | ❌ 缺失 |
-| `ViewDetailsCommand` | ❌ 缺失 |
-
-#### ✅ HerbDetailView
-
-| 命令 | 状态 |
-|------|------|
-| `BackCommand` | ✅ 存在 |
-| `CancelEditCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `SaveCommand` | ✅ 存在 |
-| `ViewUsageHistoryCommand` | ✅ 存在 |
-
-#### ✅ HerbManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `AddCommand` | ✅ 存在 |
-| `DeleteCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `ExportHerbsCommand` | ✅ 存在 |
-| `ExportTemplateCommand` | ✅ 存在 |
-| `FirstPageCommand` | ✅ 存在 |
-| `ImportHerbsCommand` | ✅ 存在 |
-| `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `ToggleStatusCommand` | ✅ 存在 |
-
-#### ✅ HerbSelectionDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `ConfirmCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-
-#### ✅ LoginView
-
-| 命令 | 状态 |
-|------|------|
-| `LoginCommand` | ✅ 存在 |
-| `LoginCommand` | ✅ 存在 |
-
-#### ❌ LoginWindow
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Auth\ViewModels\LoginWindowViewModel.cs`
-
-| 命令 | 状态 |
-|------|------|
-| `LoginCommand` | ❌ 缺失 |
-| `LoginCommand` | ❌ 缺失 |
-| `LoginCommand` | ❌ 缺失 |
-
-#### ✅ MedicalCaseDetailView
-
-| 命令 | 状态 |
-|------|------|
-| `BackCommand` | ✅ 存在 |
-| `CloseCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `PrintPrescriptionCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `StartConsultationCommand` | ✅ 存在 |
-
-#### ✅ MedicalCaseListView
-
-| 命令 | 状态 |
-|------|------|
-| `AddCommand` | ✅ 存在 |
-| `DeleteCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `StartConsultationCommand` | ✅ 存在 |
-| `ViewDetailCommand` | ✅ 存在 |
-
-#### ✅ MedicalCaseManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `AddCommand` | ✅ 存在 |
-| `CreatePrescriptionCommand` | ✅ 存在 |
-| `DeleteCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `FirstPageCommand` | ✅ 存在 |
-| `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `ViewConsultationCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ✅ 存在 |
-
-#### ✅ PatientDetailView
-
-| 命令 | 状态 |
-|------|------|
-| `BackCommand` | ✅ 存在 |
-| `CancelEditCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `SaveCommand` | ✅ 存在 |
-| `ViewMedicalHistoryCommand` | ✅ 存在 |
-| `ViewMedicalHistoryCommand` | ✅ 存在 |
-
-#### ✅ PatientImportWizardView
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `NextCommand` | ✅ 存在 |
-| `PreviousCommand` | ✅ 存在 |
-
-#### ✅ PrescriptionComposerView
-
-| 命令 | 状态 |
-|------|------|
-| `AddHerbCommand` | ✅ 存在 |
-| `ClearAllCommand` | ✅ 存在 |
-| `CloseCommand` | ✅ 存在 |
-| `EditHerbCommand` | ✅ 存在 |
-| `ImportFormulaCommand` | ✅ 存在 |
-| `RemoveHerbCommand` | ✅ 存在 |
-| `SaveDraftCommand` | ✅ 存在 |
-| `SavePrescriptionCommand` | ✅ 存在 |
-
-#### ❌ PrescriptionEditorDialog
-
-| 命令 | 状态 |
-|------|------|
-| `AddHerbCommand` | ❌ 缺失 |
-| `CancelCommand` | ✅ 存在 |
-| `EditHerbCommand` | ❌ 缺失 |
-| `LoadFormulaTemplateCommand` | ❌ 缺失 |
-| `PreviewCommand` | ❌ 缺失 |
-| `RemoveHerbCommand` | ❌ 缺失 |
-| `SaveCommand` | ✅ 存在 |
-
-#### ✅ PrescriptionManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `AddPrescriptionCommand` | ✅ 存在 |
-| `ClearFiltersCommand` | ✅ 存在 |
-| `CopyPrescriptionCommand` | ✅ 存在 |
-| `DeletePrescriptionCommand` | ✅ 存在 |
-| `EditPrescriptionCommand` | ✅ 存在 |
-| `ExportPrescriptionsCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `ViewPatientHistoryCommand` | ✅ 存在 |
-| `ViewPrescriptionCommand` | ✅ 存在 |
-
-#### ✅ PrescriptionsMainView
-
-| 命令 | 状态 |
-|------|------|
-| `CreateNewPrescriptionCommand` | ✅ 存在 |
-| `ReturnToSourceCommand` | ✅ 存在 |
-| `SwitchToManagementCommand` | ✅ 存在 |
-| `SwitchToManagementCommand` | ✅ 存在 |
-
-#### ❌ PrescriptionView
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionViewModel.cs`
-
-| 命令 | 状态 |
-|------|------|
-| `AddHerbCommand` | ❌ 缺失 |
-| `ClearCommand` | ❌ 缺失 |
-| `ImportFormulaCommand` | ❌ 缺失 |
-| `ImportHistoryCommand` | ❌ 缺失 |
-| `PrintPreviewCommand` | ❌ 缺失 |
-| `RemoveHerbCommand` | ❌ 缺失 |
-| `SaveCommand` | ❌ 缺失 |
-| `SetDiscountCommand` | ❌ 缺失 |
-| `SetDiscountCommand` | ❌ 缺失 |
-| `SetDosageCommand` | ❌ 缺失 |
-
-#### ✅ ResetPasswordDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `ConfirmCommand` | ✅ 存在 |
-| `GeneratePasswordCommand` | ✅ 存在 |
-
-#### ✅ SelectFormulaDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `ConfirmCommand` | ✅ 存在 |
-| `ConfirmCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ✅ 存在 |
-
-#### ❌ UserDetailView
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserDetailViewModel.cs`
-
-| 命令 | 状态 |
-|------|------|
-| `EditUserCommand` | ❌ 缺失 |
-| `GoBackCommand` | ❌ 缺失 |
-| `ResetPasswordCommand` | ❌ 缺失 |
-
-#### ✅ UserManagementView
-
-| 命令 | 状态 |
-|------|------|
-| `AddCommand` | ✅ 存在 |
-| `DeleteCommand` | ✅ 存在 |
-| `EditCommand` | ✅ 存在 |
-| `FirstPageCommand` | ✅ 存在 |
-| `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ✅ 存在 |
-| `PreviousPageCommand` | ✅ 存在 |
-| `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `SearchCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ✅ 存在 |
-
-#### ✅ UserProfileDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CancelCommand` | ✅ 存在 |
-| `RemoveAvatarCommand` | ✅ 存在 |
-| `SaveCommand` | ✅ 存在 |
-| `SelectAvatarCommand` | ✅ 存在 |
-
-#### ✅ ViewFormulaDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CloseCommand` | ✅ 存在 |
-| `ExportCommand` | ✅ 存在 |
-| `PrintCommand` | ✅ 存在 |
-
-
-### 模块: Shell
-
-#### ❌ ConfirmationDialog
-
-| 命令 | 状态 |
-|------|------|
-| `NoCommand` | ❌ 缺失 |
-| `YesCommand` | ❌ 缺失 |
-
-#### ✅ ErrorDetailsDialog
-
-| 命令 | 状态 |
-|------|------|
-| `CloseCommand` | ✅ 存在 |
-| `CopyErrorCommand` | ✅ 存在 |
-| `RetryCommand` | ✅ 存在 |
-
-#### ✅ HomeView
-
-| 命令 | 状态 |
-|------|------|
-| `EnterSystemManagementCommand` | ✅ 存在 |
-| `LogoutCommand` | ✅ 存在 |
-| `NavigateToDataBackupCommand` | ✅ 存在 |
-| `NavigateToFormulaManagementCommand` | ✅ 存在 |
-| `NavigateToFormulasCommand` | ✅ 存在 |
-| `NavigateToHerbManagementCommand` | ✅ 存在 |
-| `NavigateToHerbsCommand` | ✅ 存在 |
-| `NavigateToMedicalCaseCommand` | ✅ 存在 |
-| `NavigateToPatientManagementCommand` | ✅ 存在 |
-| `NavigateToPatientManagementCommand` | ✅ 存在 |
-| `NavigateToPatientReceptionCommand` | ✅ 存在 |
-| `NavigateToPrescriptionQueryCommand` | ✅ 存在 |
-| `NavigateToSystemSettingsCommand` | ✅ 存在 |
-| `NavigateToUserManagementCommand` | ✅ 存在 |
-| `RefreshTodayPatientsCommand` | ✅ 存在 |
-| `StartConsultationCommand` | ✅ 存在 |
-| `StartConsultationForPatientCommand` | ✅ 存在 |
-| `StartConsultationForPatientCommand` | ✅ 存在 |
-| `ViewPatientDetailsCommand` | ✅ 存在 |
-
-#### ❌ InformationDialog
-
-| 命令 | 状态 |
-|------|------|
-| `OkCommand` | ❌ 缺失 |
-
-#### ✅ MainWindow
-
-| 命令 | 状态 |
-|------|------|
-| `LogoutCommand` | ✅ 存在 |
-| `QuickAddPatientCommand` | ✅ 存在 |
-| `QuickStartConsultationCommand` | ✅ 存在 |
-| `ShowHelpCommand` | ✅ 存在 |
-| `ShowSettingsCommand` | ✅ 存在 |
-| `TestApiCommand` | ✅ 存在 |
-| `ToggleThemeCommand` | ✅ 存在 |
-
-
-### 模块: Workstations
-
-#### ✅ AdminWorkstationView
-
-| 命令 | 状态 |
-|------|------|
-| `LogoutCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-| `NavigateCommand` | ✅ 存在 |
-
-#### ✅ ClinicalWorkstationView
-
-| 命令 | 状态 |
-|------|------|
-| `ClearPrescriptionCommand` | ✅ 存在 |
-| `ImportDiagnosisCommand` | ✅ 存在 |
-| `ImportFormulaCommand` | ✅ 存在 |
-| `LogoutCommand` | ✅ 存在 |
-| `PrintPrescriptionCommand` | ✅ 存在 |
-| `SavePrescriptionCommand` | ✅ 存在 |
-| `SearchHerbCommand` | ✅ 存在 |
-| `SelectPatientCommand` | ✅ 存在 |
-| `ShowHistoryCommand` | ✅ 存在 |
-
-
-## 需要修复的问题
-
-### ConfirmationDialog
-
-**ViewModel**: `ConfirmationDialogViewModel`
-
-**缺失命令**:
-
-- [ ] `NoCommand`
-- [ ] `YesCommand`
-
-### EditFormulaDialog
-
-**ViewModel**: `EditFormulaDialogViewModel`
-
-**缺失命令**:
-
-- [ ] `AddHerbCommand`
-- [ ] `EditHerbCommand`
-- [ ] `RemoveHerbCommand`
-
-### FormulaTemplateDialog
-
-**ViewModel**: `FormulaTemplateDialogViewModel`
-
-**缺失命令**:
-
-- [ ] `SelectCommand`
-- [ ] `ViewDetailsCommand`
-
-### InformationDialog
-
-**ViewModel**: `InformationDialogViewModel`
-
-**缺失命令**:
-
-- [ ] `OkCommand`
-
-### LoginWindow
-
-**ViewModel**: `LoginWindowViewModel`
-
-**缺失命令**:
-
-- [ ] `LoginCommand`
-- [ ] `LoginCommand`
-- [ ] `LoginCommand`
-
-### PrescriptionEditorDialog
-
-**ViewModel**: `PrescriptionEditorDialogViewModel`
-
-**缺失命令**:
-
-- [ ] `AddHerbCommand`
-- [ ] `EditHerbCommand`
-- [ ] `LoadFormulaTemplateCommand`
-- [ ] `PreviewCommand`
-- [ ] `RemoveHerbCommand`
-
-### PrescriptionView
-
-**ViewModel**: `PrescriptionViewModel`
-
-**缺失命令**:
-
-- [ ] `AddHerbCommand`
-- [ ] `ClearCommand`
-- [ ] `ImportFormulaCommand`
-- [ ] `ImportHistoryCommand`
-- [ ] `PrintPreviewCommand`
-- [ ] `RemoveHerbCommand`
-- [ ] `SaveCommand`
-- [ ] `SetDiscountCommand`
-- [ ] `SetDiscountCommand`
-- [ ] `SetDosageCommand`
-
-### UserDetailView
-
-**ViewModel**: `UserDetailViewModel`
-
-**缺失命令**:
-
-- [ ] `EditUserCommand`
-- [ ] `GoBackCommand`
-- [ ] `ResetPasswordCommand`
-
-
-## 结论
-
-❌ **发现 29 个缺失的命令绑定，需要立即修复。**
-
-建议为每个有问题的模块创建独立的修复 Issue。
-
-## 下一步行动
-
-1. 为每个有问题的模块创建修复 Issue
-2. 实现缺失的命令
-3. 手动测试所有修复的绑定
-4. 回归测试确保无副作用
+| VirtualizedDataGrid.xaml | ⚠️ ViewModel不存在 |
+| LoginStatusControl.xaml | ⚠️ ViewModel不存在 |
+| LoginControl.xaml | ⚠️ ViewModel不存在 |
+| ErrorNotificationControl.xaml | ⚠️ ViewModel不存在 |
+| FormulaTemplateListItemControl.xaml | ⚠️ ViewModel不存在 |
+| LoginWindow.xaml | ⚠️ ViewModel不存在 |
+| EditFormulaDialog.xaml | ⚠️ ViewModel不存在 |
+| ViewFormulaDialog.xaml | ⚠️ ViewModel不存在 |
+| CreateMedicalCaseDialog.xaml | ⚠️ ViewModel不存在 |
+| FormulaTemplateDialog.xaml | ⚠️ ViewModel不存在 |
+| HerbSelectionDialog.xaml | ⚠️ ViewModel不存在 |
+| PrescriptionEditorDialog.xaml | ⚠️ ViewModel不存在 |
+| SelectFormulaDialog.xaml | ⚠️ ViewModel不存在 |
+| ChangePasswordDialog.xaml | ⚠️ ViewModel不存在 |
+| ResetPasswordDialog.xaml | ⚠️ ViewModel不存在 |
+| UserProfileDialog.xaml | ⚠️ ViewModel不存在 |
+| ConfirmationDialog.xaml | ⚠️ ViewModel不存在 |
+| ErrorDetailsDialog.xaml | ⚠️ ViewModel不存在 |
+| InformationDialog.xaml | ⚠️ ViewModel不存在 |
+| MainWindow.xaml | ⚠️ ViewModel不存在 |
+| DataManagementView.xaml | ⚠️ ViewModel不存在 |
+| ClinicalWorkflowView.xaml | ⚠️ ViewModel不存在 |
+
+## ✅ 正常的命令绑定
+
+<details>
+<summary>点击展开查看所有正常的命令绑定（162 个）</summary>
+
+| View | ViewModel | 命令 |
+|------|-----------|------|
+| LoginView.xaml | LoginViewModel.cs | `LoginCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `RefreshCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `ViewPatientHistoryCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `NewConsultationCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `ShowTemplateMenuCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `SaveConsultationCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `PrintPrescriptionCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `DecreaseQuantityCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `IncreaseQuantityCommand` |
+| ConsultationMainView.xaml | ConsultationMainViewModel.cs | `RemovePrescriptionItemCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `SearchCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `StatisticsCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `RefreshCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `ViewDetailsCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `ViewPrescriptionCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `PrintCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `CopyRecordCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `FirstPageCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `PreviousPageCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `NextPageCommand` |
+| ConsultationManagementView.xaml | ConsultationManagementViewModel.cs | `LastPageCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `BackCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `EditCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `SaveCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `CancelEditCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `CopyFormulaCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `ViewUsageHistoryCommand` |
+| FormulaDetailView.xaml | FormulaDetailViewModel.cs | `PrintCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `SearchCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `ClearFiltersCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `ImportFormulasCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `ExportTemplateCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `ExportFormulasCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `AddFormulaCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `RefreshCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `ViewDetailsCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `EditCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `CopyCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `DeleteCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `FirstPageCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `PreviousPageCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `NextPageCommand` |
+| FormulaManagementView.xaml | FormulaManagementViewModel.cs | `LastPageCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `BackCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `EditCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `SaveCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `CancelEditCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `ViewUsageHistoryCommand` |
+| HerbDetailView.xaml | HerbDetailViewModel.cs | `PrintCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `SearchCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `ImportHerbsCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `ExportTemplateCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `ExportHerbsCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `AddCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `RefreshCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `EditCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `ToggleStatusCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `DeleteCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `FirstPageCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `PreviousPageCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `NextPageCommand` |
+| HerbManagementView.xaml | HerbManagementViewModel.cs | `LastPageCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `BackCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `StartConsultationCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `PrintCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `RefreshCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `EditCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `PrintPrescriptionCommand` |
+| MedicalCaseDetailView.xaml | MedicalCaseDetailViewModel.cs | `CloseCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `SearchCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `AddCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `RefreshCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `ViewDetailCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `StartConsultationCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `EditCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `DeleteCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `PreviousPageCommand` |
+| MedicalCaseListView.xaml | MedicalCaseListViewModel.cs | `NextPageCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `SearchCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `AddCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `RefreshCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `ViewDetailsCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `EditCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `ViewConsultationCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `CreatePrescriptionCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `PrintCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `DeleteCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `FirstPageCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `PreviousPageCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `NextPageCommand` |
+| MedicalCaseManagementView.xaml | MedicalCaseManagementViewModel.cs | `LastPageCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `BackCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `EditCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `SaveCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `CancelEditCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `ViewMedicalHistoryCommand` |
+| PatientDetailView.xaml | PatientDetailViewModel.cs | `PrintCommand` |
+| PatientImportWizardView.xaml | PatientImportWizardViewModel.cs | `CancelCommand` |
+| PatientImportWizardView.xaml | PatientImportWizardViewModel.cs | `PreviousCommand` |
+| PatientImportWizardView.xaml | PatientImportWizardViewModel.cs | `NextCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `AddHerbCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `ImportFormulaCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `ClearAllCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `EditHerbCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `RemoveHerbCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `SaveDraftCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `SavePrescriptionCommand` |
+| PrescriptionComposerView.xaml | PrescriptionComposerViewModel.cs | `CloseCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `AddPrescriptionCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `ExportPrescriptionsCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `RefreshCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `ClearFiltersCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `ViewPrescriptionCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `EditPrescriptionCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `ViewPatientHistoryCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `CopyPrescriptionCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `PrintCommand` |
+| PrescriptionManagementView.xaml | PrescriptionManagementViewModel.cs | `DeletePrescriptionCommand` |
+| PrescriptionsMainView.xaml | PrescriptionsMainViewModel.cs | `SwitchToManagementCommand` |
+| PrescriptionsMainView.xaml | PrescriptionsMainViewModel.cs | `ReturnToSourceCommand` |
+| PrescriptionsMainView.xaml | PrescriptionsMainViewModel.cs | `CreateNewPrescriptionCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `AddHerbCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `ImportFormulaCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `RemoveHerbCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `SetDosageCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `SetDiscountCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `ImportHistoryCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `PrintPreviewCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `ClearCommand` |
+| PrescriptionView.xaml | PrescriptionViewModel.cs | `SaveCommand` |
+| UserDetailView.xaml | UserDetailViewModel.cs | `GoBackCommand` |
+| UserDetailView.xaml | UserDetailViewModel.cs | `EditUserCommand` |
+| UserDetailView.xaml | UserDetailViewModel.cs | `ResetPasswordCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `SearchCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `AddCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `RefreshCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `ViewDetailsCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `EditCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `DeleteCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `FirstPageCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `PreviousPageCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `NextPageCommand` |
+| UserManagementView.xaml | UserManagementViewModel.cs | `LastPageCommand` |
+| HomeView.xaml | HomeViewModel.cs | `LogoutCommand` |
+| HomeView.xaml | HomeViewModel.cs | `StartConsultationCommand` |
+| HomeView.xaml | HomeViewModel.cs | `RefreshTodayPatientsCommand` |
+| HomeView.xaml | HomeViewModel.cs | `StartConsultationForPatientCommand` |
+| HomeView.xaml | HomeViewModel.cs | `ViewPatientDetailsCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToPatientReceptionCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToMedicalCaseCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToPrescriptionQueryCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToPatientManagementCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToHerbsCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToFormulasCommand` |
+| HomeView.xaml | HomeViewModel.cs | `EnterSystemManagementCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToUserManagementCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToHerbManagementCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToFormulaManagementCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToSystemSettingsCommand` |
+| HomeView.xaml | HomeViewModel.cs | `NavigateToDataBackupCommand` |
+| AdminWorkstationView.xaml | AdminWorkstationViewModel.cs | `NavigateCommand` |
+| ClinicalWorkstationView.xaml | ClinicalWorkstationViewModel.cs | `NavigateCommand` |
+
+</details>
+
+## 📋 后续行动
+✅ **所有命令绑定检查通过！无需修复。**
+
+## 🔗 相关资源
+
+- Issue #884: 全面检查所有模块的事件绑定
+- 脚本位置: `scripts/analysis/check-command-bindings.ps1`
 
 ---
-*此报告由自动化脚本生成：`scripts/analysis/check-command-bindings.ps1`*
-
+*此报告由自动化脚本生成*
