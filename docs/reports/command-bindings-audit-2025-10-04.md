@@ -1,4 +1,4 @@
-# 命令绑定审计报告 v2
+﻿# 命令绑定审计报告 v2
 
 **生成时间**: 2025-10-04 16:18:39
 **扫描路径**: `D:\source\repos\LYBTZYZS\src\Client\Desktop`
