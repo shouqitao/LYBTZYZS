@@ -309,4 +309,4 @@ await _exceptionHandler.SafeExecuteAsync(...)
 **维护日期**：2025-09-30
 **相关文档**：
 - `docs/architecture/desktop-architecture.md`
-- `docs/reports/Issue-815-UltraThink-Architecture-Implementation-Report.md`
+- `docs/reports/Issue-815--Architecture-Implementation-Report.md`
