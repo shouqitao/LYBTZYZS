@@ -51,29 +51,12 @@ jobs:
         dotnet tool install -g dotnet-reportgenerator-globaltool
 
         # 运行所有测试项目并收集覆盖率
-        dotnet test \
-          --configuration Release \
-          --no-build \
-          --verbosity normal \
-          --settings .runsettings \
-          --collect:"XPlat Code Coverage" \
-          --logger "trx;LogFileName=TestResults.trx" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" \
-          -- xUnit.ParallelizeTestCollections=false
+        dotnet test --configuration Release --no-build --verbosity normal --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=TestResults.trx" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" -- xUnit.ParallelizeTestCollections=false
 
     - name: 📊 生成覆盖率报告
       run: |
         # 合并所有覆盖率文件
-        reportgenerator \
-          "-reports:BIN/TestResults/**/coverage.opencover.xml" \
-          "-targetdir:BIN/TestResults/CoverageReport" \
-          "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" \
-          "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" \
-          "-classfilters:-*.Migrations.*" \
-          "-assemblyfilters:-*Tests*;-*TestUtils*" \
-          "-verbosity:Info"
+        reportgenerator "-reports:BIN/TestResults/**/coverage.opencover.xml" "-targetdir:BIN/TestResults/CoverageReport" "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" "-classfilters:-*.Migrations.*" "-assemblyfilters:-*Tests*;-*TestUtils*" "-verbosity:Info"
 
         # 显示覆盖率报告路径
         echo "覆盖率报告已生成到: BIN/TestResults/CoverageReport/"
