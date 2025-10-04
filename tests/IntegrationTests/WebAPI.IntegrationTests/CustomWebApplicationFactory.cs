@@ -55,11 +55,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Lybt:Infrastructure:Database:Migration:AutoMigrate"] = "false",
                 ["Lybt:Infrastructure:Database:Migration:EnsureCreatedInDevelopment"] = "false",
 
-                // 移除 Serilog 的 MSSqlServer Sink 配置
-                // 将所有 Serilog WriteTo 数组清空
-                ["Serilog:WriteTo:0:Name"] = "Console",
-                ["Serilog:WriteTo:1:Name"] = null, // 移除 File sink
-                ["Serilog:WriteTo:2:Name"] = null  // 移除 MSSqlServer sink
+                // Serilog 配置 - 提供假连接字符串避免 null 异常
+                // MSSqlServer Sink 需要一个有效的连接字符串格式（即使实际不使用）
+                ["Serilog:WriteTo:2:Args:connectionString"] = "Server=(localdb)\\mssqllocaldb;Database=TestDb;Trusted_Connection=True;"
             };
 
             config.AddInMemoryCollection(testConfig);
