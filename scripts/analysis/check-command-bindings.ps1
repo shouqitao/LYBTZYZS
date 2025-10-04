@@ -88,7 +88,13 @@ foreach ($xaml in $xamlFiles) {
     }
 
     # 查找对应的 ViewModel
-    $viewModelName = $viewName -replace 'View$', 'ViewModel'
+    # 处理多种命名模式
+    $viewModelName = if ($viewName.EndsWith('View')) {
+        $viewName -replace 'View$', 'ViewModel'
+    } else {
+        "${viewName}ViewModel"
+    }
+
     $viewModelDir = $xaml.DirectoryName -replace '\\Views$', '\ViewModels'
     $viewModelPath = Join-Path $viewModelDir "$viewModelName.cs"
 
