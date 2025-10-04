@@ -97,6 +97,21 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand BackToHomeCommand { get; }
 
+        /// <summary>
+        /// 创建新处方命令（别名）
+        /// </summary>
+        public DelegateCommand CreateNewPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 返回源视图命令（别名）
+        /// </summary>
+        public DelegateCommand ReturnToSourceCommand { get; }
+
+        /// <summary>
+        /// 切换到管理视图命令（别名）
+        /// </summary>
+        public DelegateCommand SwitchToManagementCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -118,6 +133,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             ShowReportsCommand = new DelegateCommand(ShowReports);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             BackToHomeCommand = new DelegateCommand(BackToHome);
+
+            // 初始化别名命令
+            CreateNewPrescriptionCommand = CreateNewCommand; // 别名
+            ReturnToSourceCommand = BackToHomeCommand; // 别名
+            SwitchToManagementCommand = ShowManagementCommand; // 别名
         }
 
         #endregion

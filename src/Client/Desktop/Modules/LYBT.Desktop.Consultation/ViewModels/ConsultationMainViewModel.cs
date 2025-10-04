@@ -96,10 +96,40 @@ namespace LYBT.Desktop.Consultation.ViewModels
         // P0-02������������ʷ���Ʋ�ѯ����
         public ICommand ViewPatientHistoryCommand { get; }
 
-        // P0-04����������¼��ģ�幦��
+        // P0-04：四诊记录辅助模板功能
         public ICommand ShowTemplateMenuCommand { get; }
 
-        #endregion ����
+        /// <summary>
+        /// 新建诊疗命令
+        /// </summary>
+        public ICommand NewConsultationCommand { get; }
+
+        /// <summary>
+        /// 打印处方命令
+        /// </summary>
+        public ICommand PrintPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public ICommand RefreshCommand { get; }
+
+        /// <summary>
+        /// 增加数量命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> IncreaseQuantityCommand { get; }
+
+        /// <summary>
+        /// 减少数量命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> DecreaseQuantityCommand { get; }
+
+        /// <summary>
+        /// 移除处方项命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<object> RemovePrescriptionItemCommand { get; }
+
+        #endregion 命令
 
         #region ���캯��
 
@@ -124,10 +154,20 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // P0-02��������ʼ��������ʷ��ѯ����
             ViewPatientHistoryCommand = new DelegateCommand(async () => await ViewPatientHistoryAsync(), () => SelectedPatient != null);
 
-            // P0-04��������ʼ������ģ������
+            // P0-04：初始化四诊模板命令
             ShowTemplateMenuCommand = new DelegateCommand(async () => await ShowTemplateMenuAsync());
 
-            // �޸�: ʹ��Task.Run�ȴ���ʼ������ֹfire-and-forget
+            // 初始化新增命令
+            NewConsultationCommand = new DelegateCommand(ExecuteNewConsultation);
+            PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription, CanPrintPrescription);
+            RefreshCommand = new DelegateCommand(async () => await ExecuteRefreshAsync());
+
+            // 初始化 DataGrid 行命令
+            IncreaseQuantityCommand = new DelegateCommand<object>(ExecuteIncreaseQuantity, item => item != null);
+            DecreaseQuantityCommand = new DelegateCommand<object>(ExecuteDecreaseQuantity, item => item != null);
+            RemovePrescriptionItemCommand = new DelegateCommand<object>(ExecuteRemovePrescriptionItem, item => item != null);
+
+            // 修改: 使用Task.Run等待初始化，防止fire-and-forget
             _ = Task.Run(async () => await InitializeAsync());
         }
 
@@ -747,6 +787,115 @@ DiagnosisPoints = "��Һ���㣬������ף�������
             public required string DiagnosisPoints { get; set; }
         }
 
-        #endregion P0-04: ����¼��ģ�幦��
+        #endregion P0-04: 四诊记录辅助模板功能
+
+        #region 新增命令实现
+
+        /// <summary>
+        /// 新建诊疗
+        /// </summary>
+        private void ExecuteNewConsultation()
+        {
+            try
+            {
+                Logger.LogInformation("新建诊疗");
+                ClearData();
+                SetStatus("已清空当前诊疗记录，可以开始新的诊疗");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "新建诊疗时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 打印处方
+        /// </summary>
+        private void ExecutePrintPrescription()
+        {
+            try
+            {
+                Logger.LogInformation("打印处方功能开发中");
+                SetStatus("打印处方功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打印处方时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以打印处方
+        /// </summary>
+        private bool CanPrintPrescription()
+        {
+            return !IsLoading && SelectedPatient != null;
+        }
+
+        /// <summary>
+        /// 刷新数据
+        /// </summary>
+        private async Task ExecuteRefreshAsync()
+        {
+            try
+            {
+                await LoadPatientsAsync();
+                SetStatus("数据刷新成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新数据时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 增加药材数量
+        /// </summary>
+        private void ExecuteIncreaseQuantity(object item)
+        {
+            try
+            {
+                Logger.LogInformation("增加药材数量功能开发中");
+                SetStatus("增加药材数量功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "增加药材数量时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 减少药材数量
+        /// </summary>
+        private void ExecuteDecreaseQuantity(object item)
+        {
+            try
+            {
+                Logger.LogInformation("减少药材数量功能开发中");
+                SetStatus("减少药材数量功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "减少药材数量时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 移除处方项
+        /// </summary>
+        private void ExecuteRemovePrescriptionItem(object item)
+        {
+            try
+            {
+                Logger.LogInformation("移除处方项功能开发中");
+                SetStatus("移除处方项功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "移除处方项时发生异常");
+            }
+        }
+
+        #endregion 新增命令实现
     }
 }
