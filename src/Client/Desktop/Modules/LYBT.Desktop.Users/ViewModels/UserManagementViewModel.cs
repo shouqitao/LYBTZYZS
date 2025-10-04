@@ -171,6 +171,40 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
+        #region 暴露基类命令
+
+        /// <summary>
+        /// 搜索命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand SearchCommand => base.SearchCommand;
+
+        /// <summary>
+        /// 刷新命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand RefreshCommand => base.RefreshCommand;
+
+        /// <summary>
+        /// 添加命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand AddCommand => base.AddCommand;
+
+        /// <summary>
+        /// 删除命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand<UserDto> DeleteCommand => base.DeleteCommand;
+
+        /// <summary>
+        /// 上一页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand PreviousPageCommand => base.PreviousPageCommand;
+
+        /// <summary>
+        /// 下一页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand NextPageCommand => base.NextPageCommand;
+
+        #endregion
+
         #region ���ݼ���
 
         /// <summary>

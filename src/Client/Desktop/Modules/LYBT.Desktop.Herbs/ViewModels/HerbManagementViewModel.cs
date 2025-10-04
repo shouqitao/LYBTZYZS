@@ -37,6 +37,49 @@ namespace LYBT.Desktop.Herbs.ViewModels
             _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
 
             PageTitle = "药材管理";
+
+            // 初始化自定义命令
+            InitializeCustomCommands();
+        }
+
+        #endregion
+
+        #region 命令初始化
+
+        /// <summary>
+        /// 初始化自定义命令
+        /// </summary>
+        private void InitializeCustomCommands()
+        {
+            ToggleStatusCommand = new DelegateCommand<HerbDto>(
+                async (herb) => await ToggleStatusAsync(herb),
+                herb => herb != null && !IsBusy
+            );
+
+            ImportHerbsCommand = new DelegateCommand(
+                async () => await ImportHerbsAsync(),
+                () => !IsBusy
+            );
+
+            ExportTemplateCommand = new DelegateCommand(
+                async () => await ExportTemplateAsync(),
+                () => !IsBusy
+            );
+
+            ExportHerbsCommand = new DelegateCommand(
+                async () => await ExportHerbsAsync(),
+                () => !IsBusy && Items.Count > 0
+            );
+
+            FirstPageCommand = new DelegateCommand(
+                ExecuteFirstPage,
+                () => CurrentPage > 1 && !IsBusy
+            );
+
+            LastPageCommand = new DelegateCommand(
+                ExecuteLastPage,
+                () => CurrentPage < TotalPages && !IsBusy
+            );
         }
 
         #endregion
@@ -172,6 +215,79 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #endregion
 
+        #region 暴露基类命令
+
+        /// &lt;summary&gt;
+        /// 搜索命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand SearchCommand => base.SearchCommand;
+
+        /// <summary>
+        /// 刷新命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand RefreshCommand => base.RefreshCommand;
+
+        /// <summary>
+        /// 添加命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand AddCommand => base.AddCommand;
+
+        /// <summary>
+        /// 删除命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand<HerbDto> DeleteCommand => base.DeleteCommand;
+
+        /// <summary>
+        /// 上一页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand PreviousPageCommand => base.PreviousPageCommand;
+
+        /// <summary>
+        /// 下一页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand NextPageCommand => base.NextPageCommand;
+
+        #endregion
+
+        #region 自定义命令
+
+        /// <summary>
+        /// 编辑命令 - 别名指向 EditHerbCommand
+        /// </summary>
+        public DelegateCommand<HerbDto> EditCommand => EditHerbCommand;
+
+        /// <summary>
+        /// 切换状态命令
+        /// </summary>
+        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; }
+
+        /// <summary>
+        /// 导入药材命令
+        /// </summary>
+        public DelegateCommand ImportHerbsCommand { get; private set; }
+
+        /// <summary>
+        /// 导出模板命令
+        /// </summary>
+        public DelegateCommand ExportTemplateCommand { get; private set; }
+
+        /// <summary>
+        /// 导出药材命令
+        /// </summary>
+        public DelegateCommand ExportHerbsCommand { get; private set; }
+
+        /// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; private set; }
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; private set; }
+
+        #endregion
+
         #region 自定义功能
 
         /// <summary>
@@ -279,6 +395,100 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
             SearchText = $"分类:{category}";
             await LoadPageAsync();
+        }
+
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 切换药材状态
+        /// </summary>
+        private async Task ToggleStatusAsync(HerbDto herb)
+        {
+            if (herb == null) return;
+
+            try
+            {
+                Logger.LogInformation("切换药材状态: {HerbId}", herb.Id);
+                ShowInfoMessage($"切换药材 '{herb.Name}' 状态功能开发中");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "切换药材状态失败: {HerbId}", herb.Id);
+                await ShowErrorMessageAsync("切换药材状态失败");
+            }
+        }
+
+        /// <summary>
+        /// 导入药材
+        /// </summary>
+        private async Task ImportHerbsAsync()
+        {
+            try
+            {
+                Logger.LogInformation("导入药材");
+                ShowInfoMessage("导入药材功能开发中");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入药材失败");
+                await ShowErrorMessageAsync("导入药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 导出模板
+        /// </summary>
+        private async Task ExportTemplateAsync()
+        {
+            try
+            {
+                Logger.LogInformation("导出药材导入模板");
+                ShowInfoMessage("导出模板功能开发中");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出模板失败");
+                await ShowErrorMessageAsync("导出模板失败");
+            }
+        }
+
+        /// <summary>
+        /// 导出药材
+        /// </summary>
+        private async Task ExportHerbsAsync()
+        {
+            try
+            {
+                Logger.LogInformation("导出药材数据");
+                ShowInfoMessage("导出药材功能开发中");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导出药材失败");
+                await ShowErrorMessageAsync("导出药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 跳转到首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            CurrentPage = 1;
+        }
+
+        /// <summary>
+        /// 跳转到末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            CurrentPage = TotalPages;
         }
 
         #endregion

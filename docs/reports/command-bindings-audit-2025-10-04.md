@@ -1,6 +1,6 @@
 # XAML Command 绑定检查报告
 
-**生成时间**: 2025-10-04 08:19:44
+**生成时间**: 2025-10-04 10:10:57
 **相关 Issue**: #884
 **检查范围**: Desktop 所有模块
 
@@ -10,9 +10,9 @@
 |------|------|
 | 总 View 数 | 36 |
 | 总绑定数 | 242 |
-| ✅ 正常绑定 | 53 |
-| ❌ 缺失绑定 | 189 |
-| ⚠️ 有问题的 View | 32 |
+| ✅ 正常绑定 | 171 |
+| ❌ 缺失绑定 | 71 |
+| ⚠️ 有问题的 View | 18 |
 
 ## 检查结果
 
@@ -27,36 +27,36 @@
 | `CancelCommand` | ❌ 缺失 |
 | `ConfirmCommand` | ❌ 缺失 |
 
-#### ❌ ConsultationMainView
+#### ✅ ConsultationMainView
 
 | 命令 | 状态 |
 |------|------|
-| `DataContext.DecreaseQuantityCommand` | ❌ 缺失 |
-| `DataContext.IncreaseQuantityCommand` | ❌ 缺失 |
-| `DataContext.RemovePrescriptionItemCommand` | ❌ 缺失 |
-| `NewConsultationCommand` | ❌ 缺失 |
-| `PrintPrescriptionCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
+| `DecreaseQuantityCommand` | ✅ 存在 |
+| `IncreaseQuantityCommand` | ✅ 存在 |
+| `NewConsultationCommand` | ✅ 存在 |
+| `PrintPrescriptionCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `RemovePrescriptionItemCommand` | ✅ 存在 |
 | `SaveConsultationCommand` | ✅ 存在 |
 | `ShowTemplateMenuCommand` | ✅ 存在 |
 | `ViewPatientHistoryCommand` | ✅ 存在 |
 
-#### ❌ ConsultationManagementView
+#### ✅ ConsultationManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `DataContext.CopyRecordCommand` | ❌ 缺失 |
-| `DataContext.PrintCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
-| `DataContext.ViewPrescriptionCommand` | ❌ 缺失 |
-| `FirstPageCommand` | ❌ 缺失 |
-| `LastPageCommand` | ❌ 缺失 |
-| `NextPageCommand` | ❌ 缺失 |
-| `PreviousPageCommand` | ❌ 缺失 |
+| `CopyRecordCommand` | ✅ 存在 |
+| `FirstPageCommand` | ✅ 存在 |
+| `LastPageCommand` | ✅ 存在 |
+| `NextPageCommand` | ✅ 存在 |
+| `PreviousPageCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
 | `RefreshCommand` | ✅ 存在 |
 | `SearchCommand` | ✅ 存在 |
 | `SearchCommand` | ✅ 存在 |
-| `StatisticsCommand` | ❌ 缺失 |
+| `StatisticsCommand` | ✅ 存在 |
+| `ViewDetailsCommand` | ✅ 存在 |
+| `ViewPrescriptionCommand` | ✅ 存在 |
 
 #### ❌ CreateMedicalCaseDialog
 
@@ -75,11 +75,11 @@
 |------|------|
 | `AddHerbCommand` | ❌ 缺失 |
 | `CancelCommand` | ❌ 缺失 |
-| `DataContext.EditHerbCommand` | ❌ 缺失 |
-| `DataContext.RemoveHerbCommand` | ❌ 缺失 |
+| `EditHerbCommand` | ❌ 缺失 |
+| `RemoveHerbCommand` | ❌ 缺失 |
 | `SaveCommand` | ❌ 缺失 |
 
-#### ❌ FormulaDetailView
+#### ✅ FormulaDetailView
 
 | 命令 | 状态 |
 |------|------|
@@ -87,29 +87,29 @@
 | `CancelEditCommand` | ✅ 存在 |
 | `CopyFormulaCommand` | ✅ 存在 |
 | `EditCommand` | ✅ 存在 |
-| `PrintCommand` | ❌ 缺失 |
+| `PrintCommand` | ✅ 存在 |
 | `SaveCommand` | ✅ 存在 |
-| `ViewUsageHistoryCommand` | ❌ 缺失 |
+| `ViewUsageHistoryCommand` | ✅ 存在 |
 
 #### ❌ FormulaManagementView
 
 | 命令 | 状态 |
 |------|------|
 | `AddFormulaCommand` | ❌ 缺失 |
-| `ClearFiltersCommand` | ❌ 缺失 |
-| `DataContext.CopyCommand` | ❌ 缺失 |
-| `DataContext.DeleteCommand` | ❌ 缺失 |
-| `DataContext.EditCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
-| `ExportFormulasCommand` | ❌ 缺失 |
-| `ExportTemplateCommand` | ❌ 缺失 |
-| `FirstPageCommand` | ❌ 缺失 |
-| `ImportFormulasCommand` | ❌ 缺失 |
-| `LastPageCommand` | ❌ 缺失 |
-| `NextPageCommand` | ❌ 缺失 |
-| `PreviousPageCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
+| `ClearFiltersCommand` | ✅ 存在 |
+| `CopyCommand` | ✅ 存在 |
+| `DeleteCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
+| `ExportFormulasCommand` | ✅ 存在 |
+| `ExportTemplateCommand` | ✅ 存在 |
+| `FirstPageCommand` | ✅ 存在 |
+| `ImportFormulasCommand` | ✅ 存在 |
+| `LastPageCommand` | ✅ 存在 |
+| `NextPageCommand` | ✅ 存在 |
+| `PreviousPageCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `ViewDetailsCommand` | ❌ 缺失 |
 
 #### ❌ FormulaTemplateDialog
 
@@ -118,39 +118,39 @@
 | 命令 | 状态 |
 |------|------|
 | `CancelCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
 | `RefreshCommand` | ❌ 缺失 |
 | `SelectCommand` | ❌ 缺失 |
+| `ViewDetailsCommand` | ❌ 缺失 |
 
-#### ❌ HerbDetailView
+#### ✅ HerbDetailView
 
 | 命令 | 状态 |
 |------|------|
-| `BackCommand` | ❌ 缺失 |
-| `CancelEditCommand` | ❌ 缺失 |
-| `EditCommand` | ❌ 缺失 |
-| `PrintCommand` | ❌ 缺失 |
+| `BackCommand` | ✅ 存在 |
+| `CancelEditCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
 | `SaveCommand` | ✅ 存在 |
-| `ViewUsageHistoryCommand` | ❌ 缺失 |
+| `ViewUsageHistoryCommand` | ✅ 存在 |
 
-#### ❌ HerbManagementView
+#### ✅ HerbManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `AddCommand` | ❌ 缺失 |
-| `DataContext.DeleteCommand` | ❌ 缺失 |
-| `DataContext.EditCommand` | ❌ 缺失 |
-| `DataContext.ToggleStatusCommand` | ❌ 缺失 |
+| `AddCommand` | ✅ 存在 |
+| `DeleteCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
 | `ExportHerbsCommand` | ✅ 存在 |
 | `ExportTemplateCommand` | ✅ 存在 |
 | `FirstPageCommand` | ✅ 存在 |
 | `ImportHerbsCommand` | ✅ 存在 |
 | `LastPageCommand` | ✅ 存在 |
-| `NextPageCommand` | ❌ 缺失 |
-| `PreviousPageCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
+| `NextPageCommand` | ✅ 存在 |
+| `PreviousPageCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `ToggleStatusCommand` | ✅ 存在 |
 
 #### ❌ HerbSelectionDialog
 
@@ -180,50 +180,50 @@
 | `LoginCommand` | ❌ 缺失 |
 | `LoginCommand` | ❌ 缺失 |
 
-#### ❌ MedicalCaseDetailView
+#### ✅ MedicalCaseDetailView
 
 | 命令 | 状态 |
 |------|------|
-| `BackCommand` | ❌ 缺失 |
-| `CloseCommand` | ❌ 缺失 |
-| `EditCommand` | ❌ 缺失 |
-| `PrintCommand` | ❌ 缺失 |
-| `PrintPrescriptionCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
-| `StartConsultationCommand` | ❌ 缺失 |
+| `BackCommand` | ✅ 存在 |
+| `CloseCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
+| `PrintPrescriptionCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `StartConsultationCommand` | ✅ 存在 |
 
-#### ❌ MedicalCaseListView
+#### ✅ MedicalCaseListView
 
 | 命令 | 状态 |
 |------|------|
-| `AddCommand` | ❌ 缺失 |
-| `DataContext.DeleteCommand` | ❌ 缺失 |
-| `DataContext.EditCommand` | ❌ 缺失 |
-| `DataContext.StartConsultationCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailCommand` | ❌ 缺失 |
+| `AddCommand` | ✅ 存在 |
+| `DeleteCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
 | `NextPageCommand` | ✅ 存在 |
 | `PreviousPageCommand` | ✅ 存在 |
-| `RefreshCommand` | ❌ 缺失 |
+| `RefreshCommand` | ✅ 存在 |
 | `SearchCommand` | ✅ 存在 |
+| `StartConsultationCommand` | ✅ 存在 |
+| `ViewDetailCommand` | ✅ 存在 |
 
-#### ❌ MedicalCaseManagementView
+#### ✅ MedicalCaseManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `AddCommand` | ❌ 缺失 |
-| `DataContext.CreatePrescriptionCommand` | ❌ 缺失 |
-| `DataContext.DeleteCommand` | ❌ 缺失 |
-| `DataContext.EditCommand` | ❌ 缺失 |
-| `DataContext.PrintCommand` | ❌ 缺失 |
-| `DataContext.ViewConsultationCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
-| `FirstPageCommand` | ❌ 缺失 |
-| `LastPageCommand` | ❌ 缺失 |
-| `NextPageCommand` | ❌ 缺失 |
-| `PreviousPageCommand` | ❌ 缺失 |
+| `AddCommand` | ✅ 存在 |
+| `CreatePrescriptionCommand` | ✅ 存在 |
+| `DeleteCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
+| `FirstPageCommand` | ✅ 存在 |
+| `LastPageCommand` | ✅ 存在 |
+| `NextPageCommand` | ✅ 存在 |
+| `PreviousPageCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
 | `RefreshCommand` | ✅ 存在 |
-| `SearchCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
+| `SearchCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `ViewConsultationCommand` | ✅ 存在 |
+| `ViewDetailsCommand` | ✅ 存在 |
 
 #### ✅ PatientDetailView
 
@@ -245,18 +245,18 @@
 | `NextCommand` | ✅ 存在 |
 | `PreviousCommand` | ✅ 存在 |
 
-#### ❌ PrescriptionComposerView
+#### ✅ PrescriptionComposerView
 
 | 命令 | 状态 |
 |------|------|
 | `AddHerbCommand` | ✅ 存在 |
-| `ClearAllCommand` | ❌ 缺失 |
-| `CloseCommand` | ❌ 缺失 |
-| `DataContext.EditHerbCommand` | ❌ 缺失 |
-| `DataContext.RemoveHerbCommand` | ❌ 缺失 |
+| `ClearAllCommand` | ✅ 存在 |
+| `CloseCommand` | ✅ 存在 |
+| `EditHerbCommand` | ✅ 存在 |
 | `ImportFormulaCommand` | ✅ 存在 |
-| `SaveDraftCommand` | ❌ 缺失 |
-| `SavePrescriptionCommand` | ❌ 缺失 |
+| `RemoveHerbCommand` | ✅ 存在 |
+| `SaveDraftCommand` | ✅ 存在 |
+| `SavePrescriptionCommand` | ✅ 存在 |
 
 #### ❌ PrescriptionEditorDialog
 
@@ -266,35 +266,35 @@
 |------|------|
 | `AddHerbCommand` | ❌ 缺失 |
 | `CancelCommand` | ❌ 缺失 |
-| `DataContext.EditHerbCommand` | ❌ 缺失 |
-| `DataContext.RemoveHerbCommand` | ❌ 缺失 |
+| `EditHerbCommand` | ❌ 缺失 |
 | `LoadFormulaTemplateCommand` | ❌ 缺失 |
 | `PreviewCommand` | ❌ 缺失 |
+| `RemoveHerbCommand` | ❌ 缺失 |
 | `SaveCommand` | ❌ 缺失 |
 
-#### ❌ PrescriptionManagementView
+#### ✅ PrescriptionManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `AddPrescriptionCommand` | ❌ 缺失 |
-| `ClearFiltersCommand` | ❌ 缺失 |
-| `DataContext.CopyPrescriptionCommand` | ❌ 缺失 |
-| `DataContext.DeletePrescriptionCommand` | ❌ 缺失 |
-| `DataContext.EditPrescriptionCommand` | ❌ 缺失 |
-| `DataContext.PrintCommand` | ❌ 缺失 |
-| `DataContext.ViewPatientHistoryCommand` | ❌ 缺失 |
-| `DataContext.ViewPrescriptionCommand` | ❌ 缺失 |
-| `ExportPrescriptionsCommand` | ❌ 缺失 |
+| `AddPrescriptionCommand` | ✅ 存在 |
+| `ClearFiltersCommand` | ✅ 存在 |
+| `CopyPrescriptionCommand` | ✅ 存在 |
+| `DeletePrescriptionCommand` | ✅ 存在 |
+| `EditPrescriptionCommand` | ✅ 存在 |
+| `ExportPrescriptionsCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
 | `RefreshCommand` | ✅ 存在 |
+| `ViewPatientHistoryCommand` | ✅ 存在 |
+| `ViewPrescriptionCommand` | ✅ 存在 |
 
-#### ❌ PrescriptionsMainView
+#### ✅ PrescriptionsMainView
 
 | 命令 | 状态 |
 |------|------|
-| `CreateNewPrescriptionCommand` | ❌ 缺失 |
-| `ReturnToSourceCommand` | ❌ 缺失 |
-| `SwitchToManagementCommand` | ❌ 缺失 |
-| `SwitchToManagementCommand` | ❌ 缺失 |
+| `CreateNewPrescriptionCommand` | ✅ 存在 |
+| `ReturnToSourceCommand` | ✅ 存在 |
+| `SwitchToManagementCommand` | ✅ 存在 |
+| `SwitchToManagementCommand` | ✅ 存在 |
 
 #### ❌ PrescriptionView
 
@@ -304,14 +304,14 @@
 |------|------|
 | `AddHerbCommand` | ❌ 缺失 |
 | `ClearCommand` | ❌ 缺失 |
-| `DataContext.RemoveHerbCommand` | ❌ 缺失 |
-| `DataContext.SetDosageCommand` | ❌ 缺失 |
 | `ImportFormulaCommand` | ❌ 缺失 |
 | `ImportHistoryCommand` | ❌ 缺失 |
 | `PrintPreviewCommand` | ❌ 缺失 |
+| `RemoveHerbCommand` | ❌ 缺失 |
 | `SaveCommand` | ❌ 缺失 |
 | `SetDiscountCommand` | ❌ 缺失 |
 | `SetDiscountCommand` | ❌ 缺失 |
+| `SetDosageCommand` | ❌ 缺失 |
 
 #### ❌ ResetPasswordDialog
 
@@ -332,9 +332,9 @@
 | `CancelCommand` | ❌ 缺失 |
 | `ConfirmCommand` | ❌ 缺失 |
 | `ConfirmCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
 | `RefreshCommand` | ❌ 缺失 |
 | `SearchCommand` | ❌ 缺失 |
+| `ViewDetailsCommand` | ❌ 缺失 |
 
 #### ❌ UserDetailView
 
@@ -346,21 +346,21 @@
 | `GoBackCommand` | ❌ 缺失 |
 | `ResetPasswordCommand` | ❌ 缺失 |
 
-#### ❌ UserManagementView
+#### ✅ UserManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `AddCommand` | ❌ 缺失 |
-| `DataContext.DeleteCommand` | ❌ 缺失 |
-| `DataContext.EditCommand` | ❌ 缺失 |
-| `DataContext.ViewDetailsCommand` | ❌ 缺失 |
-| `FirstPageCommand` | ❌ 缺失 |
-| `LastPageCommand` | ❌ 缺失 |
-| `NextPageCommand` | ❌ 缺失 |
-| `PreviousPageCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
+| `AddCommand` | ✅ 存在 |
+| `DeleteCommand` | ✅ 存在 |
+| `EditCommand` | ✅ 存在 |
+| `FirstPageCommand` | ✅ 存在 |
+| `LastPageCommand` | ✅ 存在 |
+| `NextPageCommand` | ✅ 存在 |
+| `PreviousPageCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `ViewDetailsCommand` | ✅ 存在 |
 
 #### ❌ UserProfileDialog
 
@@ -405,29 +405,29 @@
 | `CopyErrorCommand` | ❌ 缺失 |
 | `RetryCommand` | ❌ 缺失 |
 
-#### ❌ HomeView
+#### ✅ HomeView
 
 | 命令 | 状态 |
 |------|------|
-| `DataContext.StartConsultationForPatientCommand` | ❌ 缺失 |
-| `DataContext.StartConsultationForPatientCommand` | ❌ 缺失 |
-| `DataContext.ViewPatientDetailsCommand` | ❌ 缺失 |
-| `EnterSystemManagementCommand` | ❌ 缺失 |
-| `LogoutCommand` | ❌ 缺失 |
-| `NavigateToDataBackupCommand` | ❌ 缺失 |
-| `NavigateToFormulaManagementCommand` | ❌ 缺失 |
-| `NavigateToFormulasCommand` | ❌ 缺失 |
-| `NavigateToHerbManagementCommand` | ❌ 缺失 |
-| `NavigateToHerbsCommand` | ❌ 缺失 |
-| `NavigateToMedicalCaseCommand` | ❌ 缺失 |
+| `EnterSystemManagementCommand` | ✅ 存在 |
+| `LogoutCommand` | ✅ 存在 |
+| `NavigateToDataBackupCommand` | ✅ 存在 |
+| `NavigateToFormulaManagementCommand` | ✅ 存在 |
+| `NavigateToFormulasCommand` | ✅ 存在 |
+| `NavigateToHerbManagementCommand` | ✅ 存在 |
+| `NavigateToHerbsCommand` | ✅ 存在 |
+| `NavigateToMedicalCaseCommand` | ✅ 存在 |
 | `NavigateToPatientManagementCommand` | ✅ 存在 |
 | `NavigateToPatientManagementCommand` | ✅ 存在 |
-| `NavigateToPatientReceptionCommand` | ❌ 缺失 |
-| `NavigateToPrescriptionQueryCommand` | ❌ 缺失 |
-| `NavigateToSystemSettingsCommand` | ❌ 缺失 |
-| `NavigateToUserManagementCommand` | ❌ 缺失 |
-| `RefreshTodayPatientsCommand` | ❌ 缺失 |
-| `StartConsultationCommand` | ❌ 缺失 |
+| `NavigateToPatientReceptionCommand` | ✅ 存在 |
+| `NavigateToPrescriptionQueryCommand` | ✅ 存在 |
+| `NavigateToSystemSettingsCommand` | ✅ 存在 |
+| `NavigateToUserManagementCommand` | ✅ 存在 |
+| `RefreshTodayPatientsCommand` | ✅ 存在 |
+| `StartConsultationCommand` | ✅ 存在 |
+| `StartConsultationForPatientCommand` | ✅ 存在 |
+| `StartConsultationForPatientCommand` | ✅ 存在 |
+| `ViewPatientDetailsCommand` | ✅ 存在 |
 
 #### ❌ InformationDialog
 
@@ -466,12 +466,12 @@
 | `NavigateCommand` | ✅ 存在 |
 | `NavigateCommand` | ✅ 存在 |
 
-#### ❌ ClinicalWorkstationView
+#### ✅ ClinicalWorkstationView
 
 | 命令 | 状态 |
 |------|------|
 | `ClearPrescriptionCommand` | ✅ 存在 |
-| `DataContext.ImportDiagnosisCommand` | ❌ 缺失 |
+| `ImportDiagnosisCommand` | ✅ 存在 |
 | `ImportFormulaCommand` | ✅ 存在 |
 | `LogoutCommand` | ✅ 存在 |
 | `PrintPrescriptionCommand` | ✅ 存在 |
@@ -492,14 +492,6 @@
 - [ ] `CancelCommand`
 - [ ] `ConfirmCommand`
 
-### ClinicalWorkstationView
-
-**ViewModel**: `ClinicalWorkstationViewModel`
-
-**缺失命令**:
-
-- [ ] `DataContext.ImportDiagnosisCommand`
-
 ### ConfirmationDialog
 
 **ViewModel**: `ConfirmationDialog`
@@ -508,35 +500,6 @@
 
 - [ ] `NoCommand`
 - [ ] `YesCommand`
-
-### ConsultationMainView
-
-**ViewModel**: `ConsultationMainViewModel`
-
-**缺失命令**:
-
-- [ ] `DataContext.DecreaseQuantityCommand`
-- [ ] `DataContext.IncreaseQuantityCommand`
-- [ ] `DataContext.RemovePrescriptionItemCommand`
-- [ ] `NewConsultationCommand`
-- [ ] `PrintPrescriptionCommand`
-- [ ] `RefreshCommand`
-
-### ConsultationManagementView
-
-**ViewModel**: `ConsultationManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `DataContext.CopyRecordCommand`
-- [ ] `DataContext.PrintCommand`
-- [ ] `DataContext.ViewDetailsCommand`
-- [ ] `DataContext.ViewPrescriptionCommand`
-- [ ] `FirstPageCommand`
-- [ ] `LastPageCommand`
-- [ ] `NextPageCommand`
-- [ ] `PreviousPageCommand`
-- [ ] `StatisticsCommand`
 
 ### CreateMedicalCaseDialog
 
@@ -555,8 +518,8 @@
 
 - [ ] `AddHerbCommand`
 - [ ] `CancelCommand`
-- [ ] `DataContext.EditHerbCommand`
-- [ ] `DataContext.RemoveHerbCommand`
+- [ ] `EditHerbCommand`
+- [ ] `RemoveHerbCommand`
 - [ ] `SaveCommand`
 
 ### ErrorDetailsDialog
@@ -569,15 +532,6 @@
 - [ ] `CopyErrorCommand`
 - [ ] `RetryCommand`
 
-### FormulaDetailView
-
-**ViewModel**: `FormulaDetailViewModel`
-
-**缺失命令**:
-
-- [ ] `PrintCommand`
-- [ ] `ViewUsageHistoryCommand`
-
 ### FormulaManagementView
 
 **ViewModel**: `FormulaManagementViewModel`
@@ -585,20 +539,7 @@
 **缺失命令**:
 
 - [ ] `AddFormulaCommand`
-- [ ] `ClearFiltersCommand`
-- [ ] `DataContext.CopyCommand`
-- [ ] `DataContext.DeleteCommand`
-- [ ] `DataContext.EditCommand`
-- [ ] `DataContext.ViewDetailsCommand`
-- [ ] `ExportFormulasCommand`
-- [ ] `ExportTemplateCommand`
-- [ ] `FirstPageCommand`
-- [ ] `ImportFormulasCommand`
-- [ ] `LastPageCommand`
-- [ ] `NextPageCommand`
-- [ ] `PreviousPageCommand`
-- [ ] `RefreshCommand`
-- [ ] `SearchCommand`
+- [ ] `ViewDetailsCommand`
 
 ### FormulaTemplateDialog
 
@@ -607,37 +548,9 @@
 **缺失命令**:
 
 - [ ] `CancelCommand`
-- [ ] `DataContext.ViewDetailsCommand`
 - [ ] `RefreshCommand`
 - [ ] `SelectCommand`
-
-### HerbDetailView
-
-**ViewModel**: `HerbDetailViewModel`
-
-**缺失命令**:
-
-- [ ] `BackCommand`
-- [ ] `CancelEditCommand`
-- [ ] `EditCommand`
-- [ ] `PrintCommand`
-- [ ] `ViewUsageHistoryCommand`
-
-### HerbManagementView
-
-**ViewModel**: `HerbManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `AddCommand`
-- [ ] `DataContext.DeleteCommand`
-- [ ] `DataContext.EditCommand`
-- [ ] `DataContext.ToggleStatusCommand`
-- [ ] `NextPageCommand`
-- [ ] `PreviousPageCommand`
-- [ ] `RefreshCommand`
-- [ ] `SearchCommand`
-- [ ] `SearchCommand`
+- [ ] `ViewDetailsCommand`
 
 ### HerbSelectionDialog
 
@@ -649,30 +562,6 @@
 - [ ] `ConfirmCommand`
 - [ ] `SearchCommand`
 - [ ] `SearchCommand`
-
-### HomeView
-
-**ViewModel**: `HomeViewModel`
-
-**缺失命令**:
-
-- [ ] `DataContext.StartConsultationForPatientCommand`
-- [ ] `DataContext.StartConsultationForPatientCommand`
-- [ ] `DataContext.ViewPatientDetailsCommand`
-- [ ] `EnterSystemManagementCommand`
-- [ ] `LogoutCommand`
-- [ ] `NavigateToDataBackupCommand`
-- [ ] `NavigateToFormulaManagementCommand`
-- [ ] `NavigateToFormulasCommand`
-- [ ] `NavigateToHerbManagementCommand`
-- [ ] `NavigateToHerbsCommand`
-- [ ] `NavigateToMedicalCaseCommand`
-- [ ] `NavigateToPatientReceptionCommand`
-- [ ] `NavigateToPrescriptionQueryCommand`
-- [ ] `NavigateToSystemSettingsCommand`
-- [ ] `NavigateToUserManagementCommand`
-- [ ] `RefreshTodayPatientsCommand`
-- [ ] `StartConsultationCommand`
 
 ### InformationDialog
 
@@ -706,66 +595,6 @@
 - [ ] `TestApiCommand`
 - [ ] `ToggleThemeCommand`
 
-### MedicalCaseDetailView
-
-**ViewModel**: `MedicalCaseDetailViewModel`
-
-**缺失命令**:
-
-- [ ] `BackCommand`
-- [ ] `CloseCommand`
-- [ ] `EditCommand`
-- [ ] `PrintCommand`
-- [ ] `PrintPrescriptionCommand`
-- [ ] `RefreshCommand`
-- [ ] `StartConsultationCommand`
-
-### MedicalCaseListView
-
-**ViewModel**: `MedicalCaseListViewModel`
-
-**缺失命令**:
-
-- [ ] `AddCommand`
-- [ ] `DataContext.DeleteCommand`
-- [ ] `DataContext.EditCommand`
-- [ ] `DataContext.StartConsultationCommand`
-- [ ] `DataContext.ViewDetailCommand`
-- [ ] `RefreshCommand`
-
-### MedicalCaseManagementView
-
-**ViewModel**: `MedicalCaseManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `AddCommand`
-- [ ] `DataContext.CreatePrescriptionCommand`
-- [ ] `DataContext.DeleteCommand`
-- [ ] `DataContext.EditCommand`
-- [ ] `DataContext.PrintCommand`
-- [ ] `DataContext.ViewConsultationCommand`
-- [ ] `DataContext.ViewDetailsCommand`
-- [ ] `FirstPageCommand`
-- [ ] `LastPageCommand`
-- [ ] `NextPageCommand`
-- [ ] `PreviousPageCommand`
-- [ ] `SearchCommand`
-- [ ] `SearchCommand`
-
-### PrescriptionComposerView
-
-**ViewModel**: `PrescriptionComposerViewModel`
-
-**缺失命令**:
-
-- [ ] `ClearAllCommand`
-- [ ] `CloseCommand`
-- [ ] `DataContext.EditHerbCommand`
-- [ ] `DataContext.RemoveHerbCommand`
-- [ ] `SaveDraftCommand`
-- [ ] `SavePrescriptionCommand`
-
 ### PrescriptionEditorDialog
 
 **ViewModel**: `PrescriptionEditorDialog`
@@ -774,38 +603,11 @@
 
 - [ ] `AddHerbCommand`
 - [ ] `CancelCommand`
-- [ ] `DataContext.EditHerbCommand`
-- [ ] `DataContext.RemoveHerbCommand`
+- [ ] `EditHerbCommand`
 - [ ] `LoadFormulaTemplateCommand`
 - [ ] `PreviewCommand`
+- [ ] `RemoveHerbCommand`
 - [ ] `SaveCommand`
-
-### PrescriptionManagementView
-
-**ViewModel**: `PrescriptionManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `AddPrescriptionCommand`
-- [ ] `ClearFiltersCommand`
-- [ ] `DataContext.CopyPrescriptionCommand`
-- [ ] `DataContext.DeletePrescriptionCommand`
-- [ ] `DataContext.EditPrescriptionCommand`
-- [ ] `DataContext.PrintCommand`
-- [ ] `DataContext.ViewPatientHistoryCommand`
-- [ ] `DataContext.ViewPrescriptionCommand`
-- [ ] `ExportPrescriptionsCommand`
-
-### PrescriptionsMainView
-
-**ViewModel**: `PrescriptionsMainViewModel`
-
-**缺失命令**:
-
-- [ ] `CreateNewPrescriptionCommand`
-- [ ] `ReturnToSourceCommand`
-- [ ] `SwitchToManagementCommand`
-- [ ] `SwitchToManagementCommand`
 
 ### PrescriptionView
 
@@ -815,14 +617,14 @@
 
 - [ ] `AddHerbCommand`
 - [ ] `ClearCommand`
-- [ ] `DataContext.RemoveHerbCommand`
-- [ ] `DataContext.SetDosageCommand`
 - [ ] `ImportFormulaCommand`
 - [ ] `ImportHistoryCommand`
 - [ ] `PrintPreviewCommand`
+- [ ] `RemoveHerbCommand`
 - [ ] `SaveCommand`
 - [ ] `SetDiscountCommand`
 - [ ] `SetDiscountCommand`
+- [ ] `SetDosageCommand`
 
 ### ResetPasswordDialog
 
@@ -843,9 +645,9 @@
 - [ ] `CancelCommand`
 - [ ] `ConfirmCommand`
 - [ ] `ConfirmCommand`
-- [ ] `DataContext.ViewDetailsCommand`
 - [ ] `RefreshCommand`
 - [ ] `SearchCommand`
+- [ ] `ViewDetailsCommand`
 
 ### UserDetailView
 
@@ -856,24 +658,6 @@
 - [ ] `EditUserCommand`
 - [ ] `GoBackCommand`
 - [ ] `ResetPasswordCommand`
-
-### UserManagementView
-
-**ViewModel**: `UserManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `AddCommand`
-- [ ] `DataContext.DeleteCommand`
-- [ ] `DataContext.EditCommand`
-- [ ] `DataContext.ViewDetailsCommand`
-- [ ] `FirstPageCommand`
-- [ ] `LastPageCommand`
-- [ ] `NextPageCommand`
-- [ ] `PreviousPageCommand`
-- [ ] `RefreshCommand`
-- [ ] `SearchCommand`
-- [ ] `SearchCommand`
 
 ### UserProfileDialog
 
@@ -899,7 +683,7 @@
 
 ## 结论
 
-❌ **发现 189 个缺失的命令绑定，需要立即修复。**
+❌ **发现 71 个缺失的命令绑定，需要立即修复。**
 
 建议为每个有问题的模块创建独立的修复 Issue。
 

@@ -111,7 +111,10 @@ foreach ($xaml in $xamlFiles) {
         foreach ($match in $matches) {
             $stats.TotalBindings++
 
-            $commandName = $match.Groups[1].Value.Trim()
+            $rawCommandName = $match.Groups[1].Value.Trim()
+            
+            # 移除 DataContext. 前缀（DataGrid 行命令模式）
+            $commandName = $rawCommandName -replace '^DataContext\.', ''
 
             # 检查 ViewModel 中是否存在该命令
             # 匹配模式：
@@ -122,11 +125,11 @@ foreach ($xaml in $xamlFiles) {
             $exists = $false
 
             # 模式 1: ICommand 属性
-            if ($vmContent -match "(?:public|internal|protected)\s+ICommand\s+$commandName\s*[{;]") {
+            if ($vmContent -match "(?:public|internal|protected)(?:\s+new)?\s+ICommand\s+$commandName\s*[{;]") {
                 $exists = $true
             }
-            # 模式 2: DelegateCommand 属性
-            elseif ($vmContent -match "(?:public|internal|protected)\s+DelegateCommand(?:<[^>]+>)?\s+$commandName\s*(?:=>|{|;)") {
+            # 模式 2: DelegateCommand 属性 (支持 new 修饰符)
+            elseif ($vmContent -match "(?:public|internal|protected)(?:\s+new)?\s+DelegateCommand(?:<[^>]+>)?\s+$commandName\s*(?:=>|{|;)") {
                 $exists = $true
             }
             # 模式 3: 字段形式 (private DelegateCommand _command)
@@ -157,7 +160,10 @@ foreach ($xaml in $xamlFiles) {
             $stats.TotalBindings++
             $stats.MissingBindings++
 
-            $commandName = $match.Groups[1].Value.Trim()
+            $rawCommandName = $match.Groups[1].Value.Trim()
+            
+            # 移除 DataContext. 前缀（DataGrid 行命令模式）
+            $commandName = $rawCommandName -replace '^DataContext\.', ''
             Write-Host "    ⚠️  $commandName (ViewModel 不存在)" -ForegroundColor Yellow
 
             $viewResult.Bindings += @{
