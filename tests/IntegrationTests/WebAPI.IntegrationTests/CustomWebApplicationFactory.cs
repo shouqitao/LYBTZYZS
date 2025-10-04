@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using LYBT.Infrastructure.Data;
 using Serilog;
 using Serilog.Events;
@@ -19,27 +17,23 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // 配置测试用 Serilog - 仅使用控制台输出
+        // 配置测试用 Serilog - 直接配置，替换全局 Logger
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .WriteTo.Console()
             .CreateLogger();
 
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            // 添加测试配置 (覆盖 Serilog MSSqlServer 连接字符串)
+            // 添加测试配置 (覆盖默认配置，包括 Serilog 配置)
             var testConfig = new Dictionary<string, string?>
             {
                 // 数据库连接字符串 (用于 InMemory 提供程序名称)
                 ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:",
                 ["Lybt:Infrastructure:Database:ConnectionString"] = "DataSource=:memory:",
-
-                // 禁用 Serilog MSSqlServer Sink (通过移除配置)
-                ["Serilog:WriteTo:1:Name"] = null, // 移除 MSSqlServer Sink
-                ["Serilog:WriteTo:1:Args:connectionString"] = null,
-                ["Serilog:WriteTo:1:Args:sinkOptionsSection:tableName"] = null,
 
                 // JWT 配置
                 ["Lybt:Authentication:Jwt:SecretKey"] = "TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789",
@@ -59,7 +53,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
                 // 禁用自动迁移
                 ["Lybt:Infrastructure:Database:Migration:AutoMigrate"] = "false",
-                ["Lybt:Infrastructure:Database:Migration:EnsureCreatedInDevelopment"] = "false"
+                ["Lybt:Infrastructure:Database:Migration:EnsureCreatedInDevelopment"] = "false",
+
+                // 移除 Serilog 的 MSSqlServer Sink 配置
+                // 将所有 Serilog WriteTo 数组清空
+                ["Serilog:WriteTo:0:Name"] = "Console",
+                ["Serilog:WriteTo:1:Name"] = null, // 移除 File sink
+                ["Serilog:WriteTo:2:Name"] = null  // 移除 MSSqlServer sink
             };
 
             config.AddInMemoryCollection(testConfig);
