@@ -105,6 +105,21 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand CancelCommand { get; }
 
+        /// <summary>
+        /// 添加药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand AddHerbCommand { get; }
+
+        /// <summary>
+        /// 编辑药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand EditHerbCommand { get; }
+
+        /// <summary>
+        /// 移除药材命令 - Phase 4B 骨架
+        /// </summary>
+        public DelegateCommand RemoveHerbCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -126,6 +141,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveFormulaAsync(), CanSave);
             CancelCommand = new DelegateCommand(Cancel);
+
+            // Phase 4B 骨架命令
+            AddHerbCommand = new DelegateCommand(() => Logger.LogInformation("EditFormulaDialog - 添加药材命令（骨架实现）"));
+            EditHerbCommand = new DelegateCommand(() => Logger.LogInformation("EditFormulaDialog - 编辑药材命令（骨架实现）"));
+            RemoveHerbCommand = new DelegateCommand(() => Logger.LogInformation("EditFormulaDialog - 移除药材命令（骨架实现）"));
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();

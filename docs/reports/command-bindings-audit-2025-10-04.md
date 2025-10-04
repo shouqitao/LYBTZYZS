@@ -1,6 +1,6 @@
 ﻿# XAML Command 绑定检查报告
 
-**生成时间**: 2025-10-04 10:10:57
+**生成时间**: 2025-10-04 10:21:02
 **相关 Issue**: #884
 **检查范围**: Desktop 所有模块
 
@@ -10,22 +10,20 @@
 |------|------|
 | 总 View 数 | 36 |
 | 总绑定数 | 242 |
-| ✅ 正常绑定 | 171 |
-| ❌ 缺失绑定 | 71 |
-| ⚠️ 有问题的 View | 18 |
+| ✅ 正常绑定 | 213 |
+| ❌ 缺失绑定 | 29 |
+| ⚠️ 有问题的 View | 8 |
 
 ## 检查结果
 
 ### 模块: Modules
 
-#### ❌ ChangePasswordDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ChangePasswordDialog.cs`
+#### ✅ ChangePasswordDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `ConfirmCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `ConfirmCommand` | ✅ 存在 |
 
 #### ✅ ConsultationMainView
 
@@ -58,26 +56,22 @@
 | `ViewDetailsCommand` | ✅ 存在 |
 | `ViewPrescriptionCommand` | ✅ 存在 |
 
-#### ❌ CreateMedicalCaseDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\ViewModels\CreateMedicalCaseDialog.cs`
+#### ✅ CreateMedicalCaseDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `SaveCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `SaveCommand` | ✅ 存在 |
 
 #### ❌ EditFormulaDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\EditFormulaDialog.cs`
 
 | 命令 | 状态 |
 |------|------|
 | `AddHerbCommand` | ❌ 缺失 |
-| `CancelCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
 | `EditHerbCommand` | ❌ 缺失 |
 | `RemoveHerbCommand` | ❌ 缺失 |
-| `SaveCommand` | ❌ 缺失 |
+| `SaveCommand` | ✅ 存在 |
 
 #### ✅ FormulaDetailView
 
@@ -91,11 +85,11 @@
 | `SaveCommand` | ✅ 存在 |
 | `ViewUsageHistoryCommand` | ✅ 存在 |
 
-#### ❌ FormulaManagementView
+#### ✅ FormulaManagementView
 
 | 命令 | 状态 |
 |------|------|
-| `AddFormulaCommand` | ❌ 缺失 |
+| `AddFormulaCommand` | ✅ 存在 |
 | `ClearFiltersCommand` | ✅ 存在 |
 | `CopyCommand` | ✅ 存在 |
 | `DeleteCommand` | ✅ 存在 |
@@ -109,16 +103,14 @@
 | `PreviousPageCommand` | ✅ 存在 |
 | `RefreshCommand` | ✅ 存在 |
 | `SearchCommand` | ✅ 存在 |
-| `ViewDetailsCommand` | ❌ 缺失 |
+| `ViewDetailsCommand` | ✅ 存在 |
 
 #### ❌ FormulaTemplateDialog
 
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\FormulaTemplateDialog.cs`
-
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
 | `SelectCommand` | ❌ 缺失 |
 | `ViewDetailsCommand` | ❌ 缺失 |
 
@@ -152,16 +144,14 @@
 | `SearchCommand` | ✅ 存在 |
 | `ToggleStatusCommand` | ✅ 存在 |
 
-#### ❌ HerbSelectionDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\HerbSelectionDialog.cs`
+#### ✅ HerbSelectionDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `ConfirmCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `ConfirmCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
 
 #### ✅ LoginView
 
@@ -172,7 +162,7 @@
 
 #### ❌ LoginWindow
 
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Auth\ViewModels\LoginWindow.cs`
+**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Auth\ViewModels\LoginWindowViewModel.cs`
 
 | 命令 | 状态 |
 |------|------|
@@ -260,17 +250,15 @@
 
 #### ❌ PrescriptionEditorDialog
 
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionEditorDialog.cs`
-
 | 命令 | 状态 |
 |------|------|
 | `AddHerbCommand` | ❌ 缺失 |
-| `CancelCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
 | `EditHerbCommand` | ❌ 缺失 |
 | `LoadFormulaTemplateCommand` | ❌ 缺失 |
 | `PreviewCommand` | ❌ 缺失 |
 | `RemoveHerbCommand` | ❌ 缺失 |
-| `SaveCommand` | ❌ 缺失 |
+| `SaveCommand` | ✅ 存在 |
 
 #### ✅ PrescriptionManagementView
 
@@ -313,28 +301,24 @@
 | `SetDiscountCommand` | ❌ 缺失 |
 | `SetDosageCommand` | ❌ 缺失 |
 
-#### ❌ ResetPasswordDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ResetPasswordDialog.cs`
+#### ✅ ResetPasswordDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `ConfirmCommand` | ❌ 缺失 |
-| `GeneratePasswordCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `ConfirmCommand` | ✅ 存在 |
+| `GeneratePasswordCommand` | ✅ 存在 |
 
-#### ❌ SelectFormulaDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\SelectFormulaDialog.cs`
+#### ✅ SelectFormulaDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `ConfirmCommand` | ❌ 缺失 |
-| `ConfirmCommand` | ❌ 缺失 |
-| `RefreshCommand` | ❌ 缺失 |
-| `SearchCommand` | ❌ 缺失 |
-| `ViewDetailsCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `ConfirmCommand` | ✅ 存在 |
+| `ConfirmCommand` | ✅ 存在 |
+| `RefreshCommand` | ✅ 存在 |
+| `SearchCommand` | ✅ 存在 |
+| `ViewDetailsCommand` | ✅ 存在 |
 
 #### ❌ UserDetailView
 
@@ -362,48 +346,40 @@
 | `SearchCommand` | ✅ 存在 |
 | `ViewDetailsCommand` | ✅ 存在 |
 
-#### ❌ UserProfileDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserProfileDialog.cs`
+#### ✅ UserProfileDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CancelCommand` | ❌ 缺失 |
-| `RemoveAvatarCommand` | ❌ 缺失 |
-| `SaveCommand` | ❌ 缺失 |
-| `SelectAvatarCommand` | ❌ 缺失 |
+| `CancelCommand` | ✅ 存在 |
+| `RemoveAvatarCommand` | ✅ 存在 |
+| `SaveCommand` | ✅ 存在 |
+| `SelectAvatarCommand` | ✅ 存在 |
 
-#### ❌ ViewFormulaDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\ViewFormulaDialog.cs`
+#### ✅ ViewFormulaDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CloseCommand` | ❌ 缺失 |
-| `ExportCommand` | ❌ 缺失 |
-| `PrintCommand` | ❌ 缺失 |
+| `CloseCommand` | ✅ 存在 |
+| `ExportCommand` | ✅ 存在 |
+| `PrintCommand` | ✅ 存在 |
 
 
 ### 模块: Shell
 
 #### ❌ ConfirmationDialog
 
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ConfirmationDialog.cs`
-
 | 命令 | 状态 |
 |------|------|
 | `NoCommand` | ❌ 缺失 |
 | `YesCommand` | ❌ 缺失 |
 
-#### ❌ ErrorDetailsDialog
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ErrorDetailsDialog.cs`
+#### ✅ ErrorDetailsDialog
 
 | 命令 | 状态 |
 |------|------|
-| `CloseCommand` | ❌ 缺失 |
-| `CopyErrorCommand` | ❌ 缺失 |
-| `RetryCommand` | ❌ 缺失 |
+| `CloseCommand` | ✅ 存在 |
+| `CopyErrorCommand` | ✅ 存在 |
+| `RetryCommand` | ✅ 存在 |
 
 #### ✅ HomeView
 
@@ -431,25 +407,21 @@
 
 #### ❌ InformationDialog
 
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\InformationDialog.cs`
-
 | 命令 | 状态 |
 |------|------|
 | `OkCommand` | ❌ 缺失 |
 
-#### ❌ MainWindow
-
-**⚠️ ViewModel 不存在**: `D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\ViewModels\MainWindow.cs`
+#### ✅ MainWindow
 
 | 命令 | 状态 |
 |------|------|
-| `LogoutCommand` | ❌ 缺失 |
-| `QuickAddPatientCommand` | ❌ 缺失 |
-| `QuickStartConsultationCommand` | ❌ 缺失 |
-| `ShowHelpCommand` | ❌ 缺失 |
-| `ShowSettingsCommand` | ❌ 缺失 |
-| `TestApiCommand` | ❌ 缺失 |
-| `ToggleThemeCommand` | ❌ 缺失 |
+| `LogoutCommand` | ✅ 存在 |
+| `QuickAddPatientCommand` | ✅ 存在 |
+| `QuickStartConsultationCommand` | ✅ 存在 |
+| `ShowHelpCommand` | ✅ 存在 |
+| `ShowSettingsCommand` | ✅ 存在 |
+| `TestApiCommand` | ✅ 存在 |
+| `ToggleThemeCommand` | ✅ 存在 |
 
 
 ### 模块: Workstations
@@ -483,89 +455,37 @@
 
 ## 需要修复的问题
 
-### ChangePasswordDialog
-
-**ViewModel**: `ChangePasswordDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `ConfirmCommand`
-
 ### ConfirmationDialog
 
-**ViewModel**: `ConfirmationDialog`
+**ViewModel**: `ConfirmationDialogViewModel`
 
 **缺失命令**:
 
 - [ ] `NoCommand`
 - [ ] `YesCommand`
 
-### CreateMedicalCaseDialog
-
-**ViewModel**: `CreateMedicalCaseDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `SaveCommand`
-
 ### EditFormulaDialog
 
-**ViewModel**: `EditFormulaDialog`
+**ViewModel**: `EditFormulaDialogViewModel`
 
 **缺失命令**:
 
 - [ ] `AddHerbCommand`
-- [ ] `CancelCommand`
 - [ ] `EditHerbCommand`
 - [ ] `RemoveHerbCommand`
-- [ ] `SaveCommand`
-
-### ErrorDetailsDialog
-
-**ViewModel**: `ErrorDetailsDialog`
-
-**缺失命令**:
-
-- [ ] `CloseCommand`
-- [ ] `CopyErrorCommand`
-- [ ] `RetryCommand`
-
-### FormulaManagementView
-
-**ViewModel**: `FormulaManagementViewModel`
-
-**缺失命令**:
-
-- [ ] `AddFormulaCommand`
-- [ ] `ViewDetailsCommand`
 
 ### FormulaTemplateDialog
 
-**ViewModel**: `FormulaTemplateDialog`
+**ViewModel**: `FormulaTemplateDialogViewModel`
 
 **缺失命令**:
 
-- [ ] `CancelCommand`
-- [ ] `RefreshCommand`
 - [ ] `SelectCommand`
 - [ ] `ViewDetailsCommand`
 
-### HerbSelectionDialog
-
-**ViewModel**: `HerbSelectionDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `ConfirmCommand`
-- [ ] `SearchCommand`
-- [ ] `SearchCommand`
-
 ### InformationDialog
 
-**ViewModel**: `InformationDialog`
+**ViewModel**: `InformationDialogViewModel`
 
 **缺失命令**:
 
@@ -573,41 +493,25 @@
 
 ### LoginWindow
 
-**ViewModel**: `LoginWindow`
+**ViewModel**: `LoginWindowViewModel`
 
 **缺失命令**:
 
 - [ ] `LoginCommand`
 - [ ] `LoginCommand`
 - [ ] `LoginCommand`
-
-### MainWindow
-
-**ViewModel**: `MainWindow`
-
-**缺失命令**:
-
-- [ ] `LogoutCommand`
-- [ ] `QuickAddPatientCommand`
-- [ ] `QuickStartConsultationCommand`
-- [ ] `ShowHelpCommand`
-- [ ] `ShowSettingsCommand`
-- [ ] `TestApiCommand`
-- [ ] `ToggleThemeCommand`
 
 ### PrescriptionEditorDialog
 
-**ViewModel**: `PrescriptionEditorDialog`
+**ViewModel**: `PrescriptionEditorDialogViewModel`
 
 **缺失命令**:
 
 - [ ] `AddHerbCommand`
-- [ ] `CancelCommand`
 - [ ] `EditHerbCommand`
 - [ ] `LoadFormulaTemplateCommand`
 - [ ] `PreviewCommand`
 - [ ] `RemoveHerbCommand`
-- [ ] `SaveCommand`
 
 ### PrescriptionView
 
@@ -626,29 +530,6 @@
 - [ ] `SetDiscountCommand`
 - [ ] `SetDosageCommand`
 
-### ResetPasswordDialog
-
-**ViewModel**: `ResetPasswordDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `ConfirmCommand`
-- [ ] `GeneratePasswordCommand`
-
-### SelectFormulaDialog
-
-**ViewModel**: `SelectFormulaDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `ConfirmCommand`
-- [ ] `ConfirmCommand`
-- [ ] `RefreshCommand`
-- [ ] `SearchCommand`
-- [ ] `ViewDetailsCommand`
-
 ### UserDetailView
 
 **ViewModel**: `UserDetailViewModel`
@@ -659,31 +540,10 @@
 - [ ] `GoBackCommand`
 - [ ] `ResetPasswordCommand`
 
-### UserProfileDialog
-
-**ViewModel**: `UserProfileDialog`
-
-**缺失命令**:
-
-- [ ] `CancelCommand`
-- [ ] `RemoveAvatarCommand`
-- [ ] `SaveCommand`
-- [ ] `SelectAvatarCommand`
-
-### ViewFormulaDialog
-
-**ViewModel**: `ViewFormulaDialog`
-
-**缺失命令**:
-
-- [ ] `CloseCommand`
-- [ ] `ExportCommand`
-- [ ] `PrintCommand`
-
 
 ## 结论
 
-❌ **发现 71 个缺失的命令绑定，需要立即修复。**
+❌ **发现 29 个缺失的命令绑定，需要立即修复。**
 
 建议为每个有问题的模块创建独立的修复 Issue。
 
