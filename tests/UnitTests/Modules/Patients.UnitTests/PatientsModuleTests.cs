@@ -1,5 +1,4 @@
-using FluentAssertions;
-using LYBT.Module.Patients;
+﻿using FluentAssertions;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Options;
 using LYBT.Module.Patients.Repositories;
@@ -80,8 +79,8 @@ namespace LYBT.Module.Patients.Tests
             services.AddPatientsModule(configuration);
 
             // Assert - 验证 Options 注册
-            var optionsDescriptor = services.FirstOrDefault(d => 
-                d.ServiceType == typeof(IOptions<>) && 
+            var optionsDescriptor = services.FirstOrDefault(d =>
+                d.ServiceType == typeof(IOptions<>) &&
                 d.Lifetime == ServiceLifetime.Singleton);
             optionsDescriptor.Should().NotBeNull();
 
