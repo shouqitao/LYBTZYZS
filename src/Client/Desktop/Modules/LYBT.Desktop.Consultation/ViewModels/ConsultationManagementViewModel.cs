@@ -66,11 +66,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ICommand LoadDataCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand RefreshCommand { get; }
-        public ICommand ViewDetailsCommand { get; }
+        public DelegateCommand<ConsultationDto> ViewDetailsCommand { get; }
 
-        public ICommand ViewPrescriptionCommand { get; }
-        public ICommand PrintCommand { get; }
-        public ICommand CopyRecordCommand { get; }
+        public DelegateCommand<ConsultationDto> ViewPrescriptionCommand { get; }
+        public DelegateCommand<ConsultationDto> PrintCommand { get; }
+        public DelegateCommand<ConsultationDto> CopyRecordCommand { get; }
         public ICommand StatisticsCommand { get; }
         public ICommand FirstPageCommand { get; }
         public ICommand LastPageCommand { get; }
@@ -94,15 +94,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ViewDetailsCommand = new DelegateCommand(ViewDetails, () => SelectedConsultation != null)
-            .ObservesProperty(() => SelectedConsultation);
+            ViewDetailsCommand = new DelegateCommand<ConsultationDto>(ViewDetails, item => item != null);
 
-            ViewPrescriptionCommand = new DelegateCommand(ViewPrescription, () => SelectedConsultation != null)
-            .ObservesProperty(() => SelectedConsultation);
-            PrintCommand = new DelegateCommand(Print, () => SelectedConsultation != null)
-            .ObservesProperty(() => SelectedConsultation);
-            CopyRecordCommand = new DelegateCommand(CopyRecord, () => SelectedConsultation != null)
-            .ObservesProperty(() => SelectedConsultation);
+            ViewPrescriptionCommand = new DelegateCommand<ConsultationDto>(ViewPrescription, item => item != null);
+            PrintCommand = new DelegateCommand<ConsultationDto>(Print, item => item != null);
+            CopyRecordCommand = new DelegateCommand<ConsultationDto>(CopyRecord, item => item != null);
             StatisticsCommand = new DelegateCommand(ShowStatistics);
             
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
@@ -186,41 +182,37 @@ namespace LYBT.Desktop.Consultation.ViewModels
             await LoadDataAsync();
         }
 
-        private void ViewDetails()
+        private void ViewDetails(ConsultationDto consultation)
         {
-            if (SelectedConsultation != null)
-            {
-                // �򵥵�������ʾ�����漰���ӵ���
-                Logger.LogInformation("�鿴���Ƽ�¼����: {ConsultationId}", SelectedConsultation.Id);
-            }
+            if (consultation == null) return;
+            
+            Logger.LogInformation("查看诊疗记录详情: {ConsultationId}", consultation.Id);
+            ShowInfoMessage("查看详情功能开发中");
         }
 
 
-        private void ViewPrescription()
+        private void ViewPrescription(ConsultationDto consultation)
         {
-            if (SelectedConsultation != null)
-            {
-                Logger.LogInformation("查看处方功能开发中: {ConsultationId}", SelectedConsultation.Id);
-                ShowInfoMessage("查看处方功能开发中");
-            }
+            if (consultation == null) return;
+            
+            Logger.LogInformation("查看处方: {ConsultationId}", consultation.Id);
+            ShowInfoMessage("查看处方功能开发中");
         }
 
-        private void Print()
+        private void Print(ConsultationDto consultation)
         {
-            if (SelectedConsultation != null)
-            {
-                Logger.LogInformation("打印诊疗记录功能开发中: {ConsultationId}", SelectedConsultation.Id);
-                ShowInfoMessage("打印功能开发中");
-            }
+            if (consultation == null) return;
+            
+            Logger.LogInformation("打印诊疗记录: {ConsultationId}", consultation.Id);
+            ShowInfoMessage("打印功能开发中");
         }
 
-        private void CopyRecord()
+        private void CopyRecord(ConsultationDto consultation)
         {
-            if (SelectedConsultation != null)
-            {
-                Logger.LogInformation("复制诊疗记录功能开发中: {ConsultationId}", SelectedConsultation.Id);
-                ShowInfoMessage("复制记录功能开发中");
-            }
+            if (consultation == null) return;
+            
+            Logger.LogInformation("复制诊疗记录: {ConsultationId}", consultation.Id);
+            ShowInfoMessage("复制记录功能开发中");
         }
 
         private void ShowStatistics()
