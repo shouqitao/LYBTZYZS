@@ -15,7 +15,7 @@ env:
 jobs:
   governance-gates:
     name: "🔒 Governance Gates"
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     continue-on-error: false
     
     steps:
