@@ -573,10 +573,5 @@ public class AuthServiceTests : IDisposable
         result.Message.Should().Contain("令牌无效");
     }
 
-    public void Dispose()
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 }
