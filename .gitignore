@@ -107,7 +107,8 @@ nul
 # Claude Code 工具文件 - 保留本地但不上传
 .claude/
 .serena/
-.ai/
+.ai/*
+!.ai/rules.json
 ai/
 ai-starter/
 

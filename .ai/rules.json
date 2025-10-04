@@ -1,0 +1,221 @@
+{
+  "projectRules": {
+    "version": "v1.0",
+    "type": "record-only-governance-baseline",
+    "description": "凌隐宝堂中医诊所系统 - Pass 7 治理基线机器可读规则",
+    "lastUpdated": "2025-09-12",
+    "enforcement": "ArchTests + CI门禁",
+    "strictMode": true
+  },
+  "recordOnlyConstraints": {
+    "functionalMode": "record-only",
+    "description": "系统仅用于数据记录和历史查询，严格禁止复杂业务逻辑",
+    "allowedOperations": [
+      "Create", "Read", "Update", "Delete", 
+      "History", "Search", "Calculate", "Validate"
+    ],
+    "prohibitedFeatures": [
+      "智能推荐系统", "配伍安全检查", "复杂业务规则引擎",
+      "工作流引擎", "数据流水线", "会话管理", "复杂状态机",
+      "事件驱动架构", "预测性分析", "机器学习"
+    ],
+    "modules": {
+      "Auth": "身份认证记录 - 登录、登出、会话管理",
+      "Users": "用户信息记录 - 用户CRUD、角色分配",
+      "Patients": "患者档案记录 - 患者信息管理、历史查询",
+      "MedicalCase": "医疗案例记录 - 案例创建、状态更新、查询",
+      "Consultation": "看诊记录 - 四诊数据记录、历史回顾",
+      "Prescriptions": "处方记录 - 处方开具、价格计算、打印",
+      "Herbs": "中药材记录 - 药材信息管理、库存记录",
+      "Formula": "验方记录 - 验方模板管理、历史查询"
+    }
+  },
+  "layeredArchitecture": {
+    "pattern": "unified-four-layer",
+    "description": "统一四层架构，严格遵循依赖方向",
+    "layers": {
+      "ui": {
+        "name": "UI层",
+        "components": ["Desktop.ViewModels", "LYBT.WebAPI.Controllers"],
+        "responsibilities": ["用户交互", "HTTP请求处理", "数据展示", "参数验证"],
+        "dependencies": ["Application层接口"],
+        "prohibitions": ["直接访问Domain层", "直接访问Infrastructure层"]
+      },
+      "application": {
+        "name": "Application层",
+        "components": ["Desktop.Modules", "Modules.Services"],
+        "responsibilities": ["应用服务", "业务编排", "DTO转换", "权限检查"],
+        "dependencies": ["Domain层接口", "Infrastructure层接口"],
+        "prohibitions": ["UI框架依赖", "具体数据库实现"]
+      },
+      "domain": {
+        "name": "Domain层",
+        "components": ["Entities", "领域服务"],
+        "responsibilities": ["实体定义", "领域逻辑", "业务规则", "实体关系"],
+        "dependencies": ["仅依赖.NET BCL"],
+        "prohibitions": ["基础设施关注点", "UI关注点"]
+      },
+      "infrastructure": {
+        "name": "Infrastructure层",
+        "components": ["LYBT.Infrastructure"],
+        "responsibilities": ["数据访问", "外部服务", "技术实现"],
+        "dependencies": ["Domain层接口", "第三方库", "数据库"],
+        "prohibitions": ["业务逻辑", "UI相关代码"]
+      }
+    },
+    "dependencyRules": {
+      "allowed": [
+        "上层 → 下层（通过接口）",
+        "任何层 → Shared层", 
+        "服务层 → Infrastructure接口",
+        "Infrastructure → Entities",
+        "控制器 → 服务接口"
+      ],
+      "prohibited": [
+        "UI层 ↛ Infrastructure层",
+        "UI层 ↛ Entities层",
+        "Controllers ↛ Infrastructure实现类",
+        "ViewModels ↛ 数据库上下文",
+        "任何层 ↛ 具体实现（必须通过接口）"
+      ]
+    }
+  },
+  "apiConstraints": {
+    "versionControl": {
+      "allowedRoutes": ["/api/v1/*"],
+      "prohibitedRoutes": ["/api/v2/*", "/api/v3/*", "/v2/*", "/v3/*", "/api/*"],
+      "pattern": "^/api/v1/[a-z][a-zA-Z0-9]*$",
+      "description": "严格API版本控制，仅允许v1版本"
+    },
+    "controllerLocation": {
+      "allowedLocation": "src/Server/Services/LYBT.WebAPI/Controllers/",
+      "prohibitedLocations": ["其他任何项目中的Controllers文件夹", "模块项目中的独立API控制器"],
+      "description": "集中控制器管理，所有控制器必须驻留在LYBT.WebAPI项目"
+    },
+    "responseFormat": {
+      "success": "ApiResponse<T>.Success(data, \"操作成功\")",
+      "failure": "ApiResponse<T>.Fail(\"错误消息\", ErrorCode.ValidationError)",
+      "description": "统一响应格式，所有API必须使用统一的响应包装器"
+    },
+    "namingConvention": {
+      "userField": "Username",
+      "prohibitedNaming": ["UserName", "user_name", "userName", "loginName"],
+      "description": "用户标识规范，系统中用户相关字段统一使用Username命名"
+    }
+  },
+  "transactionManagement": {
+    "preferredApproach": "ef-core-implicit",
+    "description": "优先使用EF Core SaveChanges的隐式事务机制",
+    "allowedPatterns": [
+      "await _context.SaveChangesAsync()",
+      "using var transaction = await _context.Database.BeginTransactionAsync()"
+    ],
+    "prohibitedFrameworks": [
+      "Saga Pattern", "Workflow Engine", "Step Functions",
+      "补偿事务", "分布式事务协调器", 
+      "MediatR事务行为", "Hangfire事务作业"
+    ],
+    "transactionBoundary": "最小显式事务，必要时使用，最少必要操作"
+  },
+  "dependencyManagement": {
+    "packageManagement": {
+      "type": "central",
+      "file": "Directory.Packages.props",
+      "enforcement": "所有NuGet包版本必须在中央文件中管理",
+      "prohibitedApproach": "项目独立包引用"
+    },
+    "prohibitedFrameworks": [
+      "工作流引擎 (Workflow Foundation, Elsa)",
+      "规则引擎 (Rules Engine, Decision Tables)",
+      "事件总线 (MediatR, NServiceBus)", 
+      "状态机 (Stateless, Automatonymous)",
+      "流水线框架 (Pipeline Patterns)",
+      "会话引擎 (Session State Providers)",
+      "AI/ML框架 (ML.NET, TensorFlow.NET)"
+    ],
+    "allowedFrameworks": [
+      ".NET 8", "EF Core 8", "ASP.NET Core",
+      "WPF", "Prism.DryIoc", "AutoMapper"
+    ]
+  },
+  "qualityGates": {
+    "compilation": {
+      "errors": 0,
+      "warnings": 0,
+      "enforcement": "阻塞性",
+      "commands": [
+        "dotnet format --verbosity minimal",
+        "dotnet build --no-restore --verbosity minimal", 
+        "dotnet test --no-build --verbosity minimal"
+      ]
+    },
+    "architectureCompliance": [
+      "层间依赖合规", "API版本合规", "控制器位置合规",
+      "命名规范合规", "框框使用合规", "事务模式合规"
+    ],
+    "ciEnforcement": {
+      "level1": ["dotnet format --verify-no-changes", "dotnet build --configuration Release"],
+      "level2": ["dotnet test --configuration Release"],
+      "level3": ["ArchTests.LayerDependencyTests", "ArchTests.ApiVersionTests", "ArchTests.ControllerLocationTests", "ArchTests.NamingConventionTests", "ArchTests.ForbiddenFrameworkTests"],
+      "failurePolicy": "任何门禁失败立即阻塞PR"
+    }
+  },
+  "violationDetection": {
+    "mechanisms": [
+      "静态分析: 代码结构、命名、依赖关系分析",
+      "编译检查: 框架引用、API路由、层间依赖",
+      "运行时检查: 事务模式、响应格式验证", 
+      "架构测试: NetArchTest规则定义和执行"
+    ],
+    "violationCategories": {
+      "blocking": {
+        "层间依赖违规": "立即CI失败",
+        "API版本违规": "立即CI失败",
+        "禁止框架引入": "立即CI失败",
+        "控制器位置违规": "立即CI失败"
+      },
+      "warning": {
+        "命名不规范": "CI警告，建议修复",
+        "注释缺失": "CI警告，建议完善"
+      }
+    },
+    "handlingProcess": [
+      "CI检测到违规 → 自动阻塞PR",
+      "开发者必须修复所有违规 → 重新提交",
+      "所有门禁通过 → 允许合并",
+      "紧急情况例外 → 架构师手动批准（需记录ADR）"
+    ]
+  },
+  "exceptionManagement": {
+    "principle": "最小例外原则",
+    "allowedExceptions": [
+      "遗留系统集成必需的复杂逻辑",
+      ".NET框架内置Pipeline（如中间件）",
+      "第三方SDK要求的特定模式"
+    ],
+    "prohibitedExceptions": [
+      "业务逻辑复杂化为理由",
+      "开发效率为理由引入重型框架", 
+      "个人偏好的技术选型"
+    ],
+    "applicationProcess": [
+      "提交架构例外申请 (包含影响分析和风险评估)",
+      "架构师review和决策 (必须在ADR中记录)",
+      "临时豁免配置 (设定明确的截止时间)",
+      "定期review例外合理性 (季度review，自动到期)"
+    ]
+  },
+  "governanceDocuments": {
+    "machineReadable": [
+      ".ai/rules.json - 完整的机器可读治理规则配置",
+      "tests/Architecture/ArchTests.cs - NetArchTest架构约束测试套件",
+      ".github/workflows/ci.yml - CI/CD强制门禁配置"
+    ],
+    "humanReadable": [
+      "_governance/architecture.md - 架构治理基线文档",
+      "CONTRIBUTING.md - 贡献指南和开发流程",
+      ".github/PULL_REQUEST_TEMPLATE.md - PR检查清单模板",
+      "CLAUDE.md - AI助手开发约定"
+    ]
+  }
+}
