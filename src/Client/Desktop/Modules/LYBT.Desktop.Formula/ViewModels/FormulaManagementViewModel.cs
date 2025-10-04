@@ -304,7 +304,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             return formula != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
         }
 
-/// <summary>
+        /// <summary>
         /// 首页命令
         /// </summary>
         public DelegateCommand FirstPageCommand =>

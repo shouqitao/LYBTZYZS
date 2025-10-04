@@ -26,7 +26,7 @@ jobs:
   # ==================== 覆盖率收集与报告 ====================
   coverage-check:
     name: 覆盖率检查与门禁
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: 📥 检出代码
@@ -319,7 +319,7 @@ jobs:
   # ==================== 覆盖率趋势分析 ====================
   coverage-trend:
     name: 覆盖率趋势分析
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: coverage-check
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
 

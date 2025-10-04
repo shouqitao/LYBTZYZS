@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   triage:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Ensure status label and guidance
         uses: actions/github-script@v7

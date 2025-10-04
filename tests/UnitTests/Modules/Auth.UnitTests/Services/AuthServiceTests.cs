@@ -119,7 +119,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ChangeSysAdminPasswordAsync_UpdatesConfiguredPassword()
+    public void ChangeSysAdminPasswordAsync_UpdatesConfiguredPassword()
     {
         // Arrange
         // TODO: 实现测试
@@ -217,7 +217,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task VerifyCredentialsAsync_WithLockedAccount_ReturnsFailure()
+    public void VerifyCredentialsAsync_WithLockedAccount_ReturnsFailure()
     {
         // Arrange
         // TODO: 实现测试
@@ -228,7 +228,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task VerifyCredentialsAsync_WithDisabledAccount_ReturnsFailure()
+    public void VerifyCredentialsAsync_WithDisabledAccount_ReturnsFailure()
     {
         // Arrange
         // TODO: 实现测试
@@ -239,7 +239,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task VerifyCredentialsAsync_IncrementsFailedLoginCount_OnFailure()
+    public void VerifyCredentialsAsync_IncrementsFailedLoginCount_OnFailure()
     {
         // Arrange
         // TODO: 实现测试
@@ -250,7 +250,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task VerifyCredentialsAsync_ResetsFailedLoginCount_OnSuccess()
+    public void VerifyCredentialsAsync_ResetsFailedLoginCount_OnSuccess()
     {
         // Arrange
         // TODO: 实现测试
@@ -261,7 +261,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task VerifyCredentialsAsync_WithNullCredentials_ThrowsArgumentNullException()
+    public void VerifyCredentialsAsync_WithNullCredentials_ThrowsArgumentNullException()
     {
         // Arrange
         // TODO: 实现测试
@@ -334,7 +334,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_GeneratesAccessToken()
+    public void LoginAsync_GeneratesAccessToken()
     {
         // Arrange
         // TODO: 实现测试
@@ -345,7 +345,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_GeneratesRefreshToken()
+    public void LoginAsync_GeneratesRefreshToken()
     {
         // Arrange
         // TODO: 实现测试
@@ -356,7 +356,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_UpdatesLastLoginTime()
+    public void LoginAsync_UpdatesLastLoginTime()
     {
         // Arrange
         // TODO: 实现测试
@@ -367,7 +367,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_SavesAuthentication()
+    public void LoginAsync_SavesAuthentication()
     {
         // Arrange
         // TODO: 实现测试
@@ -378,7 +378,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_WithRememberMe_SetsLongerExpiration()
+    public void LoginAsync_WithRememberMe_SetsLongerExpiration()
     {
         // Arrange
         // TODO: 实现测试
@@ -389,7 +389,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_WithoutRememberMe_SetsDefaultExpiration()
+    public void LoginAsync_WithoutRememberMe_SetsDefaultExpiration()
     {
         // Arrange
         // TODO: 实现测试
@@ -400,7 +400,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_WhenUserServiceFails_ReturnsFailure()
+    public void LoginAsync_WhenUserServiceFails_ReturnsFailure()
     {
         // Arrange
         // TODO: 实现测试
@@ -411,7 +411,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_WhenJwtServiceFails_ReturnsFailure()
+    public void LoginAsync_WhenJwtServiceFails_ReturnsFailure()
     {
         // Arrange
         // TODO: 实现测试
@@ -422,7 +422,7 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task LoginAsync_LogsLoginAttempt()
+    public void LoginAsync_LogsLoginAttempt()
     {
         // Arrange
         // TODO: 实现测试
@@ -510,6 +510,16 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region IDisposable Implementation
+
+    public void Dispose()
+    {
+        _dbContext?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #endregion

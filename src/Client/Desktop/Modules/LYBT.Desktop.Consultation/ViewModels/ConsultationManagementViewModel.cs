@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             PrintCommand = new DelegateCommand<ConsultationDto>(Print, item => item != null);
             CopyRecordCommand = new DelegateCommand<ConsultationDto>(CopyRecord, item => item != null);
             StatisticsCommand = new DelegateCommand(ShowStatistics);
-            
+
             FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
             LastPageCommand = new DelegateCommand(ExecuteLastPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
@@ -185,7 +185,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void ViewDetails(ConsultationDto consultation)
         {
             if (consultation == null) return;
-            
+
             Logger.LogInformation("查看诊疗记录详情: {ConsultationId}", consultation.Id);
             ShowInfoMessage("查看详情功能开发中");
         }
@@ -194,7 +194,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void ViewPrescription(ConsultationDto consultation)
         {
             if (consultation == null) return;
-            
+
             Logger.LogInformation("查看处方: {ConsultationId}", consultation.Id);
             ShowInfoMessage("查看处方功能开发中");
         }
@@ -202,7 +202,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void Print(ConsultationDto consultation)
         {
             if (consultation == null) return;
-            
+
             Logger.LogInformation("打印诊疗记录: {ConsultationId}", consultation.Id);
             ShowInfoMessage("打印功能开发中");
         }
@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private void CopyRecord(ConsultationDto consultation)
         {
             if (consultation == null) return;
-            
+
             Logger.LogInformation("复制诊疗记录: {ConsultationId}", consultation.Id);
             ShowInfoMessage("复制记录功能开发中");
         }
