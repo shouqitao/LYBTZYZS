@@ -16,9 +16,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore
-        run: dotnet restore LYBT.All.sln
+        run: dotnet restore LYBT.Server.sln
       - name: Build (Release)
-        run: dotnet build LYBT.All.sln -c Release --no-restore
+        run: dotnet build LYBT.Server.sln -c Release --no-restore
       - name: Check PR references feature IDs
         run: |
           msg=$(jq -r '.pull_request.title + "\n" + .pull_request.body' < $GITHUB_EVENT_PATH)
