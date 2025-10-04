@@ -2,7 +2,6 @@
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace LYBT.WebAPI.Tests
@@ -15,12 +14,12 @@ namespace LYBT.WebAPI.Tests
     /// <para>方法: 使用结构化响应验证，确保必要字段存在且类型正确</para>
     /// <para>覆盖: Auth、Users、Health等核心API端点</para>
     /// </remarks>
-    public class SimpleApiContractTests : IClassFixture<WebApplicationFactory<Program>>
+    public class SimpleApiContractTests : IClassFixture<CustomWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly CustomWebApplicationFactory _factory;
         private readonly HttpClient _client;
 
-        public SimpleApiContractTests(WebApplicationFactory<Program> factory)
+        public SimpleApiContractTests(CustomWebApplicationFactory factory)
         {
             _factory = factory;
             _client = _factory.CreateClient();
@@ -290,12 +289,12 @@ namespace LYBT.WebAPI.Tests
     /// <summary>
     /// API响应结构验证测试 - 专注于数据结构一致性
     /// </summary>
-    public class ApiResponseStructureTests : IClassFixture<WebApplicationFactory<Program>>
+    public class ApiResponseStructureTests : IClassFixture<CustomWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly CustomWebApplicationFactory _factory;
         private readonly HttpClient _client;
 
-        public ApiResponseStructureTests(WebApplicationFactory<Program> factory)
+        public ApiResponseStructureTests(CustomWebApplicationFactory factory)
         {
             _factory = factory;
             _client = _factory.CreateClient();
