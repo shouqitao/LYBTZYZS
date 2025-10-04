@@ -53,18 +53,19 @@ jobs:
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
       
     - name: 📊 生成覆盖率报告
+      shell: bash
       run: |
         echo "📈 合并覆盖率数据并生成报告..."
-        
+
         # 查找所有覆盖率文件
         coverage_files=$(find BIN/TestResults -name "coverage.cobertura.xml" | paste -sd ";" -)
-        
+
         if [ -n "$coverage_files" ]; then
           echo "找到覆盖率文件: $coverage_files"
-          
+
           # 生成HTML报告和徽章
           reportgenerator "-reports:$coverage_files" "-targetdir:BIN/TestResults/CoverageReport" "-reporttypes:Html;JsonSummary;Badges;TextSummary" "-sourcedirs:src" "-title:LYBTZYZS P3-测试覆盖率报告" "-tag:${{ github.sha }}" "-assemblyfilters:-*Tests*;-*TestUtilities*" "-classfilters:-*Tests*;-*Mock*;-*Stub*"
-          
+
           echo "✅ 覆盖率报告生成完成"
         else
           echo "⚠️ 未找到覆盖率数据文件"
@@ -72,18 +73,19 @@ jobs:
         fi
     
     - name: 🎯 检查覆盖率阈值
+      shell: bash
       run: |
         echo "🎯 P3任务覆盖率阈值检查: Line≥${{ env.COVERAGE_THRESHOLD_LINE }}%"
-        
+
         summary_file="TestResults/CoverageReport/Summary.json"
-        
+
         if [ -f "$summary_file" ]; then
           # 提取覆盖率数据
           line_coverage=$(cat "$summary_file" | jq -r '.coverage.linecoverage')
-          
+
           echo "📊 当前覆盖率:"
           echo "  - 行覆盖率 (Line): ${line_coverage}%"
-          
+
           # 检查阈值
           if (( $(echo "$line_coverage < ${{ env.COVERAGE_THRESHOLD_LINE }}" | bc -l) )); then
             echo "❌ 行覆盖率 ($line_coverage%) 低于阈值 (${{ env.COVERAGE_THRESHOLD_LINE }}%)"
