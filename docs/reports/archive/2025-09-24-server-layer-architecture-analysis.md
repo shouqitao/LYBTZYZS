@@ -1,4 +1,4 @@
-# LYBTZYZS Server 层架构深度分析报告
+﻿# LYBTZYZS Server 层架构深度分析报告
 
 **分析日期**: 2025-09-24
 **分析工具**: Serena Code Analyzer

@@ -1,4 +1,4 @@
-# 开发者指南 - LYBTZYZS 项目
+﻿# 开发者指南 - LYBTZYZS 项目
 
 > **统一版本**：合并原 DEVELOPER_GUIDE.md 和 development/development-guide.md，消除60%重复内容
 > **最后更新**：2025-09-28

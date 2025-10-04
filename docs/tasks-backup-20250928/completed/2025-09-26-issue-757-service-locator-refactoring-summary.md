@@ -1,4 +1,4 @@
-# Issue #757 Service Locator 重构完成总结
+﻿# Issue #757 Service Locator 重构完成总结
 
 **日期**: 2025-09-26  
 **任务**: Service Locator 反模式重构  

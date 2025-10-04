@@ -1,4 +1,4 @@
-# PRD——项目交付（Phase 2：WebAPI 与 Desktop 可运行）
+﻿# PRD——项目交付（Phase 2：WebAPI 与 Desktop 可运行）
 
 - 文档日期：2025-09-22
 - 项目：ccpm（Claude Code Project Manager）

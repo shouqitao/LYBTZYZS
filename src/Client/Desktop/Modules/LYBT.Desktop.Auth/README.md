@@ -1,4 +1,4 @@
-# LYBT.Desktop.Auth - 认证授权模块
+﻿# LYBT.Desktop.Auth - 认证授权模块
 
 ## 🎯 项目概述
 

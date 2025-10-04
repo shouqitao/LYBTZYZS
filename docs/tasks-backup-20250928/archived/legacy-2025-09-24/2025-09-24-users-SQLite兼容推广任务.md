@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite 兼容性修复与推广任务
+﻿# 2025-09-24 Users 模块 SQLite 兼容性修复与推广任务
 
 ## 任务背景
 - SQLite In-Memory 评估已完成，确认其在批量操作、事务、并发控制方面优于 EF Core InMemory Provider。

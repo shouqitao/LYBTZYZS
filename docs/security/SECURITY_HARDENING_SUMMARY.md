@@ -1,4 +1,4 @@
-# Security Hardening Summary
+﻿# Security Hardening Summary
 
 ## Epic #637: Security Hardening Implementation
 

@@ -1,4 +1,4 @@
-# Prescriptions模块设计 - Server端
+﻿# Prescriptions模块设计 - Server端
 
 ## 📋 模块概述
 **职责**：中医处方管理、处方开具、用药管理、处方审核、价格计算

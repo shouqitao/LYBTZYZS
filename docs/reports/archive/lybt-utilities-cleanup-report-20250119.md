@@ -1,4 +1,4 @@
-# LYBT.Shared.Utilities 清理优化报告
+﻿# LYBT.Shared.Utilities 清理优化报告
 
 > **项目清理日期**: 2025-01-19  
 > **执行人**: Claude Code Assistant  

@@ -1,4 +1,4 @@
-# Issue #828 Phase 1 完成报告 - Desktop Prism 基础重构
+﻿# Issue #828 Phase 1 完成报告 - Desktop Prism 基础重构
 
 **报告日期**: 2025-10-01
 **负责人**: Claude (Sonnet 4.5)

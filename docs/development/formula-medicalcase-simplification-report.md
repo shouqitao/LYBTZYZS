@@ -1,4 +1,4 @@
-# Formula和MedicalCase模块过度抽象简化重构报告
+﻿# Formula和MedicalCase模块过度抽象简化重构报告
 
 **重构日期**: 2025-09-28  
 **相关Issues**: #781 (Formula模块过度抽象), #782 (MedicalCase聚合根过度设计)  

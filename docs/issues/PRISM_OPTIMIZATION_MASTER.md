@@ -1,4 +1,4 @@
-# Issue: [Desktop] Prism架构优化总计划 - 消除反模式与提升体验
+﻿# Issue: [Desktop] Prism架构优化总计划 - 消除反模式与提升体验
 
 ## 📌 概述
 

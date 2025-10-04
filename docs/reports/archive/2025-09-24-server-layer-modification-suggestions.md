@@ -1,4 +1,4 @@
-# LYBTZYZS Server 层架构修改建议
+﻿# LYBTZYZS Server 层架构修改建议
 
 **创建日期**: 2025-09-24
 **基于分析**: 2025-09-24-server-layer-architecture-analysis.md

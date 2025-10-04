@@ -1,4 +1,4 @@
-# Desktop Core_New架构文档
+﻿# Desktop Core_New架构文档
 
 **文档版本**: 1.0
 **创建时间**: 2025-09-30

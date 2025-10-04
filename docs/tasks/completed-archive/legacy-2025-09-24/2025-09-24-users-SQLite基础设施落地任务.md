@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite 基础设施落地任务
+﻿# 2025-09-24 Users 模块 SQLite 基础设施落地任务
 
 ## 背景
 - `docs/tasks/completed/2025-09-24-users-SQLite深层问题剖析-summary.md` 描述的改动尚未在仓库落实，当前 SQLite 套件 7 个用例全部失败。

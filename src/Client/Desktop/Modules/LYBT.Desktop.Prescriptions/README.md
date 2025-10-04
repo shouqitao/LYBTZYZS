@@ -1,4 +1,4 @@
-# LYBT.Desktop.Prescriptions - 处方管理模块
+﻿# LYBT.Desktop.Prescriptions - 处方管理模块
 
 ## 🎯 项目概述
 

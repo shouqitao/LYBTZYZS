@@ -1,4 +1,4 @@
-# LYBT.Module.MedicalCase - 医疗案例管理模块
+﻿# LYBT.Module.MedicalCase - 医疗案例管理模块
 
 ## 🎯 项目概述
 

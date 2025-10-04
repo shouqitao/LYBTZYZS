@@ -1,4 +1,4 @@
-# LYBT.Desktop.Formula - 验方管理模块
+﻿# LYBT.Desktop.Formula - 验方管理模块
 
 ## 🎯 项目概述
 

@@ -1,4 +1,4 @@
-# 010-Server WebAPI 设计（最小闭环）
+﻿# 010-Server WebAPI 设计（最小闭环）
 
 ## 决策
 - 默认端口：5001；允许 `ASPNETCORE_URLS` 覆盖。

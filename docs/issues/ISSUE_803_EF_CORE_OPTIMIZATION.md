@@ -1,4 +1,4 @@
-# Issue #803: 优化EF Core查询性能 - 解决N+1问题和添加AsNoTracking
+﻿# Issue #803: 优化EF Core查询性能 - 解决N+1问题和添加AsNoTracking
 
 ## 📋 问题描述
 当前系统存在严重的EF Core查询性能问题：

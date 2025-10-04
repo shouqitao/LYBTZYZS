@@ -1,4 +1,4 @@
-# Issue: [Desktop] Phase 1 - 消除Container.Resolve反模式
+﻿# Issue: [Desktop] Phase 1 - 消除Container.Resolve反模式
 
 ## 问题描述
 

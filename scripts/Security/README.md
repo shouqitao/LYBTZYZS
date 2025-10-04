@@ -1,4 +1,4 @@
-# Security Scripts
+﻿# Security Scripts
 
 ## ManageSecrets.ps1
 

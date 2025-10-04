@@ -1,4 +1,4 @@
-# GitHub Issues 创建内容
+﻿# GitHub Issues 创建内容
 
 复制以下内容到GitHub创建对应的Issue。
 

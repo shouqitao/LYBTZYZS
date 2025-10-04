@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite 兼容性修复与推广任务总结
+﻿# 2025-09-24 Users 模块 SQLite 兼容性修复与推广任务总结
 
 ## 任务概述
 本任务旨在修复 SQLite In-Memory 测试环境中的 RowVersion NOT NULL 约束错误，推广 SQLite 测试基础设施，建立混合测试策略。

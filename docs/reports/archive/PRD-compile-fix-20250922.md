@@ -1,4 +1,4 @@
-# PRD——All 解决方案编译修复（激进替换）
+﻿# PRD——All 解决方案编译修复（激进替换）
 
 - 文档日期：2025-09-22
 - 项目：ccpm（Claude Code Project Manager）

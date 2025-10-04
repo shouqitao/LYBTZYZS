@@ -1,4 +1,4 @@
-# Issue #778: Desktop层MVP功能清理
+﻿# Issue #778: Desktop层MVP功能清理
 
 ## 问题描述
 根据最新的MVP需求文档（mvp-requirements-final-2025-09-27.md），Desktop层存在大量超出设计范围的功能代码。这些功能在MVP阶段明确标记为"不实现"，但在代码中仍有大量残留，需要进行清理。

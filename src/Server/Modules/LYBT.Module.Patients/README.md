@@ -1,4 +1,4 @@
-# LYBT.Module.Patients - 患者档案管理模块
+﻿# LYBT.Module.Patients - 患者档案管理模块
 
 ## 🎯 项目概述
 

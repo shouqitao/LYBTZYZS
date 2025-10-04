@@ -1,4 +1,4 @@
-# MedicalCase模块设计 - Server端
+﻿# MedicalCase模块设计 - Server端
 
 ## 📋 模块概述
 **职责**：病历管理（聚合根）、诊疗流程控制、医疗档案管理  

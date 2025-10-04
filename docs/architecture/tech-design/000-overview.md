@@ -1,4 +1,4 @@
-# 技术设计总览（本轮）
+﻿# 技术设计总览（本轮）
 
 目标：一天内定型，保留现有大框架，先稳 Server(WebAPI) 与 Client(Desktop)，优先实现 sysadmin 登录闭环。
 

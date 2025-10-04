@@ -1,4 +1,4 @@
-# MedicalCase 聚合根测试覆盖率报告
+﻿# MedicalCase 聚合根测试覆盖率报告
 
 **Issue**: #776 - 为MedicalCase聚合根添加完整单元测试覆盖
 **日期**: 2025-01-27

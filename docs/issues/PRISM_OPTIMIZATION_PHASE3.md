@@ -1,4 +1,4 @@
-# Issue: [Desktop] Phase 3 - 模块依赖优化与CompositeCommand实现
+﻿# Issue: [Desktop] Phase 3 - 模块依赖优化与CompositeCommand实现
 
 ## 问题描述
 

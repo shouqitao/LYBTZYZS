@@ -1,4 +1,4 @@
-# 2025-09-24 Users 模块 SQLite In-Memory 评估任务
+﻿# 2025-09-24 Users 模块 SQLite In-Memory 评估任务
 
 ## 任务背景
 - 当前 Users 模块单测使用 EF Core InMemory Provider，无法覆盖 `ExecuteUpdateAsync` 等行为，导致批量操作与事务测试无法真实复现生产逻辑。

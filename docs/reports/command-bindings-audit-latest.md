@@ -1,21 +1,21 @@
-=== ¿ªÊ¼¼ì²é XAML Command °ó¶¨ ===
-Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
-Êä³ö±¨¸æ: D:\source\repos\LYBTZYZS\docs\reports\command-bindings-audit-2025-10-04.md
+ï»¿=== ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ XAML Command ï¿½ï¿½ ===
+Desktop Â·ï¿½ï¿½: D:\source\repos\LYBTZYZS\src\Client\Desktop
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: D:\source\repos\LYBTZYZS\docs\reports\command-bindings-audit-2025-10-04.md
 
-ÕÒµ½ 36 ¸ö View ÎÄ¼þ
+ï¿½Òµï¿½ 36 ï¿½ï¿½ View ï¿½Ä¼ï¿½
 
-¼ì²é: LoginView
+ï¿½ï¿½ï¿½: LoginView
   ViewModel: LoginViewModel
     ? LoginCommand
     ? LoginCommand
 
-¼ì²é: LoginWindow
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Auth\ViewModels\LoginWindow.cs
-    ??  LoginCommand (ViewModel ²»´æÔÚ)
-    ??  LoginCommand (ViewModel ²»´æÔÚ)
-    ??  LoginCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: LoginWindow
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Auth\ViewModels\LoginWindow.cs
+    ??  LoginCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  LoginCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  LoginCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: ConsultationMainView
+ï¿½ï¿½ï¿½: ConsultationMainView
   ViewModel: ConsultationMainViewModel
     ? RefreshCommand
     ? ViewPatientHistoryCommand
@@ -27,7 +27,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? È±Ê§: DataContext.IncreaseQuantityCommand
     ? È±Ê§: DataContext.RemovePrescriptionItemCommand
 
-¼ì²é: ConsultationManagementView
+ï¿½ï¿½ï¿½: ConsultationManagementView
   ViewModel: ConsultationManagementViewModel
     ? SearchCommand
     ? SearchCommand
@@ -42,15 +42,15 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? NextPageCommand
     ? LastPageCommand
 
-¼ì²é: EditFormulaDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\EditFormulaDialog.cs
-    ??  AddHerbCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.EditHerbCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.RemoveHerbCommand (ViewModel ²»´æÔÚ)
-    ??  SaveCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: EditFormulaDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\EditFormulaDialog.cs
+    ??  AddHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.EditHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.RemoveHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SaveCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: FormulaDetailView
+ï¿½ï¿½ï¿½: FormulaDetailView
   ViewModel: FormulaDetailViewModel
     ? BackCommand
     ? EditCommand
@@ -60,7 +60,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? ViewUsageHistoryCommand
     ? PrintCommand
 
-¼ì²é: FormulaManagementView
+ï¿½ï¿½ï¿½: FormulaManagementView
   ViewModel: FormulaManagementViewModel
     ? È±Ê§: SearchCommand
     ? ClearFiltersCommand
@@ -78,13 +78,13 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? È±Ê§: NextPageCommand
     ? LastPageCommand
 
-¼ì²é: ViewFormulaDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\ViewFormulaDialog.cs
-    ??  PrintCommand (ViewModel ²»´æÔÚ)
-    ??  ExportCommand (ViewModel ²»´æÔÚ)
-    ??  CloseCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: ViewFormulaDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Formula\ViewModels\ViewFormulaDialog.cs
+    ??  PrintCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ExportCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CloseCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: HerbDetailView
+ï¿½ï¿½ï¿½: HerbDetailView
   ViewModel: HerbDetailViewModel
     ? BackCommand
     ? EditCommand
@@ -93,7 +93,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? ViewUsageHistoryCommand
     ? PrintCommand
 
-¼ì²é: HerbManagementView
+ï¿½ï¿½ï¿½: HerbManagementView
   ViewModel: HerbManagementViewModel
     ? È±Ê§: SearchCommand
     ? È±Ê§: SearchCommand
@@ -110,12 +110,12 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? È±Ê§: NextPageCommand
     ? È±Ê§: LastPageCommand
 
-¼ì²é: CreateMedicalCaseDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\ViewModels\CreateMedicalCaseDialog.cs
-    ??  SaveCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: CreateMedicalCaseDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.MedicalCase\ViewModels\CreateMedicalCaseDialog.cs
+    ??  SaveCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: MedicalCaseDetailView
+ï¿½ï¿½ï¿½: MedicalCaseDetailView
   ViewModel: MedicalCaseDetailViewModel
     ? BackCommand
     ? StartConsultationCommand
@@ -125,7 +125,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? PrintPrescriptionCommand
     ? CloseCommand
 
-¼ì²é: MedicalCaseListView
+ï¿½ï¿½ï¿½: MedicalCaseListView
   ViewModel: MedicalCaseListViewModel
     ? SearchCommand
     ? AddCommand
@@ -137,7 +137,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? PreviousPageCommand
     ? NextPageCommand
 
-¼ì²é: MedicalCaseManagementView
+ï¿½ï¿½ï¿½: MedicalCaseManagementView
   ViewModel: MedicalCaseManagementViewModel
     ? SearchCommand
     ? SearchCommand
@@ -154,7 +154,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? NextPageCommand
     ? LastPageCommand
 
-¼ì²é: PatientDetailView
+ï¿½ï¿½ï¿½: PatientDetailView
   ViewModel: PatientDetailViewModel
     ? BackCommand
     ? EditCommand
@@ -164,27 +164,27 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? PrintCommand
     ? ViewMedicalHistoryCommand
 
-¼ì²é: PatientImportWizardView
+ï¿½ï¿½ï¿½: PatientImportWizardView
   ViewModel: PatientImportWizardViewModel
     ? CancelCommand
     ? PreviousCommand
     ? NextCommand
 
-¼ì²é: FormulaTemplateDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\FormulaTemplateDialog.cs
-    ??  RefreshCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.ViewDetailsCommand (ViewModel ²»´æÔÚ)
-    ??  SelectCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: FormulaTemplateDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\FormulaTemplateDialog.cs
+    ??  RefreshCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.ViewDetailsCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SelectCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: HerbSelectionDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\HerbSelectionDialog.cs
-    ??  SearchCommand (ViewModel ²»´æÔÚ)
-    ??  SearchCommand (ViewModel ²»´æÔÚ)
-    ??  ConfirmCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: HerbSelectionDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\HerbSelectionDialog.cs
+    ??  SearchCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SearchCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ConfirmCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: PrescriptionComposerView
+ï¿½ï¿½ï¿½: PrescriptionComposerView
   ViewModel: PrescriptionComposerViewModel
     ? AddHerbCommand
     ? ImportFormulaCommand
@@ -195,17 +195,17 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? SavePrescriptionCommand
     ? CloseCommand
 
-¼ì²é: PrescriptionEditorDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionEditorDialog.cs
-    ??  AddHerbCommand (ViewModel ²»´æÔÚ)
-    ??  LoadFormulaTemplateCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.EditHerbCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.RemoveHerbCommand (ViewModel ²»´æÔÚ)
-    ??  PreviewCommand (ViewModel ²»´æÔÚ)
-    ??  SaveCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: PrescriptionEditorDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionEditorDialog.cs
+    ??  AddHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  LoadFormulaTemplateCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.EditHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.RemoveHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  PreviewCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SaveCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: PrescriptionManagementView
+ï¿½ï¿½ï¿½: PrescriptionManagementView
   ViewModel: PrescriptionManagementViewModel
     ? AddPrescriptionCommand
     ? ExportPrescriptionsCommand
@@ -218,53 +218,53 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? È±Ê§: DataContext.PrintCommand
     ? È±Ê§: DataContext.DeletePrescriptionCommand
 
-¼ì²é: PrescriptionsMainView
+ï¿½ï¿½ï¿½: PrescriptionsMainView
   ViewModel: PrescriptionsMainViewModel
     ? SwitchToManagementCommand
     ? ReturnToSourceCommand
     ? SwitchToManagementCommand
     ? CreateNewPrescriptionCommand
 
-¼ì²é: PrescriptionView
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionViewModel.cs
-    ??  AddHerbCommand (ViewModel ²»´æÔÚ)
-    ??  ImportFormulaCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.RemoveHerbCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.SetDosageCommand (ViewModel ²»´æÔÚ)
-    ??  SetDiscountCommand (ViewModel ²»´æÔÚ)
-    ??  SetDiscountCommand (ViewModel ²»´æÔÚ)
-    ??  ImportHistoryCommand (ViewModel ²»´æÔÚ)
-    ??  PrintPreviewCommand (ViewModel ²»´æÔÚ)
-    ??  ClearCommand (ViewModel ²»´æÔÚ)
-    ??  SaveCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: PrescriptionView
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\PrescriptionViewModel.cs
+    ??  AddHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ImportFormulaCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.RemoveHerbCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.SetDosageCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SetDiscountCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SetDiscountCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ImportHistoryCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  PrintPreviewCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ClearCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SaveCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: SelectFormulaDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\SelectFormulaDialog.cs
-    ??  SearchCommand (ViewModel ²»´æÔÚ)
-    ??  RefreshCommand (ViewModel ²»´æÔÚ)
-    ??  ConfirmCommand (ViewModel ²»´æÔÚ)
-    ??  DataContext.ViewDetailsCommand (ViewModel ²»´æÔÚ)
-    ??  ConfirmCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: SelectFormulaDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\ViewModels\SelectFormulaDialog.cs
+    ??  SearchCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  RefreshCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ConfirmCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  DataContext.ViewDetailsCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ConfirmCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: ChangePasswordDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ChangePasswordDialog.cs
-    ??  ConfirmCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: ChangePasswordDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ChangePasswordDialog.cs
+    ??  ConfirmCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: ResetPasswordDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ResetPasswordDialog.cs
-    ??  GeneratePasswordCommand (ViewModel ²»´æÔÚ)
-    ??  ConfirmCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: ResetPasswordDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\ResetPasswordDialog.cs
+    ??  GeneratePasswordCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ConfirmCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: UserDetailView
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserDetailViewModel.cs
-    ??  GoBackCommand (ViewModel ²»´æÔÚ)
-    ??  EditUserCommand (ViewModel ²»´æÔÚ)
-    ??  ResetPasswordCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: UserDetailView
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserDetailViewModel.cs
+    ??  GoBackCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  EditUserCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ResetPasswordCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: UserManagementView
+ï¿½ï¿½ï¿½: UserManagementView
   ViewModel: UserManagementViewModel
     ? È±Ê§: SearchCommand
     ? È±Ê§: SearchCommand
@@ -278,29 +278,29 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? È±Ê§: NextPageCommand
     ? LastPageCommand
 
-¼ì²é: UserProfileDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserProfileDialog.cs
-    ??  SelectAvatarCommand (ViewModel ²»´æÔÚ)
-    ??  RemoveAvatarCommand (ViewModel ²»´æÔÚ)
-    ??  SaveCommand (ViewModel ²»´æÔÚ)
-    ??  CancelCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: UserProfileDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Modules\LYBT.Desktop.Users\ViewModels\UserProfileDialog.cs
+    ??  SelectAvatarCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  RemoveAvatarCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  SaveCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CancelCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: ConfirmationDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ConfirmationDialog.cs
-    ??  YesCommand (ViewModel ²»´æÔÚ)
-    ??  NoCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: ConfirmationDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ConfirmationDialog.cs
+    ??  YesCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  NoCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: ErrorDetailsDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ErrorDetailsDialog.cs
-    ??  CopyErrorCommand (ViewModel ²»´æÔÚ)
-    ??  RetryCommand (ViewModel ²»´æÔÚ)
-    ??  CloseCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: ErrorDetailsDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\ErrorDetailsDialog.cs
+    ??  CopyErrorCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  RetryCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  CloseCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: InformationDialog
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\InformationDialog.cs
-    ??  OkCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: InformationDialog
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\Dialogs\ViewModels\InformationDialog.cs
+    ??  OkCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: HomeView
+ï¿½ï¿½ï¿½: HomeView
   ViewModel: HomeViewModel
     ? LogoutCommand
     ? StartConsultationCommand
@@ -322,17 +322,17 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? NavigateToSystemSettingsCommand
     ? NavigateToDataBackupCommand
 
-¼ì²é: MainWindow
-  ??  Î´ÕÒµ½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\ViewModels\MainWindow.cs
-    ??  QuickAddPatientCommand (ViewModel ²»´æÔÚ)
-    ??  QuickStartConsultationCommand (ViewModel ²»´æÔÚ)
-    ??  ShowHelpCommand (ViewModel ²»´æÔÚ)
-    ??  ShowSettingsCommand (ViewModel ²»´æÔÚ)
-    ??  ToggleThemeCommand (ViewModel ²»´æÔÚ)
-    ??  TestApiCommand (ViewModel ²»´æÔÚ)
-    ??  LogoutCommand (ViewModel ²»´æÔÚ)
+ï¿½ï¿½ï¿½: MainWindow
+  ??  Î´ï¿½Òµï¿½ ViewModel: D:\source\repos\LYBTZYZS\src\Client\Desktop\Shell\ViewModels\MainWindow.cs
+    ??  QuickAddPatientCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  QuickStartConsultationCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ShowHelpCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ShowSettingsCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  ToggleThemeCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  TestApiCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+    ??  LogoutCommand (ViewModel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-¼ì²é: AdminWorkstationView
+ï¿½ï¿½ï¿½: AdminWorkstationView
   ViewModel: AdminWorkstationViewModel
     ? LogoutCommand
     ? NavigateCommand
@@ -342,7 +342,7 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? NavigateCommand
     ? NavigateCommand
 
-¼ì²é: ClinicalWorkstationView
+ï¿½ï¿½ï¿½: ClinicalWorkstationView
   ViewModel: ClinicalWorkstationViewModel
     ? SelectPatientCommand
     ? LogoutCommand
@@ -354,13 +354,13 @@ Desktop Â·¾¶: D:\source\repos\LYBTZYZS\src\Client\Desktop
     ? SavePrescriptionCommand
     ? PrintPrescriptionCommand
 
-=== ¼ì²éÍê³É ===
+=== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ===
 
-×Ü½á:
-  ×Ü View Êý: 36
-  ×Ü°ó¶¨Êý: 242
-  ? Õý³£°ó¶¨: 112
-  ? È±Ê§°ó¶¨: 130
-  ?? ÓÐÎÊÌâµÄ View: 28
+ï¿½Ü½ï¿½:
+  ï¿½ï¿½ View ï¿½ï¿½: 36
+  ï¿½Ü°ï¿½ï¿½ï¿½: 242
+  ? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: 112
+  ? È±Ê§ï¿½ï¿½: 130
+  ?? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ View: 28
 
-±¨¸æÒÑ±£´æ: D:\source\repos\LYBTZYZS\docs\reports\command-bindings-audit-2025-10-04.md
+ï¿½ï¿½ï¿½ï¿½ï¿½Ñ±ï¿½ï¿½ï¿½: D:\source\repos\LYBTZYZS\docs\reports\command-bindings-audit-2025-10-04.md

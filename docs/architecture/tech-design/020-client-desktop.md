@@ -1,4 +1,4 @@
-# 020-Client Desktop 设计（最小闭环）
+﻿# 020-Client Desktop 设计（最小闭环）
 
 ## 决策
 - 默认 API BaseUrl：`http://localhost:5001`；允许从环境/配置覆盖。

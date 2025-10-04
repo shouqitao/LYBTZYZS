@@ -1,4 +1,4 @@
-# Desktop 架构优化 - Issue #820 执行指南
+﻿# Desktop 架构优化 - Issue #820 执行指南
 
 ## 📋 概述
 

@@ -1,4 +1,4 @@
-# Phase 1 ViewModel重构总结报告
+﻿# Phase 1 ViewModel重构总结报告
 
 **项目**: 凌隐宝堂中医诊所管理系统 (LYBTZYZS)  
 **任务**: Phase 1 ViewModel继承架构重构  

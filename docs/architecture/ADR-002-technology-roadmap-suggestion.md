@@ -1,4 +1,4 @@
-# 技术路线建议报告 (Technology Roadmap Suggestion Report)
+﻿# 技术路线建议报告 (Technology Roadmap Suggestion Report)
 
 **报告编号**: ADR-002  
 **报告日期**: 2025年9月24日  
