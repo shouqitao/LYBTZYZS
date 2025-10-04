@@ -1,18 +1,18 @@
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户详情视图模型 - Phase 4B 骨架实现
+    /// 用户详情视图模型 - Phase 4B 骨架实现（已统一架构）
     /// </summary>
-    public class UserDetailViewModel : BindableBase
+    public class UserDetailViewModel : UnifiedViewModelBase
     {
-        private readonly ILogger<UserDetailViewModel> _logger;
         private UserDto? _user;
-        private bool _isLoading;
 
         /// <summary>
         /// 当前用户
@@ -21,15 +21,6 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             get => _user;
             set => SetProperty(ref _user, value);
-        }
-
-        /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
         }
 
         /// <summary>
@@ -47,11 +38,12 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
 
-        public UserDetailViewModel(ILoggerFactory loggerFactory)
+        public UserDetailViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager)
+            : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
-            _logger = loggerFactory?.CreateLogger<UserDetailViewModel>()
-                ?? throw new ArgumentNullException(nameof(loggerFactory));
-
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
             EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
             ResetPasswordCommand = new DelegateCommand(ExecuteResetPassword, CanExecuteResetPassword);
@@ -59,35 +51,36 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private void ExecuteGoBack()
         {
-            _logger.LogInformation("UserDetailView - 返回命令执行（骨架实现）");
+            Logger.LogInformation("UserDetailView - 返回命令执行（骨架实现）");
 
             // TODO: Phase 4C - 实现返回导航
+            // NavigateBack(RegionNames.MainRegion);
         }
 
         private void ExecuteEditUser()
         {
-            _logger.LogInformation("UserDetailView - 编辑用户命令执行（骨架实现）");
-            _logger.LogDebug("用户ID: {UserId}", User?.Id);
+            Logger.LogInformation("UserDetailView - 编辑用户命令执行（骨架实现）");
+            Logger.LogDebug("用户ID: {UserId}", User?.Id);
 
             // TODO: Phase 4C - 实现编辑用户逻辑
         }
 
         private bool CanExecuteEditUser()
         {
-            return User != null && !IsLoading;
+            return User != null && !IsBusy;
         }
 
         private void ExecuteResetPassword()
         {
-            _logger.LogInformation("UserDetailView - 重置密码命令执行（骨架实现）");
-            _logger.LogDebug("用户ID: {UserId}", User?.Id);
+            Logger.LogInformation("UserDetailView - 重置密码命令执行（骨架实现）");
+            Logger.LogDebug("用户ID: {UserId}", User?.Id);
 
             // TODO: Phase 4C - 实现重置密码逻辑
         }
 
         private bool CanExecuteResetPassword()
         {
-            return User != null && !IsLoading;
+            return User != null && !IsBusy;
         }
     }
 }

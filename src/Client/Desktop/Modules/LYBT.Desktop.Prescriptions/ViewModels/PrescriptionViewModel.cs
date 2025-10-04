@@ -1,25 +1,16 @@
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
+using Prism.Regions;
 
 namespace LYBT.Desktop.Prescriptions.ViewModels
 {
     /// <summary>
-    /// 处方视图模型 - Phase 4B 骨架实现
+    /// 处方视图模型 - Phase 4B 骨架实现（已统一架构）
     /// </summary>
-    public class PrescriptionViewModel : BindableBase
+    public class PrescriptionViewModel : UnifiedViewModelBase
     {
-        private readonly ILogger<PrescriptionViewModel> _logger;
-        private bool _isLoading;
-
-        /// <summary>
-        /// 是否正在加载
-        /// </summary>
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
 
         /// <summary>
         /// 添加药材命令
@@ -66,10 +57,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand SetDosageCommand { get; }
 
-        public PrescriptionViewModel(ILoggerFactory loggerFactory)
+        public PrescriptionViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager)
+            : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
-            _logger = loggerFactory?.CreateLogger<PrescriptionViewModel>()
-                ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             AddHerbCommand = new DelegateCommand(ExecuteAddHerb, CanExecuteCommand);
             ClearCommand = new DelegateCommand(ExecuteClear, CanExecuteCommand);
@@ -84,61 +77,61 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private void ExecuteAddHerb()
         {
-            _logger.LogInformation("PrescriptionView - 添加药材命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 添加药材命令执行（骨架实现）");
             // TODO: Phase 4C - 实现添加药材逻辑
         }
 
         private void ExecuteClear()
         {
-            _logger.LogInformation("PrescriptionView - 清除命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 清除命令执行（骨架实现）");
             // TODO: Phase 4C - 实现清除逻辑
         }
 
         private void ExecuteImportFormula()
         {
-            _logger.LogInformation("PrescriptionView - 导入配方命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 导入配方命令执行（骨架实现）");
             // TODO: Phase 4C - 实现导入配方逻辑
         }
 
         private void ExecuteImportHistory()
         {
-            _logger.LogInformation("PrescriptionView - 导入历史命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 导入历史命令执行（骨架实现）");
             // TODO: Phase 4C - 实现导入历史逻辑
         }
 
         private void ExecutePrintPreview()
         {
-            _logger.LogInformation("PrescriptionView - 打印预览命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 打印预览命令执行（骨架实现）");
             // TODO: Phase 4C - 实现打印预览逻辑
         }
 
         private void ExecuteRemoveHerb()
         {
-            _logger.LogInformation("PrescriptionView - 移除药材命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 移除药材命令执行（骨架实现）");
             // TODO: Phase 4C - 实现移除药材逻辑
         }
 
         private void ExecuteSave()
         {
-            _logger.LogInformation("PrescriptionView - 保存命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 保存命令执行（骨架实现）");
             // TODO: Phase 4C - 实现保存逻辑
         }
 
         private void ExecuteSetDiscount()
         {
-            _logger.LogInformation("PrescriptionView - 设置折扣命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 设置折扣命令执行（骨架实现）");
             // TODO: Phase 4C - 实现设置折扣逻辑
         }
 
         private void ExecuteSetDosage()
         {
-            _logger.LogInformation("PrescriptionView - 设置剂量命令执行（骨架实现）");
+            Logger.LogInformation("PrescriptionView - 设置剂量命令执行（骨架实现）");
             // TODO: Phase 4C - 实现设置剂量逻辑
         }
 
         private bool CanExecuteCommand()
         {
-            return !IsLoading;
+            return !IsBusy;
         }
     }
 }

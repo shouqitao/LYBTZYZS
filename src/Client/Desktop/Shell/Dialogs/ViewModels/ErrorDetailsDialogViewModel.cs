@@ -1,15 +1,17 @@
 ﻿using System.Windows;
+using LYBT.Desktop.Models.ViewModels.Base;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
-using Prism.Mvvm;
+using Prism.Events;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
 
     /// <summary>
-    /// 错误详情对话框视图模型
+    /// 错误详情对话框视图模型（已统一架构）
     /// </summary>
-    public class ErrorDetailsDialogViewModel : BindableBase
+    public class ErrorDetailsDialogViewModel : ViewModelBase
     {
         private SharedCommon.HandledError _handledError;
 
@@ -51,7 +53,11 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         public event EventHandler? RetryRequested;
 
-        public ErrorDetailsDialogViewModel(SharedCommon.HandledError handledError)
+        public ErrorDetailsDialogViewModel(
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            SharedCommon.HandledError handledError)
+            : base(eventAggregator, loggerFactory)
         {
             _handledError = handledError ?? throw new ArgumentNullException(nameof(handledError));
 
@@ -108,19 +114,12 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 
         private void ExecuteCopyError()
         {
-            try
+            ExecuteSafely(() =>
             {
                 var errorInfo = BuildErrorSummary();
                 Clipboard.SetText(errorInfo);
-
-                // 可以显示一个简短的成功提示
-                // 这里暂时使用调试输出
-                System.Diagnostics.Debug.WriteLine("错误信息已复制到剪贴板");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"复制错误信息失败: {ex.Message}");
-            }
+                Logger.LogInformation("错误信息已复制到剪贴板");
+            }, "复制错误信息");
         }
 
         private string BuildErrorSummary()
