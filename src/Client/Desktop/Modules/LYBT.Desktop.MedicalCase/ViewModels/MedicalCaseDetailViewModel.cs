@@ -110,6 +110,41 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand CancelCommand { get; }
 
+        /// <summary>
+        /// 返回命令
+        /// </summary>
+        public DelegateCommand BackCommand { get; }
+
+        /// <summary>
+        /// 关闭命令（别名）
+        /// </summary>
+        public DelegateCommand CloseCommand { get; }
+
+        /// <summary>
+        /// 编辑命令
+        /// </summary>
+        public DelegateCommand EditCommand { get; }
+
+        /// <summary>
+        /// 打印命令
+        /// </summary>
+        public DelegateCommand PrintCommand { get; }
+
+        /// <summary>
+        /// 打印处方命令
+        /// </summary>
+        public DelegateCommand PrintPrescriptionCommand { get; }
+
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public DelegateCommand RefreshCommand { get; }
+
+        /// <summary>
+        /// 开始诊疗命令
+        /// </summary>
+        public DelegateCommand StartConsultationCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -129,8 +164,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
             CancelCommand = new DelegateCommand(Cancel);
 
+            // 初始化新增命令
+            BackCommand = new DelegateCommand(ExecuteBack);
+            CloseCommand = BackCommand; // 别名
+            EditCommand = new DelegateCommand(ExecuteEdit, CanEdit);
+            PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
+            PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription, CanPrintPrescription);
+            RefreshCommand = new DelegateCommand(async () => await ExecuteRefreshAsync());
+            StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation, CanStartConsultation);
+
             // 属性变更时刷新命令状态
-            PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
+            PropertyChanged += (s, e) => UpdateCommandStates();
         }
 
         #endregion
@@ -218,6 +262,176 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void Cancel()
         {
             NavigateBack("ContentRegion");
+        }
+
+        /// <summary>
+        /// 返回列表
+        /// </summary>
+        private void ExecuteBack()
+        {
+            NavigateTo("MainRegion", "MedicalCaseListView");
+        }
+
+        /// <summary>
+        /// 编辑病历
+        /// </summary>
+        private void ExecuteEdit()
+        {
+            try
+            {
+                Logger.LogInformation("编辑病历功能开发中");
+                ShowInfoMessage("编辑病历功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "编辑病历时发生异常");
+                ShowErrorMessage("编辑病历失败");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以编辑
+        /// </summary>
+        private bool CanEdit()
+        {
+            return !IsBusy && MedicalCase != null;
+        }
+
+        /// <summary>
+        /// 打印病历
+        /// </summary>
+        private void ExecutePrint()
+        {
+            try
+            {
+                Logger.LogInformation("打印病历: {MedicalCaseId}", MedicalCase?.Id);
+                ShowInfoMessage("打印病历功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打印病历时发生异常");
+                ShowErrorMessage("打印病历失败");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以打印
+        /// </summary>
+        private bool CanPrint()
+        {
+            return !IsBusy && MedicalCase != null;
+        }
+
+        /// <summary>
+        /// 打印处方
+        /// </summary>
+        private void ExecutePrintPrescription()
+        {
+            try
+            {
+                Logger.LogInformation("打印处方: {MedicalCaseId}", MedicalCase?.Id);
+                ShowInfoMessage("打印处方功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打印处方时发生异常");
+                ShowErrorMessage("打印处方失败");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以打印处方
+        /// </summary>
+        private bool CanPrintPrescription()
+        {
+            return !IsBusy && MedicalCase != null;
+        }
+
+        /// <summary>
+        /// 刷新数据
+        /// </summary>
+        private async Task ExecuteRefreshAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在刷新数据...");
+
+                if (MedicalCase == null)
+                {
+                    await ShowErrorMessageAsync("无法刷新：病历数据无效");
+                    return;
+                }
+
+                // 重新加载病历数据
+                var result = await _medicalCaseService.GetByIdAsync(MedicalCase.Id);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LoadMedicalCase(result.Data);
+                    await ShowSuccessMessageAsync("数据刷新成功");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync($"刷新失败: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新病历数据时发生异常");
+                await ShowErrorMessageAsync("刷新数据时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 开始诊疗
+        /// </summary>
+        private void ExecuteStartConsultation()
+        {
+            try
+            {
+                if (MedicalCase == null)
+                {
+                    ShowErrorMessage("无法开始诊疗：病历数据无效");
+                    return;
+                }
+
+                Logger.LogInformation("开始诊疗: {MedicalCaseId}", MedicalCase.Id);
+
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseId", MedicalCase.Id }
+                };
+
+                NavigateTo("MainRegion", "ConsultationMainView", parameters);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "开始诊疗时发生异常");
+                ShowErrorMessage("开始诊疗失败，请稍后重试");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以开始诊疗
+        /// </summary>
+        private bool CanStartConsultation()
+        {
+            return !IsBusy && MedicalCase != null;
+        }
+
+        /// <summary>
+        /// 更新命令状态
+        /// </summary>
+        private void UpdateCommandStates()
+        {
+            SaveCommand.RaiseCanExecuteChanged();
+            EditCommand.RaiseCanExecuteChanged();
+            PrintCommand.RaiseCanExecuteChanged();
+            PrintPrescriptionCommand.RaiseCanExecuteChanged();
+            StartConsultationCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

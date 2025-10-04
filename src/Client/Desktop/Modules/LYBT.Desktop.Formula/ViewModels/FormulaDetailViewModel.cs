@@ -259,6 +259,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand CopyFormulaCommand { get; }
 
+        /// <summary>
+        /// 打印命令
+        /// </summary>
+        public DelegateCommand PrintCommand { get; }
+
+        /// <summary>
+        /// 查看使用历史命令
+        /// </summary>
+        public DelegateCommand ViewUsageHistoryCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -281,6 +291,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             CancelEditCommand = new DelegateCommand(CancelEdit, CanCancelEdit);
             BackCommand = new DelegateCommand(NavigateBack);
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), CanCopyFormula);
+            PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
+            ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, CanViewUsageHistory);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -536,6 +548,42 @@ namespace LYBT.Desktop.Formula.ViewModels
             NavigateTo("MainRegion", "FormulaManagementView");
         }
 
+        /// <summary>
+        /// 打印配方
+        /// </summary>
+        private async void ExecutePrint()
+        {
+            try
+            {
+                Logger.LogInformation("打印配方: {FormulaId}", FormulaId);
+                // TODO: 实现打印逻辑
+                await ShowSuccessMessageAsync("打印功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打印配方时发生异常");
+                await ShowErrorMessageAsync("打印配方时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 查看使用历史
+        /// </summary>
+        private async void ExecuteViewUsageHistory()
+        {
+            try
+            {
+                Logger.LogInformation("查看配方使用历史: {FormulaId}", FormulaId);
+                // TODO: 实现查看使用历史逻辑
+                await ShowSuccessMessageAsync("查看使用历史功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "查看使用历史时发生异常");
+                await ShowErrorMessageAsync("查看使用历史时发生系统错误");
+            }
+        }
+
         #endregion
 
         #region 命令状态
@@ -574,6 +622,22 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         /// <summary>
+        /// 检查是否可以打印
+        /// </summary>
+        private bool CanPrint()
+        {
+            return !IsBusy && Formula != null;
+        }
+
+        /// <summary>
+        /// 检查是否可以查看使用历史
+        /// </summary>
+        private bool CanViewUsageHistory()
+        {
+            return !IsBusy && Formula != null;
+        }
+
+        /// <summary>
         /// 更新命令状态
         /// </summary>
         private void UpdateCommandStates()
@@ -582,6 +646,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             SaveCommand.RaiseCanExecuteChanged();
             CancelEditCommand.RaiseCanExecuteChanged();
             CopyFormulaCommand.RaiseCanExecuteChanged();
+            PrintCommand.RaiseCanExecuteChanged();
+            ViewUsageHistoryCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

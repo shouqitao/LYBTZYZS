@@ -135,6 +135,21 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand NextPageCommand { get; }
 
+        /// <summary>
+        /// 添加病历命令（别名）
+        /// </summary>
+        public DelegateCommand AddCommand { get; }
+
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        public DelegateCommand RefreshCommand { get; }
+
+        /// <summary>
+        /// 开始诊疗命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<MedicalCaseDto> StartConsultationCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -159,6 +174,11 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             ViewDetailCommand = new DelegateCommand(ViewDetail, CanViewDetail);
             PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), CanPreviousPage);
             NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), CanNextPage);
+
+            // 初始化别名和新增命令
+            AddCommand = CreateCommand; // 别名
+            RefreshCommand = new DelegateCommand(async () => await LoadDataAsync());
+            StartConsultationCommand = new DelegateCommand<MedicalCaseDto>(ExecuteStartConsultation, item => item != null && !IsBusy);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -346,6 +366,36 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             ViewDetailCommand.RaiseCanExecuteChanged();
             PreviousPageCommand.RaiseCanExecuteChanged();
             NextPageCommand.RaiseCanExecuteChanged();
+            StartConsultationCommand?.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 新增命令实现
+
+        /// <summary>
+        /// 开始诊疗
+        /// </summary>
+        private void ExecuteStartConsultation(MedicalCaseDto medicalCase)
+        {
+            if (medicalCase == null) return;
+
+            try
+            {
+                Logger.LogInformation("开始诊疗: {MedicalCaseId}", medicalCase.Id);
+
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseId", medicalCase.Id }
+                };
+
+                NavigateTo("MainRegion", "ConsultationMainView", parameters);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "开始诊疗时发生异常");
+                ShowErrorMessage("开始诊疗失败，请稍后重试");
+            }
         }
 
         #endregion

@@ -319,6 +319,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand BackCommand { get; }
 
+        /// <summary>
+        /// 清空所有命令（别名）
+        /// </summary>
+        public DelegateCommand ClearAllCommand { get; }
+
+        /// <summary>
+        /// 关闭命令
+        /// </summary>
+        public DelegateCommand CloseCommand { get; }
+
+        /// <summary>
+        /// 保存草稿命令
+        /// </summary>
+        public DelegateCommand SaveDraftCommand { get; }
+
+        /// <summary>
+        /// 保存处方命令（别名）
+        /// </summary>
+        public DelegateCommand SavePrescriptionCommand { get; }
+
+        /// <summary>
+        /// 编辑药材命令（DataGrid 行命令）
+        /// </summary>
+        public DelegateCommand<PrescriptionItemViewModel> EditHerbCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -351,6 +376,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
             // 初始化自有命令
             BackCommand = new DelegateCommand(Back);
+
+            // 初始化别名和新增命令
+            ClearAllCommand = ClearCommand; // 别名
+            CloseCommand = BackCommand; // 别名
+            SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft, CanSaveDraft);
+            SavePrescriptionCommand = SaveCommand; // 别名
+            EditHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(ExecuteEditHerb, item => item != null && !IsBusy);
 
             // 订阅事件
             SubscribeToEvents();
@@ -521,6 +553,50 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "重新计算价格时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 保存草稿
+        /// </summary>
+        private void ExecuteSaveDraft()
+        {
+            try
+            {
+                Logger.LogInformation("保存处方草稿");
+                ShowInfoMessage("保存草稿功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存草稿时发生异常");
+                ShowErrorMessage("保存草稿失败");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以保存草稿
+        /// </summary>
+        private bool CanSaveDraft()
+        {
+            return !IsBusy && PrescriptionItems.Count > 0;
+        }
+
+        /// <summary>
+        /// 编辑药材
+        /// </summary>
+        private void ExecuteEditHerb(PrescriptionItemViewModel item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                Logger.LogInformation("编辑药材: {HerbName}", item.HerbName);
+                ShowInfoMessage("编辑药材功能开发中");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "编辑药材时发生异常");
+                ShowErrorMessage("编辑药材失败");
             }
         }
 
