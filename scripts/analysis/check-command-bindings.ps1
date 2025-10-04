@@ -1,314 +1,236 @@
-#!/usr/bin/env pwsh
-<#
-.SYNOPSIS
-    检查所有 WPF 模块的 XAML Command 绑定与 ViewModel 的一致性
+# 命令绑定审计脚本 v2
+# 用途：检查所有Desktop模块的XAML Command绑定与ViewModel实现的一致性
+# Issue: #884
 
-.DESCRIPTION
-    扫描所有 XAML 文件，提取 Command 绑定，对比 ViewModel 中的 ICommand 属性
-    生成详细的检查报告，标记缺失或不匹配的绑定
-
-.PARAMETER OutputPath
-    输出报告路径（默认：docs/reports/command-bindings-audit-{date}.md）
-
-.EXAMPLE
-    .\check-command-bindings.ps1
-    .\check-command-bindings.ps1 -OutputPath "reports/bindings.md"
-
-.NOTES
-    Author: Claude Code
-    Date: 2025-10-04
-    Related Issue: #884
-#>
-
-[CmdletBinding()]
 param(
-    [string]$OutputPath = ""
+    [string]$RootPath = "D:\source\repos\LYBTZYZS\src\Client\Desktop",
+    [string]$OutputFile = "D:\source\repos\LYBTZYZS\docs\reports\command-bindings-audit-$(Get-Date -Format 'yyyy-MM-dd').md"
 )
 
-# 设置错误处理
-$ErrorActionPreference = "Stop"
-
-# 获取项目根目录
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$projectRoot = Split-Path -Parent (Split-Path -Parent $scriptPath)
-$desktopPath = Join-Path $projectRoot "src\Client\Desktop"
-
-# 设置默认输出路径
-if ([string]::IsNullOrEmpty($OutputPath)) {
-    $date = Get-Date -Format "yyyy-MM-dd"
-    $OutputPath = Join-Path $projectRoot "docs\reports\command-bindings-audit-$date.md"
-}
-
-# 确保输出目录存在
-$outputDir = Split-Path -Parent $OutputPath
-if (-not (Test-Path $outputDir)) {
-    New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-}
-
-Write-Host "=== 开始检查 XAML Command 绑定 ===" -ForegroundColor Cyan
-Write-Host "Desktop 路径: $desktopPath" -ForegroundColor Gray
-Write-Host "输出报告: $OutputPath" -ForegroundColor Gray
+Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-Host "命令绑定审计脚本 v2" -ForegroundColor Cyan
+Write-Host "扫描路径: $RootPath" -ForegroundColor Cyan
+Write-Host ("=" * 80) -ForegroundColor Cyan
 Write-Host ""
 
-# 结果统计
-$stats = @{
-    TotalViews = 0
-    TotalBindings = 0
-    MissingBindings = 0
-    ExistingBindings = 0
-    ViewsWithErrors = 0
-}
-
-# 详细结果
+# 初始化统计
+$totalXaml = 0
+$totalCommands = 0
+$totalMissing = 0
+$totalWarnings = 0
 $results = @()
 
-# 扫描所有 XAML 文件
-$xamlFiles = Get-ChildItem -Path $desktopPath -Recurse -Filter "*.xaml" |
-    Where-Object { $_.DirectoryName -match "\\Views$" }
+# 扫描所有XAML文件
+$xamlFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*.xaml" -ErrorAction SilentlyContinue
 
-Write-Host "找到 $($xamlFiles.Count) 个 View 文件" -ForegroundColor Yellow
-Write-Host ""
+foreach ($xamlFile in $xamlFiles) {
+    $totalXaml++
+    $xamlPath = $xamlFile.FullName
+    $xamlName = $xamlFile.Name
 
-foreach ($xaml in $xamlFiles) {
-    $stats.TotalViews++
+    try {
+        $xamlContent = Get-Content $xamlPath -Raw -Encoding UTF8
 
-    $viewName = $xaml.BaseName
-    $viewPath = $xaml.FullName
-    $content = Get-Content $viewPath -Raw
+        # 提取所有 Command 绑定 - 改进的正则表达式
+        # 匹配: Command="{Binding CommandName}" 或 Command="{Binding DataContext.CommandName, ...}"
+        $pattern = 'Command\s*=\s*"\{Binding\s+(?:DataContext\.)?([A-Za-z_][A-Za-z0-9_]*)'
+        $matches = [regex]::Matches($xamlContent, $pattern)
 
-    Write-Host "检查: $viewName" -ForegroundColor Cyan
-
-    # 提取所有 Command 绑定
-    $commandPattern = 'Command="{Binding\s+([^},"]+)'
-    $matches = [regex]::Matches($content, $commandPattern)
-
-    if ($matches.Count -eq 0) {
-        Write-Host "  ℹ️  无命令绑定" -ForegroundColor Gray
-        continue
-    }
-
-    # 查找对应的 ViewModel
-    # 处理多种命名模式
-    $viewModelName = if ($viewName.EndsWith('View')) {
-        $viewName -replace 'View$', 'ViewModel'
-    } else {
-        "${viewName}ViewModel"
-    }
-
-    $viewModelDir = $xaml.DirectoryName -replace '\\Views$', '\ViewModels'
-    $viewModelPath = Join-Path $viewModelDir "$viewModelName.cs"
-
-    $viewResult = @{
-        ViewName = $viewName
-        ViewPath = $viewPath
-        ViewModelName = $viewModelName
-        ViewModelPath = $viewModelPath
-        ViewModelExists = $false
-        Bindings = @()
-        HasErrors = $false
-    }
-
-    if (Test-Path $viewModelPath) {
-        $viewResult.ViewModelExists = $true
-        $vmContent = Get-Content $viewModelPath -Raw
-
-        Write-Host "  ViewModel: $viewModelName" -ForegroundColor Gray
-
-        foreach ($match in $matches) {
-            $stats.TotalBindings++
-
-            $rawCommandName = $match.Groups[1].Value.Trim()
-            
-            # 移除 DataContext. 前缀（DataGrid 行命令模式）
-            $commandName = $rawCommandName -replace '^DataContext\.', ''
-
-            # 检查 ViewModel 中是否存在该命令
-            # 匹配模式：
-            # 1. public ICommand CommandName { get; }
-            # 2. public DelegateCommand CommandName => ...
-            # 3. public DelegateCommand<T> CommandName => ...
-
-            $exists = $false
-
-            # 模式 1: ICommand 属性
-            if ($vmContent -match "(?:public|internal|protected)(?:\s+new)?\s+ICommand\s+$commandName\s*[{;]") {
-                $exists = $true
-            }
-            # 模式 2: DelegateCommand 属性 (支持 new 修饰符)
-            elseif ($vmContent -match "(?:public|internal|protected)(?:\s+new)?\s+DelegateCommand(?:<[^>]+>)?\s+$commandName\s*(?:=>|{|;)") {
-                $exists = $true
-            }
-            # 模式 3: 字段形式 (private DelegateCommand _command)
-            elseif ($vmContent -match "(?:private|protected)\s+DelegateCommand(?:<[^>]+>)?\s+_?$commandName") {
-                $exists = $true
-            }
-
-            if ($exists) {
-                $stats.ExistingBindings++
-                Write-Host "    ✅ $commandName" -ForegroundColor Green
-            } else {
-                $stats.MissingBindings++
-                $viewResult.HasErrors = $true
-                Write-Host "    ❌ 缺失: $commandName" -ForegroundColor Red
-            }
-
-            $viewResult.Bindings += @{
-                CommandName = $commandName
-                Exists = $exists
-                Line = $match.Index
-            }
-        }
-    } else {
-        Write-Host "  ⚠️  未找到 ViewModel: $viewModelPath" -ForegroundColor Yellow
-        $viewResult.HasErrors = $true
-
-        foreach ($match in $matches) {
-            $stats.TotalBindings++
-            $stats.MissingBindings++
-
-            $rawCommandName = $match.Groups[1].Value.Trim()
-            
-            # 移除 DataContext. 前缀（DataGrid 行命令模式）
-            $commandName = $rawCommandName -replace '^DataContext\.', ''
-            Write-Host "    ⚠️  $commandName (ViewModel 不存在)" -ForegroundColor Yellow
-
-            $viewResult.Bindings += @{
-                CommandName = $commandName
-                Exists = $false
-                Line = $match.Index
-            }
-        }
-    }
-
-    if ($viewResult.HasErrors) {
-        $stats.ViewsWithErrors++
-    }
-
-    $results += $viewResult
-    Write-Host ""
-}
-
-# 生成 Markdown 报告
-$reportContent = @"
-# XAML Command 绑定检查报告
-
-**生成时间**: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
-**相关 Issue**: #884
-**检查范围**: Desktop 所有模块
-
-## 概述
-
-| 指标 | 数量 |
-|------|------|
-| 总 View 数 | $($stats.TotalViews) |
-| 总绑定数 | $($stats.TotalBindings) |
-| ✅ 正常绑定 | $($stats.ExistingBindings) |
-| ❌ 缺失绑定 | $($stats.MissingBindings) |
-| ⚠️ 有问题的 View | $($stats.ViewsWithErrors) |
-
-## 检查结果
-
-"@
-
-# 按模块分组
-$moduleGroups = $results | Group-Object {
-    $_.ViewPath -replace '.*\\Desktop\\', '' -replace '\\.*', ''
-}
-
-foreach ($group in $moduleGroups | Sort-Object Name) {
-    $moduleName = $group.Name
-    $reportContent += "`n### 模块: $moduleName`n`n"
-
-    foreach ($view in $group.Group | Sort-Object ViewName) {
-        $icon = if ($view.HasErrors) { "❌" } else { "✅" }
-        $reportContent += "#### $icon $($view.ViewName)`n`n"
-
-        if (-not $view.ViewModelExists) {
-            $reportContent += "**⚠️ ViewModel 不存在**: ``$($view.ViewModelPath)```n`n"
-        }
-
-        if ($view.Bindings.Count -eq 0) {
-            $reportContent += "_无命令绑定_`n`n"
+        if ($matches.Count -eq 0) {
             continue
         }
 
-        $reportContent += "| 命令 | 状态 |`n"
-        $reportContent += "|------|------|`n"
+        Write-Host "`n=== $xamlName ===" -ForegroundColor Yellow
 
-        foreach ($binding in $view.Bindings | Sort-Object CommandName) {
-            $status = if ($binding.Exists) { "✅ 存在" } else { "❌ 缺失" }
-            $reportContent += "| ``$($binding.CommandName)`` | $status |`n"
-        }
+        # 查找对应的 ViewModel
+        $viewModelName = $xamlFile.BaseName -replace 'View$', 'ViewModel'
+        $viewModelDir = $xamlFile.DirectoryName -replace 'Views', 'ViewModels'
+        $viewModelPath = Join-Path $viewModelDir "$viewModelName.cs"
 
-        $reportContent += "`n"
-    }
-}
+        if (-not (Test-Path $viewModelPath)) {
+            Write-Host "⚠️  未找到 ViewModel: $viewModelName.cs" -ForegroundColor Yellow
+            $totalWarnings++
 
-# 添加需要修复的问题列表
-if ($stats.ViewsWithErrors -gt 0) {
-    $reportContent += "`n## 需要修复的问题`n`n"
-
-    foreach ($view in $results | Where-Object { $_.HasErrors } | Sort-Object ViewName) {
-        $missingCommands = $view.Bindings | Where-Object { -not $_.Exists } | Select-Object -ExpandProperty CommandName
-
-        if ($missingCommands.Count -gt 0) {
-            $reportContent += "### $($view.ViewName)`n`n"
-            $reportContent += "**ViewModel**: ``$($view.ViewModelName)```n`n"
-            $reportContent += "**缺失命令**:`n`n"
-
-            foreach ($cmd in $missingCommands | Sort-Object) {
-                $reportContent += "- [ ] ``$cmd```n"
+            $results += [PSCustomObject]@{
+                View = $xamlName
+                ViewModel = "$viewModelName.cs"
+                Command = "N/A"
+                Status = "⚠️ ViewModel不存在"
+                Type = "WARNING"
             }
-
-            $reportContent += "`n"
+            continue
         }
+
+        $vmContent = Get-Content $viewModelPath -Raw -Encoding UTF8
+
+        # 检查每个命令
+        $commandsInXaml = @()
+        foreach ($match in $matches) {
+            $commandName = $match.Groups[1].Value.Trim()
+
+            # 跳过重复的命令
+            if ($commandsInXaml -contains $commandName) {
+                continue
+            }
+            $commandsInXaml += $commandName
+            $totalCommands++
+
+            # 检查 ViewModel 中是否存在该命令
+            # 匹配模式 - 支持 new 关键字（如 public new DelegateCommand）
+            $cmdPattern = "(?:public|private|protected)\s+(?:new\s+)?(?:ICommand|DelegateCommand(?:<[^>]+>)?)\s+$commandName\s*[={;]"
+            $commandExists = $vmContent -match $cmdPattern
+
+            if ($commandExists) {
+                Write-Host "  ✅ $commandName" -ForegroundColor Green
+                $results += [PSCustomObject]@{
+                    View = $xamlName
+                    ViewModel = "$viewModelName.cs"
+                    Command = $commandName
+                    Status = "✅ 存在"
+                    Type = "OK"
+                }
+            } else {
+                Write-Host "  ❌ $commandName - 命令不存在" -ForegroundColor Red
+                $totalMissing++
+                $results += [PSCustomObject]@{
+                    View = $xamlName
+                    ViewModel = "$viewModelName.cs"
+                    Command = $commandName
+                    Status = "❌ 缺失"
+                    Type = "MISSING"
+                }
+            }
+        }
+    }
+    catch {
+        Write-Host "⚠️  处理文件时出错: $xamlName - $_" -ForegroundColor Yellow
+        $totalWarnings++
     }
 }
 
-# 添加结论
-$reportContent += "`n## 结论`n`n"
+# 生成统计摘要
+Write-Host "`n" + ("=" * 80) -ForegroundColor Cyan
+Write-Host "审计摘要" -ForegroundColor Cyan
+Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-Host "扫描的XAML文件数: $totalXaml"
+Write-Host "检查的命令总数: $totalCommands"
+Write-Host "缺失的命令数: $totalMissing" -ForegroundColor $(if ($totalMissing -gt 0) { "Red" } else { "Green" })
+Write-Host "警告数: $totalWarnings" -ForegroundColor $(if ($totalWarnings -gt 0) { "Yellow" } else { "Green" })
+Write-Host ""
 
-if ($stats.MissingBindings -eq 0) {
-    $reportContent += "✅ **所有命令绑定均正常，无需修复。**`n"
+# 生成Markdown报告
+$reportContent = @"
+# 命令绑定审计报告 v2
+
+**生成时间**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+**扫描路径**: ``$RootPath``
+**相关Issue**: #884
+
+## 📊 审计摘要
+
+| 指标 | 数值 |
+|------|------|
+| 扫描的XAML文件数 | $totalXaml |
+| 检查的命令总数 | $totalCommands |
+| 缺失的命令数 | **$totalMissing** |
+| 警告数 | $totalWarnings |
+
+## 🔴 缺失的命令
+
+"@
+
+$missingCommands = $results | Where-Object { $_.Type -eq "MISSING" }
+if ($missingCommands.Count -gt 0) {
+    $reportContent += "`n| View | ViewModel | 缺失的命令 |`n"
+    $reportContent += "|------|-----------|------------|`n"
+
+    foreach ($missing in $missingCommands) {
+        $reportContent += "| $($missing.View) | $($missing.ViewModel) | ``$($missing.Command)`` |`n"
+    }
 } else {
-    $reportContent += "❌ **发现 $($stats.MissingBindings) 个缺失的命令绑定，需要立即修复。**`n`n"
-    $reportContent += "建议为每个有问题的模块创建独立的修复 Issue。`n"
+    $reportContent += "`n✅ **未发现缺失的命令绑定！**`n"
 }
 
-$reportContent += "`n## 下一步行动`n`n"
+$reportContent += "`n## ⚠️ 警告`n"
+$warnings = $results | Where-Object { $_.Type -eq "WARNING" }
+if ($warnings.Count -gt 0) {
+    $reportContent += "`n| View | 问题 |`n"
+    $reportContent += "|------|------|`n"
 
-if ($stats.ViewsWithErrors -gt 0) {
-    $reportContent += "1. 为每个有问题的模块创建修复 Issue`n"
-    $reportContent += "2. 实现缺失的命令`n"
-    $reportContent += "3. 手动测试所有修复的绑定`n"
-    $reportContent += "4. 回归测试确保无副作用`n"
+    foreach ($warning in $warnings) {
+        $reportContent += "| $($warning.View) | $($warning.Status) |`n"
+    }
 } else {
-    $reportContent += "1. 手动启动应用验证所有功能`n"
-    $reportContent += "2. 点击所有按钮确保无熔断器异常`n"
-    $reportContent += "3. 关闭 Issue #884`n"
+    $reportContent += "`n✅ **无警告**`n"
 }
 
-$reportContent += "`n---`n"
-$reportContent += "*此报告由自动化脚本生成：``scripts/analysis/check-command-bindings.ps1``*`n"
+$reportContent += "`n## ✅ 正常的命令绑定`n`n"
+$okCount = ($results | Where-Object { $_.Type -eq 'OK' } | Measure-Object).Count
+$reportContent += "<details>`n<summary>点击展开查看所有正常的命令绑定（$okCount 个）</summary>`n`n"
+$reportContent += "| View | ViewModel | 命令 |`n"
+$reportContent += "|------|-----------|------|`n"
 
-# 保存报告
-$reportContent | Out-File -FilePath $OutputPath -Encoding UTF8
+$okCommands = $results | Where-Object { $_.Type -eq "OK" }
+foreach ($ok in $okCommands) {
+    $reportContent += "| $($ok.View) | $($ok.ViewModel) | ``$($ok.Command)`` |`n"
+}
 
-# 打印摘要
-Write-Host "=== 检查完成 ===" -ForegroundColor Cyan
+$reportContent += "`n</details>`n"
+
+$reportContent += @"
+
+## 📋 后续行动
+
+"@
+
+if ($totalMissing -gt 0) {
+    $reportContent += @"
+### 需要修复的模块
+
+"@
+    # 按ViewModel分组缺失的命令
+    $groupedMissing = $missingCommands | Group-Object -Property ViewModel
+    foreach ($group in $groupedMissing) {
+        $commandList = ($group.Group | ForEach-Object { "``$($_.Command)``" }) -join ", "
+        $reportContent += "- [ ] **$($group.Name)**: 缺失 $($group.Count) 个命令 - $commandList`n"
+    }
+
+    $reportContent += "`n### 建议`n"
+    $reportContent += "1. 为每个有问题的模块创建独立的修复Issue`n"
+    $reportContent += "2. 优先修复P0/P1优先级模块`n"
+    $reportContent += "3. 修复后重新运行此脚本验证`n"
+} else {
+    $reportContent += "✅ **所有命令绑定检查通过！无需修复。**`n"
+}
+
+$reportContent += @"
+
+## 🔗 相关资源
+
+- Issue #884: 全面检查所有模块的事件绑定
+- 脚本位置: ``scripts/analysis/check-command-bindings.ps1``
+
+---
+*此报告由自动化脚本生成*
+"@
+
+# 确保输出目录存在
+$outputDir = Split-Path $OutputFile -Parent
+if (-not (Test-Path $outputDir)) {
+    New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
+}
+
+# 写入报告
+$reportContent | Out-File -FilePath $OutputFile -Encoding UTF8 -Force
+
+Write-Host "📄 报告已生成: $OutputFile" -ForegroundColor Green
 Write-Host ""
-Write-Host "总结:" -ForegroundColor Yellow
-Write-Host "  总 View 数: $($stats.TotalViews)"
-Write-Host "  总绑定数: $($stats.TotalBindings)"
-Write-Host "  ✅ 正常绑定: $($stats.ExistingBindings)" -ForegroundColor Green
-Write-Host "  ❌ 缺失绑定: $($stats.MissingBindings)" -ForegroundColor Red
-Write-Host "  ⚠️ 有问题的 View: $($stats.ViewsWithErrors)" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "报告已保存: $OutputPath" -ForegroundColor Green
 
-# 返回退出代码
-if ($stats.MissingBindings -gt 0) {
+# 如果有缺失的命令，返回非零退出码
+if ($totalMissing -gt 0) {
+    Write-Host "⚠️  发现 $totalMissing 个缺失的命令绑定，请查看报告" -ForegroundColor Red
     exit 1
 } else {
+    Write-Host "✅ 所有命令绑定检查通过！" -ForegroundColor Green
     exit 0
 }

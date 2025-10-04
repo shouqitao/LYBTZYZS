@@ -1,4 +1,4 @@
-# Desktop ViewModels 架构统一报告 - Issue #897
+﻿# Desktop ViewModels 架构统一报告 - Issue #897
 
 **执行日期**：2025-10-04
 **Issue**：#897 - 确认从 UnifiedViewModelBase 和 BindableBase 的设计，形成统一

@@ -1,4 +1,4 @@
-# EF Core Migrations 使用指南
+﻿# EF Core Migrations 使用指南
 
 ## 概述
 

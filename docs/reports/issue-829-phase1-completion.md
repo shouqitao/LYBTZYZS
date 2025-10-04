@@ -1,4 +1,4 @@
-# Issue #829: Desktop Prism Phase 1 完成报告
+﻿# Issue #829: Desktop Prism Phase 1 完成报告
 
 **Issue**: #829
 **标题**: [Phase 1] Desktop Prism 基础重构（2-3周）
