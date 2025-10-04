@@ -60,7 +60,8 @@ jobs:
           --logger "trx;LogFileName=TestResults.trx" \
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute"
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" \
+          -- xUnit.ParallelizeTestCollections=false
 
     - name: 📊 生成覆盖率报告
       run: |

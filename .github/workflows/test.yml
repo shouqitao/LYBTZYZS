@@ -60,7 +60,8 @@ jobs:
           --settings .runsettings `
           --logger "trx;LogFileName=$projectName.trx" `
           --logger "html;LogFileName=$projectName.html" `
-          --collect:"XPlat Code Coverage"
+          --collect:"XPlat Code Coverage" `
+          -- xUnit.ParallelizeTestCollections=false
 
     - name: 上传测试结果
       uses: actions/upload-artifact@v4
@@ -127,6 +128,7 @@ jobs:
           --verbosity normal `
           --settings .runsettings `
           --logger "trx;LogFileName=integration-tests.trx" `
+          -- xUnit.ParallelizeTestCollections=false `
           
 
     - name: 运行 Python API 测试
