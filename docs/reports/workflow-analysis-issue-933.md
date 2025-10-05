@@ -1,4 +1,4 @@
-# Workflow 文件分析报告 - Issue #933
+﻿# Workflow 文件分析报告 - Issue #933
 
 **分析日期**: 2025-10-05
 **分析目标**: 将现有 22 个 workflow 文件合并为 ≤8 个高效workflow
