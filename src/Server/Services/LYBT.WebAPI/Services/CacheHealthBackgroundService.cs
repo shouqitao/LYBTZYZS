@@ -1,5 +1,5 @@
-﻿using LYBT.Core.Infrastructure.Caching.Interfaces;
-using LYBT.Core.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Caching.Interfaces;
+using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Services

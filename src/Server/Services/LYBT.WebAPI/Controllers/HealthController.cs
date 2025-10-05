@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Asp.Versioning;
-using LYBT.Core.Infrastructure.Data;
-using LYBT.Core.Infrastructure.Web;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -311,12 +311,12 @@ public class HealthController : BaseApiController
         {
             // 使用 EF Core LINQ 查询替代原始 SQL，更安全且类型安全
             // 注意：这里使用轻量级的 Any() 检查而非 Count()，性能更好
-            var hasUsers = await _dbContext.Set<LYBT.Core.Entities.Users.User>().AnyAsync();
-            var hasPatients = await _dbContext.Set<LYBT.Core.Entities.Patients.Patient>().AnyAsync();
+            var hasUsers = await _dbContext.Set<LYBT.Entities.Users.User>().AnyAsync();
+            var hasPatients = await _dbContext.Set<LYBT.Entities.Patients.Patient>().AnyAsync();
 
             // 如果需要具体数量，可以选择性地获取（仅在数据存在时）
-            var userCount = hasUsers ? await _dbContext.Set<LYBT.Core.Entities.Users.User>().CountAsync() : 0;
-            var patientCount = hasPatients ? await _dbContext.Set<LYBT.Core.Entities.Patients.Patient>().CountAsync() : 0;
+            var userCount = hasUsers ? await _dbContext.Set<LYBT.Entities.Users.User>().CountAsync() : 0;
+            var patientCount = hasPatients ? await _dbContext.Set<LYBT.Entities.Patients.Patient>().CountAsync() : 0;
 
             check.Status = hasUsers ? "Healthy" : "Degraded";
             check.Description = hasUsers

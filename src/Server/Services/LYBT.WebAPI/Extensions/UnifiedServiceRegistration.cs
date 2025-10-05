@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
-using LYBT.Core.Infrastructure.Configuration.Extensions;
-using LYBT.Core.Infrastructure.Configuration.Options;
+using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth;
 using LYBT.Module.Consultation;
 using LYBT.Module.Formula;
@@ -159,8 +159,8 @@ public static class UnifiedServiceRegistration
         if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
         {
             // 使用 NullCacheService
-            services.AddSingleton<LYBT.Core.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.NullCacheService>();
-            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.NullCacheService>(); // 移除复杂缓存
+            services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.NullCacheService>();
+            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.NullCacheService>(); // 移除复杂缓存
         }
         else
         {
@@ -173,8 +173,8 @@ public static class UnifiedServiceRegistration
             });
 
             // 使用 MemoryCacheAdapter
-            services.AddSingleton<LYBT.Core.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.MemoryCacheAdapter>();
-            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Core.Infrastructure.Caching.Adapters.MemoryCacheAdapter>(); // 移除复杂缓存
+            services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.MemoryCacheAdapter>();
+            // services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.MemoryCacheAdapter>(); // 移除复杂缓存
 
             // 缓存诊断服务（Phase 3缓存治理）
             // TODO: 实现 CacheDiagnosticsService 后启用

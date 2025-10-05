@@ -1,4 +1,4 @@
-﻿using LYBT.Core.Infrastructure.Utilities;
+﻿using LYBT.Infrastructure.Utilities;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
