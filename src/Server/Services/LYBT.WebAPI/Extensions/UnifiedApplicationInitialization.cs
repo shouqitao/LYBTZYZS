@@ -1,7 +1,4 @@
-﻿// using LYBT.Infrastructure.Configuration; // Removed - SimplifiedConfigurationService eliminated
-
-// using LYBT.WebAPI.Services; // Removed - enterprise services
-namespace LYBT.WebAPI.Extensions;
+﻿namespace LYBT.WebAPI.Extensions;
 
 /// <summary>
 /// 统一应用初始化管理 - UltraThink初始化系统

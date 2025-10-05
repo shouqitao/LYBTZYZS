@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using AutoMapper;
-// using LYBT.Module.Auth.Mapping; // 已简化，Auth模块不再使用AutoMapper
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Formula.Mapping;
 using LYBT.Module.Herbs.Mapping;
