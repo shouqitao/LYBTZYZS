@@ -1,8 +1,10 @@
 using FluentAssertions;
 using LYBT.Tests.IntegrationTests;
 using LYBT.WebAPI;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Xunit;
 
@@ -258,7 +260,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
                 Password = "LybtAdmin2025@SecurePass!"
             };
 
-            await developmentFactory.InitializeTestDatabaseAsync();
+            await _factory.InitializeTestDatabaseAsync();
             var loginResponse = await developmentClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
             
             if (loginResponse.Headers.TryGetValues("Authorization", out var authHeaders))
@@ -309,7 +311,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
                 Password = "LybtAdmin2025@SecurePass!"
             };
 
-            await productionFactory.InitializeTestDatabaseAsync();
+            await _factory.InitializeTestDatabaseAsync();
             var loginResponse = await productionClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
             
             if (loginResponse.Headers.TryGetValues("Authorization", out var authHeaders))
@@ -364,9 +366,15 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             
             // 在开发环境中应该包含数据库检查
             var checksArray = checks.EnumerateArray().ToArray();
-            checksArray.Should().Contain(check => 
-                check.TryGetProperty("name", out var name) && 
-                name.GetString() == "db");
+            var hasDbCheck = checksArray.Any(check =>
+            {
+                if (check.TryGetProperty("name", out var name))
+                {
+                    return name.GetString() == "db";
+                }
+                return false;
+            });
+            hasDbCheck.Should().BeTrue();
         }
 
         #endregion
