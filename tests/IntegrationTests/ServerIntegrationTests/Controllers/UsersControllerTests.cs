@@ -1,15 +1,11 @@
-using FluentAssertions;
-using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Users;
-using LYBT.Shared.Models.Enums;
-using LYBT.Tests.IntegrationTests;
-using LYBT.WebAPI;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using FluentAssertions;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Tests.IntegrationTests.Controllers
@@ -86,7 +82,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
 
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, _jsonOptions);
-            
+
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();

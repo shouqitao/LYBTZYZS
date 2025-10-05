@@ -1,14 +1,10 @@
-using FluentAssertions;
-using LYBT.Infrastructure.Web;
-using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Tests.IntegrationTests;
-using LYBT.WebAPI;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using FluentAssertions;
+using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using Xunit;
 
 namespace LYBT.Tests.IntegrationTests.Controllers
@@ -53,18 +49,18 @@ namespace LYBT.Tests.IntegrationTests.Controllers
         private async Task<string> LoginAndGetTokenAsync()
         {
             await _factory.InitializeTestDatabaseAsync();
-            
+
             var loginRequest = GetValidLoginRequest();
             var response = await _client.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-            
+
             response.EnsureSuccessStatusCode();
-            
+
             // 从响应头获取token
             if (response.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 return authHeaders.First();
             }
-            
+
             throw new InvalidOperationException("登录失败：未找到Authorization头");
         }
 
@@ -86,12 +82,12 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<ApiResponse<LoginResponse>>(content, _jsonOptions);
-            
+
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.User.UserName.Should().Be("sysadmin");
-            
+
             // 验证响应头中有Authorization token
             response.Headers.Should().ContainKey("Authorization");
         }
@@ -172,7 +168,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             // Arrange
             var token = await LoginAndGetTokenAsync();
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+
             var logoutRequest = new LogoutRequest
             {
                 Username = "sysadmin"
@@ -211,7 +207,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             // Arrange
             var token = await LoginAndGetTokenAsync();
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+
             var logoutRequest = new LogoutRequest
             {
                 Username = ""
@@ -250,7 +246,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             // Arrange
             var token = await LoginAndGetTokenAsync();
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+
             var changePasswordRequest = new ChangeSysAdminPassword
             {
                 NewPassword = "NewValidPassword123!"
@@ -289,7 +285,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             // Arrange
             var token = await LoginAndGetTokenAsync();
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+
             var changePasswordRequest = new ChangeSysAdminPassword
             {
                 NewPassword = ""
@@ -310,7 +306,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             // Arrange
             var token = await LoginAndGetTokenAsync();
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+
             var changePasswordRequest = new ChangeSysAdminPassword
             {
                 NewPassword = "weak" // 弱密码
@@ -348,7 +344,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
         {
             // Arrange
             var token = await LoginAndGetTokenAsync();
-            
+
             // Act
             var response = await _client.PostAsJsonAsync("/api/v1/auth/refresh", token);
 

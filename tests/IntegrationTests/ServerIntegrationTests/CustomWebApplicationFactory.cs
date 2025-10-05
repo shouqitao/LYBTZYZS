@@ -1,13 +1,10 @@
+﻿using LYBT.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using LYBT.Infrastructure.Data;
-using LYBT.WebAPI;
-using System;
-using System.IO;
 
 namespace LYBT.Tests.IntegrationTests
 {
@@ -48,7 +45,7 @@ namespace LYBT.Tests.IntegrationTests
                 // 添加测试专用的SQL Server数据库
                 var configuration = BuildConfiguration();
                 var connectionString = configuration.GetConnectionString("SqlServerConnection");
-                
+
                 if (string.IsNullOrEmpty(connectionString))
                 {
                     throw new InvalidOperationException("未找到SQL Server连接字符串配置");
@@ -67,7 +64,7 @@ namespace LYBT.Tests.IntegrationTests
                             maxRetryDelay: TimeSpan.FromSeconds(5),
                             errorNumbersToAdd: null);
                     });
-                    
+
                     // 启用详细错误信息用于测试
                     options.EnableSensitiveDataLogging();
                     options.EnableDetailedErrors();
@@ -104,7 +101,7 @@ namespace LYBT.Tests.IntegrationTests
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
+
             try
             {
                 await context.Database.EnsureCreatedAsync();
@@ -124,7 +121,7 @@ namespace LYBT.Tests.IntegrationTests
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
+
             try
             {
                 await context.Database.EnsureDeletedAsync();
@@ -153,7 +150,7 @@ namespace LYBT.Tests.IntegrationTests
                     }
                 });
             }
-            
+
             base.Dispose(disposing);
         }
     }
