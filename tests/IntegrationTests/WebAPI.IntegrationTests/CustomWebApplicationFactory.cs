@@ -12,6 +12,12 @@ namespace LYBT.WebAPI.Tests;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    public CustomWebApplicationFactory()
+    {
+        // 在 Program.cs 读取环境变量之前设置测试环境
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // 使用测试环境（会自动加载 appsettings.Test.json）
