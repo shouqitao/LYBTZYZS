@@ -5,6 +5,8 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Services.HealthCheck;
+using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Services.Modules;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -28,6 +30,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private readonly IRegionManager _regionManager;
     private readonly IApplicationCommands _applicationCommands;
     private readonly IModuleLoadingService _moduleLoadingService;
+    private readonly IApiHealthCheckService _apiHealthCheckService;
 
     /// <summary>
     /// 构造函数 - 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
@@ -44,12 +47,14 @@ public class MainWindowViewModel : UnifiedViewModelBase
         ILoggerFactory loggerFactory,
         LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands,
-        IModuleLoadingService moduleLoadingService) : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
+        IModuleLoadingService moduleLoadingService,
+        IApiHealthCheckService apiHealthCheckService) : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
+        _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
 
         // 按照Prism 8.x最佳实践，在构造函数中完成初始化
         InitializeViewModel();
@@ -62,6 +67,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private bool _isLoggedIn = false;
     private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     private System.Windows.Threading.DispatcherTimer _clockTimer = null!;
+
+    // API 健康检查相关字段
+    private System.Windows.Threading.DispatcherTimer _healthCheckTimer = null!;
+    private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
     /// <summary>
     /// 获取或设置窗口标题
@@ -112,6 +121,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
         set => SetProperty(ref _currentTime, value);
     }
 
+    /// <summary>
+    /// 获取或设置 API 健康状态
+    /// 每 10 秒自动更新
+    /// </summary>
+    public ApiHealthStatus ApiStatus
+    {
+        get => _apiStatus;
+        set => SetProperty(ref _apiStatus, value);
+    }
+
     /// <summary>获取是否未登录状态，用于界面绑定</summary>
     public bool IsNotLoggedIn => !_isLoggedIn;
 
@@ -140,6 +159,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>主题切换命令</summary>
     public DelegateCommand ToggleThemeCommand { get; set; } = null!;
+
+    /// <summary>重试 API 健康检查命令</summary>
+    public DelegateCommand RetryHealthCheckCommand { get; set; } = null!;
 
     #endregion 命令属性
 
@@ -197,6 +219,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings)
             .ObservesProperty(() => IsLoggedIn);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
+        RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
 
         // Phase 3: 初始化全局命令键盘绑定
         // 这些命令已在ApplicationCommands中初始化，这里只需要暴露给View使用
@@ -215,6 +238,56 @@ public class MainWindowViewModel : UnifiedViewModelBase
         };
         _clockTimer.Tick += OnClockTick;
         _clockTimer.Start();
+    }
+
+    /// <summary>
+    /// 初始化 API 健康检查定时器
+    /// 每 10 秒自动检查一次 API 健康状态
+    /// </summary>
+    private void InitializeHealthCheck()
+    {
+        _healthCheckTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(10)
+        };
+        _healthCheckTimer.Tick += async (s, e) => await OnHealthCheckTickAsync();
+        _healthCheckTimer.Start();
+
+        // 立即执行第一次检查
+        _ = Task.Run(async () => await OnHealthCheckTickAsync());
+    }
+
+    /// <summary>
+    /// 健康检查定时器 Tick 事件处理
+    /// </summary>
+    private async Task OnHealthCheckTickAsync()
+    {
+        try
+        {
+            ApiStatus = ApiHealthStatus.Checking;
+            var status = await _apiHealthCheckService.CheckHealthAsync(timeout: 5000);
+            ApiStatus = status;
+
+            if (status == ApiHealthStatus.Unhealthy)
+            {
+                Logger.LogWarning("API 健康检查失败: {ErrorMessage}", _apiHealthCheckService.LastErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "执行 API 健康检查时发生异常");
+            ApiStatus = ApiHealthStatus.Unhealthy;
+        }
+    }
+
+    /// <summary>
+    /// 执行重试 API 健康检查
+    /// 由用户手动触发
+    /// </summary>
+    private async Task ExecuteRetryHealthCheckAsync()
+    {
+        Logger.LogInformation("用户手动触发 API 健康检查");
+        await OnHealthCheckTickAsync();
     }
 
     /// <summary>
@@ -249,6 +322,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private void InitializeViewModel()
     {
         InitializeClock();
+        InitializeHealthCheck();
         InitializeCommands();
         InitializeEvents();
     }
@@ -835,6 +909,14 @@ public class MainWindowViewModel : UnifiedViewModelBase
                 _clockTimer.Tick -= OnClockTick;
                 _clockTimer = null!;
                 System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
+            }
+
+            // 清理健康检查定时器
+            if (_healthCheckTimer != null)
+            {
+                _healthCheckTimer.Stop();
+                _healthCheckTimer = null!;
+                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
             }
 
             // 取消EventAggregator订阅
