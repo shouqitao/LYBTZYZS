@@ -22,7 +22,7 @@
     <RunParallel>true</RunParallel>
 
     <!-- 测试运行设置文件 -->
-    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\runsettings</RunSettingsFilePath>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <!-- 测试框架包版本管理 -->

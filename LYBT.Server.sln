@@ -47,7 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "Integra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAPI.IntegrationTests", "WebAPI.IntegrationTests", "{5D7E69B7-43D2-D4DA-24EF-3AEB6F01D601}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WebAPI.Tests", "tests\IntegrationTests\WebAPI.IntegrationTests\LYBT.WebAPI.Tests.csproj", "{EEEFFD34-5A1B-46DD-8746-D3206637A834}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.WebAPI.IntegrationTests", "tests\IntegrationTests\WebAPI.IntegrationTests\LYBT.WebAPI.IntegrationTests.csproj", "{EEEFFD34-5A1B-46DD-8746-D3206637A834}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{394A81D9-3C45-9818-BB26-23F2B85056FF}"
 EndProject

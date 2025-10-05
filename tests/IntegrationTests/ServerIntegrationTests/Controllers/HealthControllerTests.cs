@@ -1,9 +1,8 @@
-using FluentAssertions;
-using LYBT.Tests.IntegrationTests;
-using LYBT.WebAPI;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
+using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace LYBT.Tests.IntegrationTests.Controllers
@@ -70,7 +69,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             healthData.GetProperty("status").GetString().Should().Be("Healthy");
             healthData.TryGetProperty("timestamp", out _).Should().BeTrue();
         }
@@ -83,7 +82,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             {
                 builder.UseEnvironment("Production");
             });
-            
+
             using var productionClient = productionFactory.CreateClient();
 
             // Act
@@ -93,10 +92,10 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             healthData.GetProperty("status").GetString().Should().Be("Healthy");
             healthData.GetProperty("timestamp").ValueKind.Should().Be(JsonValueKind.String);
-            
+
             // 生产环境不应包含版本和环境信息
             healthData.TryGetProperty("version", out _).Should().BeFalse();
             healthData.TryGetProperty("environment", out _).Should().BeFalse();
@@ -110,7 +109,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             {
                 builder.UseEnvironment("Development");
             });
-            
+
             using var developmentClient = developmentFactory.CreateClient();
 
             // Act
@@ -120,10 +119,10 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             healthData.GetProperty("status").GetString().Should().Be("Healthy");
             healthData.GetProperty("timestamp").ValueKind.Should().Be(JsonValueKind.String);
-            
+
             // 开发环境应包含版本和环境信息
             healthData.TryGetProperty("version", out _).Should().BeTrue();
             healthData.TryGetProperty("environment", out _).Should().BeTrue();
@@ -156,7 +155,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var pingData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             pingData.GetProperty("message").GetString().Should().Be("pong");
             pingData.TryGetProperty("timestamp", out _).Should().BeTrue();
         }
@@ -174,7 +173,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var pingData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             pingData.GetProperty("message").GetString().Should().Be("pong");
         }
 
@@ -196,7 +195,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             foreach (var response in responses)
             {
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
-                
+
                 var content = await response.Content.ReadAsStringAsync();
                 var pingData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
                 pingData.GetProperty("message").GetString().Should().Be("pong");
@@ -220,7 +219,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             healthData.GetProperty("status").GetString().Should().BeOneOf("Healthy", "Degraded");
             healthData.TryGetProperty("checks", out var checks).Should().BeTrue();
             checks.ValueKind.Should().Be(JsonValueKind.Array);
@@ -248,9 +247,9 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             {
                 builder.UseEnvironment("Development");
             });
-            
+
             using var developmentClient = developmentFactory.CreateClient();
-            
+
             // 认证开发环境的客户端
             var loginRequest = new
             {
@@ -258,9 +257,9 @@ namespace LYBT.Tests.IntegrationTests.Controllers
                 Password = "LybtAdmin2025@SecurePass!"
             };
 
-            await developmentFactory.InitializeTestDatabaseAsync();
+            await _factory.InitializeTestDatabaseAsync();
             var loginResponse = await developmentClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-            
+
             if (loginResponse.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 var token = authHeaders.First();
@@ -274,12 +273,12 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             // 开发环境应包含完整信息
             healthData.TryGetProperty("uptimeMs", out _).Should().BeTrue();
             healthData.TryGetProperty("nowUtc", out _).Should().BeTrue();
             healthData.TryGetProperty("checks", out var checks).Should().BeTrue();
-            
+
             // 检查是否包含详细的检查信息
             if (checks.ValueKind == JsonValueKind.Array && checks.GetArrayLength() > 0)
             {
@@ -299,9 +298,9 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             {
                 builder.UseEnvironment("Production");
             });
-            
+
             using var productionClient = productionFactory.CreateClient();
-            
+
             // 认证生产环境的客户端
             var loginRequest = new
             {
@@ -309,9 +308,9 @@ namespace LYBT.Tests.IntegrationTests.Controllers
                 Password = "LybtAdmin2025@SecurePass!"
             };
 
-            await productionFactory.InitializeTestDatabaseAsync();
+            await _factory.InitializeTestDatabaseAsync();
             var loginResponse = await productionClient.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
-            
+
             if (loginResponse.Headers.TryGetValues("Authorization", out var authHeaders))
             {
                 var token = authHeaders.First();
@@ -325,15 +324,15 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             // 生产环境应只包含基本信息
             healthData.GetProperty("status").ValueKind.Should().Be(JsonValueKind.String);
             healthData.GetProperty("timestamp").ValueKind.Should().Be(JsonValueKind.String);
             healthData.TryGetProperty("checks", out var checks).Should().BeTrue();
-            
+
             // 生产环境不应包含详细信息
             healthData.TryGetProperty("uptimeMs", out _).Should().BeFalse();
-            
+
             // 检查项应该是简化的
             if (checks.ValueKind == JsonValueKind.Array && checks.GetArrayLength() > 0)
             {
@@ -359,14 +358,20 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
             var healthData = JsonSerializer.Deserialize<JsonElement>(content, _jsonOptions);
-            
+
             healthData.TryGetProperty("checks", out var checks).Should().BeTrue();
-            
+
             // 在开发环境中应该包含数据库检查
             var checksArray = checks.EnumerateArray().ToArray();
-            checksArray.Should().Contain(check => 
-                check.TryGetProperty("name", out var name) && 
-                name.GetString() == "db");
+            var hasDbCheck = checksArray.Any(check =>
+            {
+                if (check.TryGetProperty("name", out var name))
+                {
+                    return name.GetString() == "db";
+                }
+                return false;
+            });
+            hasDbCheck.Should().BeTrue();
         }
 
         #endregion
@@ -429,7 +434,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             {
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
             }
-            
+
             // 50个请求应该在合理时间内完成
             stopwatch.ElapsedMilliseconds.Should().BeLessThan(30000); // 30秒内完成
         }
