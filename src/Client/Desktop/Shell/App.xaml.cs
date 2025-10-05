@@ -126,10 +126,6 @@ public partial class App : PrismApplication
         }
     }
 
-
-
-
-
     /// <summary>
     /// 配置模块目录
     /// 基于角色的智能模块加载策略,显著提升启动性能
@@ -177,46 +173,6 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<ClinicalWorkstation.ClinicalWorkstationModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
-    }
-
-    /// <summary>
-    /// 添加核心模块
-    /// 核心模块在应用启动时立即加载
-    /// </summary>
-    /// <param name="moduleCatalog">模块目录</param>
-    /// <param name="moduleName">模块名称</param>
-    /// <param name="moduleType">模块类型</param>
-    private static void AddCoreModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType)
-    {
-        moduleCatalog.AddModule(new ModuleInfo
-        {
-            ModuleName = moduleName,
-            ModuleType = moduleType.AssemblyQualifiedName,
-            InitializationMode = InitializationMode.WhenAvailable
-        });
-    }
-
-    /// <summary>
-    /// 添加基于角色的智能模块配置
-    /// 根据用户角色决定模块加载时机,提升启动性能
-    /// </summary>
-    /// <param name="moduleCatalog">模块目录</param>
-    /// <param name="moduleName">模块名称</param>
-    /// <param name="moduleType">模块类型</param>
-    /// <param name="requiredRoles">所需角色数组</param>
-    private static void AddRoleBasedModule(IModuleCatalog moduleCatalog, string moduleName, Type moduleType, string[] requiredRoles)
-    {
-        var moduleInfo = new ModuleInfo
-        {
-            ModuleName = moduleName,
-            ModuleType = moduleType.AssemblyQualifiedName,
-
-            // 设为按需加载,登录后根据角色决定是否立即加载
-            InitializationMode = InitializationMode.OnDemand
-        };
-
-        // 记录模块角色信息(简化处理,当前不限制角色访问)
-        moduleCatalog.AddModule(moduleInfo);
     }
 
     /// <summary>

@@ -46,9 +46,7 @@ namespace LYBT.Desktop.Services.Extensions
             services.AddScoped<IHerbService, HerbService>();
             services.AddScoped<IFormulaService, FormulaService>();
             services.AddScoped<IConsultationService, ConsultationService>();
-            // TODO: AuthService 接口签名不兼容，需要单独Issue处理 - 暂时注释
-            // services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<AuthService>(); // 暂时注册为具体类型
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }
