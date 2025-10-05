@@ -43,14 +43,6 @@ namespace LYBT.Infrastructure.Data
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-
-        // public DbSet<LoginAttempt> LoginAttempts { get; set; } // UltraThink简化：暂时移除
-        // public DbSet<SecurityLog> SecurityLogs { get; set; } // UltraThink简化：暂时移除
-
-        // 安全审计 - UltraThink重构安全架构 (已移除过度设计的SecurityAuditLog)
-
-        // JWT令牌存储 - UltraThink安全优化 P8-01B (已移除过度设计的令牌实体存储)
-
         // 患者管理
         public DbSet<Patient> Patients { get; set; }
 
@@ -76,17 +68,6 @@ namespace LYBT.Infrastructure.Data
         // 系统日志
         public DbSet<SystemLog> SystemLogs { get; set; }
 
-        // 配伍管理 - 移除：HerbCompatibilityNote实体已删除
-
-        // ==================== 事务协调器相关实体 ====================
-        // UltraThink简化：移除未使用的分布式事务日志实体
-
-        // ==================== 日志相关实体 - UltraThink重构：简化 ====================
-
-        // ==================== 配置相关实体 ====================
-
-        // UltraThink v2.0简化：配置相关实体已移除，使用简化的配置管理
-
         /// <summary>
         /// 治疗目录
         /// </summary>
@@ -103,7 +84,6 @@ namespace LYBT.Infrastructure.Data
             ConfigureAuth(modelBuilder);
             ConfigurePatients(modelBuilder);
 
-            // ConfigureRegistrations(modelBuilder); // 模块已删除
             ConfigureMedicalCases(modelBuilder);
             ConfigureConsultations(modelBuilder);
             ConfigurePrescriptions(modelBuilder);
@@ -111,20 +91,8 @@ namespace LYBT.Infrastructure.Data
             ConfigureFormulas(modelBuilder);
             ConfigureSystemLogs(modelBuilder);
 
-            // ConfigureCompatibilityNotes(modelBuilder); // 移除：HerbCompatibilityNote实体已删除
-
-            // UltraThink简化：移除未使用的分布式事务日志配置
-
-            // ConfigurePharmacies(modelBuilder); // 模块已删除
-
-            // ConfigureCashiers(modelBuilder); // 模块已删除
-            // ConfigureTreatmentTasks(modelBuilder); // 模块已删除
-            // ConfigureSyncs(modelBuilder); // MVP阶段暂不需要
-
-            // ConfigureConfigurationModels(modelBuilder); // UltraThink v2.0简化：配置实体已移除
             ConfigureSecurityAudit(modelBuilder);
 
-            // ConfigureTokenStore(modelBuilder); // UltraThink安全优化 P8-01B (已移除过度设计的令牌存储)
         }
 
         private static void ConfigureUsers(ModelBuilder modelBuilder)
@@ -444,23 +412,6 @@ namespace LYBT.Infrastructure.Data
         // ConfigureCompatibilityNotes方法已删除 - HerbCompatibilityNote实体不再存在
 
         // UltraThink简化：ConfigureTransactions方法已删除（对应实体已清理）
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Sync模块MVP阶段暂不需要
 
         /// <summary>

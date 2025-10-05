@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -78,55 +78,55 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private void ExecuteAddHerb()
         {
             Logger.LogInformation("PrescriptionView - 添加药材命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现添加药材逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteClear()
         {
             Logger.LogInformation("PrescriptionView - 清除命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现清除逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteImportFormula()
         {
             Logger.LogInformation("PrescriptionView - 导入配方命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现导入配方逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteImportHistory()
         {
             Logger.LogInformation("PrescriptionView - 导入历史命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现导入历史逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecutePrintPreview()
         {
             Logger.LogInformation("PrescriptionView - 打印预览命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现打印预览逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteRemoveHerb()
         {
             Logger.LogInformation("PrescriptionView - 移除药材命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现移除药材逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteSave()
         {
             Logger.LogInformation("PrescriptionView - 保存命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现保存逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteSetDiscount()
         {
             Logger.LogInformation("PrescriptionView - 设置折扣命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现设置折扣逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private void ExecuteSetDosage()
         {
             Logger.LogInformation("PrescriptionView - 设置剂量命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现设置剂量逻辑
+            // 骨架实现，已废弃（RegisterForNavigation 已注释）
         }
 
         private bool CanExecuteCommand()

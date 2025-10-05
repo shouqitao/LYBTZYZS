@@ -68,10 +68,8 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private void ExecuteLogin()
         {
-            _logger.LogInformation("LoginWindow - 登录命令执行（骨架实现）");
+            _logger.LogInformation("LoginWindow - 登录命令执行（骨架实现，已由 LoginViewModel 替代）");
             _logger.LogDebug("用户名: {Username}", Username);
-
-            // TODO: Phase 4C - 实现实际登录逻辑
         }
 
         private bool CanExecuteLogin()

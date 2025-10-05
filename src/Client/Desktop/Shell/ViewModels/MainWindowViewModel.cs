@@ -699,8 +699,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             {
                 if (navigationResult.Result == true)
                 {
-                    // 成功导航后，可以发送事件触发快速开始诊疗流程
-                    // TODO: QuickStartConsultationEvent 已移除，需要使用新的事件机制
+                    Logger.LogInformation("成功导航到诊疗工作台");
                 }
             });
 

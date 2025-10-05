@@ -34,13 +34,13 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         private void ExecuteYes()
         {
             Logger.LogInformation("ConfirmationDialog - 是命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现确认逻辑
+            // 骨架实现,已由 UnifiedViewModelBase.ShowConfirmationAsync 替代
         }
 
         private void ExecuteNo()
         {
             Logger.LogInformation("ConfirmationDialog - 否命令执行（骨架实现）");
-            // TODO: Phase 4C - 实现取消逻辑
+            // 骨架实现,已由 UnifiedViewModelBase.ShowConfirmationAsync 替代
         }
     }
 }
