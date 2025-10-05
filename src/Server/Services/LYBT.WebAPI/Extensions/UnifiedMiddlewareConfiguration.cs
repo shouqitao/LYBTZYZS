@@ -1,4 +1,4 @@
-﻿using LYBT.Core.Infrastructure.Configuration.Options;
+﻿using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.WebAPI.Middleware;
 using Microsoft.Extensions.Options;

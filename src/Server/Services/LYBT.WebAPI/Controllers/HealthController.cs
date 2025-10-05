@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Asp.Versioning;
-using LYBT.Core.Infrastructure.Data;
-using LYBT.Core.Infrastructure.Web;
+using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

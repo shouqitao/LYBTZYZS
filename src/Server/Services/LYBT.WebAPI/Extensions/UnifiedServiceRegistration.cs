@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
-using LYBT.Core.Infrastructure.Configuration.Extensions;
-using LYBT.Core.Infrastructure.Configuration.Options;
+using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth;
 using LYBT.Module.Consultation;
 using LYBT.Module.Formula;
