@@ -11,7 +11,6 @@
         Background="White">
 
     <Window.Resources>
-        <!-- 转换器已在 UnifiedDesignSystem.xaml 全局定义 -->
         <local:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <local:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
     </Window.Resources>
