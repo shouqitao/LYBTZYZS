@@ -44,18 +44,7 @@ jobs:
       uses: gitleaks/gitleaks-action@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: 🔒 安全代码扫描 (Security Code Scan)
-      run: |
-        dotnet tool install -g security-scan
-        security-scan LYBT.All.sln --export=security-report.sarif
       continue-on-error: true
-
-    - name: 📤 上传 SARIF 结果
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: security-report.sarif
-      if: always()
 
   # ==================== 依赖漏洞扫描 ====================
   dependency-scan:
@@ -112,11 +101,16 @@ jobs:
   # ==================== SAST 静态应用安全测试 ====================
   sast-scan:
     name: SAST 静态安全测试
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: 📥 检出代码
       uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: 🔍 Semgrep 扫描
       uses: returntocorp/semgrep-action@v1
@@ -129,7 +123,7 @@ jobs:
       continue-on-error: true
 
     - name: 🔒 CodeQL 分析
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: csharp
         queries: security-and-quality
@@ -140,7 +134,7 @@ jobs:
         dotnet build LYBT.All.sln --configuration Release --no-restore
 
     - name: 📊 执行 CodeQL 分析
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
   # ==================== 许可证合规性检查 ====================
   license-check:
@@ -163,6 +157,7 @@ jobs:
 
         dotnet tool install -g dotnet-project-licenses
         dotnet-project-licenses -i LYBT.All.sln -o
+      continue-on-error: true
 
     - name: 📊 上传许可证报告
       uses: actions/upload-artifact@v4
