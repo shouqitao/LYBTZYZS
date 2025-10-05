@@ -12,8 +12,6 @@ using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
 using LYBT.Shared.Models.Enums;
-// TODO: Issue #815 Phase 3 - 恢复Workstation引用
-// using LYBT.Desktop.Workstation.Medical;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -189,9 +187,6 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);
 
         // ========== 工作台模块 - 用户触发加载 ==========
-        // 诊疗工作台 - 顶层集成模块
-        // TODO: Issue #815 Phase 3 - 恢复诊疗工作台模块
-        // moduleCatalog.AddModule<MedicalWorkstationModule>(InitializationMode.OnDemand);
 
         // 管理工作台 - 管理员角色使用
         moduleCatalog.AddModule<AdminWorkstation.AdminWorkstationModule>(InitializationMode.OnDemand);
