@@ -23,16 +23,28 @@ public class DatabaseInitializationService
     /// <summary>
     /// 初始化数据库 - 使用 EF Migrations
     /// </summary>
+    /// <summary>
+    /// 初始化数据库 - 使用 EF Migrations
+    /// </summary>
     public async Task InitializeDatabaseAsync()
     {
         try
         {
             _logger.LogInformation("开始初始化数据库并应用迁移");
 
-            // 使用 Migrations 自动应用待执行的迁移
-            await _context.Database.MigrateAsync();
-
-            _logger.LogInformation("数据库初始化完成，所有迁移已应用");
+            // 检查是否为关系型数据库（排除 InMemory 数据库）
+            if (_context.Database.IsRelational())
+            {
+                // 仅在关系型数据库上应用迁移
+                await _context.Database.MigrateAsync();
+                _logger.LogInformation("数据库初始化完成，所有迁移已应用");
+            }
+            else
+            {
+                // InMemory 或其他非关系型数据库，确保数据库已创建
+                await _context.Database.EnsureCreatedAsync();
+                _logger.LogInformation("数据库初始化完成（InMemory 数据库）");
+            }
         }
         catch (Exception ex)
         {
