@@ -61,9 +61,7 @@ namespace LYBT.Desktop.Services
             services.AddScoped<IPatientService, PatientService>();
             services.AddScoped<IConsultationService, ConsultationService>();
             services.AddScoped<IUserService, UserService>();
-            // TODO: AuthService 接口签名不兼容，需要单独Issue处理 - 暂时注释
-            // services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<AuthService>(); // 暂时注册为具体类型
+            services.AddScoped<IAuthService, AuthService>();
 
             // 注册内存缓存 - 带配置优化
             services.AddMemoryCache(options =>
