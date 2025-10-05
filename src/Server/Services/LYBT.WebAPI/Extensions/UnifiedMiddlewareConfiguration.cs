@@ -1,5 +1,5 @@
-﻿using LYBT.Infrastructure.Configuration.Options;
-using LYBT.Infrastructure.Configuration.Extensions;
+﻿using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Infrastructure.Configuration.Options;
 using LYBT.WebAPI.Middleware;
 using Microsoft.Extensions.Options;
 
