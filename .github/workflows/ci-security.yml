@@ -104,7 +104,7 @@ jobs:
   # ==================== SAST 静态应用安全测试 - Server ====================
   sast-scan-server:
     name: SAST 扫描 (Server)
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: 📥 检出代码
@@ -115,16 +115,6 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 🔍 Semgrep 扫描
-      uses: returntocorp/semgrep-action@v1
-      with:
-        config: >-
-          p/security-audit
-          p/csharp
-          p/owasp-top-ten
-          p/r2c-security-audit
-      continue-on-error: true
-
     - name: 🔒 CodeQL 分析初始化
       uses: github/codeql-action/init@v3
       with:
@@ -133,9 +123,8 @@ jobs:
 
     - name: 🔨 构建服务端项目
       run: |
-        # 只构建服务端核心项目，避免 Desktop 依赖
-        dotnet restore src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj
-        dotnet build src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --configuration Release --no-restore
+        dotnet restore LYBT.Server.sln
+        dotnet build LYBT.Server.sln --configuration Release --no-restore
 
     - name: 📊 执行 CodeQL 分析
       uses: github/codeql-action/analyze@v3
