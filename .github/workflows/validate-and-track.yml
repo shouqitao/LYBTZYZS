@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           msg=$(jq -r '.pull_request.title + "\n" + .pull_request.body' < $GITHUB_EVENT_PATH)
-          echo "$msg" | grep -E '\[(SRV|CLI|DOC|AUTH|USR|PAT|MC|CON|PRS|HRB|FRM|SHR|CI)\-[0-9]+\]' || {
+          echo "$msg" | grep -E '\[(SRV|CLI|DOC|AUTH|USR|PAT|MC|CON|PRS|HRB|FRM|SHR|CI|PRO)\-[0-9]+\]' || {
             echo 'ERROR: PR 未引用功能清单编号（如 [SRV-1]）' ; exit 1 ; }
 
   track:
@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           echo "ids=$(echo \"${{ github.event.pull_request.title }}
-          ${{ github.event.pull_request.body }}\" | grep -Eo '\\[(SRV|CLI|DOC|AUTH|USR|PAT|MC|CON|PRS|HRB|FRM|SHR|CI)\\-[0-9]+\\]' | tr -d '[]' | tr '\n' ' ' )" >> $GITHUB_OUTPUT
+          ${{ github.event.pull_request.body }}\" | grep -Eo '\\[(SRV|CLI|DOC|AUTH|USR|PAT|MC|CON|PRS|HRB|FRM|SHR|CI|PRO)\\-[0-9]+\\]' | tr -d '[]' | tr '\n' ' ' )" >> $GITHUB_OUTPUT
       - name: Comment merged PR (placeholder)
         if: ${{ github.event.pull_request.merged }}
         uses: actions/github-script@v7
