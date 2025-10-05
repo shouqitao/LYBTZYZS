@@ -41,15 +41,60 @@ jobs:
           # model: "claude-opus-4-1-20250805"
 
           # Direct prompt for automated review (no @claude mention needed)
+          # 中文审查提示 - C#/WPF 项目专项检查
           direct_prompt: |
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
-            
-            Be constructive and helpful in your feedback.
+            请对本 Pull Request 进行全面代码审查，重点关注：
+
+            ## 1. 架构合规性（最高优先级）
+            - ✅ 严格遵守 Record-Only 系统约束（仅 CRUD + 历史查询）
+            - ❌ 禁止使用：Docker, Kubernetes, Redis, CQRS, MediatR, Event-Driven, 微服务架构
+            - ❌ 禁止引入：GraphQL, gRPC, MessageQueue（RabbitMQ/Kafka）
+            - ✅ 确认符合 `.ai/rules.json` 和 `_governance/architecture.md` 定义的技术标准
+
+            ## 2. C# / .NET 8 最佳实践
+            - 命名规范：PascalCase（类型/公开成员）、`_camelCase`（私有字段）、UPPER_SNAKE_CASE（常量）
+            - 异步约定：涉及 I/O 的方法必须 `async/await`，方法名以 `Async` 结尾
+            - 依赖注入：仅使用构造函数注入，禁止 `ServiceLocator` 或 `Container.Resolve()`
+            - 资源管理：正确使用 `IDisposable` 和 `using` 语句
+            - Nullable 引用类型：正确处理可空性注解
+
+            ## 3. WPF / Prism MVVM 规范
+            - ViewModel 必须继承 `BindableBase` 或实现 `INotifyPropertyChanged`
+            - 导航使用 Prism `IRegionManager`，禁止直接 `new Window()`
+            - 对话框使用 Prism `IDialogService`，禁止 `MessageBox.Show()`
+            - 事件聚合使用 `IEventAggregator`
+            - 命令使用 `DelegateCommand` 或 `DelegateCommand<T>`
+
+            ## 4. 代码质量
+            - 单个文件控制在 ≤500 行
+            - 方法复杂度合理（圈复杂度 ≤10）
+            - 避免重复代码（DRY 原则）
+            - 清晰的注释（复杂逻辑必须注释）
+            - 魔法数字提取为常量
+
+            ## 5. 安全性
+            - SQL 注入防护（使用参数化查询）
+            - 敏感信息不得硬编码（密码、密钥、连接串）
+            - 输入验证与清理
+            - 正确的异常处理（不泄露堆栈信息给用户）
+
+            ## 6. 性能
+            - 避免 N+1 查询（EF Core）
+            - 合理使用缓存（IMemoryCache）
+            - 大集合操作使用 LINQ 延迟执行
+            - WPF UI 操作在 UI 线程，耗时操作异步化
+
+            ## 7. 测试覆盖
+            - 核心逻辑必须有单元测试
+            - 测试命名清晰（Given_When_Then 模式）
+            - 边界条件与异常场景测试
+
+            ## 8. 文档同步
+            - 架构变更需更新 `docs/architecture/` 文档
+            - API 变更需更新 `docs/api/` 文档
+            - 新增功能需更新模块 README
+
+            请用 **中文** 提供建设性的反馈，标注问题严重程度（🔴严重 / 🟡建议 / 🟢优化）。
 
           # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
           # use_sticky_comment: true
