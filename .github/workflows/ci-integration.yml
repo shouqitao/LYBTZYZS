@@ -59,7 +59,7 @@ jobs:
 
         if [ -f "tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj" ]; then
           dotnet test tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj \
-            --configuration ${{ env.CONFIGURATION }} --no-build \
+            --configuration ${{ env.CONFIGURATION }} \
             --verbosity normal \
             --logger "trx;LogFileName=server-integration-test-results.trx" \
             -- xUnit.ParallelizeTestCollections=false
@@ -74,7 +74,7 @@ jobs:
 
         if [ -f "tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj" ]; then
           dotnet test tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj \
-            --configuration ${{ env.CONFIGURATION }} --no-build \
+            --configuration ${{ env.CONFIGURATION }} \
             --verbosity normal \
             --logger "trx;LogFileName=webapi-integration-test-results.trx" \
             -- xUnit.ParallelizeTestCollections=false
