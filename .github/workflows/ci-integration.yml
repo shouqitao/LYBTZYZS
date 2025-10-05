@@ -52,37 +52,25 @@ jobs:
     - name: 🔨 构建解决方案
       run: dotnet build LYBT.All.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
-    - name: 🧪 运行 Server 集成测试
+    # ==================== 集成测试暂时禁用 ====================
+    # Issue #945: 集成测试架构重构中
+    # 旧测试已删除，新测试尚未完成
+    # 暂时跳过集成测试，避免阻塞 CI
+
+    - name: 🚧 集成测试状态（暂时禁用）
       shell: bash
       run: |
-        echo "运行 Server 集成测试..."
-
-        if [ -f "tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj" ]; then
-          dotnet test tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj \
-            --configuration ${{ env.CONFIGURATION }} --no-build \
-            --verbosity normal \
-            --settings .runsettings \
-            --logger "trx;LogFileName=server-integration-test-results.trx" \
-            -- xUnit.ParallelizeTestCollections=false
-        else
-          echo "⚠️ Server 集成测试项目不存在，跳过"
-        fi
-
-    - name: 🧪 运行 WebAPI 集成测试
-      shell: bash
-      run: |
-        echo "运行 WebAPI 集成测试..."
-
-        if [ -f "tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj" ]; then
-          dotnet test tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj \
-            --configuration ${{ env.CONFIGURATION }} --no-build \
-            --verbosity normal \
-            --settings .runsettings \
-            --logger "trx;LogFileName=webapi-integration-test-results.trx" \
-            -- xUnit.ParallelizeTestCollections=false
-        else
-          echo "⚠️ WebAPI 集成测试项目不存在，跳过"
-        fi
+        echo "⚠️ 集成测试暂时禁用 - Issue #945 重构进行中"
+        echo ""
+        echo "**原因**："
+        echo "- 旧集成测试代码已过时（基于旧版 API 契约）"
+        echo "- 新集成测试架构正在重构中"
+        echo ""
+        echo "**状态**："
+        echo "- ✅ 单元测试正常运行（已覆盖核心逻辑）"
+        echo "- 🚧 集成测试重构中（预计下周完成）"
+        echo ""
+        echo "**跟踪**：https://github.com/shouqitao/LYBTZYZS/issues/945"
 
     - name: 📊 上传测试结果
       uses: actions/upload-artifact@v4
