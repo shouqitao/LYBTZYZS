@@ -1,0 +1,268 @@
+# 覆盖率检查流程 - Issue #933 CI 重构
+# 合并自: ci.yml (Level 2.5), coverage-check.yml, test-coverage.yml
+# 特性: 渐进式覆盖率阈值（Phase 1: 30%, Phase 2: 50%, Phase 3: 70%）
+name: CI - Coverage Check
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.sln'
+      - '*.props'
+      - '.github/workflows/ci-coverage.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  workflow_dispatch:
+    inputs:
+      coverage_threshold:
+        description: '覆盖率阈值百分比 (默认: 30)'
+        required: false
+        default: '30'
+        type: choice
+        options:
+          - '30'
+          - '50'
+          - '70'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # 渐进式覆盖率策略 - Issue #933
+  # Phase 1 (Week 1-2): 30%
+  # Phase 2 (Week 3-4): 50%
+  # Phase 3 (Week 5-6): 70%
+  COVERAGE_THRESHOLD_LINE: ${{ github.event.inputs.coverage_threshold || '30' }}
+  COVERAGE_THRESHOLD_BRANCH: ${{ github.event.inputs.coverage_threshold || '30' }}
+
+jobs:
+  coverage-check:
+    name: 覆盖率检查与门禁
+    runs-on: windows-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🔧 安装 .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 缓存 NuGet 包
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: 📚 恢复 NuGet 包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 🔨 构建解决方案
+      run: dotnet build LYBT.All.sln --configuration Release --no-restore
+
+    - name: 🧪 运行测试并收集覆盖率
+      run: |
+        echo "收集覆盖率数据..."
+        New-Item -ItemType Directory -Force -Path "BIN/TestResults/Coverage"
+
+        # 运行所有模块测试收集覆盖率（-m:1 禁用 MSBuild 并行避免文件锁定）
+        dotnet test tests/UnitTests/Modules/ -m:1 `
+          --configuration Release --no-build `
+          --settings .runsettings `
+          --collect:"XPlat Code Coverage" `
+          --logger "console;verbosity=minimal" `
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura `
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" `
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" `
+          -- xUnit.ParallelizeTestCollections=false
+
+    - name: 📊 生成覆盖率报告
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+
+        # 查找所有覆盖率文件
+        $coverageFiles = Get-ChildItem -Path "BIN/TestResults" -Recurse -Filter "coverage.cobertura.xml" | ForEach-Object { $_.FullName }
+        $coverageInput = $coverageFiles -join ";"
+
+        if ($coverageFiles.Count -gt 0) {
+          echo "找到 $($coverageFiles.Count) 个覆盖率文件"
+
+          reportgenerator `
+            "-reports:$coverageInput" `
+            "-targetdir:BIN/TestResults/CoverageReport" `
+            "-reporttypes:Html;JsonSummary;Badges;TextSummary;Cobertura" `
+            "-sourcedirs:src" `
+            "-title:LYBTZYZS 覆盖率报告" `
+            "-assemblyfilters:-*Tests*;-*TestUtilities*" `
+            "-classfilters:-*Tests*;-*Mock*;-*Stub*;-*.Migrations.*" `
+            "-filefilters:-**/Migrations/**;-**/Program.cs"
+
+          echo "✅ 覆盖率报告生成完成"
+        } else {
+          echo "❌ 未找到覆盖率数据文件"
+          exit 1
+        }
+
+    - name: 📈 解析覆盖率数据
+      id: coverage
+      shell: bash
+      run: |
+        summary_file="BIN/TestResults/CoverageReport/Summary.json"
+
+        if [ -f "$summary_file" ]; then
+          # 从 JSON 摘要中提取覆盖率数据
+          LINE_COVERAGE=$(jq -r '.summary.linecoverage' "$summary_file")
+          BRANCH_COVERAGE=$(jq -r '.summary.branchcoverage' "$summary_file")
+          METHOD_COVERAGE=$(jq -r '.summary.methodcoverage' "$summary_file")
+
+          echo "line_coverage=$LINE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "branch_coverage=$BRANCH_COVERAGE" >> $GITHUB_OUTPUT
+          echo "method_coverage=$METHOD_COVERAGE" >> $GITHUB_OUTPUT
+
+          echo "## 📊 测试覆盖率报告" >> $GITHUB_STEP_SUMMARY
+          echo "| 覆盖率类型 | 当前值 | 目标阈值 | 状态 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
+
+          # 行覆盖率检查
+          if (( $(echo "$LINE_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_LINE }}" | bc -l) )); then
+            LINE_STATUS="✅ 通过"
+          else
+            LINE_STATUS="❌ 未达标"
+          fi
+          echo "| 行覆盖率 | ${LINE_COVERAGE}% | ${{ env.COVERAGE_THRESHOLD_LINE }}% | $LINE_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+          # 分支覆盖率检查
+          if (( $(echo "$BRANCH_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_BRANCH }}" | bc -l) )); then
+            BRANCH_STATUS="✅ 通过"
+          else
+            BRANCH_STATUS="❌ 未达标"
+          fi
+          echo "| 分支覆盖率 | ${BRANCH_COVERAGE}% | ${{ env.COVERAGE_THRESHOLD_BRANCH }}% | $BRANCH_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+          echo "| 方法覆盖率 | ${METHOD_COVERAGE}% | - | ℹ️ 参考 |" >> $GITHUB_STEP_SUMMARY
+
+          echo "覆盖率数据: Line=${LINE_COVERAGE}%, Branch=${BRANCH_COVERAGE}%, Method=${METHOD_COVERAGE}%"
+        else
+          echo "⚠️ 覆盖率摘要文件不存在"
+          echo "line_coverage=0" >> $GITHUB_OUTPUT
+          echo "branch_coverage=0" >> $GITHUB_OUTPUT
+          echo "method_coverage=0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 🚨 覆盖率门禁检查
+      shell: bash
+      run: |
+        LINE_COVERAGE="${{ steps.coverage.outputs.line_coverage }}"
+        BRANCH_COVERAGE="${{ steps.coverage.outputs.branch_coverage }}"
+
+        echo "=== 覆盖率门禁检查开始 ==="
+        echo "📊 当前覆盖率阶段: Phase 1 (Week 1-2) → 30% 阈值"
+        echo "📊 当前覆盖率数据:"
+        echo "  行覆盖率: ${LINE_COVERAGE}% (阈值: ${{ env.COVERAGE_THRESHOLD_LINE }}%)"
+        echo "  分支覆盖率: ${BRANCH_COVERAGE}% (阈值: ${{ env.COVERAGE_THRESHOLD_BRANCH }}%)"
+        echo ""
+
+        # 检查覆盖率是否达标
+        line_pass=$(echo "$LINE_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_LINE }}" | bc -l)
+        branch_pass=$(echo "$BRANCH_COVERAGE >= ${{ env.COVERAGE_THRESHOLD_BRANCH }}" | bc -l)
+
+        echo "🔍 门禁检查结果:"
+        echo "  行覆盖率检查: $([ "$line_pass" == "1" ] && echo "✅ 通过" || echo "❌ 失败")"
+        echo "  分支覆盖率检查: $([ "$branch_pass" == "1" ] && echo "✅ 通过" || echo "❌ 失败")"
+        echo ""
+
+        # 汇总检查结果
+        if [[ "$line_pass" == "1" && "$branch_pass" == "1" ]]; then
+          echo "🎉 覆盖率门禁检查通过！"
+          echo "## ✅ 覆盖率门禁检查通过" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **恭喜！覆盖率达到 Phase 1 要求的 ${{ env.COVERAGE_THRESHOLD_LINE }}% 阈值。**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 覆盖率详情" >> $GITHUB_STEP_SUMMARY
+          echo "- **行覆盖率**: ${LINE_COVERAGE}% ≥ ${{ env.COVERAGE_THRESHOLD_LINE }}% ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支覆盖率**: ${BRANCH_COVERAGE}% ≥ ${{ env.COVERAGE_THRESHOLD_BRANCH }}% ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📅 下一阶段目标" >> $GITHUB_STEP_SUMMARY
+          echo "- Phase 2 (Week 3-4): 50% 覆盖率" >> $GITHUB_STEP_SUMMARY
+          echo "- Phase 3 (Week 5-6): 70% 覆盖率" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "💥 覆盖率门禁检查失败！"
+          echo "## ❌ 覆盖率门禁检查失败" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💥 **代码质量门禁未通过。以下指标需要改进:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$line_pass" != "1" ]]; then
+            gap=$(echo "${{ env.COVERAGE_THRESHOLD_LINE }} - $LINE_COVERAGE" | bc)
+            echo "- ❌ **行覆盖率**: ${LINE_COVERAGE}% < ${{ env.COVERAGE_THRESHOLD_LINE }}% (差距: ${gap}个百分点)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$branch_pass" != "1" ]]; then
+            gap=$(echo "${{ env.COVERAGE_THRESHOLD_BRANCH }} - $BRANCH_COVERAGE" | bc)
+            echo "- ❌ **分支覆盖率**: ${BRANCH_COVERAGE}% < ${{ env.COVERAGE_THRESHOLD_BRANCH }}% (差距: ${gap}个百分点)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 改进建议" >> $GITHUB_STEP_SUMMARY
+          echo "1. 为未覆盖的代码路径添加单元测试" >> $GITHUB_STEP_SUMMARY
+          echo "2. 重点关注核心业务模块的测试覆盖率" >> $GITHUB_STEP_SUMMARY
+          echo "3. 确保异常处理分支有相应的测试用例" >> $GITHUB_STEP_SUMMARY
+          echo "4. 参考已有测试用例的最佳实践" >> $GITHUB_STEP_SUMMARY
+
+          exit 1
+        fi
+
+    - name: 📤 上传覆盖率报告
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report-${{ github.run_id }}
+        path: |
+          BIN/TestResults/CoverageReport/
+          BIN/TestResults/**/*.trx
+        retention-days: 30
+
+    - name: 📈 发布覆盖率到 Codecov
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: BIN/TestResults/**/coverage.cobertura.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+
+    - name: 💬 PR 覆盖率评论
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request' && always()
+      with:
+        recreate: true
+        message: |
+          ## 📊 测试覆盖率报告 (Phase 1: 30% 阈值)
+
+          | 覆盖率类型 | 当前值 | 目标阈值 | 状态 |
+          |------------|--------|----------|------|
+          | 行覆盖率 | ${{ steps.coverage.outputs.line_coverage }}% | ${{ env.COVERAGE_THRESHOLD_LINE }}% | ${{ steps.coverage.outputs.line_coverage >= env.COVERAGE_THRESHOLD_LINE && '✅ 通过' || '❌ 未达标' }} |
+          | 分支覆盖率 | ${{ steps.coverage.outputs.branch_coverage }}% | ${{ env.COVERAGE_THRESHOLD_BRANCH }}% | ${{ steps.coverage.outputs.branch_coverage >= env.COVERAGE_THRESHOLD_BRANCH && '✅ 通过' || '❌ 未达标' }} |
+          | 方法覆盖率 | ${{ steps.coverage.outputs.method_coverage }}% | - | ℹ️ 参考 |
+
+          ### 📅 渐进式覆盖率计划
+          - ✅ **Phase 1** (Week 1-2): 30% ← 当前阶段
+          - 🎯 **Phase 2** (Week 3-4): 50%
+          - 🎯 **Phase 3** (Week 5-6): 70%
+
+          📈 [查看详细覆盖率报告](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ---
+          🤖 *此评论由覆盖率检查工作流自动生成 - Issue #933*
