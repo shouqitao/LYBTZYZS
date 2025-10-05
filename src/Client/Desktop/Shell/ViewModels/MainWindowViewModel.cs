@@ -768,14 +768,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             // 导航到诊疗工作台
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ClinicalWorkstationView", navigationResult =>
-            {
-                if (navigationResult.Result == true)
-                {
-                    // 成功导航后，可以发送事件触发快速开始诊疗流程
-                    // TODO: QuickStartConsultationEvent 已移除，需要使用新的事件机制
-                }
-            });
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ClinicalWorkstationView");
 
             await ShowSuccessMessageAsync("已切换到诊疗工作台，准备开始诊疗");
         }
