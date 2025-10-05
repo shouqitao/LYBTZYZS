@@ -113,19 +113,19 @@ if (!string.IsNullOrWhiteSpace(keyword))
 - `SimplifiedMedicalCaseCreateDto` - 简化的创建DTO
 
 #### 2. 业务规则集中化
-**创建业务规则类** (`MedicalCaseBusinessRules.cs`):
+**创建业务规则类** (`MedicalCaseRules.cs`):
 ```csharp
-public static class MedicalCaseBusinessRules
+public static class MedicalCaseRules
 {
     // 核心规则1：患者同时只能有一个进行中的医案
     public static bool CanCreateNewCase(IEnumerable<MedicalCaseEntity> existingCases)
-    
+
     // 核心规则2：当天可改、过期锁定机制
     public static bool CanEdit(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
-    
+
     // 核心规则3：删除权限检查
     public static bool CanDelete(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
-    
+
     // 核心规则4：完成医案的前置条件
     public static bool CanComplete(MedicalCaseEntity medicalCase)
 }
@@ -133,14 +133,14 @@ public static class MedicalCaseBusinessRules
 
 #### 3. 简化聚合根操作
 **重构前**: 复杂的聚合创建逻辑
-**重构后**: 
+**重构后**:
 ```csharp
 // 简化版本，使用业务规则验证
 public async Task<ServiceResult<MedicalCaseDto>> CreateAsync(MedicalCaseCreateDto dto)
 {
     // 使用业务规则类验证
     var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
-    var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
+    var validation = MedicalCaseRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
     
     if (!validation.IsValid)
     {
@@ -206,7 +206,7 @@ private IQueryable<MedicalCaseEntity> GetDetailQuery()
 - `src/Shared/LYBT.Shared.Models/Contracts/MedicalCase/SimplifiedMedicalCaseDtos.cs`
 
 ### 业务规则类
-- `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseBusinessRules.cs`
+- `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseRules.cs`
 
 ### 简化服务
 - `src/Server/Modules/LYBT.Module.MedicalCase/Services/SimplifiedMedicalCaseService.cs`
