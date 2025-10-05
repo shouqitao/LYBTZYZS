@@ -209,9 +209,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("切诊")]
         public string? Palpation { get; set; }
 
-
-
-
         /// <summary>中医诊断</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "中医诊断长度不能超过{1}个字符")]
         [DisplayName("中医诊断")]

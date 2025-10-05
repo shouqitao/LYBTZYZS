@@ -209,8 +209,6 @@ namespace LYBT.Infrastructure.Caching.Adapters
             });
         }
 
-
-
         #endregion
     }
 }

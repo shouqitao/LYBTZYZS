@@ -4,8 +4,6 @@ using LYBT.Shared.Models.Contracts.Common;
 namespace LYBT.Infrastructure.Interfaces
 {
 
-
-
     /// <summary>
     /// 只读仓储接口 - 用于只需要查询功能的场景
     /// </summary>
