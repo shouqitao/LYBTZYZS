@@ -321,11 +321,34 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
         }
 
-        #region 辅助方法
+        /// <summary>
+        /// 注册领域业务服务
+        /// </summary>
+        private static void RegisterDomainServices(IContainerRegistry containerRegistry)
+        {
+            // 注意：8个业务模块(Auth/Users/Patients/Herbs/Formula/Consultation/Prescriptions/MedicalCase)
+            // 现在通过自动发现系统统一注册，无需在各自的XxxModule.RegisterTypes中重复注册
+            // 这消除了双重注册风险，简化了模块开发
+        }
 
-        // UltraThink统一API客户端管理器已替代原有的独立API服务注册方式
-        // 所有API客户端现由UnifiedApiClientManager统一管理，提供更好的一致性和可维护�?
-        #endregion 辅助方法
+        /// <summary>
+        /// 注册对话框服务
+        /// </summary>
+        private static void RegisterDialogs(IContainerRegistry containerRegistry)
+        {
+            // Phase 3.4: 所有 Dialog 现在使用 Prism Dialog System
+            // SimplifiedDialogService 和 ICustomDialogService 已删除
+            // 各模块通过 containerRegistry.RegisterDialog<TView, TViewModel>() 注册
+        }
+
+        /// <summary>
+        /// 注册性能优化服务
+        /// </summary>
+        private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
+        {
+            // UltraThink清理：移除过度工程的ModuleLoadingCoordinator
+            // 小诊所系统不需要复杂的模块加载协调功能
+        }
     }
 
 }
