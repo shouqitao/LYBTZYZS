@@ -184,9 +184,8 @@
 **架构测试项目 (1个)**
 - `LYBT.ArchTests` - 架构测试
 
-**集成测试项目 (2个)**
-- `WebAPI.IntegrationTests` - WebAPI集成测试
-- `LYBT.WebAPI.Tests` - WebAPI测试
+**集成测试项目 (1个)**
+- `LYBT.ServerIntegrationTests` - 服务端集成测试
 
 **单元测试项目 (10个)**
 - `Auth.UnitTests` & `LYBT.Module.Auth.Tests` - 认证模块测试
