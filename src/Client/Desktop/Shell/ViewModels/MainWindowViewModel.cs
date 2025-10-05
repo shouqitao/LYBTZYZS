@@ -5,7 +5,6 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.HealthCheck;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Desktop.Services.Modules;
 using LYBT.Shared.Models.Contracts.Users;

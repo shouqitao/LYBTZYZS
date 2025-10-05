@@ -1,7 +1,6 @@
-using LYBT.Desktop.Services.Interfaces;
-using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
+using LYBT.Desktop.Services.Interfaces;
 
 namespace LYBT.Desktop.Shell.Converters
 {
