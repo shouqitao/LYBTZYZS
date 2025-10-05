@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-05 | `CLEANUP-REPORT-ISSUE-948.md` | **Issue #948 死代码清理报告** - Phase 1-3完成（12个文件，净减少69行，修复集成测试编译错误，0警告0错误） |
 | 2025-10-05 | `workflow-analysis-issue-933.md` | **Issue #933 CI/CD Workflow 分析报告** - 22个workflow合并为≤8个（发现3个严重违规：Docker/K8s，3个覆盖率门禁冲突0.5% vs 70%~90%，设计新8-workflow结构） |
 | 2025-10-04 | `architecture-unification-issue-897-2025-10-04.md` | **Issue #897 架构统一报告** - Desktop ViewModels 基类统一（40个ViewModels，迁移4个，统一率77.5%→87.5%，符合Prism MVVM最佳实践） |
 | 2025-10-03 | `pr-871-review-2025-10-03.md` | **PR #871 代码审查报告** - Users 模块单元测试审查（171个测试，Line 94.52%，Method 87.5%，建议批准合并） |
