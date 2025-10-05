@@ -1,0 +1,92 @@
+# CODEOWNERS - GitHub Pro 自动审查者分配
+# 语法: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# 规则:
+# - 每行定义路径模式和所有者（GitHub 用户名或团队）
+# - 最后匹配的规则优先级最高
+# - @username 表示个人，@org/team 表示团队
+#
+# 使用说明:
+# 1. 将下方的占位符替换为实际的 GitHub 用户名
+# 2. 提交后，新 PR 会自动请求对应所有者审查
+# 3. 分支保护规则可强制要求所有者批准
+
+# ==================== 默认所有者 ====================
+# 所有未明确指定的文件
+* @shouqitao
+
+# ==================== Server 端代码 ====================
+# Server 核心代码（Infrastructure、Entities、Services）
+/src/Server/Core/**                    @shouqitao
+/src/Server/Infrastructure/**          @shouqitao
+/src/Server/Services/**                @shouqitao
+
+# Server 业务模块（各模块独立维护）
+/src/Server/Modules/LYBT.Module.Users/**         @shouqitao
+/src/Server/Modules/LYBT.Module.Patients/**      @shouqitao
+/src/Server/Modules/LYBT.Module.Prescriptions/** @shouqitao
+/src/Server/Modules/LYBT.Module.Consultation/**  @shouqitao
+/src/Server/Modules/LYBT.Module.Herbs/**         @shouqitao
+/src/Server/Modules/LYBT.Module.Formula/**       @shouqitao
+/src/Server/Modules/LYBT.Module.MedicalCase/**   @shouqitao
+/src/Server/Modules/LYBT.Module.Auth/**          @shouqitao
+
+# ==================== Client 端代码 ====================
+# WPF Desktop 客户端
+/src/Client/Desktop/**                 @shouqitao
+
+# ==================== Shared 共享代码 ====================
+# Shared 模型与工具（影响 Server + Client）
+/src/Shared/**                         @shouqitao
+
+# ==================== 测试代码 ====================
+# 单元测试与集成测试（确保测试质量）
+/tests/**                              @shouqitao
+
+# ==================== CI/CD 配置 ====================
+# GitHub Actions workflows（严格审查，影响所有 PR）
+/.github/workflows/**                  @shouqitao
+
+# ==================== 文档 ====================
+# 项目文档（架构、开发规范、API 文档）
+/docs/architecture/**                  @shouqitao
+/docs/development/**                   @shouqitao
+/docs/api/**                           @shouqitao
+
+# 普通文档（相对宽松）
+/docs/**                               @shouqitao
+
+# ==================== 配置文件 ====================
+# 解决方案与项目配置
+/*.sln                                 @shouqitao
+/**/*.csproj                           @shouqitao
+/Directory.Build.props                 @shouqitao
+/Directory.Packages.props              @shouqitao
+
+# NuGet 配置
+/nuget.config                          @shouqitao
+
+# .editorconfig 与代码规范
+/.editorconfig                         @shouqitao
+
+# Git 配置
+/.gitignore                            @shouqitao
+/.gitattributes                        @shouqitao
+
+# ==================== 安全与治理 ====================
+# 治理规则（严格审查）
+/.ai/rules.json                        @shouqitao
+/_governance/**                        @shouqitao
+
+# ==================== 脚本 ====================
+# PowerShell 脚本（自动化脚本）
+/scripts/**                            @shouqitao
+
+# ==================== 特殊文件 ====================
+# CLAUDE.md 与 README（项目核心文档）
+/CLAUDE.md                             @shouqitao
+/README.md                             @shouqitao
+
+# PR 模板
+/.github/pull_request_template.md      @shouqitao
+/.github/ISSUE_TEMPLATE/**             @shouqitao
