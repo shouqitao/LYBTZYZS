@@ -65,11 +65,11 @@ jobs:
       run: |
         echo "扫描易受攻击的 NuGet 包..."
 
-        # 列出所有易受攻击的包
-        dotnet list package --vulnerable --include-transitive
+        # 列出所有易受攻击的包（明确指定 Server 解决方案）
+        dotnet list LYBT.Server.sln package --vulnerable --include-transitive
 
         # 生成 JSON 报告
-        dotnet list package --vulnerable --include-transitive --format json > vulnerable-packages.json || true
+        dotnet list LYBT.Server.sln package --vulnerable --include-transitive --format json > vulnerable-packages.json || true
 
         # 检查是否有高危漏洞
         if [ -s vulnerable-packages.json ]; then
@@ -130,8 +130,8 @@ jobs:
 
     - name: 🔨 构建项目（CodeQL 需要）
       run: |
-        dotnet restore LYBT.All.sln
-        dotnet build LYBT.All.sln --configuration Release --no-restore
+        dotnet restore LYBT.Server.sln
+        dotnet build LYBT.Server.sln --configuration Release --no-restore
 
     - name: 📊 执行 CodeQL 分析
       uses: github/codeql-action/analyze@v3
