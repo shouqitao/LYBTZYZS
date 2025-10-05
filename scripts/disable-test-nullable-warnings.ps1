@@ -5,7 +5,6 @@ Write-Host "P4-Server 编译警告治理 - 禁用测试项目可空性检查" -F
 
 $testProjects = @(
     "tests/Architecture/LYBT.ArchTests.csproj",
-    "tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.Tests.csproj",
     "tests/TestUtilities/TestBase/TestBase.csproj",
     "tests/TestUtilities/TestDataFactory.UnitTests/TestDataFactory.csproj",
     "tests/TestUtilities/TestUtilities/TestUtilities.csproj",

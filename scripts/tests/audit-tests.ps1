@@ -174,13 +174,14 @@ $($migrationPlan | ForEach-Object { "| $($_.From) | $($_.To) | $($_.Type) |" } |
 
 ```
 tests/
-├── Core.UnitTests/
-├── Infrastructure.UnitTests/
-├── WebAPI.IntegrationTests/
-├── Desktop.E2E/
-└── Shared/
-    ├── TestHelpers/
-    └── TestData/
+├── UnitTests/
+│   ├── Modules/
+│   ├── Server/
+│   └── Desktop/
+├── IntegrationTests/
+│   └── ServerIntegrationTests/
+├── Architecture/
+└── TestConfiguration/
 ```
 
 ## 下一步操作
