@@ -260,6 +260,21 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// bool类型ServiceResult解包
         /// </summary>
+        /// <summary>
+        /// 非泛型ServiceResult解包（无数据返回场景，如删除操作）
+        /// </summary>
+        protected ActionResult<ApiResponse> HandleServiceResult(ServiceResult serviceResult, string? successMessage = null)
+        {
+            if (serviceResult.IsSuccess)
+            {
+                return Success(successMessage ?? "操作成功");
+            }
+            else
+            {
+                return BusinessFail(serviceResult.ErrorMessage ?? "操作失败");
+            }
+        }
+
         protected ActionResult<ApiResponse> HandleBoolServiceResult(ServiceResult<bool> serviceResult, string? successMessage = null, string? failMessage = null)
         {
             if (serviceResult.IsSuccess && serviceResult.Data)
