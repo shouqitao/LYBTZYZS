@@ -44,8 +44,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             set => SetProperty(ref _herbItems, value);
         }
 
-
-
         private decimal _totalCost;
 
         public decimal TotalCost

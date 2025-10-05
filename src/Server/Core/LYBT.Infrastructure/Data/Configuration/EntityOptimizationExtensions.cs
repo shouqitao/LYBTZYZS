@@ -148,9 +148,6 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(p => p.Status)
                     .HasDatabaseName("IX_Prescription_Status");
 
-
-
-
             });
         }
 
@@ -175,17 +172,12 @@ namespace LYBT.Infrastructure.Data.Configuration
                 entity.HasIndex(u => u.PhoneNumber)
                     .HasDatabaseName("IX_User_Phone");
 
-
-
                 entity.HasIndex(u => u.Role)
                     .HasDatabaseName("IX_User_Role");
 
 
             });
         }
-
-
-
 
     }
 }

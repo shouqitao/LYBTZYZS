@@ -89,8 +89,6 @@ public static class UnifiedMiddlewareConfiguration
         return app;
     }
 
-
-
     /// <summary>
     /// 配置 Swagger API 文档
     /// </summary>
@@ -110,9 +108,6 @@ public static class UnifiedMiddlewareConfiguration
 
         return app;
     }
-
-
-
 
 }
 
