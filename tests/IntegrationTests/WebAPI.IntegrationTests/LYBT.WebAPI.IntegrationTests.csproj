@@ -1,40 +1,48 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);CS8625</NoWarn>
+
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="TestResults\**" />
-    <EmbeddedResource Remove="TestResults\**" />
-    <None Remove="TestResults\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <!-- 测试框架 -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Moq" />
+
+    <!-- 断言库 -->
     <PackageReference Include="FluentAssertions" />
+
+    <!-- 集成测试专用包 -->
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="System.Net.Http.Json" />
+
+    <!-- Mock 框架（仅用于外部依赖） -->
+    <PackageReference Include="Moq" />
+
+    <!-- SQL Server 数据库（真实数据库，非 InMemory） -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 项目引用 -->
     <ProjectReference Include="..\..\..\src\Server\Services\LYBT.WebAPI\LYBT.WebAPI.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-    <ProjectReference Include="..\..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- xUnit 配置文件 -->
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
