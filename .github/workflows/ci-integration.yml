@@ -52,6 +52,24 @@ jobs:
     - name: 🔨 构建解决方案
       run: dotnet build LYBT.All.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
 
+    - name: 🗄️ 初始化 SQL Server LocalDB
+      shell: powershell
+      run: |
+        Write-Host "检查 SQL Server LocalDB 实例..."
+        sqllocaldb info mssqllocaldb
+        
+        # 如果实例不存在，创建它
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "创建 LocalDB 实例 'mssqllocaldb'..."
+          sqllocaldb create mssqllocaldb -s
+        } else {
+          Write-Host "LocalDB 实例已存在，启动实例..."
+          sqllocaldb start mssqllocaldb
+        }
+        
+        Write-Host "LocalDB 实例信息:"
+        sqllocaldb info mssqllocaldb
+
     - name: 🧪 运行 Server 集成测试
       shell: bash
       run: |
@@ -107,8 +125,12 @@ jobs:
         echo "## ✅ 集成测试验证通过" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "所有集成测试已通过：" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Server 集成测试" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ WebAPI 集成测试" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ WebAPI 集成测试（Auth/Health/Users 模块）" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**测试覆盖**:" >> $GITHUB_STEP_SUMMARY
+        echo "- Auth 模块：登录、登出、Token 验证" >> $GITHUB_STEP_SUMMARY
+        echo "- Health 模块：健康检查端点" >> $GITHUB_STEP_SUMMARY
+        echo "- Users 模块：用户 CRUD 操作" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**提交信息**:" >> $GITHUB_STEP_SUMMARY
         echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

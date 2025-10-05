@@ -79,6 +79,7 @@ src/
 3. [模块设计](architecture/modules/README.md) → **16个业务模块详细设计**
 4. [任务管理](tasks/) → 当前任务和优先级（需求与讨论在 GitHub Issues）
 5. [测试指导](development/testing/README.md) → 质量保证
+   - [集成测试架构](development/integration-tests.md) → WebAPI 集成测试实践
 
 ### 📊 项目管理视角
 1. GitHub Issues → 需求/变更/讨论/验收（单一事实源）
