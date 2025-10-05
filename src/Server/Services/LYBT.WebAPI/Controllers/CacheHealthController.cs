@@ -1,5 +1,5 @@
-﻿using LYBT.Core.Infrastructure.Caching.Interfaces;
-using LYBT.Core.Infrastructure.Web;
+﻿using LYBT.Infrastructure.Caching.Interfaces;
+using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;

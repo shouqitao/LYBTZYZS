@@ -39,6 +39,44 @@
 - **GraphQL** - RESTful足够
 - **决策日期**: 2025-09-27
 
+## 代码审查 (Code Review) ⭐ GitHub Pro 双审查
+
+### AI 双审查机制
+- **标准**: 所有 Pull Request 必须通过 **Claude Code + GitHub Copilot** 双重 AI 审查
+- **决策日期**: 2025-10-05
+- **流程**:
+  1. **Claude Code 自动初审** - 全面代码质量检查
+     - 架构合规性（禁止框架、Record-Only 模式）
+     - C# / .NET 8 最佳实践
+     - WPF / Prism MVVM 规范
+     - 代码质量、安全性、性能
+     - 测试覆盖、文档同步
+  2. **GitHub Copilot 二审** - 补充性代码改进建议
+     - 代码简洁性优化
+     - 潜在问题检测
+     - .NET 新特性使用建议
+  3. **人工审查（CODEOWNERS）** - 业务逻辑与设计决策
+     - 业务逻辑正确性
+     - 设计决策合理性
+     - 代码可读性与可维护性
+- **相关文档**:
+  - [代码审查指南](code-review-guidelines.md)
+  - [分支保护配置](branch-protection-setup.md)
+  - `.github/CODEOWNERS`
+  - `.github/workflows/claude-code-review.yml`
+- **相关 Issue**: #935
+
+### 强制审查规则（分支保护）
+- **标准**: `master` 分支必须配置以下保护规则
+- **决策日期**: 2025-10-05
+- **规则**:
+  - ✅ 需要至少 1 次人工审批（CODEOWNERS）
+  - ✅ 需要 Claude Code Review 通过
+  - ✅ 需要所有 CI 检查通过（编译、测试、覆盖率、架构合规）
+  - ✅ 需要线性提交历史
+  - ❌ 不允许绕过保护规则（包括管理员）
+- **配置指南**: [分支保护配置](branch-protection-setup.md)
+
 ## 安全 (Security)
 
 - **API 密钥长度 (API Key Length)**

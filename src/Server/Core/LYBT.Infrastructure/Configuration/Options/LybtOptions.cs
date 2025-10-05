@@ -32,7 +32,7 @@ public class LybtOptions
     /// 业务逻辑配置
     /// 整合：UserOptions, SysAdminOptions
     /// </summary>
-    public BusinessOptions Business { get; set; } = new();
+    public DomainOptions Business { get; set; } = new();
 
     /// <summary>
     /// 应用层配置
@@ -793,10 +793,10 @@ public class CacheMonitoringConfiguration
 }
 
 /// <summary>
-/// 业务逻辑配置选项
+/// 领域配置选项
 /// 整合原 UserOptions, SysAdminOptions
 /// </summary>
-public class BusinessOptions
+public class DomainOptions
 {
     /// <summary>
     /// 用户管理配置
@@ -809,9 +809,9 @@ public class BusinessOptions
     public SystemAdminConfiguration SystemAdmin { get; set; } = new();
 
     /// <summary>
-    /// 诊疗业务配置
+    /// 诊疗运营配置
     /// </summary>
-    public MedicalBusinessConfiguration MedicalBusiness { get; set; } = new();
+    public MedicalOperationsConfiguration MedicalOperations { get; set; } = new();
 }
 
 /// <summary>
@@ -888,18 +888,18 @@ public class SystemAdminConfiguration
 }
 
 /// <summary>
-/// 诊疗业务配置
+/// 诊疗运营配置
 /// </summary>
-public class MedicalBusinessConfiguration
+public class MedicalOperationsConfiguration
 {
     /// <summary>
-    /// 默认诊疗时长（分钟）
+    /// 默认诊疗时长(分钟)
     /// </summary>
     [Range(5, 120)]
     public int DefaultConsultationDurationMinutes { get; set; } = 30;
 
     /// <summary>
-    /// 预约提前时间（小时）
+    /// 预约提前时间(小时)
     /// </summary>
     [Range(1, 168)]
     public int MinAdvanceBookingHours { get; set; } = 2;
