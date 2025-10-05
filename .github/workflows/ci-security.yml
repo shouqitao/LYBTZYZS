@@ -98,9 +98,9 @@ jobs:
         path: reports/
         retention-days: 30
 
-  # ==================== SAST 静态应用安全测试 ====================
-  sast-scan:
-    name: SAST 静态安全测试
+  # ==================== SAST 静态应用安全测试 - Server ====================
+  sast-scan-server:
+    name: SAST 扫描 (Server)
     runs-on: ubuntu-latest
 
     steps:
@@ -122,19 +122,51 @@ jobs:
           p/r2c-security-audit
       continue-on-error: true
 
-    - name: 🔒 CodeQL 分析
+    - name: 🔒 CodeQL 分析初始化
       uses: github/codeql-action/init@v3
       with:
         languages: csharp
         queries: security-and-quality
 
-    - name: 🔨 构建项目（CodeQL 需要）
+    - name: 🔨 构建服务端项目
       run: |
         dotnet restore LYBT.Server.sln
         dotnet build LYBT.Server.sln --configuration Release --no-restore
 
     - name: 📊 执行 CodeQL 分析
       uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:csharp/server"
+
+  # ==================== SAST 静态应用安全测试 - Desktop ====================
+  sast-scan-desktop:
+    name: SAST 扫描 (Desktop)
+    runs-on: windows-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 🔒 CodeQL 分析初始化
+      uses: github/codeql-action/init@v3
+      with:
+        languages: csharp
+        queries: security-and-quality
+
+    - name: 🔨 构建桌面端项目
+      run: |
+        dotnet restore LYBT.Desktop.sln
+        dotnet build LYBT.Desktop.sln --configuration Release --no-restore
+
+    - name: 📊 执行 CodeQL 分析
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:csharp/desktop"
 
   # ==================== 许可证合规性检查 ====================
   license-check:
@@ -173,7 +205,7 @@ jobs:
   security-report:
     name: 安全报告汇总
     runs-on: windows-latest
-    needs: [code-security, dependency-scan, sast-scan, license-check]
+    needs: [code-security, dependency-scan, sast-scan-server, sast-scan-desktop, license-check]
     if: always()
 
     steps:
@@ -191,7 +223,8 @@ jobs:
         echo "|----------|------|" >> $GITHUB_STEP_SUMMARY
         echo "| 代码安全扫描 | ${{ needs.code-security.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| 依赖漏洞扫描 | ${{ needs.dependency-scan.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| SAST扫描 | ${{ needs.sast-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| SAST扫描 (Server) | ${{ needs.sast-scan-server.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| SAST扫描 (Desktop) | ${{ needs.sast-scan-desktop.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| 许可证检查 | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
 
@@ -225,7 +258,8 @@ jobs:
           **扫描结果详情**:
           - 代码安全: ${{ needs.code-security.result }}
           - 依赖漏洞: ${{ needs.dependency-scan.result }}
-          - SAST扫描: ${{ needs.sast-scan.result }}
+          - SAST扫描 (Server): ${{ needs.sast-scan-server.result }}
+          - SAST扫描 (Desktop): ${{ needs.sast-scan-desktop.result }}
           - 许可证检查: ${{ needs.license-check.result }}
 
           请查看 [扫描详细日志](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
@@ -244,7 +278,7 @@ jobs:
   security-success:
     name: ✅ 安全扫描通过
     runs-on: windows-latest
-    needs: [code-security, dependency-scan, sast-scan, license-check]
+    needs: [code-security, dependency-scan, sast-scan-server, sast-scan-desktop, license-check]
     if: success()
 
     steps:
@@ -264,7 +298,7 @@ jobs:
   security-failed:
     name: ❌ 安全扫描失败
     runs-on: windows-latest
-    needs: [code-security, dependency-scan, sast-scan, license-check]
+    needs: [code-security, dependency-scan, sast-scan-server, sast-scan-desktop, license-check]
     if: failure()
 
     steps:
@@ -278,7 +312,8 @@ jobs:
         echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
         echo "- 代码安全: ${{ needs.code-security.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- 依赖漏洞: ${{ needs.dependency-scan.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- SAST扫描: ${{ needs.sast-scan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- SAST扫描 (Server): ${{ needs.sast-scan-server.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- SAST扫描 (Desktop): ${{ needs.sast-scan-desktop.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- 许可证检查: ${{ needs.license-check.result }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
