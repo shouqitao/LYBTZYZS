@@ -77,7 +77,7 @@ jobs:
       run: |
         echo "🎯 P3任务覆盖率阈值检查: Line≥${{ env.COVERAGE_THRESHOLD_LINE }}%"
 
-        summary_file="TestResults/CoverageReport/Summary.json"
+        summary_file="BIN/TestResults/CoverageReport/Summary.json"
 
         if [ -f "$summary_file" ]; then
           # 提取覆盖率数据
