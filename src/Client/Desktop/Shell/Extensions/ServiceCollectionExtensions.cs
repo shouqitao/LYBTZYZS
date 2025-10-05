@@ -255,63 +255,11 @@ namespace LYBT.Desktop.Shell.Extensions
 
         /// <summary>
         /// DT-003优化: 分层模块服务注册 - 按依赖层级防止循环依�?
-        /// 基于依赖分析结果�?层注册策略，确保服务解析顺序正确
+        /// 注：Layer 1-5 方法已移除（均为空实现）
         /// </summary>
         private static void RegisterModuleServicesManually(IContainerRegistry containerRegistry)
         {
-            // Layer 1: 基础�?- 无外部依赖的基础模块（优先注册）
-            RegisterLayer1BasicModules(containerRegistry);
-
-            // Layer 2: 认证�?- 依赖基础�?
-            RegisterLayer2AuthModules(containerRegistry);
-
-            // Layer 3: 业务数据�?- 依赖认证�?
-            RegisterLayer3BusinessDataModules(containerRegistry);
-
-            // Layer 4: 流程协调�?- 依赖业务数据�?
-            RegisterLayer4ProcessModules(containerRegistry);
-
-            // Layer 5: 聚合服务�?- 依赖流程协调�?
-            RegisterLayer5AggregationModules(containerRegistry);
-        }
-
-        /// <summary>
-        /// Layer 1: 基础模块注册 - Herbs, Formula (无外部依�?
-        /// 性能优化：改为Scoped注册，避免启动时立即实例�?
-        /// </summary>
-        private static void RegisterLayer1BasicModules(IContainerRegistry containerRegistry)
-        {
-        }
-
-        /// <summary>
-        /// Layer 2: 认证模块注册 - 依赖基础�?
-        /// </summary>
-        private static void RegisterLayer2AuthModules(IContainerRegistry containerRegistry)
-        {
-        }
-
-        /// <summary>
-        /// Layer 3: 业务数据模块注册 - 依赖认证�?
-        /// 性能优化：改为Scoped注册，避免启动时立即实例�?
-        /// </summary>
-        private static void RegisterLayer3BusinessDataModules(IContainerRegistry containerRegistry)
-        {
-        }
-
-        /// <summary>
-        /// Layer 4: 流程协调模块注册 - 依赖业务数据�?
-        /// 性能优化：改为Scoped注册，避免启动时立即实例�?
-        /// </summary>
-        private static void RegisterLayer4ProcessModules(IContainerRegistry containerRegistry)
-        {
-        }
-
-        /// <summary>
-        /// Layer 5: 聚合服务模块注册 - 依赖流程协调�?
-        /// 性能优化：改为Scoped注册，避免启动时立即实例�?
-        /// </summary>
-        private static void RegisterLayer5AggregationModules(IContainerRegistry containerRegistry)
-        {
+            // 当前所有模块服务通过各自的 Module 类注册，无需在此手动注册
         }
 
         /// <summary>
