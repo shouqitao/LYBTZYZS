@@ -25,20 +25,27 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // 移除现有的 DbContext 配置
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+            // 移除所有与 AppDbContext 相关的服务描述符
+            var descriptorsToRemove = services
+                .Where(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
+                           d.ServiceType == typeof(AppDbContext) ||
+                           d.ServiceType == typeof(DbContextOptions) ||
+                           (d.ServiceType.IsGenericType && 
+                            d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)))
+                .ToList();
 
-            if (descriptor != null)
+            foreach (var descriptor in descriptorsToRemove)
             {
                 services.Remove(descriptor);
             }
 
-            // 添加内存数据库
+            // 添加内存数据库 - 使用唯一的数据库名称
+            var databaseName = $"TestDatabase_{Guid.NewGuid()}";
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDatabase");
+                options.UseInMemoryDatabase(databaseName);
                 options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
             });
 
             // 确保数据库已创建
