@@ -1,11 +1,13 @@
-name: Docs Normalization
+# 文档同步与规范化 - Issue #933 CI 重构
+# 重命名自: docs-normalization.yml
+name: Docs Sync
 
 on:
   pull_request:
     paths:
       - "**/*.md"
       - "scripts/*.ps1"
-      - ".github/workflows/docs-normalization.yml"
+      - ".github/workflows/docs-sync.yml"
   workflow_dispatch: {}
 
 jobs:

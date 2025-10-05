@@ -1,0 +1,208 @@
+# 主 CI 流程 - Issue #933 CI 重构
+# 合并自: ci.yml (Level 1-2), backend-ci.yml, governance.yml 部分
+name: CI - Main Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.sln'
+      - '*.props'
+      - '.github/workflows/ci-main.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.sln'
+      - '*.props'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  CONFIGURATION: Release
+
+jobs:
+  # ==================== Level 1: 代码质量门禁 ====================
+  code-quality-gate:
+    name: Level 1 - 代码质量门禁
+    runs-on: windows-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 缓存 NuGet 包
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: 📚 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 🚨 强制门禁 - 代码格式验证
+      run: dotnet format LYBT.All.sln --verify-no-changes --verbosity minimal
+
+    - name: 🚨 强制门禁 - 编译检查
+      run: dotnet build LYBT.All.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+
+  # ==================== Level 2: 测试质量门禁 ====================
+  test-quality-gate:
+    name: Level 2 - 测试质量门禁
+    runs-on: windows-latest
+    needs: code-quality-gate
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 缓存 NuGet 包
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: 📚 还原依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 🔨 构建解决方案
+      run: dotnet build LYBT.All.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+
+    - name: 🚨 强制门禁 - 单元测试
+      run: |
+        echo "运行 8 个模块的单元测试..."
+
+        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Patients.UnitTests/LYBT.Module.Patients.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Prescriptions.UnitTests/LYBT.Module.Prescriptions.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Consultation.UnitTests/LYBT.Module.Consultation.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Herbs.UnitTests/LYBT.Module.Herbs.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Formula.UnitTests/LYBT.Module.Formula.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/MedicalCase.UnitTests/LYBT.Module.MedicalCase.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+        dotnet test tests/UnitTests/Modules/Auth.UnitTests/LYBT.Module.Auth.Tests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings `
+          -- xUnit.ParallelizeTestCollections=false
+
+    - name: 🚨 强制门禁 - 架构合规测试
+      run: |
+        dotnet test tests/Architecture/LYBT.ArchTests.csproj `
+          --configuration ${{ env.CONFIGURATION }} --no-build --verbosity minimal `
+          --settings .runsettings
+
+    - name: 📊 收集基本覆盖率（不阻塞）
+      run: |
+        echo "收集覆盖率数据用于报告..."
+        dotnet test tests/UnitTests/Modules/ `
+          --configuration ${{ env.CONFIGURATION }} --no-build `
+          --settings .runsettings `
+          --collect:"XPlat Code Coverage" `
+          --logger "console;verbosity=minimal" `
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura `
+          -- xUnit.ParallelizeTestCollections=false
+      continue-on-error: true
+
+    - name: 📤 上传测试结果
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ github.run_id }}
+        path: |
+          BIN/TestResults/**/*.trx
+          BIN/TestResults/**/coverage.cobertura.xml
+        retention-days: 7
+
+  # ==================== 总结通知 ====================
+  ci-main-summary:
+    name: ✅ CI 主流程完成
+    runs-on: windows-latest
+    needs: [code-quality-gate, test-quality-gate]
+    if: success()
+
+    steps:
+    - name: CI 主流程验证成功
+      run: |
+        echo "## ✅ CI 主流程验证通过" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "所有强制门禁检查已通过：" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Level 1: 代码质量门禁 (格式化 + 编译零错误零警告)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Level 2: 测试质量门禁 (8个模块单元测试 + 架构测试)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**提交信息**:" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  ci-main-failed:
+    name: ❌ CI 主流程失败
+    runs-on: windows-latest
+    needs: [code-quality-gate, test-quality-gate]
+    if: failure()
+
+    steps:
+    - name: CI 主流程验证失败
+      run: |
+        echo "## ❌ CI 主流程验证失败" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**PR被自动阻塞** - 必须修复所有违规项" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 1 代码质量: ${{ needs.code-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Level 2 测试质量: ${{ needs.test-quality-gate.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
+        echo "1. 检查构建错误和警告 - 必须为0" >> $GITHUB_STEP_SUMMARY
+        echo "2. 运行 \`dotnet format\` 修复格式问题" >> $GITHUB_STEP_SUMMARY
+        echo "3. 确保所有单元测试通过" >> $GITHUB_STEP_SUMMARY
+        echo "4. 修复架构测试失败项" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "详细错误信息请查看上方构建日志" >> $GITHUB_STEP_SUMMARY
+        exit 1

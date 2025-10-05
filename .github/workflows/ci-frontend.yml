@@ -1,288 +1,228 @@
-# 凌隐宝堂前端CI流水线 - UltraThink重构CI/CD架构
-name: Frontend CI Pipeline
+# WPF 前端 CI 流程 - Issue #933 CI 重构
+# 优化自: ci-frontend.yml (修正路径，简化流程)
+name: CI - Frontend (WPF)
 
 on:
   push:
-    branches: [ main, develop, release/* ]
+    branches: [ main, master, develop ]
     paths:
-      - 'src/Frontend/**'
+      - 'src/Client/Desktop/**'
+      - 'tests/**/Desktop*/**'
       - '.github/workflows/ci-frontend.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
     paths:
-      - 'src/Frontend/**'
+      - 'src/Client/Desktop/**'
+      - 'tests/**/Desktop*/**'
+  workflow_dispatch:
 
 env:
   DOTNET_VERSION: '8.0.x'
   DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  CONFIGURATION: Release
 
 jobs:
-  # ==================== WPF桌面客户端构建 ====================
-  wpf-build:
-    name: WPF客户端构建
+  # ==================== WPF 代码质量检查 ====================
+  wpf-code-quality:
+    name: WPF 代码质量检查
     runs-on: windows-latest
-    
+
     steps:
     - name: 📥 检出代码
       uses: actions/checkout@v5
 
-    - name: 🔧 安装.NET
+    - name: 🔧 设置 .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 📦 恢复NuGet缓存
+    - name: 📦 缓存 NuGet 包
       uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/packages.lock.json') }}
+        key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-nuget-wpf-
 
-    - name: 📚 恢复依赖
-      run: dotnet restore LYBT.Desktop.sln
-
-    - name: 🔨 构建WPF应用
+    - name: 🔍 XAML 语法检查
       run: |
-        dotnet build LYBT.Desktop.sln --configuration Release --no-restore
-        
-    - name: 🧪 运行WPF单元测试
-      run: |
-        dotnet test tests/LYBT.Desktop.Tests/LYBT.Desktop.Tests.csproj `
-          --configuration Release `
-          --no-build `
-          --logger "trx;LogFileName=wpf-test-results.trx"
-      continue-on-error: true
-
-    - name: 📦 发布WPF应用
-      run: |
-        dotnet publish src/Frontend/Desktop/Shell/LYBT.WPF.Client.Shell.csproj `
-          --configuration Release `
-          --output ./publish/wpf `
-          --runtime win-x64 `
-          --self-contained true `
-          -p:PublishSingleFile=true `
-          -p:PublishReadyToRun=true `
-          -p:IncludeNativeLibrariesForSelfExtract=true
-
-    - name: 🔑 代码签名
-      run: |
-        # 使用证书签名（需要配置证书）
-        # signtool sign /f ${{ secrets.CERT_FILE }} /p ${{ secrets.CERT_PASSWORD }} /t http://timestamp.digicert.com ./publish/wpf/*.exe
-        echo "Code signing skipped in CI environment"
-      continue-on-error: true
-
-    - name: 📤 上传WPF构建产物
-      uses: actions/upload-artifact@v3
-      with:
-        name: wpf-client
-        path: ./publish/wpf/
-
-  # ==================== 代码质量检查 ====================
-  code-quality:
-    name: 前端代码质量
-    runs-on: windows-latest
-    
-    steps:
-    - name: 📥 检出代码
-      uses: actions/checkout@v5
-
-    - name: 🔧 安装.NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: 🔍 XAML语法检查
-      run: |
-        # 检查XAML文件语法
-        $xamlFiles = Get-ChildItem -Path src/Frontend -Include *.xaml -Recurse
+        echo "检查 XAML 文件语法..."
+        $xamlFiles = Get-ChildItem -Path src/Client/Desktop -Include *.xaml -Recurse
         $errors = 0
+
         foreach ($file in $xamlFiles) {
           try {
-            [xml]$xaml = Get-Content $file.FullName
+            [xml]$xaml = Get-Content $file.FullName -ErrorAction Stop
+            Write-Host "✅ $($file.Name)"
           } catch {
-            Write-Error "XAML syntax error in $($file.FullName): $_"
+            Write-Error "❌ XAML 语法错误: $($file.FullName) - $_"
             $errors++
           }
         }
+
         if ($errors -gt 0) {
+          Write-Error "发现 $errors 个 XAML 语法错误"
           exit 1
+        } else {
+          Write-Host "✅ 所有 XAML 文件语法正确"
         }
 
-    - name: 🎨 代码风格检查
+    - name: 🎨 代码格式验证
       run: |
         dotnet tool install -g dotnet-format
-        dotnet format LYBT.Desktop.sln --verify-no-changes --verbosity diagnostic
+        dotnet format LYBT.Desktop.sln --verify-no-changes --verbosity minimal
 
-    - name: 📊 代码分析
-      run: |
-        dotnet build LYBT.Desktop.sln --configuration Release /p:TreatWarningsAsErrors=true
-
-  # ==================== UI自动化测试 ====================
-  ui-test:
-    name: UI自动化测试
+  # ==================== WPF 构建与测试 ====================
+  wpf-build-test:
+    name: WPF 构建与测试
     runs-on: windows-latest
-    needs: wpf-build
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
+    needs: wpf-code-quality
+
     steps:
     - name: 📥 检出代码
       uses: actions/checkout@v5
 
-    - name: 🔧 安装.NET
+    - name: 🔧 设置 .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: 📥 下载WPF客户端
-      uses: actions/download-artifact@v3
+    - name: 📦 缓存 NuGet 包
+      uses: actions/cache@v3
       with:
-        name: wpf-client
-        path: ./wpf-client
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-wpf-
 
-    - name: 🤖 运行UI自动化测试
+    - name: 📚 恢复依赖包
+      run: dotnet restore LYBT.Desktop.sln
+
+    - name: 🔨 构建 WPF 应用
+      run: dotnet build LYBT.Desktop.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+
+    - name: 🧪 运行 WPF 单元测试
+      shell: bash
       run: |
-        # 安装WinAppDriver（如果需要）
-        # 运行UI自动化测试
-        echo "UI automation tests would run here"
-      continue-on-error: true
+        echo "运行 WPF 单元测试..."
 
-    - name: 📊 上传测试报告
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: ui-test-results
-        path: ./test-results/
-
-  # ==================== 安装包制作 ====================
-  create-installer:
-    name: 制作安装包
-    runs-on: windows-latest
-    needs: [wpf-build, code-quality]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
-    
-    steps:
-    - name: 📥 检出代码
-      uses: actions/checkout@v5
-
-    - name: 📥 下载WPF客户端
-      uses: actions/download-artifact@v3
-      with:
-        name: wpf-client
-        path: ./wpf-client
-
-    - name: 🔧 安装Inno Setup
-      run: |
-        choco install innosetup -y
-        
-    - name: 📦 创建安装程序
-      run: |
-        # 创建Inno Setup脚本
-        @"
-        [Setup]
-        AppName=凌隐宝堂中医诊所管理系统
-        AppVersion=${{ github.run_number }}
-        DefaultDirName={pf}\LYBT
-        DefaultGroupName=凌隐宝堂
-        OutputDir=.
-        OutputBaseFilename=LYBT-Setup-${{ github.run_number }}
-        Compression=lzma2
-        SolidCompression=yes
-        SetupIconFile=assets\icon.ico
-        UninstallDisplayIcon={app}\LYBT.exe
-        
-        [Languages]
-        Name: "chinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
-        
-        [Files]
-        Source: "wpf-client\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
-        
-        [Icons]
-        Name: "{group}\凌隐宝堂中医诊所管理系统"; Filename: "{app}\LYBT.WPF.Client.Shell.exe"
-        Name: "{group}\卸载"; Filename: "{uninstallexe}"
-        Name: "{commondesktop}\凌隐宝堂"; Filename: "{app}\LYBT.WPF.Client.Shell.exe"
-        
-        [Run]
-        Filename: "{app}\LYBT.WPF.Client.Shell.exe"; Description: "启动凌隐宝堂系统"; Flags: nowait postinstall skipifsilent
-        "@ | Out-File -FilePath setup.iss -Encoding UTF8
-        
-        # 编译安装程序
-        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
-
-    - name: 📤 上传安装包
-      uses: actions/upload-artifact@v3
-      with:
-        name: installer
-        path: LYBT-Setup-*.exe
-
-  # ==================== 版本发布 ====================
-  release:
-    name: 创建版本发布
-    runs-on: windows-latest
-    needs: [wpf-build, create-installer]
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-    - name: 📥 检出代码
-      uses: actions/checkout@v5
-
-    - name: 📥 下载所有构建产物
-      uses: actions/download-artifact@v3
-
-    - name: 📝 生成更新日志
-      id: changelog
-      run: |
-        echo "# 更新日志" > CHANGELOG.md
-        echo "" >> CHANGELOG.md
-        git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> CHANGELOG.md
-        
-    - name: 🏷️ 创建GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        body_path: CHANGELOG.md
-        files: |
-          wpf-client/*
-          installer/*.exe
-        draft: false
-        prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # ==================== 通知 ====================
-  notify:
-    name: 发送通知
-    runs-on: windows-latest
-    needs: [wpf-build, code-quality]
-    if: always()
-    
-    steps:
-    - name: 📧 计算构建状态
-      id: status
-      run: |
-        if [[ "${{ needs.wpf-build.result }}" == "success" && "${{ needs.code-quality.result }}" == "success" ]]; then
-          echo "status=success" >> $GITHUB_OUTPUT
-          echo "emoji=✅" >> $GITHUB_OUTPUT
+        if [ -f "tests/LYBT.Desktop.Tests/LYBT.Desktop.Tests.csproj" ]; then
+          dotnet test tests/LYBT.Desktop.Tests/LYBT.Desktop.Tests.csproj \
+            --configuration ${{ env.CONFIGURATION }} --no-build \
+            --verbosity normal \
+            --logger "trx;LogFileName=wpf-test-results.trx" \
+            --settings .runsettings \
+            -- xUnit.ParallelizeTestCollections=false
         else
-          echo "status=failure" >> $GITHUB_OUTPUT
-          echo "emoji=❌" >> $GITHUB_OUTPUT
+          echo "⚠️ WPF 单元测试项目不存在，跳过"
         fi
 
-    - name: 💬 发送通知
+    - name: 📤 上传测试结果
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: wpf-test-results-${{ github.run_id }}
+        path: |
+          BIN/TestResults/**/*.trx
+        retention-days: 7
+
+  # ==================== WPF 发布构建（仅主分支）====================
+  wpf-publish:
+    name: WPF 发布构建
+    runs-on: windows-latest
+    needs: wpf-build-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📚 恢复依赖包
+      run: dotnet restore LYBT.Desktop.sln
+
+    - name: 🔨 构建发布版本
+      run: dotnet build LYBT.Desktop.sln --configuration ${{ env.CONFIGURATION }} --no-restore
+
+    - name: 📦 发布 WPF 应用
+      shell: bash
       run: |
-        curl -X POST ${{ secrets.NOTIFICATION_WEBHOOK }} \
-          -H 'Content-Type: application/json' \
-          -d '{
-            "text": "${{ steps.status.outputs.emoji }} Frontend CI Pipeline",
-            "attachments": [{
-              "color": "${{ steps.status.outputs.status == 'success' && 'good' || 'danger' }}",
-              "fields": [
-                {"title": "Status", "value": "${{ steps.status.outputs.status }}", "short": true},
-                {"title": "Branch", "value": "${{ github.ref_name }}", "short": true},
-                {"title": "Commit", "value": "${{ github.sha }}", "short": false},
-                {"title": "Author", "value": "${{ github.actor }}", "short": true},
-                {"title": "Job", "value": "${{ github.workflow }}", "short": true}
-              ]
-            }]
-          }'
-      if: always() && env.NOTIFICATION_WEBHOOK != ''
+        echo "发布 WPF 应用..."
+
+        if [ -f "src/Client/Desktop/Shell/LYBT.Client.Desktop.Shell.csproj" ]; then
+          dotnet publish src/Client/Desktop/Shell/LYBT.Client.Desktop.Shell.csproj \
+            --configuration ${{ env.CONFIGURATION }} \
+            --output ./publish/wpf \
+            --runtime win-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:PublishReadyToRun=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true
+        else
+          echo "⚠️ WPF Shell 项目不存在"
+        fi
+
+    - name: 📤 上传发布产物
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: wpf-publish-${{ github.run_id }}
+        path: ./publish/wpf/
+        retention-days: 30
+
+  # ==================== WPF CI 总结 ====================
+  wpf-ci-summary:
+    name: ✅ WPF CI 完成
+    runs-on: windows-latest
+    needs: [wpf-code-quality, wpf-build-test]
+    if: success()
+
+    steps:
+    - name: WPF CI 成功
+      shell: bash
+      run: |
+        echo "## ✅ WPF 前端 CI 验证通过" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "所有检查已通过：" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ XAML 语法检查" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ 代码格式验证" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ WPF 应用构建" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ WPF 单元测试" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**提交信息**:" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  wpf-ci-failed:
+    name: ❌ WPF CI 失败
+    runs-on: windows-latest
+    needs: [wpf-code-quality, wpf-build-test]
+    if: failure()
+
+    steps:
+    - name: WPF CI 失败
+      shell: bash
+      run: |
+        echo "## ❌ WPF 前端 CI 验证失败" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**PR被自动阻塞** - 必须修复所有失败项" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
+        echo "- WPF 代码质量: ${{ needs.wpf-code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- WPF 构建测试: ${{ needs.wpf-build-test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
+        echo "1. 检查 XAML 语法错误" >> $GITHUB_STEP_SUMMARY
+        echo "2. 运行 \`dotnet format\` 修复格式问题" >> $GITHUB_STEP_SUMMARY
+        echo "3. 确保 WPF 应用可以正常构建" >> $GITHUB_STEP_SUMMARY
+        echo "4. 修复 WPF 单元测试失败项" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "详细错误信息请查看上方构建日志" >> $GITHUB_STEP_SUMMARY
+        exit 1

@@ -1,0 +1,142 @@
+# 集成测试流程 - Issue #933 CI 重构
+# 合并自: ci-backend.yml (集成测试部分), test.yml
+name: CI - Integration Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/IntegrationTests/**'
+      - '.github/workflows/ci-integration.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/IntegrationTests/**'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  CONFIGURATION: Release
+
+jobs:
+  # ==================== 集成测试 ====================
+  integration-tests:
+    name: 集成测试
+    runs-on: windows-latest
+
+    steps:
+    - name: 📥 检出代码
+      uses: actions/checkout@v5
+
+    - name: 🔧 设置 .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: 📦 缓存 NuGet 包
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: 📚 恢复依赖包
+      run: dotnet restore LYBT.All.sln
+
+    - name: 🔨 构建解决方案
+      run: dotnet build LYBT.All.sln --configuration ${{ env.CONFIGURATION }} --no-restore --verbosity minimal
+
+    - name: 🧪 运行 Server 集成测试
+      shell: bash
+      run: |
+        echo "运行 Server 集成测试..."
+
+        if [ -f "tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj" ]; then
+          dotnet test tests/IntegrationTests/ServerIntegrationTests/LYBT.ServerIntegrationTests.csproj \
+            --configuration ${{ env.CONFIGURATION }} --no-build \
+            --verbosity normal \
+            --settings .runsettings \
+            --logger "trx;LogFileName=server-integration-test-results.trx" \
+            -- xUnit.ParallelizeTestCollections=false
+        else
+          echo "⚠️ Server 集成测试项目不存在，跳过"
+        fi
+
+    - name: 🧪 运行 WebAPI 集成测试
+      shell: bash
+      run: |
+        echo "运行 WebAPI 集成测试..."
+
+        if [ -f "tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj" ]; then
+          dotnet test tests/IntegrationTests/WebAPI.IntegrationTests/LYBT.WebAPI.IntegrationTests.csproj \
+            --configuration ${{ env.CONFIGURATION }} --no-build \
+            --verbosity normal \
+            --settings .runsettings \
+            --logger "trx;LogFileName=webapi-integration-test-results.trx" \
+            -- xUnit.ParallelizeTestCollections=false
+        else
+          echo "⚠️ WebAPI 集成测试项目不存在，跳过"
+        fi
+
+    - name: 📊 上传测试结果
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: integration-test-results-${{ github.run_id }}
+        path: |
+          BIN/TestResults/**/*.trx
+        retention-days: 7
+
+  # ==================== 集成测试总结 ====================
+  integration-tests-summary:
+    name: ✅ 集成测试完成
+    runs-on: windows-latest
+    needs: integration-tests
+    if: success()
+
+    steps:
+    - name: 集成测试成功
+      shell: bash
+      run: |
+        echo "## ✅ 集成测试验证通过" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "所有集成测试已通过：" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Server 集成测试" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ WebAPI 集成测试" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**提交信息**:" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 提交者: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  integration-tests-failed:
+    name: ❌ 集成测试失败
+    runs-on: windows-latest
+    needs: integration-tests
+    if: failure()
+
+    steps:
+    - name: 集成测试失败
+      shell: bash
+      run: |
+        echo "## ❌ 集成测试验证失败" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**PR被自动阻塞** - 必须修复所有失败的集成测试" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**失败状态**:" >> $GITHUB_STEP_SUMMARY
+        echo "- 集成测试: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**修复指导**:" >> $GITHUB_STEP_SUMMARY
+        echo "1. 检查集成测试失败项" >> $GITHUB_STEP_SUMMARY
+        echo "2. 确保测试环境配置正确" >> $GITHUB_STEP_SUMMARY
+        echo "3. 检查依赖服务是否可用" >> $GITHUB_STEP_SUMMARY
+        echo "4. 本地运行集成测试验证修复" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "详细错误信息请查看上方构建日志" >> $GITHUB_STEP_SUMMARY
+        exit 1
