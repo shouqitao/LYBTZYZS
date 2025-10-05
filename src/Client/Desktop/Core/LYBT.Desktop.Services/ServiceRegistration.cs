@@ -76,14 +76,5 @@ namespace LYBT.Desktop.Services
 
             return services;
         }
-
-        /// <summary>
-        /// 向后兼容的方法
-        /// </summary>
-        [Obsolete("请使用 AddDesktopServices 方法")]
-        public static IServiceCollection AddBusinessServices(this IServiceCollection services)
-        {
-            return AddDesktopServices(services);
-        }
     }
 }
