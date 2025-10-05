@@ -317,7 +317,7 @@ namespace LYBT.UnitTests.Core.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result!.Status.Should().Be(MedicalCaseStatus.Closed);
             result.CompletedAt.Should().NotBeNull();
             result.CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         }

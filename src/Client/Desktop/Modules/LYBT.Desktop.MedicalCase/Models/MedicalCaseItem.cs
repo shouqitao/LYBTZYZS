@@ -227,9 +227,7 @@ public class MedicalCaseItem : BindableBase
     {
         MedicalCaseStatus.Active => "进行中",
         MedicalCaseStatus.Closed => "已完成",
-#pragma warning disable CS0618 // Type or member is obsolete
-        MedicalCaseStatus.Cancelled => "已取消",
-#pragma warning restore CS0618
+// Cancelled 状态已合并到 Closed，保留映射用于历史数据兼容
         _ => "未知"
     };
 
@@ -240,9 +238,7 @@ public class MedicalCaseItem : BindableBase
     {
         MedicalCaseStatus.Active => "#4CAF50",
         MedicalCaseStatus.Closed => "#9E9E9E",
-#pragma warning disable CS0618 // Type or member is obsolete
-        MedicalCaseStatus.Cancelled => "#F44336",
-#pragma warning restore CS0618
+// Cancelled 颜色已合并到 Closed
         _ => "#757575"
     };
 

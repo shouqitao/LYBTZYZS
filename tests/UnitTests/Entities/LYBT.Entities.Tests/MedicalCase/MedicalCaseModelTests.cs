@@ -86,7 +86,7 @@ namespace LYBT.UnitTests.Core.Entities
 
         [Theory]
         [InlineData(MedicalCaseStatus.Active, false)]
-        [InlineData(MedicalCaseStatus.Completed, true)]
+        [InlineData(MedicalCaseStatus.Closed, true)]
         [InlineData(MedicalCaseStatus.Closed, true)]
         public void IsLocked_ShouldReturnCorrectStatus(MedicalCaseStatus status, bool expected)
         {
@@ -188,11 +188,11 @@ namespace LYBT.UnitTests.Core.Entities
             };
 
             // Act
-            medicalCase.Status = MedicalCaseStatus.Completed;
+            medicalCase.Status = MedicalCaseStatus.Closed;
             medicalCase.CompletedAt = DateTime.UtcNow;
 
             // Assert
-            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
+            medicalCase.Status.Should().Be(MedicalCaseStatus.Closed);
             medicalCase.CompletedAt.Should().NotBeNull();
         }
 
@@ -202,7 +202,7 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var medicalCase = new MedicalCase
             {
-                Status = MedicalCaseStatus.Completed,
+                Status = MedicalCaseStatus.Closed,
                 CompletedAt = DateTime.UtcNow
             };
 
@@ -210,7 +210,7 @@ namespace LYBT.UnitTests.Core.Entities
             // 实际业务逻辑应该在服务层验证
             Action act = () =>
             {
-                if (medicalCase.Status == MedicalCaseStatus.Completed)
+                if (medicalCase.Status == MedicalCaseStatus.Closed)
                 {
                     throw new InvalidOperationException("已完成的医疗案例不能重新激活");
                 }

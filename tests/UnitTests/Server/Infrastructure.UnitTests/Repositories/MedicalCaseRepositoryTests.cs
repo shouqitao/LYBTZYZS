@@ -355,7 +355,7 @@ namespace LYBT.UnitTests.Infrastructure.Repositories
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
                     DoctorId = doctorId,
-                    Status = MedicalCaseStatus.Completed,
+                    Status = MedicalCaseStatus.Closed,
                     CreatedAt = today.AddDays(-1)
                 },
                 new MedicalCase
