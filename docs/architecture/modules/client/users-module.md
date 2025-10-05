@@ -80,6 +80,11 @@ public class UserService : IUserService
 - 导航到创建/编辑/详情页面
 - 快速操作（状态切换、密码重置）
 
+**导航生命周期**：
+- 继承自 `UnifiedListViewModelBase<UserDto>`
+- 重写 `OnNavigatedToAsync` 方法自动触发 `LoadPageAsync()` 加载数据
+- 确保页面导航完成后立即加载用户列表
+
 ### UserEditViewModel
 编辑视图模型，负责：
 - 加载现有用户数据

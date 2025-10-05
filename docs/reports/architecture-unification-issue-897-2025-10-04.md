@@ -282,6 +282,16 @@ public XxxViewModel(
 }
 ```
 
+**列表ViewModel模式**（继承自UnifiedListViewModelBase）：
+```csharp
+// 所有列表管理ViewModel必须重写OnNavigatedToAsync以自动加载数据
+protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+{
+    await base.OnNavigatedToAsync(navigationContext);
+    await LoadPageAsync(); // 触发数据加载
+}
+```
+
 #### 2. ViewModelBase（5%场景）
 **适用场景**：
 - ✅ 简单对话框（不参与 Region 导航）

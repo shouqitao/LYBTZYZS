@@ -205,6 +205,19 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
+        #region 导航处理
+
+        /// <summary>
+        /// 页面导航完成时触发
+        /// </summary>
+        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        {
+            await base.OnNavigatedToAsync(navigationContext);
+            await LoadPageAsync();
+        }
+
+        #endregion
+
         #region ���ݼ���
 
         /// <summary>
