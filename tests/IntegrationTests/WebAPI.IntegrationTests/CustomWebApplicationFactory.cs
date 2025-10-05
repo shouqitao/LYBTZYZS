@@ -1,5 +1,4 @@
-﻿using LYBT.Infrastructure.Data;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +40,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             // 添加内存数据库 - 为两个 AppDbContext 都注册
             var databaseName = $"TestDatabase_{Guid.NewGuid()}";
-            
+
             // 注册 LYBT.Infrastructure.Data.AppDbContext
             services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>(options =>
             {
@@ -62,7 +61,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var scopedServices = scope.ServiceProvider;
-            
+
             // 只需要创建一次数据库（两个 DbContext 使用相同的内存数据库）
             var db = scopedServices.GetRequiredService<LYBT.Core.Infrastructure.Data.AppDbContext>();
             db.Database.EnsureCreated();
