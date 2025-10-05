@@ -25,10 +25,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // 移除所有与两个 AppDbContext 相关的服务描述符
-            // 注意：项目中存在两个 AppDbContext：
-            // 1. LYBT.Infrastructure.Data.AppDbContext
-            // 2. LYBT.Core.Infrastructure.Data.AppDbContext
+            // 移除现有的 AppDbContext 服务描述符
             var descriptorsToRemove = services
                 .Where(d => d.ServiceType.Name.Contains("AppDbContext") ||
                            d.ServiceType.Name.Contains("DbContextOptions"))
@@ -39,19 +36,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // 添加内存数据库 - 为两个 AppDbContext 都注册
+            // 添加内存数据库用于测试
             var databaseName = $"TestDatabase_{Guid.NewGuid()}";
-            
+
             // 注册 LYBT.Infrastructure.Data.AppDbContext
             services.AddDbContext<LYBT.Infrastructure.Data.AppDbContext>(options =>
-            {
-                options.UseInMemoryDatabase(databaseName);
-                options.EnableSensitiveDataLogging();
-                options.EnableDetailedErrors();
-            });
-
-            // 注册 LYBT.Core.Infrastructure.Data.AppDbContext
-            services.AddDbContext<LYBT.Core.Infrastructure.Data.AppDbContext>(options =>
             {
                 options.UseInMemoryDatabase(databaseName);
                 options.EnableSensitiveDataLogging();
@@ -62,9 +51,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var scopedServices = scope.ServiceProvider;
-            
-            // 只需要创建一次数据库（两个 DbContext 使用相同的内存数据库）
-            var db = scopedServices.GetRequiredService<LYBT.Core.Infrastructure.Data.AppDbContext>();
+
+            // 只需要创建一次数据库
+            var db = scopedServices.GetRequiredService<LYBT.Infrastructure.Data.AppDbContext>();
             db.Database.EnsureCreated();
         });
     }
