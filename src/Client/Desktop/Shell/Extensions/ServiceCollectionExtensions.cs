@@ -63,12 +63,8 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterBusinessServices(containerRegistry);
             RegisterCoreServices(containerRegistry); // Issue #837: 添加缺失的核心服务注册
             RegisterErrorHandlingServices(containerRegistry);
-            RegisterDialogs(containerRegistry);
-            RegisterPerformanceServices(containerRegistry);
             RegisterUltraThinkServices(containerRegistry);
-            RegisterNavigationServices(containerRegistry); // Phase 2: NavigationJournal支持
             RegisterCommandServices(containerRegistry); // Phase 3: CompositeCommand全局命令
-            RegisterModuleServicesManually(containerRegistry); // 简化：直接使用手动注册
 
             // ViewModels和Views通过Prism的ViewModelLocator自动解析，无需手动注册
         }
@@ -123,15 +119,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Theming.IThemeService,
                 LYBT.Desktop.Services.Theming.ThemeService>();
 
-            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 107-108）
-            // RegisterPerformanceServices 当前为空实现，未来可能扩展性能监控服务
-        }
-
-        /// <summary>
-        /// 注册导航服务 - Phase 2: NavigationJournal支持
-        /// </summary>
-        private static void RegisterNavigationServices(IContainerRegistry containerRegistry)
-        {
+            // Note: IStartupOptimizationService 实际在 RegisterBootstrapServices 中注册（lines 103-104）
         }
 
         /// <summary>
@@ -254,15 +242,6 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>
-        /// DT-003优化: 分层模块服务注册 - 按依赖层级防止循环依�?
-        /// 注：Layer 1-5 方法已移除（均为空实现）
-        /// </summary>
-        private static void RegisterModuleServicesManually(IContainerRegistry containerRegistry)
-        {
-            // 当前所有模块服务通过各自的 Module 类注册，无需在此手动注册
-        }
-
-        /// <summary>
         /// 注册业务服务 - UltraThink架构 with Repository Pattern
         /// </summary>
         private static void RegisterBusinessServices(IContainerRegistry containerRegistry)
@@ -340,35 +319,6 @@ namespace LYBT.Desktop.Shell.Extensions
                 LYBT.Desktop.Infrastructure.Services.UserExperienceService>();
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,
                 LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
-        }
-
-        /// <summary>
-        /// 注册领域业务服务
-        /// </summary>
-        private static void RegisterDomainServices(IContainerRegistry containerRegistry)
-        {
-            // 注意�?个业务模�?Auth/Users/Patients/Herbs/Formula/Consultation/Prescriptions/MedicalCase)
-            // 现在通过自动发现系统统一注册，无需在各自的XxxModule.RegisterTypes中重复注�?
-            // 这消除了双重注册风险，简化了模块开�?
-        }
-
-        /// <summary>
-        /// 注册对话框服�?
-        /// </summary>
-        private static void RegisterDialogs(IContainerRegistry containerRegistry)
-        {
-            // Phase 3.4: 所有 Dialog 现在使用 Prism Dialog System
-            // SimplifiedDialogService 和 ICustomDialogService 已删除
-            // 各模块通过 containerRegistry.RegisterDialog&lt;TView, TViewModel&gt;() 注册
-        }
-
-        /// <summary>
-        /// 注册性能优化服务
-        /// </summary>
-        private static void RegisterPerformanceServices(IContainerRegistry containerRegistry)
-        {
-            // UltraThink清理：移除过度工程的ModuleLoadingCoordinator
-            // 小诊所系统不需要复杂的模块加载协调功能
         }
 
         #region 辅助方法
