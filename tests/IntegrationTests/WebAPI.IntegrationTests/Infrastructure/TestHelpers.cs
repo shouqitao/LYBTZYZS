@@ -7,6 +7,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using LYBT.Infrastructure.Data;
 using LYBT.Entities.Users;
+using LYBT.WebAPI.IntegrationTests.Infrastructure.Builders;
 
 namespace LYBT.WebAPI.IntegrationTests.Infrastructure;
 
@@ -149,5 +150,30 @@ public static class TestHelpers
     public static string GenerateUniquePrefix(string prefix = "test")
     {
         return $"{prefix}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N[..8]}";
+    }
+
+    /// <summary>
+    /// 创建用户构建器
+    /// </summary>
+    /// <returns>用户构建器实例</returns>
+    public static UserBuilder CreateUser()
+    {
+        return new UserBuilder();
+    }
+
+    /// <summary>
+    /// 保存用户到数据库
+    /// </summary>
+    /// <param name="factory">Web 应用程序工厂</param>
+    /// <param name="user">用户实体</param>
+    public static async Task<User> SaveUserAsync(this CustomWebApplicationFactory factory, User user)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return user;
     }
 }

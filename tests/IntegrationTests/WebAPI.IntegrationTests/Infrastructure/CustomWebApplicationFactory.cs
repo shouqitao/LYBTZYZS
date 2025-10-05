@@ -26,6 +26,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public string TestDatabaseName { get; }
 
     /// <summary>
+    /// 测试种子数据生成器
+    /// </summary>
+    public TestDataSeeder Seeder { get; private set; } = null!;
+
+    /// <summary>
     /// 构造函数 - 生成唯一的测试数据库名称
     /// </summary>
     public CustomWebApplicationFactory()
@@ -96,6 +101,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
         });
 
+        // 初始化种子数据生成器
+        Seeder = new TestDataSeeder(this);
     }
 
     /// <summary>
