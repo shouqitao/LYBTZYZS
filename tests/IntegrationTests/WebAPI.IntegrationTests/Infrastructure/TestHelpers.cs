@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using FluentAssertions;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.DependencyInjection;
@@ -149,31 +150,4 @@ public static class TestHelpers
     {
         return $"{prefix}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N[..8]}";
     }
-}
-
-/// <summary>
-/// API 响应包装类（与 WebAPI 保持一致）
-/// </summary>
-/// <typeparam name="T">数据类型</typeparam>
-public class ApiResponse<T>
-{
-    /// <summary>
-    /// 是否成功
-    /// </summary>
-    public bool Success { get; set; }
-
-    /// <summary>
-    /// 消息
-    /// </summary>
-    public string Message { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 数据
-    /// </summary>
-    public T? Data { get; set; }
-
-    /// <summary>
-    /// 错误列表
-    /// </summary>
-    public List<string>? Errors { get; set; }
 }
