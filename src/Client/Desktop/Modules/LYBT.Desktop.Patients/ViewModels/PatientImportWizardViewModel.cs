@@ -1058,7 +1058,16 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            // 清理 BackgroundWorker
+            if (_importWorker != null)
+            {
+                _importWorker.Dispose();
+                _importWorker = null;
+            }
+
+            // 清理 DataTable
+            _previewData?.Dispose();
+            _previewData = null;
         }
 
         #endregion Helper Methods
