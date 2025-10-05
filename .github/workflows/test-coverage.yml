@@ -47,7 +47,7 @@ jobs:
         
         # 运行用户模块测试（-m:1 禁用 MSBuild 并行构建）
         echo "👤 运行Users模块测试..."
-        dotnet test tests/**/Users.UnitTests/*.csproj -m:1 --configuration Release --no-build --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=users-test-results.trx" --logger "console;verbosity=detailed" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura -- xUnit.ParallelizeTestCollections=false || true
+        dotnet test tests/UnitTests/Modules/Users.UnitTests/LYBT.Module.Users.Tests.csproj -m:1 --configuration Release --no-build --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=users-test-results.trx" --logger "console;verbosity=detailed" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura -- xUnit.ParallelizeTestCollections=false || true
     
     - name: 🔧 安装 ReportGenerator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
