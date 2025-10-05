@@ -793,9 +793,9 @@ public class CacheMonitoringConfiguration
 }
 
 /// <summary>
-    /// 领域配置选项
-    /// 整合原 UserOptions, SysAdminOptions
-    /// </summary>
+/// 领域配置选项
+/// 整合原 UserOptions, SysAdminOptions
+/// </summary>
 public class DomainOptions
 {
     /// <summary>
@@ -888,8 +888,8 @@ public class SystemAdminConfiguration
 }
 
 /// <summary>
-    /// 诊疗运营配置
-    /// </summary>
+/// 诊疗运营配置
+/// </summary>
 public class MedicalOperationsConfiguration
 {
     /// <summary>
