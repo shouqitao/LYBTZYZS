@@ -272,6 +272,21 @@ namespace LYBT.Infrastructure.Web
             }
         }
 
+        /// <summary>
+        /// 非泛型ServiceResult解包 - 处理不返回数据的操作（如删除）
+        /// </summary>
+        protected ActionResult<ApiResponse> HandleServiceResult(ServiceResult serviceResult, string? successMessage = null)
+        {
+            if (serviceResult.IsSuccess)
+            {
+                return Success(successMessage ?? "操作成功");
+            }
+            else
+            {
+                return BusinessFail(serviceResult.ErrorMessage ?? "操作失败");
+            }
+        }
+
         #endregion ServiceResult统一处理方法 - UltraThink核心模式
 
         #region 业务验证方法
