@@ -90,7 +90,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Username.Should().Be("sysadmin");
+            result.Data!.User.UserName.Should().Be("sysadmin");
             
             // 验证响应头中有Authorization token
             response.Headers.Should().ContainKey("Authorization");

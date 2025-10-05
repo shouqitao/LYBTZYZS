@@ -242,7 +242,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var result = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, _jsonOptions);
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Username.Should().Be("sysadmin");
+            result.Data!.UserName.Should().Be("sysadmin");
         }
 
         [Fact]
@@ -371,7 +371,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<ApiResponse<PagedResult<UserDto>>>(content, _jsonOptions);
             result!.Success.Should().BeTrue();
-            result.Data!.Items.Should().Contain(u => u.Username!.Contains("searchable"));
+            result.Data!.Items.Should().Contain(u => u.UserName!.Contains("searchable"));
         }
 
         [Fact]
@@ -451,7 +451,7 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var result = JsonSerializer.Deserialize<ApiResponse<UserDto>>(content, _jsonOptions);
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Username.Should().Be("newuser");
+            result.Data!.UserName.Should().Be("newuser");
         }
 
         [Fact]
@@ -509,7 +509,6 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var updateRequest = new UserUpdateDto
             {
                 Id = user.Id,
-                Username = user.Username,
                 RealName = "更新后的姓名",
                 Role = user.Role,
                 Email = "updated@test.com",
@@ -539,7 +538,6 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var updateRequest = new UserUpdateDto
             {
                 Id = differentId, // 不匹配的ID
-                Username = user.Username,
                 RealName = "更新后的姓名",
                 Role = user.Role
             };
@@ -561,7 +559,6 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var updateRequest = new UserUpdateDto
             {
                 Id = invalidId,
-                Username = "testuser",
                 RealName = "测试用户",
                 Role = UserRole.Doctor
             };
@@ -585,25 +582,25 @@ namespace LYBT.Tests.IntegrationTests.Controllers
             var testId = Guid.NewGuid();
 
             // Act & Assert - 测试所有需要认证的端点
-            var endpoints = new[]
+            var endpoints = new (HttpMethod Method, string Url)[]
             {
-                HttpMethod.Get, "/api/v1/users",
-                HttpMethod.Get, $"/api/v1/users/{testId}",
-                HttpMethod.Post, "/api/v1/users",
-                HttpMethod.Put, $"/api/v1/users/{testId}",
-                HttpMethod.Patch, $"/api/v1/users/{testId}/toggle-status",
-                HttpMethod.Post, $"/api/v1/users/reset-password/{testId}",
-                HttpMethod.Patch, "/api/v1/users/password",
-                HttpMethod.Get, "/api/v1/users/profile",
-                HttpMethod.Put, "/api/v1/users/profile",
-                HttpMethod.Get, "/api/v1/users/roles",
-                HttpMethod.Get, "/api/v1/users/active"
+                (HttpMethod.Get, "/api/v1/users"),
+                (HttpMethod.Get, $"/api/v1/users/{testId}"),
+                (HttpMethod.Post, "/api/v1/users"),
+                (HttpMethod.Put, $"/api/v1/users/{testId}"),
+                (HttpMethod.Patch, $"/api/v1/users/{testId}/toggle-status"),
+                (HttpMethod.Post, $"/api/v1/users/reset-password/{testId}"),
+                (HttpMethod.Patch, "/api/v1/users/password"),
+                (HttpMethod.Get, "/api/v1/users/profile"),
+                (HttpMethod.Put, "/api/v1/users/profile"),
+                (HttpMethod.Get, "/api/v1/users/roles"),
+                (HttpMethod.Get, "/api/v1/users/active")
             };
 
-            for (int i = 0; i < endpoints.Length; i += 2)
+            foreach (var endpoint in endpoints)
             {
-                var method = (HttpMethod)endpoints[i];
-                var url = (string)endpoints[i + 1];
+                var method = endpoint.Method;
+                var url = endpoint.Url;
 
                 var request = new HttpRequestMessage(method, url);
                 if (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch)
