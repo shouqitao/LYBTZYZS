@@ -21,7 +21,7 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// <summary>
         /// 业务配置
         /// </summary>
-        public BusinessSettings Business { get; set; } = new();
+        public OperationalSettings Business { get; set; } = new();
     }
 
     /// <summary>
@@ -234,7 +234,7 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// 业务配置 - 合并原 UserOptions、DefaultPasswordOptions、CacheOptions、SessionOptions
     /// </summary>
-    public class BusinessSettings
+    public class OperationalSettings
     {
         /// <summary>
         /// 用户配置
@@ -355,9 +355,9 @@ namespace LYBT.Infrastructure.Configuration.Options
         public string Phone { get; set; } = string.Empty;
 
         /// <summary>
-        /// 营业时间
+        /// 运营时间
         /// </summary>
-        public string BusinessHours { get; set; } = "周一至周六 8:00-18:00";
+        public string OperatingHours { get; set; } = "周一至周六 8:00-18:00";
 
         /// <summary>
         /// 版权信息

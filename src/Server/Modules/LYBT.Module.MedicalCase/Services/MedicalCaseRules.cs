@@ -4,10 +4,10 @@ using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 namespace LYBT.Module.MedicalCase.Services
 {
     /// <summary>
-    /// 医疗案例业务规则 - 集中管理核心业务逻辑
+    /// 医疗案例规则 - 集中管理核心业务逻辑
     /// 简化版本，只保留最核心的业务规则
     /// </summary>
-    public static class MedicalCaseBusinessRules
+    public static class MedicalCaseRules
     {
         /// <summary>
         /// 核心规则1：患者同时只能有一个进行中的医案
