@@ -13,8 +13,8 @@
     <!-- Framework35 | [Framework40] | Framework45 -->
     <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
     
-    <!-- Uncomment to control maximum parallel test execution -->
-    <MaxCpuCount>0</MaxCpuCount>
+    <!-- 控制最大并行测试执行 - 设为 1 避免文件锁定问题 -->
+    <MaxCpuCount>1</MaxCpuCount>
     
     <!-- Test session timeout in milliseconds -->
     <TestSessionTimeout>1800000</TestSessionTimeout>
@@ -135,10 +135,10 @@
 
   <!-- Configuration for xUnit -->
   <xUnit>
-    <!-- Enable running tests in parallel -->
+    <!-- 禁用并行测试执行以避免文件锁定问题 -->
     <ParallelizeAssembly>false</ParallelizeAssembly>
-    <ParallelizeTestCollections>true</ParallelizeTestCollections>
-    <MaxParallelThreads>0</MaxParallelThreads>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
+    <MaxParallelThreads>1</MaxParallelThreads>
   </xUnit>
 
   <!-- Adapter specific sections -->

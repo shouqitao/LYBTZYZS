@@ -50,30 +50,14 @@ jobs:
         # 安装覆盖率工具
         dotnet tool install -g dotnet-reportgenerator-globaltool
 
-        # 运行所有测试项目并收集覆盖率
-        dotnet test \
-          --configuration Release \
-          --no-build \
-          --verbosity normal \
-          --settings .runsettings \
-          --collect:"XPlat Code Coverage" \
-          --logger "trx;LogFileName=TestResults.trx" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" \
-          -- xUnit.ParallelizeTestCollections=false
+        # 运行所有测试项目并收集覆盖率（-m:1 禁用 MSBuild 并行构建避免文件锁定）
+        dotnet test LYBT.All.sln -m:1 --configuration Release --no-build --verbosity normal --settings .runsettings --collect:"XPlat Code Coverage" --logger "trx;LogFileName=TestResults.trx" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Migrations/**" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByAttribute="Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute" -- xUnit.ParallelizeTestCollections=false
 
     - name: 📊 生成覆盖率报告
+      shell: bash
       run: |
         # 合并所有覆盖率文件
-        reportgenerator \
-          "-reports:BIN/TestResults/**/coverage.opencover.xml" \
-          "-targetdir:BIN/TestResults/CoverageReport" \
-          "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" \
-          "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" \
-          "-classfilters:-*.Migrations.*" \
-          "-assemblyfilters:-*Tests*;-*TestUtils*" \
-          "-verbosity:Info"
+        reportgenerator "-reports:BIN/TestResults/**/coverage.opencover.xml" "-targetdir:BIN/TestResults/CoverageReport" "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummary;Badges;Json" "-filefilters:-**/Migrations/**;-**/Program.cs;-**/Startup.cs" "-classfilters:-*.Migrations.*" "-assemblyfilters:-*Tests*;-*TestUtils*" "-verbosity:Info"
 
         # 显示覆盖率报告路径
         echo "覆盖率报告已生成到: BIN/TestResults/CoverageReport/"
@@ -91,6 +75,7 @@ jobs:
 
     - name: 📈 解析覆盖率数据
       id: coverage
+      shell: bash
       run: |
         # 从JSON摘要中提取覆盖率数据
         if [ -f "BIN/TestResults/CoverageReport/Summary.json" ]; then
@@ -119,6 +104,7 @@ jobs:
 
     - name: 🎯 检查关键模块覆盖率
       id: critical_modules
+      shell: bash
       run: |
         # 检查关键模块覆盖率 (Auth, Users, MedicalCase, Prescriptions)
         echo "正在检查关键模块覆盖率..."
@@ -192,6 +178,7 @@ jobs:
         echo "all_critical_pass=$all_critical_pass" >> $GITHUB_OUTPUT
 
     - name: 🚨 覆盖率门禁检查
+      shell: bash
       run: |
         LINE_COVERAGE="${{ steps.coverage.outputs.line_coverage }}"
         BRANCH_COVERAGE="${{ steps.coverage.outputs.branch_coverage }}"
@@ -337,6 +324,7 @@ jobs:
         path: ./coverage-report
 
     - name: 📈 分析覆盖率趋势
+      shell: bash
       run: |
         # 从历史数据中分析覆盖率趋势
         echo "正在分析覆盖率趋势..."
@@ -348,6 +336,7 @@ jobs:
         echo "当前主分支覆盖率已记录，可用于后续趋势分析。" >> $GITHUB_STEP_SUMMARY
 
     - name: 🗃️ 存储覆盖率历史
+      shell: bash
       run: |
         # 将覆盖率数据保存到历史记录中
         mkdir -p .coverage-history

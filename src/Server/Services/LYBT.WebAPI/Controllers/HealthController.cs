@@ -223,20 +223,39 @@ public class HealthController : BaseApiController
                 return check;
             }
 
-            var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
-            var pendingCount = pendingMigrations.Count();
+            // 检查是否为关系型数据库（排除 InMemory 数据库）
+            var isRelationalDatabase = _dbContext.Database.IsRelational();
 
-            check.Status = pendingCount == 0 ? "Healthy" : "Degraded";
-            check.Description = pendingCount == 0
-                ? "Database connection and migrations OK"
-                : $"{pendingCount} pending migrations";
-
-            check.Data = new
+            if (isRelationalDatabase)
             {
-                connected = true,
-                pendingMigrations = pendingCount,
-                migrations = pendingMigrations.ToArray()
-            };
+                // 仅在关系型数据库上检查迁移
+                var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
+                var pendingCount = pendingMigrations.Count();
+
+                check.Status = pendingCount == 0 ? "Healthy" : "Degraded";
+                check.Description = pendingCount == 0
+                    ? "Database connection and migrations OK"
+                    : $"{pendingCount} pending migrations";
+
+                check.Data = new
+                {
+                    connected = true,
+                    databaseType = "Relational",
+                    pendingMigrations = pendingCount,
+                    migrations = pendingMigrations.ToArray()
+                };
+            }
+            else
+            {
+                // InMemory 或其他非关系型数据库
+                check.Status = "Healthy";
+                check.Description = "Database connection OK (non-relational)";
+                check.Data = new
+                {
+                    connected = true,
+                    databaseType = "InMemory"
+                };
+            }
         }
         catch (Exception ex)
         {

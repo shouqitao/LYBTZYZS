@@ -86,7 +86,7 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 // 使用业务规则类验证
                 var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
-                var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
+                var validation = MedicalCaseRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
 
                 if (!validation.IsValid)
                 {
@@ -120,7 +120,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult<MedicalCaseDto>.Failure("医疗案例不存在");
 
                 // 使用业务规则类验证（这里需要传入当前用户ID，暂时使用实体的DoctorId）
-                var validation = MedicalCaseBusinessRules.ValidateCaseUpdate(entity, entity.DoctorId);
+                var validation = MedicalCaseRules.ValidateCaseUpdate(entity, entity.DoctorId);
                 if (!validation.IsValid)
                 {
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
@@ -151,7 +151,7 @@ namespace LYBT.Module.MedicalCase.Services
                     return ServiceResult.Failure("医疗案例不存在");
 
                 // 使用业务规则验证
-                if (!MedicalCaseBusinessRules.CanDelete(entity, entity.DoctorId))
+                if (!MedicalCaseRules.CanDelete(entity, entity.DoctorId))
                 {
                     return ServiceResult.Failure("无权限删除此医案或医案已锁定");
                 }
@@ -197,7 +197,7 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 // 验证是否可以创建新医案
                 var existingCases = await _repository.GetByPatientIdAsync(caseDto.PatientId);
-                var validation = MedicalCaseBusinessRules.ValidateNewCaseCreation(caseDto.PatientId, existingCases);
+                var validation = MedicalCaseRules.ValidateNewCaseCreation(caseDto.PatientId, existingCases);
 
                 if (!validation.IsValid)
                 {
