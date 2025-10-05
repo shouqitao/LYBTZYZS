@@ -65,6 +65,9 @@ jobs:
       run: |
         echo "扫描易受攻击的 NuGet 包..."
 
+        # 先还原依赖
+        dotnet restore LYBT.Server.sln
+
         # 列出所有易受攻击的包（明确指定 Server 解决方案）
         dotnet list LYBT.Server.sln package --vulnerable --include-transitive
 
@@ -130,8 +133,9 @@ jobs:
 
     - name: 🔨 构建服务端项目
       run: |
-        dotnet restore LYBT.Server.sln
-        dotnet build LYBT.Server.sln --configuration Release --no-restore
+        # 只构建服务端核心项目，避免 Desktop 依赖
+        dotnet restore src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj
+        dotnet build src/Server/Services/LYBT.WebAPI/LYBT.WebAPI.csproj --configuration Release --no-restore
 
     - name: 📊 执行 CodeQL 分析
       uses: github/codeql-action/analyze@v3
