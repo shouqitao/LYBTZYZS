@@ -58,7 +58,7 @@ namespace LYBT.Module.Consultation
         /// </summary>
         public static IHealthChecksBuilder AddConsultationModuleHealthCheck(this IHealthChecksBuilder builder)
         {
-            // return builder.AddCheck<ConsultationModuleHealthCheck>("consultation_module");  // 待创建健康检查类
+            // TODO: 待创建健康检查类
             return builder;
         }
     }

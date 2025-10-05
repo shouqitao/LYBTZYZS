@@ -1,9 +1,4 @@
-﻿// using System; // Moved to GlobalUsings.cs
-// using System.Collections.Generic; // Moved to GlobalUsings.cs
-// using System.Linq; // Moved to GlobalUsings.cs
-// using System.Threading; // Moved to GlobalUsings.cs
-// using System.Threading.Tasks; // Moved to GlobalUsings.cs
-using LYBT.Infrastructure.Caching.Interfaces;
+﻿using LYBT.Infrastructure.Caching.Interfaces;
 using LYBT.Infrastructure.Caching.Models;
 
 namespace LYBT.Infrastructure.Caching.Adapters
