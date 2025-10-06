@@ -41,7 +41,16 @@ namespace LYBT.Desktop.Services.Repositories
             if (id == Guid.Empty)
                 throw new ArgumentException("ID不能为空", nameof(id));
 
-            return (await _apiService.GetAsync<T>($"{_endpoint}/{id}"))!;
+            // 服务端返回 ApiResponse<T> 格式
+            var response = await _apiService.GetAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<T>>($"{_endpoint}/{id}");
+            
+            if (response?.Success == true && response.Data != null)
+            {
+                return response.Data;
+            }
+            
+            _logger?.LogWarning("API返回失败或数据为空: {Message}", response?.Message ?? "未知错误");
+            return null!;
         }
 
         public virtual async Task<T> CreateAsync(T entity)
@@ -49,7 +58,16 @@ namespace LYBT.Desktop.Services.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            return (await _apiService.PostAsync<T, T>(_endpoint, entity))!;
+            // 服务端返回 ApiResponse<T> 格式
+            var response = await _apiService.PostAsync<T, LYBT.Shared.Models.Contracts.Common.ApiResponse<T>>(_endpoint, entity);
+            
+            if (response?.Success == true && response.Data != null)
+            {
+                return response.Data;
+            }
+            
+            _logger?.LogWarning("API返回失败或数据为空: {Message}", response?.Message ?? "未知错误");
+            return null!;
         }
 
         public virtual async Task<T> UpdateAsync(Guid id, T entity)
@@ -59,7 +77,16 @@ namespace LYBT.Desktop.Services.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            return (await _apiService.PutAsync<T, T>($"{_endpoint}/{id}", entity))!;
+            // 服务端返回 ApiResponse<T> 格式
+            var response = await _apiService.PutAsync<T, LYBT.Shared.Models.Contracts.Common.ApiResponse<T>>($"{_endpoint}/{id}", entity);
+            
+            if (response?.Success == true && response.Data != null)
+            {
+                return response.Data;
+            }
+            
+            _logger?.LogWarning("API返回失败或数据为空: {Message}", response?.Message ?? "未知错误");
+            return null!;
         }
 
         public virtual async Task<bool> DeleteAsync(Guid id)
@@ -74,8 +101,17 @@ namespace LYBT.Desktop.Services.Repositories
         public virtual async Task<List<T>> SearchAsync(string keyword)
         {
             var query = new { keyword };
-            var result = await _apiService.GetAsync<List<T>>($"{_endpoint}/search", query);
-            return result ?? new List<T>();
+            
+            // 服务端返回 ApiResponse<PagedResult<T>> 格式
+            var response = await _apiService.GetAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Common.PagedResult<T>>>($"{_endpoint}/search", query);
+            
+            if (response?.Success == true && response.Data?.Items != null)
+            {
+                return response.Data.Items.ToList();
+            }
+            
+            _logger?.LogWarning("API返回失败或数据为空: {Message}", response?.Message ?? "未知错误");
+            return new List<T>();
         }
     }
 }
