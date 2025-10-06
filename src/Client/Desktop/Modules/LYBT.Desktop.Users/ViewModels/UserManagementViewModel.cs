@@ -151,7 +151,7 @@ namespace LYBT.Desktop.Users.ViewModels
             // ��ʼ���û��ض�����
             InitializeUserCommands();
 
-            Logger.LogDebug("�û�����ViewModel�ѳ�ʼ��");
+            Logger.LogDebug("用户管理ViewModel已初始化");
         }
 
         #endregion
@@ -212,7 +212,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            Logger.LogDebug("�����û�����: ��{Page}ҳ, ÿҳ{PageSize}��, �ؼ���: {SearchText}", page, pageSize, searchText);
+            Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", page, pageSize, searchText);
 
             try
             {
@@ -247,14 +247,14 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("�����û�����ʧ��: {ErrorMessage}", result.ErrorMessage);
+                    Logger.LogWarning("加载用户列表失败: {ErrorMessage}", result.ErrorMessage);
                     TotalCount = 0;
                     return new List<UserDto>();
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "�����û�����ʱ�����쳣");
+                Logger.LogError(ex, "加载用户列表时发生异常");
                 var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
                 await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
 
@@ -272,7 +272,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         protected override Task OnExecuteAddAsync()
         {
-            Logger.LogDebug("ִ���������û�");
+            Logger.LogDebug("执行添加新用户");
 
             // �������û�����ҳ��
             NavigateTo("ContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
@@ -290,16 +290,16 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            Logger.LogDebug("ɾ���û�: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
 
             var result = await _userService.DeleteAsync(user.Id);
             if (!result.IsSuccess)
             {
-                Logger.LogWarning("ɾ���û�ʧ��: {ErrorMessage}", result.ErrorMessage);
-                throw new InvalidOperationException($"ɾ���û�ʧ��: {result.ErrorMessage}");
+                Logger.LogWarning("删除用户失败: {ErrorMessage}", result.ErrorMessage);
+                throw new InvalidOperationException($"删除用户失败: {result.ErrorMessage}");
             }
 
-            Logger.LogInformation("�ɹ�ɾ���û�: {UserName}", user.UserName);
+            Logger.LogInformation("成功删除用户: {UserName}", user.UserName);
         }
 
         /// <summary>
@@ -349,7 +349,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            Logger.LogDebug("�༭�û�: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
 
             NavigateTo("ContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
             {
@@ -375,7 +375,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             await ExecuteSafelyAsync(() =>
             {
-                Logger.LogDebug("�����û�����: {UserId} - {UserName}", user.Id, user.UserName);
+                Logger.LogDebug("重置用户密码: {UserId} - {UserName}", user.Id, user.UserName);
 
                 // ����Ӧ�õ����������÷��񣬻��ߴ���������Ի���
                 // ��ʱ��¼��־
@@ -408,9 +408,9 @@ namespace LYBT.Desktop.Users.ViewModels
             await ExecuteSafelyAsync(async () =>
             {
                 var newStatus = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
-                var action = newStatus == CommonStatus.Enabled ? "����" : "����";
+                var action = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
 
-                Logger.LogDebug("{Action}�û�: {UserId} - {UserName}", action, user.Id, user.UserName);
+                Logger.LogDebug("{Action}用户: {UserId} - {UserName}", action, user.Id, user.UserName);
 
                 var updateDto = new UserUpdateDto
                 {
@@ -421,16 +421,16 @@ namespace LYBT.Desktop.Users.ViewModels
                 var result = await _userService.UpdateAsync(user.Id, updateDto);
                 if (result.IsSuccess)
                 {
-                    Logger.LogInformation("�ɹ�{Action}�û�: {UserName}", action, user.UserName);
+                    Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
                     await LoadPageAsync(); // ˢ������
                 }
                 else
                 {
-                    Logger.LogWarning("{Action}�û�ʧ��: {ErrorMessage}", action, result.ErrorMessage);
-                    throw new InvalidOperationException($"{action}�û�ʧ��: {result.ErrorMessage}");
+                    Logger.LogWarning("{Action}用户失败: {ErrorMessage}", action, result.ErrorMessage);
+                    throw new InvalidOperationException($"{action}用户失败: {result.ErrorMessage}");
                 }
 
-            }, user.Status == CommonStatus.Enabled ? "�����û�" : "�����û�");
+            }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");
         }
 
         /// <summary>
@@ -448,7 +448,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            Logger.LogDebug("�鿴�û�����: {UserId} - {UserName}", user.Id, user.UserName);
+            Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
 
             NavigateTo("ContentRegion", "UserDetailsView", new Prism.Regions.NavigationParameters
             {
