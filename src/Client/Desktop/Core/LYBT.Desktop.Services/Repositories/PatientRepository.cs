@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Services.Repositories
         public PatientRepository(
             IApiService apiService,
             ILogger<PatientRepository> logger)
-            : base(apiService, logger, "api/v1/patients")
+            : base(apiService, logger, "api/Patients")
         {
         }
 

@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Services.Repositories
         public UserRepository(
             IApiService apiService,
             ILogger<UserRepository> logger)
-            : base(apiService, logger, "api/v1/users")
+            : base(apiService, logger, "api/Users")
         {
         }
 
