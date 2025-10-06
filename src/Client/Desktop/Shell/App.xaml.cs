@@ -91,6 +91,9 @@ public partial class App : PrismApplication
     {
         base.OnInitialized();
 
+        // 设置控制台编码为UTF-8,解决Visual Studio输出窗口中文日志乱码问题 (Issue #993)
+        System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+
         // 使用注入的启动引导服务(避免Container.Resolve)
         try
         {
