@@ -411,23 +411,9 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterApiServices(this IServiceCollection services)
     {
-        // API 版本管理
-        services.AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ReportApiVersions = true;
-            options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
-                new Asp.Versioning.QueryStringApiVersionReader("version"),
-                new Asp.Versioning.HeaderApiVersionReader("X-Version"),
-                new Asp.Versioning.UrlSegmentApiVersionReader());
-        }).AddMvc().AddApiExplorer(options =>
-        {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
-        });
+        // API 版本管理已在 ConfigureApiVersioning() 中统一配置
 
-        // ProblemDetails + 全局异常处理器
+// ProblemDetails + 全局异常处理器
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
 

@@ -11,7 +11,7 @@ namespace LYBT.WebAPI.Controllers
     /// 提供查询性能统计和分析功能
     /// </summary>
     [ApiController]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/[controller]")]
     [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")] // 仅管理员可访问
     public class PerformanceController : BaseApiController

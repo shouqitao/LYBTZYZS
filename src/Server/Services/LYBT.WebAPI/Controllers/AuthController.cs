@@ -15,8 +15,8 @@ namespace LYBT.WebAPI.Controllers
     /// 提供用户登录、登出和密码管理功能
     /// </summary>
     [ApiController]
-    [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/[controller]")]
     [Authorize]  // 默认需要认证，公开端点使用 AllowAnonymous 覆盖
     public class AuthController : BaseApiController
     {

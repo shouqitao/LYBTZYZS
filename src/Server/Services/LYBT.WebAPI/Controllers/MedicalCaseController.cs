@@ -14,8 +14,8 @@ namespace LYBT.WebAPI.Controllers
     /// 医疗案例管理 API - 基础CRUD功能
     /// </summary>
     [ApiController]
-    [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/medicalcases")]
+    [ApiVersion("1.0")]
+    [Route("api/medicalcases")]
     [Authorize]
     public class MedicalCaseController : BaseApiController
     {

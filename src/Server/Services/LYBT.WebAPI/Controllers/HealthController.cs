@@ -13,8 +13,8 @@ namespace LYBT.WebAPI.Controllers;
 /// 健康检查控制器
 /// </summary>
 [ApiController]
-[ApiVersion("1")]
-[Route("api/v{version:apiVersion}/health")]
+[ApiVersion("1.0")]
+[Route("api/health")]
 [Authorize]  // 默认需要认证，公开端点使用 AllowAnonymous 覆盖
 public class HealthController : BaseApiController
 {

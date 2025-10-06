@@ -14,8 +14,8 @@ namespace LYBT.WebAPI.Controllers
     /// 药材管理 API - 基础CRUD功能
     /// </summary>
     [ApiController]
-    [ApiVersion("1")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/[controller]")]
     [Authorize]
     public class HerbsController : BaseApiController
     {

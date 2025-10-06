@@ -10,7 +10,7 @@ namespace LYBT.WebAPI.Controllers
     /// 缓存健康监控控制器
     /// </summary>
     [ApiController]
-    [Route("api/v1/system/cache")]
+    [Route("api/system/cache")]
     [Authorize(Roles = "Admin")]
     public class CacheHealthController : BaseSystemController
     {
