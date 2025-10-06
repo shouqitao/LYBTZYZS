@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Services.Repositories
         public HerbRepository(
             IApiService apiService,
             ILogger<HerbRepository> logger)
-            : base(apiService, logger, "api/herbs")
+            : base(apiService, logger, "api/v1/herbs")
         {
         }
 
