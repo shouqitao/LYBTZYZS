@@ -23,8 +23,16 @@ namespace LYBT.Module.Consultation
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
             // services.AddScoped<IConsultationRecordRepository, ConsultationRecordRepository>();  // 不存在的类型
 
-            // 注册服务
-            services.AddScoped<IConsultationService, ConsultationService>();
+            // 注册服务实现类
+            services.AddScoped<ConsultationService>();
+
+            // 注册 Module 内部接口
+            services.AddScoped<IConsultationService>(sp => sp.GetRequiredService<ConsultationService>());
+
+            // 注册跨平台契约接口（供 WebAPI Controller 和 Desktop Client 使用）
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IConsultationService>(sp =>
+                sp.GetRequiredService<ConsultationService>());
+
             services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 

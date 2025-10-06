@@ -50,7 +50,7 @@
 
                 <!-- 搜索框 -->
                 <Border Grid.Row="0" Background="White" Padding="10">
-                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                             Tag="搜索患者..." />
                 </Border>
 
@@ -309,7 +309,7 @@
                         <!-- 药材搜索框 -->
                         <TextBox x:Name="HerbSearchBox"
                                 Tag="搜索药材名称..."
-                                Text="{Binding HerbSearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{Binding HerbSearchText, UpdateSourceTrigger=PropertyChanged}"
                                 Margin="0,0,0,5" />
                         <!-- 药材选择列表 -->
                         <ComboBox x:Name="HerbComboBox"

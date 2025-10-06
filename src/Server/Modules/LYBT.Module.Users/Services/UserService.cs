@@ -6,13 +6,15 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SharedInterfaces = LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Module.Users.Services
 {
     /// <summary>
     /// 用户服务实现 - 包含完整的CRUD和认证功能
+    /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// </summary>
-    public class UserService : IUserService
+    public class UserService : IUserService, SharedInterfaces.IUserService
     {
         private readonly IUserRepository _repository;
         private readonly IMapper _mapper;
@@ -564,6 +566,51 @@ namespace LYBT.Module.Users.Services
                 _logger.LogError(ex, "修改个人信息失败");
                 return ServiceResult<bool>.Failure("修改个人信息失败");
             }
+        }
+
+        #endregion
+
+        #region Shared.Interfaces.Services.IUserService 显式接口实现（跨平台契约适配）
+
+        /// <summary>
+        /// Shared 接口 - 分页查询用户（适配到 Module 接口）
+        /// </summary>
+        async Task<ServiceResult<PagedResult<UserDto>>> SharedInterfaces.IUserService.GetPagedAsync(int page, int pageSize, string? keyword)
+        {
+            var query = new UserSearchDto
+            {
+                PageIndex = page,
+                PageSize = pageSize,
+                Keyword = keyword
+            };
+            return await GetPagedAsync(query);
+        }
+
+        /// <summary>
+        /// Shared 接口 - 创建用户（适配到 Module 接口）
+        /// </summary>
+        async Task<ServiceResult<UserDto>> SharedInterfaces.IUserService.CreateAsync(UserCreateDto dto)
+        {
+            return await CreateUserAsync(dto);
+        }
+
+        /// <summary>
+        /// Shared 接口 - 更新用户（适配到 Module 接口）
+        /// </summary>
+        async Task<ServiceResult<UserDto>> SharedInterfaces.IUserService.UpdateAsync(Guid id, UserUpdateDto dto)
+        {
+            return await UpdateUserAsync(id, dto);
+        }
+
+        /// <summary>
+        /// Shared 接口 - 删除用户（适配到 Module 接口）
+        /// </summary>
+        async Task<ServiceResult> SharedInterfaces.IUserService.DeleteAsync(Guid id)
+        {
+            var result = await DeleteUserAsync(id);
+            return result.IsSuccess
+                ? ServiceResult.Success()
+                : ServiceResult.Failure(result.Message ?? "删除用户失败");
         }
 
         #endregion

@@ -33,7 +33,7 @@
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBox x:Name="SearchBox"
-                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource ModernTextBoxStyle}"
                              ToolTip="搜索患者姓名或案例编号..."
                              Width="250" Margin="4" />
@@ -112,7 +112,7 @@
 
                 <!-- 状态 -->
                 <DataGridTextColumn Header="状态"
-                                    Binding="{Binding StatusText}"
+                                    Binding="{Binding StatusMessage}"
                                     Width="80">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">

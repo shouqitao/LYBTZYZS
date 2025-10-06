@@ -4,14 +4,16 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using SharedInterfaces = LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Module.Consultation.Services
 {
     /// <summary>
     /// 诊疗服务 - 简化版，专注四诊信息的基础录入和管理
     /// 支持独立创建和通过医案聚合根创建两种方式
+    /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// </summary>
-    public class ConsultationService : Interfaces.IConsultationService
+    public class ConsultationService : Interfaces.IConsultationService, SharedInterfaces.IConsultationService
     {
         private readonly IConsultationRepository _repository;
         private readonly IMapper _mapper;

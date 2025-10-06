@@ -91,6 +91,17 @@ public partial class App : PrismApplication
     {
         base.OnInitialized();
 
+        // 设置控制台编码为UTF-8,解决Visual Studio输出窗口中文日志乱码问题 (Issue #993)
+        // WPF应用默认无控制台窗口,需try-catch保护
+        try
+        {
+            System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+        }
+        catch (System.IO.IOException)
+        {
+            // 无控制台窗口时忽略,不影响应用运行
+        }
+
         // 使用注入的启动引导服务(避免Container.Resolve)
         try
         {

@@ -458,5 +458,20 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         #endregion
+
+        #region 导航处理
+
+        /// <summary>
+        /// 页面导航进入时自动加载数据
+        /// </summary>
+        protected override async Task OnNavigatedToAsync(Prism.Regions.NavigationContext navigationContext)
+        {
+            await base.OnNavigatedToAsync(navigationContext);
+
+            // 自动加载第一页数据
+            await LoadPageAsync();
+        }
+
+        #endregion
     }
 }

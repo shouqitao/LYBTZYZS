@@ -8,6 +8,7 @@ using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace LYBT.Desktop.Services
 {
@@ -19,21 +20,44 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 注册所有服务 - UltraThink架构完整配置
         /// </summary>
-        public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001")
+        public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001", bool ignoreSslErrors = false)
         {
-            // 配置HttpClient和ApiService - 修复重复注册问题
-            services.AddHttpClient<ApiService>(client =>
+            // 注册日志服务 (如果尚未注册)
+            if (!services.Any(s => s.ServiceType == typeof(ILoggerFactory)))
+            {
+                services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Information));
+            }
+
+            // 注册 Token 存储服务 (AuthorizationMessageHandler 依赖)
+            services.AddSingleton<ITokenStorageService, TokenStorageService>();
+
+            // 注册认证消息处理器
+            services.AddTransient<AuthorizationMessageHandler>();
+
+            // 配置 Named HttpClient - 添加认证处理器和 SSL 配置
+            services.AddHttpClient("ApiService", client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var handler = new HttpClientHandler();
+                if (ignoreSslErrors)
+                {
+                    handler.ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                }
+                return handler;
+            })
+            .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
-            // 注册IApiService - 使用HttpClient工厂创建的实例
+            // 注册 IApiService - 使用配置好的 HttpClient
             services.AddScoped<IApiService>(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient(nameof(ApiService));
+                var httpClient = httpClientFactory.CreateClient("ApiService");  // 使用命名客户端
                 var cache = provider.GetService<IMemoryCache>();
                 var logger = provider.GetService<ILogger<ApiService>>();
                 var retryOptions = provider.GetService<RetryPolicyOptions>();

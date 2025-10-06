@@ -117,7 +117,7 @@
             <Setter Property="Padding" Value="20,10" />
         </Style>
 
-        <Style x:Key="StatusText" TargetType="TextBlock">
+        <Style x:Key="StatusMessage" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="#6C757D" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -167,7 +167,7 @@
 
                     <TextBlock Text="搜索：" Style="{StaticResource LabelText}" />
                     <TextBox Style="{StaticResource SearchTextBox}"
-                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                         </TextBox.InputBindings>
@@ -241,7 +241,7 @@
                                     CornerRadius="3"
                                     Padding="8,4"
                                     HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding StatusText}"
+                                <TextBlock Text="{Binding StatusMessage}"
                                            Foreground="White"
                                            FontSize="12" />
                             </Border>
@@ -299,8 +299,8 @@
 
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource StatusText}"
-                               Text="{Binding StatusText}" />
+                    <TextBlock Style="{StaticResource StatusMessage}"
+                               Text="{Binding StatusMessage}" />
                 </StackPanel>
 
                 <!-- 分页控件 -->
