@@ -340,7 +340,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = Status
                 };
 
-                var result = await _userService.UpdateAsync(UserId, updateDto);
+                var result = await _userService.UpdateUserAsync(UserId, updateDto);
 
                 if (result.IsSuccess && result.Data != null)
                 {

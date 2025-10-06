@@ -33,8 +33,14 @@ namespace LYBT.Shared.Interfaces.Services
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);
 
-        // 简化接口，移除过度抽象的方法：
-        // - SearchAsync: 通过GetPagedAsync的keyword参数实现搜索功能
-        // - CloneFormulaAsync: 通过Create + 修改名称实现克隆功能
+        /// <summary>
+        /// 搜索验方 - 支持多条件搜索
+        /// </summary>
+        Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 克隆验方 - 复制验方并创建新实例
+        /// </summary>
+        Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
     }
 }

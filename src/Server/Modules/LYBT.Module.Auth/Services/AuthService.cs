@@ -18,14 +18,14 @@ namespace LYBT.Module.Auth.Services
     public class AuthService : IAuthService
     {
         private readonly IJwtService _jwtService;
-        private readonly LYBT.Module.Users.Interfaces.IUserService _userService;
+        private readonly IUserService _userService;
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
         public AuthService(
             IJwtService jwtService,
-            LYBT.Module.Users.Interfaces.IUserService userService,
+            IUserService userService,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
             IConfiguration configuration)

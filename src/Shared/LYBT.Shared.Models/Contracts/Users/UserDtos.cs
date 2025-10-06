@@ -40,6 +40,14 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
+        /// <summary>最后登录时间</summary>
+        [DisplayName("最后登录时间")]
+        public DateTime? LastLoginTime { get; set; }
+
+        /// <summary>失败登录次数</summary>
+        [DisplayName("失败登录次数")]
+        public int FailedLoginCount { get; set; }
+
         /// <summary>账号启用状态 - UltraThink兼容性别名</summary>
         [DisplayName("账号启用状态")]
         public bool IsActive => Status == CommonStatus.Enabled;

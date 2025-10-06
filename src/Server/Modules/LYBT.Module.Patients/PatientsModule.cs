@@ -22,15 +22,8 @@ namespace LYBT.Module.Patients
             services.AddScoped<IPatientRepository, PatientRepository>();
             // services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 
-            // 注册服务实现类
-            services.AddScoped<PatientService>();
-
-            // 注册 Module 内部接口
-            services.AddScoped<IPatientService>(sp => sp.GetRequiredService<PatientService>());
-
-            // 注册跨平台契约接口（供 WebAPI Controller 和 Desktop Client 使用）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IPatientService>(sp =>
-                sp.GetRequiredService<PatientService>());
+            // 注册服务实现类（统一使用Shared接口）
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IPatientService, PatientService>();
 
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 

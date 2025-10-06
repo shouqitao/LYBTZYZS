@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
-using SharedInterfaces = LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -12,7 +12,7 @@ namespace LYBT.Module.Patients.Services
     /// 患者服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// </summary>
-    public class PatientService : Interfaces.IPatientService, SharedInterfaces.IPatientService
+    public class PatientService : IPatientService
     {
         private readonly IPatientRepository _repository;
         private readonly IMapper _mapper;
