@@ -103,6 +103,10 @@ namespace LYBT.Desktop.Shell.Extensions
 
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
+
+            // 注册启动优化服务 (ApplicationBootstrapper 依赖)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Performance.IStartupOptimizationService,
+                LYBT.Desktop.Services.Performance.StartupOptimizationService>();
         }
 
         // 静态字段用于在 RegisterBootstrapServices 和 RegisterHttpServices 之间传递配置
