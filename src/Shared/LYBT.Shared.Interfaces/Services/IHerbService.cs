@@ -32,5 +32,10 @@ namespace LYBT.Shared.Interfaces.Services
         /// 删除药材（软删除）
         /// </summary>
         Task<ServiceResult> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 搜索药材 - 支持多条件搜索
+        /// </summary>
+        Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
     }
 }

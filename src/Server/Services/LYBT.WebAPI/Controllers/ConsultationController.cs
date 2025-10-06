@@ -1,10 +1,10 @@
 ﻿using Asp.Versioning;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using ConsultationIConsultationService = LYBT.Module.Consultation.Interfaces.IConsultationService;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -17,9 +17,9 @@ namespace LYBT.WebAPI.Controllers
     [Authorize]
     public class ConsultationController : ControllerBase
     {
-        private readonly ConsultationIConsultationService _consultationService;
+        private readonly IConsultationService _consultationService;
 
-        public ConsultationController(ConsultationIConsultationService consultationService)
+        public ConsultationController(IConsultationService consultationService)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
         }

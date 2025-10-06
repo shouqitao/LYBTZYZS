@@ -34,6 +34,11 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
+        /// 搜索诊疗记录 - 支持多条件搜索
+        /// </summary>
+        Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword);
+
+        /// <summary>
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);

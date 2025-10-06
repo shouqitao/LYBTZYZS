@@ -1,8 +1,10 @@
-﻿using LYBT.Module.Consultation.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Consultation.Options;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
+using LYBT.Module.Consultation.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,22 +25,14 @@ namespace LYBT.Module.Consultation
             services.AddScoped<IConsultationRepository, ConsultationRepository>();
             // services.AddScoped<IConsultationRecordRepository, ConsultationRecordRepository>();  // 不存在的类型
 
-            // 注册服务实现类
-            services.AddScoped<ConsultationService>();
-
-            // 注册 Module 内部接口
-            services.AddScoped<IConsultationService>(sp => sp.GetRequiredService<ConsultationService>());
-
-            // 注册跨平台契约接口（供 WebAPI Controller 和 Desktop Client 使用）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IConsultationService>(sp =>
-                sp.GetRequiredService<ConsultationService>());
+            // 注册服务实现类（统一使用Shared接口）
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IConsultationService, ConsultationService>();
 
             services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 
-            // 注册验证器 - 暂时注释，待创建后启用
-            // services.AddScoped<IValidator<ConsultationCreateDto>, ConsultationCreateDtoValidator>();
-            // services.AddScoped<IValidator<DiagnosisDto>, DiagnosisDtoValidator>();  // 不存在的类型
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
 
             // 注册AutoMapper配置
             services.AddAutoMapper(typeof(ConsultationMappingProfile));

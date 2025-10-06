@@ -190,5 +190,23 @@ namespace LYBT.Desktop.Services.Business
                 return ServiceResult<ConsultationDto>.Success(created);
             }, nameof(StartAsync));
         }
+
+        public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
+        {
+            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            {
+                _logger.LogInformation($"搜索诊疗记录: {keyword}");
+
+                var allConsultations = await _repository.GetAllAsync();
+                var results = allConsultations.Where(c =>
+                    (!string.IsNullOrEmpty(c.PatientName) && c.PatientName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.DoctorName) && c.DoctorName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.ChiefComplaint) && c.ChiefComplaint.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.TCMDiagnosis) && c.TCMDiagnosis.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                return ServiceResult<List<ConsultationDto>>.Success(results);
+            }, nameof(SearchAsync));
+        }
     }
 }

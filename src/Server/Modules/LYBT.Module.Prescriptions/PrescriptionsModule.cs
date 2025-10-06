@@ -1,6 +1,8 @@
-﻿using LYBT.Module.Prescriptions.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
+using LYBT.Module.Prescriptions.Validators;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +27,9 @@ namespace LYBT.Module.Prescriptions
 
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IPrescriptionService, PrescriptionService>();
+
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<PrescriptionCreateDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

@@ -22,15 +22,8 @@ namespace LYBT.Module.Herbs
             services.AddScoped<IHerbRepository, HerbRepository>();
             // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
 
-            // 注册服务实现类
-            services.AddScoped<HerbService>();
-
-            // 注册 Module 内部接口
-            services.AddScoped<IHerbService>(sp => sp.GetRequiredService<HerbService>());
-
-            // 注册跨平台契约接口（供 WebAPI Controller 和 Desktop Client 使用）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IHerbService>(sp =>
-                sp.GetRequiredService<HerbService>());
+            // 注册服务实现类（统一使用Shared接口）
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IHerbService, HerbService>();
 
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
 

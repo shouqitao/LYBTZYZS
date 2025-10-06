@@ -217,7 +217,13 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 // ������ѯ����������򻯴�����ʵ�ʿ�����Ҫ�����ӵĲ�ѯ��������
-                var result = await _userService.GetPagedAsync(page, pageSize, searchText);
+                var query = new UserSearchDto
+                {
+                    PageIndex = page,
+                    PageSize = pageSize,
+                    Keyword = searchText
+                };
+                var result = await _userService.GetPagedAsync(query);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -292,7 +298,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            var result = await _userService.DeleteAsync(user.Id);
+            var result = await _userService.DeleteUserAsync(user.Id);
             if (!result.IsSuccess)
             {
                 Logger.LogWarning("删除用户失败: {ErrorMessage}", result.ErrorMessage);
@@ -315,7 +321,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 try
                 {
-                    var result = await _userService.DeleteAsync(user.Id);
+                    var result = await _userService.DeleteUserAsync(user.Id);
                     if (!result.IsSuccess)
                     {
                         failedUsers.Add($"{user.UserName}: {result.ErrorMessage}");
@@ -418,7 +424,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = newStatus
                 };
 
-                var result = await _userService.UpdateAsync(user.Id, updateDto);
+                var result = await _userService.UpdateUserAsync(user.Id, updateDto);
                 if (result.IsSuccess)
                 {
                     Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);

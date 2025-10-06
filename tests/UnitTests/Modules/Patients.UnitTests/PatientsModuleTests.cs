@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
+using IPatientService = LYBT.Shared.Interfaces.Services.IPatientService;
 
 namespace LYBT.Module.Patients.Tests
 {

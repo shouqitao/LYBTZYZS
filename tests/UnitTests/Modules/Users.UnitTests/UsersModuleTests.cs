@@ -4,11 +4,13 @@ using LYBT.Infrastructure.Configuration.Services;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Mapping;
+using LYBT.Shared.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+using IUserServiceFromModule = LYBT.Module.Users.Interfaces.IUserRepository;
 
 namespace LYBT.Module.Users.Tests
 {

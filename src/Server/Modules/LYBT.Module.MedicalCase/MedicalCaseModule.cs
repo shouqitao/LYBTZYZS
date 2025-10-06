@@ -1,6 +1,8 @@
-﻿using LYBT.Module.MedicalCase.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
+using LYBT.Module.MedicalCase.Validators;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +27,9 @@ namespace LYBT.Module.MedicalCase
 
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();
+
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<MedicalCaseCreateDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

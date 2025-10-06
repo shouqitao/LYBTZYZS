@@ -127,6 +127,66 @@ namespace LYBT.Desktop.Services.Business
             }, nameof(UpdateAsync));
         }
 
+
+        public async Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword)
+        {
+            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            {
+                _logger.LogInformation($"搜索验方: {keyword}");
+
+                var allFormulas = await _repository.GetAllAsync();
+                var results = allFormulas.Where(f =>
+                    f.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(f.Effect) && f.Effect.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.Description) && f.Description.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                return ServiceResult<List<FormulaDto>>.Success(results);
+            }, nameof(SearchAsync));
+        }
+
+        public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId)
+        {
+            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            {
+                _logger.LogInformation($"克隆验方: {formulaId}");
+
+                // 获取原验方
+                var original = await _repository.GetByIdAsync(formulaId);
+
+                // 创建克隆副本
+                var cloned = new FormulaDto
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"{original.Name} (副本)",
+                    Effect = original.Effect,
+                    Description = original.Description,
+                    Usage = original.Usage,
+                    Property = original.Property,
+                    IsShared = false, // 克隆的验方默认为私有
+                    Indications = original.Indications,
+                    Contraindications = original.Contraindications,
+                    Remark = original.Remark,
+                    Status = CommonStatus.Enabled,
+                    Herbs = original.Herbs?.Select(h => new FormulaHerbItemDto
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = h.HerbId,
+                        HerbName = h.HerbName,
+                        Quantity = h.Quantity,
+                        Unit = h.Unit,
+                        ProcessingMethod = h.ProcessingMethod,
+                        SpecialInstructions = h.SpecialInstructions
+                    }).ToList() ?? new List<FormulaHerbItemDto>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                var created = await _repository.CreateAsync(cloned);
+                return ServiceResult<FormulaDto>.Success(created);
+            }, nameof(CloneFormulaAsync));
+        }
+
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>

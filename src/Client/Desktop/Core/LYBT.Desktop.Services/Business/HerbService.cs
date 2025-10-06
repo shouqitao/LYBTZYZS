@@ -131,5 +131,23 @@ namespace LYBT.Desktop.Services.Business
                 return ServiceResult.Success();
             }, nameof(DeleteAsync));
         }
+
+        public async Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword)
+        {
+            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            {
+                _logger.LogInformation($"搜索药材: {keyword}");
+
+                var allHerbs = await _repository.GetAllAsync();
+                var results = allHerbs.Where(h =>
+                    h.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(h.Category) && h.Category.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(h.Properties) && h.Properties.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(h.Effect) && h.Effect.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                return ServiceResult<List<HerbDto>>.Success(results);
+            }, nameof(SearchAsync));
+        }
     }
 }

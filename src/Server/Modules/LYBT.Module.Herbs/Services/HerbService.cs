@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
-using SharedInterfaces = LYBT.Shared.Interfaces.Services;
 
 namespace LYBT.Module.Herbs.Services
 {
@@ -12,7 +12,7 @@ namespace LYBT.Module.Herbs.Services
     /// 药材服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// </summary>
-    public class HerbService : Interfaces.IHerbService, SharedInterfaces.IHerbService
+    public class HerbService : IHerbService
     {
         private readonly IHerbRepository _repository;
         private readonly IMapper _mapper;
