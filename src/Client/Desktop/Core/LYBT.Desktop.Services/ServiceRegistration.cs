@@ -24,8 +24,8 @@ namespace LYBT.Desktop.Services
             // 注册认证消息处理器
             services.AddTransient<AuthorizationMessageHandler>();
 
-            // 配置HttpClient和ApiService - 添加认证处理器
-            services.AddHttpClient<ApiService>(client =>
+            // 配置 Named HttpClient - 添加认证处理器
+            services.AddHttpClient("ApiService", client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
@@ -33,11 +33,11 @@ namespace LYBT.Desktop.Services
             })
             .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
-            // 注册IApiService - 使用HttpClient工厂创建的实例
+            // 注册 IApiService - 使用配置好的 HttpClient
             services.AddScoped<IApiService>(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient(nameof(ApiService));
+                var httpClient = httpClientFactory.CreateClient("ApiService");  // 使用命名客户端
                 var cache = provider.GetService<IMemoryCache>();
                 var logger = provider.GetService<ILogger<ApiService>>();
                 var retryOptions = provider.GetService<RetryPolicyOptions>();
