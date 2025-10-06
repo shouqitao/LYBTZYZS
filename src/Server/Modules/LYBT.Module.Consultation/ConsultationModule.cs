@@ -1,8 +1,10 @@
-﻿using LYBT.Module.Consultation.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Consultation.Options;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
+using LYBT.Module.Consultation.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +31,8 @@ namespace LYBT.Module.Consultation
             services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 
-            // 注册验证器 - 暂时注释，待创建后启用
-            // services.AddScoped<IValidator<ConsultationCreateDto>, ConsultationCreateDtoValidator>();
-            // services.AddScoped<IValidator<DiagnosisDto>, DiagnosisDtoValidator>();  // 不存在的类型
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
 
             // 注册AutoMapper配置
             services.AddAutoMapper(typeof(ConsultationMappingProfile));

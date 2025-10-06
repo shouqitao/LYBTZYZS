@@ -1,6 +1,8 @@
-﻿using LYBT.Module.Formula.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Repositories;
 using LYBT.Module.Formula.Services;
+using LYBT.Module.Formula.Validators;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +28,9 @@ namespace LYBT.Module.Formula
 
             // 统一服务 - 合并查询和业务逻辑
             services.AddScoped<IFormulaService, FormulaService>();
+
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<FormulaCreateDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
