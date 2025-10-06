@@ -152,7 +152,7 @@
                             <Border Background="{DynamicResource SuccessBrush}"
                                     CornerRadius="12"
                                     Padding="12,4">
-                                <TextBlock Text="{Binding StatusText}"
+                                <TextBlock Text="{Binding StatusMessage}"
                                            Foreground="White"
                                            FontWeight="Bold"
                                            FontSize="12" />

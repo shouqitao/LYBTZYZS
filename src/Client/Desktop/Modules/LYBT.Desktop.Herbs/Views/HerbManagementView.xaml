@@ -33,7 +33,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="搜索：" Style="{StaticResource LabelText}" />
                     <TextBox Style="{StaticResource SearchTextBox}"
-                             Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}">
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                         </TextBox.InputBindings>
@@ -124,7 +124,7 @@
                                     CornerRadius="3"
                                     Padding="8,4"
                                     HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding StatusText}"
+                                <TextBlock Text="{Binding StatusMessage}"
                                            Foreground="White"
                                            FontSize="12" />
                             </Border>
@@ -176,7 +176,7 @@
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Style="{StaticResource StatusLabel}"
-                               Text="{Binding StatusText}" />
+                               Text="{Binding StatusMessage}" />
                 </StackPanel>
 
                 <!-- 分页控件 -->
