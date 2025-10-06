@@ -107,7 +107,12 @@ namespace LYBT.Desktop.Services.Http
                 if (_cache != null && response.IsSuccessStatusCode && result != null)
                 {
                     var cacheKey = $"GET:{url}";
-                    _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+                    var cacheOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                        Size = 1  // 每个条目占1个单位,配合ServiceRegistration中的SizeLimit配置
+                    };
+                    _cache.Set(cacheKey, result, cacheOptions);
                 }
 
                 return result;
