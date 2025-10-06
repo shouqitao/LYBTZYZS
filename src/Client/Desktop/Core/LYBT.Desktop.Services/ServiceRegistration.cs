@@ -53,11 +53,11 @@ namespace LYBT.Desktop.Services
             })
             .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
-            // 注册IApiService - 使用HttpClient工厂创建的实例
+            // 注册 IApiService - 使用配置好的 HttpClient
             services.AddScoped<IApiService>(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient(nameof(ApiService));
+                var httpClient = httpClientFactory.CreateClient("ApiService");  // 使用命名客户端
                 var cache = provider.GetService<IMemoryCache>();
                 var logger = provider.GetService<ILogger<ApiService>>();
                 var retryOptions = provider.GetService<RetryPolicyOptions>();
