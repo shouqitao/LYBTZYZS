@@ -94,8 +94,8 @@ namespace LYBT.Desktop.Services.Business
                     PatientName = string.Empty, // 需要从Patient服务获取
                     DoctorName = string.Empty, // 需要从User服务获取
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(medicalCase);
@@ -115,7 +115,7 @@ namespace LYBT.Desktop.Services.Business
                 existing.DoctorId = dto.DoctorId;
                 existing.ChiefComplaint = dto.ChiefComplaint;
                 existing.Remark = dto.Remark;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<MedicalCaseDto>.Success(updated);
@@ -167,8 +167,8 @@ namespace LYBT.Desktop.Services.Business
                     PatientName = string.Empty,
                     DoctorName = string.Empty,
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(medicalCase);
@@ -205,8 +205,8 @@ namespace LYBT.Desktop.Services.Business
                     CaseStatus = medicalCase.CaseStatus,
                     Remark = medicalCase.Remark,
                     Status = medicalCase.Status,
-                    CreateTime = medicalCase.CreateTime,
-                    UpdateTime = medicalCase.UpdateTime
+                    CreatedAt = medicalCase.CreatedAt,
+                    UpdatedAt = medicalCase.UpdatedAt
                 };
 
                 _logger.LogWarning("GetByIdWithDetailsAsync 需要实现Consultation和Prescription的加载逻辑");

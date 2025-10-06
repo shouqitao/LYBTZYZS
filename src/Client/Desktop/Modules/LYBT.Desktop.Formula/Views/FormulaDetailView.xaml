@@ -268,7 +268,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBlock Grid.Row="4" Grid.Column="1"
-                                       Text="{Binding CreateTime, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                        VerticalAlignment="Center"
                                        Margin="0,8,16,8" />
 
@@ -278,7 +278,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBlock Grid.Row="4" Grid.Column="3"
-                                       Text="{Binding UpdateTime, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                         </Grid>

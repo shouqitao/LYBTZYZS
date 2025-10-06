@@ -93,8 +93,8 @@ namespace LYBT.Desktop.Services.Business
                     Remark = dto.Remark,
                     Status = CommonStatus.Enabled,
                     Herbs = new List<FormulaHerbItemDto>(),
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(formula);
@@ -120,7 +120,7 @@ namespace LYBT.Desktop.Services.Business
                 existing.Contraindications = dto.Contraindications;
                 existing.Remark = dto.Remark;
                 existing.Status = dto.Status;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<FormulaDto>.Success(updated);

@@ -196,8 +196,8 @@ public class FormulaItem : BindableBase
             IsPersonal = !dto.IsShared, // 根据IsShared推断
             IsActive = dto.Status == CommonStatus.Enabled,
             UsageCount = 0, // 默认值
-            CreatedAt = dto.CreateTime,
-            UpdatedAt = dto.UpdateTime
+            CreatedAt = dto.CreatedAt,
+            UpdatedAt = dto.UpdatedAt
         };
 
         // 转换药材列表
@@ -224,8 +224,8 @@ public class FormulaItem : BindableBase
             IsShared = !IsPersonal,
             Remark = Note,
             Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
-            CreateTime = CreatedAt,
-            UpdateTime = UpdatedAt,
+            CreatedAt = CreatedAt,
+            UpdatedAt = UpdatedAt,
             Herbs = Herbs.Select(h => h.ToDto()).ToList()
         };
     }

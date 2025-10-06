@@ -283,7 +283,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 if (todayResult.IsSuccess && todayResult.Data?.Items != null)
                 {
                     var todayPrescriptions = todayResult.Data.Items
-                        .Where(p => p.CreateTime.Date == today)
+                        .Where(p => p.CreatedAt.Date == today)
                         .ToList();
                     TodayPrescriptionsCount = todayPrescriptions.Count;
                     TodayTotalAmount = todayPrescriptions.Sum(p => p.TotalAmount);

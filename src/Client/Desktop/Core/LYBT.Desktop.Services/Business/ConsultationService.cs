@@ -99,8 +99,8 @@ namespace LYBT.Desktop.Services.Business
                     Remark = dto.Remark,
                     ConsultationStatus = ConsultationStatus.InProgress,
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(consultation);
@@ -136,7 +136,7 @@ namespace LYBT.Desktop.Services.Business
                     existing.EndTime = dto.EndTime;
                 }
 
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<ConsultationDto>.Success(updated);
@@ -182,8 +182,8 @@ namespace LYBT.Desktop.Services.Business
                     StartTime = DateTime.UtcNow,
                     ConsultationStatus = ConsultationStatus.InProgress,
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(consultation);

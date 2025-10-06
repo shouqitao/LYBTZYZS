@@ -86,8 +86,8 @@ namespace LYBT.Desktop.Services.Business
                     Email = dto.Email,
                     Role = dto.Role,
                     Status = dto.Status,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 // TODO: 密码处理应该在Repository或更底层处理
@@ -127,7 +127,7 @@ namespace LYBT.Desktop.Services.Business
                 }
 
                 existing.Status = dto.Status;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<UserDto>.Success(updated);

@@ -90,8 +90,8 @@ namespace LYBT.Desktop.Services.Business
                     FormulaSource = dto.FormulaSource,
                     Items = new List<PrescriptionItemDto>(),
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(prescription);
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Services.Business
                 existing.DosageCount = dto.DosageCount;
                 existing.Advice = dto.Advice;
                 existing.Remark = dto.Remark;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 // 处理Items更新
                 if (dto.Items != null && dto.Items.Any())

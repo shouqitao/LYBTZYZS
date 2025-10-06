@@ -198,12 +198,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 创建时间显示
         /// </summary>
-        public string CreateTimeDisplay => Formula?.CreateTime.ToString("yyyy-MM-dd HH:mm") ?? "未知";
+        public string CreatedAtDisplay => Formula?.CreatedAt.ToString("yyyy-MM-dd HH:mm") ?? "未知";
 
         /// <summary>
         /// 更新时间显示
         /// </summary>
-        public string UpdateTimeDisplay => Formula?.UpdateTime?.ToString("yyyy-MM-dd HH:mm") ?? "未知";
+        public string UpdatedAtDisplay => Formula?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "未知";
 
         /// <summary>
         /// 状态显示
@@ -680,8 +680,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private void RefreshDisplayProperties()
         {
-            RaisePropertyChanged(nameof(CreateTimeDisplay));
-            RaisePropertyChanged(nameof(UpdateTimeDisplay));
+            RaisePropertyChanged(nameof(CreatedAtDisplay));
+            RaisePropertyChanged(nameof(UpdatedAtDisplay));
             RaisePropertyChanged(nameof(StatusDisplay));
             RaisePropertyChanged(nameof(HerbCount));
             RaisePropertyChanged(nameof(TotalPrice));

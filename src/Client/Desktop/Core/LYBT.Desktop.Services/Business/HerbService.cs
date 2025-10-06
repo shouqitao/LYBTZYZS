@@ -91,8 +91,8 @@ namespace LYBT.Desktop.Services.Business
                     Effect = dto.Effect,
                     Usage = dto.Usage,
                     Status = CommonStatus.Enabled,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(herb);
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Services.Business
                 existing.CostPrice = dto.CostPrice;
                 existing.Effect = dto.Effect;
                 existing.Usage = dto.Usage;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<HerbDto>.Success(updated);

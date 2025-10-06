@@ -125,7 +125,7 @@ public class PatientItem : BindableBase
             IdCard = dto.IdNumber, // PatientDto中是IdNumber
             MedicalHistory = null, // PatientDto中没有此属性，将来扩展
             AllergyHistory = dto.AllergyHistory,
-            CreatedAt = dto.CreateTime, // PatientDto中是CreateTime
+            CreatedAt = dto.CreatedAt, // PatientDto中是CreateTime
             LastVisitDate = dto.LastVisitTime, // PatientDto中是LastVisitTime
             VisitCount = dto.VisitCount
         };
@@ -147,8 +147,8 @@ public class PatientItem : BindableBase
             IdNumber = IdCard, // PatientItem的IdCard对应PatientDto的IdNumber
             AllergyHistory = AllergyHistory,
             Status = CommonStatus.Enabled, // 默认启用状态
-            CreateTime = CreatedAt,
-            UpdateTime = DateTime.Now,
+            CreatedAt = CreatedAt,
+            UpdatedAt = DateTime.Now,
             LastVisitTime = LastVisitDate,
             VisitCount = VisitCount
         };
@@ -168,7 +168,7 @@ public class PatientItem : BindableBase
         IdCard = dto.IdNumber; // PatientDto中是IdNumber
         MedicalHistory = null; // PatientDto中没有此属性，将来扩展
         AllergyHistory = dto.AllergyHistory;
-        CreatedAt = dto.CreateTime; // PatientDto中是CreateTime
+        CreatedAt = dto.CreatedAt; // PatientDto中是CreateTime
         LastVisitDate = dto.LastVisitTime; // PatientDto中是LastVisitTime
         VisitCount = dto.VisitCount;
     }

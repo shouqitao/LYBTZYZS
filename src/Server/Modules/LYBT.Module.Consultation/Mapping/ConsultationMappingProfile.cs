@@ -16,11 +16,9 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.Empty)) // 测试映射时确保ID为空值
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
 
-                // 映射审计字段（从DTO的CreateTime/UpdateTime到实体的CreatedAt/UpdatedAt）
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateTime))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateTime))
-
-                // 忽略BaseEntity的其他审计字段（这些不应该从DTO设置）
+                // 忽略BaseEntity的审计字段（这些不应该从DTO设置）
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
@@ -49,10 +47,6 @@ namespace LYBT.Module.Consultation.Mapping
 
             // Consultation -> ConsultationDto - 基础列表映射
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDto>()
-                // 映射时间字段
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
-
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
@@ -71,10 +65,6 @@ namespace LYBT.Module.Consultation.Mapping
 
             // Consultation -> ConsultationDetailDto - 详细信息映射
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDetailDto>()
-                // 映射时间字段
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
-
                 // 映射显示字段（保持null值，服务层会填充实际值）
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
