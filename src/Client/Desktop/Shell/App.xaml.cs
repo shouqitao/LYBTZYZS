@@ -1,5 +1,7 @@
 ﻿using System.Windows;
+using LYBT.Desktop.AdminWorkstation;
 using LYBT.Desktop.Auth;
+using LYBT.Desktop.ClinicalWorkstation;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
