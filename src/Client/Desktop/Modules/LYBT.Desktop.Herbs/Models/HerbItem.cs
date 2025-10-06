@@ -200,8 +200,8 @@ public class HerbItem : BindableBase
             IsActive = dto.Status == CommonStatus.Enabled,
             // MVP阶段移除Stock属性
             Remark = dto.Remark,
-            CreatedAt = dto.CreateTime,
-            UpdatedAt = dto.UpdateTime
+            CreatedAt = dto.CreatedAt,
+            UpdatedAt = dto.UpdatedAt
         };
     }
 
@@ -224,8 +224,8 @@ public class HerbItem : BindableBase
             Usage = Usage,
             Status = IsActive ? CommonStatus.Enabled : CommonStatus.Disabled,
             Remark = Remark,
-            CreateTime = CreatedAt,
-            UpdateTime = UpdatedAt
+            CreatedAt = CreatedAt,
+            UpdatedAt = UpdatedAt
         };
     }
 

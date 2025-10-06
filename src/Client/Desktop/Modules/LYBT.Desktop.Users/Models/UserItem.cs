@@ -133,8 +133,8 @@ public class UserItem : BindableBase
             Title = null, // UserDto中没有此属性
             PinYinCode = dto.PinYinCode,
             Status = dto.Status,
-            CreateTime = dto.CreateTime,
-            UpdateTime = dto.UpdateTime
+            CreateTime = dto.CreatedAt,
+            UpdateTime = dto.UpdatedAt
         };
     }
 
@@ -154,8 +154,8 @@ public class UserItem : BindableBase
             // Department 和 Title 在 UserDto 中不存在
             PinYinCode = PinYinCode,
             Status = Status,
-            CreateTime = CreateTime,
-            UpdateTime = UpdateTime
+            CreatedAt = CreateTime,
+            UpdatedAt = UpdateTime
         };
     }
 
@@ -174,8 +174,8 @@ public class UserItem : BindableBase
         Title = null; // UserDto中没有此属性
         PinYinCode = dto.PinYinCode;
         Status = dto.Status;
-        CreateTime = dto.CreateTime;
-        UpdateTime = dto.UpdateTime;
+        CreateTime = dto.CreatedAt;
+        UpdateTime = dto.UpdatedAt;
     }
 
     /// <summary>

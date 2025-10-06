@@ -347,7 +347,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 }
 
                 var medicalCases = medicalCasesResult.Data
-                .OrderByDescending(mc => mc.CreateTime)
+                .OrderByDescending(mc => mc.CreatedAt)
                 .ToList();
 
                 // Ϊÿ��ҽ����ȡ������Ƽ�¼
@@ -358,7 +358,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     var detail = new PatientHistoryDetail
                     {
                         MedicalCase = medicalCase,
-                        CreateTime = medicalCase.CreateTime,
+                        CreatedAt = medicalCase.CreatedAt,
                         Status = GetMedicalCaseStatusText((int)medicalCase.Status)
                     };
 
@@ -438,7 +438,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     var detail = historyDetails[i];
                     var medicalCase = detail.MedicalCase;
 
-                    historyContent.AppendLine($"? �� {i + 1} �ξ��� - {detail.CreateTime:yyyy-MM-dd HH:mm}");
+                    historyContent.AppendLine($"? �� {i + 1} �ξ��� - {detail.CreatedAt:yyyy-MM-dd HH:mm}");
                     historyContent.AppendLine($" ״̬: {detail.Status}");
 
                     if (!string.IsNullOrEmpty(medicalCase.Remark))
@@ -523,7 +523,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             public required LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto MedicalCase { get; set; }
             public LYBT.Shared.Models.Contracts.Consultation.ConsultationDto? Consultation { get; set; }
-            public DateTime CreateTime { get; set; }
+            public DateTime CreatedAt { get; set; }
             public string Status { get; set; } = string.Empty;
             public bool HasConsultation { get; set; }
         }

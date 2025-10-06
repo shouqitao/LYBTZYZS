@@ -17,9 +17,7 @@ namespace LYBT.Module.Herbs.Mapping
             // ==================== 共享契约映射 ====================
 
             // 药材实体转HerbDetailDto（API响应）
-            CreateMap<Herb, HerbDetailDto>()
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt));
+            CreateMap<Herb, HerbDetailDto>();
 
             // HerbCreateDto转药材实体
             CreateMap<HerbCreateDto, Herb>()
@@ -48,8 +46,6 @@ namespace LYBT.Module.Herbs.Mapping
 
             // 药材实体转HerbDto（列表显示）
             CreateMap<Herb, HerbDto>()
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt))
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Properties, opt => opt.Ignore());
 

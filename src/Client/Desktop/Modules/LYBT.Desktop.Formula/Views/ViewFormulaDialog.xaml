@@ -79,12 +79,12 @@
                         <!-- 创建时间 -->
                         <TextBlock Grid.Row="4" Grid.Column="0" Text="创建时间：" FontWeight="Bold" />
                         <TextBlock Grid.Row="4" Grid.Column="1"
-                                   Text="{Binding Formula.CreateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+                                   Text="{Binding Formula.CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
 
                         <!-- 更新时间 -->
                         <TextBlock Grid.Row="4" Grid.Column="2" Text="更新时间：" FontWeight="Bold" Margin="10,0,0,0" />
                         <TextBlock Grid.Row="4" Grid.Column="3"
-                                   Text="{Binding Formula.UpdateTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+                                   Text="{Binding Formula.UpdatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
                     </Grid>
                 </GroupBox>
 

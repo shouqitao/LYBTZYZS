@@ -76,8 +76,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         public string Address => Patient?.Address ?? string.Empty;
         public string EmergencyContact => Patient?.EmergencyContactName ?? string.Empty;
         public string EmergencyPhone => Patient?.EmergencyContactPhone ?? string.Empty;
-        public DateTime? CreateTime => Patient?.CreateTime;
-        public DateTime? UpdateTime => Patient?.UpdateTime;
+        public DateTime? CreatedAt => Patient?.CreatedAt;
+        public DateTime? UpdatedAt => Patient?.UpdatedAt;
         public string StatusText => GetStatusText();
 
         #endregion 属性
@@ -347,8 +347,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             RaisePropertyChanged(nameof(Address));
             RaisePropertyChanged(nameof(EmergencyContact));
             RaisePropertyChanged(nameof(EmergencyPhone));
-            RaisePropertyChanged(nameof(CreateTime));
-            RaisePropertyChanged(nameof(UpdateTime));
+            RaisePropertyChanged(nameof(CreatedAt));
+            RaisePropertyChanged(nameof(UpdatedAt));
             RaisePropertyChanged(nameof(StatusText));
         }
 

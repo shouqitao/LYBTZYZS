@@ -7,11 +7,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
 
     /// <summary>
     /// 药材信息DTO - UltraThink v2.0简化版
-    /// 与Herb实体对齐，删除库存管理和时间字段
-    /// </summary>
-    /// <summary>
-    /// 药材信息DTO - UltraThink v2.0简化版
-    /// 与Herb实体对齐，删除库存管理和时间字段
+    /// 与Herb实体对齐，继承StatusDto获取审计字段
     /// </summary>
     public class HerbDto : StatusDto, IRemarkable
     {
