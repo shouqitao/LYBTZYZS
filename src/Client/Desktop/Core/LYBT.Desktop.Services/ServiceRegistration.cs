@@ -8,6 +8,7 @@ using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace LYBT.Desktop.Services
 {
@@ -21,6 +22,15 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001", bool ignoreSslErrors = false)
         {
+            // 注册日志服务 (如果尚未注册)
+            if (!services.Any(s => s.ServiceType == typeof(ILoggerFactory)))
+            {
+                services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Information));
+            }
+
+            // 注册 Token 存储服务 (AuthorizationMessageHandler 依赖)
+            services.AddSingleton<ITokenStorageService, TokenStorageService>();
+
             // 注册认证消息处理器
             services.AddTransient<AuthorizationMessageHandler>();
 
