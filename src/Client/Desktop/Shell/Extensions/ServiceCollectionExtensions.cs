@@ -1,4 +1,3 @@
-﻿using System.Net.Http;
 using AutoMapper;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Services.Modules;
@@ -6,8 +5,10 @@ using LYBT.Desktop.Services.Performance;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
+using System.Net.Http;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -82,6 +83,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 .Build();
             containerRegistry.RegisterInstance<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
 
+            // 读取 API 配置并设置为静态字段供 RegisterHttpServices 使用
+            _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+            _ignoreSslErrors = configuration.GetValue<bool>("ApiSettings:IgnoreSslErrors", false);
+
             // Issue #840: 注册用户通知服务
             // MainWindowViewModel 使用 IUserNotificationService 进行简单消息提示
             // 系统级错误处理由 UnifiedErrorHandlingService 负责
@@ -98,17 +103,11 @@ namespace LYBT.Desktop.Shell.Extensions
 
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.ErrorHandling.IErrorHandlingService,
                 LYBT.Desktop.Services.ErrorHandling.UnifiedErrorHandlingService>();
-
-            // 注册启动优化服务
-            containerRegistry.RegisterSingleton<IStartupOptimizationService,
-                StartupOptimizationService>();
-
-            // Issue #841 Fix #2: 注册应用程序初始化服务 - 必须在所有依赖项之后
-            // ApplicationInitializationService 依赖 IErrorHandlingService 和 IStartupOptimizationService
-            // 因此必须在它们之后注册,确保 DI 容器可以正确解析依赖链
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
-                LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
         }
+
+        // 静态字段用于在 RegisterBootstrapServices 和 RegisterHttpServices 之间传递配置
+        private static string _apiBaseUrl = "https://localhost:5001";
+        private static bool _ignoreSslErrors = false;
 
         /// <summary>
         /// 注册UltraThink高级服务
@@ -201,34 +200,32 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry)
         {
-            // Issue #835: 注册 IHttpClientFactory 用于 AuthService
-            // Prism/DryIoc 需要使用 RegisterInstance 来注册 HttpClient
-            containerRegistry.RegisterSingleton<IHttpClientFactory>(() =>
-            {
-                return new SimpleHttpClientFactory();
-            });
-
+            // 创建 ServiceCollection,使用 ServiceRegistration 配置 HttpClient
+            var services = new ServiceCollection();
+            
+            // 调用 ServiceRegistration.AddDesktopServices() - 这会正确配置:
+            // 1. AuthorizationMessageHandler (自动添加 JWT token)
+            // 2. SSL 证书验证绕过 (开发环境)
+            // 3. Named HttpClient "ApiService" 配置
+            // 4. IApiService 及其依赖
+            LYBT.Desktop.Services.ServiceRegistration.AddDesktopServices(services, _apiBaseUrl, _ignoreSslErrors);
+            
+            // 构建 ServiceProvider
+            var serviceProvider = services.BuildServiceProvider();
+            
+            // 从 ServiceProvider 中获取配置好的服务,注册到 Prism 容器
+            var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+            containerRegistry.RegisterInstance<IHttpClientFactory>(httpClientFactory);
+            
+            // 注册 IApiService - 已包含认证处理和 SSL 配置
+            var apiService = serviceProvider.GetRequiredService<LYBT.Desktop.Services.Http.IApiService>();
+            containerRegistry.RegisterInstance<LYBT.Desktop.Services.Http.IApiService>(apiService);
+            
             // 兼容性:保留单例 HttpClient 供其他旧代码使用
             containerRegistry.RegisterSingleton<HttpClient>(() =>
             {
-                var client = new HttpClient
-                {
-                    BaseAddress = new Uri("http://localhost:5001") // 从配置读取
-                };
-                return client;
+                return httpClientFactory.CreateClient("ApiService");
             });
-        }
-
-        /// <summary>
-        /// 简单的 HttpClientFactory 实现 - MVP版本
-        /// 生产环境可升级为 Microsoft.Extensions.Http
-        /// </summary>
-        private class SimpleHttpClientFactory : IHttpClientFactory
-        {
-            public HttpClient CreateClient(string name)
-            {
-                return new HttpClient();
-            }
         }
 
         /// <summary>
@@ -236,9 +233,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterApiServices(IContainerRegistry containerRegistry)
         {
-            // 注册通用API服务 - 使用 Core_New 的实现
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Http.IApiService,
-                LYBT.Desktop.Services.Http.ApiService>();
+            // IApiService 已经在 RegisterHttpServices 中通过 ServiceRegistration.AddDesktopServices() 注册
+            // 无需额外操作
         }
 
         /// <summary>
