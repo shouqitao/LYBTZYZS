@@ -19,15 +19,29 @@ namespace LYBT.Desktop.Services
         /// <summary>
         /// 注册所有服务 - UltraThink架构完整配置
         /// </summary>
-        public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001")
+        public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001", bool ignoreSslErrors = false)
         {
-            // 配置HttpClient和ApiService - 修复重复注册问题
-            services.AddHttpClient<ApiService>(client =>
+            // 注册认证消息处理器
+            services.AddTransient<AuthorizationMessageHandler>();
+
+            // 配置 Named HttpClient - 添加认证处理器和 SSL 配置
+            services.AddHttpClient("ApiService", client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var handler = new HttpClientHandler();
+                if (ignoreSslErrors)
+                {
+                    handler.ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                }
+                return handler;
+            })
+            .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
             // 注册IApiService - 使用HttpClient工厂创建的实例
             services.AddScoped<IApiService>(provider =>
