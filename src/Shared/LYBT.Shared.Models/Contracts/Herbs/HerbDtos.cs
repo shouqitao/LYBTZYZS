@@ -21,10 +21,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>拼音码(兼容)</summary>
-        [DisplayName("拼音码")]
-        public string? PinyinCode { get => PinYinCode; set => PinYinCode = value; }
-
         /// <summary>药材分类</summary>
         [DisplayName("分类")]
         public string? Category { get; set; }

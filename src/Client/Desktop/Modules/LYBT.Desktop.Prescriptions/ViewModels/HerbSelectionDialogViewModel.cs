@@ -305,7 +305,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     {
                         filtered = filtered.Where(h =>
                             h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            h.PinyinCode?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                            h.PinYinCode?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
                             h.Properties?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
                     }
 
