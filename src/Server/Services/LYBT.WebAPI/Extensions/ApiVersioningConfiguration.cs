@@ -29,9 +29,10 @@ public static class ApiVersioningConfiguration
             // 在响应头中返回支持的API版本
             options.ReportApiVersions = true;
 
-            // API版本读取方式 - 简化为只使用URL段
-            // 只保留URL路径版本读取: /api/v1/users
-            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            // API版本读取方式 - 使用查询字符串读取(可选)，默认使用1.0版本
+            // 移除URL段读取器,因为路由模板已不包含{version:apiVersion}
+            // 客户端可通过?api-version=1.0指定版本,或不指定使用默认版本
+            options.ApiVersionReader = new QueryStringApiVersionReader("api-version");
         })
         .AddMvc() // 为MVC控制器添加版本控制支持
         .AddApiExplorer(options =>
@@ -39,8 +40,8 @@ public static class ApiVersioningConfiguration
             // 版本格式：'v'VVV，其中VVV是版本号
             options.GroupNameFormat = "'v'VVV";
 
-            // 在URL中替换版本占位符
-            options.SubstituteApiVersionInUrl = true;
+            // 禁用URL版本占位符替换,因为路由模板不再包含版本段
+            options.SubstituteApiVersionInUrl = false;
         });
 
         // 配置API版本元数据
