@@ -70,7 +70,10 @@ public class CacheService : ICacheService
     {
         try
         {
-            var options = new MemoryCacheEntryOptions();
+            var options = new MemoryCacheEntryOptions
+            {
+                Size = 1  // 每个条目占1个单位,配合ServiceRegistration中的SizeLimit配置
+            };
 
             if (expiry.HasValue)
             {
