@@ -164,8 +164,8 @@ public class MedicalCaseItem : BindableBase
             Status = dto.CaseStatus,
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
-            CreatedAt = dto.CreateTime,
-            CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdateTime : null,
+            CreatedAt = dto.CreatedAt,
+            CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdatedAt : null,
             CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null
         };
     }
@@ -190,8 +190,8 @@ public class MedicalCaseItem : BindableBase
             PresentIllness = PresentIllness,
             DiagnosisResult = Diagnosis,
             TreatmentPlan = TreatmentPlan,
-            CreateTime = CreatedAt,
-            UpdateTime = CompletedAt ?? DateTime.Now,
+            CreatedAt = CreatedAt,
+            UpdatedAt = CompletedAt ?? DateTime.Now,
             Status = Status == MedicalCaseStatus.Active ? CommonStatus.Enabled : CommonStatus.Disabled,
             Remark = CompletionReason
         };
@@ -215,8 +215,8 @@ public class MedicalCaseItem : BindableBase
         Status = dto.CaseStatus;
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;
-        CreatedAt = dto.CreateTime;
-        CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdateTime : null;
+        CreatedAt = dto.CreatedAt;
+        CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdatedAt : null;
         CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null;
     }
 

@@ -226,7 +226,7 @@ public class ConsultationItem : BindableBase
             Syndrome = null, // ConsultationDto中没有此属性
             TreatmentPrinciple = dto.TreatmentPrinciple,
             Status = dto.ConsultationStatus, // 使用ConsultationStatus而不是Status
-            CreatedAt = dto.CreateTime, // ConsultationDto继承的属性
+            CreatedAt = dto.CreatedAt, // ConsultationDto继承的属性
             CompletedAt = dto.EndTime, // 使用EndTime
             PrescriptionId = null // ConsultationDto中没有此属性
         };
@@ -258,8 +258,8 @@ public class ConsultationItem : BindableBase
             EndTime = CompletedAt,
             Remark = null, // ConsultationItem中没有Note属性
             Status = Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
-            CreateTime = CreatedAt,
-            UpdateTime = DateTime.Now
+            CreatedAt = CreatedAt,
+            UpdatedAt = DateTime.Now
         };
     }
 

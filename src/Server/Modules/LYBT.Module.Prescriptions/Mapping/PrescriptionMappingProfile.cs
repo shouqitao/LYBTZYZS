@@ -20,17 +20,13 @@ namespace LYBT.Module.Prescriptions.Mapping
             CreateMap<Prescription, PrescriptionDto>()
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算
-                .ForMember(dest => dest.TotalWeight, opt => opt.Ignore()) // 计算属性，由DTO自动计算
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt)); // 计算属性，由DTO自动计算
+                .ForMember(dest => dest.TotalWeight, opt => opt.Ignore()); // 计算属性，由DTO自动计算
 
             // Prescription -> PrescriptionDetailDto
             CreateMap<Prescription, PrescriptionDetailDto>()
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // 计算属性，由DTO自动计算
-                .ForMember(dest => dest.TotalWeight, opt => opt.Ignore()) // 计算属性，由DTO自动计算
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt)); // 计算属性，由DTO自动计算
+                .ForMember(dest => dest.TotalWeight, opt => opt.Ignore()); // 计算属性，由DTO自动计算
 
             // PrescriptionItemModel -> PrescriptionItemDto
             CreateMap<PrescriptionItem, PrescriptionItemDto>();

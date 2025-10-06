@@ -212,7 +212,7 @@ public class PrescriptionItem : BindableBase
             TotalAmount = dto.TotalPrice,
             Status = PrescriptionStatus.Draft, // 默认状态
             DoctorName = string.Empty, // 需要从其他地方获取
-            CreatedAt = dto.CreateTime,
+            CreatedAt = dto.CreatedAt,
             DispensedAt = null, // DTO中没有此属性
             DispensedBy = null // DTO中没有此属性
         };
@@ -250,8 +250,8 @@ public class PrescriptionItem : BindableBase
             MedicalAdvice = Note,
             Remark = Note,
             Items = Herbs.Select(h => h.ToDto()).ToList(),
-            CreateTime = CreatedAt,
-            UpdateTime = DateTime.Now,
+            CreatedAt = CreatedAt,
+            UpdatedAt = DateTime.Now,
             Status = CommonStatus.Enabled
         };
     }

@@ -18,9 +18,7 @@ namespace LYBT.Module.Users.Mapping
 
             // 用户实体转UserDto（API响应和业务逻辑）
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 统一命名
-                .ForMember(dest => dest.CreateTime, opt => opt.MapFrom(src => src.CreatedAt)) // 映射审计字段
-                .ForMember(dest => dest.UpdateTime, opt => opt.MapFrom(src => src.UpdatedAt)); // 映射审计字段
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)); // 统一命名
 
             // UserCreateDto转用户实体
             CreateMap<UserCreateDto, User>()

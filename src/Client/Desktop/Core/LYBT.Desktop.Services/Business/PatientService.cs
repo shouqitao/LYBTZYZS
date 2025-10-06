@@ -96,8 +96,8 @@ namespace LYBT.Desktop.Services.Business
                     EmergencyContactRelation = dto.EmergencyContactRelation,
                     Status = dto.Status,
                     VisitCount = 0,
-                    CreateTime = DateTime.UtcNow,
-                    UpdateTime = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
                 var created = await _repository.CreateAsync(patient);
@@ -127,7 +127,7 @@ namespace LYBT.Desktop.Services.Business
                 existing.EmergencyContactPhone = dto.EmergencyContactPhone;
                 existing.EmergencyContactRelation = dto.EmergencyContactRelation;
                 existing.Status = dto.Status;
-                existing.UpdateTime = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<PatientDto>.Success(updated);

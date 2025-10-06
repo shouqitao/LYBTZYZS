@@ -25,10 +25,10 @@ namespace LYBT.Shared.Models.Contracts.Common
     {
 
         /// <summary>创建时间</summary>
-        DateTime CreateTime { get; set; }
+        DateTime CreatedAt { get; set; }
 
         /// <summary>更新时间</summary>
-        DateTime? UpdateTime { get; set; }
+        DateTime? UpdatedAt { get; set; }
     }
 
     /// <summary>
@@ -86,11 +86,11 @@ namespace LYBT.Shared.Models.Contracts.Common
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreateTime { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         /// <summary>更新时间</summary>
         [DisplayName("更新时间")]
-        public DateTime? UpdateTime { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 
     /// <summary>
