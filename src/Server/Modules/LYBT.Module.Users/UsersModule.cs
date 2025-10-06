@@ -24,7 +24,16 @@ namespace LYBT.Module.Users
         {
             // 仅注册必要的核心服务
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserService, UserService>();
+
+            // 注册具体实现类（确保单例）
+            services.AddScoped<UserService>();
+
+            // 注册 Module 内部接口（指向实现类）
+            services.AddScoped<IUserService>(sp => sp.GetRequiredService<UserService>());
+
+            // 注册跨平台契约接口（供 WebAPI Controller 和 Desktop Client 使用）
+            services.AddScoped<LYBT.Shared.Interfaces.Services.IUserService>(sp =>
+                sp.GetRequiredService<UserService>());
 
             // 保留基础验证器（简化但有用）
             services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
