@@ -21,13 +21,17 @@ namespace LYBT.Desktop.Services
         /// </summary>
         public static IServiceCollection AddDesktopServices(this IServiceCollection services, string apiBaseUrl = "https://localhost:5001")
         {
-            // 配置HttpClient和ApiService - 修复重复注册问题
+            // 注册认证消息处理器
+            services.AddTransient<AuthorizationMessageHandler>();
+
+            // 配置HttpClient和ApiService - 添加认证处理器
             services.AddHttpClient<ApiService>(client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
                 client.Timeout = TimeSpan.FromSeconds(30);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
+            })
+            .AddHttpMessageHandler<AuthorizationMessageHandler>();
 
             // 注册IApiService - 使用HttpClient工厂创建的实例
             services.AddScoped<IApiService>(provider =>
