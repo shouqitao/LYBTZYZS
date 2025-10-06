@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Services.Repositories
         public FormulaRepository(
             IApiService apiService,
             ILogger<FormulaRepository> logger)
-            : base(apiService, logger, "api/formulas")
+            : base(apiService, logger, "api/v1/formulas")
         {
         }
 
