@@ -24,8 +24,16 @@ namespace LYBT.Desktop.Services.Repositories
 
         public virtual async Task<List<T>> GetAllAsync()
         {
-            var result = await _apiService.GetAsync<List<T>>(_endpoint);
-            return result ?? new List<T>();
+            // 服务端返回 ApiResponse<PagedResult<T>> 格式
+            var response = await _apiService.GetAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<LYBT.Shared.Models.Contracts.Common.PagedResult<T>>>(_endpoint);
+            
+            if (response?.Success == true && response.Data?.Items != null)
+            {
+                return response.Data.Items.ToList();
+            }
+            
+            _logger?.LogWarning("API返回失败或数据为空: {Message}", response?.Message ?? "未知错误");
+            return new List<T>();
         }
 
         public virtual async Task<T> GetByIdAsync(Guid id)
