@@ -144,7 +144,18 @@
     - 最佳实践：始于干净 git 状态，使用结构化代码库，利用类型注解，谨慎审查变更
   - `memory`：记录临时笔记或 TODO。
   - `playwright`：运行桌面/Web 自动化脚本（仅在任务要求时使用）。
-  - `sequential-thinking`：在复杂任务或需要严密推理时生成逐步思考记录；调用后按返回的步骤逐一落实，可作为方案/复盘的附件引用。
+  - `sequential-thinking`：在复杂任务或需要严密推理时生成逐步思考记录；调用后按返回的步骤逐一落实，可作为方案/复盘的附件引用。调用参数必须使用驼峰命名，例如：
+
+    ```xml
+    <invoke name="mcp__sequential-thinking__sequentialthinking">
+      <parameter name="thought">分析内容...</parameter>
+      <parameter name="nextThoughtNeeded">true</parameter>
+      <parameter name="thoughtNumber">1</parameter>
+      <parameter name="totalThoughts">35</parameter>
+    </invoke>
+    ```
+
+    支持的参数：thought、nextThoughtNeeded、thoughtNumber、totalThoughts、isRevision、revisesThought、branchFromThought、branchId。
   - `time`：获取标准化时间信息（UTC、本地时区、倒计时等）；用于安排截止日期、记录操作时间戳或在文档中标记时间。
 - **容错策略**：调用失败时解析错误 → 修正参数重试一次；仍失败即报告阻塞及报错信息。
  - **文档/库查询**：涉及外部依赖或 API 时优先通过 `context7__resolve-library-id`、`context7__get-library-docs` 获取权威说明。
