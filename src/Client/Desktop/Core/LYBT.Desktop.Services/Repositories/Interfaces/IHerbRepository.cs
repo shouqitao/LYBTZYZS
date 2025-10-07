@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Herbs;
+﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Services.Repositories.Interfaces
 {
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.Services.Repositories.Interfaces
     public interface IHerbRepository
     {
         Task<List<HerbDto>> GetAllAsync();
+        Task<PagedResult<HerbDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<HerbDto> GetByIdAsync(Guid id);
         Task<HerbDto> CreateAsync(HerbDto herb);
         Task<HerbDto> UpdateAsync(HerbDto herb);

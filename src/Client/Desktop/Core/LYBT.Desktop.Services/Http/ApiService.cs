@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -244,6 +245,14 @@ namespace LYBT.Desktop.Services.Http
 
             try
             {
+                // 尝试解包ApiResponse<TResponse>格式
+                var unwrapped = TryUnwrapApiResponse<TResponse>(content);
+                if (unwrapped.Success)
+                {
+                    return unwrapped.Data;
+                }
+
+                // 如果不是ApiResponse格式，直接反序列化为TResponse
                 return JsonSerializer.Deserialize<TResponse>(content, _jsonOptions);
             }
             catch (JsonException ex)
@@ -251,6 +260,37 @@ namespace LYBT.Desktop.Services.Http
                 _logger?.LogError(ex, $"JSON反序列化失败: {content}");
                 throw new ApiException(response.StatusCode, "响应格式错误", "GET", content, ex);
             }
+        }
+
+        /// <summary>
+        /// 尝试解包ApiResponse<T>格式的响应
+        /// </summary>
+        private (bool Success, TData? Data) TryUnwrapApiResponse<TData>(string content)
+        {
+            try
+            {
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<TData>>(content, _jsonOptions);
+                if (apiResponse != null)
+                {
+                    if (apiResponse.Success)
+                    {
+                        return (true, apiResponse.Data);
+                    }
+                    else
+                    {
+                        // API业务失败，抛出异常
+                        var errorMessage = apiResponse.Message ?? "API调用失败";
+                        _logger?.LogWarning($"API业务失败: {errorMessage}");
+                        throw new ApiException(System.Net.HttpStatusCode.BadRequest, errorMessage);
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // 不是ApiResponse格式，返回false
+            }
+
+            return (false, default);
         }
 
         /// <summary>
