@@ -268,6 +268,11 @@ namespace LYBT.Desktop.Shell.Extensions
             // Issue #835: 注册认证服务(使用 Shared.Interfaces)
             containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IAuthService,
                 LYBT.Desktop.Services.Business.AuthService>();
+
+            // Issue #1039: 注册 Desktop 本地认证服务（ILocalAuthService 继承 IAuthService）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ILocalAuthService,
+                LYBT.Desktop.Services.Business.AuthService>();
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ITokenStorageService,
                 LYBT.Desktop.Services.Business.TokenStorageService>();
 
