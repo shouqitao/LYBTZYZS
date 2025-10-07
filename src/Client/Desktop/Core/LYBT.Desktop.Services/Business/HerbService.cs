@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -17,15 +18,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<HerbService> _logger;
         private readonly IHerbRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public HerbService(
             IHerbRepository repository,
             ILogger<HerbService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -78,22 +82,9 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建药材: {dto.Name}");
 
-                // 转换DTO
-                var herb = new HerbDto
-                {
-                    Id = Guid.NewGuid(),
-                    Name = dto.Name,
-                    Category = dto.Origin,
-                    Properties = dto.Spec,
-                    Unit = dto.Unit,
-                    Price = dto.Price,
-                    CostPrice = dto.CostPrice,
-                    Effect = dto.Effect,
-                    Usage = dto.Usage,
-                    Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var herb = _mapper.Map<HerbDto>(dto);
+                herb.Id = Guid.NewGuid();
 
                 var created = await _repository.CreateAsync(herb);
                 return ServiceResult<HerbDto>.Success(created);
@@ -107,16 +98,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段
-                existing.Name = dto.Name;
-                existing.Origin = dto.Origin;
-                existing.Spec = dto.Spec;
-                existing.Unit = dto.Unit;
-                existing.Price = dto.Price;
-                existing.CostPrice = dto.CostPrice;
-                existing.Effect = dto.Effect;
-                existing.Usage = dto.Usage;
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<HerbDto>.Success(updated);

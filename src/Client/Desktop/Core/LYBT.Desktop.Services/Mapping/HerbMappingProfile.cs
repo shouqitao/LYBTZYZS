@@ -20,9 +20,9 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.Remark, opt => opt.Ignore())
-                // Category 和 Properties 保持为 null（CreateDto 没有这些字段）
-                .ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.Properties, opt => opt.Ignore());
+                // 修复字段映射: Origin→Category, Spec→Properties
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Origin))
+                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => src.Spec));
 
             // HerbUpdateDto → HerbDto (用于更新现有实体)
             CreateMap<HerbUpdateDto, HerbDto>()
@@ -33,8 +33,9 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.Remark, opt => opt.Ignore())
-                .ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.Properties, opt => opt.Ignore());
+                // 修复字段映射: Origin→Category, Spec→Properties
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Origin))
+                .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => src.Spec));
 
             // HerbDto → HerbDto (用于克隆)
             CreateMap<HerbDto, HerbDto>();

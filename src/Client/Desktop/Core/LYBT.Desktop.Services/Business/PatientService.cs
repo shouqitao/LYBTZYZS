@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,15 +17,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<PatientService> _logger;
         private readonly IPatientRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public PatientService(
             IPatientRepository repository,
             ILogger<PatientService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -77,28 +81,9 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建患者: {dto.Name}");
 
-                // 转换DTO
-                var patient = new PatientDto
-                {
-                    Id = Guid.NewGuid(),
-                    Name = dto.Name,
-                    Gender = dto.Gender,
-                    BirthDate = dto.BirthDate,
-                    PhoneNumber = dto.PhoneNumber,
-                    Address = dto.Address,
-                    IdNumber = dto.IdNumber,
-                    AllergyHistory = dto.AllergyHistory,
-                    MaritalStatus = dto.MaritalStatus,
-                    IdType = dto.IdType,
-                    BloodType = dto.BloodType,
-                    EmergencyContactName = dto.EmergencyContactName,
-                    EmergencyContactPhone = dto.EmergencyContactPhone,
-                    EmergencyContactRelation = dto.EmergencyContactRelation,
-                    Status = dto.Status,
-                    VisitCount = 0,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var patient = _mapper.Map<PatientDto>(dto);
+                patient.Id = Guid.NewGuid();
 
                 var created = await _repository.CreateAsync(patient);
                 return ServiceResult<PatientDto>.Success(created);
@@ -112,22 +97,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段
-                existing.Name = dto.Name;
-                existing.Gender = dto.Gender;
-                existing.BirthDate = dto.BirthDate;
-                existing.PhoneNumber = dto.PhoneNumber;
-                existing.Address = dto.Address;
-                existing.IdNumber = dto.IdNumber;
-                existing.AllergyHistory = dto.AllergyHistory;
-                existing.MaritalStatus = dto.MaritalStatus;
-                existing.IdType = dto.IdType;
-                existing.BloodType = dto.BloodType;
-                existing.EmergencyContactName = dto.EmergencyContactName;
-                existing.EmergencyContactPhone = dto.EmergencyContactPhone;
-                existing.EmergencyContactRelation = dto.EmergencyContactRelation;
-                existing.Status = dto.Status;
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<PatientDto>.Success(updated);

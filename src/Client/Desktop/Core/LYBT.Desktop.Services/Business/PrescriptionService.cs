@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -18,14 +19,21 @@ namespace LYBT.Desktop.Services.Business
         private readonly IPrescriptionRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
 
+        private readonly ILogger<PrescriptionService> _logger;
+        private readonly IPrescriptionRepository _repository;
+        private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
+
         public PrescriptionService(
             IPrescriptionRepository repository,
             ILogger<PrescriptionService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -77,47 +85,25 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建处方: 患者ID={dto.PatientId}");
 
-                // 转换DTO
-                var prescription = new PrescriptionDto
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = dto.PatientId,
-                    MedicalCaseId = Guid.Empty, // 需要关联具体医案
-                    UserId = dto.DoctorId,
-                    DosageCount = dto.Quantity,
-                    Usage = dto.Usage,
-                    Remark = dto.Notes,
-                    FormulaSource = dto.FormulaSource,
-                    Items = new List<PrescriptionItemDto>(),
-                    Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var prescription = _mapper.Map<PrescriptionDto>(dto);
+                prescription.Id = Guid.NewGuid();
+                prescription.Items = new List<PrescriptionItemDto>(); // Items 集合在 Profile 中 Ignore,需手动初始化
 
                 var created = await _repository.CreateAsync(prescription);
                 return ServiceResult<PrescriptionDto>.Success(created);
             }, nameof(CreateAsync));
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
+        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段
-                existing.DosageCount = dto.DosageCount;
-                existing.Advice = dto.Advice;
-                existing.Remark = dto.Remark;
-                existing.UpdatedAt = DateTime.UtcNow;
-
-                // 处理Items更新
-                if (dto.Items != null && dto.Items.Any())
-                {
-                    // TODO: 实现Items的更新逻辑
-                    _logger.LogWarning("PrescriptionUpdateDto.Items更新逻辑待实现");
-                }
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<PrescriptionDto>.Success(updated);
