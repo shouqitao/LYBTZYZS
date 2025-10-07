@@ -1,4 +1,4 @@
-﻿# LYBTZYZS Server 层架构修改建议
+﻿# 凌隐宝堂中医诊所 Server 层架构修改建议
 
 **创建日期**: 2025-09-24
 **基于分析**: 2025-09-24-server-layer-architecture-analysis.md
@@ -1016,7 +1016,7 @@ public class ConsultationIntegrationTests : IntegrationTestBase
 - **开发效率**: 新功能开发时间减少 30%
 - **Bug 修复时间**: 平均修复时间减少 40%
 
-通过系统性的分阶段重构，我们将显著提升 LYBTZYZS Server 层的架构质量和开发效率，为后续业务发展奠定坚实的技术基础。
+通过系统性的分阶段重构，我们将显著提升凌隐宝堂中医诊所 Server 层的架构质量和开发效率，为后续业务发展奠定坚实的技术基础。
 
 ---
 **文档状态**: ✅ 完整

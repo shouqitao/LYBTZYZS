@@ -1,4 +1,4 @@
-﻿# LYBTZYZS Desktop层架构重构建议
+﻿# 凌隐宝堂中医诊所 Desktop层架构重构建议
 
 **建议制定时间**: 2025年9月25日  
 **基于分析报告**: desktop-architecture-analysis-2025-09-25.md  
