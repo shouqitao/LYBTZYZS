@@ -10,15 +10,15 @@ namespace LYBT.Module.MedicalCase
 {
 
     /// <summary>
-    /// 医疗案例模块注册 - UltraThink标准化重构
-    /// 负责注册医疗案例相关的所有服务、仓储和映射配置
-    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
+    /// 医疗案例模块注册 - 标准三层架构
+    /// 负责注册医疗案例相关的所有服务、仓储和验证器
+    /// 采用标准三层架构：Controller → Service → Repository
     /// </summary>
     public static class MedicalCaseModule
     {
 
         /// <summary>
-        /// 注册医疗案例模块服务 - UltraThink双层架构标准
+        /// 注册医疗案例模块服务 - 标准三层架构
         /// </summary>
         public static IServiceCollection AddMedicalCaseModule(this IServiceCollection services)
         {

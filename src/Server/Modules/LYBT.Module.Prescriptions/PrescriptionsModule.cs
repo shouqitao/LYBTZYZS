@@ -10,15 +10,15 @@ namespace LYBT.Module.Prescriptions
 {
 
     /// <summary>
-    /// 处方模块注册 - UltraThink标准化重构
-    /// 负责注册处方相关的所有服务、仓储和映射配置
-    /// 采用UltraThink双层架构：QueryService + BusinessService 专业分离
+    /// 处方模块注册 - 标准三层架构
+    /// 负责注册处方相关的所有服务、仓储和验证器
+    /// 采用标准三层架构：Controller → Service → Repository
     /// </summary>
     public static class PrescriptionsModule
     {
 
         /// <summary>
-        /// 注册处方模块服务 - UltraThink双层架构标准
+        /// 注册处方模块服务 - 标准三层架构
         /// </summary>
         public static IServiceCollection AddPrescriptionsModule(this IServiceCollection services)
         {

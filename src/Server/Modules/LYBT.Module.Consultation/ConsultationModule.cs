@@ -33,8 +33,7 @@ namespace LYBT.Module.Consultation
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
 
-            // 注册AutoMapper配置
-            services.AddAutoMapper(typeof(ConsultationMappingProfile));
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             // 注册模块特定的配置(带启动验证)
             services.AddOptions<ConsultationModuleOptions>()

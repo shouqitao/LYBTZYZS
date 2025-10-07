@@ -49,6 +49,18 @@
 
 ## 2025-10-07
 
+### Issue #1022 Phase 5 完成报告
+- **文件**: [issue-1022-phase5-completion-report.md](./issue-1022-phase5-completion-report.md)
+- **类型**: 架构重构完成报告
+- **关联**: Issue #1022
+- **摘要**: Server端统一架构重构5个Phase全部完成，架构符合度85→95分，编译验证通过，对标Client端#1013实现完整统一
+
+### Issue #1022 Phase 1 Server端架构分析报告
+- **文件**: [server-architecture-analysis-2025-10-07.md](./server-architecture-analysis-2025-10-07.md)
+- **类型**: 架构现状分析报告
+- **关联**: Issue #1022
+- **摘要**: Server端8个模块架构健康度评分85/100，发现CQRS遗留接口、误导性注释、AutoMapper/Validator注册不一致问题
+
 ### Issue #1013 Phase 5 完成报告
 - **文件**: [issue-1013-phase5-completion-report.md](./issue-1013-phase5-completion-report.md)
 - **类型**: 架构重构完成报告
