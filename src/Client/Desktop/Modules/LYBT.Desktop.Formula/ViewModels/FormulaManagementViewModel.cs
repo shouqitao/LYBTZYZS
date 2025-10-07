@@ -65,15 +65,14 @@ namespace LYBT.Desktop.Formula.ViewModels
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "加载配方数据失败");
+                    Logger.LogWarning("加载配方数据失败: {ErrorMessage}", result.ErrorMessage);
                     return new List<FormulaDto>();
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载配方数据时发生异常");
-                await ShowErrorMessageAsync("加载配方数据时发生系统错误");
-                return new List<FormulaDto>();
+                throw;  // 重新抛出异常，让ExecuteSafelyAsync统一处理
             }
         }
 
