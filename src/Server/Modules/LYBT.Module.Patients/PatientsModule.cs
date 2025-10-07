@@ -31,8 +31,7 @@ namespace LYBT.Module.Patients
             // services.AddScoped<IValidator<PatientCreateDto>, PatientCreateDtoValidator>();
             // services.AddScoped<IValidator<PatientUpdateDto>, PatientUpdateDtoValidator>();
 
-            // 注册AutoMapper配置 - 暂时注释，待创建配置文件后启用
-            // services.AddAutoMapper(typeof(PatientMappingProfile));
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             // 注册模块特定的配置(带启动验证)
             services.AddOptions<PatientModuleOptions>()

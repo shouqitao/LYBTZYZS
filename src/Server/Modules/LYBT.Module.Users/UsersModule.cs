@@ -28,12 +28,10 @@ namespace LYBT.Module.Users
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<LYBT.Shared.Interfaces.Services.IUserService, UserService>();
 
-            // 保留基础验证器（简化但有用）
-            services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
-            services.AddScoped<IValidator<UserUpdateDto>, UserUpdateDtoValidator>();
+            // 注册验证器 - 自动注册所有Validator
+            services.AddValidatorsFromAssemblyContaining<UserCreateDtoValidator>();
 
-            // 保留AutoMapper（简化但有用）
-            services.AddAutoMapper(typeof(UserMappingProfile));
+            // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
             return services;
         }
