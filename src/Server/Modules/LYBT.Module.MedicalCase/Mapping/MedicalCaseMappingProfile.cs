@@ -26,16 +26,8 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore());
 
             CreateMap<MedicalCaseUpdateDto, LYBT.Entities.MedicalCase.MedicalCase>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore()) // 导航属性忽略
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore()) // 导航属性忽略
-
-                // 忽略BaseEntity的审计字段（这些不应该从DTO设置）
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
 
                 // 忽略DTO中不存在于实体的字段
                 .ForSourceMember(src => src.DiagnosisSummary, opt => opt.DoNotValidate())

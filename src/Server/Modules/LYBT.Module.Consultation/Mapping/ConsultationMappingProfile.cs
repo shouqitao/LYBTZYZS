@@ -16,14 +16,6 @@ namespace LYBT.Module.Consultation.Mapping
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.Empty)) // 测试映射时确保ID为空值
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
 
-                // 忽略BaseEntity的审计字段（这些不应该从DTO设置）
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-
                 // 状态映射：ConsultationStatus -> CommonStatus
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src =>
                     src.ConsultationStatus == ConsultationStatus.Completed
@@ -83,15 +75,8 @@ namespace LYBT.Module.Consultation.Mapping
 
             // ConsultationCreateDto -> Consultation - 创建映射
             CreateMap<ConsultationCreateDto, LYBT.Entities.Consultation.Consultation>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID由系统生成
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled)) // 新建默认启用
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.StartTime))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false))
 
                 // 忽略导航属性
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
@@ -103,7 +88,6 @@ namespace LYBT.Module.Consultation.Mapping
 
             // ConsultationUpdateDto -> Consultation - 更新映射
             CreateMap<ConsultationUpdateDto, LYBT.Entities.Consultation.Consultation>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID不允许更新
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
 
                 // 状态映射
@@ -111,16 +95,6 @@ namespace LYBT.Module.Consultation.Mapping
                     src.ConsultationStatus.HasValue && src.ConsultationStatus.Value == ConsultationStatus.Completed
                         ? CommonStatus.Disabled
                         : CommonStatus.Enabled))
-
-                // 更新时间
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
-
-                // 忽略审计字段
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
 
                 // 忽略导航属性
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())

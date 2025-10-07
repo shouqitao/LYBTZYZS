@@ -35,9 +35,44 @@ public class DatabaseInitializationService
             // 检查是否为关系型数据库（排除 InMemory 数据库）
             if (_context.Database.IsRelational())
             {
-                // 仅在关系型数据库上应用迁移
-                await _context.Database.MigrateAsync();
-                _logger.LogInformation("数据库初始化完成，所有迁移已应用");
+                // 幂等性检查：先检查是否有待应用的 Migration
+                var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+
+                if (pendingMigrations.Any())
+                {
+                    _logger.LogInformation("发现 {Count} 个待应用的迁移: {Migrations}",
+                        pendingMigrations.Count(),
+                        string.Join(", ", pendingMigrations));
+
+                    // 重试逻辑：最多重试 3 次，每次等待 1-3 秒（随机退避）
+                    var retryCount = 0;
+                    var maxRetries = 3;
+                    var random = new Random();
+
+                    while (retryCount < maxRetries)
+                    {
+                        try
+                        {
+                            await _context.Database.MigrateAsync();
+                            _logger.LogInformation("数据库迁移应用成功");
+                            break;
+                        }
+                        catch (Exception ex) when (retryCount < maxRetries - 1)
+                        {
+                            retryCount++;
+                            var delaySeconds = random.Next(1, 4); // 1-3秒随机延迟
+                            _logger.LogWarning(ex, "迁移失败，第 {Retry}/{MaxRetries} 次重试，等待 {Delay}秒后重试...",
+                                retryCount, maxRetries, delaySeconds);
+                            await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("无待应用的迁移，数据库已是最新状态");
+                }
+
+                _logger.LogInformation("数据库初始化完成");
             }
             else
             {
