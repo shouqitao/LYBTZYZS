@@ -42,11 +42,16 @@
    - Issue 清单项完成后，由 Claude 自动生成 PR 草稿（包含模板、关单关键字、编译摘要），供人工核查实现情况后确认提交。
    - 说明引用的清单编号与验收结果。
    - 粘贴编译命令及结果（至少 `dotnet build LYBT.All.sln -c Release`）。
-   - 勾选 `Claude Code 初审`，如调用 Serena 完成二审，勾选 `Serena 二审`。
-3. **AI 代码审查清单**：
-   - 必读 `docs/development/standards.md` 与 Issue 验收标准。
-   - 判断是否满足验收、遵守架构禁令（禁止 MediatR/CQRS 等）、命名与异步规范、文档同步、增量原则、测试覆盖。
-   - 未满足标准时仅给出最小修复建议。
+   - AI 审查清单：**GitHub Copilot 初审**（自动），**Claude Code 二审**（评论模式，可选）。
+3. **AI 代码审查流程**：
+   - **GitHub Copilot 初审**（自动触发）：
+     - 检查代码规范、潜在问题、最佳实践。
+     - 自动在 PR 中发表审查评论。
+   - **Claude Code 二审**（可选，评论模式）：
+     - 必读 `docs/development/standards.md` 与 Issue 验收标准。
+     - 判断是否满足验收、遵守架构禁令（禁止 MediatR/CQRS 等）、命名与异步规范、文档同步、增量原则、测试覆盖。
+     - 以**评论模式**发布审查意见（因 GitHub 限制，PR 作者不能 approve 自己的 PR）。
+     - 未满足标准时仅给出最小修复建议。
 4. **合并与关闭**：人工审核通过后合并；Workflow 自动关闭 Issue 并更新标签。若 PR 被拒绝，关闭 PR 并创建新 Issue 重新立项。
 - GitHub CLI (`gh`) 已在本仓库完成认证配置：当 PR 符合上文审核要求且检查通过时，可直接使用 `gh pr review`/`gh pr merge` 等命令完成审批与合并；如检查未通过，必须先推动提交人修复直至满足要求后再合并。
 
