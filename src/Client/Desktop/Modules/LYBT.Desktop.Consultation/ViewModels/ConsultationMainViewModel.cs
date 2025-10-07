@@ -140,8 +140,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         IEventAggregator eventAggregator,
         ILoggerFactory loggerFactory,
         IRegionManager regionManager,
-        ISessionManager sessionManager)
-        : base(eventAggregator, loggerFactory, regionManager, sessionManager)
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
             _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));

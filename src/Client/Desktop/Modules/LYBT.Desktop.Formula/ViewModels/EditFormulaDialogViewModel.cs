@@ -125,10 +125,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public EditFormulaDialogViewModel(
+            IFormulaService formulaService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaService formulaService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)

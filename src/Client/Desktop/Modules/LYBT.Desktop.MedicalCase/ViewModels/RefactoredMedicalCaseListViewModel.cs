@@ -216,10 +216,10 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         #region 构造函数
 
         public RefactoredMedicalCaseListViewModel(
+            IMedicalCaseService medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IMedicalCaseService medicalCaseService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)

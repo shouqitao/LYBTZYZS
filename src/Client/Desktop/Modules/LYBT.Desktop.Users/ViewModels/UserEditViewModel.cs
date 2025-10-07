@@ -195,10 +195,10 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserEditViewModel(
+            IUserService userService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IUserService userService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)

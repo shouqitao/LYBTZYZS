@@ -224,10 +224,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region 构造函数
 
         public HerbDetailViewModel(
+            IHerbService herbService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IHerbService herbService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
