@@ -23,7 +23,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 私有字段
 
         private readonly IPatientService _patientService;
-        private readonly IRegionManager _navigationService;
         private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
 
@@ -98,7 +97,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientDetailViewModel(
             IPatientService patientService,
-            IRegionManager navigationService,
             IMapper mapper,
             IPrescriptionPrintService printService,
             IEventAggregator eventAggregator,
@@ -109,7 +107,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
@@ -247,7 +244,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void NavigateBack()
         {
-            _navigationService.RequestNavigate("ContentRegion", "PatientManagementView");
+            RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
         }
 
         private void EnableEdit()
@@ -307,7 +304,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     { "PatientId", Patient.Id }
                 };
                 // 使用同步导航
-                _navigationService.RequestNavigate("ContentRegion", "MedicalCaseListView", navigationParameters);
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView", navigationParameters);
                 await Task.CompletedTask; // 保持异步签名
             }
             catch (Exception ex)
