@@ -8,11 +8,17 @@
   - `README.md`（项目权威概览）
   - `docs/index.md`（文档导航体系）
   - `docs/development/standards.md`、`docs/development/coding-and-implementation-specification.md`
+  - `docs/architecture/server-module-design-standard.md`（Server端模块设计标准）
+  - `docs/architecture/client/unified-design-standard.md`（Client端业务模块统一设计标准）
   - `docs/development/minimal-practice.md`（Issue→清单→PR 工作法）
   - `docs/development/documentation-guidelines.md`
   - `docs/PROJECT-STATUS-2025-09-27.md`（实时项目状态）
 
 > 处理任务前必须先查阅相关文档，未理解文档禁止开始编码或给出建议。
+>
+> **架构设计标准**：
+> - Server 端开发必须遵循 `server-module-design-standard.md`（三层架构、禁止CQRS、接口统一位置）
+> - Client 端开发必须遵循 `client/unified-design-standard.md`（MVVM三层、依赖注入标准、AutoMapper强制、代码模板）
 
 ## 2. Issue 驱动工作流
 
