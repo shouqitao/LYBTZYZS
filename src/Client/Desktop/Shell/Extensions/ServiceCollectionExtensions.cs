@@ -171,10 +171,9 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             var mapperConfig = new MapperConfiguration(cfg =>
             {
-                // 注册各模块的MappingProfile
-                cfg.AddProfile(new LYBT.Desktop.Herbs.Mappings.MappingProfile());
-                cfg.AddProfile(new LYBT.Desktop.Auth.Mappings.MappingProfile());
-                // TODO: 其他模块的MappingProfile需要在此添加
+                // Phase 2: 移除分散的模块 Mappings，准备集中配置
+                // Phase 4 将在 Desktop.Services/Mapping/ 创建统一的 MappingProfile
+                // TODO: Phase 4 - 添加统一的 Desktop.Services.Mapping.MappingProfile
             });
 
             var mapper = mapperConfig.CreateMapper();
