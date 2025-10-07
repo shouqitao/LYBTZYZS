@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
   </ItemGroup>
 
 </Project>

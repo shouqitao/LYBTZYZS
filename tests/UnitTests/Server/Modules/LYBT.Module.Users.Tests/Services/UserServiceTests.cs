@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -26,17 +27,20 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly UserService _userService;
         private readonly Mock<IUserRepository> _repositoryMock;
         private readonly Mock<ILogger<UserService>> _loggerMock;
+        private readonly Mock<IConfiguration> _configurationMock;
 
         public UserServiceTests()
         {
             _repositoryMock = CreateMock<IUserRepository>();
             _loggerMock = CreateLoggerMock<UserService>();
+            _configurationMock = CreateMock<IConfiguration>();
 
             // 创建UserService实例，使用基类提供的Mapper
             _userService = new UserService(
                 _repositoryMock.Object,
                 Mapper,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _configurationMock.Object);
         }
 
         protected override void ConfigureServices(IServiceCollection services)
@@ -159,7 +163,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(userId);
             result.Data.UserName.Should().Be(user.UserName);
-            result.Data.Name.Should().Be(user.Name);
+            result.Data.RealName.Should().Be(user.RealName);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
         }
@@ -223,22 +227,22 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var createDto = new UserCreateDto
             {
-                UserName = "newuser",
-                Name = "新用户",
+                Username = "newuser",
+                RealName = "新用户",
                 Email = "newuser@test.com",
-                Phone = "13800138000",
+                PhoneNumber = "13800138000",
                 Role = UserRole.Doctor
             };
 
             var createdUser = new User
             {
                 Id = Guid.NewGuid(),
-                UserName = createDto.UserName,
-                Name = createDto.Name,
+                UserName = createDto.Username,
+                RealName = createDto.RealName,
                 Email = createDto.Email,
-                Phone = createDto.Phone,
+                PhoneNumber = createDto.PhoneNumber,
                 Role = createDto.Role,
-                Status = UserStatus.Active,
+                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -253,8 +257,8 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.UserName.Should().Be(createDto.UserName);
-            result.Data.Name.Should().Be(createDto.Name);
+            result.Data.UserName.Should().Be(createDto.Username);
+            result.Data.RealName.Should().Be(createDto.RealName);
             result.Data.Email.Should().Be(createDto.Email);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<User>()), Times.Once);
@@ -266,8 +270,8 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var createDto = new UserCreateDto
             {
-                UserName = "newuser",
-                Name = "新用户",
+                Username = "newuser",
+                RealName = "新用户",
                 Email = "newuser@test.com"
             };
 
@@ -308,20 +312,18 @@ namespace LYBT.Module.Users.Tests.Services
             
             var updateDto = new UserUpdateDto
             {
-                Name = "更新的名字",
+                RealName = "更新的名字",
                 Email = "updated@test.com",
-                Phone = "13900139000",
-                Department = "新部门"
+                PhoneNumber = "13900139000"
             };
 
             var updatedUser = new User
             {
                 Id = userId,
                 UserName = existingUser.UserName,
-                Name = updateDto.Name,
+                RealName = updateDto.RealName,
                 Email = updateDto.Email,
-                Phone = updateDto.Phone,
-                Department = updateDto.Department,
+                PhoneNumber = updateDto.PhoneNumber,
                 Role = existingUser.Role,
                 Status = existingUser.Status,
                 UpdatedAt = DateTime.UtcNow
@@ -343,7 +345,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(userId);
-            result.Data.Name.Should().Be(updateDto.Name);
+            result.Data.RealName.Should().Be(updateDto.RealName);
             result.Data.Email.Should().Be(updateDto.Email);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
@@ -357,7 +359,7 @@ namespace LYBT.Module.Users.Tests.Services
             var userId = Guid.NewGuid();
             var updateDto = new UserUpdateDto
             {
-                Name = "更新的名字"
+                RealName = "更新的名字"
             };
 
             _repositoryMock
@@ -384,7 +386,7 @@ namespace LYBT.Module.Users.Tests.Services
             var existingUser = CreateTestUser(userId);
             var updateDto = new UserUpdateDto
             {
-                Name = "更新的名字"
+                RealName = "更新的名字"
             };
 
             var exception = new Exception("数据库错误");
@@ -498,12 +500,11 @@ namespace LYBT.Module.Users.Tests.Services
             {
                 Id = userId,
                 UserName = $"user_{userId.ToString().Substring(0, 8)}",
-                Name = $"测试用户_{userId.ToString().Substring(0, 8)}",
+                RealName = $"测试用户_{userId.ToString().Substring(0, 8)}",
                 Email = $"user_{userId.ToString().Substring(0, 8)}@test.com",
-                Phone = "13800138000",
+                PhoneNumber = "13800138000",
                 Role = UserRole.Doctor,
-                Status = UserStatus.Active,
-                Department = "内科",
+                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

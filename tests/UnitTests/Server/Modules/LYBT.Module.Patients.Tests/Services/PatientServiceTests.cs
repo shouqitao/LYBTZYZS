@@ -160,7 +160,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(patientId);
             result.Data.Name.Should().Be(patient.Name);
-            result.Data.Phone.Should().Be(patient.Phone);
+            result.Data.PhoneNumber.Should().Be(patient.PhoneNumber);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
         }
@@ -227,11 +227,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 Name = "张三",
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1990, 1, 1),
-                Phone = "13800138000",
+                PhoneNumber = "13800138000",
                 IdNumber = "110101199001011234",
                 Address = "北京市朝阳区",
-                EmergencyContact = "李四",
-                EmergencyPhone = "13900139000"
+                EmergencyContactName = "李四",
+                EmergencyContactPhone = "13900139000"
             };
 
             var createdPatient = new Patient
@@ -240,11 +240,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 Name = createDto.Name,
                 Gender = createDto.Gender,
                 BirthDate = createDto.BirthDate,
-                Phone = createDto.Phone,
+                PhoneNumber = createDto.PhoneNumber,
                 IdNumber = createDto.IdNumber,
                 Address = createDto.Address,
-                EmergencyContact = createDto.EmergencyContact,
-                EmergencyPhone = createDto.EmergencyPhone,
+                EmergencyContactName = createDto.EmergencyContactName,
+                EmergencyContactPhone = createDto.EmergencyContactPhone,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -260,7 +260,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be(createDto.Name);
-            result.Data.Phone.Should().Be(createDto.Phone);
+            result.Data.PhoneNumber.Should().Be(createDto.PhoneNumber);
             result.Data.IdNumber.Should().Be(createDto.IdNumber);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<Patient>()), Times.Once);
@@ -274,7 +274,7 @@ namespace LYBT.Module.Patients.Tests.Services
             {
                 Name = "张三",
                 Gender = Gender.Male,
-                Phone = "13800138000"
+                PhoneNumber = "13800138000"
             };
 
             var exception = new Exception("数据库错误");
@@ -315,10 +315,10 @@ namespace LYBT.Module.Patients.Tests.Services
             var updateDto = new PatientUpdateDto
             {
                 Name = "更新的姓名",
-                Phone = "13900139000",
+                PhoneNumber = "13900139000",
                 Address = "更新的地址",
-                EmergencyContact = "更新的紧急联系人",
-                EmergencyPhone = "13700137000"
+                EmergencyContactName = "更新的紧急联系人",
+                EmergencyContactPhone = "13700137000"
             };
 
             var updatedPatient = new Patient
@@ -327,11 +327,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 Name = updateDto.Name,
                 Gender = existingPatient.Gender,
                 BirthDate = existingPatient.BirthDate,
-                Phone = updateDto.Phone,
+                PhoneNumber = updateDto.PhoneNumber,
                 IdNumber = existingPatient.IdNumber,
                 Address = updateDto.Address,
-                EmergencyContact = updateDto.EmergencyContact,
-                EmergencyPhone = updateDto.EmergencyPhone,
+                EmergencyContactName = updateDto.EmergencyContactName,
+                EmergencyContactPhone = updateDto.EmergencyContactPhone,
                 UpdatedAt = DateTime.UtcNow
             };
 
@@ -352,7 +352,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(patientId);
             result.Data.Name.Should().Be(updateDto.Name);
-            result.Data.Phone.Should().Be(updateDto.Phone);
+            result.Data.PhoneNumber.Should().Be(updateDto.PhoneNumber);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Once);
@@ -625,11 +625,11 @@ namespace LYBT.Module.Patients.Tests.Services
                 Name = $"患者_{patientId.ToString().Substring(0, 8)}",
                 Gender = Gender.Male,
                 BirthDate = new DateTime(1990, 1, 1),
-                Phone = "13800138000",
+                PhoneNumber = "13800138000",
                 IdNumber = $"110101199001{patientId.ToString().Substring(0, 6)}",
                 Address = "测试地址",
-                EmergencyContact = "紧急联系人",
-                EmergencyPhone = "13900139000",
+                EmergencyContactName = "紧急联系人",
+                EmergencyContactPhone = "13900139000",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
