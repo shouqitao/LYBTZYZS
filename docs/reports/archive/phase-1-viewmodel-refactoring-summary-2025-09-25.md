@@ -1,6 +1,6 @@
 ﻿# Phase 1 ViewModel重构总结报告
 
-**项目**: 凌隐宝堂中医诊所管理系统 (LYBTZYZS)  
+**项目**: 凌隐宝堂中医诊所管理系统  
 **任务**: Phase 1 ViewModel继承架构重构  
 **完成时间**: 2025-09-25  
 **执行方式**: Claude Code Ultrathink模式  

@@ -138,39 +138,28 @@
   - 实施阶段：用 `filesystem` 定位/读写文件，`git` 生成差异与补丁；遵循 Issue 先行与文档归位。
   - 审查阶段：用 `serena.find_referencing_symbols` 检查改动影响范围，结合自检清单校验一致性；`context7` 回溯依据；`git` 生成 PR 草稿补丁。
   - 文档与报告：将分析输出统一落在 `docs/` 与 `scripts/analysis/outputs/`，并通过 MCP 完成索引更新与链接校验。
-- **核心服务**：
-  - `filesystem`：目录遍历、读写文件；写入前确认路径。
-  - `git`：`status`、`diff`、`log`、`applyPatch`、`commit`。
-  - `github-cli` (`gh`)：统一使用 `gh` 命令行工具处理所有与 GitHub 平台相关的交互，包括但不限于 Issue 的创建与更新、Pull Request 的提交与管理。确保自动化流程的一致性与可追溯性。
-  - `context7`：索引与查询 `src/`、`docs/` 内容；缺乏上下文时先 `add` 再 `query`。
-  - `serena`：语义代码检索与编辑工具（基于 LSP）
-    - 符号搜索：`find_symbol`（全局/局部符号搜索，支持类型过滤）、`find_referencing_symbols`（查找引用关系）
-    - 代码编辑：`replace_symbol_body`（替换符号定义）、`insert_after_symbol`/`insert_before_symbol`（精确位置插入）
-    - 项目管理：`activate_project`（激活项目）、`execute_shell_command`（执行 shell 命令）
-    - 文件操作：`read_file`（读取文件）、`create_text_file`（创建/覆盖文件）
-    - 最佳实践：始于干净 git 状态，使用结构化代码库，利用类型注解，谨慎审查变更
-  - `memory`：记录临时笔记或 TODO。
-  - `playwright`：运行桌面/Web 自动化脚本（仅在任务要求时使用）。
-  - `sequential-thinking`：在复杂任务或需要严密推理时生成逐步思考记录；调用后按返回的步骤逐一落实，可作为方案/复盘的附件引用。调用参数必须使用驼峰命名，例如：
+- **核心服务**（工具列表）：
 
-    ```xml
-    <invoke name="mcp__sequential-thinking__sequentialthinking">
-      <parameter name="thought">分析内容...</parameter>
-      <parameter name="nextThoughtNeeded">true</parameter>
-      <parameter name="thoughtNumber">1</parameter>
-      <parameter name="totalThoughts">35</parameter>
-    </invoke>
-    ```
-
-    支持的参数：thought、nextThoughtNeeded、thoughtNumber、totalThoughts、isRevision、revisesThought、branchFromThought、branchId。
-  - `time`：获取标准化时间信息（UTC、本地时区、倒计时等）；用于安排截止日期、记录操作时间戳或在文档中标记时间。
+| 工具 | 主要用途 | 参数约定 |
+|------|---------|---------|
+| `filesystem` | 文件读写、目录遍历、批量操作 | camelCase |
+| `git` | 版本控制（status, diff, commit, log 等） | camelCase |
+| `serena` | 语义代码检索与编辑（基于 LSP） | snake_case |
+| `context7` | 查询库文档与代码示例 | camelCase |
+| `memory` | 知识图谱存储（实体-关系模型） | camelCase |
+| `sequential-thinking` | 结构化推理与步骤分解 | camelCase |
+| `time` | 时区转换与时间标准化 | snake_case |
+| `playwright` | 浏览器自动化（按需使用） | camelCase |
+| `github-cli (gh)` | Issue/PR管理（命令行工具） | - |
 - **容错策略**：调用失败时解析错误 → 修正参数重试一次；仍失败即报告阻塞及报错信息。
  - **文档/库查询**：涉及外部依赖或 API 时优先通过 `context7__resolve-library-id`、`context7__get-library-docs` 获取权威说明。
- - **AI 辅助协同逻辑（优先使用 MCP 工具）**：Serena（语义代码操作）、sequential-thinking（步骤化推理）、Context7（代码/库文档检索）需协调工作：
-   1) 先用 Context7 获取权威资料与代码片段（契约/接口/最佳实践）；
-   2) 用 sequential-thinking 拆解任务，形成最小闭环步骤与验收点；
-   3) 涉及精确代码修改时，用 Serena 的符号搜索（`find_symbol`/`find_referencing_symbols`）定位目标，再用符号级编辑工具（`replace_symbol_body`/`insert_after_symbol`）执行语义安全的修改；
-   4) 执行阶段全程用 MCP 工具（serena/filesystem/git/context7）记录操作，保证"代码即日志"。
+ - **AI 辅助协同逻辑**（优先使用 MCP 工具）：
+   1) Context7 获取权威资料与代码片段
+   2) sequential-thinking 拆解任务步骤
+   3) serena 执行语义级代码操作（find_symbol → replace_symbol_body）
+   4) git 记录变更历史
+
+**📚 详细参考**：[MCP工具参考手册](docs/development/mcp-tools-reference.md) - 包含完整参数规范、调用示例、工作流模式与错误处理策略
 
 ### 3.1 代码修复后的后台清理（Run-to-Completion Hygiene）
 
