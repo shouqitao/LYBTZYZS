@@ -112,6 +112,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #region 构造函数
 
+        // TODO: Phase 4C - 当前为DTO转换类,按需评估是否需要业务服务
+        // 若后续需要服务层支持(如价格计算、库存检查),则补充对应服务
+        // 集成业务服务后需调整构造函数顺序为: 业务服务 → 基类依赖 → 可选依赖
         public PrescriptionItemViewModel(
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,

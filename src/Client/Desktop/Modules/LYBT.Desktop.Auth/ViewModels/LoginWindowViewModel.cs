@@ -58,6 +58,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         public DelegateCommand LoginCommand { get; }
 
+        // TODO: Phase 4C - 待补充业务服务依赖
+        // 当前为骨架实现,仅包含基类依赖 (ILoggerFactory)
+        // 待补充: IAuthService
+        // 集成业务服务后需调整构造函数顺序为: 业务服务 → 基类依赖 → 可选依赖
+        // 并考虑迁移到继承 UnifiedViewModelBase 以统一架构
         public LoginWindowViewModel(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory?.CreateLogger<LoginWindowViewModel>()
