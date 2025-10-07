@@ -158,15 +158,16 @@ jobs:
             let updatedBody = pr.data.body || '';
 
             // 勾选 Claude Code 初审（包含审查链接）
+            // 使用 \s 匹配任何空白字符（包括特殊的 UTF-8 空格）
             const reviewUrl = review.data.html_url;
             updatedBody = updatedBody.replace(
-              /- \[ \] \*\*Claude Code 初审\*\*[：:][^\n]*/,
+              /-\s*\[\s*\]\s*\*\*Claude Code 初审\*\*[：:][^\n]*/,
               `- [x] **Claude Code 初审**：✅ 已完成 - [查看审查报告](${reviewUrl})`
             );
 
             // 勾选 GitHub Actions 自动审查
             updatedBody = updatedBody.replace(
-              /- \[ \] \*\*GitHub Actions 自动审查\*\*[：:][^\n]*/,
+              /-\s*\[\s*\]\s*\*\*GitHub Actions 自动审查\*\*[：:][^\n]*/,
               '- [x] **GitHub Actions 自动审查**：✅ 已完成'
             );
 
