@@ -349,11 +349,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionComposerViewModel(
+            IPrescriptionService prescriptionService,
+            IMedicalCaseService medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IPrescriptionService prescriptionService,
-            IMedicalCaseService medicalCaseService,
             PrescriptionDataManager dataManager,
             PrescriptionCalculator calculator,
             PrescriptionValidator validator,

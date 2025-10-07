@@ -212,6 +212,10 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Constructor
 
+        // TODO: Phase 4D - 考虑迁移到 UnifiedViewModelBase (需处理 IDisposable 冲突)
+        // 当前继承 BindableBase + IDisposable,使用 BackgroundWorker 实现长时间导入任务
+        // 若迁移,需在 UnifiedViewModelBase 添加 IDisposable 支持或在子类保留 Dispose 实现
+        // 当前构造函数已调整为: 业务服务 → 基础依赖,符合统一标准
         public PatientImportWizardViewModel(
             IPatientService patientService,
             ILogger<PatientImportWizardViewModel> logger)
