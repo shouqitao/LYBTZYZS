@@ -1,0 +1,110 @@
+name: PR 自动审查 (Claude Code)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  claude-code-review:
+    name: Claude Code 自动审查
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: 检查文件变更
+        id: files
+        run: |
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} | wc -l)
+          LINES_ADDED=$(git diff --numstat origin/${{ github.base_ref }}...${{ github.sha }} | awk '{add+=$1} END {print add}')
+          LINES_DELETED=$(git diff --numstat origin/${{ github.base_ref }}...${{ github.sha }} | awk '{del+=$2} END {print del}')
+
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          echo "lines_added=$LINES_ADDED" >> $GITHUB_OUTPUT
+          echo "lines_deleted=$LINES_DELETED" >> $GITHUB_OUTPUT
+
+      - name: 发布审查评论
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = `${{ steps.files.outputs.changed_files }}`.trim();
+            const filesChanged = '${{ steps.files.outputs.files_changed }}';
+            const linesAdded = '${{ steps.files.outputs.lines_added }}';
+            const linesDeleted = '${{ steps.files.outputs.lines_deleted }}';
+
+            const reviewBody = `# 🤖 Claude Code 自动审查报告
+
+            ## 📊 变更统计
+
+            - **文件数**: ${filesChanged} 个文件
+            - **新增**: +${linesAdded} 行
+            - **删除**: -${linesDeleted} 行
+
+            <details>
+            <summary>📁 变更文件列表</summary>
+
+            \`\`\`
+            ${changedFiles}
+            \`\`\`
+            </details>
+
+            ## 📋 审查清单
+
+            请人工确认以下项目：
+
+            ### 架构合规性
+            - [ ] 未引入黑名单技术 (Redis/消息队列/微服务/CQRS/Docker/GraphQL)
+            - [ ] 符合适度设计原则 (KISS, YAGNI)
+            - [ ] 遵守三层架构模式
+
+            ### 代码规范
+            - [ ] 类名使用 PascalCase
+            - [ ] 私有字段使用 \`_camelCase\`
+            - [ ] 异步方法以 Async 结尾
+            - [ ] 使用构造函数依赖注入（禁止 ServiceLocator）
+
+            ### 文档与测试
+            - [ ] 架构变更已更新文档
+            - [ ] 接口变更已更新文档
+            - [ ] 核心逻辑已添加单元测试（MVP 阶段可选）
+
+            ### 增量原则
+            - [ ] 遵循最小变更原则
+            - [ ] 无推倒重写
+            - [ ] 保持向后兼容
+
+            ---
+
+            ⚠️ **注意**:
+            - 本次审查为轻量级自动检查（不包含编译/测试）
+            - 请自行验证编译通过：\`dotnet build LYBT.All.sln -c Release\`
+            - 仍需人工最终审批
+
+            📚 **参考文档**:
+            - [技术标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/development/standards.md)
+            - [统一设计标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)
+
+            🤖 Automated by GitHub Actions
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: reviewBody
+            });

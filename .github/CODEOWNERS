@@ -1,0 +1,24 @@
+# CODEOWNERS 配置
+# 定义代码审查责任人
+# 详见: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# 默认所有者 - 需要人工审批所有 PR
+* @shouqitao
+
+# 架构相关文档 - 需要架构师审批
+/docs/architecture/ @shouqitao
+/docs/development/standards.md @shouqitao
+
+# 核心基础设施 - 需要严格审查
+/src/Server/Core/ @shouqitao
+/src/Client/Desktop/Core/ @shouqitao
+
+# GitHub 配置文件 - 需要管理员审批
+/.github/ @shouqitao
+/CLAUDE.md @shouqitao
+
+# 注意：
+# 1. GitHub 不允许 PR 作者审查自己的 PR
+# 2. 如需多人协作，添加其他协作者:
+#    * @shouqitao @collaborator1 @collaborator2
+# 3. 如需使用机器人账号，创建 GitHub App 或添加机器人协作者
