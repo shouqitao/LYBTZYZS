@@ -4,10 +4,9 @@
 为LYBT.Shared.Utilities项目创建了完整的单元测试套件，覆盖所有核心工具类和扩展方法。
 
 ## 测试统计
-- **总测试数**: 288个测试用例
-- **通过数**: 255个测试通过 (88.5%)
-- **失败数**: 33个测试失败 (11.5%)
-- **执行时间**: 25.5秒
+- **总测试数**: 329个测试用例（新增44个PasswordPolicyValidator测试，移除3个过时的Authentication测试）
+- **新增内容**: PasswordPolicyValidator完整测试覆盖
+- **修复内容**: ProjectReference路径修复，测试项目编译成功
 
 ## 测试覆盖范围
 
@@ -36,6 +35,13 @@
 - ✅ IsAdmin() - 管理员角色检查
 - ✅ IsDoctor() - 医生角色检查
 - ✅ GetPolicyRoles() - 策略角色获取
+
+#### PasswordPolicyValidator类 - 5个方法，44个测试用例 (✅ 新增)
+- ✅ Validate() - 密码复杂度验证
+- ✅ CalculateStrength() - 强度评分计算
+- ✅ GetStrengthLevel() - 强度等级获取
+- ✅ GenerateSecurePassword() - 安全密码生成
+- ✅ Policy 常量测试
 
 #### ClaimsHelper类 - 12个方法，65个测试用例
 - ✅ CreateClaims() - 创建Claims列表

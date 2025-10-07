@@ -139,9 +139,41 @@ jobs:
             reviewBody += `- [统一设计标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)\n\n`;
             reviewBody += `🤖 Automated by GitHub Actions`;
 
-            await github.rest.issues.createComment({
+            // 创建正式审查（GitHub Actions 无权批准，统一使用 COMMENT）
+            const review = await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: reviewBody
+              pull_number: context.issue.number,
+              body: reviewBody,
+              event: 'COMMENT'
+            });
+
+            // 更新 PR 描述，勾选 Claude Code 初审复选框
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            let updatedBody = pr.data.body || '';
+
+            // 勾选 Claude Code 初审（包含审查链接）
+            // 使用 \s 匹配任何空白字符（包括特殊的 UTF-8 空格）
+            const reviewUrl = review.data.html_url;
+            updatedBody = updatedBody.replace(
+              /-\s*\[\s*\]\s*\*\*Claude Code 初审\*\*[：:][^\n]*/,
+              `- [x] **Claude Code 初审**：✅ 已完成 - [查看审查报告](${reviewUrl})`
+            );
+
+            // 勾选 GitHub Actions 自动审查
+            updatedBody = updatedBody.replace(
+              /-\s*\[\s*\]\s*\*\*GitHub Actions 自动审查\*\*[：:][^\n]*/,
+              '- [x] **GitHub Actions 自动审查**：✅ 已完成'
+            );
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              body: updatedBody
             });

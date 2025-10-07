@@ -27,7 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+    <ProjectReference Include="..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
   </ItemGroup>
 
 </Project>

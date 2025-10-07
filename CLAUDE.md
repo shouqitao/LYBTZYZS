@@ -33,7 +33,30 @@
 ### 2.2 Issue 生命周期
 - **单一事实源**：所有代码、配置、脚本改动必须先有 GitHub Issue（含验收标准），并且 Issue 必须直接在 GitHub 上创建与维护，严禁在本地文档或其他渠道先行创建再同步。
 - **模块化功能清单**：Issue 创建后按 `docs/development/minimal-practice.md` 生成模块化条目（示例前缀 `[SRV-1]`、`[CLI-1]`、`[DOC-1]`），条目需描述产出路径与验收点；范围调整时生成 v2 清单并附变更摘要。
-- **标签与状态**：
+- **标签体系**（必读 `docs/development/github-labels-guide.md`）：
+  - **必选标签**：每个 Issue 至少包含以下标签组合：
+    - **类型标签**（type:*）：`type:feature`、`type:bug`、`type:refactor`、`type:test`、`type:documentation`、`type:security`
+    - **模块标签**（module:*）：`module:server`、`module:desktop`、`module:shared`、`module:tests`
+  - **推荐标签**：
+    - **优先级标签**（priority:*）：`priority:p0`（24h）、`priority:p1`（3天）、`priority:p2`（1周）、`priority:p3`（灵活）
+    - **Epic 标签**（epic:*）：用于关联大型任务，如 `epic:server-tests-coverage-20250921`
+  - **创建示例**：
+    ```bash
+    # Server 模块 Bug 修复（高优先级）
+    gh issue create --label "type:bug,module:server,priority:p1" --title "fix(server): 修复用户认证失败问题"
+
+    # Desktop 测试创建（中优先级）
+    gh issue create --label "type:test,module:desktop,module:tests,priority:p2" --title "test(desktop): 创建单元测试"
+    ```
+  - **查询示例**：
+    ```bash
+    # 查询 Server 模块的 Bug
+    gh issue list --label "type:bug,module:server"
+
+    # 查询高优先级未完成任务
+    gh issue list --label "priority:p1" --state open
+    ```
+- **状态标签**：
   - 新建 Issue → 自动打 `status: todo` 并提示分支命名。
   - 启动任务 → 人工加 `status: in-progress`。
   - PR 合并 → 自动加 `status: done` 并触发关单。
