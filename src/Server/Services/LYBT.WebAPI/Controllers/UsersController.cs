@@ -34,13 +34,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var query = new UserSearchDto
-                {
-                    PageIndex = page,
-                    PageSize = pageSize,
-                    Keyword = keyword
-                };
-                var result = await _userService.GetPagedAsync(query);
+                var result = await _userService.GetPagedAsync(page, pageSize, keyword);
 
                 if (result.IsSuccess)
                 {
@@ -90,7 +84,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _userService.CreateUserAsync(dto);
+                var result = await _userService.CreateAsync(dto);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -116,7 +110,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _userService.UpdateUserAsync(id, dto);
+                var result = await _userService.UpdateAsync(id, dto);
 
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -141,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _userService.DeleteUserAsync(id);
+                var result = await _userService.DeleteAsync(id);
 
                 if (result.IsSuccess)
                 {

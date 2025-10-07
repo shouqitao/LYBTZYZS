@@ -1,16 +1,24 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Shared.Interfaces.Services
 {
     /// <summary>
-    /// 用户服务统一接口 - 完整业务功能
-    /// 合并原 IUserBusinessService 和 IUserQueryService 功能
-    /// 遵循单一服务原则，降低复杂性
+    /// 用户服务统一接口 - 标准CRUD模式
+    /// Issue #1008: 重构为标准接口，移除过度设计方法
+    /// 遵循单一服务原则，符合MVP适度设计原则
     /// </summary>
     public interface IUserService
     {
         #region 查询操作
+
+        /// <summary>
+        /// 分页获取用户列表
+        /// </summary>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键字（可选，搜索用户名/邮箱/真实姓名）</param>
+        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 根据ID获取用户详情
@@ -18,83 +26,10 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<UserDto>> GetByIdAsync(Guid id);
 
         /// <summary>
-        /// 分页获取用户列表
+        /// 搜索用户（返回所有匹配结果）
         /// </summary>
-        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
-
-        /// <summary>
-        /// 根据用户名获取用户
-        /// </summary>
-        Task<ServiceResult<UserDto>> GetByUsernameAsync(string userName);
-
-        /// <summary>
-        /// 根据邮箱获取用户
-        /// </summary>
-        Task<ServiceResult<UserDto>> GetByEmailAsync(string email);
-
-        /// <summary>
-        /// 获取启用的用户列表
-        /// </summary>
-        Task<ServiceResult<List<UserDto>>> GetActiveUsersAsync();
-
-        /// <summary>
-        /// 搜索用户
-        /// </summary>
+        /// <param name="keyword">搜索关键字</param>
         Task<ServiceResult<List<UserDto>>> SearchAsync(string keyword);
-
-        /// <summary>
-        /// 获取系统所有角色
-        /// </summary>
-        Task<ServiceResult<List<object>>> GetRolesAsync();
-
-        /// <summary>
-        /// 验证用户名是否可用
-        /// </summary>
-        Task<ServiceResult<bool>> ValidateUsernameAsync(string userName);
-
-        /// <summary>
-        /// 获取所有医生
-        /// </summary>
-        Task<ServiceResult<List<UserDto>>> GetDoctorsAsync();
-
-        /// <summary>
-        /// 检查医生是否在线
-        /// </summary>
-        Task<ServiceResult<bool>> IsDoctorAvailableAsync(Guid doctorId);
-
-        #endregion
-
-        #region 认证操作
-
-        /// <summary>
-        /// 验证用户密码
-        /// </summary>
-        Task<ServiceResult<bool>> ValidatePasswordAsync(Guid userId, string password);
-
-        /// <summary>
-        /// 根据用户名或邮箱获取用户（用于登录）
-        /// </summary>
-        Task<ServiceResult<UserDto>> GetByUsernameOrEmailAsync(string usernameOrEmail);
-
-        /// <summary>
-        /// 更新最后登录时间
-        /// </summary>
-        Task<ServiceResult<bool>> UpdateLastLoginTimeAsync(Guid userId);
-
-        /// <summary>
-        /// 增加失败登录次数
-        /// </summary>
-        Task<ServiceResult<bool>> IncrementFailedLoginCountAsync(Guid userId);
-
-        /// <summary>
-        /// 重置失败登录次数
-        /// </summary>
-        Task<ServiceResult<bool>> ResetFailedLoginCountAsync(Guid userId);
-
-        /// <summary>
-        /// 检查账户是否被锁定
-        /// </summary>
-        Task<ServiceResult<bool>> IsAccountLockedAsync(Guid userId);
 
         #endregion
 
@@ -103,52 +38,42 @@ namespace LYBT.Shared.Interfaces.Services
         /// <summary>
         /// 创建用户
         /// </summary>
-        Task<ServiceResult<UserDto>> CreateUserAsync(UserCreateDto dto, CancellationToken cancellationToken = default);
+        Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UserUpdateDto dto, CancellationToken cancellationToken = default);
+        Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 删除用户（软删除）
         /// </summary>
-        Task<ServiceResult<bool>> DeleteUserAsync(Guid id);
+        Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
         /// 禁用用户
         /// </summary>
-        Task<ServiceResult<bool>> DisableAsync(Guid id);
+        Task<ServiceResult> DisableAsync(Guid id);
 
         /// <summary>
         /// 启用用户
         /// </summary>
-        Task<ServiceResult<bool>> EnableAsync(Guid id);
-
-        /// <summary>
-        /// 批量禁用用户
-        /// </summary>
-        Task<ServiceResult<int>> BatchDisableAsync(List<Guid> ids);
-
-        /// <summary>
-        /// 批量启用用户
-        /// </summary>
-        Task<ServiceResult<int>> BatchEnableAsync(List<Guid> ids);
+        Task<ServiceResult> EnableAsync(Guid id);
 
         /// <summary>
         /// 重置密码
         /// </summary>
-        Task<ServiceResult<bool>> ResetPasswordAsync(Guid id, string newPassword);
+        Task<ServiceResult> ResetPasswordAsync(Guid id, string newPassword);
 
         /// <summary>
         /// 更改密码
         /// </summary>
-        Task<ServiceResult<bool>> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
+        Task<ServiceResult> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
 
         /// <summary>
         /// 修改个人信息
         /// </summary>
-        Task<ServiceResult<bool>> ChangeProfileAsync(Guid userId, string realName, string phoneNumber);
+        Task<ServiceResult> ChangeProfileAsync(Guid userId, string realName, string phoneNumber);
 
         #endregion
     }

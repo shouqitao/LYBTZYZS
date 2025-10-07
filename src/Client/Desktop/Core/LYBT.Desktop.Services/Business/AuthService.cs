@@ -11,8 +11,9 @@ namespace LYBT.Desktop.Services.Business
     /// <summary>
     /// 认证服务实现 - 连接 Server API 的真实实现
     /// Issue #835: 替换 Mock 实现,支持管理员和医生角色登录/退出
+    /// Issue #1008: 实现ILocalAuthService（Desktop特定接口）
     /// </summary>
-    public class AuthService : IAuthService
+    public class AuthService : ILocalAuthService
     {
         private readonly ILogger<AuthService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;

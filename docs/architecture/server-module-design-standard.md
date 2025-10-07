@@ -1,8 +1,9 @@
 ﻿# Server模块设计标准
 
-> **版本**: 1.0
+> **版本**: 1.1
 > **日期**: 2025-10-07
-> **关联**: [ADR-003 Server模块统一设计](ADR-003-server-module-unified-design.md)
+> **关联**: [ADR-003 Server模块统一设计](decisions/ADR-003-server-module-unified-design.md)
+> **关联**: [ADR-004 Service接口统一设计标准](decisions/ADR-004-service-interface-unified-design-standard.md)
 
 ## 1. 概述
 
@@ -115,7 +116,10 @@ namespace LYBT.Module.Xxx.Interfaces
 ❌ src/Server/Modules/LYBT.Module.Formula/Services/FormulaRepository.cs
 ```
 
-## 4. 接口设计标准
+## 4. Service 接口统一设计标准
+
+> **参考**: [ADR-004 Service接口统一设计标准](decisions/ADR-004-service-interface-unified-design-standard.md)
+> **更新日期**: 2025-10-07
 
 ### 4.1 Service接口统一位置
 
@@ -144,7 +148,336 @@ namespace LYBT.Shared.Interfaces.Services
 - ✅ 避免接口重复定义
 - ✅ 简化依赖注入配置
 
-### 4.2 Repository接口
+### 4.2 Service 接口设计原则
+
+#### 4.2.1 最小接口原则（ISP）
+
+每个 Service 接口方法数控制在 **6-12 个之间**：
+
+- **下限（6方法）**：标准CRUD（3）+ 查询（2-3）
+- **上限（12方法）**：标准CRUD + 查询 + 业务操作（≤5）
+
+**超过 12 个方法**视为过度设计，需重构拆分。
+
+**参考案例**：
+- IUserService 重构前：26 方法 ❌（过度设计）
+- IUserService 重构后：11 方法 ✅（符合标准）
+
+#### 4.2.2 单一职责原则（SRP）
+
+每个 Service 接口只负责**一个业务实体**的核心操作：
+
+```csharp
+// ✅ 正确：用户管理职责
+IUserService
+{
+    CreateAsync, UpdateAsync, DeleteAsync,
+    DisableAsync, EnableAsync,
+    ChangePasswordAsync, ChangeProfileAsync
+}
+
+// ✅ 正确：认证职责
+IAuthService
+{
+    LoginAsync, LogoutAsync,
+    ValidateTokenAsync, RefreshTokenAsync,
+    ResetPasswordAsync, ChangePasswordAsync
+}
+
+// ❌ 错误：职责混合
+IUserService
+{
+    CreateAsync, UpdateAsync, DeleteAsync,
+    LoginAsync, ValidateTokenAsync,         // ❌ 应由IAuthService负责
+    SaveAuthenticationAsync                  // ❌ Desktop专有方法
+}
+```
+
+#### 4.2.3 YAGNI 原则（You Aren't Gonna Need It）
+
+MVP 阶段**优先实现核心功能**，非必需功能延后：
+
+```csharp
+// ❌ 错误：批量操作在MVP阶段未使用
+Task<ServiceResult> BatchEnableAsync(List<Guid> userIds);
+Task<ServiceResult> BatchDisableAsync(List<Guid> userIds);
+
+// ❌ 错误：内部逻辑不应暴露为公开方法
+Task<ServiceResult<bool>> ValidateUsernameAsync(string username);
+Task<ServiceResult<bool>> IsDoctorAvailableAsync(Guid userId);
+
+// ✅ 正确：MVP核心功能
+Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
+Task<ServiceResult> DisableAsync(Guid id);
+```
+
+**判断标准**：
+- 若某方法在当前MVP需求中**未被调用** → 移除或标记为"后续实现"
+- 若某方法仅被**内部逻辑**使用 → 改为 private 或移至 Repository
+
+### 4.3 标准 Service 接口结构
+
+所有 Service 接口必须遵循以下结构（6-12 methods）：
+
+```csharp
+namespace LYBT.Shared.Interfaces.Services
+{
+    /// <summary>
+    /// {Entity}业务服务接口
+    /// </summary>
+    public interface I{Entity}Service
+    {
+        #region 查询操作 (2-4 methods)
+
+        /// <summary>
+        /// 分页查询{Entity}列表
+        /// </summary>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">关键词搜索（可选）</param>
+        /// <returns>分页结果</returns>
+        Task<ServiceResult<PagedResult<{Entity}Dto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null
+        );
+
+        /// <summary>
+        /// 根据ID查询{Entity}
+        /// </summary>
+        Task<ServiceResult<{Entity}Dto>> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// 关键词搜索{Entity}（可选）
+        /// </summary>
+        Task<ServiceResult<List<{Entity}Dto>>> SearchAsync(string keyword);
+
+        #endregion
+
+        #region CRUD 操作 (3 methods)
+
+        /// <summary>
+        /// 创建{Entity}
+        /// </summary>
+        Task<ServiceResult<{Entity}Dto>> CreateAsync(
+            {Entity}CreateDto dto,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
+        /// 更新{Entity}
+        /// </summary>
+        Task<ServiceResult<{Entity}Dto>> UpdateAsync(
+            Guid id,
+            {Entity}UpdateDto dto,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
+        /// 删除{Entity}（软删除）
+        /// </summary>
+        Task<ServiceResult> DeleteAsync(Guid id);
+
+        #endregion
+
+        #region 业务操作 (0-5 methods)
+
+        // Entity-specific business methods
+        // 示例：
+        // Task<ServiceResult> DisableAsync(Guid id);
+        // Task<ServiceResult> EnableAsync(Guid id);
+        // Task<ServiceResult> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
+
+        #endregion
+    }
+}
+```
+
+### 4.4 命名约定
+
+#### 4.4.1 方法命名
+
+统一使用 **动词 + Async** 格式：
+
+| 操作类型 | 标准命名 | 禁止命名 |
+|---------|---------|---------|
+| 创建 | `CreateAsync` | ❌ CreateUserAsync, AddAsync |
+| 更新 | `UpdateAsync` | ❌ UpdateUserAsync, ModifyAsync |
+| 删除 | `DeleteAsync` | ❌ DeleteUserAsync, RemoveAsync |
+| 查询单个 | `GetByIdAsync` | ❌ FindByIdAsync, GetAsync |
+| 分页查询 | `GetPagedAsync` | ❌ GetAllAsync, QueryAsync |
+| 关键词搜索 | `SearchAsync` | ❌ FindAsync, QueryAsync |
+| 启用/禁用 | `EnableAsync`, `DisableAsync` | ❌ ActivateAsync, DeactivateAsync |
+
+**禁止在方法名中包含实体名称**（接口名已表明实体）：
+
+```csharp
+// ❌ 错误：重复实体名
+interface IUserService {
+    Task CreateUserAsync(UserCreateDto dto);
+    Task UpdateUserAsync(Guid id, UserUpdateDto dto);
+}
+
+// ✅ 正确：简洁命名
+interface IUserService {
+    Task CreateAsync(UserCreateDto dto);
+    Task UpdateAsync(Guid id, UserUpdateDto dto);
+}
+```
+
+#### 4.4.2 参数命名
+
+| 参数类型 | 标准命名 | 类型 | 示例 |
+|---------|---------|------|------|
+| 主键 | `id` | `Guid` | `GetByIdAsync(Guid id)` |
+| 创建DTO | `dto` | `{Entity}CreateDto` | `CreateAsync(UserCreateDto dto)` |
+| 更新DTO | `dto` | `{Entity}UpdateDto` | `UpdateAsync(Guid id, UserUpdateDto dto)` |
+| 分页参数 | `page`, `pageSize` | `int` | `GetPagedAsync(int page, int pageSize)` |
+| 关键词 | `keyword` | `string?` | `GetPagedAsync(..., string? keyword = null)` |
+| 取消令牌 | `cancellationToken` | `CancellationToken` | `CreateAsync(..., CancellationToken cancellationToken = default)` |
+
+#### 4.4.3 返回类型
+
+| 返回场景 | 标准返回类型 | 禁止返回类型 |
+|---------|------------|------------|
+| 有数据返回 | `Task<ServiceResult<T>>` | ❌ `Task<T>`, `Task<bool>` |
+| 无数据返回 | `Task<ServiceResult>` | ❌ `Task<ServiceResult<bool>>`, `Task` |
+| 分页数据 | `Task<ServiceResult<PagedResult<T>>>` | ❌ `Task<ServiceResult<List<T>>>` |
+
+**禁止使用裸类型返回**：
+
+```csharp
+// ❌ 错误：裸类型返回
+Task<UserDto> GetByIdAsync(Guid id);
+Task<bool> DeleteAsync(Guid id);
+
+// ✅ 正确：ServiceResult包装
+Task<ServiceResult<UserDto>> GetByIdAsync(Guid id);
+Task<ServiceResult> DeleteAsync(Guid id);
+```
+
+### 4.5 分页查询标准
+
+所有分页查询必须使用以下统一签名：
+
+```csharp
+/// <summary>
+/// 分页查询{Entity}列表
+/// </summary>
+/// <param name="page">页码（从1开始，默认1）</param>
+/// <param name="pageSize">每页数量（默认20）</param>
+/// <param name="keyword">关键词搜索（可选，支持名称/编号等字段）</param>
+/// <returns>分页结果</returns>
+Task<ServiceResult<PagedResult<{Entity}Dto>>> GetPagedAsync(
+    int page = 1,
+    int pageSize = 20,
+    string? keyword = null
+);
+```
+
+**禁止使用复杂 SearchDto** 作为参数（MVP阶段）：
+
+```csharp
+// ❌ 错误：MVP阶段过度设计
+Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserSearchDto query);
+
+public class UserSearchDto  // 12 fields - 过于复杂
+{
+    public int PageIndex { get; set; }
+    public int PageSize { get; set; }
+    public string? Keyword { get; set; }
+    public string? WuBiCode { get; set; }        // MVP未使用
+    public DateTime? StartDate { get; set; }     // MVP未使用
+    public DateTime? EndDate { get; set; }       // MVP未使用
+    // ... 更多字段
+}
+
+// ✅ 正确：MVP阶段简化为关键词搜索
+Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(
+    int page = 1,
+    int pageSize = 20,
+    string? keyword = null  // 足够满足基础搜索需求
+);
+```
+
+**简化原则**：
+- MVP 阶段使用 `keyword` 参数进行基础搜索（名称、编号等常见字段）
+- 高级筛选（日期范围、多字段组合）在有明确需求时再添加
+- 客户端可在获取分页数据后进行二次过滤（小数据量场景）
+
+### 4.6 软删除标准
+
+所有 `DeleteAsync` 方法必须实现**软删除**（更新 `IsDeleted` 字段）：
+
+```csharp
+/// <summary>
+/// 删除{Entity}（软删除，更新IsDeleted标志）
+/// </summary>
+/// <param name="id">实体ID</param>
+/// <returns>删除结果</returns>
+Task<ServiceResult> DeleteAsync(Guid id);
+```
+
+**实现要求**：
+- 返回类型：`Task<ServiceResult>`（不是 `Task<ServiceResult<bool>>`）
+- 操作类型：软删除（设置 `IsDeleted = true`，保留数据）
+- 物理删除：如需物理删除，方法名必须明确标注 `DeletePermanentlyAsync`
+
+**示例实现**：
+
+```csharp
+public async Task<ServiceResult> DeleteAsync(Guid id)
+{
+    var entity = await _repository.GetByIdAsync(id);
+    if (entity == null)
+        return ServiceResult.Failure("实体不存在");
+
+    entity.IsDeleted = true;  // 软删除
+    entity.DeletedAt = DateTime.UtcNow;
+    await _repository.UpdateAsync(entity);
+
+    return ServiceResult.Success();  // 不返回bool值
+}
+```
+
+### 4.7 CancellationToken 标准
+
+Create 和 Update 操作必须支持 `CancellationToken`（作为可选参数）：
+
+```csharp
+/// <summary>
+/// 创建{Entity}
+/// </summary>
+/// <param name="dto">创建数据传输对象</param>
+/// <param name="cancellationToken">取消令牌（可选）</param>
+Task<ServiceResult<{Entity}Dto>> CreateAsync(
+    {Entity}CreateDto dto,
+    CancellationToken cancellationToken = default
+);
+
+/// <summary>
+/// 更新{Entity}
+/// </summary>
+/// <param name="id">实体ID</param>
+/// <param name="dto">更新数据传输对象</param>
+/// <param name="cancellationToken">取消令牌（可选）</param>
+Task<ServiceResult<{Entity}Dto>> UpdateAsync(
+    Guid id,
+    {Entity}UpdateDto dto,
+    CancellationToken cancellationToken = default
+);
+```
+
+**使用场景**：
+- HTTP 请求被客户端取消时，终止数据库操作
+- 长时间运行的创建/更新操作
+- 批量操作的中途取消
+
+**可选支持**：
+- 查询操作（GetByIdAsync, GetPagedAsync）可选择性添加
+- 短时间操作（DisableAsync, EnableAsync）通常不需要
+
+### 4.8 Repository接口
 
 Repository接口继续保留在各模块的 `Interfaces/` 目录：
 
@@ -273,3 +606,4 @@ services.AddScoped<LYBT.Shared.Interfaces.Services.IXxxService, XxxService>();
 | 版本 | 日期 | 作者 | 变更说明 |
 |------|------|------|---------|
 | 1.0 | 2025-10-07 | Claude | 初始版本，基于Issue #1006统一设计成果 |
+| 1.1 | 2025-10-07 | Claude | 新增第4节"Service接口统一设计标准"（基于Issue #1008）：<br>- 4.2 Service接口设计原则（ISP/SRP/YAGNI）<br>- 4.3 标准Service接口结构（6-12方法模板）<br>- 4.4 命名约定（方法/参数/返回类型）<br>- 4.5 分页查询标准<br>- 4.6 软删除标准<br>- 4.7 CancellationToken标准<br>关联 [ADR-004](decisions/ADR-004-service-interface-unified-design-standard.md) |
