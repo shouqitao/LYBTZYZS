@@ -26,13 +26,17 @@ jobs:
       - name: 检查文件变更
         id: files
         run: |
+          # 使用 GitHub 提供的 base 和 head SHA 进行比较
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          
           echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} >> $GITHUB_OUTPUT
+          git diff --name-only $BASE_SHA $HEAD_SHA >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }} | wc -l)
-          LINES_ADDED=$(git diff --numstat origin/${{ github.base_ref }}...${{ github.sha }} | awk '{add+=$1} END {print add}')
-          LINES_DELETED=$(git diff --numstat origin/${{ github.base_ref }}...${{ github.sha }} | awk '{del+=$2} END {print del}')
+          FILES_CHANGED=$(git diff --name-only $BASE_SHA $HEAD_SHA | wc -l)
+          LINES_ADDED=$(git diff --numstat $BASE_SHA $HEAD_SHA | awk '{add+=$1} END {print add}')
+          LINES_DELETED=$(git diff --numstat $BASE_SHA $HEAD_SHA | awk '{del+=$2} END {print del}')
 
           echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
           echo "lines_added=$LINES_ADDED" >> $GITHUB_OUTPUT
