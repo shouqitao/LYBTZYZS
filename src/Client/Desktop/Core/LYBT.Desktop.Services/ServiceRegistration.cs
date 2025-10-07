@@ -85,7 +85,9 @@ namespace LYBT.Desktop.Services
             services.AddScoped<IPatientService, PatientService>();
             services.AddScoped<IConsultationService, ConsultationService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IAuthService, AuthService>();
+
+            // Issue #1008: 注册ILocalAuthService（Desktop特定认证接口）
+            services.AddScoped<ILocalAuthService, AuthService>();
 
             // 注册内存缓存 - 带配置优化
             services.AddMemoryCache(options =>

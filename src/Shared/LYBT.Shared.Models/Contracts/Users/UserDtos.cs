@@ -171,6 +171,7 @@ namespace LYBT.Shared.Models.Contracts.Users
 
     /// <summary>
     /// 用户搜索DTO - 高级搜索条件
+    /// Issue #1008: 简化为MVP必需字段（移除WuBiCode/StartDate/EndDate）
     /// </summary>
     public class UserSearchDto : UserQueryDto
     {
@@ -185,18 +186,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         /// <summary>按拼音码搜索</summary>
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
-
-        /// <summary>按五笔码搜索</summary>
-        [DisplayName("五笔码")]
-        public string? WuBiCode { get; set; }
-
-        /// <summary>创建日期范围-开始日期</summary>
-        [DisplayName("开始日期")]
-        public DateTime? StartDate { get; set; }
-
-        /// <summary>创建日期范围-结束日期</summary>
-        [DisplayName("结束日期")]
-        public DateTime? EndDate { get; set; }
 
         /// <summary>是否包含已禁用项</summary>
         [DisplayName("包含已禁用")]

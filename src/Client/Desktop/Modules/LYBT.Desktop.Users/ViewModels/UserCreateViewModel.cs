@@ -239,7 +239,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 };
 
                 // 调用服务创建用户
-                var result = await _userService.CreateUserAsync(createDto);
+                var result = await _userService.CreateAsync(createDto);
                 if (result.IsSuccess)
                 {
                     StatusMessage = "用户创建成功";

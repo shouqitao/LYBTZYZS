@@ -6,6 +6,7 @@ namespace LYBT.Shared.Interfaces.Services
 
     /// <summary>
     /// 身份认证服务接口 - UltraThink统一标准
+    /// Issue #1008: 移除Desktop特定方法SaveAuthenticationAsync（已迁移到ILocalAuthService）
     /// </summary>
     public interface IAuthService
     {
@@ -49,10 +50,5 @@ namespace LYBT.Shared.Interfaces.Services
         /// 撤销RefreshToken
         /// </summary>
         Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request);
-
-        /// <summary>
-        /// 保存认证信息到本地
-        /// </summary>
-        Task SaveAuthenticationAsync(LoginResponse loginResponse);
     }
 }

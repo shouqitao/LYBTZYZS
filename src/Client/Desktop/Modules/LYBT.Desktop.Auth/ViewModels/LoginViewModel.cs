@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Services.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -16,10 +17,11 @@ namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
     /// 登录视图模型 - 实现基于角色的导航（已统一架构）
+    /// Issue #1008: 使用ILocalAuthService（Desktop特定认证接口）
     /// </summary>
     public class LoginViewModel : UnifiedViewModelBase
     {
-        private readonly IAuthService _authService;
+        private readonly ILocalAuthService _authService;
         private readonly IApiHealthCheckService? _apiHealthCheckService;
         private readonly LYBT.Desktop.Services.Business.IUsernameStorageService? _usernameStorage;
 
@@ -31,7 +33,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private string _apiStatusMessage = "正在检查连接...";
 
         public LoginViewModel(
-            IAuthService authService,
+            ILocalAuthService authService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,

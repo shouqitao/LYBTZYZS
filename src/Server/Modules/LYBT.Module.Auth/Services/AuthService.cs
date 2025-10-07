@@ -1,5 +1,7 @@
-﻿using LYBT.Infrastructure.Data;
+﻿using AutoMapper;
+using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -13,25 +15,29 @@ namespace LYBT.Module.Auth.Services
 {
     /// <summary>
     /// 认证服务 - 简化版本（遵循适度设计原则）
+    /// Issue #1008: 改为直接使用IUserRepository，移除对IUserService的依赖
     /// 仅提供小型中医诊所系统所需的基础认证功能，移除企业级复杂功能
     /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IJwtService _jwtService;
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
         public AuthService(
             IJwtService jwtService,
-            IUserService userService,
+            IUserRepository userRepository,
+            IMapper mapper,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
             IConfiguration configuration)
         {
             _jwtService = jwtService;
-            _userService = userService;
+            _userRepository = userRepository;
+            _mapper = mapper;
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
@@ -97,6 +103,7 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 验证用户凭据
+        /// Issue #1008: 改为直接使用IUserRepository和BCrypt验证
         /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
@@ -114,18 +121,17 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<string>.Success("SUPER_ADMIN:" + request.Username);
                 }
 
-                // 普通用户认证流程
-                var userResult = await _userService.GetByUsernameAsync(request.Username);
-                if (!userResult.IsSuccess || userResult.Data == null)
+                // 普通用户认证流程 - 直接调用Repository
+                var userEntity = await _userRepository.GetByUsernameAsync(request.Username);
+                if (userEntity == null)
                     return ServiceResult<string>.Failure("用户名或密码错误");
 
-                // 使用用户服务验证密码
-                var passwordValidation = await _userService.ValidatePasswordAsync(userResult.Data.Id, request.Password);
-                if (passwordValidation.IsSuccess && passwordValidation.Data)
+                // 直接使用BCrypt验证密码
+                if (BCrypt.Net.BCrypt.Verify(request.Password, userEntity.PasswordHash))
                 {
                     _logger.LogInformation("用户认证成功 [用户名: {Username}] [时间: {Timestamp}]",
                     request.Username, DateTime.UtcNow);
-                    return ServiceResult<string>.Success(userResult.Data.Id.ToString());
+                    return ServiceResult<string>.Success(userEntity.Id.ToString());
                 }
 
                 _logger.LogWarning("用户认证失败 [用户名: {Username}] [原因: 密码错误] [时间: {Timestamp}]",
@@ -203,23 +209,23 @@ namespace LYBT.Module.Auth.Services
                 }
                 else
                 {
-                    // 普通用户登录流程
-                    var userResult = await _userService.GetByUsernameAsync(request.Username);
-                    if (!userResult.IsSuccess || userResult.Data == null)
+                    // 普通用户登录流程 - Issue #1008: 改为直接调用Repository
+                    var userEntity = await _userRepository.GetByUsernameAsync(request.Username);
+                    if (userEntity == null)
                         return ServiceResult<LoginResponse>.Failure("获取用户信息失败");
 
-                    var user = userResult.Data;
+                    var userDto = _mapper.Map<UserDto>(userEntity);
 
                     // 生成JWT令牌
                     var token = _jwtService.GenerateToken(
-                        user.Id.ToString(),
-                        user.UserName,
-                        user.Role);
+                        userDto.Id.ToString(),
+                        userDto.UserName,
+                        userDto.Role);
 
                     response = new LoginResponse
                     {
                         Token = token,
-                        User = user,
+                        User = userDto,
                         RefreshToken = "", // 简化版本不使用RefreshToken
                         ExpiresAt = DateTime.UtcNow.AddHours(8) // 简化：固定8小时过期
                     };
@@ -311,17 +317,9 @@ namespace LYBT.Module.Auth.Services
             return ServiceResult<bool>.Success(true, "简化版本无需撤销令牌");
         }
 
-        /// <summary>
-        /// 保存认证信息（服务器端为空实现）
-        /// </summary>
-        public async Task SaveAuthenticationAsync(LoginResponse response)
-        {
-            // 服务器端不需要保存认证信息，认证信息存储在客户端
-            await Task.CompletedTask;
-        }
-
         #endregion 认证流程操作
 
+        // Issue #1008: 移除SaveAuthenticationAsync（Desktop特定方法，已迁移到ILocalAuthService）
         // 移除私有密码验证方法，改为委托给用户服务进行验证
         // 这样符合单一职责原则，认证服务专注于认证流程，密码验证交给用户服务
     }

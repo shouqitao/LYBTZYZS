@@ -46,7 +46,9 @@ namespace LYBT.Desktop.Services.Extensions
             services.AddScoped<IHerbService, HerbService>();
             services.AddScoped<IFormulaService, FormulaService>();
             services.AddScoped<IConsultationService, ConsultationService>();
-            services.AddScoped<IAuthService, AuthService>();
+
+            // Issue #1008: 注册ILocalAuthService（Desktop特定认证接口）
+            services.AddScoped<ILocalAuthService, AuthService>();
 
             return services;
         }
