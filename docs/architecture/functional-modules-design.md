@@ -9,9 +9,11 @@
 
 ### 1.1 设计原则
 - **单一职责**：每个模块只负责一个业务领域
-- **接口隔离**：查询与命令分离，读写分离
+- **接口统一**：Service接口统一在Shared.Interfaces.Services（禁止CQRS双层Service）
 - **依赖倒置**：依赖抽象而非具体实现
 - **开闭原则**：对扩展开放，对修改关闭
+
+> ⚠️ **重要**: 参考 [Server模块设计标准](server-module-design-standard.md) 和 [ADR-003](ADR-003-server-module-unified-design.md)，**严格禁止**使用CQRS模式（查询与业务Service分离）。所有Server模块必须使用统一Service接口。
 
 ### 1.2 实际实现状态
 

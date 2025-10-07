@@ -28,7 +28,6 @@ namespace LYBT.Module.Consultation
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<LYBT.Shared.Interfaces.Services.IConsultationService, ConsultationService>();
 
-            services.AddScoped<IConsultationQueryService, ConsultationQueryService>();
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 
             // 注册验证器 - 自动注册所有Validator
