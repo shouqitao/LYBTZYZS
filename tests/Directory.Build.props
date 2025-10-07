@@ -23,6 +23,10 @@
 
     <!-- 测试运行设置文件 -->
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\.runsettings</RunSettingsFilePath>
+
+    <!-- 解决 Coverlet 并行测试时的文件锁定问题 -->
+    <!-- 为每个测试项目创建依赖程序集的本地副本 -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <!-- 测试框架包版本管理 -->
