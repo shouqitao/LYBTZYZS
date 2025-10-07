@@ -139,9 +139,11 @@ jobs:
             reviewBody += `- [统一设计标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)\n\n`;
             reviewBody += `🤖 Automated by GitHub Actions`;
 
-            await github.rest.issues.createComment({
+            // 创建正式审查（GitHub Actions 无权批准，统一使用 COMMENT）
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: reviewBody
+              pull_number: context.issue.number,
+              body: reviewBody,
+              event: 'COMMENT'
             });
