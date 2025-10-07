@@ -40,6 +40,7 @@
 
 ## 历史档案
 - 更早的报告移至 `archive/` 目录，详见 `docs/ARCHIVE.md`。
+- 测试覆盖率与执行报告归档至 `test-archives/` 目录（2025-10-07迁移）
 
 ## 使用说明
 1. 撰写新报告时将文件置于本目录，采用 `yyyy-mm-dd-主题.md` 命名，并在上表追加条目。
@@ -48,6 +49,12 @@
 
 
 ## 2025-10-07
+
+### Issue #1024 Phase 4 MVP测试覆盖度分析
+- **文件**: [test-coverage-mvp-analysis.md](./test-coverage-mvp-analysis.md)
+- **类型**: 测试覆盖度分析报告
+- **关联**: Issue #1024
+- **摘要**: MVP核心6大模块测试覆盖度62.5%（未达80%目标），识别P0风险：方剂配伍安全验证缺失、端到端诊疗流程无集成测试
 
 ### Issue #1022 Phase 5 完成报告
 - **文件**: [issue-1022-phase5-completion-report.md](./issue-1022-phase5-completion-report.md)

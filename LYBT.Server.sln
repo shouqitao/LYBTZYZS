@@ -55,31 +55,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{5BC5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth.UnitTests", "Auth.UnitTests", "{616B9518-FCB4-EB95-34E8-4F51EDA8DAB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Auth.Tests", "tests\UnitTests\Modules\Auth.UnitTests\LYBT.Module.Auth.Tests.csproj", "{C1572DDA-C797-44A5-8E1B-7CA40D2131E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Auth.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Auth.Tests\LYBT.Module.Auth.Tests.csproj", "{C1572DDA-C797-44A5-8E1B-7CA40D2131E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Consultation.UnitTests", "Consultation.UnitTests", "{4AEFD1F9-C807-7E63-643D-8DFC85A2BE30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Consultation.Tests", "tests\UnitTests\Modules\Consultation.UnitTests\LYBT.Module.Consultation.Tests.csproj", "{F70A2902-E5B3-43BC-8A2B-C3A74CC04450}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Consultation.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Consultation.Tests\LYBT.Module.Consultation.Tests.csproj", "{F70A2902-E5B3-43BC-8A2B-C3A74CC04450}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Herbs.UnitTests", "Herbs.UnitTests", "{AB4CD49C-C5CE-DF89-F5E5-77FBF1EEC8F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Herbs.Tests", "tests\UnitTests\Modules\Herbs.UnitTests\LYBT.Module.Herbs.Tests.csproj", "{ACBE0703-6383-44CE-A0BA-A9EAEC88B44B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Herbs.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Herbs.Tests\LYBT.Module.Herbs.Tests.csproj", "{ACBE0703-6383-44CE-A0BA-A9EAEC88B44B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Patients.UnitTests", "Patients.UnitTests", "{0F5B45BC-5A21-B58D-CB51-F5743476D124}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Patients.Tests", "tests\UnitTests\Modules\Patients.UnitTests\LYBT.Module.Patients.Tests.csproj", "{BB3ACDAC-C72A-4558-BB64-68175AC71C09}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Patients.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Patients.Tests\LYBT.Module.Patients.Tests.csproj", "{BB3ACDAC-C72A-4558-BB64-68175AC71C09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prescriptions.UnitTests", "Prescriptions.UnitTests", "{5DDC5353-9BD9-5BCA-0D58-C53830B82062}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Prescriptions.Tests", "tests\UnitTests\Modules\Prescriptions.UnitTests\LYBT.Module.Prescriptions.Tests.csproj", "{688F9F29-7F58-4D0A-96EB-A34B59DE37D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Prescriptions.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Prescriptions.Tests\LYBT.Module.Prescriptions.Tests.csproj", "{688F9F29-7F58-4D0A-96EB-A34B59DE37D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Users.UnitTests", "Users.UnitTests", "{2B1D5DF1-AB1B-20FF-B835-9CCB0008ECB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Users.Tests", "tests\UnitTests\Modules\Users.UnitTests\LYBT.Module.Users.Tests.csproj", "{FA8D34F9-D22A-4FF2-B18A-2A80F5F280EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Module.Users.Tests", "tests\UnitTests\Server\Modules\LYBT.Module.Users.Tests\LYBT.Module.Users.Tests.csproj", "{FA8D34F9-D22A-4FF2-B18A-2A80F5F280EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared.Models.UnitTests", "Shared.Models.UnitTests", "{A20BAE7C-BFBD-2DCD-3154-443057CA7E70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models.Tests", "tests\UnitTests\Shared.Models.UnitTests\LYBT.Shared.Models.Tests.csproj", "{7A939CAD-D30B-46CB-88FD-A2C0CA7A1633}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Models.Tests", "tests\UnitTests\Shared\LYBT.Shared.Models.Tests\LYBT.Shared.Models.Tests.csproj", "{7A939CAD-D30B-46CB-88FD-A2C0CA7A1633}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Shared.Interfaces", "src\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj", "{12217A0D-1329-C351-C2A9-9B89C9371BAE}"
 EndProject

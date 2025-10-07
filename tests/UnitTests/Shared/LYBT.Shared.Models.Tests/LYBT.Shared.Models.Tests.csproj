@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS8625</NoWarn>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"  />
+    <PackageReference Include="xunit"  />
+    <PackageReference Include="xunit.runner.visualstudio" >
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="AutoMapper"  />
+    <PackageReference Include="FluentAssertions"  />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared Models -->
+    <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    
+    <!-- Module References for Mapping Profiles -->
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Prescriptions\LYBT.Module.Prescriptions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Auth\LYBT.Module.Auth.csproj" />
+  </ItemGroup>
+
+</Project>

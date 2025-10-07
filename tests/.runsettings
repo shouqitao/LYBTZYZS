@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- 测试运行配置 - VS2022兼容 -->
+  <RunConfiguration>
+    <!-- 测试结果输出目录（相对于tests目录） -->
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+
+    <!-- 最大CPU并行数 (0=自动检测) -->
+    <MaxCpuCount>0</MaxCpuCount>
+
+    <!-- 测试会话超时（毫秒，5分钟） -->
+    <TestSessionTimeout>300000</TestSessionTimeout>
+
+    <!-- 目标平台 -->
+    <TargetPlatform>x64</TargetPlatform>
+
+    <!-- 目标框架 -->
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+  </RunConfiguration>
+
+  <!-- xUnit 测试框架配置 -->
+  <xUnit>
+    <!-- 并行执行测试集合 -->
+    <ParallelizeTestCollections>true</ParallelizeTestCollections>
+
+    <!-- 最大并行线程数 (-1=自动) -->
+    <MaxParallelThreads>-1</MaxParallelThreads>
+
+    <!-- 显示测试名称 -->
+    <DiagnosticMessages>false</DiagnosticMessages>
+    <InternalDiagnosticMessages>false</InternalDiagnosticMessages>
+  </xUnit>
+
+  <!-- 数据收集器配置（代码覆盖率） -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <!-- XPlat代码覆盖率收集器 -->
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <Exclude>[*.Tests]*,[*]*.Designer,[*]*.g.cs</Exclude>
+          <IncludeDirectory>../BIN/</IncludeDirectory>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <!-- 日志配置 -->
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="True">
+        <Configuration>
+          <Verbosity>normal</Verbosity>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+</RunSettings>
