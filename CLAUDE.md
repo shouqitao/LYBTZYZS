@@ -25,7 +25,10 @@
 ### 2.1 任务启动前置检查
 1. `git pull` → 获取最新主分支。
 2. `dotnet build LYBT.All.sln` → 若失败，优先修复再继续任务。
-3. `dotnet test LYBT.Server.sln` → 记录基线失败项，评估是否影响任务。
+3. `dotnet test LYBT.Server.sln -c Release` → 记录基线失败项，评估是否影响任务。
+   - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
+   - **注意**：Desktop测试当前阻塞（需单独修复Issue），仅运行Server端测试
+   - **详细指南**：参考 `docs/development/testing-guide.md`
 
 ### 2.2 Issue 生命周期
 - **单一事实源**：所有代码、配置、脚本改动必须先有 GitHub Issue（含验收标准），并且 Issue 必须直接在 GitHub 上创建与维护，严禁在本地文档或其他渠道先行创建再同步。
