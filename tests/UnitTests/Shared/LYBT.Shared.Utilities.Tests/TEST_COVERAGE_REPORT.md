@@ -167,3 +167,7 @@ tests/UnitTests/Shared/LYBT.Shared.Utilities.Tests/
 ✅ **建立**了可维护的测试架构和标准
 
 通过这些测试，LYBT.Shared.Utilities项目的代码质量和可靠性得到了显著提升，为后续的开发和维护提供了强有力的保障。
+
+---
+
+<!-- 测试标记：验证 PR 自动审查勾选功能 -->
