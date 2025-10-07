@@ -18,10 +18,6 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<PrescriptionService> _logger;
         private readonly IPrescriptionRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-
-        private readonly ILogger<PrescriptionService> _logger;
-        private readonly IPrescriptionRepository _repository;
-        private readonly IExceptionHandler _exceptionHandler;
         private readonly IMapper _mapper;
 
         public PrescriptionService(
@@ -95,15 +91,21 @@ namespace LYBT.Desktop.Services.Business
             }, nameof(CreateAsync));
         }
 
-        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionEditDto dto)
+        public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 使用 AutoMapper 更新字段
-                _mapper.Map(dto, existing);
+                // 手动映射 PrescriptionUpdateDto → PrescriptionDto (只映射共同字段)
+                // PrescriptionDto 不包含: PrescriptionNumber, Diagnosis
+                existing.Advice = dto.Advice;
+                existing.DosageCount = dto.DosageCount;
+                existing.Usage = dto.Usage;
+                existing.Discount = dto.Discount;
+                existing.Remark = dto.Remark;
+                existing.UpdatedAt = DateTime.UtcNow;
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<PrescriptionDto>.Success(updated);

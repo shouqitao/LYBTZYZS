@@ -18,16 +18,12 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.EndTime, opt => opt.Ignore());
 
             // ConsultationUpdateDto → ConsultationDto (用于更新现有实体)
             CreateMap<ConsultationUpdateDto, ConsultationDto>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore());
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
 
             // ConsultationDto → ConsultationDto (用于克隆)
             CreateMap<ConsultationDto, ConsultationDto>();

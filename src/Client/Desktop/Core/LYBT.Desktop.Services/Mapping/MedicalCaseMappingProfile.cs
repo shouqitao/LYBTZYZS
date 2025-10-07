@@ -18,8 +18,6 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ConsultationDate, opt => opt.MapFrom(src => DateTime.Now))
                 // 患者/医生信息需要在 Service 层填充
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
@@ -35,9 +33,7 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.CaseStatus, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.ConsultationDate, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())

@@ -17,8 +17,6 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.DoctorId))
                 .ForMember(dest => dest.DosageCount, opt => opt.MapFrom(src => src.Quantity))
@@ -30,9 +28,7 @@ namespace LYBT.Desktop.Services.Mapping
             // PrescriptionEditDto → PrescriptionDto (用于更新现有实体)
             CreateMap<PrescriptionEditDto, PrescriptionDto>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
                 .ForMember(dest => dest.Indication, opt => opt.Ignore())
                 // Items 集合需要在 Service 层单独处理
@@ -44,8 +40,6 @@ namespace LYBT.Desktop.Services.Mapping
             // PrescriptionItemCreateDto → PrescriptionItemDto
             CreateMap<PrescriptionItemCreateDto, PrescriptionItemDto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.UnitPrice * src.Quantity))
                 .ForMember(dest => dest.TotalWeight, opt => opt.Ignore())
                 .ForMember(dest => dest.Dosage, opt => opt.MapFrom(src => src.Quantity));

@@ -17,9 +17,6 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.Remark, opt => opt.Ignore())
                 // 修复字段映射: Origin→Category, Spec→Properties
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Origin))
                 .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => src.Spec));
@@ -29,9 +26,7 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.Remark, opt => opt.Ignore())
                 // 修复字段映射: Origin→Category, Spec→Properties
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Origin))

@@ -20,10 +20,6 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<MedicalCaseService> _logger;
         private readonly IMedicalCaseRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-
-        private readonly ILogger<MedicalCaseService> _logger;
-        private readonly IMedicalCaseRepository _repository;
-        private readonly IExceptionHandler _exceptionHandler;
         private readonly IMapper _mapper;
 
         public MedicalCaseService(

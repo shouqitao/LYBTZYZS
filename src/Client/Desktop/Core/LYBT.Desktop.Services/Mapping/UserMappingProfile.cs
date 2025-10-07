@@ -17,8 +17,6 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))  // Username → UserName
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
                 .ForMember(dest => dest.LastLoginTime, opt => opt.Ignore())
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.MapFrom(src => 0));
@@ -28,9 +26,7 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UserName, opt => opt.Ignore())  // 用户名不允许修改
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 // UpdateDto 中的可选字段使用条件映射
                 .ForMember(dest => dest.RealName, opt => opt.Condition(src => !string.IsNullOrEmpty(src.RealName)))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))

@@ -17,8 +17,6 @@ namespace LYBT.Desktop.Services.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 // Herbs 集合需要在 Service 层单独处理
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore())
                 // Source 字段在 CreateDto 中不存在
@@ -27,9 +25,7 @@ namespace LYBT.Desktop.Services.Mapping
             // FormulaUpdateDto → FormulaDto (用于更新现有实体)
             CreateMap<FormulaUpdateDto, FormulaDto>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 // Herbs 集合需要在 Service 层单独处理
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore())
                 .ForMember(dest => dest.Source, opt => opt.Ignore());

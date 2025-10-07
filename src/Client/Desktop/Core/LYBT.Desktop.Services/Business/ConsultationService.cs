@@ -18,10 +18,6 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<ConsultationService> _logger;
         private readonly IConsultationRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-
-        private readonly ILogger<ConsultationService> _logger;
-        private readonly IConsultationRepository _repository;
-        private readonly IExceptionHandler _exceptionHandler;
         private readonly IMapper _mapper;
 
         public ConsultationService(
