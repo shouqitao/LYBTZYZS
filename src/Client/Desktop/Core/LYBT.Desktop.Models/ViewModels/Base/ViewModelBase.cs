@@ -193,6 +193,21 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 if (showProgress)
                 {
                     StatusMessage = $"{operationName ?? "操作"}完成";
+
+                    // 延迟3秒后自动清除StatusMessage，避免永久显示
+                    var completionMessage = StatusMessage;
+                    _ = Task.Delay(TimeSpan.FromSeconds(3))
+                        .ContinueWith(_ =>
+                        {
+                            // 只清除当前的完成消息，避免误清除后续操作的消息
+                            RunOnUIThread(() =>
+                            {
+                                if (StatusMessage == completionMessage)
+                                {
+                                    StatusMessage = string.Empty;
+                                }
+                            });
+                        });
                 }
             }
             catch (TaskCanceledException)
@@ -235,6 +250,21 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 if (showProgress)
                 {
                     StatusMessage = $"{operationName ?? "操作"}完成";
+
+                    // 延迟3秒后自动清除StatusMessage，避免永久显示
+                    var completionMessage = StatusMessage;
+                    _ = Task.Delay(TimeSpan.FromSeconds(3))
+                        .ContinueWith(_ =>
+                        {
+                            // 只清除当前的完成消息，避免误清除后续操作的消息
+                            RunOnUIThread(() =>
+                            {
+                                if (StatusMessage == completionMessage)
+                                {
+                                    StatusMessage = string.Empty;
+                                }
+                            });
+                        });
                 }
 
                 return result;
