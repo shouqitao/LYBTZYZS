@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -17,15 +18,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<FormulaService> _logger;
         private readonly IFormulaRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public FormulaService(
             IFormulaRepository repository,
             ILogger<FormulaService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -78,24 +82,10 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建验方: {dto.Name}");
 
-                // 转换DTO
-                var formula = new FormulaDto
-                {
-                    Id = Guid.NewGuid(),
-                    Name = dto.Name,
-                    Effect = dto.Effect,
-                    Description = dto.Description,
-                    Usage = dto.Usage,
-                    Property = dto.Property,
-                    IsShared = dto.IsShared,
-                    Indications = dto.Indications,
-                    Contraindications = dto.Contraindications,
-                    Remark = dto.Remark,
-                    Status = CommonStatus.Enabled,
-                    Herbs = new List<FormulaHerbItemDto>(),
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var formula = _mapper.Map<FormulaDto>(dto);
+                formula.Id = Guid.NewGuid();
+                formula.Herbs = new List<FormulaHerbItemDto>(); // Herbs 集合在 Profile 中 Ignore,需手动初始化
 
                 var created = await _repository.CreateAsync(formula);
                 return ServiceResult<FormulaDto>.Success(created);
@@ -109,18 +99,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段
-                existing.Name = dto.Name;
-                existing.Effect = dto.Effect;
-                existing.Description = dto.Description;
-                existing.Usage = dto.Usage;
-                existing.Property = dto.Property;
-                existing.IsShared = dto.IsShared;
-                existing.Indications = dto.Indications;
-                existing.Contraindications = dto.Contraindications;
-                existing.Remark = dto.Remark;
-                existing.Status = dto.Status;
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<FormulaDto>.Success(updated);

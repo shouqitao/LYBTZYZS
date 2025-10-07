@@ -29,6 +29,7 @@
 
   <!-- Framework Dependencies -->
   <ItemGroup Label="Framework">
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>

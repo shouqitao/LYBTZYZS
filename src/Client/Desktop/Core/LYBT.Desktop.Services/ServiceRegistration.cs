@@ -1,5 +1,7 @@
 ﻿using System.Net.Http;
+using AutoMapper;
 using LYBT.Desktop.Services.Business;
+using LYBT.Desktop.Services.Mapping;
 using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Repositories;
@@ -64,6 +66,9 @@ namespace LYBT.Desktop.Services
 
                 return new ApiService(httpClient, cache, logger, retryOptions);
             });
+
+            // 注册 AutoMapper - 自动扫描所有 MappingProfile
+            services.AddAutoMapper(typeof(HerbMappingProfile).Assembly);
 
             // 注册异常处理器
             services.AddScoped<IExceptionHandler, StandardExceptionHandler>();

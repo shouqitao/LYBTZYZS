@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -17,15 +18,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<ConsultationService> _logger;
         private readonly IConsultationRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public ConsultationService(
             IConsultationRepository repository,
             ILogger<ConsultationService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -78,30 +82,9 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建诊疗记录: 患者ID={dto.PatientId}");
 
-                // 转换DTO
-                var consultation = new ConsultationDto
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = dto.PatientId,
-                    MedicalCaseId = dto.MedicalCaseId,
-                    UserId = dto.UserId,
-                    PatientName = dto.PatientName,
-                    DoctorName = dto.DoctorName,
-                    StartTime = dto.StartTime,
-                    ChiefComplaint = dto.ChiefComplaint,
-                    PresentIllness = dto.PresentIllness,
-                    Inspection = dto.Inspection,
-                    AuscultationOlfaction = dto.AuscultationOlfaction,
-                    Inquiry = dto.Inquiry,
-                    Palpation = dto.Palpation,
-                    TCMDiagnosis = dto.TCMDiagnosis,
-                    TreatmentPrinciple = dto.TreatmentPrinciple,
-                    Remark = dto.Remark,
-                    ConsultationStatus = ConsultationStatus.InProgress,
-                    Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var consultation = _mapper.Map<ConsultationDto>(dto);
+                consultation.Id = Guid.NewGuid();
 
                 var created = await _repository.CreateAsync(consultation);
                 return ServiceResult<ConsultationDto>.Success(created);
@@ -115,28 +98,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段
-                existing.ChiefComplaint = dto.ChiefComplaint ?? existing.ChiefComplaint;
-                existing.PresentIllness = dto.PresentIllness ?? existing.PresentIllness;
-                existing.Inspection = dto.Inspection ?? existing.Inspection;
-                existing.AuscultationOlfaction = dto.AuscultationOlfaction ?? existing.AuscultationOlfaction;
-                existing.Inquiry = dto.Inquiry ?? existing.Inquiry;
-                existing.Palpation = dto.Palpation ?? existing.Palpation;
-                existing.TCMDiagnosis = dto.TCMDiagnosis ?? existing.TCMDiagnosis;
-                existing.TreatmentPrinciple = dto.TreatmentPrinciple ?? existing.TreatmentPrinciple;
-                existing.Remark = dto.Remark ?? existing.Remark;
-
-                if (dto.ConsultationStatus.HasValue)
-                {
-                    existing.ConsultationStatus = dto.ConsultationStatus.Value;
-                }
-
-                if (dto.EndTime.HasValue)
-                {
-                    existing.EndTime = dto.EndTime;
-                }
-
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<ConsultationDto>.Success(updated);

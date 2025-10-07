@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -18,15 +19,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<UserService> _logger;
         private readonly IUserRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public UserService(
             IUserRepository repository,
             ILogger<UserService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         #region 查询操作
@@ -102,22 +106,12 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建用户: {dto.Username}");
 
-                // 转换DTO - 注意CreateDto使用Username而不是UserName
-                var user = new UserDto
-                {
-                    Id = Guid.NewGuid(),
-                    UserName = dto.Username,
-                    RealName = dto.RealName,
-                    PhoneNumber = dto.PhoneNumber,
-                    Email = dto.Email,
-                    Role = dto.Role,
-                    Status = dto.Status,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var user = _mapper.Map<UserDto>(dto);
+                user.Id = Guid.NewGuid();
 
                 // TODO: 密码处理应该在Repository或更底层处理
-                // 当前简化实现，实际应该加密dto.Password
+                // 当前简化实现,实际应该加密dto.Password
 
                 var created = await _repository.CreateAsync(user);
                 return ServiceResult<UserDto>.Success(created);
@@ -131,29 +125,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段 - UpdateDto的字段是可选的
-                if (!string.IsNullOrEmpty(dto.RealName))
-                {
-                    existing.RealName = dto.RealName;
-                }
-
-                if (!string.IsNullOrEmpty(dto.PhoneNumber))
-                {
-                    existing.PhoneNumber = dto.PhoneNumber;
-                }
-
-                if (!string.IsNullOrEmpty(dto.Email))
-                {
-                    existing.Email = dto.Email;
-                }
-
-                if (dto.Role.HasValue)
-                {
-                    existing.Role = dto.Role.Value;
-                }
-
-                existing.Status = dto.Status;
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段 (Profile 中已配置条件更新)
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<UserDto>.Success(updated);

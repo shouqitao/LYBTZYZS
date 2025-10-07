@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Exceptions;
+﻿using AutoMapper;
+using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -19,15 +20,18 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<MedicalCaseService> _logger;
         private readonly IMedicalCaseRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
+        private readonly IMapper _mapper;
 
         public MedicalCaseService(
             IMedicalCaseRepository repository,
             ILogger<MedicalCaseService> logger,
-            IExceptionHandler exceptionHandler)
+            IExceptionHandler exceptionHandler,
+            IMapper mapper)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<MedicalCaseDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -80,23 +84,11 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建病历: 患者ID={dto.PatientId}");
 
-                // 转换DTO
-                var medicalCase = new MedicalCaseDto
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = dto.PatientId,
-                    DoctorId = dto.DoctorId,
-                    CaseNumber = dto.CaseNumber,
-                    ChiefComplaint = dto.ChiefComplaint,
-                    ConsultationDate = DateTime.UtcNow,
-                    CaseStatus = dto.Status,
-                    Remark = dto.Remark,
-                    PatientName = string.Empty, // 需要从Patient服务获取
-                    DoctorName = string.Empty, // 需要从User服务获取
-                    Status = CommonStatus.Enabled,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                // 使用 AutoMapper 转换 DTO
+                var medicalCase = _mapper.Map<MedicalCaseDto>(dto);
+                medicalCase.Id = Guid.NewGuid();
+                medicalCase.PatientName = string.Empty; // 需要从Patient服务获取
+                medicalCase.DoctorName = string.Empty; // 需要从User服务获取
 
                 var created = await _repository.CreateAsync(medicalCase);
                 return ServiceResult<MedicalCaseDto>.Success(created);
@@ -110,12 +102,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 更新字段 - MedicalCaseUpdateDto继承自EditDto
-                existing.PatientId = dto.PatientId;
-                existing.DoctorId = dto.DoctorId;
-                existing.ChiefComplaint = dto.ChiefComplaint;
-                existing.Remark = dto.Remark;
-                existing.UpdatedAt = DateTime.UtcNow;
+                // 使用 AutoMapper 更新字段
+                _mapper.Map(dto, existing);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<MedicalCaseDto>.Success(updated);
