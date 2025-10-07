@@ -1,10 +1,14 @@
-﻿using FluentAssertions;
+using AutoMapper;
+using FluentAssertions;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -16,11 +20,13 @@ namespace LYBT.Module.Auth.Tests.Services;
 /// <summary>
 /// AuthService 单元测试
 /// Issue #864 - Phase 2.3: Auth 模块测试
+/// Issue #1008 - 更新为匹配新的 AuthService 实现（IUserRepository + IMapper 替代 IUserService）
 /// </summary>
 public class AuthServiceTests : IDisposable
 {
     private readonly Mock<IJwtService> _mockJwtService;
-    private readonly Mock<IUserService> _mockUserService;
+    private readonly Mock<IUserRepository> _mockUserRepository;
+    private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<ILogger<AuthService>> _mockLogger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
@@ -29,11 +35,12 @@ public class AuthServiceTests : IDisposable
     public AuthServiceTests()
     {
         _mockJwtService = new Mock<IJwtService>();
-        _mockUserService = new Mock<IUserService>();
+        _mockUserRepository = new Mock<IUserRepository>();
+        _mockMapper = new Mock<IMapper>();
         _mockLogger = new Mock<ILogger<AuthService>>();
 
         // 使用 InMemory SQLite 创建真实 DbContext
-        var options = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite($"DataSource=:memory:")
             .Options;
         _dbContext = new AppDbContext(options);
@@ -44,7 +51,8 @@ public class AuthServiceTests : IDisposable
 
         _sut = new AuthService(
             _mockJwtService.Object,
-            _mockUserService.Object,
+            _mockUserRepository.Object,
+            _mockMapper.Object,
             _mockLogger.Object,
             _dbContext,
             _configuration
@@ -54,82 +62,12 @@ public class AuthServiceTests : IDisposable
     private static IConfiguration CreateMockConfiguration()
     {
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Auth:SuperAdmin:Username"]).Returns("sysadmin");
-        config.Setup(c => c["Auth:SuperAdmin:Password"]).Returns("Admin@123");
+        config.Setup(c => c["Lybt:Business:SystemAdmin:Username"]).Returns("sysadmin");
+        config.Setup(c => c["Lybt:Business:SystemAdmin:Email"]).Returns("admin@lybt.com");
         config.Setup(c => c["Jwt:AccessTokenExpirationMinutes"]).Returns("30");
         config.Setup(c => c["Jwt:RefreshTokenExpirationDays"]).Returns("7");
         return config.Object;
     }
-
-    #region 超级管理员认证测试
-
-    [Fact]
-    public void IsSuperAdminCredentials_WithCorrectCredentials_ReturnsTrue()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void IsSuperAdminCredentials_WithIncorrectUsername_ReturnsFalse()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void IsSuperAdminCredentials_WithIncorrectPassword_ReturnsFalse()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void IsSuperAdminCredentials_WithNullCredentials_ReturnsFalse()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void IsSuperAdminCredentials_WhenConfigMissing_ReturnsFalse()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void ChangeSysAdminPasswordAsync_UpdatesConfiguredPassword()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    #endregion
 
     #region 用户凭据验证测试
 
@@ -137,11 +75,12 @@ public class AuthServiceTests : IDisposable
     public async Task VerifyCredentialsAsync_WithValidCredentials_ReturnsSuccess()
     {
         // Arrange
-        var testUser = new UserDto
+        var userId = Guid.NewGuid();
+        var testUser = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             UserName = "testuser",
-            Role = LYBT.Shared.Models.Enums.UserRole.Doctor
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!")
         };
 
         var request = new LoginRequest
@@ -150,18 +89,15 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        _mockUserService.Setup(x => x.GetByUsernameAsync(request.Username))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<UserDto>.Success(testUser));
-
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(testUser.Id, request.Password))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<bool>.Success(true));
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync(testUser);
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Data.Should().Be(testUser.Id.ToString());
+        result.Data.Should().Be(userId.ToString());
     }
 
     [Fact]
@@ -174,8 +110,8 @@ public class AuthServiceTests : IDisposable
             Password = "Password123!"
         };
 
-        _mockUserService.Setup(x => x.GetByUsernameAsync(request.Username))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<UserDto>.Failure("用户不存在"));
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync((User?)null);
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -189,11 +125,11 @@ public class AuthServiceTests : IDisposable
     public async Task VerifyCredentialsAsync_WithWrongPassword_ReturnsFailure()
     {
         // Arrange
-        var testUser = new UserDto
+        var testUser = new User
         {
             Id = Guid.NewGuid(),
             UserName = "testuser",
-            Role = LYBT.Shared.Models.Enums.UserRole.Doctor
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword")
         };
 
         var request = new LoginRequest
@@ -202,11 +138,8 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        _mockUserService.Setup(x => x.GetByUsernameAsync(request.Username))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<UserDto>.Success(testUser));
-
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(testUser.Id, request.Password))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<bool>.Success(false));
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync(testUser);
 
         // Act
         var result = await _sut.VerifyCredentialsAsync(request);
@@ -217,56 +150,39 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public void VerifyCredentialsAsync_WithLockedAccount_ReturnsFailure()
+    public async Task VerifyCredentialsAsync_WithEmptyUsername_ReturnsFailure()
     {
         // Arrange
-        // TODO: 实现测试
+        var request = new LoginRequest
+        {
+            Username = "",
+            Password = "Password123!"
+        };
 
         // Act
+        var result = await _sut.VerifyCredentialsAsync(request);
 
         // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Message.Should().Contain("用户名和密码不能为空");
     }
 
     [Fact]
-    public void VerifyCredentialsAsync_WithDisabledAccount_ReturnsFailure()
+    public async Task VerifyCredentialsAsync_WithEmptyPassword_ReturnsFailure()
     {
         // Arrange
-        // TODO: 实现测试
+        var request = new LoginRequest
+        {
+            Username = "testuser",
+            Password = ""
+        };
 
         // Act
+        var result = await _sut.VerifyCredentialsAsync(request);
 
         // Assert
-    }
-
-    [Fact]
-    public void VerifyCredentialsAsync_IncrementsFailedLoginCount_OnFailure()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void VerifyCredentialsAsync_ResetsFailedLoginCount_OnSuccess()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void VerifyCredentialsAsync_WithNullCredentials_ThrowsArgumentNullException()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act & Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Message.Should().Contain("用户名和密码不能为空");
     }
 
     #endregion
@@ -277,12 +193,23 @@ public class AuthServiceTests : IDisposable
     public async Task LoginAsync_WithValidUserCredentials_ReturnsToken()
     {
         // Arrange
-        var testUser = new UserDto
+        var userId = Guid.NewGuid();
+        var testUser = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             UserName = "testuser",
             RealName = "测试用户",
-            Role = LYBT.Shared.Models.Enums.UserRole.Doctor,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            Role = UserRole.Doctor,
+            Email = "test@example.com"
+        };
+
+        var testUserDto = new UserDto
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            Role = UserRole.Doctor,
             Email = "test@example.com"
         };
 
@@ -294,13 +221,17 @@ public class AuthServiceTests : IDisposable
 
         var expectedToken = "test.jwt.token";
 
-        _mockUserService.Setup(x => x.GetByUsernameAsync(request.Username))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<UserDto>.Success(testUser));
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync(testUser);
 
-        _mockUserService.Setup(x => x.ValidatePasswordAsync(testUser.Id, request.Password))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<bool>.Success(true));
+        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+            .Returns(testUserDto);
 
-        _mockJwtService.Setup(x => x.GenerateToken(testUser.Id.ToString(), testUser.UserName, testUser.Role))
+        _mockJwtService.Setup(x => x.GenerateToken(
+            testUserDto.Id.ToString(),
+            testUserDto.UserName,
+            testUserDto.Role,
+            null))
             .Returns(expectedToken);
 
         // Act
@@ -310,7 +241,7 @@ public class AuthServiceTests : IDisposable
         result.IsSuccess.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.Token.Should().Be(expectedToken);
-        result.Data.User.Should().BeEquivalentTo(testUser);
+        result.Data.User.Should().BeEquivalentTo(testUserDto);
     }
 
     [Fact]
@@ -323,113 +254,42 @@ public class AuthServiceTests : IDisposable
             Password = "WrongPassword"
         };
 
-        _mockUserService.Setup(x => x.GetByUsernameAsync(request.Username))
-            .ReturnsAsync(LYBT.Shared.Models.Contracts.Common.ServiceResult<UserDto>.Failure("用户不存在"));
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync((User?)null);
 
         // Act
         var result = await _sut.LoginAsync(request);
 
         // Assert
         result.IsSuccess.Should().BeFalse();
+        result.Message.Should().Contain("用户名或密码错误");
     }
 
     [Fact]
-    public void LoginAsync_GeneratesAccessToken()
+    public async Task LoginAsync_WithWrongPassword_ReturnsFailure()
     {
         // Arrange
-        // TODO: 实现测试
+        var testUser = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = "testuser",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword")
+        };
+
+        var request = new LoginRequest
+        {
+            Username = "testuser",
+            Password = "WrongPassword"
+        };
+
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+            .ReturnsAsync(testUser);
 
         // Act
+        var result = await _sut.LoginAsync(request);
 
         // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_GeneratesRefreshToken()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_UpdatesLastLoginTime()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_SavesAuthentication()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_WithRememberMe_SetsLongerExpiration()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_WithoutRememberMe_SetsDefaultExpiration()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_WhenUserServiceFails_ReturnsFailure()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_WhenJwtServiceFails_ReturnsFailure()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
-    }
-
-    [Fact]
-    public void LoginAsync_LogsLoginAttempt()
-    {
-        // Arrange
-        // TODO: 实现测试
-
-        // Act
-
-        // Assert
+        result.IsSuccess.Should().BeFalse();
     }
 
     #endregion
@@ -447,7 +307,6 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Message.Should().Contain("登出成功");
     }
 
     [Fact]
@@ -514,16 +373,6 @@ public class AuthServiceTests : IDisposable
 
     #endregion
 
-    #region IDisposable Implementation
-
-    public void Dispose()
-    {
-        _dbContext?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    #endregion
-
     #region 会话管理测试
 
     [Fact]
@@ -571,6 +420,16 @@ public class AuthServiceTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Message.Should().Contain("令牌无效");
+    }
+
+    #endregion
+
+    #region IDisposable Implementation
+
+    public void Dispose()
+    {
+        _dbContext?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #endregion

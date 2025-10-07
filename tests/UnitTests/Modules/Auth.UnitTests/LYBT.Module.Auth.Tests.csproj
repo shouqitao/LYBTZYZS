@@ -36,9 +36,4 @@
     <ProjectReference Include="..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
   </ItemGroup>
 
-  <!-- TODO Issue #1008: AuthServiceTests 需要重构以匹配新的 AuthService 依赖 (IUserRepository 替代 IUserService) -->
-  <ItemGroup>
-    <Compile Remove="Services\AuthServiceTests.cs" />
-  </ItemGroup>
-
 </Project>
