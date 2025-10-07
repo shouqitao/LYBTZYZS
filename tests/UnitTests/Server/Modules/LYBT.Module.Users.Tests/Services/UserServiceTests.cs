@@ -77,10 +77,10 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(5);
-            result.Data.TotalCount.Should().Be(5);
-            result.Data.CurrentPage.Should().Be(1);
-            result.Data.PageSize.Should().Be(20);
+            result.Data!.Items.Should().HaveCount(5);
+            result.Data!.TotalCount.Should().Be(5);
+            result.Data!.CurrentPage.Should().Be(1);
+            result.Data!.PageSize.Should().Be(20);
 
             _repositoryMock.Verify(x => x.GetPagedAsync(1, 20), Times.Once);
         }
@@ -106,9 +106,9 @@ namespace LYBT.Module.Users.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("获取用户列表失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取用户列表失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -135,8 +135,8 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().BeEmpty();
-            result.Data.TotalCount.Should().Be(0);
+            result.Data!.Items.Should().BeEmpty();
+            result.Data!.TotalCount.Should().Be(0);
         }
 
         #endregion
@@ -161,9 +161,9 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(userId);
-            result.Data.UserName.Should().Be(user.UserName);
-            result.Data.RealName.Should().Be(user.RealName);
+            result.Data!.Id.Should().Be(userId);
+            result.Data!.UserName.Should().Be(user.UserName);
+            result.Data!.RealName.Should().Be(user.RealName);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
         }
@@ -176,7 +176,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             _repositoryMock
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.GetByIdAsync(userId);
@@ -211,9 +211,9 @@ namespace LYBT.Module.Users.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("获取用户详情失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取用户详情失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -257,9 +257,9 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.UserName.Should().Be(createDto.Username);
-            result.Data.RealName.Should().Be(createDto.RealName);
-            result.Data.Email.Should().Be(createDto.Email);
+            result.Data!.UserName.Should().Be(createDto.Username);
+            result.Data!.RealName.Should().Be(createDto.RealName);
+            result.Data!.Email.Should().Be(createDto.Email);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<User>()), Times.Once);
         }
@@ -293,9 +293,9 @@ namespace LYBT.Module.Users.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("创建用户失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("创建用户失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -344,9 +344,9 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(userId);
-            result.Data.RealName.Should().Be(updateDto.RealName);
-            result.Data.Email.Should().Be(updateDto.Email);
+            result.Data!.Id.Should().Be(userId);
+            result.Data!.RealName.Should().Be(updateDto.RealName);
+            result.Data!.Email.Should().Be(updateDto.Email);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(userId), Times.Once);
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<User>()), Times.Once);
@@ -364,7 +364,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             _repositoryMock
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.UpdateAsync(userId, updateDto);
@@ -411,9 +411,9 @@ namespace LYBT.Module.Users.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("更新用户失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("更新用户失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -483,9 +483,9 @@ namespace LYBT.Module.Users.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("删除用户失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("删除用户失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 

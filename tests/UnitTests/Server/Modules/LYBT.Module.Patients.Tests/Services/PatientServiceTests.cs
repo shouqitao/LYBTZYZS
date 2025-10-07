@@ -74,10 +74,10 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(5);
-            result.Data.TotalCount.Should().Be(5);
-            result.Data.CurrentPage.Should().Be(1);
-            result.Data.PageSize.Should().Be(20);
+            result.Data!.Items.Should().HaveCount(5);
+            result.Data!.TotalCount.Should().Be(5);
+            result.Data!.CurrentPage.Should().Be(1);
+            result.Data!.PageSize.Should().Be(20);
 
             _repositoryMock.Verify(x => x.GetPagedAsync(1, 20), Times.Once);
         }
@@ -103,9 +103,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("获取患者列表失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取患者列表失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -132,8 +132,8 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().BeEmpty();
-            result.Data.TotalCount.Should().Be(0);
+            result.Data!.Items.Should().BeEmpty();
+            result.Data!.TotalCount.Should().Be(0);
         }
 
         #endregion
@@ -158,9 +158,9 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(patientId);
-            result.Data.Name.Should().Be(patient.Name);
-            result.Data.PhoneNumber.Should().Be(patient.PhoneNumber);
+            result.Data!.Id.Should().Be(patientId);
+            result.Data!.Name.Should().Be(patient.Name);
+            result.Data!.PhoneNumber.Should().Be(patient.PhoneNumber);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
         }
@@ -173,7 +173,7 @@ namespace LYBT.Module.Patients.Tests.Services
 
             _repositoryMock
                 .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync((Patient)null);
+                .ReturnsAsync((Patient?)null);
 
             // Act
             var result = await _patientService.GetByIdAsync(patientId);
@@ -208,9 +208,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("获取患者详情失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("获取患者详情失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -259,9 +259,9 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Be(createDto.Name);
-            result.Data.PhoneNumber.Should().Be(createDto.PhoneNumber);
-            result.Data.IdNumber.Should().Be(createDto.IdNumber);
+            result.Data!.Name.Should().Be(createDto.Name);
+            result.Data!.PhoneNumber.Should().Be(createDto.PhoneNumber);
+            result.Data!.IdNumber.Should().Be(createDto.IdNumber);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<Patient>()), Times.Once);
         }
@@ -295,9 +295,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("创建患者失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("创建患者失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -350,9 +350,9 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(patientId);
-            result.Data.Name.Should().Be(updateDto.Name);
-            result.Data.PhoneNumber.Should().Be(updateDto.PhoneNumber);
+            result.Data!.Id.Should().Be(patientId);
+            result.Data!.Name.Should().Be(updateDto.Name);
+            result.Data!.PhoneNumber.Should().Be(updateDto.PhoneNumber);
 
             _repositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Patient>()), Times.Once);
@@ -370,7 +370,7 @@ namespace LYBT.Module.Patients.Tests.Services
 
             _repositoryMock
                 .Setup(x => x.GetByIdAsync(patientId))
-                .ReturnsAsync((Patient)null);
+                .ReturnsAsync((Patient?)null);
 
             // Act
             var result = await _patientService.UpdateAsync(patientId, updateDto);
@@ -417,9 +417,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("更新患者失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("更新患者失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -448,8 +448,8 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().HaveCount(2);
-            result.Data.All(p => p.Name.Contains(keyword)).Should().BeTrue();
+            result.Data!.Should().HaveCount(2);
+            result.Data!.All(p => p.Name.Contains(keyword)).Should().BeTrue();
         }
 
         [Fact]
@@ -465,7 +465,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().BeEmpty();
+            result.Data!.Should().BeEmpty();
 
             _repositoryMock.Verify(x => x.GetAllAsync(), Times.Never);
         }
@@ -483,7 +483,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().BeEmpty();
+            result.Data!.Should().BeEmpty();
 
             _repositoryMock.Verify(x => x.GetAllAsync(), Times.Never);
         }
@@ -506,7 +506,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Should().BeEmpty();
+            result.Data!.Should().BeEmpty();
         }
 
         [Fact]
@@ -533,10 +533,10 @@ namespace LYBT.Module.Patients.Tests.Services
                     LogLevel.Error,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, t) => 
-                        v.ToString().Contains("搜索患者时发生错误") && 
-                        v.ToString().Contains(keyword)),
+                        v.ToString()!.Contains("搜索患者时发生错误") && 
+                        v.ToString()!.Contains(keyword)),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -606,9 +606,9 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("删除患者失败")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("删除患者失败")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
