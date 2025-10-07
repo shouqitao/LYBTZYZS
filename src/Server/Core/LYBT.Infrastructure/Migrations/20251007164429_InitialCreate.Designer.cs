@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LYBT.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250927140436_SimplifiedPrescriptionPrintManagement")]
-    partial class SimplifiedPrescriptionPrintManagement
+    [Migration("20251007164429_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -948,7 +948,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("UsernName")
+                    b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -967,7 +967,7 @@ namespace LYBT.Infrastructure.Migrations
                     b.HasIndex("Role")
                         .HasDatabaseName("IX_User_Role");
 
-                    b.HasIndex("UsernName")
+                    b.HasIndex("UserName")
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
