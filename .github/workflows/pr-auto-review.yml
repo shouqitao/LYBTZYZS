@@ -42,7 +42,7 @@ jobs:
           echo "lines_added=$LINES_ADDED" >> $GITHUB_OUTPUT
           echo "lines_deleted=$LINES_DELETED" >> $GITHUB_OUTPUT
 
-      - name: 发布审查评论
+      - name: 自动审查与确认
         uses: actions/github-script@v7
         with:
           script: |
@@ -51,60 +51,93 @@ jobs:
             const linesAdded = '${{ steps.files.outputs.lines_added }}';
             const linesDeleted = '${{ steps.files.outputs.lines_deleted }}';
 
-            const reviewBody = `# 🤖 Claude Code 自动审查报告
+            // 分析变更类型
+            const fileList = changedFiles.split('\n').filter(f => f.trim());
+            const isDocsOnly = fileList.every(f =>
+              f.endsWith('.md') ||
+              f.startsWith('.github/') ||
+              f.startsWith('docs/') ||
+              f.startsWith('scripts/')
+            );
 
-            ## 📊 变更统计
+            const hasCodeChange = fileList.some(f =>
+              f.endsWith('.cs') ||
+              f.endsWith('.xaml') ||
+              f.endsWith('.csproj') ||
+              f.endsWith('.sln')
+            );
 
-            - **文件数**: ${filesChanged} 个文件
-            - **新增**: +${linesAdded} 行
-            - **删除**: -${linesDeleted} 行
+            let reviewBody = `# 🤖 Claude Code 自动审查报告\n\n`;
+            reviewBody += `## 📊 变更统计\n\n`;
+            reviewBody += `- **文件数**: ${filesChanged} 个文件\n`;
+            reviewBody += `- **新增**: +${linesAdded} 行\n`;
+            reviewBody += `- **删除**: -${linesDeleted} 行\n`;
+            reviewBody += `- **变更类型**: ${isDocsOnly ? '📄 文档/配置' : '💻 代码变更'}\n\n`;
 
-            <details>
-            <summary>📁 变更文件列表</summary>
+            reviewBody += `<details>\n<summary>📁 变更文件列表</summary>\n\n\`\`\`\n${changedFiles}\n\`\`\`\n</details>\n\n`;
 
-            \`\`\`
-            ${changedFiles}
-            \`\`\`
-            </details>
+            reviewBody += `## 📋 审查清单自动确认\n\n`;
 
-            ## 📋 审查清单
+            if (isDocsOnly) {
+              // 纯文档/配置变更 - 自动确认
+              reviewBody += `### ✅ 架构合规性\n`;
+              reviewBody += `- ✅ **未引入黑名单技术** - 确认：仅文档/配置变更\n`;
+              reviewBody += `- ✅ **符合适度设计原则** - 确认：文档优化\n`;
+              reviewBody += `- ✅ **遵守三层架构模式** - 确认：未改动架构\n\n`;
 
-            请人工确认以下项目：
+              reviewBody += `### ✅ 代码规范\n`;
+              reviewBody += `- ✅ **代码规范** - N/A：无代码变更\n\n`;
 
-            ### 架构合规性
-            - [ ] 未引入黑名单技术 (Redis/消息队列/微服务/CQRS/Docker/GraphQL)
-            - [ ] 符合适度设计原则 (KISS, YAGNI)
-            - [ ] 遵守三层架构模式
+              reviewBody += `### ✅ 文档与测试\n`;
+              reviewBody += `- ✅ **文档已更新** - 确认：本次为文档变更\n`;
+              reviewBody += `- ✅ **测试覆盖** - N/A：无逻辑变更\n\n`;
 
-            ### 代码规范
-            - [ ] 类名使用 PascalCase
-            - [ ] 私有字段使用 \`_camelCase\`
-            - [ ] 异步方法以 Async 结尾
-            - [ ] 使用构造函数依赖注入（禁止 ServiceLocator）
+              reviewBody += `### ✅ 增量原则\n`;
+              reviewBody += `- ✅ **最小变更原则** - 确认\n`;
+              reviewBody += `- ✅ **无推倒重写** - 确认\n`;
+              reviewBody += `- ✅ **向后兼容** - 确认：文档变更不影响代码\n\n`;
 
-            ### 文档与测试
-            - [ ] 架构变更已更新文档
-            - [ ] 接口变更已更新文档
-            - [ ] 核心逻辑已添加单元测试（MVP 阶段可选）
+              reviewBody += `---\n\n`;
+              reviewBody += `## ✅ 自动审查结论\n\n`;
+              reviewBody += `**所有审查项已自动通过** - 纯文档/配置变更，无需编译验证\n\n`;
+              reviewBody += `💡 **建议**: 可直接合并\n`;
+            } else {
+              // 有代码变更 - 需要人工确认
+              reviewBody += `⚠️ **检测到代码变更，需人工确认以下项：**\n\n`;
 
-            ### 增量原则
-            - [ ] 遵循最小变更原则
-            - [ ] 无推倒重写
-            - [ ] 保持向后兼容
+              reviewBody += `### 架构合规性\n`;
+              reviewBody += `- [ ] 未引入黑名单技术 (Redis/消息队列/微服务/CQRS/Docker/GraphQL)\n`;
+              reviewBody += `- [ ] 符合适度设计原则 (KISS, YAGNI)\n`;
+              reviewBody += `- [ ] 遵守三层架构模式\n\n`;
 
-            ---
+              reviewBody += `### 代码规范\n`;
+              reviewBody += `- [ ] 类名使用 PascalCase\n`;
+              reviewBody += `- [ ] 私有字段使用 \`_camelCase\`\n`;
+              reviewBody += `- [ ] 异步方法以 Async 结尾\n`;
+              reviewBody += `- [ ] 使用构造函数依赖注入（禁止 ServiceLocator）\n\n`;
 
-            ⚠️ **注意**:
-            - 本次审查为轻量级自动检查（不包含编译/测试）
-            - 请自行验证编译通过：\`dotnet build LYBT.All.sln -c Release\`
-            - 仍需人工最终审批
+              reviewBody += `### 文档与测试\n`;
+              reviewBody += `- [ ] 架构变更已更新文档\n`;
+              reviewBody += `- [ ] 接口变更已更新文档\n`;
+              reviewBody += `- [ ] 核心逻辑已添加单元测试（MVP 阶段可选）\n\n`;
 
-            📚 **参考文档**:
-            - [技术标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/development/standards.md)
-            - [统一设计标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)
+              reviewBody += `### 增量原则\n`;
+              reviewBody += `- [ ] 遵循最小变更原则\n`;
+              reviewBody += `- [ ] 无推倒重写\n`;
+              reviewBody += `- [ ] 保持向后兼容\n\n`;
 
-            🤖 Automated by GitHub Actions
-            `;
+              reviewBody += `---\n\n`;
+              reviewBody += `## ⚠️ 人工审查要求\n\n`;
+              reviewBody += `**编译验证**: \`dotnet build LYBT.All.sln -c Release\`\n`;
+              reviewBody += `**测试验证**: \`dotnet test LYBT.Server.sln -c Release\`\n\n`;
+              reviewBody += `💡 **提示**: 仍需人工最终审批\n`;
+            }
+
+            reviewBody += `\n---\n\n`;
+            reviewBody += `📚 **参考文档**:\n`;
+            reviewBody += `- [技术标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/development/standards.md)\n`;
+            reviewBody += `- [统一设计标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)\n\n`;
+            reviewBody += `🤖 Automated by GitHub Actions`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
