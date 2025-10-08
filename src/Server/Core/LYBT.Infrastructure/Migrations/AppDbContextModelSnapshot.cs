@@ -968,6 +968,21 @@ namespace LYBT.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@lybt.com",
+                            FailedLoginCount = 0,
+                            IsDeleted = false,
+                            PasswordHash = "$2a$11$6vF3z.VwKQZLXxE9wE3D1eO5v6qU4xKQF9Qq9Ek3Z8Ky7Jq3Mq9oG",
+                            RealName = "系统管理员",
+                            Role = 10,
+                            Status = 1,
+                            UserName = "sysadmin"
+                        });
                 });
 
             modelBuilder.Entity("LYBT.Entities.Auth.RefreshToken", b =>

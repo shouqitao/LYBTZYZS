@@ -12,16 +12,9 @@ namespace LYBT.Infrastructure.Mapping
     {
         public BaseEntityMappingProfile()
         {
-            // 全局配置：所有映射到 BaseEntity 或其派生类的操作都忽略审计字段
-            CreateMap<object, BaseEntity>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .IncludeAllDerived();
+            // 注：审计字段（CreatedAt, UpdatedAt 等）由 AppDbContext.SetAuditFields() 统一管理
+            // 不需要全局 AutoMapper 配置，避免循环映射错误
+            // 如需在特定实体 Profile 中忽略审计字段，请在该实体的 Profile 中单独配置
         }
     }
 }

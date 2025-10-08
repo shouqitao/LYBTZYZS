@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LYBT.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCreateV2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -379,6 +379,11 @@ namespace LYBT.Infrastructure.Migrations
                 table: "AdminSecrets",
                 columns: new[] { "Id", "PasswordHash" },
                 values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), "AQAAAAIAAYagAAAAEBZtKH/jLrWSCIstrn4KyQtIopjqYQNrjJ8ZTIZxjKrpJ1l0obDU19hLQMSNwBjbeQ==" });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "Email", "FailedLoginCount", "IsDeleted", "LastLoginTime", "LockoutEnd", "PasswordHash", "PhoneNumber", "PinYinCode", "RealName", "Remark", "Role", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "admin@lybt.com", 0, false, null, null, "$2a$11$6vF3z.VwKQZLXxE9wE3D1eO5v6qU4xKQF9Qq9Ek3Z8Ky7Jq3Mq9oG", null, null, "系统管理员", null, 10, 1, null, null, "sysadmin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuthSessions_LoginTime",
