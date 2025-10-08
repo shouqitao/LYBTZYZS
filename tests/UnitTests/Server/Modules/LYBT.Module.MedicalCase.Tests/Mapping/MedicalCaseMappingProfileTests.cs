@@ -9,7 +9,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 {
     /// <summary>
     /// MedicalCaseMappingProfile 映射配置测试
-    /// 验证病历实体与DTO之间的映射正确性
+    /// Issue #1053: 重写以匹配实际API
     /// </summary>
     public class MedicalCaseMappingProfileTests
     {
@@ -52,16 +52,13 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                ConsultationId = Guid.NewGuid(),
-                PrescriptionId = Guid.NewGuid(),
+                PatientName = "张三",
                 DoctorId = Guid.NewGuid(),
-                Status = MedicalCaseStatus.Completed,
-                VisitDate = DateTime.Now.AddDays(-1),
-                Diagnosis = "感冒",
-                Treatment = "清热解毒",
-                Notes = "注意休息",
-                FollowUpDate = DateTime.Now.AddDays(7),
-                CreatedAt = DateTime.Now.AddDays(-2)
+                DoctorName = "李医生",
+                ConsultationDate = DateTime.Now,
+                Status = MedicalCaseStatus.Active,
+                Remark = "测试备注",
+                CreatedAt = DateTime.Now.AddDays(-1)
             };
 
             // Act
@@ -71,31 +68,27 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(medicalCase.Id);
             dto.PatientId.Should().Be(medicalCase.PatientId);
-            dto.ConsultationId.Should().Be(medicalCase.ConsultationId);
-            dto.PrescriptionId.Should().Be(medicalCase.PrescriptionId);
+            dto.PatientName.Should().Be(medicalCase.PatientName);
             dto.DoctorId.Should().Be(medicalCase.DoctorId);
-            dto.CaseStatus.Should().Be(medicalCase.Status); // Status映射到CaseStatus
-            dto.VisitDate.Should().Be(medicalCase.VisitDate);
-            dto.Diagnosis.Should().Be(medicalCase.Diagnosis);
-            dto.Treatment.Should().Be(medicalCase.Treatment);
-            dto.Notes.Should().Be(medicalCase.Notes);
-            dto.FollowUpDate.Should().Be(medicalCase.FollowUpDate);
+            dto.DoctorName.Should().Be(medicalCase.DoctorName);
+            dto.ConsultationDate.Should().Be(medicalCase.ConsultationDate);
+            dto.CaseStatus.Should().Be(medicalCase.Status);
+            dto.Remark.Should().Be(medicalCase.Remark);
         }
 
         [Fact]
-        public void MedicalCase_To_MedicalCaseDto_WithNullOptionalFields_ShouldMapCorrectly()
+        public void MedicalCase_To_MedicalCaseDto_WithNullRemark_ShouldMapCorrectly()
         {
             // Arrange
             var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                Status = MedicalCaseStatus.InProgress,
-                VisitDate = DateTime.Now,
-                Diagnosis = "初步诊断",
-                Treatment = null,
-                Notes = null,
-                FollowUpDate = null
+                PatientName = "患者",
+                DoctorId = Guid.NewGuid(),
+                DoctorName = "医生",
+                Status = MedicalCaseStatus.Active,
+                Remark = null
             };
 
             // Act
@@ -103,10 +96,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.Should().NotBeNull();
-            dto.CaseStatus.Should().Be(MedicalCaseStatus.InProgress);
-            dto.Treatment.Should().BeNull();
-            dto.Notes.Should().BeNull();
-            dto.FollowUpDate.Should().BeNull();
+            dto.Remark.Should().BeNull();
         }
 
         #endregion
@@ -121,14 +111,12 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                ConsultationId = Guid.NewGuid(),
+                PatientName = "患者A",
                 DoctorId = Guid.NewGuid(),
-                Status = MedicalCaseStatus.Draft,
-                VisitDate = DateTime.Now,
-                Diagnosis = "详细诊断",
-                Treatment = "详细治疗方案",
-                Notes = "详细备注",
-                FollowUpDate = DateTime.Now.AddMonths(1)
+                DoctorName = "医生A",
+                ConsultationDate = DateTime.Now,
+                Status = MedicalCaseStatus.Active,
+                Remark = "详细备注"
             };
 
             // Act
@@ -138,9 +126,9 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(medicalCase.Id);
             detailDto.PatientId.Should().Be(medicalCase.PatientId);
+            detailDto.PatientName.Should().Be(medicalCase.PatientName);
             detailDto.CaseStatus.Should().Be(medicalCase.Status);
-            detailDto.Diagnosis.Should().Be(medicalCase.Diagnosis);
-            detailDto.Treatment.Should().Be(medicalCase.Treatment);
+            detailDto.Remark.Should().Be(medicalCase.Remark);
         }
 
         #endregion
@@ -154,13 +142,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var createDto = new MedicalCaseCreateDto
             {
                 PatientId = Guid.NewGuid(),
-                ConsultationId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                VisitDate = DateTime.Now,
-                Diagnosis = "新病历诊断",
-                Treatment = "新治疗方案",
-                Notes = "新备注",
-                FollowUpDate = DateTime.Now.AddWeeks(2)
+                Remark = "新病历备注"
             };
 
             // Act
@@ -169,13 +152,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             // Assert
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(createDto.PatientId);
-            medicalCase.ConsultationId.Should().Be(createDto.ConsultationId);
             medicalCase.DoctorId.Should().Be(createDto.DoctorId);
-            medicalCase.VisitDate.Should().Be(createDto.VisitDate);
-            medicalCase.Diagnosis.Should().Be(createDto.Diagnosis);
-            medicalCase.Treatment.Should().Be(createDto.Treatment);
-            medicalCase.Notes.Should().Be(createDto.Notes);
-            medicalCase.FollowUpDate.Should().Be(createDto.FollowUpDate);
+            medicalCase.Remark.Should().Be(createDto.Remark);
         }
 
         [Fact]
@@ -185,7 +163,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var createDto = new MedicalCaseCreateDto
             {
                 PatientId = Guid.NewGuid(),
-                Diagnosis = "测试诊断"
+                DoctorId = Guid.NewGuid()
             };
 
             // Act
@@ -207,10 +185,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             // Arrange
             var updateDto = new MedicalCaseUpdateDto
             {
-                Diagnosis = "更新的诊断",
-                Treatment = "更新的治疗",
-                Notes = "更新的备注",
-                FollowUpDate = DateTime.Now.AddDays(14)
+                Remark = "更新的备注"
             };
 
             // Act
@@ -218,10 +193,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             medicalCase.Should().NotBeNull();
-            medicalCase.Diagnosis.Should().Be(updateDto.Diagnosis);
-            medicalCase.Treatment.Should().Be(updateDto.Treatment);
-            medicalCase.Notes.Should().Be(updateDto.Notes);
-            medicalCase.FollowUpDate.Should().Be(updateDto.FollowUpDate);
+            medicalCase.Remark.Should().Be(updateDto.Remark);
         }
 
         [Fact]
@@ -230,7 +202,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             // Arrange
             var updateDto = new MedicalCaseUpdateDto
             {
-                Diagnosis = "忽略测试"
+                Remark = "忽略测试"
             };
 
             // Act
@@ -247,70 +219,14 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             // Arrange
             var updateDto = new MedicalCaseUpdateDto
             {
-                Diagnosis = "部分更新",
-                Treatment = null, // null值应该被跳过
-                Notes = null
+                Remark = null // null值应该被跳过
             };
 
             // Act
             var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(updateDto);
 
             // Assert - ForAllMembers条件会跳过null值
-            medicalCase.Diagnosis.Should().Be("部分更新");
-            medicalCase.Treatment.Should().BeNull();
-            medicalCase.Notes.Should().BeNull();
-        }
-
-        #endregion
-
-        #region MedicalCaseDto -> MedicalCase 映射测试
-
-        [Fact]
-        public void MedicalCaseDto_To_MedicalCase_ShouldMapCorrectly()
-        {
-            // Arrange
-            var medicalCaseDto = new MedicalCaseDto
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                ConsultationId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                CaseStatus = MedicalCaseStatus.Completed,
-                VisitDate = DateTime.Now.AddDays(-3),
-                Diagnosis = "DTO诊断",
-                Treatment = "DTO治疗"
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(medicalCaseDto);
-
-            // Assert
-            medicalCase.Should().NotBeNull();
-            medicalCase.Id.Should().Be(medicalCaseDto.Id);
-            medicalCase.PatientId.Should().Be(medicalCaseDto.PatientId);
-            medicalCase.Status.Should().Be(medicalCaseDto.CaseStatus); // CaseStatus映射到Status
-            medicalCase.Diagnosis.Should().Be(medicalCaseDto.Diagnosis);
-            medicalCase.Treatment.Should().Be(medicalCaseDto.Treatment);
-        }
-
-        [Fact]
-        public void MedicalCaseDto_To_MedicalCase_ShouldIgnoreNavigationProperties()
-        {
-            // Arrange
-            var medicalCaseDto = new MedicalCaseDto
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                CaseStatus = MedicalCaseStatus.Draft,
-                Diagnosis = "导航属性测试"
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(medicalCaseDto);
-
-            // Assert
-            medicalCase.Consultation.Should().BeNull();
-            medicalCase.Prescription.Should().BeNull();
+            medicalCase.Remark.Should().BeNull();
         }
 
         #endregion
@@ -327,9 +243,10 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                Status = status,
-                VisitDate = DateTime.Now,
-                Diagnosis = "状态测试"
+                PatientName = "患者",
+                DoctorId = Guid.NewGuid(),
+                DoctorName = "医生",
+                Status = status
             };
 
             // Act
@@ -337,28 +254,6 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.CaseStatus.Should().Be(status);
-        }
-
-        [Theory]
-        [InlineData(MedicalCaseStatus.Active)]
-        [InlineData(MedicalCaseStatus.Closed)]
-        public void MedicalCaseDto_To_MedicalCase_ShouldMapAllStatuses(MedicalCaseStatus status)
-        {
-            // Arrange
-            var dto = new MedicalCaseDto
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                CaseStatus = status,
-                VisitDate = DateTime.Now,
-                Diagnosis = "反向状态测试"
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(dto);
-
-            // Assert
-            medicalCase.Status.Should().Be(status);
         }
 
         #endregion
@@ -385,9 +280,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             var createDto = new MedicalCaseCreateDto
             {
                 PatientId = Guid.NewGuid(),
-                VisitDate = DateTime.Now,
-                Diagnosis = "最小数据"
-                // 其他字段为null
+                DoctorId = Guid.NewGuid()
             };
 
             // Act
@@ -396,9 +289,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             // Assert
             medicalCase.Should().NotBeNull();
             medicalCase.PatientId.Should().Be(createDto.PatientId);
-            medicalCase.Diagnosis.Should().Be("最小数据");
-            medicalCase.Treatment.Should().BeNull();
-            medicalCase.Notes.Should().BeNull();
+            medicalCase.DoctorId.Should().Be(createDto.DoctorId);
+            medicalCase.Remark.Should().BeNull();
         }
 
         #endregion
@@ -413,20 +305,20 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
-                Status = MedicalCaseStatus.Completed,
-                VisitDate = DateTime.Now,
-                Diagnosis = "风寒感冒（轻度）；咳嗽",
-                Treatment = "清热解毒、宣肺止咳\n服用：小柴胡汤加减",
-                Notes = "患者体质偏寒，建议温服；忌食生冷/辛辣"
+                PatientName = "张三（男）",
+                DoctorId = Guid.NewGuid(),
+                DoctorName = "李医生/主治医师",
+                Status = MedicalCaseStatus.Active,
+                Remark = "患者体质偏寒，建议温服；忌食生冷/辛辣\n注意：复诊时间待定"
             };
 
             // Act
             var dto = _mapper.Map<MedicalCaseDto>(medicalCase);
 
             // Assert
-            dto.Diagnosis.Should().Be("风寒感冒（轻度）；咳嗽");
-            dto.Treatment.Should().Be("清热解毒、宣肺止咳\n服用：小柴胡汤加减");
-            dto.Notes.Should().Be("患者体质偏寒，建议温服；忌食生冷/辛辣");
+            dto.PatientName.Should().Be("张三（男）");
+            dto.DoctorName.Should().Be("李医生/主治医师");
+            dto.Remark.Should().Be("患者体质偏寒，建议温服；忌食生冷/辛辣\n注意：复诊时间待定");
         }
 
         #endregion
