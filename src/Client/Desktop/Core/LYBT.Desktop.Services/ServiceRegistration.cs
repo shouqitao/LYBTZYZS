@@ -71,28 +71,10 @@ namespace LYBT.Desktop.Services
             services.AddAutoMapper(typeof(HerbMappingProfile).Assembly);
 
             // 注册异常处理器
-            services.AddScoped<IExceptionHandler, StandardExceptionHandler>();
+            services.AddSingleton<IExceptionHandler, StandardExceptionHandler>();
 
-            // 注册Repository接口和实现
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IPatientRepository, PatientRepository>();
-            services.AddScoped<IHerbRepository, HerbRepository>();
-            services.AddScoped<IFormulaRepository, FormulaRepository>();
-            services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
-            services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-            services.AddScoped<IConsultationRepository, ConsultationRepository>();
-
-            // 注册业务服务接口 - 使用Shared.Interfaces统一接口
-            services.AddScoped<IPrescriptionService, PrescriptionService>();
-            services.AddScoped<IHerbService, HerbService>();
-            services.AddScoped<IFormulaService, FormulaService>();
-            services.AddScoped<IMedicalCaseService, MedicalCaseService>();
-            services.AddScoped<IPatientService, PatientService>();
-            services.AddScoped<IConsultationService, ConsultationService>();
-            services.AddScoped<IUserService, UserService>();
-
-            // Issue #1008: 注册ILocalAuthService（Desktop特定认证接口）
-            services.AddScoped<ILocalAuthService, AuthService>();
+            // 注意：Repository和Service在Prism容器中注册（避免重复注册）
+            // 参见：ServiceCollectionExtensions.RegisterBusinessServices
 
             // 注册内存缓存 - 带配置优化
             services.AddMemoryCache(options =>

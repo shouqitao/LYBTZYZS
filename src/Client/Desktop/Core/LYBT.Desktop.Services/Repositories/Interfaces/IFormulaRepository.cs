@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Formula;
+﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Desktop.Services.Repositories.Interfaces
 {
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.Services.Repositories.Interfaces
     public interface IFormulaRepository
     {
         Task<List<FormulaDto>> GetAllAsync();
+        Task<PagedResult<FormulaDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<FormulaDto> GetByIdAsync(Guid id);
         Task<FormulaDto> CreateAsync(FormulaDto formula);
         Task<FormulaDto> UpdateAsync(FormulaDto formula);

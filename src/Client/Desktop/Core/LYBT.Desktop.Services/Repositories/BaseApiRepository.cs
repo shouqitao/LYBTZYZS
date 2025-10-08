@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Services.Http;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Repositories
@@ -26,6 +27,19 @@ namespace LYBT.Desktop.Services.Repositories
         {
             var result = await _apiService.GetAsync<List<T>>(_endpoint);
             return result ?? new List<T>();
+        }
+
+        public virtual async Task<PagedResult<T>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            var queryParams = new { page, pageSize, keyword };
+            var result = await _apiService.GetAsync<PagedResult<T>>(_endpoint, queryParams);
+            return result ?? new PagedResult<T>
+            {
+                Items = new List<T>(),
+                TotalCount = 0,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
         }
 
         public virtual async Task<T> GetByIdAsync(Guid id)

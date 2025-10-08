@@ -108,15 +108,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "加载药材数据失败");
+                    Logger.LogWarning("加载药材数据失败: {ErrorMessage}", result.ErrorMessage);
                     return new List<HerbDto>();
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载药材数据时发生异常");
-                await ShowErrorMessageAsync("加载药材数据时发生系统错误");
-                return new List<HerbDto>();
+                throw;  // 重新抛出异常，让ExecuteSafelyAsync统一处理
             }
         }
 

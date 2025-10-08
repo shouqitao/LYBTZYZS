@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Users;
+﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Services.Repositories.Interfaces
 {
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.Services.Repositories.Interfaces
     public interface IUserRepository
     {
         Task<List<UserDto>> GetAllAsync();
+        Task<PagedResult<UserDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<UserDto> GetByIdAsync(Guid id);
         Task<UserDto> CreateAsync(UserDto user);
         Task<UserDto> UpdateAsync(UserDto user);

@@ -36,33 +36,8 @@ namespace LYBT.Desktop.Services.Business
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
-                var allHerbs = await _repository.GetAllAsync();
-
-                // 应用关键词搜索
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    allHerbs = allHerbs.Where(h =>
-                        h.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                        (h.Category != null && h.Category.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
-                        (h.Properties != null && h.Properties.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                    ).ToList();
-                }
-
-                // 分页
-                var totalCount = allHerbs.Count;
-                var items = allHerbs
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                var pagedResult = new PagedResult<HerbDto>
-                {
-                    Items = items,
-                    TotalCount = totalCount,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-
+                // 直接调用Repository的服务端分页方法
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
                 return ServiceResult<PagedResult<HerbDto>>.Success(pagedResult);
             }, nameof(GetPagedAsync));
         }

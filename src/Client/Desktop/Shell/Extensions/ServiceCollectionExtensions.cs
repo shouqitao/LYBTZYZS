@@ -113,6 +113,9 @@ namespace LYBT.Desktop.Shell.Extensions
         private static string _apiBaseUrl = "https://localhost:5001";
         private static bool _ignoreSslErrors = false;
 
+        // 保存MS DI ServiceProvider用于HTTP服务（避免被垃圾回收）
+        private static IServiceProvider? _httpServiceProvider;
+
         /// <summary>
         /// 注册UltraThink高级服务
         /// </summary>
@@ -213,9 +216,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 4. IApiService 及其依赖
             LYBT.Desktop.Services.ServiceRegistration.AddDesktopServices(services, _apiBaseUrl, _ignoreSslErrors);
             
-            // 构建 ServiceProvider
+            // 构建 ServiceProvider 并保存到静态字段（避免被垃圾回收）
             var serviceProvider = services.BuildServiceProvider();
-            
+            _httpServiceProvider = serviceProvider;
+
             // 从 ServiceProvider 中获取配置好的服务,注册到 Prism 容器
             var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
             containerRegistry.RegisterInstance<IHttpClientFactory>(httpClientFactory);
@@ -245,20 +249,20 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterBusinessServices(IContainerRegistry containerRegistry)
         {
-            // 注册Repository层 - 使用 Core_New 的实现
-            containerRegistry.RegisterScoped<IPatientRepository,
+            // Issue #1041: Repository层改为Singleton（WPF无请求作用域，Scoped无意义）
+            containerRegistry.RegisterSingleton<IPatientRepository,
                 LYBT.Desktop.Services.Repositories.PatientRepository>();
-            containerRegistry.RegisterScoped<IUserRepository,
+            containerRegistry.RegisterSingleton<IUserRepository,
                 LYBT.Desktop.Services.Repositories.UserRepository>();
-            containerRegistry.RegisterScoped<IMedicalCaseRepository,
+            containerRegistry.RegisterSingleton<IMedicalCaseRepository,
                 LYBT.Desktop.Services.Repositories.MedicalCaseRepository>();
-            containerRegistry.RegisterScoped<IPrescriptionRepository,
+            containerRegistry.RegisterSingleton<IPrescriptionRepository,
                 LYBT.Desktop.Services.Repositories.PrescriptionRepository>();
-            containerRegistry.RegisterScoped<IHerbRepository,
+            containerRegistry.RegisterSingleton<IHerbRepository,
                 LYBT.Desktop.Services.Repositories.HerbRepository>();
-            containerRegistry.RegisterScoped<IFormulaRepository,
+            containerRegistry.RegisterSingleton<IFormulaRepository,
                 LYBT.Desktop.Services.Repositories.FormulaRepository>();
-            containerRegistry.RegisterScoped<IConsultationRepository,
+            containerRegistry.RegisterSingleton<IConsultationRepository,
                 LYBT.Desktop.Services.Repositories.ConsultationRepository>();
 
             // UltraThink修复 Issue #856: 注册异常处理服务(业务服务依赖)
@@ -279,20 +283,24 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Auth.IAuthenticationService,
                 LYBT.Desktop.Services.Auth.AuthenticationService>();
 
-            // Issue #842: 注册业务服务(使用 Shared.Interfaces)
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IPatientService,
+            // Issue #1039: 注册 Desktop 本地认证服务（ILocalAuthService 继承 IAuthService）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Services.Business.ILocalAuthService,
+                LYBT.Desktop.Services.Business.AuthService>();
+
+            // Issue #1041: 业务服务改为Singleton（WPF无请求作用域，Scoped无意义）
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPatientService,
                 LYBT.Desktop.Services.Business.PatientService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IUserService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IUserService,
                 LYBT.Desktop.Services.Business.UserService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IMedicalCaseService,
                 LYBT.Desktop.Services.Business.MedicalCaseService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IPrescriptionService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IPrescriptionService,
                 LYBT.Desktop.Services.Business.PrescriptionService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IHerbService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IHerbService,
                 LYBT.Desktop.Services.Business.HerbService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IFormulaService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IFormulaService,
                 LYBT.Desktop.Services.Business.FormulaService>();
-            containerRegistry.RegisterScoped<LYBT.Shared.Interfaces.Services.IConsultationService,
+            containerRegistry.RegisterSingleton<LYBT.Shared.Interfaces.Services.IConsultationService,
                 LYBT.Desktop.Services.Business.ConsultationService>();
         }
 
