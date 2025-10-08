@@ -51,23 +51,25 @@
   - MedicalCaseMappingProfileTests: AutoMapper配置验证
 - **最新提交**: 修复了BaseEntity字段忽略配置
 
-## 需要重写的模块
-
-### LYBT.Module.Formula.Tests
-- **状态**: ❌ 无法编译
-- **问题**:
-  - 使用了错误的实体类名 `FormulaEntity`（应为 `Formula`）
-  - 使用了不存在的DTO属性：
-    - `Code`, `PinyinAbbreviation`, `Source`, `Composition`
-    - `Function`, `Indication`, `Contraindication`, `Notes`
-    - `IsClassic`, `IsActive`
-  - 实际可用的DTO属性来自 `FormulaInputBaseDto`:
-    - Name, Effect, Description, Usage, Property
-    - Category, IsShared, Instructions, Indications
-    - Contraindications, Preparation, Remark
-- **建议**: 需要完全重写FormulaServiceTests以匹配实际API
-- **错误数量**: 63个编译错误
-- **跟踪**: Issue #1051 - test(formula): 完全重写 FormulaServiceTests 以匹配实际API
+### 6. LYBT.Module.Formula.Tests
+- **状态**: ✅ 全部通过
+- **测试数量**: 15个
+- **覆盖范围**:
+  - FormulaServiceTests: 方剂服务业务逻辑
+  - CreateAsync (2个测试)
+  - GetByIdAsync (2个测试)
+  - SearchAsync (3个测试)
+  - GetPagedAsync (2个测试)
+  - UpdateAsync (2个测试)
+  - DeleteAsync (2个测试)
+  - CloneFormulaAsync (2个测试)
+- **修复项目**:
+  - 完全重写以修复63个编译错误
+  - 使用正确的 `Formula` 实体类（using alias）
+  - 使用正确的DTO属性（FormulaInputBaseDto）
+  - 移除ConfigureServices覆写避免初始化顺序问题
+- **PR**: #1052 - 已合并
+- **覆盖率**: 27.87%
 
 ## AutoMapper配置修复模式
 
@@ -123,18 +125,13 @@ entity.Id.Should().NotBe(Guid.Empty)
 
 ## 下一步计划
 
-1. **FormulaServiceTests 完全重写**（高优先级）
-   - 创建新Issue
-   - 使用正确的 `Formula` 实体类
-   - 使用正确的DTO属性
-   - 参考其他已完成的测试模块
-
-2. **Consultation 聚合根重构完成后**（中优先级）
+1. **Consultation 聚合根重构完成后**（中优先级）
    - 取消注释被跳过的测试
    - 补充完整测试覆盖
 
-3. **全量测试与覆盖率报告**（待完成）
-   - 修复FormulaServiceTests后执行
+2. **全量测试与覆盖率报告**（高优先级）
+   - ✅ FormulaServiceTests已修复（Issue #1051，PR #1052）
+   - 执行全量测试验证
    - 使用Coverlet生成覆盖率报告
    - 目标：Server模块80%+代码覆盖率
 
@@ -142,7 +139,7 @@ entity.Id.Should().NotBe(Guid.Empty)
 
 - Issue #1049: 补充Server模块单元测试覆盖
 - Issue #1050: 修复AutoMapper配置
-- Issue #1051: test(formula): 完全重写 FormulaServiceTests 以匹配实际API
+- Issue #1051: test(formula): 完全重写 FormulaServiceTests 以匹配实际API ✅ 已完成（PR #1052）
 
 ## 附录：统计数据
 
@@ -153,9 +150,9 @@ entity.Id.Should().NotBe(Guid.Empty)
 | Herbs.Tests | 12 | ✅ 通过 | - |
 | Consultation.Tests | 3 | ⚠️ 部分 | - |
 | MedicalCase.Tests | - | ✅ 已修复 | - |
-| Formula.Tests | 0 | ❌ 编译失败 | 0% |
-| **总计（可运行）** | **80** | **已完成** | **待统计** |
+| Formula.Tests | 15 | ✅ 通过 | 27.87% |
+| **总计（可运行）** | **95** | **已完成** | **待统计** |
 
 ---
 *报告生成人：Claude Code*
-*最后更新：2025-01*
+*最后更新：2025-10-08*
