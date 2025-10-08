@@ -1,11 +1,12 @@
 ﻿# 阶段报告索引
 
 - **维护人**：Thinker（ChatGPT）+ Claude Code
-- **最后更新**：2025-10-05
+- **最后更新**：2025-10-08
 
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-08 | `test-execution-verification-2025-10-08.md` | **Issue #1049 Phase 3 Server端单元测试执行验证报告** - 7个模块测试验证（6个100%通过/146测试，1个95.7%通过，1个126编译错误需重写），修复ConfigureServices初始化问题，创建Issue #1053追踪MedicalCase.Tests重写 |
 | 2025-10-05 | `workflow-analysis-issue-933.md` | **Issue #933 CI/CD Workflow 分析报告** - 22个workflow合并为≤8个（发现3个严重违规：Docker/K8s，3个覆盖率门禁冲突0.5% vs 70%~90%，设计新8-workflow结构） |
 | 2025-10-04 | `architecture-unification-issue-897-2025-10-04.md` | **Issue #897 架构统一报告** - Desktop ViewModels 基类统一（40个ViewModels，迁移4个，统一率77.5%→87.5%，符合Prism MVVM最佳实践） |
 | 2025-10-03 | `pr-871-review-2025-10-03.md` | **PR #871 代码审查报告** - Users 模块单元测试审查（171个测试，Line 94.52%，Method 87.5%，建议批准合并） |
@@ -44,9 +45,17 @@
 
 ## 使用说明
 1. 撰写新报告时将文件置于本目录，采用 `yyyy-mm-dd-主题.md` 命名，并在上表追加条目。
-2. 若报告与任务/PRD 关联，请在文末“关联记录”段落列出相关路径。
+2. 若报告与任务/PRD 关联，请在文末"关联记录"段落列出相关路径。
 3. 当报告过期或被替换时，从表格移除并归档至 `archive/`。
 
+
+## 2025-10-08
+
+### Issue #1049 Phase 3 Server端单元测试执行验证报告
+- **文件**: [test-execution-verification-2025-10-08.md](./test-execution-verification-2025-10-08.md)
+- **类型**: 测试执行验证报告
+- **关联**: Issue #1049, Issue #1053
+- **摘要**: 对7个Server模块进行全面测试验证，6个模块100%通过（146测试），1个模块95.7%通过（Consultation，22/23），1个模块126编译错误需重写（MedicalCase）。修复了UserServiceTests和PatientServiceTests的ConfigureServices初始化顺序问题，修复了Consultation.Tests的时间戳排序逻辑错误。整体可运行测试通过率99.3%→100%。创建Issue #1053追踪MedicalCase.Tests重写工作。
 
 ## 2025-10-07
 

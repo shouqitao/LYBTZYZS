@@ -141,9 +141,13 @@ public class ConsultationRepositoryTests : IDisposable
             Id = medicalCase1.Id,
             ChiefComplaint = "主诉1",
             CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase1,
-            CreatedAt = DateTime.UtcNow.AddDays(-2)
+            MedicalCase = medicalCase1
         };
+
+        // 稍后插入以确保CreatedAt更晚
+        await _context.MedicalCases.AddAsync(medicalCase1);
+        await _context.Consultations.AddAsync(consultation1);
+        await _context.SaveChangesAsync();
 
         var medicalCase2 = new LYBT.Entities.MedicalCase.MedicalCase
         {
@@ -160,12 +164,12 @@ public class ConsultationRepositoryTests : IDisposable
             Id = medicalCase2.Id,
             ChiefComplaint = "主诉2",
             CreatedBy = Guid.NewGuid(),
-            MedicalCase = medicalCase2,
-            CreatedAt = DateTime.UtcNow.AddDays(-1)
+            MedicalCase = medicalCase2
         };
 
-        _context.MedicalCases.AddRange(medicalCase1, medicalCase2);
-        _context.Consultations.AddRange(consultation1, consultation2);
+        // 后插入，CreatedAt会更晚
+        await _context.MedicalCases.AddAsync(medicalCase2);
+        await _context.Consultations.AddAsync(consultation2);
         await _context.SaveChangesAsync();
 
         // Act
@@ -173,7 +177,7 @@ public class ConsultationRepositoryTests : IDisposable
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].ChiefComplaint.Should().Be("主诉2"); // 最新的在前
+        result[0].ChiefComplaint.Should().Be("主诉2"); // 最新的在前（后插入的）
         result[1].ChiefComplaint.Should().Be("主诉1");
     }
 
