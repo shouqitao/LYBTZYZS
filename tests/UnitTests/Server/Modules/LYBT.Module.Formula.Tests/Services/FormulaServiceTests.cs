@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using LYBT.Entities.Formula;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Services;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Tests.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using FormulaEntity = LYBT.Entities.Formula.Formula;
 
 namespace LYBT.Module.Formula.Tests.Services
 {
@@ -46,49 +46,40 @@ namespace LYBT.Module.Formula.Tests.Services
                 _loggerMock.Object);
         }
 
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-
-            // 注册方剂服务相关的依赖
-            services.AddSingleton(_formulaService);
-            services.AddSingleton(_repositoryMock.Object);
-        }
-
         #region 创建方剂测试
 
         [Fact]
         public async Task CreateAsync_WithValidData_ShouldReturnSuccess()
         {
             // Arrange
+            var herbId1 = Guid.NewGuid();
+            var herbId2 = Guid.NewGuid();
+
             var createDto = new FormulaCreateDto
             {
-                Name = "小柴胡汤",
-                Code = "XCHT001",
-                PinyinAbbreviation = "XCHT",
-                Category = "和解剂",
-                Source = "《伤寒论》",
-                Composition = "柴胡24g，黄芩9g，人参9g，半夏9g，甘草6g，生姜9g，大枣4枚",
-                Preparation = "上七味，以水一斗二升，煮取六升，去滓，再煎取三升",
-                Function = "和解少阳",
-                Indication = "少阳证：往来寒热，胸胁苦满，默默不欲饮食，心烦喜呕",
-                Usage = "温服一升，日三服",
-                Contraindication = "阴虚火旺者慎用",
-                Notes = "临床常用方剂",
-                IsClassic = true,
-                IsActive = true
+                Name = "桂枝汤",
+                Effect = "解肌发表，调和营卫",
+                Usage = "水煎服，温服",
+                Category = "解表剂",
+                Description = "伤寒论经典名方",
+                Preparation = "水煎",
+                Indications = "外感风寒表虚证",
+                Contraindications = "表实无汗者禁用",
+                IsShared = false,
+                Herbs = new List<FormulaHerbItemCreateDto>
+                {
+                    new() { HerbId = herbId1, Quantity = 9, SortOrder = 1 },
+                    new() { HerbId = herbId2, Quantity = 9, SortOrder = 2 }
+                }
             };
 
             var formula = new FormulaEntity
             {
                 Id = Guid.NewGuid(),
                 Name = createDto.Name,
-                Code = createDto.Code,
-                Category = createDto.Category,
-                Source = createDto.Source,
-                IsClassic = createDto.IsClassic,
-                IsActive = createDto.IsActive,
-                CreatedAt = DateTime.Now
+                Effect = createDto.Effect,
+                Usage = createDto.Usage,
+                Category = createDto.Category
             };
 
             _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
@@ -99,13 +90,39 @@ namespace LYBT.Module.Formula.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be(createDto.Name);
-            result.Data.Code.Should().Be(createDto.Code);
-            result.Data.Category.Should().Be(createDto.Category);
+            result.Data.Effect.Should().Be(createDto.Effect);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WithException_ShouldReturnFailure()
+        {
+            // Arrange
+            var createDto = new FormulaCreateDto
+            {
+                Name = "测试方剂",
+                Effect = "测试功效",
+                Usage = "测试用法",
+                Herbs = new List<FormulaHerbItemCreateDto>
+                {
+                    new() { HerbId = Guid.NewGuid(), Quantity = 10, SortOrder = 1 }
+                }
+            };
+
+            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _formulaService.CreateAsync(createDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("创建验方失败");
         }
 
         #endregion
@@ -121,15 +138,12 @@ namespace LYBT.Module.Formula.Tests.Services
             {
                 Id = formulaId,
                 Name = "小柴胡汤",
-                Code = "XCHT001",
-                Category = "和解剂",
-                Source = "《伤寒论》",
-                IsClassic = true,
-                IsActive = true,
-                CreatedAt = DateTime.Now
+                Effect = "和解少阳",
+                Usage = "温服一升，日三服",
+                Category = "和解剂"
             };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
             // Act
@@ -137,10 +151,28 @@ namespace LYBT.Module.Formula.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(formulaId);
             result.Data.Name.Should().Be(formula.Name);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_WithNonExistentId_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
+                .ReturnsAsync((FormulaEntity?)null);
+
+            // Act
+            var result = await _formulaService.GetByIdAsync(formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("验方不存在");
         }
 
         [Fact]
@@ -150,36 +182,130 @@ namespace LYBT.Module.Formula.Tests.Services
             var searchTerm = "柴胡";
             var formulas = new List<FormulaEntity>
             {
-                new FormulaEntity
+                new()
                 {
                     Id = Guid.NewGuid(),
                     Name = "小柴胡汤",
-                    Code = "XCHT001",
-                    Category = "和解剂",
-                    IsActive = true
+                    Effect = "和解少阳",
+                    Category = "和解剂"
                 },
-                new FormulaEntity
+                new()
                 {
                     Id = Guid.NewGuid(),
                     Name = "大柴胡汤",
-                    Code = "DCHT001",
-                    Category = "和解剂",
-                    IsActive = true
+                    Effect = "和解少阳，内泻热结",
+                    Category = "和解剂"
                 }
             };
 
-            _repositoryMock.Setup(x => x.SearchAsync(searchTerm))
-                .ReturnsAsync(formulas);
+            var pagedResult = new PagedResult<FormulaEntity>
+            {
+                Items = formulas,
+                TotalCount = 2,
+                CurrentPage = 1,
+                PageSize = 100
+            };
+
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 100, searchTerm))
+                .ReturnsAsync(pagedResult);
 
             // Act
             var result = await _formulaService.SearchAsync(searchTerm);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Should().HaveCount(2);
-            result.Data.All(f => f.Name.Contains(searchTerm)).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SearchAsync_WithEmptyKeyword_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var emptyKeyword = "";
+
+            // Act
+            var result = await _formulaService.SearchAsync(emptyKeyword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Should().BeEmpty();
+
+            _repositoryMock.Verify(x => x.GetPagedWithDetailsAsync(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SearchAsync_WithWhitespaceKeyword_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var whitespaceKeyword = "   ";
+
+            // Act
+            var result = await _formulaService.SearchAsync(whitespaceKeyword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_WithValidParameters_ShouldReturnPagedResult()
+        {
+            // Arrange
+            var formulas = new List<FormulaEntity>
+            {
+                new() { Id = Guid.NewGuid(), Name = "方剂1", Effect = "功效1" },
+                new() { Id = Guid.NewGuid(), Name = "方剂2", Effect = "功效2" }
+            };
+
+            var pagedResult = new PagedResult<FormulaEntity>
+            {
+                Items = formulas,
+                TotalCount = 2,
+                CurrentPage = 1,
+                PageSize = 20
+            };
+
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(1, 20, null))
+                .ReturnsAsync(pagedResult);
+
+            // Act
+            var result = await _formulaService.GetPagedAsync(1, 20, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Items.Should().HaveCount(2);
+            result.Data.TotalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_WithZeroPage_ShouldStillWork()
+        {
+            // Arrange
+            var pagedResult = new PagedResult<FormulaEntity>
+            {
+                Items = new List<FormulaEntity>(),
+                TotalCount = 0,
+                CurrentPage = 0,
+                PageSize = 20
+            };
+
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(0, 20, null))
+                .ReturnsAsync(pagedResult);
+
+            // Act
+            var result = await _formulaService.GetPagedAsync(0, 20, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
         }
 
         #endregion
@@ -195,19 +321,20 @@ namespace LYBT.Module.Formula.Tests.Services
             {
                 Id = formulaId,
                 Name = "小柴胡汤（加减）",
-                Function = "和解少阳，疏肝解郁",
-                Indication = "少阳证，肝郁气滞证",
-                Notes = "临床应用广泛"
+                Effect = "和解少阳，疏肝解郁",
+                Usage = "温服，日三次",
+                Herbs = new List<FormulaHerbItemUpdateDto>
+                {
+                    new() { HerbId = Guid.NewGuid(), Quantity = 9, SortOrder = 1 }
+                }
             };
 
             var existingFormula = new FormulaEntity
             {
                 Id = formulaId,
                 Name = "小柴胡汤",
-                Code = "XCHT001",
-                Category = "和解剂",
-                IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-30)
+                Effect = "和解少阳",
+                Category = "和解剂"
             };
 
             _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
@@ -217,15 +344,43 @@ namespace LYBT.Module.Formula.Tests.Services
                 .ReturnsAsync(existingFormula);
 
             // Act
-            var result = await _formulaService.UpdateAsync(updateDto);
+            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(formulaId);
 
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WithNonExistentId_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var updateDto = new FormulaUpdateDto
+            {
+                Id = formulaId,
+                Name = "测试方剂",
+                Effect = "测试功效",
+                Usage = "测试用法",
+                Herbs = new List<FormulaHerbItemUpdateDto>()
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync((FormulaEntity?)null);
+
+            // Act
+            var result = await _formulaService.UpdateAsync(formulaId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("验方不存在");
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
         }
 
         #endregion
@@ -237,17 +392,6 @@ namespace LYBT.Module.Formula.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "测试方剂",
-                Code = "TEST001",
-                IsActive = true,
-                IsDeleted = false
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
-                .ReturnsAsync(formula);
 
             _repositoryMock.Setup(x => x.DeleteAsync(formulaId))
                 .ReturnsAsync(true);
@@ -257,90 +401,92 @@ namespace LYBT.Module.Formula.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
-            result.Message.Should().Contain("成功");
+            result.IsSuccess.Should().BeTrue();
 
             _repositoryMock.Verify(x => x.DeleteAsync(formulaId), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteAsync_WithClassicFormula_ShouldReturnFailure()
+        public async Task DeleteAsync_WithRepositoryFailure_ShouldReturnFailure()
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var formula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "小柴胡汤",
-                Code = "XCHT001",
-                IsClassic = true,
-                IsActive = true,
-                IsDeleted = false
-            };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
-                .ReturnsAsync(formula);
+            _repositoryMock.Setup(x => x.DeleteAsync(formulaId))
+                .ReturnsAsync(false);
 
             // Act
             var result = await _formulaService.DeleteAsync(formulaId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeFalse();
-            result.Message.Should().Contain("经典方剂不能删除");
-
-            _repositoryMock.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("删除失败");
         }
 
         #endregion
 
-        #region 边界条件测试
+        #region 克隆方剂测试
 
         [Fact]
-        public async Task CreateAsync_WithEmptyRequiredFields_ShouldReturnValidationError()
+        public async Task CloneFormulaAsync_WithValidId_ShouldReturnClonedFormula()
         {
             // Arrange
-            var createDto = new FormulaCreateDto
+            var formulaId = Guid.NewGuid();
+            var originalFormula = new FormulaEntity
             {
-                Name = "", // 空的名称
-                Code = "", // 空的代码
-                Category = "" // 空的分类
+                Id = formulaId,
+                Name = "桂枝汤",
+                Effect = "解肌发表，调和营卫",
+                Usage = "温服",
+                Category = "解表剂",
+                FormulaType = LYBT.Entities.Formula.FormulaType.Classic,
+                IsShared = true
             };
 
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
+                .ReturnsAsync(originalFormula);
+
+            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
+                .ReturnsAsync((FormulaEntity f) => f);
+
+            _repositoryMock.Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1);
+
             // Act
-            var result = await _formulaService.CreateAsync(createDto);
+            var result = await _formulaService.CloneFormulaAsync(formulaId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeFalse();
-            result.Message.Should().Contain("验证失败");
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Name.Should().Contain("副本");
+            result.Data.Name.Should().Contain(originalFormula.Name);
+
+            _repositoryMock.Verify(x => x.GetByIdWithHerbsAsync(formulaId), Times.Once);
+            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
+            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task GetPagedAsync_WithLargePageSize_ShouldLimitResults()
+        public async Task CloneFormulaAsync_WithNonExistentId_ShouldReturnFailure()
         {
             // Arrange
-            var pageRequest = new PagedRequest
-            {
-                PageNumber = 1,
-                PageSize = 1000 // 极大的页面大小
-            };
+            var formulaId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetPagedAsync(
-                    1,
-                    50, // 应该限制为最大值50
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>()))
-                .ReturnsAsync((new List<FormulaEntity>(), 0));
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
+                .ReturnsAsync((FormulaEntity?)null);
 
             // Act
-            var result = await _formulaService.GetPagedAsync(pageRequest);
+            var result = await _formulaService.CloneFormulaAsync(formulaId);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeTrue();
-            result.Data.PageSize.Should().BeLessThanOrEqualTo(50);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("未找到要克隆的处方");
+
+            _repositoryMock.Verify(x => x.GetByIdWithHerbsAsync(formulaId), Times.Once);
+            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Never);
         }
 
         #endregion
