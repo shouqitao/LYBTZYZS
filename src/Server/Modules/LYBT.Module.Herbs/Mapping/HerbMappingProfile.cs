@@ -13,35 +13,52 @@ namespace LYBT.Module.Herbs.Mapping
     {
 
         public HerbMappingProfile()
-        {
-            // ==================== 共享契约映射 ====================
+    {
+        // Herb -> HerbDto
+        CreateMap<Herb, HerbDto>()
+            .ForMember(dest => dest.Category, opt => opt.Ignore())
+            .ForMember(dest => dest.Properties, opt => opt.Ignore());
 
-            // 药材实体转HerbDetailDto（API响应）
-            CreateMap<Herb, HerbDetailDto>();
+        // Herb -> HerbDetailDto
+        CreateMap<Herb, HerbDetailDto>();
 
-            // HerbCreateDto转药材实体
-            CreateMap<HerbCreateDto, Herb>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.Empty));
+        // HerbCreateDto -> Herb
+        CreateMap<HerbCreateDto, Herb>()
+            // BaseEntity 审计字段
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // HerbUpdateDto转药材实体
-            CreateMap<HerbUpdateDto, Herb>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.Empty))
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        // HerbUpdateDto -> Herb
+        CreateMap<HerbUpdateDto, Herb>()
+            // BaseEntity 审计字段
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            // 药材实体转HerbDto（列表显示）
-            CreateMap<Herb, HerbDto>()
-                .ForMember(dest => dest.Category, opt => opt.Ignore())
-                .ForMember(dest => dest.Properties, opt => opt.Ignore());
-
-            // HerbImportDto转药材实体
-            CreateMap<HerbImportDto, Herb>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.Empty))
-                .ForMember(dest => dest.Usage, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
-                .ForMember(dest => dest.CostPrice, opt => opt.Ignore());
-
-            // ==================== UltraThink v2.0简化映射 ====================
-            // 不再使用基础模型继承，直接映射
-        }
+        // HerbImportDto -> Herb
+        CreateMap<HerbImportDto, Herb>()
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.Usage, opt => opt.Ignore())
+            .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
+            .ForMember(dest => dest.CostPrice, opt => opt.Ignore())
+            // BaseEntity 审计字段
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
+            .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
+    }
     }
 }
