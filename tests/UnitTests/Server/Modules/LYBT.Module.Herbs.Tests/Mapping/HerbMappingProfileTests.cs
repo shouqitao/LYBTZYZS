@@ -109,8 +109,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             herb.Unit.Should().Be(createDto.Unit);
             herb.Remark.Should().Be(createDto.Remark);
 
-            // 验证忽略字段
-            herb.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            herb.Id.Should().NotBe(Guid.Empty);
             herb.Status.Should().Be(CommonStatus.Enabled);
         }
 
@@ -148,8 +148,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             herb.Unit.Should().Be(updateDto.Unit);
             herb.Remark.Should().Be(updateDto.Remark);
 
-            // 验证忽略字段
-            herb.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            herb.Id.Should().NotBe(Guid.Empty);
         }
 
         [Fact]
@@ -221,8 +221,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             herb.Price.Should().Be(importDto.Price);
             herb.Remark.Should().Be(importDto.Remark);
 
-            // 验证忽略字段
-            herb.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            herb.Id.Should().NotBe(Guid.Empty);
             herb.Status.Should().Be(CommonStatus.Enabled);
         }
 

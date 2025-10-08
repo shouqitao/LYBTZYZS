@@ -491,12 +491,11 @@ namespace LYBT.Infrastructure.Data
 
                 if (entry.State == EntityState.Added)
                 {
-                    // 只在未手动设置时自动填充 CreatedAt（允许测试环境手动设置）
-                    if (entity.CreatedAt == default || entity.CreatedAt == DateTime.MinValue)
-                    {
-                        entity.CreatedAt = timestamp;
-                    }
-                    // 只在有用户上下文时设置 CreatedBy，允许测试环境手动设置
+                    // 强制设置 CreatedAt 和 UpdatedAt（统一由 DbContext 负责）
+                    entity.CreatedAt = timestamp;
+                    entity.UpdatedAt = timestamp;
+
+                    // 只在有用户上下文时设置 CreatedBy
                     if (userId.HasValue)
                     {
                         entity.CreatedBy = userId;
@@ -505,7 +504,9 @@ namespace LYBT.Infrastructure.Data
 
                 if (entry.State == EntityState.Modified)
                 {
+                    // 强制设置 UpdatedAt
                     entity.UpdatedAt = timestamp;
+
                     // 只在有用户上下文时设置 UpdatedBy
                     if (userId.HasValue)
                     {

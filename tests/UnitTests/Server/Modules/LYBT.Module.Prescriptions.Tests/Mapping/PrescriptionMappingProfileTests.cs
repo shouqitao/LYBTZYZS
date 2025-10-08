@@ -180,8 +180,8 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             // 注意：DoctorId映射到UserId
             // 其他字段根据映射配置来验证
 
-            // 验证忽略字段
-            prescription.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            prescription.Id.Should().NotBe(Guid.Empty);
         }
 
         [Fact]
@@ -244,8 +244,8 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             prescription.Advice.Should().Be(editDto.Advice);
             prescription.Remark.Should().Be(editDto.Remark);
 
-            // 验证忽略字段
-            prescription.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            prescription.Id.Should().NotBe(Guid.Empty);
         }
 
         [Fact]

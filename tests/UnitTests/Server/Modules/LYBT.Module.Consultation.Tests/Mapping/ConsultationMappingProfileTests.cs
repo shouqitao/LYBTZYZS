@@ -87,8 +87,8 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             consultation.TreatmentPrinciple.Should().Be(detailDto.TreatmentPrinciple);
             consultation.MedicalAdvice.Should().Be(detailDto.MedicalAdvice);
 
-            // 验证忽略字段
-            consultation.Id.Should().Be(Guid.Empty);
+            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
+            consultation.Id.Should().NotBe(Guid.Empty);
             // Patient、User已移至MedicalCase聚合根
             // consultation.Patient.Should().BeNull();
             // consultation.User.Should().BeNull();

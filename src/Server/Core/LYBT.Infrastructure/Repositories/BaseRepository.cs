@@ -427,7 +427,6 @@ namespace LYBT.Infrastructure.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            entity.CreatedAt = DateTime.Now;
             entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
 
             await _dbSet.AddAsync(entity);
@@ -450,7 +449,6 @@ namespace LYBT.Infrastructure.Repositories
 
             foreach (var entity in entityList)
             {
-                entity.CreatedAt = DateTime.Now;
                 entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
             }
 
@@ -480,8 +478,6 @@ namespace LYBT.Infrastructure.Repositories
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
-
-            entity.UpdatedAt = DateTime.Now;
 
             _dbSet.Update(entity);
             await SaveChangesAsync();

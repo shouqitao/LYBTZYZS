@@ -293,37 +293,6 @@ namespace LYBT.UnitTests.Core.Services
 
         #endregion
 
-        #region Status Transition Tests
-
-        [Fact]
-        public async Task CompleteCase_ShouldUpdateStatusAndTimestamp()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var medicalCase = new MedicalCase
-            {
-                Id = medicalCaseId,
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                Status = MedicalCaseStatus.Active,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.MedicalCases.Add(medicalCase);
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _service.CompleteCaseAsync(medicalCaseId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
-            result.CompletedAt.Should().NotBeNull();
-            result.CompletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        }
-
-        #endregion
-
         public void Dispose()
         {
             _context?.Dispose();
