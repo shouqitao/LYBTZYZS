@@ -1,13 +1,7 @@
 <Project>
   <!-- 为所有测试项目自动添加覆盖率工具 -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <!-- Coverlet MSBuild 集成，用于命令行覆盖率收集 -->
-    <PackageReference Include="coverlet.msbuild">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-
-    <!-- Coverlet Collector，用于 dotnet test 集成 -->
+    <!-- Coverlet Collector，用于 dotnet test 集成（通过 .runsettings 配置） -->
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -30,9 +24,6 @@
 
     <!-- 跳过自动生成的文件 -->
     <ExcludeFromCodeCoverage>true</ExcludeFromCodeCoverage>
-
-    <!-- 收集覆盖率 -->
-    <CollectCoverage>true</CollectCoverage>
 
     <!-- VSTest 结果目录（trx/junit 等）统一到仓库根 BIN/TestResults -->
     <VSTestResultsDirectory>$(RepoRoot)BIN\TestResults</VSTestResultsDirectory>
