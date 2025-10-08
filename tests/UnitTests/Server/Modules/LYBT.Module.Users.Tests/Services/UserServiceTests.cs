@@ -43,14 +43,6 @@ namespace LYBT.Module.Users.Tests.Services
                 _configurationMock.Object);
         }
 
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-
-            // 注册测试服务
-            services.AddSingleton(_userService);
-        }
-
         #region GetPagedAsync 测试
 
         [Fact]

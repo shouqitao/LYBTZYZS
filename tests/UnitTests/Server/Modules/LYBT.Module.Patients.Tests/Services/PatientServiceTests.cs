@@ -40,13 +40,7 @@ namespace LYBT.Module.Patients.Tests.Services
                 _loggerMock.Object);
         }
 
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-
-            // 注册测试服务
-            services.AddSingleton(_patientService);
-        }
+        
 
         #region GetPagedAsync 测试
 

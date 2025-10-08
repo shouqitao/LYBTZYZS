@@ -1,3 +1,4 @@
+using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Consultation;
@@ -26,10 +27,9 @@ namespace LYBT.UnitTests.Core.Services
     public class MedicalCaseServiceTests : IDisposable
     {
         private readonly AppDbContext _context;
-        private readonly Mock<ILogger<MedicalCaseBusinessService>> _loggerMock;
-        private readonly Mock<IConsultationRepository> _consultationRepoMock;
-        private readonly Mock<IPrescriptionRepository> _prescriptionRepoMock;
-        private readonly MedicalCaseBusinessService _service;
+        private readonly Mock<ILogger<MedicalCaseService>> _loggerMock;
+        private readonly Mock<IMapper> _mapperMock;
+        private readonly MedicalCaseService _service;
 
         public MedicalCaseServiceTests()
         {
@@ -39,16 +39,14 @@ namespace LYBT.UnitTests.Core.Services
                 .Options;
 
             _context = new AppDbContext(options);
-            _loggerMock = new Mock<ILogger<MedicalCaseBusinessService>>();
-            _consultationRepoMock = new Mock<IConsultationRepository>();
-            _prescriptionRepoMock = new Mock<IPrescriptionRepository>();
+            _loggerMock = new Mock<ILogger<MedicalCaseService>>();
+            _mapperMock = new Mock<IMapper>();
 
             // 创建服务实例
             var repository = new MedicalCaseRepository(_context);
-            _service = new MedicalCaseBusinessService(
+            _service = new MedicalCaseService(
                 repository,
-                _consultationRepoMock.Object,
-                _prescriptionRepoMock.Object,
+                _mapperMock.Object,
                 _loggerMock.Object
             );
         }
