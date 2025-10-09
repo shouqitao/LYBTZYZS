@@ -26,7 +26,7 @@ namespace LYBT.Entities.Common
         /// 更新时间
         /// </summary>
         [DisplayName("更新时间")]
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.Now;
 
         /// <summary>
         /// 创建者ID

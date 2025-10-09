@@ -211,3 +211,4 @@
 ---
 以上约束如需调整，须先在 GitHub Issue 中提出并获批准，再同步更新本文档及相关标准。
 - issue默认创建在 GitHub 上
+- 积极使用时序思考MCP工具和Serena MCP工具。

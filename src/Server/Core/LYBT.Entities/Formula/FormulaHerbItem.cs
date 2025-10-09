@@ -26,6 +26,12 @@ namespace LYBT.Entities.Formula
         public Guid FormulaId { get; set; }
 
         /// <summary>
+        /// 关联的验方实体
+        /// </summary>
+        [ForeignKey("FormulaId")]
+        public Formula? Formula { get; set; }
+
+        /// <summary>
         /// Gets or sets 药材ID（关联药材库）.
         /// </summary>
         [DisplayName("药材ID")]
