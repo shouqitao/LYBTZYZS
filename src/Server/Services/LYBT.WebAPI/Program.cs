@@ -8,143 +8,90 @@ using LYBT.WebAPI.Extensions;
 using Serilog;
 using System.Reflection;
 
-namespace LYBT.WebAPI
+/// <summary>
+/// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
+/// Issue #1077 修复：Program类移到全局命名空间确保WebApplicationFactory兼容性
+/// </summary>
+public class Program
 {
-    public class Program
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
+        // 环境感知的配置构建
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var configBuilder = new ConfigurationBuilder();
+
+        if (environment == "Development")
         {
-            // =========== UltraThink安全配置加载逻辑 ===========
-            // 生产环境优先使用安全配置文件，开发环境使用标准配置
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-            var configBuilder = new ConfigurationBuilder();
+            configBuilder.AddJsonFile("appsettings.json", optional: false);
+        }
+        else
+        {
+            configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
+        }
 
-            if (environment == "Development")
+        configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
+        configBuilder.AddEnvironmentVariables();
+
+        // 配置Serilog
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configBuilder.Build())
+            .CreateLogger();
+
+        try
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            
+            // 配置主机和服务
+            builder.Host.ConfigureEnvironmentAwareHosting();
+            builder.Host.UseSerilog();
+            builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
+
+            // 生产环境配置验证
+            if (builder.Environment.IsProduction())
             {
-                // 开发环境：加载基础配置文件（包含开发用默认值）
-                configBuilder.AddJsonFile("appsettings.json", optional: false);
-            }
-            else
-            {
-                // 生产环境：仅使用安全配置模板 + 环境变量
-                configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
-            }
-
-            // 环境特定配置覆盖（如果存在）
-            configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
-
-            // 环境变量具有最高优先级（用于敏感配置）- 只保留这一处
-            configBuilder.AddEnvironmentVariables();
-
-            // 检测是否在测试环境中运行
-            var isTestEnvironment = Assembly.GetEntryAssembly()?.GetName().Name?.Contains("testhost") == true
-                                   || environment == "Test"
-                                   || environment == "Testing";
-
-            if (isTestEnvironment)
-            {
-                // 测试环境：使用简化日志配置，避免SQL Server依赖
-                Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Warning()
-                    .WriteTo.Console()
-                    .CreateLogger();
-            }
-            else
-            {
-                // 生产/开发环境：使用完整配置
-                Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(configBuilder.Build())
-                    .CreateLogger();
+                var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+                try
+                {
+                    validator.ValidateOrThrow();
+                    Log.Information("✅ Production 配置验证通过");
+                }
+                catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
+                {
+                    Log.Fatal(ex, "❌ Production 配置验证失败");
+                    Console.Error.WriteLine(ex.Message);
+                    Environment.Exit(1);
+                }
             }
 
+            var app = builder.Build();
+
+            // 初始化应用服务
             try
             {
-                Log.Information(isTestEnvironment ? "测试环境启动" : "启动 LYBT WebAPI 服务...");
-
-                var builder = WebApplication.CreateBuilder(args);
-
-                // 配置主机（测试环境跳过某些配置）
-                if (!isTestEnvironment)
-                {
-                    builder.Host.ConfigureEnvironmentAwareHosting();
-                }
-
-                // 配置Serilog作为日志提供程序
-                builder.Host.UseSerilog();
-
-                // =========== UltraThink统一服务注册 ===========
-                builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
-
-                // =========== Production 配置验证 ===========
-                if (!isTestEnvironment && builder.Environment.IsProduction())
-                {
-                    var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
-                    try
-                    {
-                        validator.ValidateOrThrow();
-                        Log.Information("✅ Production 配置验证通过");
-                    }
-                    catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
-                    {
-                        Log.Fatal(ex, "❌ Production 配置验证失败");
-                        Console.Error.WriteLine(ex.Message);
-                        Environment.Exit(1);
-                    }
-                }
-
-                // =========== 构建应用 ===========
-                var app = builder.Build();
-
-                // =========== 应用初始化（测试环境简化） ===========
-                if (!isTestEnvironment)
-                {
-                    // 生产/开发环境：完整初始化
-                    await app.InitializeAllApplicationServices();
-                    await app.DisplayDatabaseStatusAsync();
-                    app.DisplayDevelopmentStartupInfo();
-                }
-
-                // =========== 中间件配置 ===========
-                app.ConfigureAllMiddleware();
-
-                if (!isTestEnvironment)
-                {
-                    app.UseDevelopmentRequestLogging();
-                }
-
-                Log.Information(isTestEnvironment ? "测试环境应用构建完成" : "应用配置完成");
-
-                // =========== Issue #1077 修复：运行应用（测试环境特殊处理） ===========
-                if (!isTestEnvironment)
-                {
-                    // 生产/开发环境：使用完整的生命周期管理
-                    await app.ConfigureEnvironmentAwareShutdown();
-                }
-                // 测试环境：不调用app.Run()，由WebApplicationFactory管理应用生命周期
+                await app.InitializeAllApplicationServices();
+                await app.DisplayDatabaseStatusAsync();
+                app.DisplayDevelopmentStartupInfo();
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "应用程序启动失败");
-                if (!isTestEnvironment)
-                {
-                    throw; // 生产环境重新抛出异常
-                }
-                else
-                {
-                    Log.Warning("测试环境中忽略启动异常，继续执行");
-                }
+                Log.Error(ex, "应用初始化过程中出现错误");
             }
-            finally
-            {
-                if (!isTestEnvironment)
-                {
-                    Log.CloseAndFlush();
-                }
-            }
-        }
 
+            // 配置中间件
+            app.ConfigureAllMiddleware();
+            app.UseDevelopmentRequestLogging();
+
+            Log.Information("应用配置完成，启动中...");
+            await app.RunAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "应用程序启动失败");
+            throw;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 }
-
-// Issue #1077 修复：为集成测试提供全局Program类访问权限
-public partial class Program { }
