@@ -85,11 +85,6 @@
     <ProjectReference Include="..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Workstation Modules">
-    <ProjectReference Include="..\Workstations\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
-    <ProjectReference Include="..\Workstations\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
-  </ItemGroup>
-
   <ItemGroup Label="Business Modules">
     <ProjectReference Include="..\Modules\LYBT.Desktop.Auth\LYBT.Desktop.Auth.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj" />
@@ -99,6 +94,11 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Label="Workstation Modules">
+    <ProjectReference Include="..\Workstations\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
+    <ProjectReference Include="..\Workstations\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->
