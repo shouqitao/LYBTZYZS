@@ -23,6 +23,8 @@
     <PackageReference Include="Bogus"  />
     <PackageReference Include="System.Data.SqlClient" />
     <PackageReference Include="System.Net.Http.Json" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>
 
   <ItemGroup>

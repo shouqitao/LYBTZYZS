@@ -230,8 +230,7 @@ public class AuthServiceTests : IDisposable
         _mockJwtService.Setup(x => x.GenerateToken(
             testUserDto.Id.ToString(),
             testUserDto.UserName,
-            testUserDto.Role,
-            null))
+            testUserDto.Role))
             .Returns(expectedToken);
 
         // Act

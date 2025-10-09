@@ -1,0 +1,102 @@
+﻿{
+    "Summary":  {
+                    "Failed":  15,
+                    "PassRate":  "0%",
+                    "Total":  15,
+                    "Passed":  0
+                },
+    "Environment":  "http://localhost:5000",
+    "Results":  [
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "Doctor账号登录"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "Admin账号登录（BCrypt问题）"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "无效凭据登录"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询中药材列表"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "搜索中药材"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询验方列表（需认证）"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "搜索验方"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询患者列表"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "创建新患者"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询病历列表"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询处方列表"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询咨询列表"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "查询用户列表（需管理员权限）"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "健康检查端点"
+                    },
+                    {
+                        "Message":  "找不到与参数名称“StatusCodeVariable”匹配的参数。",
+                        "Timestamp":  "2025-10-09 09:02:16",
+                        "Success":  false,
+                        "TestName":  "API健康检查"
+                    }
+                ],
+    "TestDate":  "2025-10-09 09:02:16"
+}

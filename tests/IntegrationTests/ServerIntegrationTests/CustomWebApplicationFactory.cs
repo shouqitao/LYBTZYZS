@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace LYBT.Tests.IntegrationTests
 {
@@ -21,7 +24,7 @@ namespace LYBT.Tests.IntegrationTests
             _testDatabaseName = $"LYBTDB_Test_{Guid.NewGuid():N}";
         }
 
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
+protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((context, config) =>
             {
@@ -33,8 +36,14 @@ namespace LYBT.Tests.IntegrationTests
                 }
             });
 
+
+
             builder.ConfigureServices(services =>
             {
+                // 重新配置日志系统以避免MSSqlServer连接字符串问题
+                services.RemoveAll<ILoggerProvider>();
+                services.AddLogging(builder => builder.ClearProviders().AddConsole());
+                
                 // 移除生产环境的DbContext
                 var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
                 if (descriptor != null)

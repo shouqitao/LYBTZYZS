@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- 测试运行配置 -->
+  <RunConfiguration>
+    <!-- 并行执行的最大CPU数，设为1确保测试稳定性 -->
+    <MaxCpuCount>1</MaxCpuCount>
+    <!-- 测试结果目录 -->
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <!-- 测试超时时间（毫秒）：5分钟 -->
+    <TestSessionTimeout>300000</TestSessionTimeout>
+    <!-- 没有测试时不视为错误 -->
+    <TreatNoTestsAsError>false</TreatNoTestsAsError>
+    <!-- 目标框架 -->
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+  </RunConfiguration>
+
+  <!-- 数据收集器配置 -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <!-- 代码覆盖率收集器 -->
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <Configuration>
+          <!-- 输出格式 -->
+          <Format>cobertura</Format>
+          <!-- 排除的文件模式 -->
+          <ExcludeByFile>
+            **/obj/**,
+            **/bin/**,
+            **/*.Designer.cs,
+            **/*.g.cs,
+            **/Migrations/**
+          </ExcludeByFile>
+          <!-- 排除的程序集 -->
+          <ExcludeByAttribute>
+            Obsolete,
+            GeneratedCodeAttribute,
+            CompilerGeneratedAttribute
+          </ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <!-- MSTest 配置（如果使用MSTest） -->
+  <MSTest>
+    <Parallelize>
+      <Workers>1</Workers>
+      <Scope>MethodLevel</Scope>
+    </Parallelize>
+  </MSTest>
+
+  <!-- xUnit 配置 -->
+  <RunSettings>
+    <DisableParallelization>false</DisableParallelization>
+    <MaxParallelThreads>1</MaxParallelThreads>
+  </RunSettings>
+</RunSettings>
