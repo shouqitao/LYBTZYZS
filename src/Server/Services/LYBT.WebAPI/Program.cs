@@ -2,102 +2,96 @@
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
 /// UltraThink重构：采用统一服务注入管理，简化代码结构，提高可维护性
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持
+/// Issue #1077 Fix: 转换为传统Main方法确保WebApplicationFactory完全兼容性
 /// </summary>
 using LYBT.WebAPI.Extensions;
 using Serilog;
+using System.Reflection;
 
-// =========== UltraThink安全配置加载逻辑 ===========
-// 生产环境优先使用安全配置文件，开发环境使用标准配置
-var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-var configBuilder = new ConfigurationBuilder();
-
-if (environment == "Development")
+/// <summary>
+/// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
+/// Issue #1077 修复：Program类移到全局命名空间确保WebApplicationFactory兼容性
+/// </summary>
+public class Program
 {
-    // 开发环境：加载基础配置文件（包含开发用默认值）
-    configBuilder.AddJsonFile("appsettings.json", optional: false);
-}
-else
-{
-    // 生产环境：仅使用安全配置模板 + 环境变量
-    configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
-}
-
-// 环境特定配置覆盖（如果存在）
-configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
-
-// 环境变量具有最高优先级（用于敏感配置）- 只保留这一处
-configBuilder.AddEnvironmentVariables();
-
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(configBuilder.Build())
-    .CreateLogger();
-
-try
-{
-    Log.Information("启动 LYBT WebAPI 服务...");
-
-    var builder = WebApplication.CreateBuilder(args);
-
-    // 配置环境感知的主机运行模式
-    builder.Host.ConfigureEnvironmentAwareHosting();
-
-    // 配置Serilog作为日志提供程序
-    builder.Host.UseSerilog();
-
-    // =========== 端口配置 ===========
-    // 端口配置已移至 appsettings.json 中的 Kestrel 配置
-
-    // 移除重复的环境变量配置（已在上面configBuilder中添加）
-
-    // =========== UltraThink统一服务注册 ===========
-    builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
-
-    // =========== Production 配置验证 ===========
-    if (builder.Environment.IsProduction())
+    public static async Task Main(string[] args)
     {
-        var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+        // 环境感知的配置构建
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var configBuilder = new ConfigurationBuilder();
+
+        if (environment == "Development")
+        {
+            configBuilder.AddJsonFile("appsettings.json", optional: false);
+        }
+        else
+        {
+            configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
+        }
+
+        configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
+        configBuilder.AddEnvironmentVariables();
+
+        // 配置Serilog
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configBuilder.Build())
+            .CreateLogger();
+
         try
         {
-            validator.ValidateOrThrow();
-            Log.Information("✅ Production 配置验证通过");
+            var builder = WebApplication.CreateBuilder(args);
+            
+            // 配置主机和服务
+            builder.Host.ConfigureEnvironmentAwareHosting();
+            builder.Host.UseSerilog();
+            builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
+
+            // 生产环境配置验证
+            if (builder.Environment.IsProduction())
+            {
+                var validator = new LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationValidator(builder.Configuration);
+                try
+                {
+                    validator.ValidateOrThrow();
+                    Log.Information("✅ Production 配置验证通过");
+                }
+                catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
+                {
+                    Log.Fatal(ex, "❌ Production 配置验证失败");
+                    Console.Error.WriteLine(ex.Message);
+                    Environment.Exit(1);
+                }
+            }
+
+            var app = builder.Build();
+
+            // 初始化应用服务
+            try
+            {
+                await app.InitializeAllApplicationServices();
+                await app.DisplayDatabaseStatusAsync();
+                app.DisplayDevelopmentStartupInfo();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "应用初始化过程中出现错误");
+            }
+
+            // 配置中间件
+            app.ConfigureAllMiddleware();
+            app.UseDevelopmentRequestLogging();
+
+            Log.Information("应用配置完成，启动中...");
+            await app.RunAsync();
         }
-        catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
+        catch (Exception ex)
         {
-            Log.Fatal(ex, "❌ Production 配置验证失败");
-            Console.Error.WriteLine(ex.Message);
-            Environment.Exit(1);
+            Log.Fatal(ex, "应用程序启动失败");
+            throw;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
-
-    // =========== 构建应用 ===========
-    var app = builder.Build();
-
-    // =========== UltraThink统一初始化 ===========
-    await app.InitializeAllApplicationServices();
-
-    // =========== UltraThink统一中间件配置 ===========
-    app.ConfigureAllMiddleware();
-
-    // =========== 开发模式请求日志中间件 ===========
-    app.UseDevelopmentRequestLogging();
-
-    // =========== 显示数据库状态 ===========
-    await app.DisplayDatabaseStatusAsync();
-
-    // =========== 显示开发模式启动信息 ===========
-    app.DisplayDevelopmentStartupInfo();
-
-    // =========== 环境感知的优雅关闭配置 ===========
-    await app.ConfigureEnvironmentAwareShutdown();
 }
-catch (Exception ex)
-{
-    Log.Fatal(ex, "应用程序启动失败");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
-
-// P3-Fix: 为集成测试提供Program类访问权限
-public partial class Program { }

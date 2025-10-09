@@ -2,6 +2,7 @@
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -46,6 +47,63 @@ namespace LYBT.WebAPI.Controllers
             {
                 Log.Error(ex, "获取用户列表失败");
                 return StatusCode(500, ApiResponse<PagedResult<UserDto>>.CreateFail("获取用户列表失败"));
+            }
+        }
+
+        /// <summary>
+        /// 获取当前登录用户信息
+        /// </summary>
+        /// <summary>
+        /// 获取当前登录用户信息
+        /// </summary>
+        [HttpGet("current")]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(ApiResponse<UserDto>.CreateFail("无法获取当前用户信息"));
+                }
+
+                // 特殊处理超级管理员
+                if (userId == Guid.Empty)
+                {
+                    var username = User.Identity?.Name ?? "sysadmin";
+                    var isSuperAdmin = User.FindFirst("IsSuperAdmin")?.Value == "true";
+                    
+                    if (isSuperAdmin)
+                    {
+                        // 返回超级管理员的虚拟用户信息
+                        var superAdminDto = new UserDto
+                        {
+                            Id = Guid.Empty,
+                            UserName = username,
+                            RealName = "系统超级管理员",
+                            Role = UserRole.Admin,
+                            Email = "admin@lybt.com",
+                            Status = CommonStatus.Enabled,
+                            CreatedAt = DateTime.MinValue,
+                            UpdatedAt = DateTime.Now
+                        };
+                        return Ok(ApiResponse<UserDto>.CreateSuccess(superAdminDto));
+                    }
+                }
+
+                var result = await _userService.GetByIdAsync(userId);
+                if (result.IsSuccess && result.Data != null)
+                {
+                    return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
+                }
+                return NotFound(ApiResponse<UserDto>.CreateFail("用户不存在"));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "获取当前用户信息失败");
+                return StatusCode(500, ApiResponse<UserDto>.CreateFail("获取当前用户信息失败"));
             }
         }
 

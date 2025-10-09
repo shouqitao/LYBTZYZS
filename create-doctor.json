@@ -1,0 +1,9 @@
+{
+  "username": "doctor1",
+  "realName": "张医生",
+  "role": "Doctor",
+  "password": "Pass123!",
+  "confirmPassword": "Pass123!",
+  "phoneNumber": "13800138001",
+  "email": "doctor1@lybt.com"
+}

@@ -35,6 +35,7 @@
 |----------|------|----------|
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
 | [development/testing-guide.md](development/testing-guide.md) | **测试运行指南** ✨ | **VS2022/CLI测试、xUnit配置、MVP覆盖度分析、最佳实践** |
+| [architecture/testing/architecture-testing-guide.md](architecture/testing/architecture-testing-guide.md) | **架构测试指南** 🏗️ | **Server/Desktop架构约束、15条规则、100%通过率** |
 | [development/ai-assisted-automation-workflow.md](development/ai-assisted-automation-workflow.md) | **AI辅助自动化工作流程** | **Issue驱动开发、Claude+Serena双重审查、GitHub自动化** |
 | [security/](security/) | 安全指导文档 | JWT安全配置、安全加固指南 |
 | [deployment/](deployment/) | **部署与配置指南** | **Production环境配置、环境变量设置、配置验证脚本** |

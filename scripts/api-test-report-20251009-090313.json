@@ -1,0 +1,8 @@
+﻿{
+    "TestDate":  "2025-10-09 09:03:13",
+    "Passed":  2,
+    "Environment":  "http://localhost:5000",
+    "TotalTests":  9,
+    "Failed":  7,
+    "PassRate":  "22.22%"
+}

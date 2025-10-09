@@ -18,6 +18,9 @@ namespace LYBT.Module.Formula.Mapping
         CreateMap<LYBT.Entities.Formula.Formula, FormulaDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
+        // FormulaHerbItem -> FormulaHerbItemDto
+        CreateMap<LYBT.Entities.Formula.FormulaHerbItem, FormulaHerbItemDto>();
+
         // Formula -> FormulaDetailDto
         CreateMap<LYBT.Entities.Formula.Formula, FormulaDetailDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
