@@ -192,6 +192,212 @@
 
 **📚 详细参考**：[MCP工具参考手册](docs/development/mcp-tools-reference.md) - 包含完整参数规范、调用示例、工作流模式与错误处理策略
 
+## 7. 工作模式（7种行为模式）
+
+参考SuperClaude Framework的理念，定义7种专业化工作模式。每种模式包含特定的工作流程、工具链和质量标准。
+
+### 7.1 🔍 Code Review Mode - 代码审查模式
+
+**触发方式**: `/code-review` 或明确要求代码审查
+
+**工作流程**:
+1. 读取 `docs/development/standards.md` 和相关架构标准
+2. 使用 `mcp__serena__read_file` 读取目标代码
+3. 使用 `mcp__serena__find_symbol` 分析类和方法
+4. 执行审查清单（代码质量、.NET最佳实践、架构合规、安全性、性能）
+5. 生成审查报告（通过项/建议改进/必须修复）
+
+**工具链**: serena, context7, sequential-thinking
+
+**质量标准**:
+- 命名规范100%符合（PascalCase/_camelCase）
+- 无黑名单技术引入
+- 异步方法正确使用async/await
+- 依赖注入仅使用构造函数注入
+
+**相关命令**: `/code-review`, `/review-arch`
+
+---
+
+### 7.2 🏗️ Architecture Mode - 架构审查模式
+
+**触发方式**: `/review-arch` 或重大架构变更
+
+**工作流程**:
+1. 读取架构标准文档（server/client/project-status）
+2. 分析代码变更（git diff + serena.find_symbol）
+3. 检查架构合规性（三层/四层架构、依赖方向）
+4. 运行架构测试（DesktopLayerArchTests/ArchTests）
+5. 生成架构审查报告
+
+**工具链**: serena, git, sequential-thinking
+
+**质量标准**:
+- 黑名单技术检查：0违规
+- Server端：Controller→Service→Repository 依赖方向正确
+- Desktop端：Shell→Workstation→Module→Core 依赖方向正确
+- 架构测试通过率：100%
+
+**相关命令**: `/review-arch`, `/analyze-dependencies`
+
+---
+
+### 7.3 ⚡ Performance Mode - 性能优化模式
+
+**触发方式**: `/analyze-perf` 或性能问题报告
+
+**工作流程**:
+1. 识别性能问题（数据库查询/内存泄漏/并发问题）
+2. 使用 `mcp__serena__search_for_pattern` 搜索性能反模式
+3. 分析代码实现（Repository/Service层）
+4. 量化影响（网络流量/内存/响应时间）
+5. 提供优化建议和代码示例
+6. 生成性能分析报告
+
+**工具链**: serena, sequential-thinking, git
+
+**关键检查项**:
+- ❌ N+1查询问题
+- ❌ 客户端分页/过滤
+- ❌ 缺少分页参数
+- ❌ 阻塞异步调用
+- ❌ 资源未释放
+
+**相关命令**: `/analyze-perf`, `/analyze-queries`
+
+---
+
+### 7.4 🔄 Refactoring Mode - 重构规划模式
+
+**触发方式**: `/refactor-plan` 或重构任务
+
+**工作流程**:
+1. **激活UltraThink**：使用 `mcp__sequential-thinking` 进行20-30步结构化分析
+2. **问题识别**（1-5步）：代码异味、架构违规、技术债务
+3. **根因分析**（6-10步）：追溯历史、设计缺陷、量化影响
+4. **方案设计**（11-15步）：目标架构、候选方案、风险评估
+5. **实施规划**（16-20步）：Phase拆分、验收标准、工期评估
+6. 生成重构计划文档（Markdown格式）
+7. 创建GitHub Epic Issue和Phase Issues
+
+**工具链**: sequential-thinking, serena, git, gh (GitHub CLI)
+
+**输出标准**:
+- UltraThink分析步数：≥20步
+- Phase数量：4-6个
+- 每个Phase包含验收标准
+- ROI分析（投入vs收益）
+
+**相关命令**: `/refactor-plan`, `/brainstorm`
+
+---
+
+### 7.5 🧪 Testing Mode - 测试驱动模式
+
+**触发方式**: `/generate-tests` 或测试任务
+
+**工作流程**:
+1. 分析目标类的公共方法（使用serena.find_symbol）
+2. 生成测试类骨架（AAA模式：Arrange-Act-Assert）
+3. 配置Mock对象
+4. 生成每个方法的测试用例
+5. 执行测试覆盖率分析
+6. 识别未覆盖的关键代码路径
+
+**工具链**: serena, git
+
+**质量标准**:
+- 测试命名：{MethodName}_{Scenario}_{ExpectedResult}
+- 每个公共方法至少1个测试
+- Mock对象正确配置
+- 测试独立性（无依赖其他测试）
+
+**相关命令**: `/generate-tests`, `/test-coverage`
+
+---
+
+### 7.6 📝 Documentation Mode - 文档同步模式
+
+**触发方式**: `/update-docs`, `/generate-readme` 或文档任务
+
+**工作流程**:
+1. 检测代码变更（git diff）
+2. 识别需要更新的文档（架构/API/README）
+3. 使用serena分析代码结构
+4. 生成/更新文档内容
+5. 更新索引（docs/index.md, docs/reports/INDEX.md）
+6. 验证文档链接有效性
+
+**工具链**: serena, git, filesystem
+
+**文档标准**:
+- UTF-8 with BOM编码
+- 符合 `docs/development/documentation-guidelines.md`
+- 按 `docs/development/file-organization-guidelines.md` 归档
+- 更新相关索引
+
+**相关命令**: `/update-docs`, `/generate-readme`, `/generate-api-doc`
+
+---
+
+### 7.7 🧠 Research Mode - 深度研究模式
+
+**触发方式**: `/deep-research`, `/ask` 或技术调研
+
+**工作流程**:
+1. **WebSearch**: 查找最新技术资料和最佳实践
+2. **Context7**: 查询相关库的权威文档
+3. **Serena**: 分析项目现有实现
+4. **Sequential-thinking**: 整合多源信息，结构化分析
+5. 生成研究报告（技术背景/最佳实践/项目适用建议/参考资料）
+
+**工具链**: WebSearch, context7, serena, sequential-thinking
+
+**输出标准**:
+- 技术背景完整
+- 引用权威来源（官方文档/技术博客）
+- 适用于本项目的具体建议
+- 参考资料链接可访问
+
+**相关命令**: `/deep-research`, `/ask`, `/brainstorm`
+
+---
+
+### 7.8 模式切换与组合
+
+#### 自动模式识别
+Claude Code会根据用户请求自动选择合适的模式：
+- "帮我审查这段代码" → Code Review Mode
+- "分析这个性能问题" → Performance Mode
+- "规划重构方案" → Refactoring Mode + UltraThink
+
+#### 模式组合使用
+复杂任务可组合多种模式：
+```
+Performance Mode → Create Issue → Refactoring Mode → Generate PR
+   ↓                    ↓                 ↓              ↓
+analyze-perf    create-issue        refactor-plan  generate-pr
+```
+
+#### 强制指定模式
+使用对应的slash命令强制切换到特定模式：
+```
+/review-arch        → 强制Architecture Mode
+/analyze-perf       → 强制Performance Mode
+/refactor-plan      → 强制Refactoring Mode (UltraThink)
+```
+
+---
+
+**💡 最佳实践**:
+- 重构任务优先使用Refactoring Mode（UltraThink深度分析）
+- PR合并前使用Architecture Mode + Code Review Mode
+- 性能问题使用Performance Mode + Research Mode组合
+
+**📚 详细说明**: 每种模式的具体执行细节请参考 `.claude/commands/README.md`
+
+---
+
 ### 3.1 代码修复后的后台清理（Run-to-Completion Hygiene）
 
 为避免测试通过后遗留的运行中后台进程或临时环境状态影响后续验证，完成修复并通过测试后，必须执行以下清理：
@@ -212,3 +418,4 @@
 以上约束如需调整，须先在 GitHub Issue 中提出并获批准，再同步更新本文档及相关标准。
 - issue默认创建在 GitHub 上
 - 积极使用时序思考MCP工具和Serena MCP工具。
+- 所有用到时间的地方通用 time MCP工具获取最新时间。
