@@ -5,6 +5,7 @@ using LYBT.Entities.Consultation;
 using LYBT.Entities.MedicalCase;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ namespace LYBT.UnitTests.Core.Services
     public class ConsultationServiceTests : IDisposable
     {
         private readonly Mock<IConsultationRepository> _repositoryMock;
+        private readonly Mock<IMedicalCaseRepository> _medicalCaseRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<ConsultationService>> _loggerMock;
         private readonly ConsultationService _service;
@@ -26,11 +28,16 @@ namespace LYBT.UnitTests.Core.Services
         public ConsultationServiceTests()
         {
             _repositoryMock = new Mock<IConsultationRepository>();
+            _medicalCaseRepositoryMock = new Mock<IMedicalCaseRepository>();
             _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILogger<ConsultationService>>();
 
             // 创建服务实例
-            _service = new ConsultationService(_repositoryMock.Object, _mapperMock.Object, _loggerMock.Object);
+            _service = new ConsultationService(
+                _repositoryMock.Object,
+                _medicalCaseRepositoryMock.Object,
+                _mapperMock.Object,
+                _loggerMock.Object);
         }
 
         #region Get Through MedicalCase Tests
