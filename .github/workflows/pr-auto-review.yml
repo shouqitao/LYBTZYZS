@@ -46,7 +46,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const changedFiles = `${{ steps.files.outputs.changed_files }}`.trim();
+            // 使用 String() 构造函数来避免模板字符串的八进制转义序列问题
+            const changedFiles = String.raw`${{ steps.files.outputs.changed_files }}`.trim();
             const filesChanged = '${{ steps.files.outputs.files_changed }}';
             const linesAdded = '${{ steps.files.outputs.lines_added }}';
             const linesDeleted = '${{ steps.files.outputs.lines_deleted }}';
