@@ -33,27 +33,9 @@ namespace LYBT.Infrastructure.Data.Configurations
             // 配置并发控制字段
             entity.Property(u => u.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            // Seed Data：创建系统唯一默认超级管理员 sysadmin
-            // 注意：密码哈希为 BCrypt hash of "LybtAdmin2025@SecurePass!"
-            // 使用 BCrypt.Net.BCrypt.HashPassword("LybtAdmin2025@SecurePass!") 生成
-            entity.HasData(new User
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                UserName = "sysadmin",
-                Email = "admin@lybt.com",
-                RealName = "系统管理员",
-                // BCrypt hash for "LybtAdmin2025@SecurePass!"
-                // 使用 BCrypt.Net.BCrypt.HashPassword("LybtAdmin2025@SecurePass!", 11) 生成
-                PasswordHash = "$2a$11$6vF3z.VwKQZLXxE9wE3D1eO5v6qU4xKQF9Qq9Ek3Z8Ky7Jq3Mq9oG",
-                Role = UserRole.Admin, // 系统管理员角色
-                Status = CommonStatus.Enabled, // 激活状态
-                CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                UpdatedAt = null,
-                IsDeleted = false,
-                FailedLoginCount = 0,
-                CreatedBy = null,
-                UpdatedBy = null
-            });
+            // Issue #1074: 移除sysadmin种子数据
+            // 超级管理员通过AdminSecrets表认证，不应存在于Users表中
+            // 保持Users表仅用于业务用户，确保架构边界清晰
         }
     }
 }

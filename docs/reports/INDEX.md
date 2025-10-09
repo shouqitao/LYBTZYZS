@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-09 | `api-test-summary-2025-10-09.md` | **API集成测试汇总报告** - 核心API测试验证，Formula修复(PR #1072)，Admin认证问题(Issue #1073)，MVP发布就绪评估 |
 | 2025-10-08 | `test-execution-verification-2025-10-08.md` | **Issue #1049 Phase 3 Server端单元测试执行验证报告** - 7个模块测试验证（6个100%通过/146测试，1个95.7%通过，1个126编译错误需重写），修复ConfigureServices初始化问题，创建Issue #1053追踪MedicalCase.Tests重写 |
 | 2025-10-05 | `workflow-analysis-issue-933.md` | **Issue #933 CI/CD Workflow 分析报告** - 22个workflow合并为≤8个（发现3个严重违规：Docker/K8s，3个覆盖率门禁冲突0.5% vs 70%~90%，设计新8-workflow结构） |
 | 2025-10-04 | `architecture-unification-issue-897-2025-10-04.md` | **Issue #897 架构统一报告** - Desktop ViewModels 基类统一（40个ViewModels，迁移4个，统一率77.5%→87.5%，符合Prism MVVM最佳实践） |
