@@ -35,6 +35,11 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
+  <!-- Prism Framework -->
+  <ItemGroup Label="Prism Framework">
+    <PackageReference Include="Prism.Core" />
+  </ItemGroup>
+
   <!-- Configuration and Caching -->
   <ItemGroup Label="Configuration">
     <PackageReference Include="Microsoft.Extensions.Configuration" />
