@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     /// ������������ͼģ�� - �򻯰洿���ݼ�¼
     /// ֻ����򵥵���������¼�룬���������̼�ܺ����ܴ���
     /// </summary>
-    public class ConsultationMainViewModel : UnifiedViewModelBase
+    public class MedicalCaseMainViewModel : UnifiedViewModelBase
     {
 
         #region ��������
@@ -133,7 +133,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region ���캯��
 
-        public ConsultationMainViewModel(
+        public MedicalCaseMainViewModel(
         IConsultationService consultationService,
         IMedicalCaseService medicalCaseService,
         IPatientService patientService,

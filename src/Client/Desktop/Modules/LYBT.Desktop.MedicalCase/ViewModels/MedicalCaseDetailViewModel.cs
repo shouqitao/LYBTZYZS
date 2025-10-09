@@ -405,7 +405,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     { "MedicalCaseId", MedicalCase.Id }
                 };
 
-                NavigateTo("MainRegion", "ConsultationMainView", parameters);
+                NavigateTo("MainRegion", "MedicalCaseMainView", parameters);
             }
             catch (Exception ex)
             {

@@ -20,11 +20,11 @@ namespace LYBT.Desktop.Consultation
             // Services由Core_New/Services统一注册，不在Module中注册
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.ConsultationMainViewModel>();
+            containerRegistry.Register<ViewModels.MedicalCaseMainViewModel>();
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
 
             // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.ConsultationMainView>();
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseMainView>();
             containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
         }
     }
