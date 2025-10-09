@@ -89,7 +89,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Items.Should().HaveCount(1);
+            result.Data!.Items.Should().HaveCount(1);
             result.Data.TotalCount.Should().Be(1);
 
             _repositoryMock.Verify(x => x.GetPagedWithDetailsAsync(1, 20, null), Times.Once);
@@ -161,7 +161,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(prescriptionId);
+            result.Data!.Id.Should().Be(prescriptionId);
             result.Data.Items.Should().HaveCount(1);
         }
 
@@ -171,7 +171,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             // Arrange
             var nonExistentId = Guid.NewGuid();
             _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(nonExistentId))
-                .ReturnsAsync((Prescription)null);
+                .ReturnsAsync((Prescription?)null);
 
             // Act
             var result = await _prescriptionService.GetByIdAsync(nonExistentId);
@@ -449,7 +449,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Id.Should().Be(prescriptionId);
+            result.Data!.Id.Should().Be(prescriptionId);
             // 价格计算：(12 * 0.5 + 9 * 0.8) * 7 * 0.9 = (6 + 7.2) * 7 * 0.9 = 13.2 * 7 * 0.9 = 83.16
             result.Data.TotalPrice.Should().BeApproximately(83.16m, 0.01m);
         }
@@ -460,7 +460,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             // Arrange
             var nonExistentId = Guid.NewGuid();
             _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(nonExistentId))
-                .ReturnsAsync((Prescription)null);
+                .ReturnsAsync((Prescription?)null);
 
             // Act
             var result = await _prescriptionService.RecalculatePriceAsync(nonExistentId);
@@ -526,7 +526,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             // Arrange
             var nonExistentId = Guid.NewGuid();
             _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(nonExistentId))
-                .ReturnsAsync((Prescription)null);
+                .ReturnsAsync((Prescription?)null);
 
             // Act
             var result = await _prescriptionService.GeneratePrintFormatAsync(nonExistentId);

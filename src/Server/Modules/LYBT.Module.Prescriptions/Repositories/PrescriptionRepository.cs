@@ -25,13 +25,13 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <summary>
         /// 根据ID获取处方（包含处方项和药材信息）
         /// </summary>
-        public async Task<PrescriptionEntity> GetByIdWithItemsAsync(Guid id)
+        public async Task<PrescriptionEntity?> GetByIdWithItemsAsync(Guid id)
         {
-            return (await _dbSet
+            return await _dbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.Id == id && !p.IsDeleted)
-                .FirstOrDefaultAsync())!;
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>

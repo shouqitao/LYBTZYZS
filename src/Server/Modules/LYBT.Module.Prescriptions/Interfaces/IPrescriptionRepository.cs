@@ -12,7 +12,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据ID获取处方（包含处方项和药材信息）
         /// </summary>
-        Task<Prescription> GetByIdWithItemsAsync(Guid id);
+        Task<Prescription?> GetByIdWithItemsAsync(Guid id);
 
         /// <summary>
         /// 获取分页列表（包含关联数据）
