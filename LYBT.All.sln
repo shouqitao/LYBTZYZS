@@ -151,6 +151,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{5F8C5971-0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Foundation", "src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj", "{4F6C7072-74EF-4202-B95D-0D2051C7B86B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Presentation", "src\Client\Desktop\Core\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj", "{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -701,6 +703,18 @@ Global
 		{4F6C7072-74EF-4202-B95D-0D2051C7B86B}.Release|x64.Build.0 = Release|Any CPU
 		{4F6C7072-74EF-4202-B95D-0D2051C7B86B}.Release|x86.ActiveCfg = Release|Any CPU
 		{4F6C7072-74EF-4202-B95D-0D2051C7B86B}.Release|x86.Build.0 = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|x64.Build.0 = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|x64.ActiveCfg = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|x64.Build.0 = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -775,6 +789,7 @@ Global
 		{541EB82A-D313-4594-AF6C-CB36F2760CA3} = {6C894970-EBDD-4BC3-958B-CDD5682657C4}
 		{5F8C5971-0354-4201-8FC3-B1E2A5EB95CA} = {541EB82A-D313-4594-AF6C-CB36F2760CA3}
 		{4F6C7072-74EF-4202-B95D-0D2051C7B86B} = {5F8C5971-0354-4201-8FC3-B1E2A5EB95CA}
+		{5D0F8D1F-55E7-4C7F-B584-0D5355338D15} = {5F8C5971-0354-4201-8FC3-B1E2A5EB95CA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0E1F2A3-B4C5-4D6E-7F8A-9B0C1D2E3F4A}
