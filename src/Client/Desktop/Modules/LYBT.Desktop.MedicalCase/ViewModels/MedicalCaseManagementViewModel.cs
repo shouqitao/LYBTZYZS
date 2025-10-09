@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Interfaces.Services;
 using Microsoft.Extensions.Logging;
@@ -386,9 +387,4 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
 
         #endregion
     }
-
-    /// <summary>
-    /// 数据刷新事件
-    /// </summary>
-    public class DataRefreshEvent : PubSubEvent<string> { }
 }
