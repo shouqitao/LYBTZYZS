@@ -11,8 +11,17 @@ namespace LYBT.Desktop.Patients.Repositories
     {
         Task<List<PatientDto>> GetAllAsync();
         Task<PatientDto> GetByIdAsync(Guid id);
-        Task<PatientDto> CreateAsync(PatientDto patient);
-        Task<PatientDto> UpdateAsync(PatientDto patient);
+
+        /// <summary>
+        /// 创建新患者（使用CreateDto）
+        /// </summary>
+        Task<PatientDto> CreateAsync(PatientCreateDto patient);
+
+        /// <summary>
+        /// 更新患者信息（使用UpdateDto）
+        /// </summary>
+        Task<PatientDto> UpdateAsync(PatientUpdateDto patient);
+
         Task<bool> DeleteAsync(Guid id);
         Task<List<PatientDto>> SearchAsync(string keyword);
 

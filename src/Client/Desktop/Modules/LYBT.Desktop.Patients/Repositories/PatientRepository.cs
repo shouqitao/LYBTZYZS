@@ -7,7 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Patients.Repositories
 {
     /// <summary>
-    /// 患者数据仓储实现 - API集成 - UltraThink架构
+    /// 患者数据仓储实现 - Phase 2模块化架构
+    /// Issue #1114 - 支持CreateDto和UpdateDto
     /// </summary>
     public class PatientRepository : BaseApiRepository<PatientDto>, IPatientRepository
     {
@@ -28,19 +29,29 @@ namespace LYBT.Desktop.Patients.Repositories
             return base.GetByIdAsync(id);
         }
 
-        public override Task<PatientDto> CreateAsync(PatientDto patient)
+        /// <summary>
+        /// 创建新患者（使用CreateDto）
+        /// </summary>
+        public async Task<PatientDto> CreateAsync(PatientCreateDto patient)
         {
-            return base.CreateAsync(patient);
+            if (patient == null)
+                throw new ArgumentNullException(nameof(patient));
+
+            return (await _apiService.PostAsync<PatientCreateDto, PatientDto>(_endpoint, patient))!;
         }
 
-        public Task<PatientDto> UpdateAsync(PatientDto patient)
+        /// <summary>
+        /// 更新患者信息（使用UpdateDto）
+        /// </summary>
+        public async Task<PatientDto> UpdateAsync(PatientUpdateDto patient)
         {
-            if (patient?.Id == null)
+            if (patient?.Id == null || patient.Id == Guid.Empty)
             {
                 _logger.LogError("Cannot update patient with null or invalid id");
-                return Task.FromResult<PatientDto>(null!);
+                throw new ArgumentException("Patient ID is required", nameof(patient));
             }
-            return base.UpdateAsync(patient.Id, patient);
+
+            return (await _apiService.PutAsync<PatientUpdateDto, PatientDto>($"{_endpoint}/{patient.Id}", patient))!;
         }
 
         public override Task<bool> DeleteAsync(Guid id)
