@@ -77,9 +77,15 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <param name="dto">诊疗创建信息</param>
         /// <returns>创建的诊疗信息</returns>
+        /// <remarks>
+        /// ⚠️ 不推荐使用：请通过 MedicalCaseController 创建医疗案例，系统会自动创建关联的诊疗记录。
+        /// MedicalCase 是聚合根，Consultation 作为其一部分使用共享主键模式（Consultation.Id == MedicalCase.Id）。
+        /// 独立创建 Consultation 违反了聚合根架构原则。
+        /// </remarks>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 201)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        [Obsolete("不推荐使用。请通过 POST /api/medicalcases 创建医疗案例，系统会自动创建诊疗记录。此端点仅保留用于向后兼容。", false)]
         public async Task<ActionResult<ApiResponse<ConsultationDto>>> CreateConsultation([FromBody] ConsultationCreateDto dto)
         {
             try

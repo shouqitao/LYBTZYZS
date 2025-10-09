@@ -4,12 +4,12 @@ namespace LYBT.Desktop.Consultation.Views
 {
 
     /// <summary>
-    /// ConsultationMainView.xaml 的交互逻辑 - 简化版纯数据记录界面
+    /// MedicalCaseMainView.xaml 的交互逻辑 - 简化版纯数据记录界面
     /// </summary>
-    public partial class ConsultationMainView : UserControl
+    public partial class MedicalCaseMainView : UserControl
     {
 
-        public ConsultationMainView()
+        public MedicalCaseMainView()
         {
             InitializeComponent();
         }

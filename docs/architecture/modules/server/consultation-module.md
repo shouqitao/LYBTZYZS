@@ -356,6 +356,41 @@ Pending → InProgress → Completed
 Cancelled ← Cancelled
 ```
 
+## 📌 架构修正记录
+
+### 2025-01-09: Issue #1093 - 依赖关系正名
+**问题**：历史设计偏差导致Consultation被误作为中心实体，违反了聚合根架构原则。
+
+**修正内容**：
+1. **明确从属关系**：
+   - Consultation **不是**独立实体，而是 MedicalCase 聚合根的**依赖部分**
+   - 共享主键约束：`Consultation.Id == MedicalCase.Id`（一对一强制关系）
+   - 创建约束：Consultation 必须由 MedicalCase 创建，不允许孤立存在
+
+2. **Server端创建流程调整**：
+   - `MedicalCaseService.CreateAsync()` 自动创建关联的 Consultation
+   - `ConsultationService.CreateAsync()` 添加聚合根校验和一对一约束
+   - `ConsultationController.CreateAsync()` 标记为 `[Obsolete]`，不推荐直接创建
+
+3. **Desktop端业务流程修正**：
+   - `ConsultationMainViewModel` 从"创建"改为"加载并更新"模式
+   - 移除独立创建 Consultation 的逻辑
+   - 通过 MedicalCaseId 加载已存在的 Consultation
+
+**架构原则重申**：
+- **聚合根**：MedicalCase 是聚合根，管理整个诊疗流程
+- **依赖实体**：Consultation 作为 MedicalCase 的一部分，使用共享主键
+- **业务流程**：Patient → **MedicalCase** (自动创建 Consultation) → 更新 Consultation → 可选 Prescription
+- **禁止**：独立创建 Consultation，必须通过 MedicalCase 聚合根
+
+**待进一步优化**：
+- Desktop端命名修正：`ConsultationMainViewModel` 应改名为 `MedicalCaseMainViewModel`（建议新开 Issue）
+- 视图和导航配置相应调整（建议新开 Issue）
+
+**参考资料**：
+- Issue: #1093
+- 相关文档: `docs/architecture/modules/server/medicalcase-module.md`
+
 ## 📋 实现状态
 
 ### ✅ 已实现
