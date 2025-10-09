@@ -14,6 +14,7 @@ namespace LYBT.Desktop.Services.Repositories.Interfaces
         Task<bool> DeleteAsync(Guid id);
         Task<List<ConsultationDto>> SearchAsync(string keyword);
         Task<List<ConsultationDto>> GetByPatientIdAsync(Guid patientId);
+        Task<List<ConsultationDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
         Task<List<ConsultationDto>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<ConsultationDto> GetLatestByPatientIdAsync(Guid patientId);
         Task<List<ConsultationDto>> GetTodayConsultationsAsync();

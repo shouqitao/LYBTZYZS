@@ -335,7 +335,41 @@ namespace LYBT.Desktop.Services.Mapping
 }
 ```
 
-### 4.5 Service 示例模板
+### 4.5 DTO 使用规范
+
+**📚 权威参考**: 请参阅 [DTO 设计原则](../dto-design-principles.md) 获取完整的 DTO 设计规范。
+
+**Desktop 端 DTO 使用要点**:
+
+1. **DTO 来源**:
+   - ✅ 使用 `Shared.Models.Contracts.*` 中的标准 DTO
+   - ❌ 禁止在 Desktop 项目中重复定义 DTO
+
+2. **场景选择**:
+   ```csharp
+   // ViewModel → Service (创建场景)
+   var createDto = new PatientCreateDto { Name = "张三", ... };
+   var result = await _patientService.CreateAsync(createDto);
+
+   // ViewModel → Service (更新场景)
+   var updateDto = new PatientUpdateDto { Name = "李四", ... };
+   var result = await _patientService.UpdateAsync(id, updateDto);
+
+   // Service → ViewModel (展示场景)
+   var patient = result.Data; // PatientDto
+   ```
+
+3. **Repository 层数据传输**:
+   - Desktop Repository 通过 HTTP 调用 Server API
+   - Repository 方法直接返回 DTO,**不返回 Entity**
+   - Service 层从 Repository 获取 DTO,无需 Entity → DTO 转换
+
+4. **常见错误**:
+   - ❌ 在 Desktop 端使用 Entity 类型
+   - ❌ 使用 `Guid.Empty` 作为默认值
+   - ❌ 混用 CreateDto/UpdateDto/Dto 场景
+
+### 4.6 Service 示例模板
 
 ```csharp
 using AutoMapper;
@@ -656,6 +690,8 @@ var patient = _mapper.Map<PatientDto>(dto);
 
 ## 九、参考资料
 
+- [DTO 设计原则](../dto-design-principles.md) - 本项目 DTO 设计规范
+- [Server Module Design Standard](../server-module-design-standard.md) - Server 端模块设计标准
 - [Prism 官方文档](https://prismlibrary.com/)
 - [AutoMapper 官方文档](https://docs.automapper.org/)
 - [MVVM 设计模式](https://learn.microsoft.com/zh-cn/dotnet/architecture/maui/mvvm)
@@ -667,6 +703,7 @@ var patient = _mapper.Map<PatientDto>(dto);
 
 | 版本 | 日期 | 修订内容 | 作者 |
 |------|------|---------|------|
+| 1.1 | 2025-01-09 | 添加 DTO 使用规范章节,引用 DTO 设计原则文档 (Issue #1094) | Claude Code |
 | 1.0 | 2025-10-07 | 初始版本，制定统一设计标准 | Claude Code |
 
 ---

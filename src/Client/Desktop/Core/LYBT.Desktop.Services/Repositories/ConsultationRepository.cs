@@ -66,6 +66,28 @@ namespace LYBT.Desktop.Services.Repositories
             }
         }
 
+        /// <summary>
+        /// 根据医案ID获取诊疗记录
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>诊疗记录列表</returns>
+        /// <remarks>
+        /// 由于共享主键设计（Consultation.Id == MedicalCase.Id），通常返回单个记录。
+        /// </remarks>
+        public async Task<List<ConsultationDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                var result = await _apiService.GetAsync<List<ConsultationDto>>($"{_endpoint}/medicalcase/{medicalCaseId}");
+                return result ?? new List<ConsultationDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医案ID获取诊疗记录失败: {MedicalCaseId}", medicalCaseId);
+                return new List<ConsultationDto>();
+            }
+        }
+
         public async Task<List<ConsultationDto>> GetTodayConsultationsAsync()
         {
             try
