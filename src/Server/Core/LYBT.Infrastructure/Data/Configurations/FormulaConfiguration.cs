@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Data.Configurations
         {
             entity.ToTable("Formulas");
             entity.HasKey(f => f.Id);
-            entity.Property(f => f.Name).HasMaxLength(200);
+            entity.Property(f => f.Name).IsRequired().HasMaxLength(200);
             entity.Property(f => f.Effect).HasMaxLength(500);
             entity.Property(f => f.Usage).HasMaxLength(500);
             entity.Property(f => f.Property).HasMaxLength(300);
@@ -23,8 +23,11 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(f => f.Status).HasConversion<int>();
             entity.Property(f => f.IsShared).HasDefaultValue(false);
 
-            // 简化配置，忽略子实体以避免复杂的配置问题
-            entity.Ignore(f => f.Herbs);
+            // 配置与FormulaHerbItem的一对多关系
+            entity.HasMany(f => f.Herbs)
+                .WithOne(f => f.Formula)
+                .HasForeignKey(f => f.FormulaId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
