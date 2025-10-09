@@ -49,14 +49,7 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <!-- 统一包引用版本管理 -->
-  <PropertyGroup>
-    <!-- 常用包版本集中管理 -->
-    <AutoMapperVersion>13.0.1</AutoMapperVersion>
-    <EntityFrameworkVersion>8.0.17</EntityFrameworkVersion>
-    <SwashbuckleVersion>9.0.1</SwashbuckleVersion>
-    <PrismVersion>8.1.97</PrismVersion>
-  </PropertyGroup>
+  <!-- 包版本通过 Directory.Packages.props 中央管理，这里不再定义版本变量 -->
 
 
 </Project>
