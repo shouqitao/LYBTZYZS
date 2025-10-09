@@ -51,7 +51,7 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
             _regionManager = regionManager;
 
             // 初始化导航服务
-            NavigationService = new Services.ClinicalNavigator(regionManager);
+            NavigationService = new Navigation.ClinicalNavigator(regionManager);
 
             // 初始化命令
             NavigateCommand = new DelegateCommand<string>(ExecuteNavigate);

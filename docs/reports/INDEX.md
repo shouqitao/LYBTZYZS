@@ -6,6 +6,8 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-09 | `desktop-architecture-optimization-analysis.md` | **Desktop架构优化深度分析报告** - UltraThink 28步分析，识别5个关键架构问题（P0性能问题+P1设计问题），提出彻底模块化重构方案（移除Service层、拆分Desktop.Services、Repository下沉），预期性能提升50%+（Issue #1114）|
+| 2025-10-09 | `desktop-layer-architecture-uniformity-audit.md` | **Desktop 层架构与模块统一程度审查报告** - 四层架构分析（Core/Module/Workstation/Shell），10个模块统一度94.3%，识别4类合理例外，架构测试12/12通过（Issue #1113）|
 | 2025-10-09 | `api-test-summary-2025-10-09.md` | **API集成测试汇总报告** - 核心API测试验证，Formula修复(PR #1072)，Admin认证问题(Issue #1073)，MVP发布就绪评估 |
 | 2025-10-08 | `test-execution-verification-2025-10-08.md` | **Issue #1049 Phase 3 Server端单元测试执行验证报告** - 7个模块测试验证（6个100%通过/146测试，1个95.7%通过，1个126编译错误需重写），修复ConfigureServices初始化问题，创建Issue #1053追踪MedicalCase.Tests重写 |
 | 2025-10-05 | `workflow-analysis-issue-933.md` | **Issue #933 CI/CD Workflow 分析报告** - 22个workflow合并为≤8个（发现3个严重违规：Docker/K8s，3个覆盖率门禁冲突0.5% vs 70%~90%，设计新8-workflow结构） |
