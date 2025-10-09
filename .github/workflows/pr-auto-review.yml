@@ -12,6 +12,63 @@ permissions:
   issues: write
 
 jobs:
+  architecture-tests:
+    name: 架构合规测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 检查是否有代码变更
+        id: check-code
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # 检查是否有.cs/.csproj/.sln文件变更
+          if git diff --name-only $BASE_SHA $HEAD_SHA | grep -E '\.(cs|csproj|sln)$'; then
+            echo "has_code_change=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_code_change=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup .NET
+        if: steps.check-code.outputs.has_code_change == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 运行架构测试
+        if: steps.check-code.outputs.has_code_change == 'true'
+        run: |
+          dotnet test tests/Architecture/LYBT.ArchTests.csproj -c Release --logger "console;verbosity=detailed" --filter "FullyQualifiedName~Desktop"
+
+      - name: 报告测试结果
+        if: always() && steps.check-code.outputs.has_code_change == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testPassed = '${{ job.status }}' === 'success';
+            const emoji = testPassed ? '✅' : '❌';
+            const status = testPassed ? '通过' : '失败';
+
+            const comment = `## ${emoji} 架构合规测试${status}\n\n` +
+              `Desktop 层架构测试已执行，详情请查看 [测试日志](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})。\n\n` +
+              `测试文件: \`tests/Architecture/DesktopLayerArchTests.cs\`\n` +
+              `测试规则: Desktop 四层架构 + 依赖方向验证\n\n` +
+              (testPassed ?
+                '✅ 所有架构规则验证通过，代码结构符合设计标准。' :
+                '❌ 架构测试失败，请检查代码是否违反层间依赖规则。\n\n' +
+                '参考文档: [Desktop层架构标准](https://github.com/shouqitao/LYBTZYZS/blob/master/docs/architecture/client/unified-design-standard.md)');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
   claude-code-review:
     name: Claude Code 自动审查
     runs-on: ubuntu-latest
