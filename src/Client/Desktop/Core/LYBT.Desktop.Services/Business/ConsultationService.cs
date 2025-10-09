@@ -115,27 +115,42 @@ namespace LYBT.Desktop.Services.Business
             }, nameof(DeleteAsync));
         }
 
+        /// <summary>
+        /// 根据医案ID获取诊疗记录
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>诊疗记录列表</returns>
+        /// <remarks>
+        /// 优化后直接调用Server API，避免GetAll + 内存过滤的低效方式。
+        /// 由于共享主键设计（Consultation.Id == MedicalCase.Id），通常返回单个记录。
+        /// </remarks>
         public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
-                // Repository需要扩展此方法，当前使用GetAll + 过滤
-                var allConsultations = await _repository.GetAllAsync();
-                var consultations = allConsultations
-                    .Where(c => c.MedicalCaseId == medicalCaseId)
-                    .ToList();
-
+                var consultations = await _repository.GetByMedicalCaseIdAsync(medicalCaseId);
                 return ServiceResult<List<ConsultationDto>>.Success(consultations);
             }, nameof(GetByMedicalCaseIdAsync));
         }
 
+        /// <summary>
+        /// 开始新的诊疗会话
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>诊疗记录</returns>
+        /// <remarks>
+        /// ⚠️ 已废弃：请通过 MedicalCaseService 创建医疗案例，系统会自动创建关联的诊疗记录。
+        /// MedicalCase 是聚合根，Consultation 作为其一部分使用共享主键模式（Consultation.Id == MedicalCase.Id）。
+        /// 独立创建 Consultation 违反了聚合根架构原则。
+        /// </remarks>
+        [Obsolete("已废弃。请通过 MedicalCaseService 创建医疗案例，系统会自动创建诊疗记录。此方法保留用于向后兼容。", false)]
         public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
-                _logger.LogInformation($"开始新的诊疗会话: 患者ID={patientId}");
+                _logger.LogWarning("调用了已废弃的 StartAsync 方法。患者ID={PatientId}。建议改用 MedicalCaseService.CreateAsync()", patientId);
 
-                // 创建新的诊疗记录
+                // 创建新的诊疗记录（已废弃的实现，保留向后兼容）
                 var consultation = new ConsultationDto
                 {
                     Id = Guid.NewGuid(),

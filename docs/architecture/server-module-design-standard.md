@@ -496,6 +496,60 @@ namespace LYBT.Module.Xxx.Interfaces
 }
 ```
 
+### 4.9 DTO 设计规范
+
+**📚 权威参考**: 请参阅 [DTO 设计原则](dto-design-principles.md) 获取完整的 DTO 设计规范。
+
+**Server 端 DTO 使用要点**:
+
+1. **DTO 定义位置**:
+   - ✅ 所有 DTO 必须定义在 `Shared.Models.Contracts.*`
+   - ❌ 禁止在 Server Module 中重复定义 DTO
+
+2. **场景分离原则**:
+   ```csharp
+   // 创建场景 - CreateDto
+   public class ConsultationCreateDto
+   {
+       public Guid MedicalCaseId { get; set; }  // 必需,非 nullable
+       public string ChiefComplaint { get; set; } = string.Empty;
+       // 不包含 Id, CreatedAt 等系统字段
+   }
+
+   // 更新场景 - UpdateDto
+   public class ConsultationUpdateDto
+   {
+       public string? ChiefComplaint { get; set; }  // 可选,nullable
+       public string? TCMDiagnosis { get; set; }
+       // 不包含 Id, MedicalCaseId, CreatedAt 等
+   }
+
+   // 展示场景 - Dto
+   public class ConsultationDto
+   {
+       public Guid Id { get; set; }
+       public string PatientName { get; set; } = string.Empty;  // 扁平化
+       public string DoctorName { get; set; } = string.Empty;   // 扁平化
+       // 包含展示所需的所有字段
+   }
+   ```
+
+3. **AutoMapper 映射**:
+   - Mapping Profile 必须放在 `Mapping/` 目录
+   - Service 层使用 `_mapper.Map<T>()` 进行转换
+   - 详见 [DTO 设计原则 - AutoMapper 配置规范](dto-design-principles.md#dto-与-entity-映射)
+
+4. **验证规范**:
+   - 简单验证: Data Annotations
+   - 复杂验证: FluentValidation (放在 `Validators/` 目录)
+   - 详见 [DTO 设计原则 - 验证规范](dto-design-principles.md#验证规范)
+
+5. **常见错误**:
+   - ❌ 在 Module 中定义 DTO (应在 Shared.Models)
+   - ❌ 混用 CreateDto/UpdateDto/Dto 场景
+   - ❌ 使用 `Guid.Empty` 作为默认值
+   - ❌ DTO 包含业务逻辑方法
+
 ## 5. 服务注册模式
 
 ### 5.1 标准注册模板
@@ -850,14 +904,17 @@ public static IServiceCollection AddConsultationModule(...)
 
 ## 10. 相关文档
 
+- [DTO 设计原则](dto-design-principles.md) - 本项目 DTO 设计规范
+- [Client Unified Design Standard](client/unified-design-standard.md) - Client 端统一设计标准
 - [技术标准与规范](../development/standards.md) - 架构禁令与技术决策
-- [ADR-003 Server模块统一设计](ADR-003-server-module-unified-design.md) - 架构决策记录
+- [ADR-003 Server模块统一设计](decisions/ADR-003-server-module-unified-design.md) - 架构决策记录
 - [功能模块设计](functional-modules-design.md) - 模块化设计详解
 
 ## 11. 变更历史
 
 | 版本 | 日期 | 作者 | 变更说明 |
 |------|------|------|---------|
-| 1.0 | 2025-10-07 | Claude | 初始版本，基于Issue #1006统一设计成果 |
-| 1.1 | 2025-10-07 | Claude | 新增第4节"Service接口统一设计标准"（基于Issue #1008）：<br>- 4.2 Service接口设计原则（ISP/SRP/YAGNI）<br>- 4.3 标准Service接口结构（6-12方法模板）<br>- 4.4 命名约定（方法/参数/返回类型）<br>- 4.5 分页查询标准<br>- 4.6 软删除标准<br>- 4.7 CancellationToken标准<br>关联 [ADR-004](decisions/ADR-004-service-interface-unified-design-standard.md) |
+| 1.3 | 2025-01-09 | Claude Code | 添加 4.9 DTO 设计规范章节,引用 DTO 设计原则文档 (Issue #1094) |
 | 1.2 | 2025-10-07 | Claude | 基于Issue #1022 Phase 2补充：<br>- 5.3 AutoMapper注册说明（集中 vs 显式）<br>- 5.4 Validator注册说明（自动扫描 vs 显式）<br>- 5.5 常见注册错误与修复<br>- 第8节 迁移指南（分步迁移、检查清单、迁移示例）<br>- 第9节 常见问题FAQ（10个常见问题解答）<br>关联 [Phase 1分析报告](../reports/server-architecture-analysis-2025-10-07.md) |
+| 1.1 | 2025-10-07 | Claude | 新增第4节"Service接口统一设计标准"（基于Issue #1008）：<br>- 4.2 Service接口设计原则（ISP/SRP/YAGNI）<br>- 4.3 标准Service接口结构（6-12方法模板）<br>- 4.4 命名约定（方法/参数/返回类型）<br>- 4.5 分页查询标准<br>- 4.6 软删除标准<br>- 4.7 CancellationToken标准<br>关联 [ADR-004](decisions/ADR-004-service-interface-unified-design-standard.md) |
+| 1.0 | 2025-10-07 | Claude | 初始版本，基于Issue #1006统一设计成果 |
