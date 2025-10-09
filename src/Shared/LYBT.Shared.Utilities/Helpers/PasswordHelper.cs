@@ -168,7 +168,7 @@ namespace LYBT.Shared.Utilities.Helpers
         /// <param name="password1">密码1</param>
         /// <param name="password2">密码2</param>
         /// <returns>是否相同</returns>
-        public static bool SecureEquals(string password1, string password2)
+        public static bool SecureEquals(string? password1, string? password2)
         {
             if (password1 == null || password2 == null)
                 return password1 == password2;
