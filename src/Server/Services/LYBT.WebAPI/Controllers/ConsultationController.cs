@@ -157,17 +157,66 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var result = await _consultationService.DeleteAsync(id);
-                
+
                 if (result.IsSuccess)
                 {
                     LogOperation("删除诊疗记录", null, id);
                 }
-                
+
                 return HandleServiceResult(result, "诊疗记录删除成功");
             }
             catch (Exception ex)
             {
                 return HandleException(ex, "删除诊疗记录", new { ConsultationId = id });
+            }
+        }
+
+        /// <summary>
+        /// 根据医案ID获取诊疗记录列表
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>诊疗记录列表</returns>
+        [HttpGet("medicalcase/{medicalCaseId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByMedicalCaseId(Guid medicalCaseId)
+        {
+            try
+            {
+                var validationResult = ValidateGuid<List<ConsultationDto>>(medicalCaseId, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<ConsultationDto>>(ex, "根据医案ID获取诊疗记录", new { MedicalCaseId = medicalCaseId });
+            }
+        }
+
+        /// <summary>
+        /// 搜索诊疗记录
+        /// </summary>
+        /// <param name="keyword">搜索关键词</param>
+        /// <returns>匹配的诊疗记录列表</returns>
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> Search([FromQuery] string keyword)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword))
+                {
+                    return BadRequest(ApiResponse<List<ConsultationDto>>.CreateFail("搜索关键词不能为空"));
+                }
+
+                var result = await _consultationService.SearchAsync(keyword);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<ConsultationDto>>(ex, "搜索诊疗记录", new { Keyword = keyword });
             }
         }
     }
