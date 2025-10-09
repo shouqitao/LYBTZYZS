@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultation.Interfaces;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -16,15 +17,18 @@ namespace LYBT.Module.Consultation.Services
     public class ConsultationService : IConsultationService
     {
         private readonly IConsultationRepository _repository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationService> _logger;
 
         public ConsultationService(
             IConsultationRepository repository,
+            IMedicalCaseRepository medicalCaseRepository,
             IMapper mapper,
             ILogger<ConsultationService> logger)
         {
             _repository = repository;
+            _medicalCaseRepository = medicalCaseRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -92,7 +96,27 @@ namespace LYBT.Module.Consultation.Services
         {
             try
             {
+                // 聚合根模式校验：验证 MedicalCase 是否存在
+                var medicalCase = await _medicalCaseRepository.GetByIdAsync(dto.MedicalCaseId);
+                if (medicalCase == null)
+                {
+                    _logger.LogWarning("创建诊疗记录失败：医疗案例 {MedicalCaseId} 不存在", dto.MedicalCaseId);
+                    return ServiceResult<ConsultationDto>.Failure("医疗案例不存在，无法创建诊疗记录");
+                }
+
+                // 一对一约束校验：验证是否已有 Consultation
+                var existingConsultation = await _repository.GetByIdAsync(dto.MedicalCaseId);
+                if (existingConsultation != null)
+                {
+                    _logger.LogWarning("创建诊疗记录失败：医疗案例 {MedicalCaseId} 已有诊疗记录", dto.MedicalCaseId);
+                    return ServiceResult<ConsultationDto>.Failure("该医疗案例已有诊疗记录，不可重复创建");
+                }
+
                 var entity = _mapper.Map<ConsultationEntity>(dto);
+                
+                // 共享主键：Consultation.Id 必须等于 MedicalCase.Id
+                entity.Id = dto.MedicalCaseId;
+                
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<ConsultationDto>(result);
                 return ServiceResult<ConsultationDto>.Success(resultDto);

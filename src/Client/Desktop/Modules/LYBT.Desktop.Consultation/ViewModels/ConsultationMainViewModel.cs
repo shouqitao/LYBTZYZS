@@ -238,43 +238,50 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 if (SelectedPatient == null)
                 {
-                    Logger.LogWarning("����ѡ����");
+                    Logger.LogWarning("未选择患者");
+                    return;
+                }
+
+                // 聚合根模式校验：确保 MedicalCaseId 有效
+                if (MedicalCaseId == null || MedicalCaseId == Guid.Empty)
+                {
+                    Logger.LogError("无法保存诊疗记录：缺少医案ID");
+                    await ShowErrorMessageAsync("无法保存诊疗记录：请从病历详情进入诊疗界面");
                     return;
                 }
 
                 IsLoading = true;
 
-                // ���û�����Ϣ
-                Consultation.PatientId = SelectedPatient.Id;
-                Consultation.UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-                Consultation.MedicalCaseId = MedicalCaseId ?? Guid.NewGuid();
-                Consultation.StartTime = DateTime.Now;
-                Consultation.DoctorName = SessionManager?.CurrentUser?.RealName ?? string.Empty;
-
-                var createDto = new ConsultationCreateDto
+                // 更新诊疗记录（不是创建）
+                // 因为 MedicalCase 创建时已自动创建 Consultation
+                var updateDto = new ConsultationUpdateDto
                 {
-                    PatientId = SelectedPatient.Id,
-                    UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
-                    MedicalCaseId = MedicalCaseId ?? Guid.NewGuid(),
-                    ChiefComplaint = "�����Ƽ�¼",
-                    Remark = $"���ߣ�{SelectedPatient.Name}��ҽ����{SessionManager?.CurrentUser?.RealName ?? string.Empty}"
+                    ChiefComplaint = Consultation?.ChiefComplaint ?? string.Empty,
+                    PresentIllness = Consultation?.PresentIllness,
+                    Inspection = Consultation?.Inspection,
+                    AuscultationOlfaction = Consultation?.AuscultationOlfaction,
+                    Inquiry = Consultation?.Inquiry,
+                    Palpation = Consultation?.Palpation,
+                    TCMDiagnosis = Consultation?.TCMDiagnosis,
+                    TreatmentPrinciple = Consultation?.TreatmentPrinciple,
+                    Remark = $"患者：{SelectedPatient.Name}，医生：{SessionManager?.CurrentUser?.RealName ?? string.Empty}"
                 };
 
-                var result = await _consultationService.CreateAsync(createDto);
+                var result = await _consultationService.UpdateAsync(MedicalCaseId.Value, updateDto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     Consultation = result.Data;
-                    SetStatus("���Ƽ�¼����ɹ�");
+                    SetStatus("诊疗记录保存成功");
                 }
                 else
                 {
-                    Logger.LogError("����ʧ��: {Message}", result.Message);
+                    Logger.LogError("保存失败: {Message}", result.Message);
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "�������Ƽ�¼ʧ��");
-                Logger.LogError("����ʧ�ܣ�������");
+                Logger.LogError(ex, "保存诊疗记录失败");
+                Logger.LogError("保存失败，请稍后重试");
             }
             finally
             {
@@ -298,11 +305,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 导航接口实现
 
         /// <inheritdoc/>
-        public override void OnNavigatedTo(NavigationContext navigationContext)
+        public override async void OnNavigatedTo(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters["MedicalCaseId"] is Guid caseId)
             {
                 MedicalCaseId = caseId;
+                
+                // 聚合根模式：加载已存在的 Consultation（MedicalCase 创建时自动生成）
+                await LoadExistingConsultationAsync(caseId);
             }
         }
 
@@ -315,6 +325,51 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <inheritdoc/>
         public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
+        }
+
+        /// <summary>
+        /// 加载已存在的 Consultation（聚合根模式：MedicalCase 创建时自动生成）
+        /// </summary>
+        private async Task LoadExistingConsultationAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                IsLoading = true;
+
+                // 通过 MedicalCaseId 加载 Consultation（共享主键：Consultation.Id == MedicalCase.Id）
+                var result = await _consultationService.GetByIdAsync(medicalCaseId);
+                
+                if (result.IsSuccess && result.Data != null)
+                {
+                    Consultation = result.Data;
+                    Logger.LogInformation("已加载医案 {MedicalCaseId} 的诊疗记录", medicalCaseId);
+                }
+                else
+                {
+                    // 如果加载失败，可能是旧数据（MedicalCase 创建时未自动创建 Consultation）
+                    Logger.LogWarning("未找到医案 {MedicalCaseId} 的诊疗记录，将创建新记录", medicalCaseId);
+                    
+                    // 初始化空的 Consultation 对象供用户填写
+                    Consultation = new ConsultationDto
+                    {
+                        Id = medicalCaseId,
+                        MedicalCaseId = medicalCaseId,
+                        PatientId = SelectedPatient?.Id ?? Guid.Empty,
+                        UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                        PatientName = SelectedPatient?.Name ?? string.Empty,
+                        DoctorName = SessionManager?.CurrentUser?.RealName ?? string.Empty
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载诊疗记录失败");
+                await ShowErrorMessageAsync("加载诊疗记录失败，请稍后重试");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         #endregion 导航接口实现

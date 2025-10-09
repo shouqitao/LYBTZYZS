@@ -293,6 +293,45 @@ MedicalCaseDto (基础DTO)
 - **SQL注入防护**: 使用EF Core参数化查询
 - **授权检查**: 基于角色和数据所有权的访问控制
 
+## 📌 架构修正记录
+
+### 2025-01-09: Issue #1093 - 聚合根模式强化
+**问题**：Desktop端代码以Consultation为中心创建诊疗记录，违反了聚合根架构原则。
+
+**修正内容**：
+1. **Server端强化聚合根创建**：
+   - 修改 `MedicalCaseService.CreateAsync()`：创建MedicalCase时自动创建关联的Consultation（共享主键：`Consultation.Id == MedicalCase.Id`）
+   - 修改 `ConsultationService.CreateAsync()`：添加聚合根校验和一对一约束校验，防止孤立创建Consultation
+   - 标记 `ConsultationController.CreateAsync()` 为 `[Obsolete]`：引导开发者通过MedicalCaseController创建
+
+2. **Desktop端修正业务流程**：
+   - 修改 `ConsultationMainViewModel`：从"创建Consultation"改为"加载并更新Consultation"
+   - 移除 `MedicalCaseId ?? Guid.NewGuid()` 回退逻辑
+   - 添加 `LoadExistingConsultationAsync()` 方法：加载MedicalCase创建时自动生成的Consultation
+
+3. **架构约束强化**：
+   - 共享主键约束：Consultation.Id 必须等于 MedicalCase.Id
+   - 聚合根模式：MedicalCase 是聚合根，Consultation 是依赖部分
+   - 业务流程：Patient → MedicalCase (自动创建 Consultation) → 更新 Consultation → 可选 Prescription
+
+**影响范围**：
+- `LYBT.Module.MedicalCase.Services.MedicalCaseService` (CreateAsync 方法)
+- `LYBT.Module.Consultation.Services.ConsultationService` (CreateAsync 方法，新增 IMedicalCaseRepository 依赖)
+- `LYBT.WebAPI.Controllers.ConsultationController` (CreateAsync 标记为过时)
+- `LYBT.Desktop.Consultation.ViewModels.ConsultationMainViewModel` (OnNavigatedTo 和 SaveConsultationAsync 方法)
+- `LYBT.Module.Consultation.csproj` (新增对 MedicalCase 模块的项目引用)
+
+**验收结果**：
+- ✅ Server端编译成功（0警告，0错误）
+- ✅ Desktop端编译成功（0警告，0错误）
+- ✅ 聚合根模式正确实现
+- ✅ 共享主键约束正确执行
+
+**参考资料**：
+- Issue: #1093
+- PR: [待创建]
+- 相关文档: `docs/requirements/business-requirements-2025-09-27.md`
+
 ## 📝 实现状态
 
 ### ✅ 已实现

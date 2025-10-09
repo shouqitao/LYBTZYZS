@@ -96,6 +96,23 @@ namespace LYBT.Module.MedicalCase.Services
                 var entity = _mapper.Map<MedicalCaseEntity>(dto);
                 entity.ConsultationDate = DateTime.Now;
 
+                // 聚合根模式：创建 MedicalCase 时自动创建关联的 Consultation（共享主键）
+                var consultationEntity = new LYBT.Entities.Consultation.Consultation
+                {
+                    Id = entity.Id, // 共享主键：Consultation.Id == MedicalCase.Id
+                    CreatedBy = entity.CreatedBy,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedBy = entity.UpdatedBy,
+                    UpdatedAt = entity.UpdatedAt,
+                    Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
+                    // 初始化必填字段为空值，待用户填写
+                    ChiefComplaint = string.Empty,
+                    // 其他可选字段保持 nullable 默认值
+                };
+
+                entity.Consultation = consultationEntity;
+
+                // EF Core 会级联保存 Consultation
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
 
