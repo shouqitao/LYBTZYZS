@@ -1,11 +1,12 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
+using LYBT.Infrastructure.Web;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -16,11 +17,12 @@ namespace LYBT.WebAPI.Controllers
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, ILogger<UsersController> logger, IMemoryCache? cache = null)
+            : base(logger, cache)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
@@ -31,42 +33,33 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserDto>>), 200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> GetUsers(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
                 var result = await _userService.GetPagedAsync(page, pageSize, keyword);
-
-                if (result.IsSuccess)
-                {
-                    return Ok(ApiResponse<PagedResult<UserDto>>.CreateSuccess(result.Data));
-                }
-                return BadRequest(ApiResponse<PagedResult<UserDto>>.CreateFail(result.Message ?? "获取用户列表失败"));
+                return HandlePagedServiceResult(result);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "获取用户列表失败");
-                return StatusCode(500, ApiResponse<PagedResult<UserDto>>.CreateFail("获取用户列表失败"));
+                return HandleExceptionPaged<UserDto>(ex, "获取用户列表");
             }
         }
 
         /// <summary>
         /// 获取当前登录用户信息
         /// </summary>
-        /// <summary>
-        /// 获取当前登录用户信息
-        /// </summary>
         [HttpGet("current")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<IActionResult> GetCurrentUser()
+        public async Task<ActionResult<ApiResponse<UserDto>>> GetCurrentUser()
         {
             try
             {
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 {
-                    return Unauthorized(ApiResponse<UserDto>.CreateFail("无法获取当前用户信息"));
+                    return Unauthorized<UserDto>("无法获取当前用户信息");
                 }
 
                 // 特殊处理超级管理员
@@ -89,21 +82,16 @@ namespace LYBT.WebAPI.Controllers
                             CreatedAt = DateTime.MinValue,
                             UpdatedAt = DateTime.Now
                         };
-                        return Ok(ApiResponse<UserDto>.CreateSuccess(superAdminDto));
+                        return Success(superAdminDto);
                     }
                 }
 
                 var result = await _userService.GetByIdAsync(userId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
-                }
-                return NotFound(ApiResponse<UserDto>.CreateFail("用户不存在"));
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "获取当前用户信息失败");
-                return StatusCode(500, ApiResponse<UserDto>.CreateFail("获取当前用户信息失败"));
+                return HandleException<UserDto>(ex, "获取当前用户信息");
             }
         }
 
@@ -113,22 +101,19 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetUser(Guid id)
+        public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
         {
             try
             {
-                var result = await _userService.GetByIdAsync(id);
+                var validationResult = ValidateGuid<UserDto>(id, "用户ID");
+                if (validationResult != null) return validationResult;
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
-                }
-                return NotFound(ApiResponse<UserDto>.CreateFail("用户不存在"));
+                var result = await _userService.GetByIdAsync(id);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "获取用户失败 {UserId}", id);
-                return StatusCode(500, ApiResponse<UserDto>.CreateFail("获取用户失败"));
+                return HandleException<UserDto>(ex, "获取用户", new { UserId = id });
             }
         }
 
@@ -138,23 +123,27 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> CreateUser([FromBody] UserCreateDto dto)
+        public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
         {
             try
             {
-                var result = await _userService.CreateAsync(dto);
+                var validationResult = ValidateModel<UserDto>();
+                if (validationResult != null) return validationResult;
 
+                var result = await _userService.CreateAsync(dto);
+                
                 if (result.IsSuccess && result.Data != null)
                 {
+                    LogOperation("创建用户", dto, result.Data.Id);
                     return CreatedAtAction(nameof(GetUser), new { id = result.Data.Id },
                         ApiResponse<UserDto>.CreateSuccess(result.Data));
                 }
-                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message ?? "创建用户失败"));
+                
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "创建用户失败");
-                return StatusCode(500, ApiResponse<UserDto>.CreateFail("创建用户失败"));
+                return HandleException<UserDto>(ex, "创建用户", dto);
             }
         }
 
@@ -164,22 +153,28 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
         {
             try
             {
-                var result = await _userService.UpdateAsync(id, dto);
+                var guidValidationResult = ValidateGuid<UserDto>(id, "用户ID");
+                if (guidValidationResult != null) return guidValidationResult;
 
-                if (result.IsSuccess && result.Data != null)
+                var modelValidationResult = ValidateModel<UserDto>();
+                if (modelValidationResult != null) return modelValidationResult;
+
+                var result = await _userService.UpdateAsync(id, dto);
+                
+                if (result.IsSuccess)
                 {
-                    return Ok(ApiResponse<UserDto>.CreateSuccess(result.Data));
+                    LogOperation("更新用户", dto, id);
                 }
-                return BadRequest(ApiResponse<UserDto>.CreateFail(result.Message ?? "更新用户失败"));
+                
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "更新用户失败 {UserId}", id);
-                return StatusCode(500, ApiResponse<UserDto>.CreateFail("更新用户失败"));
+                return HandleException<UserDto>(ex, "更新用户", new { UserId = id, UpdateData = dto });
             }
         }
 
@@ -187,24 +182,27 @@ namespace LYBT.WebAPI.Controllers
         /// 删除用户
         /// </summary>
         [HttpDelete("{id:guid}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        public async Task<ActionResult<ApiResponse>> DeleteUser(Guid id)
         {
             try
             {
-                var result = await _userService.DeleteAsync(id);
+                var validationResult = ValidateGuid(id, "用户ID");
+                if (validationResult != null) return validationResult;
 
+                var result = await _userService.DeleteAsync(id);
+                
                 if (result.IsSuccess)
                 {
-                    return Ok(ApiResponse<object>.CreateSuccess(null, "删除成功"));
+                    LogOperation("删除用户", null, id);
                 }
-                return BadRequest(ApiResponse<object>.CreateFail(result.Message ?? "删除用户失败"));
+                
+                return HandleServiceResult(result, "删除成功");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "删除用户失败 {UserId}", id);
-                return StatusCode(500, ApiResponse<object>.CreateFail("删除用户失败"));
+                return HandleException(ex, "删除用户", new { UserId = id });
             }
         }
     }
