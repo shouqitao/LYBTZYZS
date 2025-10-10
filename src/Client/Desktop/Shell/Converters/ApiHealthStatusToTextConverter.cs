@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Foundation.HealthCheck;
 
 namespace LYBT.Desktop.Shell.Converters
 {

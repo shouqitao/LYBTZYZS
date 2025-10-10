@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using LYBT.Desktop.Services.Interfaces;
+using LYBT.Desktop.Foundation.HealthCheck;
 
 namespace LYBT.Desktop.Shell.Converters
 {
