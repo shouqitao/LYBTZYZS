@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Formula.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public ViewFormulaDialogViewModel(
-            IFormulaService formulaService,
+            IFormulaRepository formulaRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             // 初始化命令
             CloseCommand = new DelegateCommand(Close);
@@ -135,18 +135,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载验方详情...");
 
-                var result = await _formulaService.GetByIdAsync(_formulaId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Formula = result.Data;
-                    HerbItems = new ObservableCollection<FormulaHerbItemDto>();
-                    CalculateTotalCost();
-                    StatusMessage = string.Empty;
-                }
-                else
-                {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "加载验方失败");
-                }
+                var formula = await _formulaRepository.GetByIdAsync(_formulaId);
+                Formula = formula;
+                HerbItems = new ObservableCollection<FormulaHerbItemDto>();
+                CalculateTotalCost();
+                StatusMessage = string.Empty;
             }
             catch (Exception ex)
             {

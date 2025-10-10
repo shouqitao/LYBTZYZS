@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbService _herbService;
+        private readonly IHerbRepository _herbRepository;
 
         #endregion
 
@@ -224,7 +224,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region 构造函数
 
         public HerbDetailViewModel(
-            IHerbService herbService,
+            IHerbRepository herbRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -232,7 +232,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
 
             // 初始化选项
             StatusOptions = Enum.GetValues<CommonStatus>();
@@ -281,24 +281,17 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Status = Status
                     };
 
-                    var result = await _herbService.CreateAsync(createDto);
-                    if (result.IsSuccess)
-                    {
-                        StatusMessage = "药材创建成功";
-                        System.Windows.MessageBox.Show("药材创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                        NavigateToHerbManagement();
-                    }
-                    else
-                    {
-                        ErrorMessage = $"创建药材失败: {result.ErrorMessage}";
-                        System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    }
+                    var createdHerb = await _herbRepository.CreateAsync(createDto);
+                    StatusMessage = "药材创建成功";
+                    System.Windows.MessageBox.Show("药材创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    NavigateToHerbManagement();
                 }
                 else
                 {
                     // 更新现有药材
                     var updateDto = new HerbUpdateDto
                     {
+                        Id = Herb.Id,
                         Name = Name.Trim(),
                         PinYinCode = string.IsNullOrWhiteSpace(PinYinCode) ? null : PinYinCode.Trim(),
                         Origin = string.IsNullOrWhiteSpace(Origin) ? null : Origin.Trim(),
@@ -311,18 +304,10 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Status = Status
                     };
 
-                    var result = await _herbService.UpdateAsync(Herb.Id, updateDto);
-                    if (result.IsSuccess)
-                    {
-                        StatusMessage = "药材更新成功";
-                        System.Windows.MessageBox.Show("药材更新成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                        NavigateToHerbManagement();
-                    }
-                    else
-                    {
-                        ErrorMessage = $"更新药材失败: {result.ErrorMessage}";
-                        System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    }
+                    var updatedHerb = await _herbRepository.UpdateAsync(updateDto);
+                    StatusMessage = "药材更新成功";
+                    System.Windows.MessageBox.Show("药材更新成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    NavigateToHerbManagement();
                 }
             }
             catch (Exception ex)
@@ -438,17 +423,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 IsBusy = true;
                 StatusMessage = "正在加载药材信息...";
 
-                var result = await _herbService.GetByIdAsync(herbId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Herb = result.Data;
-                    LoadFromDto(result.Data);
-                }
-                else
-                {
-                    ErrorMessage = $"加载药材信息失败: {result.ErrorMessage}";
-                    System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                }
+                var herb = await _herbRepository.GetByIdAsync(herbId);
+                Herb = herb;
+                LoadFromDto(herb);
             }
             catch (Exception ex)
             {

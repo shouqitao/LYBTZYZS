@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Formula.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -125,7 +125,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public EditFormulaDialogViewModel(
-            IFormulaService formulaService,
+            IFormulaRepository formulaRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -133,7 +133,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             // 初始化选项
             StatusOptions = Enum.GetValues<CommonStatus>();
@@ -169,24 +169,18 @@ namespace LYBT.Desktop.Formula.ViewModels
                     // 更新现有配方
                     var updateDto = new FormulaUpdateDto
                     {
+                        Id = FormulaId.Value,
                         Name = FormulaName.Trim(),
                         Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
                     };
 
-                    var result = await _formulaService.UpdateAsync(FormulaId.Value, updateDto);
-                    if (result.IsSuccess)
+                    var updatedFormula = await _formulaRepository.UpdateAsync(updateDto);
+                    var parameters = new DialogParameters
                     {
-                        var parameters = new DialogParameters
-                        {
-                            { "Formula", result.Data }
-                        };
-                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-                        Logger.LogInformation("配方更新成功: {FormulaId}", FormulaId);
-                    }
-                    else
-                    {
-                        await ShowErrorMessageAsync($"更新配方失败: {result.ErrorMessage}");
-                    }
+                        { "Formula", updatedFormula }
+                    };
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                    Logger.LogInformation("配方更新成功: {FormulaId}", FormulaId);
                 }
                 else
                 {
@@ -197,20 +191,13 @@ namespace LYBT.Desktop.Formula.ViewModels
                         Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
                     };
 
-                    var result = await _formulaService.CreateAsync(createDto);
-                    if (result.IsSuccess)
+                    var createdFormula = await _formulaRepository.CreateAsync(createDto);
+                    var parameters = new DialogParameters
                     {
-                        var parameters = new DialogParameters
-                        {
-                            { "Formula", result.Data }
-                        };
-                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-                        Logger.LogInformation("配方创建成功");
-                    }
-                    else
-                    {
-                        await ShowErrorMessageAsync($"创建配方失败: {result.ErrorMessage}");
-                    }
+                        { "Formula", createdFormula }
+                    };
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                    Logger.LogInformation("配方创建成功");
                 }
             }
             catch (Exception ex)
@@ -306,18 +293,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     SetIsBusy(true, "正在加载配方信息...");
 
-                    var result = await _formulaService.GetByIdAsync(formulaId.Value);
-                    if (result.IsSuccess && result.Data != null)
-                    {
-                        var formula = result.Data;
-                        FormulaName = formula.Name ?? string.Empty;
-                        Description = formula.Remark ?? string.Empty;
-                        Status = formula.Status;
-                    }
-                    else
-                    {
-                        await ShowErrorMessageAsync("加载配方信息失败");
-                    }
+                    var formula = await _formulaRepository.GetByIdAsync(formulaId.Value);
+                    FormulaName = formula.Name ?? string.Empty;
+                    Description = formula.Remark ?? string.Empty;
+                    Status = formula.Status;
                 }
                 else
                 {

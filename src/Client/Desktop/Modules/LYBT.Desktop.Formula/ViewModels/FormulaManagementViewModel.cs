@@ -1,6 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Formula.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -19,14 +19,14 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
         #region 构造函数
 
         public FormulaManagementViewModel(
-            IFormulaService formulaService,
+            IFormulaRepository formulaRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             PageTitle = "配方管理";
         }
@@ -50,11 +50,9 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var result = await _formulaService.GetPagedAsync(page, pageSize, searchText);
+                var pagedData = await _formulaRepository.GetPagedAsync(page, pageSize, searchText);
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var pagedData = result.Data;
+                
 
                     // 更新分页信息
                     TotalCount = pagedData.TotalCount;
@@ -62,12 +60,6 @@ namespace LYBT.Desktop.Formula.ViewModels
                     PageSize = pagedData.PageSize;
 
                     return pagedData.Items;
-                }
-                else
-                {
-                    Logger.LogWarning("加载配方数据失败: {ErrorMessage}", result.ErrorMessage);
-                    return new List<FormulaDto>();
-                }
             }
             catch (Exception ex)
             {
@@ -96,16 +88,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var result = await _formulaService.DeleteAsync(item.Id);
+                var success = await _formulaRepository.DeleteAsync(item.Id);
 
-                if (result.IsSuccess)
+                if (success)
                 {
                     await ShowSuccessMessageAsync($"配方 '{item.Name}' 删除成功");
                     await LoadPageAsync(); // 重新加载数据
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? $"删除配方 {item.Name} 失败");
+                    await ShowErrorMessageAsync($"删除配方 {item.Name} 失败");
                 }
             }
             catch (Exception ex)
@@ -124,29 +116,33 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 var selectedIds = items.Select(f => f.Id).ToList();
 
-                // 循环调用DeleteAsync（Shared.Interfaces暂无BatchDeleteAsync）
+                // 循环调用DeleteAsync（Repository暂无BatchDeleteAsync）
                 int successCount = 0;
                 List<string> errors = new();
                 foreach (var id in selectedIds)
                 {
-                    var deleteResult = await _formulaService.DeleteAsync(id);
-                    if (deleteResult.IsSuccess)
-                        successCount++;
-                    else if (!string.IsNullOrEmpty(deleteResult.ErrorMessage))
-                        errors.Add(deleteResult.ErrorMessage);
+                    try
+                    {
+                        var success = await _formulaRepository.DeleteAsync(id);
+                        if (success)
+                            successCount++;
+                        else
+                            errors.Add($"删除配方 {id} 失败");
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"删除配方 {id} 异常: {ex.Message}");
+                    }
                 }
-                var result = successCount == selectedIds.Count
-                    ? ServiceResult.Success()
-                    : ServiceResult.Failure(string.Join("; ", errors));
 
-                if (result.IsSuccess)
+                if (successCount == selectedIds.Count)
                 {
                     await ShowSuccessMessageAsync($"成功删除 {items.Count} 个配方");
                     await LoadPageAsync(); // 重新加载数据
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "批量删除配方失败");
+                    await ShowErrorMessageAsync($"批量删除完成，成功 {successCount} 个，失败 {errors.Count} 个");
                 }
             }
             catch (Exception ex)

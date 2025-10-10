@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Formula.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -277,12 +277,12 @@ namespace LYBT.Desktop.Formula.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaService formulaService,
+            IFormulaRepository formulaRepository,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -351,15 +351,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载配方详情...");
 
-                var result = await _formulaService.GetByIdAsync(FormulaId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Formula = result.Data;
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载配方详情失败: {result.ErrorMessage}");
-                }
+                var formula = await _formulaRepository.GetByIdAsync(FormulaId);
+                Formula = formula;
             }
             catch (Exception ex)
             {
@@ -426,6 +419,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 var updateDto = new FormulaUpdateDto
                 {
+                    Id = Formula.Id,
                     Name = FormulaName!.Trim(),
                     Effect = string.IsNullOrWhiteSpace(Effect) ? null! : Effect!.Trim(),
                     Usage = string.IsNullOrWhiteSpace(Usage) ? null! : Usage!.Trim(),
@@ -442,17 +436,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                     }).ToList()
                 };
 
-                var result = await _formulaService.UpdateAsync(Formula.Id, updateDto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Formula = result.Data;
-                    IsEditMode = false;
-                    await ShowSuccessMessageAsync("配方保存成功");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"保存配方失败: {result.ErrorMessage}");
-                }
+                var updatedFormula = await _formulaRepository.UpdateAsync(updateDto);
+                Formula = updatedFormula;
+                IsEditMode = false;
+                await ShowSuccessMessageAsync("配方保存成功");
             }
             catch (Exception ex)
             {
@@ -493,19 +480,12 @@ namespace LYBT.Desktop.Formula.ViewModels
                     }).ToList() ?? new List<FormulaHerbItemCreateDto>()
                 };
 
-                var result = await _formulaService.CreateAsync(createDto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    await ShowSuccessMessageAsync($"配方复制成功！新配方名称：{result.Data.Name}");
+                var newFormula = await _formulaRepository.CreateAsync(createDto);
+                await ShowSuccessMessageAsync($"配方复制成功！新配方名称：{newFormula.Name}");
 
-                    // 导航到新配方
-                    FormulaId = result.Data.Id;
-                    await LoadDataAsync();
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"复制配方失败: {result.ErrorMessage}");
-                }
+                // 导航到新配方
+                FormulaId = newFormula.Id;
+                await LoadDataAsync();
             }
             catch (Exception ex)
             {
