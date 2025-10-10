@@ -1,4 +1,5 @@
-﻿using Prism.Ioc;
+﻿using LYBT.Desktop.Consultation.Repositories;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Consultation
@@ -17,7 +18,8 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Services由Core_New/Services统一注册，不在Module中注册
+            // Phase 3: 注册 Repository（模块级数据访问）
+            containerRegistry.RegisterSingleton<IConsultationRepository, ConsultationRepository>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.MedicalCaseMainViewModel>();

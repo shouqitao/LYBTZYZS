@@ -2,7 +2,9 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Consultation.Repositories;
+using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -22,9 +24,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region ��������
 
-        private readonly IConsultationService _consultationService;
-        private readonly IMedicalCaseService _medicalCaseService;
-        private readonly IPatientService _patientService;
+        private readonly IConsultationRepository _consultationRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        private readonly IPatientRepository _patientRepository;
 
         #endregion ��������
 
@@ -134,9 +136,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region ���캯��
 
         public MedicalCaseMainViewModel(
-        IConsultationService consultationService,
-        IMedicalCaseService medicalCaseService,
-        IPatientService patientService,
+        IConsultationRepository consultationRepository,
+        IMedicalCaseRepository medicalCaseRepository,
+        IPatientRepository patientRepository,
         IEventAggregator eventAggregator,
         ILoggerFactory loggerFactory,
         IRegionManager regionManager,
@@ -144,9 +146,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         IUserNotificationService? userNotificationService = null)
         : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
 
             LoadPatientsCommand = new DelegateCommand(async () => await LoadPatientsAsync());
             SaveConsultationCommand = new DelegateCommand(async () => await SaveConsultationAsync());
@@ -208,11 +210,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Keyword = string.Empty
                 };
 
-                var result = await _patientService.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
-                if (result.IsSuccess && result.Data != null)
+                var result = await _patientRepository.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
+                if (result != null && result.Items != null)
                 {
                     Patients.Clear();
-                    foreach (var patient in result.Data.Items)
+                    foreach (var patient in result.Items)
                     {
                         Patients.Add(patient);
                     }
@@ -256,6 +258,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 // 因为 MedicalCase 创建时已自动创建 Consultation
                 var updateDto = new ConsultationUpdateDto
                 {
+                    Id = MedicalCaseId.Value, // Repository 需要在 DTO 中传递 ID
                     ChiefComplaint = Consultation?.ChiefComplaint ?? string.Empty,
                     PresentIllness = Consultation?.PresentIllness,
                     Inspection = Consultation?.Inspection,
@@ -267,15 +270,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Remark = $"患者：{SelectedPatient.Name}，医生：{SessionManager?.CurrentUser?.RealName ?? string.Empty}"
                 };
 
-                var result = await _consultationService.UpdateAsync(MedicalCaseId.Value, updateDto);
-                if (result.IsSuccess && result.Data != null)
+                var updatedConsultation = await _consultationRepository.UpdateAsync(updateDto);
+                if (updatedConsultation != null)
                 {
-                    Consultation = result.Data;
+                    Consultation = updatedConsultation;
                     SetStatus("诊疗记录保存成功");
-                }
-                else
-                {
-                    Logger.LogError("保存失败: {Message}", result.Message);
                 }
             }
             catch (Exception ex)
@@ -337,18 +336,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 IsLoading = true;
 
                 // 通过 MedicalCaseId 加载 Consultation（共享主键：Consultation.Id == MedicalCase.Id）
-                var result = await _consultationService.GetByIdAsync(medicalCaseId);
-                
-                if (result.IsSuccess && result.Data != null)
+                var consultation = await _consultationRepository.GetByIdAsync(medicalCaseId);
+
+                if (consultation != null)
                 {
-                    Consultation = result.Data;
+                    Consultation = consultation;
                     Logger.LogInformation("已加载医案 {MedicalCaseId} 的诊疗记录", medicalCaseId);
                 }
                 else
                 {
                     // 如果加载失败，可能是旧数据（MedicalCase 创建时未自动创建 Consultation）
                     Logger.LogWarning("未找到医案 {MedicalCaseId} 的诊疗记录，将创建新记录", medicalCaseId);
-                    
+
                     // 初始化空的 Consultation 对象供用户填写
                     Consultation = new ConsultationDto
                     {
@@ -394,15 +393,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 IsLoading = true;
 
                 // ��ȡ���ߵ�����ҽ����ʷ
-                var medicalCasesResult = await _medicalCaseService.GetByPatientIdAsync(SelectedPatient.Id);
+                var medicalCases = await _medicalCaseRepository.GetByPatientIdAsync(SelectedPatient.Id);
 
-                if (!medicalCasesResult.IsSuccess || medicalCasesResult.Data == null || !medicalCasesResult.Data.Any())
+                if (medicalCases == null || !medicalCases.Any())
                 {
                     ShowHistoryDialog(SelectedPatient, null);
                     return;
                 }
 
-                var medicalCases = medicalCasesResult.Data
+                medicalCases = medicalCases
                 .OrderByDescending(mc => mc.CreatedAt)
                 .ToList();
 
@@ -421,16 +420,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     // ���Ի�ȡ��ҽ�������Ƽ�¼
                     try
                     {
-                        var consultationResult = await _consultationService.GetByMedicalCaseIdAsync(medicalCase.Id);
-                        if (consultationResult.IsSuccess && consultationResult.Data != null)
+                        var consultations = await _consultationRepository.GetByMedicalCaseIdAsync(medicalCase.Id);
+                        if (consultations != null && consultations.Any())
                         {
                             // �޸���ȡ��һ�����Ƽ�¼
-                            var consultations = consultationResult.Data;
-                            if (consultations.Any())
-                            {
-                                detail.Consultation = consultations.First();
-                                detail.HasConsultation = true;
-                            }
+                            detail.Consultation = consultations.First();
+                            detail.HasConsultation = true;
                         }
                     }
                     catch (Exception ex)

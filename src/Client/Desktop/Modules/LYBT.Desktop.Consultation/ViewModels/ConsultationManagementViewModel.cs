@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Consultation.Repositories;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region ��������
 
-        private readonly IConsultationService _consultationService;
+        private readonly IConsultationRepository _consultationRepository;
 
         #endregion ��������
 
@@ -82,7 +82,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region ���캯��
 
         public ConsultationManagementViewModel(
-        IConsultationService consultationService,
+        IConsultationRepository consultationRepository,
         IEventAggregator eventAggregator,
         ILoggerFactory loggerFactory,
         IRegionManager regionManager,
@@ -90,7 +90,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         IUserNotificationService? userNotificationService = null)
         : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
+            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -147,18 +147,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Keyword = SearchKeyword
                 };
 
-                var result = await _consultationService.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
-                if (result.IsSuccess && result.Data != null)
+                var result = await _consultationRepository.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
+                if (result != null && result.Items != null)
                 {
                     Consultations.Clear();
-                    foreach (var consultation in result.Data.Items)
+                    foreach (var consultation in result.Items)
                     {
                         Consultations.Add(consultation);
                     }
-                }
-                else
-                {
-                    ShowErrorMessage($"��������ʧ��: {result.Message}");
                 }
             }
             catch (Exception ex)
