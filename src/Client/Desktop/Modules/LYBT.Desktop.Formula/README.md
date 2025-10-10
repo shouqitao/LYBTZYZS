@@ -22,7 +22,8 @@ LYBT.Desktop.Formula/
 - **.NET 8 & WPF**: 基础框架。
 - **Prism.DryIoc**: 用于模块化、依赖注入和区域导航。
 - **LYBT.Desktop.Core**: 提供ViewModel基类和通用服务。
-- **LYBT.Desktop.Services**: 提供与后端交互的业务服务实现。
+- **LYBT.Desktop.Foundation**: 提供Repository基类和ApiClient。
+- **模块内 Repositories/**: 提供与后端交互的数据访问层实现。
 
 ## 🚀 快速开始
 
@@ -33,31 +34,46 @@ LYBT.Desktop.Formula/
 dotnet build src\Client\Desktop\Modules\Formula\LYBT.Desktop.Formula.csproj
 ```
 
-## 🔌 API 接口
+## 🔌 数据访问层架构
 
-此项目为UI模块，不直接调用API。它通过依赖注入获取在 `LYBT.Desktop.Services` 层实现的 `IFormulaService` 接口，并调用该服务来完成所有验方相关的业务操作。
+此项目为UI模块，采用 **ViewModel → Repository → ApiClient** 三层架构：
+
+- **ViewModel 层**：UI业务逻辑，通过依赖注入获取 Repository
+- **Repository 层**（模块内 `Repositories/`）：数据访问与转换，调用 Foundation 层的 ApiClient
+- **ApiClient 层**（Foundation）：统一的HTTP通信封装
+
+### 代码示例
 
 ```csharp
-// FormulaListViewModel.cs
-public class FormulaListViewModel : CoreViewModel
-{
-    private readonly IFormulaService _formulaService;
+// FormulaManagementViewModel.cs
+using LYBT.Desktop.Formula.Repositories;
 
-    public FormulaListViewModel(IFormulaService formulaService)
+public class FormulaManagementViewModel : UnifiedViewModelBase
+{
+    private readonly IFormulaRepository _formulaRepository;
+
+    public FormulaManagementViewModel(IFormulaRepository formulaRepository, ...)
     {
-        _formulaService = formulaService;
+        _formulaRepository = formulaRepository;
     }
 
-    private async Task LoadFormulas()
+    private async Task LoadFormulasAsync()
     {
-        var result = await _formulaService.GetPagedAsync(new PagedQueryBaseDto());
-        if(result.IsSuccess)
+        var result = await _formulaRepository.GetPagedAsync(1, 100);
+        if (result != null && result.Items != null)
         {
-            // ...
+            foreach (var formula in result.Items)
+            {
+                Formulas.Add(formula);
+            }
         }
     }
 }
 ```
+
+**关键差异**：
+- ❌ 禁止直接依赖 `LYBT.Desktop.Services` 的 Server Service（会导致运行时崩溃）
+- ✅ 使用模块内 Repository，返回裸类型而非 `Result<T>`
 
 ---
 
