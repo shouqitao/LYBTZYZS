@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -150,7 +150,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseDetailViewModel(
-            IMedicalCaseService medicalCaseService,
+            IMedicalCaseRepository medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -158,7 +158,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -221,17 +221,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     FollowUpPlan = ""
                 };
 
-                var result = await _medicalCaseService.UpdateAsync(MedicalCase.Id, updateDto);
-                if (result.IsSuccess)
-                {
-                    await ShowSuccessMessageAsync("医疗案例保存成功");
-                    // 修复NavigateBack调用 - 提供区域名称
-                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"保存失败: {result.ErrorMessage}");
-                }
+                var updatedCase = await _medicalCaseRepository.UpdateAsync(updateDto);
+                await ShowSuccessMessageAsync("医疗案例保存成功");
+                // 修复NavigateBack调用 - 提供区域名称
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
             }
             catch (Exception ex)
             {
@@ -363,16 +356,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 重新加载病历数据
-                var result = await _medicalCaseService.GetByIdAsync(MedicalCase.Id);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LoadMedicalCase(result.Data);
-                    await ShowSuccessMessageAsync("数据刷新成功");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"刷新失败: {result.ErrorMessage}");
-                }
+                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCase.Id);
+                LoadMedicalCase(medicalCase);
+                await ShowSuccessMessageAsync("数据刷新成功");
             }
             catch (Exception ex)
             {

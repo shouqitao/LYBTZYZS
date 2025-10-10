@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public CreateMedicalCaseViewModel(
-            IMedicalCaseService medicalCaseService,
+            IMedicalCaseRepository medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -164,7 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 
             // 初始化命令
             CreateCommand = new DelegateCommand(async () => await CreateAsync(), CanCreate);
@@ -202,16 +202,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Status = (MedicalCaseStatus)Status
                 };
 
-                var result = await _medicalCaseService.CreateAsync(createDto);
-                if (result.IsSuccess)
-                {
-                    await ShowSuccessMessageAsync("医疗案例创建成功");
-                    NavigateToMedicalCaseManagement();
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"创建医疗案例失败: {result.ErrorMessage}");
-                }
+                var medicalCase = await _medicalCaseRepository.CreateAsync(createDto);
+                await ShowSuccessMessageAsync("医疗案例创建成功");
+                NavigateToMedicalCaseManagement();
             }
             catch (Exception ex)
             {

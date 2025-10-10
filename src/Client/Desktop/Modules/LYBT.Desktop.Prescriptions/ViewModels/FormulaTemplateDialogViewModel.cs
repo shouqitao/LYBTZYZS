@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Formula.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaService _formulaService;
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -142,12 +142,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaService formulaService,
+            IFormulaRepository formulaService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaService = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -219,21 +219,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载验方模板...");
 
-                var result = await _formulaService.GetPagedAsync(1, int.MaxValue, null);
-                if (result.IsSuccess && result.Data?.Items != null)
+                var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                FormulaTemplates.Clear();
+                foreach (var item in pagedData.Items)
                 {
-                    FormulaTemplates.Clear();
-                    foreach (var item in result.Data.Items)
-                    {
-                        FormulaTemplates.Add(item);
-                    }
+                    FormulaTemplates.Add(item);
+                }
 
-                    Logger.LogInformation("验方模板加载完成，共 {Count} 个", FormulaTemplates.Count);
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载验方模板失败: {result.ErrorMessage}");
-                }
+                Logger.LogInformation("验方模板加载完成，共 {Count} 个", FormulaTemplates.Count);
             }
             catch (Exception ex)
             {
@@ -255,33 +248,30 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                var allFormulas = await _formulaService.GetPagedAsync(1, int.MaxValue, null);
-                if (allFormulas.IsSuccess && allFormulas.Data?.Items != null)
+                var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                var filtered = allFormulas.Items.AsEnumerable();
+
+                // 按关键字筛选
+                if (!string.IsNullOrWhiteSpace(SearchText))
                 {
-                    var filtered = allFormulas.Data.Items.AsEnumerable();
-
-                    // 按关键字筛选
-                    if (!string.IsNullOrWhiteSpace(SearchText))
-                    {
-                        filtered = filtered.Where(f =>
-                            f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            f.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
-                    }
-
-                    // 按分类筛选
-                    if (!string.IsNullOrWhiteSpace(CategoryFilter) && CategoryFilter != "全部")
-                    {
-                        filtered = filtered.Where(f => f.Category == CategoryFilter);
-                    }
-
-                    FormulaTemplates.Clear();
-                    foreach (var item in filtered)
-                    {
-                        FormulaTemplates.Add(item);
-                    }
-
-                    Logger.LogDebug("搜索完成，找到 {Count} 个验方", FormulaTemplates.Count);
+                    filtered = filtered.Where(f =>
+                        f.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                        f.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
                 }
+
+                // 按分类筛选
+                if (!string.IsNullOrWhiteSpace(CategoryFilter) && CategoryFilter != "全部")
+                {
+                    filtered = filtered.Where(f => f.Category == CategoryFilter);
+                }
+
+                FormulaTemplates.Clear();
+                foreach (var item in filtered)
+                {
+                    FormulaTemplates.Add(item);
+                }
+
+                Logger.LogDebug("搜索完成，找到 {Count} 个验方", FormulaTemplates.Count);
             }
             catch (Exception ex)
             {

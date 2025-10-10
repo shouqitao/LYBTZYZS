@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -155,7 +155,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseListViewModel(
-            IMedicalCaseService medicalCaseService,
+            IMedicalCaseRepository medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -163,7 +163,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -210,20 +210,13 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在加载病历列表...");
 
-                var result = await _medicalCaseService.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                if (result.IsSuccess && result.Data != null)
+                var pagedData = await _medicalCaseRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                MedicalCases.Clear();
+                foreach (var item in pagedData.Items)
                 {
-                    MedicalCases.Clear();
-                    foreach (var item in result.Data.Items)
-                    {
-                        MedicalCases.Add(item);
-                    }
-                    TotalCount = result.Data.TotalCount;
+                    MedicalCases.Add(item);
                 }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载病历列表失败: {result.ErrorMessage}");
-                }
+                TotalCount = pagedData.TotalCount;
             }
             catch (Exception ex)
             {
@@ -282,15 +275,15 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在删除病历...");
 
-                var result = await _medicalCaseService.DeleteAsync(SelectedMedicalCase.Id);
-                if (result.IsSuccess)
+                var success = await _medicalCaseRepository.DeleteAsync(SelectedMedicalCase.Id);
+                if (success)
                 {
                     await ShowSuccessMessageAsync("病历删除成功");
                     await LoadDataAsync();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync($"删除病历失败: {result.ErrorMessage}");
+                    await ShowErrorMessageAsync("删除病历失败");
                 }
             }
             catch (Exception ex)

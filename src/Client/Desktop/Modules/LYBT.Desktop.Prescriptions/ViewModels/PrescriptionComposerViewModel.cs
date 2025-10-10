@@ -2,7 +2,8 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Prescriptions.Repositories;
+using LYBT.Desktop.MedicalCase.Repositories;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,8 +20,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionService _prescriptionService;
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -349,8 +350,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionComposerViewModel(
-            IPrescriptionService prescriptionService,
-            IMedicalCaseService medicalCaseService,
+            IPrescriptionRepository prescriptionRepository,
+            IMedicalCaseRepository medicalCaseRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -363,8 +364,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -468,15 +469,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             try
             {
-                var result = await _medicalCaseService.GetByIdAsync(MedicalCaseId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    CurrentMedicalCase = result.Data;
-                }
-                else
-                {
-                    Logger.LogWarning("未找到医疗案例，ID: {MedicalCaseId}", MedicalCaseId);
-                }
+                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
+                CurrentMedicalCase = medicalCase;
             }
             catch (Exception ex)
             {

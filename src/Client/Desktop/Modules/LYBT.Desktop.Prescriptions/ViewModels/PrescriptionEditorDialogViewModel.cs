@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Prescriptions.Repositories;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionService _prescriptionService;
+        private readonly IPrescriptionRepository _prescriptionRepository;
 
         #endregion
 
@@ -266,7 +266,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionEditorDialogViewModel(
-            IPrescriptionService prescriptionService,
+            IPrescriptionRepository prescriptionRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -274,7 +274,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -374,17 +374,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方信息...");
 
-                var result = await _prescriptionService.GetByIdAsync(PrescriptionId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    OriginalPrescription = result.Data;
-                    LoadFromPrescription(OriginalPrescription);
-                    Logger.LogInformation("处方信息加载完成");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载处方信息失败: {result.ErrorMessage}");
-                }
+                var prescription = await _prescriptionRepository.GetByIdAsync(PrescriptionId);
+                OriginalPrescription = prescription;
+                LoadFromPrescription(OriginalPrescription);
+                Logger.LogInformation("处方信息加载完成");
             }
             catch (Exception ex)
             {
@@ -455,23 +448,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     Discount = Discount
                 };
 
-                var result = await _prescriptionService.UpdateAsync(PrescriptionId, updateDto);
-                if (result.IsSuccess)
-                {
-                    await ShowSuccessMessageAsync("处方信息保存成功");
+                var updatedPrescription = await _prescriptionRepository.UpdateAsync(PrescriptionId, updateDto);
+                await ShowSuccessMessageAsync("处方信息保存成功");
 
-                    var parameters = new DialogParameters
-                    {
-                        { "UpdatedPrescription", result.Data },
-                        { "HasChanges", true }
-                    };
-
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-                }
-                else
+                var parameters = new DialogParameters
                 {
-                    await ShowErrorMessageAsync($"保存处方信息失败: {result.ErrorMessage}");
-                }
+                    { "UpdatedPrescription", updatedPrescription },
+                    { "HasChanges", true }
+                };
+
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
             }
             catch (Exception ex)
             {
