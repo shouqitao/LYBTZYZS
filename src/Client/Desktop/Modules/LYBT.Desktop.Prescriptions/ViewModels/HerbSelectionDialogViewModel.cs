@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbService _herbService;
+        private readonly IHerbRepository _herbRepository;
 
         #endregion
 
@@ -164,12 +164,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IHerbService herbService,
+            IHerbRepository herbService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _herbRepository = herbService ?? throw new ArgumentNullException(nameof(herbService));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -259,21 +259,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载药材列表...");
 
-                var result = await _herbService.GetPagedAsync(1, 1000);
-                if (result.IsSuccess && result.Data != null)
+                var pagedData = await _herbRepository.GetPagedAsync(1, 1000);
+                AvailableHerbs.Clear();
+                foreach (var item in pagedData.Items)
                 {
-                    AvailableHerbs.Clear();
-                    foreach (var item in result.Data.Items)
-                    {
-                        AvailableHerbs.Add(item);
-                    }
+                    AvailableHerbs.Add(item);
+                }
 
-                    Logger.LogInformation("药材列表加载完成，共 {Count} 个", AvailableHerbs.Count);
-                }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载药材列表失败: {result.ErrorMessage}");
-                }
+                Logger.LogInformation("药材列表加载完成，共 {Count} 个", AvailableHerbs.Count);
             }
             catch (Exception ex)
             {
@@ -295,34 +288,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                var allHerbs = await _herbService.GetPagedAsync(1, 1000);
-                if (allHerbs.IsSuccess && allHerbs.Data != null)
+                var allHerbs = await _herbRepository.GetPagedAsync(1, 1000);
+                var filtered = allHerbs.Items.AsEnumerable();
+
+                // 按关键字筛选
+                if (!string.IsNullOrWhiteSpace(SearchText))
                 {
-                    var filtered = allHerbs.Data.Items.AsEnumerable();
-
-                    // 按关键字筛选
-                    if (!string.IsNullOrWhiteSpace(SearchText))
-                    {
-                        filtered = filtered.Where(h =>
-                            h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            h.PinYinCode?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
-                            h.Properties?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
-                    }
-
-                    // 按分类筛选
-                    if (!string.IsNullOrWhiteSpace(CategoryFilter) && CategoryFilter != "全部")
-                    {
-                        filtered = filtered.Where(h => h.Category == CategoryFilter);
-                    }
-
-                    AvailableHerbs.Clear();
-                    foreach (var item in filtered)
-                    {
-                        AvailableHerbs.Add(item);
-                    }
-
-                    Logger.LogDebug("搜索完成，找到 {Count} 个药材", AvailableHerbs.Count);
+                    filtered = filtered.Where(h =>
+                        h.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                        h.PinYinCode?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                        h.Properties?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true);
                 }
+
+                // 按分类筛选
+                if (!string.IsNullOrWhiteSpace(CategoryFilter) && CategoryFilter != "全部")
+                {
+                    filtered = filtered.Where(h => h.Category == CategoryFilter);
+                }
+
+                AvailableHerbs.Clear();
+                foreach (var item in filtered)
+                {
+                    AvailableHerbs.Add(item);
+                }
+
+                Logger.LogDebug("搜索完成，找到 {Count} 个药材", AvailableHerbs.Count);
             }
             catch (Exception ex)
             {

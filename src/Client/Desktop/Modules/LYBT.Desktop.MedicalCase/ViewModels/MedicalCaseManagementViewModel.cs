@@ -1,7 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.MedicalCase.Repositories;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseManagementViewModel(
-            IMedicalCaseService medicalCaseService,
+            IMedicalCaseRepository medicalCaseService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -132,7 +132,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
 
             // 初始化命令
             ShowListCommand = new DelegateCommand(ShowList);

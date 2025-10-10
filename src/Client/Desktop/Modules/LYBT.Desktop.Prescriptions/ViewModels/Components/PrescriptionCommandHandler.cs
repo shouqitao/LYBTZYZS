@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Prescriptions.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     /// </summary>
     public class PrescriptionCommandHandler
     {
-        private readonly IPrescriptionService _prescriptionService;
+        private readonly IPrescriptionRepository _prescriptionRepository;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
 
         #region 事件定义
@@ -94,11 +94,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         #endregion
 
         public PrescriptionCommandHandler(
-            IPrescriptionService prescriptionService,
+            IPrescriptionRepository prescriptionService,
             ILogger<PrescriptionCommandHandler> logger,
             ISessionManager sessionManager)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionRepository = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
@@ -155,18 +155,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     Items = ConvertToCreateItems(items)
                 };
 
-                var result = await _prescriptionService.CreateAsync(createDto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    _logger.LogInformation("处方创建成功：{PrescriptionId}", result.Data.Id);
-                    return CommandResult<PrescriptionDto>.Success(result.Data);
-                }
-                else
-                {
-                    _logger.LogWarning("处方创建失败：{ErrorMessage}", result.ErrorMessage);
-                    return CommandResult<PrescriptionDto>.Failure(result.ErrorMessage ?? "创建处方失败");
-                }
+                var prescription = await _prescriptionRepository.CreateAsync(createDto);
+                _logger.LogInformation("处方创建成功：{PrescriptionId}", prescription.Id);
+                return CommandResult<PrescriptionDto>.Success(prescription);
             }
             catch (Exception ex)
             {
@@ -195,18 +186,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     Items = ConvertToUpdateItems(items)
                 };
 
-                var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    _logger.LogInformation("处方更新成功：{PrescriptionId}", prescriptionId);
-                    return CommandResult<PrescriptionDto>.Success(result.Data);
-                }
-                else
-                {
-                    _logger.LogWarning("处方更新失败：{ErrorMessage}", result.ErrorMessage);
-                    return CommandResult<PrescriptionDto>.Failure(result.ErrorMessage ?? "更新处方失败");
-                }
+                var prescription = await _prescriptionRepository.UpdateAsync(prescriptionId, updateDto);
+                _logger.LogInformation("处方更新成功：{PrescriptionId}", prescriptionId);
+                return CommandResult<PrescriptionDto>.Success(prescription);
             }
             catch (Exception ex)
             {
@@ -224,17 +206,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             {
                 _logger.LogInformation("开始删除处方：{PrescriptionId}", prescriptionId);
 
-                var result = await _prescriptionService.DeleteAsync(prescriptionId);
-
-                if (result.IsSuccess)
+                var success = await _prescriptionRepository.DeleteAsync(prescriptionId);
+                if (success)
                 {
                     _logger.LogInformation("处方删除成功：{PrescriptionId}", prescriptionId);
                     return CommandResult<bool>.Success(true);
                 }
                 else
                 {
-                    _logger.LogWarning("处方删除失败：{ErrorMessage}", result.ErrorMessage);
-                    return CommandResult<bool>.Failure(result.ErrorMessage ?? "删除处方失败");
+                    _logger.LogWarning("处方删除失败：{PrescriptionId}", prescriptionId);
+                    return CommandResult<bool>.Failure("删除处方失败");
                 }
             }
             catch (Exception ex)
@@ -389,28 +370,25 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
                 // 循环调用DeleteAsync（Shared.Interfaces暂无BatchDeleteAsync）
                 int successCount = 0;
-                List<string> errors = new();
+                int failureCount = 0;
                 foreach (var id in ids)
                 {
-                    var deleteResult = await _prescriptionService.DeleteAsync(id);
-                    if (deleteResult.IsSuccess)
+                    var success = await _prescriptionRepository.DeleteAsync(id);
+                    if (success)
                         successCount++;
-                    else if (!string.IsNullOrEmpty(deleteResult.ErrorMessage))
-                        errors.Add(deleteResult.ErrorMessage);
+                    else
+                        failureCount++;
                 }
-                var result = successCount == ids.Count
-                    ? ServiceResult.Success()
-                    : ServiceResult.Failure(string.Join("; ", errors));
 
-                if (result.IsSuccess)
+                if (failureCount == 0)
                 {
                     _logger.LogInformation("批量删除处方成功，数量：{Count}", ids.Count);
                     return CommandResult<bool>.Success(true);
                 }
                 else
                 {
-                    _logger.LogWarning("批量删除处方失败：{ErrorMessage}", result.ErrorMessage);
-                    return CommandResult<bool>.Failure(result.ErrorMessage ?? "批量删除处方失败");
+                    _logger.LogWarning("批量删除处方部分失败：成功 {SuccessCount} 个，失败 {FailureCount} 个", successCount, failureCount);
+                    return CommandResult<bool>.Failure($"批量删除完成：成功 {successCount} 个，失败 {failureCount} 个");
                 }
             }
             catch (Exception ex)
@@ -433,21 +411,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             {
                 _logger.LogInformation("开始获取患者处方列表：{PatientId}", patientId);
 
-                var result = await _prescriptionService.GetPagedAsync(1, int.MaxValue, null);
-
-                if (result.IsSuccess && result.Data?.Items != null)
-                {
-                    var prescriptions = result.Data.Items
-                        .Where(p => p.PatientId == patientId)
-                        .ToList();
-                    _logger.LogInformation("获取患者处方列表成功，数量：{Count}", prescriptions.Count);
-                    return CommandResult<IEnumerable<PrescriptionDto>>.Success(prescriptions);
-                }
-                else
-                {
-                    _logger.LogWarning("获取患者处方列表失败：{ErrorMessage}", result.ErrorMessage);
-                    return CommandResult<IEnumerable<PrescriptionDto>>.Failure(result.ErrorMessage ?? "获取处方列表失败");
-                }
+                var pagedData = await _prescriptionRepository.GetPagedAsync(1, int.MaxValue, null);
+                var prescriptions = pagedData.Items
+                    .Where(p => p.PatientId == patientId)
+                    .ToList();
+                _logger.LogInformation("获取患者处方列表成功，数量：{Count}", prescriptions.Count);
+                return CommandResult<IEnumerable<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {

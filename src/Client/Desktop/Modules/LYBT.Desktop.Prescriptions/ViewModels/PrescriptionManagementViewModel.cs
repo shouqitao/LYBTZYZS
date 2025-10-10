@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Prescriptions.Repositories;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionService _prescriptionService;
+        private readonly IPrescriptionRepository _prescriptionRepository;
 
         #endregion
 
@@ -211,7 +211,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionManagementViewModel(
-            IPrescriptionService prescriptionService,
+            IPrescriptionRepository prescriptionRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -219,7 +219,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -275,20 +275,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方列表...");
 
-                var result = await _prescriptionService.GetPagedAsync(CurrentPage, PageSize, SearchText);
-                if (result.IsSuccess && result.Data != null)
+                var pagedData = await _prescriptionRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                Prescriptions.Clear();
+                foreach (var item in pagedData.Items)
                 {
-                    Prescriptions.Clear();
-                    foreach (var item in result.Data.Items)
-                    {
-                        Prescriptions.Add(item);
-                    }
-                    TotalCount = result.Data.TotalCount;
+                    Prescriptions.Add(item);
                 }
-                else
-                {
-                    await ShowErrorMessageAsync($"加载处方列表失败: {result.ErrorMessage}");
-                }
+                TotalCount = pagedData.TotalCount;
             }
             catch (Exception ex)
             {
@@ -347,15 +340,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在删除处方...");
 
-                var result = await _prescriptionService.DeleteAsync(SelectedPrescription.Id);
-                if (result.IsSuccess)
+                var success = await _prescriptionRepository.DeleteAsync(SelectedPrescription.Id);
+                if (success)
                 {
                     await ShowSuccessMessageAsync("处方删除成功");
                     await LoadDataAsync();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync($"删除处方失败: {result.ErrorMessage}");
+                    await ShowErrorMessageAsync("删除处方失败");
                 }
             }
             catch (Exception ex)

@@ -1,7 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Prescriptions.Repositories;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -17,7 +17,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionService _prescriptionService;
+        private readonly IPrescriptionRepository _prescriptionRepository;
 
         #endregion
 
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionsMainViewModel(
-            IPrescriptionService prescriptionService,
+            IPrescriptionRepository prescriptionRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -126,7 +126,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
 
             // 初始化命令
             ShowManagementCommand = new DelegateCommand(ShowManagement);
@@ -272,23 +272,17 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 Logger.LogInformation("开始加载处方统计数据");
 
                 // 加载总处方数
-                var totalResult = await _prescriptionService.GetPagedAsync(1, 1, null);
-                if (totalResult.IsSuccess && totalResult.Data != null)
-                {
-                    TotalPrescriptionsCount = totalResult.Data.TotalCount;
-                }
+                var totalResult = await _prescriptionRepository.GetPagedAsync(1, 1, null);
+                TotalPrescriptionsCount = totalResult.TotalCount;
 
                 // 加载今日处方数据
                 var today = DateTime.Today;
-                var todayResult = await _prescriptionService.GetPagedAsync(1, int.MaxValue, null);
-                if (todayResult.IsSuccess && todayResult.Data?.Items != null)
-                {
-                    var todayPrescriptions = todayResult.Data.Items
-                        .Where(p => p.CreatedAt.Date == today)
-                        .ToList();
-                    TodayPrescriptionsCount = todayPrescriptions.Count;
-                    TodayTotalAmount = todayPrescriptions.Sum(p => p.TotalAmount);
-                }
+                var todayResult = await _prescriptionRepository.GetPagedAsync(1, int.MaxValue, null);
+                var todayPrescriptions = todayResult.Items
+                    .Where(p => p.CreatedAt.Date == today)
+                    .ToList();
+                TodayPrescriptionsCount = todayPrescriptions.Count;
+                TodayTotalAmount = todayPrescriptions.Sum(p => p.TotalAmount);
 
                 Logger.LogInformation("处方统计数据加载完成");
             }
