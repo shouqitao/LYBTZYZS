@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Users.ViewModels;
+﻿using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -20,7 +21,8 @@ namespace LYBT.Desktop.Users
         /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Services由Core_New/Services统一注册，不在Module中注册
+            // Issue #1128: 注册模块内 Repository（覆盖 Shell 层的旧 Repository）
+            containerRegistry.RegisterSingleton<IUserRepository, UserRepository>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<UserManagementViewModel>();

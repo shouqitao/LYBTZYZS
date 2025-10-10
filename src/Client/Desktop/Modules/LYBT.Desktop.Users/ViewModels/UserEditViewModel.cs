@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Users.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region 依赖服务
 
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
 
         #endregion
 
@@ -195,7 +195,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserEditViewModel(
-            IUserService userService,
+            IUserRepository userRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -203,7 +203,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -272,11 +272,12 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogDebug("开始加载用户数据: {UserId}", UserId);
 
-                var result = await _userService.GetByIdAsync(UserId);
+                // Repository 模式：直接返回 UserDto?
+                var user = await _userRepository.GetByIdAsync(UserId);
 
-                if (result.IsSuccess && result.Data != null)
+                if (user != null)
                 {
-                    _originalUser = result.Data;
+                    _originalUser = user;
                     LoadUserData(_originalUser);
                     IsUserLoaded = true;
 
@@ -286,8 +287,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户数据失败: {ErrorMessage}", result.ErrorMessage);
-                    throw new InvalidOperationException($"加载用户数据失败: {result.ErrorMessage}");
+                    Logger.LogWarning("加载用户数据失败: Repository 返回 null");
+                    throw new InvalidOperationException("加载用户数据失败: 用户不存在");
                 }
 
             }, "加载用户数据");
@@ -340,11 +341,12 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = Status
                 };
 
-                var result = await _userService.UpdateAsync(UserId, updateDto);
+                // Repository 模式：直接返回 UserDto?
+                var updatedUser = await _userRepository.UpdateAsync(updateDto);
 
-                if (result.IsSuccess && result.Data != null)
+                if (updatedUser != null)
                 {
-                    _originalUser = result.Data;
+                    _originalUser = updatedUser;
                     LoadUserData(_originalUser);
 
                     Logger.LogInformation("成功更新用户: {Username} - {RealName}", Username, RealName);
@@ -357,8 +359,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("更新用户失败: {ErrorMessage}", result.ErrorMessage);
-                    throw new InvalidOperationException($"更新用户失败: {result.ErrorMessage}");
+                    Logger.LogWarning("更新用户失败: Repository 返回 null");
+                    throw new InvalidOperationException("更新用户失败");
                 }
 
             }, "更新用户");
