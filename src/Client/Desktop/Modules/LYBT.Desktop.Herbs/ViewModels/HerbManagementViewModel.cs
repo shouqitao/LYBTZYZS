@@ -1,6 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -19,14 +19,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbService _herbService;
+        private readonly IHerbRepository _herbRepository;
 
         #endregion
 
         #region 构造函数
 
         public HerbManagementViewModel(
-            IHerbService herbService,
+            IHerbRepository herbRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -34,7 +34,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbService = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
 
             PageTitle = "药材管理";
 
@@ -93,24 +93,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                var result = await _herbService.GetPagedAsync(page, pageSize, searchText);
+                var pagedData = await _herbRepository.GetPagedAsync(page, pageSize, searchText);
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var pagedData = result.Data;
+                // 更新分页信息
+                TotalCount = pagedData.TotalCount;
+                CurrentPage = pagedData.CurrentPage;
+                PageSize = pagedData.PageSize;
 
-                    // 更新分页信息
-                    TotalCount = pagedData.TotalCount;
-                    CurrentPage = pagedData.CurrentPage;
-                    PageSize = pagedData.PageSize;
-
-                    return pagedData.Items;
-                }
-                else
-                {
-                    Logger.LogWarning("加载药材数据失败: {ErrorMessage}", result.ErrorMessage);
-                    return new List<HerbDto>();
-                }
+                return pagedData.Items;
             }
             catch (Exception ex)
             {
@@ -139,16 +129,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                var result = await _herbService.DeleteAsync(item.Id);
+                var success = await _herbRepository.DeleteAsync(item.Id);
 
-                if (result.IsSuccess)
+                if (success)
                 {
                     await ShowSuccessMessageAsync($"药材 '{item.Name}' 删除成功");
                     await LoadPageAsync(); // 重新加载数据
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? $"删除药材 {item.Name} 失败");
+                    await ShowErrorMessageAsync($"删除药材 {item.Name} 失败");
                 }
             }
             catch (Exception ex)
@@ -167,29 +157,33 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 var selectedIds = items.Select(h => h.Id).ToList();
 
-                // 循环调用DeleteAsync（Shared.Interfaces暂无BatchDeleteAsync）
+                // 循环调用DeleteAsync（Repository暂无BatchDeleteAsync）
                 int successCount = 0;
                 List<string> errors = new();
                 foreach (var id in selectedIds)
                 {
-                    var deleteResult = await _herbService.DeleteAsync(id);
-                    if (deleteResult.IsSuccess)
-                        successCount++;
-                    else if (!string.IsNullOrEmpty(deleteResult.ErrorMessage))
-                        errors.Add(deleteResult.ErrorMessage);
+                    try
+                    {
+                        var success = await _herbRepository.DeleteAsync(id);
+                        if (success)
+                            successCount++;
+                        else
+                            errors.Add($"删除药材 {id} 失败");
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"删除药材 {id} 异常: {ex.Message}");
+                    }
                 }
-                var result = successCount == selectedIds.Count
-                    ? ServiceResult.Success()
-                    : ServiceResult.Failure(string.Join("; ", errors));
 
-                if (result.IsSuccess)
+                if (successCount == selectedIds.Count)
                 {
                     await ShowSuccessMessageAsync($"成功删除 {items.Count} 个药材");
                     await LoadPageAsync(); // 重新加载数据
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "批量删除药材失败");
+                    await ShowErrorMessageAsync($"批量删除完成，成功 {successCount} 个，失败 {errors.Count} 个");
                 }
             }
             catch (Exception ex)

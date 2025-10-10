@@ -1,14 +1,16 @@
-﻿using Prism.Ioc;
+﻿using LYBT.Desktop.Patients.Repositories;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Patients
 {
     /// <summary>
-    /// 患者管理模块 - 简化版
+    /// 患者管理模块 - Phase 2模块化架构
+    /// Issue #1114 - Repository下沉到模块
     /// </summary>
     [Module(ModuleName = nameof(PatientsModule))]
     [ModuleDependency("AuthenticationModule")]
-    [ModuleDependency("UsersModule")] // 患者模块依赖用户和认证
+    [ModuleDependency("UsersModule")]
     public class PatientsModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
@@ -18,7 +20,8 @@ namespace LYBT.Desktop.Patients
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Services由Core_New/Services统一注册，不在Module中注册
+            // Phase 2：Repository由模块自己注册
+            containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();

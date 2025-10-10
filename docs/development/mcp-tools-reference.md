@@ -1,464 +1,1071 @@
-# MCP工具参考手册
+﻿# MCP工具参考手册
 
-> **版本**: 1.0
-> **最后更新**: 2025-10-07
-> **关联**: [CLAUDE.md](../../CLAUDE.md) Section 6
+**版本**: 1.0.0
+**创建日期**: 2025-10-09
+**用途**: LYBTZYZS项目AI协同工作的MCP工具完整参考
 
-本文档提供凌隐宝堂中医诊所项目中所有MCP（Model Context Protocol）工具的详细参数规范、调用示例与最佳实践。
-
----
-
-## 目录
-
-1. [工具详细规范](#1-工具详细规范)
-2. [工具协调与工作流](#2-工具协调与工作流)
-3. [常见问题与错误处理](#3-常见问题与错误处理)
+本文档提供8个MCP工具的完整参数规范、调用示例、工作流模式与错误处理策略。
 
 ---
 
-## 1. 工具详细规范
+## 📚 目录
 
-### 1.1 filesystem
+- [1. MCP工具概览](#1-mcp工具概览)
+- [2. 工具详细规范](#2-工具详细规范)
+  - [2.1 Serena - 语义代码分析](#21-serena---语义代码分析)
+  - [2.2 Context7 - 库文档查询](#22-context7---库文档查询)
+  - [2.3 Memory - 知识图谱](#23-memory---知识图谱)
+  - [2.4 Git - 版本控制](#24-git---版本控制)
+  - [2.5 Sequential-Thinking - 结构化推理](#25-sequential-thinking---结构化推理)
+  - [2.6 Time - 时间工具](#26-time---时间工具)
+  - [2.7 Filesystem - 文件操作](#27-filesystem---文件操作)
+  - [2.8 Playwright - 浏览器自动化](#28-playwright---浏览器自动化)
+- [3. 工作流模式](#3-工作流模式)
+- [4. 错误处理策略](#4-错误处理策略)
+- [5. 最佳实践](#5-最佳实践)
 
-**用途**: 文件系统操作（读写文件、目录遍历、批量处理）
+---
 
-#### 核心工具
+## 1. MCP工具概览
 
-| 工具 | 关键参数 | 说明 |
-|------|---------|------|
-| `read_text_file` | path (string), head? (number), tail? (number) | 读取文本文件（支持前N/后N行） |
-| `write_file` | path (string), content (string) | 创建/覆盖文件（谨慎使用） |
-| `edit_file` | path (string), edits[] {oldText, newText}, dryRun? (boolean) | 基于行的精确编辑 |
-| `list_directory` | path (string) | 列出目录内容（[FILE]/[DIR]前缀） |
-| `search_files` | path (string), pattern (string), excludePatterns? (string[]) | 递归搜索文件名 |
-| `read_multiple_files` | paths[] (string[]) | 批量读取文件（效率优先） |
+| 工具 | 参数约定 | 主要用途 | 使用频率 |
+|------|---------|---------|---------|
+| **serena** | snake_case | 语义代码检索与编辑（基于LSP） | 🔥 高频 |
+| **context7** | camelCase | 查询库文档与代码示例 | 🔥 高频 |
+| **memory** | camelCase | 知识图谱存储（实体-关系模型） | 🔶 中频 |
+| **git** | camelCase | 版本控制（status, diff, commit等） | 🔥 高频 |
+| **sequential-thinking** | camelCase | 结构化推理与步骤分解（UltraThink） | 🔥 高频 |
+| **time** | snake_case | 时区转换与时间标准化 | 🔷 低频 |
+| **filesystem** | camelCase | 文件读写、目录遍历、批量操作 | 🔥 高频 |
+| **playwright** | camelCase | 浏览器自动化（按需使用） | 🔷 低频 |
 
-#### 调用示例
+---
 
-```xml
-<!-- 读取文件（前50行） -->
-<invoke name="mcp__filesystem__read_text_file">
-  <parameter name="path">D:\source\repos\LYBTZYZS\CLAUDE.md</parameter>
-  <parameter name="head">50</parameter>
-</invoke>
+## 2. 工具详细规范
 
-<!-- 精确编辑文件 -->
-<invoke name="mcp__filesystem__edit_file">
-  <parameter name="path">D:\source\repos\LYBTZYZS\src\Example.cs</parameter>
-  <parameter name="edits">[{
-    "oldText": "public class Example",
-    "newText": "public sealed class Example"
-  }]</parameter>
-  <parameter name="dryRun">false</parameter>
-</invoke>
+### 2.1 Serena - 语义代码分析
 
-<!-- 批量读取 -->
-<invoke name="mcp__filesystem__read_multiple_files">
-  <parameter name="paths">["file1.cs", "file2.cs", "file3.cs"]</parameter>
-</invoke>
+**命名约定**: `mcp__serena__<function_name>` （snake_case）
+
+#### 核心功能
+
+##### A. `find_symbol` - 查找符号
+根据名称路径查找代码符号（类、方法、属性等）。
+
+**参数**:
+```json
+{
+  "name_path": "string",           // 必填：符号名称路径（如 "PatientService/GetByIdAsync"）
+  "relative_path": "string",       // 可选：限定搜索范围（文件或目录）
+  "substring_matching": boolean,   // 可选：是否启用子串匹配（默认false）
+  "depth": integer,                // 可选：返回子符号的深度（如 1 返回类的方法）
+  "include_body": boolean,         // 可选：是否包含符号体（默认false）
+  "include_kinds": [integer],      // 可选：LSP符号类型过滤（如 [5] 只返回类）
+  "exclude_kinds": [integer],      // 可选：排除的LSP符号类型
+  "max_answer_chars": integer      // 可选：最大返回字符数（-1使用默认值）
+}
 ```
 
-#### 验证规则
-
-- `path` 必须是绝对路径（Windows使用反斜杠或正斜杠均可）
-- `edit_file` 的 `oldText` 必须完全匹配，否则编辑失败
-- `write_file` 会直接覆盖，写入前应先用 `read_text_file` 确认
-- `dryRun=true` 时仅预览变更，不实际修改文件
-
----
-
-### 1.2 git
-
-**用途**: 版本控制操作（所有参数使用 camelCase）
-
-#### 核心工具（最常用工作流）
-
-| 工具 | 关键参数 | 说明 |
-|------|---------|------|
-| `git_status` | path? (string, 默认当前目录) | 查询工作区状态 |
-| `git_diff` | commit1? (string), commit2? (string), file? (string), staged? (boolean), includeUntracked? (boolean) | 差异对比 |
-| `git_add` | files (string/string[], 默认"."), path? (string) | 暂存文件 |
-| `git_commit` | message (string), author? {name, email}, amend? (boolean), filesToStage? (string[]) | 提交变更 |
-| `git_branch` | mode (list/create/delete/rename/show-current), branchName? (string), force? (boolean) | 分支管理 |
-| `git_checkout` | branchOrPath (string), newBranch? (string), force? (boolean) | 切换分支 |
-| `git_log` | branchOrFile? (string), maxCount? (number), author? (string), showSignature? (boolean) | 提交历史 |
-
-#### 调用示例（典型工作流）
-
-```xml
-<!-- 1. 查看状态 -->
-<invoke name="mcp__git__git_status">
-  <parameter name="path">D:\source\repos\LYBTZYZS</parameter>
-</invoke>
-
-<!-- 2. 查看差异 -->
-<invoke name="mcp__git__git_diff">
-  <parameter name="staged">false</parameter>
-  <parameter name="includeUntracked">true</parameter>
-</invoke>
-
-<!-- 3. 暂存+提交 -->
-<invoke name="mcp__git__git_commit">
-  <parameter name="message">feat: 完善MCP工具参数规范
-
-- 添加8个工具的详细参数表
-- 补充调用示例与验证规则
-- 统一参数命名约定（camelCase）
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;</parameter>
-  <parameter name="filesToStage">["CLAUDE.md"]</parameter>
-</invoke>
-
-<!-- 4. 查看最近3次提交 -->
-<invoke name="mcp__git__git_log">
-  <parameter name="maxCount">3</parameter>
-  <parameter name="showSignature">false</parameter>
-</invoke>
+**LSP符号类型速查表**:
+```
+5  = Class         12 = Function      6  = Method
+7  = Property      8  = Field         13 = Variable
+14 = Constant      4  = Namespace     2  = Module
 ```
 
-#### 验证规则
+**调用示例**:
 
-- `message` 遵循 Conventional Commits（如 `feat:`, `fix:`, `docs:`）
-- `git_set_working_dir` 应在会话开始时调用，设置默认工作目录
-- `filesToStage` 可自动暂存文件，避免单独调用 `git_add`
-- `amend` 仅用于修改最近一次提交，且确认未 push
-- 提交信息末尾附加 Claude Code 标识和 Co-Authored-By
+```javascript
+// 示例1：查找类定义（不包含方法体）
+mcp__serena__find_symbol({
+  "name_path": "PatientService",
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients",
+  "include_kinds": [5],  // 只返回Class
+  "depth": 1,            // 返回类的直接成员
+  "include_body": false
+})
 
----
+// 示例2：查找方法并包含完整实现
+mcp__serena__find_symbol({
+  "name_path": "PatientService/GetByIdAsync",
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs",
+  "include_body": true
+})
 
-### 1.3 context7
-
-**用途**: 查询库文档与代码示例
-
-#### 核心工具
-
-1. `resolve-library-id`：libraryName (string) → 返回 Context7 兼容的库ID
-2. `get-library-docs`：context7CompatibleLibraryID (string, 必需), topic (string, 可选), tokens (number, 可选, 默认5000)
-
-#### 调用流程
-
-```xml
-<!-- 步骤1: 解析库名 -->
-<invoke name="mcp__context7__resolve-library-id">
-  <parameter name="libraryName">AutoMapper</parameter>
-</invoke>
-<!-- 返回: /automapper/automapper -->
-
-<!-- 步骤2: 获取文档 -->
-<invoke name="mcp__context7__get-library-docs">
-  <parameter name="context7CompatibleLibraryID">/automapper/automapper</parameter>
-  <parameter name="topic">profile configuration</parameter>
-  <parameter name="tokens">3000</parameter>
-</invoke>
+// 示例3：模糊查找（子串匹配）
+mcp__serena__find_symbol({
+  "name_path": "Patient",
+  "substring_matching": true,
+  "include_kinds": [5],  // 只返回类
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients"
+})
 ```
 
-#### 验证规则
+##### B. `find_referencing_symbols` - 查找引用
+查找所有引用指定符号的位置。
 
-- `context7CompatibleLibraryID` 必须是 `/org/project` 或 `/org/project/version` 格式
-- `tokens` 建议 3000-5000（平衡详细度与上下文消耗）
-- 必须先调用 `resolve-library-id` 获取准确ID，除非用户明确提供格式化ID
-
----
-
-### 1.4 serena
-
-**用途**: 语义代码检索与编辑（基于 LSP）
-
-#### 核心工具
-
-- **符号搜索**: `find_symbol`（全局/局部符号搜索，支持类型过滤）、`find_referencing_symbols`（查找引用关系）
-- **代码编辑**: `replace_symbol_body`（替换符号定义）、`insert_after_symbol`/`insert_before_symbol`（精确位置插入）
-- **项目管理**: `activate_project`（激活项目）、`execute_shell_command`（执行 shell 命令）
-- **文件操作**: `read_file`（读取文件）、`create_text_file`（创建/覆盖文件）
-
-#### 参数约定
-
-所有参数使用 **snake_case**（遵循Python LSP约定）
-
-#### 最佳实践
-
-- 始于干净 git 状态
-- 使用结构化代码库
-- 利用类型注解
-- 谨慎审查变更
-
----
-
-### 1.5 memory
-
-**用途**: 知识图谱存储（实体-关系模型）
-
-#### 核心工具（实体操作）
-
-| 工具 | 关键参数 | 说明 |
-|------|---------|------|
-| `create_entities` | entities[] {name, entityType, observations[]} | 创建实体节点 |
-| `create_relations` | relations[] {from, to, relationType} | 创建实体间关系 |
-| `add_observations` | observations[] {entityName, contents[]} | 为实体添加观察 |
-| `search_nodes` | query (string) | 搜索实体/观察内容 |
-| `read_graph` | - | 读取整个知识图谱 |
-
-#### 调用示例
-
-```xml
-<!-- 创建实体 -->
-<invoke name="mcp__memory__create_entities">
-  <parameter name="entities">[{
-    "name": "Issue-1013",
-    "entityType": "Task",
-    "observations": ["Phase 1-5 完成", "涉及29个ViewModel重构"]
-  }]</parameter>
-</invoke>
-
-<!-- 创建关系 -->
-<invoke name="mcp__memory__create_relations">
-  <parameter name="relations">[{
-    "from": "Issue-1013",
-    "to": "LYBT.Desktop",
-    "relationType": "修改"
-  }]</parameter>
-</invoke>
-
-<!-- 搜索节点 -->
-<invoke name="mcp__memory__search_nodes">
-  <parameter name="query">ViewModel重构</parameter>
-</invoke>
+**参数**:
+```json
+{
+  "name_path": "string",       // 必填：目标符号名称路径
+  "relative_path": "string",   // 必填：目标符号所在文件
+  "include_kinds": [integer],  // 可选：引用位置符号类型过滤
+  "exclude_kinds": [integer],  // 可选：排除的符号类型
+  "max_answer_chars": integer  // 可选：最大返回字符数
+}
 ```
 
-#### 验证规则
-
-- `relationType` 使用主动语态（如"修改"、"依赖"、"实现"）
-- `entityType` 建议使用统一分类（Task, Module, Issue, Feature, Bug 等）
-- 实体名称应唯一且有意义，避免泛化命名
-
----
-
-### 1.6 sequential-thinking
-
-**用途**: 结构化推理与步骤分解
-
-#### 参数规范（必须使用 camelCase）
-
-| 参数 | 类型 | 必需 | 约束 | 说明 |
-|------|------|------|------|------|
-| `thought` | string | ✅ | - | 当前思考步骤内容 |
-| `nextThoughtNeeded` | boolean | ✅ | - | 是否需要下一步思考 |
-| `thoughtNumber` | integer | ✅ | ≥1 | 当前步骤编号 |
-| `totalThoughts` | integer | ✅ | ≥1 | 预估总步骤数（可动态调整） |
-| `isRevision` | boolean | ❌ | - | 是否修订先前思考 |
-| `revisesThought` | integer | ❌ | ≥1 | 修订的步骤编号（需 isRevision=true） |
-| `branchFromThought` | integer | ❌ | ≥1 | 分支起点编号 |
-| `branchId` | string | ❌ | - | 分支标识符 |
-| `needsMoreThoughts` | boolean | ❌ | - | 是否需要更多步骤（动态扩展） |
-
-#### 调用示例
-
-```xml
-<invoke name="mcp__sequential-thinking__sequentialthinking">
-  <parameter name="thought">分析需求并拆解为3个Phase...</parameter>
-  <parameter name="nextThoughtNeeded">true</parameter>
-  <parameter name="thoughtNumber">1</parameter>
-  <parameter name="totalThoughts">5</parameter>
-</invoke>
+**调用示例**:
+```javascript
+// 查找所有调用 GetByIdAsync 的位置
+mcp__serena__find_referencing_symbols({
+  "name_path": "PatientService/GetByIdAsync",
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs"
+})
 ```
 
-#### 验证规则
+##### C. `replace_symbol_body` - 替换符号体
+替换符号的完整实现（方法体、类体等）。
 
-- `thoughtNumber` 必须 ≤ `totalThoughts`（除非设置 `needsMoreThoughts=true` 动态扩展）
-- 设置 `isRevision=true` 时必须提供 `revisesThought`
-- `branchId` 用于标识并行推理分支，同一分支保持一致
-
----
-
-### 1.7 time
-
-**用途**: 时区转换与时间标准化
-
-#### 核心工具
-
-1. `get_current_time`：timezone (string) → 返回指定时区当前时间（默认 Asia/Shanghai）
-2. `convert_time`：source_timezone (string), time (string, HH:MM), target_timezone (string)
-
-#### 调用示例
-
-```xml
-<!-- 获取当前时间 -->
-<invoke name="mcp__time__get_current_time">
-  <parameter name="timezone">Asia/Shanghai</parameter>
-</invoke>
-
-<!-- 时区转换 -->
-<invoke name="mcp__time__convert_time">
-  <parameter name="source_timezone">America/New_York</parameter>
-  <parameter name="time">14:30</parameter>
-  <parameter name="target_timezone">Asia/Shanghai</parameter>
-</invoke>
+**参数**:
+```json
+{
+  "name_path": "string",      // 必填：目标符号名称路径
+  "relative_path": "string",  // 必填：目标文件路径
+  "body": "string"            // 必填：新的符号体（无需包含签名）
+}
 ```
 
-#### 验证规则
-
-- `timezone` 使用 IANA 格式（如 "America/New_York", "Europe/London", "Asia/Tokyo"）
-- `time` 必须为 24小时制 HH:MM 格式（如 "14:30", "09:00"）
-- 常用时区：Asia/Shanghai (中国), America/New_York (美东), Europe/London (英国), Asia/Tokyo (日本)
-
----
-
-### 1.8 playwright
-
-**用途**: 浏览器自动化（仅在任务明确要求时使用）
-
-**说明**: 详细参数规范按需补充。常用工具包括 `browser_navigate`、`browser_snapshot`、`browser_click`、`browser_type` 等。
-
----
-
-## 2. 工具协调与工作流
-
-### 2.1 工具选择决策（何时用哪个工具）
-
-| 场景 | 优先工具 | 次选工具 | 原因 |
-|------|---------|---------|------|
-| **查找类/方法定义** | `serena.find_symbol` | `grep` | 语义级搜索更精确，支持类型过滤 |
-| **查找符号引用** | `serena.find_referencing_symbols` | `grep` + 人工过滤 | 自动过滤非代码引用（注释/字符串） |
-| **读取完整文件** | `filesystem.read_text_file` | `serena.read_file` | filesystem支持head/tail，更灵活 |
-| **替换整个方法** | `serena.replace_symbol_body` | `filesystem.edit_file` | 保留缩进，语义安全 |
-| **替换跨符号代码** | `serena.replace_regex` | `filesystem.edit_file` | 支持通配符，避免指定精确内容 |
-| **批量读取文件** | `filesystem.read_multiple_files` | 循环调用read | 一次调用减少往返开销 |
-| **查询库文档** | `context7.get-library-docs` | WebSearch | 获取权威文档片段，含代码示例 |
-| **执行Shell命令** | `serena.execute_shell_command` | Bash工具 | 集成在代码操作流程中 |
-| **Git操作** | `git.*` 工具 | Bash git命令 | 结构化参数，返回JSON |
-| **记录临时思路** | `memory.create_entities` | 本地文件 | 支持关系图谱，便于后续检索 |
-
----
-
-### 2.2 典型协调流程（串行依赖链）
-
-#### 流程1: 需求理解 → 方案设计 → 代码实现 → 验证提交
-
-```
-[Context7: 查询相关文档/库]
-        ↓
-[sequential-thinking: 拆解步骤与依赖]
-        ↓
-[serena.find_symbol: 定位目标代码]
-        ↓
-[serena.find_referencing_symbols: 检查影响范围]
-        ↓
-[serena.replace_symbol_body: 修改代码]
-        ↓
-[git.diff: 查看差异]
-        ↓
-[git.commit: 提交变更]
+**调用示例**:
+```javascript
+mcp__serena__replace_symbol_body({
+  "name_path": "PatientService/GetByIdAsync",
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs",
+  "body": `{
+    if (id <= 0) throw new ArgumentException("Invalid ID");
+    return await _repository.GetByIdAsync(id);
+}`
+})
 ```
 
-#### 流程2: Bug修复工作流
+##### D. `search_for_pattern` - 正则搜索
+在代码中搜索正则表达式模式。
 
+**参数**:
+```json
+{
+  "substring_pattern": "string",        // 必填：正则表达式模式
+  "relative_path": "string",            // 可选：搜索范围（目录或文件）
+  "restrict_search_to_code_files": boolean,  // 可选：仅搜索代码文件（默认false）
+  "paths_include_glob": "string",       // 可选：包含文件模式（如 "*.cs"）
+  "paths_exclude_glob": "string",       // 可选：排除文件模式（如 "*test*"）
+  "context_lines_before": integer,      // 可选：返回匹配前N行
+  "context_lines_after": integer,       // 可选：返回匹配后N行
+  "max_answer_chars": integer           // 可选：最大返回字符数
+}
 ```
-[serena.search_for_pattern: 定位错误代码]
-        ↓
-[serena.get_symbols_overview: 理解文件结构]
-        ↓
-[serena.find_symbol(..., include_body=true): 读取方法实现]
-        ↓
-[context7.get-library-docs: 查询正确用法]
-        ↓
-[serena.replace_symbol_body: 修复代码]
-        ↓
-[serena.execute_shell_command: 运行测试]
-        ↓
-[git.commit: 提交修复]
+
+**调用示例**:
+```javascript
+// 查找所有 TODO 注释
+mcp__serena__search_for_pattern({
+  "substring_pattern": "//\\s*TODO:.*",
+  "relative_path": "src/Server",
+  "restrict_search_to_code_files": true,
+  "context_lines_before": 2,
+  "context_lines_after": 2
+})
+
+// 查找所有异步方法定义
+mcp__serena__search_for_pattern({
+  "substring_pattern": "async\\s+Task<.*?>.*Async\\(",
+  "paths_include_glob": "*.cs",
+  "paths_exclude_glob": "*Test.cs"
+})
+```
+
+##### E. `get_symbols_overview` - 获取符号概览
+获取文件的顶层符号列表（不含实现）。
+
+**参数**:
+```json
+{
+  "relative_path": "string",    // 必填：目标文件路径
+  "max_answer_chars": integer   // 可选：最大返回字符数
+}
+```
+
+**调用示例**:
+```javascript
+mcp__serena__get_symbols_overview({
+  "relative_path": "src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs"
+})
 ```
 
 ---
 
-### 2.3 并行执行模式（独立任务）
+### 2.2 Context7 - 库文档查询
 
-#### 场景1: 多文件信息收集
+**命名约定**: `mcp__context7__<function_name>` （camelCase）
 
-```xml
-<!-- 并行读取3个文件（单次调用） -->
-<invoke name="mcp__filesystem__read_multiple_files">
-  <parameter name="paths">["file1.cs", "file2.cs", "file3.cs"]</parameter>
-</invoke>
+#### A. `resolve-library-id` - 解析库ID
+将库名称解析为Context7兼容的库ID。
+
+**参数**:
+```json
+{
+  "libraryName": "string"  // 必填：库名称（如 "EntityFrameworkCore"）
+}
 ```
 
-#### 场景2: 多个符号定位
-
-```xml
-<!-- 并行查找多个类（单个消息内多次调用） -->
-<invoke name="mcp__serena__find_symbol">
-  <parameter name="name_path">UserService</parameter>
-  <parameter name="relative_path">src/Server/Modules</parameter>
-</invoke>
-<invoke name="mcp__serena__find_symbol">
-  <parameter name="name_path">HerbService</parameter>
-  <parameter name="relative_path">src/Server/Modules</parameter>
-</invoke>
-<invoke name="mcp__serena__find_symbol">
-  <parameter name="name_path">PatientService</parameter>
-  <parameter name="relative_path">src/Server/Modules</parameter>
-</invoke>
+**调用示例**:
+```javascript
+mcp__context7__resolve-library-id({
+  "libraryName": "Entity Framework Core"
+})
+// 返回: "/dotnet/efcore" 或类似的库ID列表
 ```
 
-#### 场景3: Git状态+差异+日志同时查询
+#### B. `get-library-docs` - 获取库文档
+获取指定库的文档和代码示例。
 
-```xml
-<!-- 并行获取Git信息（单个消息内多次调用） -->
-<invoke name="mcp__git__git_status" />
-<invoke name="mcp__git__git_diff">
-  <parameter name="staged">false</parameter>
-</invoke>
-<invoke name="mcp__git__git_log">
-  <parameter name="maxCount">5</parameter>
-</invoke>
+**参数**:
+```json
+{
+  "context7CompatibleLibraryID": "string",  // 必填：库ID（如 "/dotnet/efcore"）
+  "topic": "string",                        // 可选：具体主题（如 "migrations"）
+  "tokens": number                          // 可选：最大返回token数（默认5000）
+}
+```
+
+**调用示例**:
+```javascript
+// 查询 EF Core 迁移文档
+mcp__context7__get-library-docs({
+  "context7CompatibleLibraryID": "/dotnet/efcore",
+  "topic": "migrations",
+  "tokens": 5000
+})
+
+// 查询 Prism MVVM 文档
+mcp__context7__get-library-docs({
+  "context7CompatibleLibraryID": "/prismlib/prism",
+  "topic": "dependency injection"
+})
 ```
 
 ---
 
-## 3. 常见问题与错误处理
+### 2.3 Memory - 知识图谱
 
-### 3.1 错误处理与回退策略
+**命名约定**: `mcp__memory__<function_name>` （camelCase）
 
-| 错误类型 | 检测方式 | 回退策略 | 示例 |
-|---------|---------|---------|------|
-| **参数类型错误** | 工具返回参数验证失败 | 修正参数类型后重试1次 | `thoughtNumber` 传了字符串 → 改为数字 |
-| **文件路径不存在** | `read_text_file` 返回FileNotFound | 用 `search_files` 查找正确路径 | 路径拼写错误 → 搜索文件名 |
-| **符号未找到** | `find_symbol` 返回空结果 | 启用 `substring_matching=true` 重试 | 类名记忆不准确 → 模糊搜索 |
-| **多符号匹配** | `replace_regex` 报告多次匹配 | 增加上下文扩展正则表达式 | 通用方法名 → 添加类名限定 |
-| **Git冲突** | `git_merge` 返回冲突状态 | 用 `git.diff` 查看冲突 → 人工决策 | 合并分支冲突 → 展示差异给用户 |
-| **编译失败** | `execute_shell_command` 返回非0退出码 | 解析错误信息 → 定位失败文件 → 修正 | dotnet build 失败 → 读取错误日志 |
-| **上下文不足** | 工具返回内容截断 | 增加 `max_answer_chars` 或拆分查询 | 文件过大 → 分段读取 |
+#### A. `create_entities` - 创建实体
+在知识图谱中创建新实体。
+
+**参数**:
+```json
+{
+  "entities": [
+    {
+      "name": "string",            // 实体名称
+      "entityType": "string",      // 实体类型
+      "observations": ["string"]   // 观察记录数组
+    }
+  ]
+}
+```
+
+**调用示例**:
+```javascript
+mcp__memory__create_entities({
+  "entities": [
+    {
+      "name": "PatientService",
+      "entityType": "Service",
+      "observations": [
+        "位于 LYBT.Module.Patients",
+        "实现患者CRUD操作",
+        "依赖 IPatientRepository 和 IMapper"
+      ]
+    }
+  ]
+})
+```
+
+#### B. `create_relations` - 创建关系
+在实体之间创建关系。
+
+**参数**:
+```json
+{
+  "relations": [
+    {
+      "from": "string",         // 起始实体名称
+      "to": "string",           // 目标实体名称
+      "relationType": "string"  // 关系类型（主动语态）
+    }
+  ]
+}
+```
+
+**调用示例**:
+```javascript
+mcp__memory__create_relations({
+  "relations": [
+    {
+      "from": "PatientService",
+      "to": "IPatientRepository",
+      "relationType": "depends on"
+    }
+  ]
+})
+```
+
+#### C. `search_nodes` - 搜索节点
+根据查询搜索知识图谱中的节点。
+
+**参数**:
+```json
+{
+  "query": "string"  // 搜索查询
+}
+```
+
+**调用示例**:
+```javascript
+mcp__memory__search_nodes({
+  "query": "PatientService dependencies"
+})
+```
 
 ---
 
-### 3.2 容错原则
+### 2.4 Git - 版本控制
 
-1. **一次重试**：参数错误修正后仅重试1次，避免无限循环
-2. **上报阻塞**：重试失败后立即报告用户，附带原始错误信息
-3. **保留现场**：错误发生前的所有工具调用记录保留，便于复盘
-4. **降级方案**：优先工具失败时，回退到次选工具（如 serena → filesystem → grep）
+**命名约定**: `mcp__git__git_<operation>` （camelCase）
+
+#### A. `git_status` - 获取状态
+获取Git仓库状态。
+
+**参数**:
+```json
+{
+  "path": "string"  // 可选：仓库路径（默认 "."）
+}
+```
+
+**调用示例**:
+```javascript
+mcp__git__git_status({
+  "path": "."
+})
+```
+
+#### B. `git_diff` - 查看差异
+查看文件差异。
+
+**参数**:
+```json
+{
+  "path": "string",           // 可选：仓库路径
+  "staged": boolean,          // 可选：查看暂存区差异
+  "commit1": "string",        // 可选：比较起始提交
+  "commit2": "string",        // 可选：比较结束提交
+  "file": "string",           // 可选：指定文件
+  "includeUntracked": boolean // 可选：包含未跟踪文件
+}
+```
+
+**调用示例**:
+```javascript
+// 查看工作区差异
+mcp__git__git_diff({
+  "path": "."
+})
+
+// 查看暂存区差异
+mcp__git__git_diff({
+  "path": ".",
+  "staged": true
+})
+
+// 比较两个提交
+mcp__git__git_diff({
+  "path": ".",
+  "commit1": "HEAD~1",
+  "commit2": "HEAD"
+})
+```
+
+#### C. `git_log` - 查看历史
+查看提交历史。
+
+**参数**:
+```json
+{
+  "path": "string",           // 可选：仓库路径
+  "maxCount": number,         // 可选：最大返回数量
+  "author": "string",         // 可选：作者筛选
+  "since": "string",          // 可选：起始日期
+  "until": "string",          // 可选：结束日期
+  "branchOrFile": "string",   // 可选：分支或文件
+  "showSignature": boolean    // 可选：显示签名
+}
+```
+
+**调用示例**:
+```javascript
+// 查看最近10条提交
+mcp__git__git_log({
+  "path": ".",
+  "maxCount": 10
+})
+
+// 查看特定作者的提交
+mcp__git__git_log({
+  "path": ".",
+  "author": "Claude Code",
+  "since": "1 week ago"
+})
+```
+
+#### D. `git_commit` - 提交更改
+创建Git提交。
+
+**参数**:
+```json
+{
+  "message": "string",              // 必填：提交信息
+  "path": "string",                 // 可选：仓库路径
+  "filesToStage": ["string"],       // 可选：要暂存的文件
+  "amend": boolean,                 // 可选：修改上一次提交
+  "allowEmpty": boolean,            // 可选：允许空提交
+  "author": {                       // 可选：覆盖作者
+    "name": "string",
+    "email": "string"
+  },
+  "forceUnsignedOnFailure": boolean // 可选：签名失败时回退
+}
+```
+
+**调用示例**:
+```javascript
+mcp__git__git_commit({
+  "message": "feat(patients): 添加患者批量导入功能\n\n- 实现CSV批量导入\n- 添加数据验证\n- 完成单元测试\n\nCloses #123",
+  "filesToStage": [
+    "src/Server/Modules/LYBT.Module.Patients/Services/PatientImportService.cs",
+    "tests/UnitTests/Server/Modules/LYBT.Module.Patients.Tests/PatientImportServiceTests.cs"
+  ]
+})
+```
 
 ---
 
-## 附录
+### 2.5 Sequential-Thinking - 结构化推理
 
-### A. 参数命名约定总结
+**命名约定**: `mcp__sequential-thinking__sequentialthinking` （camelCase）
 
-| 工具 | 参数约定 | 原因 |
-|------|---------|------|
-| filesystem, git, context7, memory, time | **camelCase** | 遵循JSON标准 |
-| serena | **snake_case** | 遵循Python LSP约定 |
-| sequential-thinking | **camelCase** | 遵循工具Schema定义 |
+**用途**: 复杂问题的结构化分析（UltraThink模式）
 
-### B. 常用IANA时区列表
+**参数**:
+```json
+{
+  "thought": "string",              // 必填：当前思考步骤
+  "nextThoughtNeeded": boolean,     // 必填：是否需要下一步
+  "thoughtNumber": integer,         // 必填：当前步骤编号
+  "totalThoughts": integer,         // 必填：预计总步数
+  "isRevision": boolean,            // 可选：是否修订先前思考
+  "revisesThought": integer,        // 可选：修订的步骤编号
+  "branchFromThought": integer,     // 可选：分支起点编号
+  "branchId": "string",             // 可选：分支标识
+  "needsMoreThoughts": boolean      // 可选：是否需要更多步骤
+}
+```
 
-- `Asia/Shanghai` - 中国标准时间 (UTC+8)
-- `America/New_York` - 美国东部时间 (UTC-5/-4)
-- `Europe/London` - 英国时间 (UTC+0/+1)
-- `Asia/Tokyo` - 日本标准时间 (UTC+9)
-- `America/Los_Angeles` - 美国西部时间 (UTC-8/-7)
+**调用示例 - 重构规划**:
+```javascript
+// Step 1: 问题识别
+mcp__sequential-thinking__sequentialthinking({
+  "thought": "分析PatientService当前的性能瓶颈：\n1. GetAllAsync() 一次性加载所有患者数据\n2. 缺少分页和过滤机制\n3. 未使用异步流（IAsyncEnumerable）",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 1,
+  "totalThoughts": 20
+})
+
+// Step 2: 根因分析
+mcp__sequential-thinking__sequentialthinking({
+  "thought": "根本原因：\n- 早期MVP设计未考虑大数据量场景\n- Repository接口设计过于简单\n- 缺少查询对象（Query Object）模式",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 2,
+  "totalThoughts": 20
+})
+
+// Step 11: 方案设计
+mcp__sequential-thinking__sequentialthinking({
+  "thought": "重构方案：\n1. 添加 PagedRequest<T> 和 PagedResponse<T>\n2. Repository 增加分页方法\n3. Service 层实现流式查询\n4. 保持向后兼容（保留原 GetAllAsync）",
+  "nextThoughtNeeded": true,
+  "thoughtNumber": 11,
+  "totalThoughts": 20
+})
+
+// Step 20: 完成
+mcp__sequential-thinking__sequentialthinking({
+  "thought": "总结：重构可以分3个PR完成\n- PR1: 添加分页基础设施\n- PR2: Repository层实现\n- PR3: Service层重构\n预计工作量：5-8小时",
+  "nextThoughtNeeded": false,
+  "thoughtNumber": 20,
+  "totalThoughts": 20
+})
+```
 
 ---
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+### 2.6 Time - 时间工具
+
+**命名约定**: `mcp__time__<function_name>` （snake_case）
+
+#### A. `get_current_time` - 获取当前时间
+获取指定时区的当前时间。
+
+**参数**:
+```json
+{
+  "timezone": "string"  // 必填：IANA时区名称（如 "Asia/Shanghai"）
+}
+```
+
+**调用示例**:
+```javascript
+mcp__time__get_current_time({
+  "timezone": "Asia/Shanghai"
+})
+```
+
+#### B. `convert_time` - 转换时间
+在时区之间转换时间。
+
+**参数**:
+```json
+{
+  "source_timezone": "string",  // 必填：源时区
+  "target_timezone": "string",  // 必填：目标时区
+  "time": "string"              // 必填：时间（24小时格式 HH:MM）
+}
+```
+
+**调用示例**:
+```javascript
+mcp__time__convert_time({
+  "source_timezone": "Asia/Shanghai",
+  "target_timezone": "America/New_York",
+  "time": "14:00"
+})
+```
+
+---
+
+### 2.7 Filesystem - 文件操作
+
+**命名约定**: `mcp__filesystem__<function_name>` （camelCase）
+
+#### A. `read_text_file` - 读取文本文件
+读取文件内容。
+
+**参数**:
+```json
+{
+  "path": "string",    // 必填：文件路径
+  "head": number,      // 可选：只读前N行
+  "tail": number       // 可选：只读后N行
+}
+```
+
+**调用示例**:
+```javascript
+// 读取完整文件
+mcp__filesystem__read_text_file({
+  "path": "src/Server/Modules/LYBT.Module.Patients/Services/PatientService.cs"
+})
+
+// 只读前50行
+mcp__filesystem__read_text_file({
+  "path": "docs/development/standards.md",
+  "head": 50
+})
+```
+
+#### B. `write_file` - 写入文件
+创建或覆盖文件。
+
+**参数**:
+```json
+{
+  "path": "string",     // 必填：文件路径
+  "content": "string"   // 必填：文件内容
+}
+```
+
+**调用示例**:
+```javascript
+mcp__filesystem__write_file({
+  "path": "docs/reports/performance-analysis-2025-10-09.md",
+  "content": "# 性能分析报告\n\n## 摘要\n..."
+})
+```
+
+#### C. `list_directory` - 列出目录
+列出目录内容。
+
+**参数**:
+```json
+{
+  "path": "string"  // 必填：目录路径
+}
+```
+
+**调用示例**:
+```javascript
+mcp__filesystem__list_directory({
+  "path": "src/Server/Modules"
+})
+```
+
+#### D. `search_files` - 搜索文件
+递归搜索文件。
+
+**参数**:
+```json
+{
+  "path": "string",              // 必填：搜索起始路径
+  "pattern": "string",           // 必填：搜索模式
+  "excludePatterns": ["string"]  // 可选：排除模式
+}
+```
+
+**调用示例**:
+```javascript
+mcp__filesystem__search_files({
+  "path": "src/Server",
+  "pattern": "*Service.cs",
+  "excludePatterns": ["*Test.cs", "*Mock.cs"]
+})
+```
+
+---
+
+### 2.8 Playwright - 浏览器自动化
+
+**命名约定**: `mcp__playwright__browser_<action>` （camelCase）
+
+**常用操作**:
+
+```javascript
+// 导航到URL
+mcp__playwright__browser_navigate({
+  "url": "http://localhost:5001/swagger"
+})
+
+// 截图
+mcp__playwright__browser_take_screenshot({
+  "filename": "swagger-ui.png"
+})
+
+// 获取页面快照
+mcp__playwright__browser_snapshot({})
+
+// 点击元素
+mcp__playwright__browser_click({
+  "element": "登录按钮",
+  "ref": "button#login"
+})
+```
+
+---
+
+## 3. 工作流模式
+
+### 3.1 代码审查流程
+
+```mermaid
+graph LR
+    A[读取标准文档] -->|context7| B[获取架构标准]
+    B -->|serena| C[分析目标代码]
+    C -->|serena| D[查找引用]
+    D -->|sequential-thinking| E[生成审查清单]
+    E --> F[输出审查报告]
+```
+
+**工具链**:
+```javascript
+// 1. 读取标准
+context7.get-library-docs({
+  libraryID: "/docs/development/standards"
+})
+
+// 2. 获取代码符号
+serena.get_symbols_overview({
+  relative_path: "target/file.cs"
+})
+
+// 3. 查找关键符号
+serena.find_symbol({
+  name_path: "TargetClass",
+  include_body: true,
+  depth: 1
+})
+
+// 4. 检查引用
+serena.find_referencing_symbols({
+  name_path: "TargetClass/CriticalMethod",
+  relative_path: "target/file.cs"
+})
+
+// 5. 结构化分析
+sequential-thinking.sequentialthinking({
+  thought: "检查点1: 命名规范...",
+  thoughtNumber: 1,
+  totalThoughts: 10
+})
+```
+
+---
+
+### 3.2 性能分析流程
+
+```mermaid
+graph TD
+    A[扫描代码模式] -->|serena.search_for_pattern| B[识别性能反模式]
+    B -->|serena.find_symbol| C[分析具体实现]
+    C -->|sequential-thinking| D[UltraThink深度分析]
+    D --> E[生成优化方案]
+    E -->|memory| F[记录到知识图谱]
+```
+
+**工具链**:
+```javascript
+// 1. 搜索N+1查询模式
+serena.search_for_pattern({
+  substring_pattern: "foreach.*await.*Repository",
+  relative_path: "src/Server/Modules",
+  restrict_search_to_code_files: true
+})
+
+// 2. 分析具体方法
+serena.find_symbol({
+  name_path: "ServiceClass/ProblematicMethod",
+  include_body: true
+})
+
+// 3. 深度分析（20-30步）
+sequential-thinking.sequentialthinking({
+  thought: "Step 1: 识别到N+1查询...",
+  thoughtNumber: 1,
+  totalThoughts: 25
+})
+
+// 4. 记录分析结果
+memory.create_entities({
+  entities: [{
+    name: "N+1 Query in PatientService",
+    entityType: "Performance Issue",
+    observations: ["位置: GetAllWithDetailsAsync", "影响: 1000+患者时超5秒"]
+  }]
+})
+```
+
+---
+
+### 3.3 重构规划流程
+
+```mermaid
+graph LR
+    A[问题识别] -->|serena| B[代码分析]
+    B -->|sequential-thinking| C[UltraThink规划]
+    C -->|serena| D[影响范围分析]
+    D --> E[生成重构清单]
+    E -->|git| F[创建分支]
+```
+
+**工具链**:
+```javascript
+// 1. 查找目标符号
+serena.find_symbol({
+  name_path: "TargetClass",
+  depth: 1,
+  include_body: true
+})
+
+// 2. 分析引用影响
+serena.find_referencing_symbols({
+  name_path: "TargetClass",
+  relative_path: "target/file.cs"
+})
+
+// 3. UltraThink规划（20-30步）
+sequential-thinking.sequentialthinking({
+  thought: "Step 1: 当前实现分析...",
+  thoughtNumber: 1,
+  totalThoughts: 25
+})
+// ... 后续19-24步
+
+// 4. 检查Git状态
+git.git_status({ path: "." })
+
+// 5. 创建重构分支
+git.git_branch({
+  mode: "create",
+  branchName: "refactor/patient-service-pagination"
+})
+```
+
+---
+
+### 3.4 文档同步流程
+
+```mermaid
+graph TD
+    A[检测代码变更] -->|git.git_diff| B[分析变更范围]
+    B -->|serena| C[提取符号信息]
+    C -->|filesystem| D[读取现有文档]
+    D --> E[生成文档更新]
+    E -->|filesystem| F[写入文档]
+    F -->|git| G[提交文档变更]
+```
+
+**工具链**:
+```javascript
+// 1. 查看代码变更
+git.git_diff({
+  commit1: "HEAD~1",
+  commit2: "HEAD"
+})
+
+// 2. 分析新增符号
+serena.get_symbols_overview({
+  relative_path: "changed/file.cs"
+})
+
+// 3. 读取现有文档
+filesystem.read_text_file({
+  path: "docs/architecture/modules/patients/README.md"
+})
+
+// 4. 更新文档
+filesystem.write_file({
+  path: "docs/architecture/modules/patients/README.md",
+  content: "更新后的文档内容..."
+})
+
+// 5. 提交文档
+git.git_commit({
+  message: "docs(patients): 同步 PatientService API 文档",
+  filesToStage: ["docs/architecture/modules/patients/README.md"]
+})
+```
+
+---
+
+## 4. 错误处理策略
+
+### 4.1 通用错误处理
+
+```javascript
+function callMcpToolWithRetry(tool, params, maxRetries = 1) {
+  try {
+    return mcp.run(tool, params);
+  } catch (error) {
+    console.log(`错误: ${error.message}`);
+
+    // 解析错误并修正参数
+    if (error.type === 'INVALID_PARAMETER') {
+      const fixedParams = fixParameters(params, error);
+      return mcp.run(tool, fixedParams);
+    }
+
+    // 达到最大重试次数
+    if (maxRetries === 0) {
+      throw new Error(`MCP工具 ${tool} 调用失败: ${error.message}`);
+    }
+
+    // 重试
+    return callMcpToolWithRetry(tool, params, maxRetries - 1);
+  }
+}
+```
+
+### 4.2 常见错误与解决方案
+
+| 错误类型 | 常见原因 | 解决方案 |
+|---------|---------|---------|
+| **符号未找到** | name_path 不正确 | 使用 `get_symbols_overview` 先获取符号列表 |
+| **参数类型错误** | snake_case vs camelCase | 检查工具命名约定表 |
+| **文件不存在** | 路径错误 | 使用 `filesystem.list_directory` 验证路径 |
+| **权限拒绝** | 文件被占用 | 检查文件锁定状态 |
+| **超时** | 操作耗时过长 | 减少搜索范围或分批处理 |
+| **Git冲突** | 并发修改 | 先 `git pull`，解决冲突后重试 |
+
+### 4.3 错误日志记录
+
+所有MCP工具调用失败都应记录：
+```javascript
+{
+  "timestamp": "2025-10-09T10:30:00Z",
+  "tool": "mcp__serena__find_symbol",
+  "params": { ... },
+  "error": "Symbol 'NonExistentClass' not found",
+  "context": "执行 /review-arch 命令时"
+}
+```
+
+---
+
+## 5. 最佳实践
+
+### 5.1 性能优化
+
+#### A. 批量操作优先
+```javascript
+// ❌ 避免：循环调用
+for (const file of files) {
+  await filesystem.read_text_file({ path: file });
+}
+
+// ✅ 推荐：批量读取
+await filesystem.read_multiple_files({ paths: files });
+```
+
+#### B. 限定搜索范围
+```javascript
+// ❌ 避免：全仓库搜索
+serena.find_symbol({
+  name_path: "PatientService"
+})
+
+// ✅ 推荐：限定模块
+serena.find_symbol({
+  name_path: "PatientService",
+  relative_path: "src/Server/Modules/LYBT.Module.Patients"
+})
+```
+
+#### C. 按需包含符号体
+```javascript
+// ❌ 避免：总是包含符号体
+serena.find_symbol({
+  name_path: "LargeClass",
+  include_body: true,
+  depth: 2  // 返回大量代码
+})
+
+// ✅ 推荐：先概览，后详细
+serena.get_symbols_overview({ relative_path: "file.cs" });
+// 然后只读取需要的方法
+serena.find_symbol({
+  name_path: "LargeClass/SpecificMethod",
+  include_body: true
+})
+```
+
+---
+
+### 5.2 工具选择决策树
+
+```mermaid
+graph TD
+    A[需要操作代码?] -->|是| B[需要语义理解?]
+    A -->|否| C[需要查询文档?]
+    B -->|是| D[使用 Serena]
+    B -->|否| E[使用 Filesystem]
+    C -->|是| F[使用 Context7]
+    C -->|否| G[需要版本控制?]
+    G -->|是| H[使用 Git]
+    G -->|否| I[需要深度分析?]
+    I -->|是| J[使用 Sequential-Thinking]
+    I -->|否| K[其他工具]
+```
+
+---
+
+### 5.3 命令与工具映射表
+
+| Slash命令 | 主要工具链 | 次要工具 |
+|----------|-----------|---------|
+| `/review-arch` | serena, context7, sequential-thinking | git, filesystem |
+| `/code-review` | serena, context7 | git |
+| `/analyze-perf` | serena, sequential-thinking | memory |
+| `/refactor-plan` | sequential-thinking, serena | git |
+| `/analyze-queries` | serena | - |
+| `/security-scan` | serena, context7 | - |
+| `/generate-dto` | serena, filesystem | - |
+| `/generate-tests` | serena, filesystem | context7 |
+| `/generate-pr` | git, serena | - |
+| `/update-docs` | filesystem, git, serena | - |
+| `/brainstorm` | sequential-thinking | context7 |
+| `/deep-research` | context7, serena | memory |
+
+---
+
+### 5.4 并行调用优化
+
+当多个操作独立时，使用并行调用：
+```javascript
+// ✅ 推荐：并行执行独立操作
+Promise.all([
+  git.git_status({ path: "." }),
+  git.git_diff({ staged: true }),
+  serena.get_symbols_overview({ relative_path: "file.cs" })
+]);
+
+// ❌ 避免：串行执行独立操作
+await git.git_status({ path: "." });
+await git.git_diff({ staged: true });
+await serena.get_symbols_overview({ relative_path: "file.cs" });
+```
+
+---
+
+### 5.5 容错与优雅降级
+
+```javascript
+// 示例：查询库文档，失败时回退到本地文档
+try {
+  const libDocs = await context7.get_library_docs({
+    context7CompatibleLibraryID: "/dotnet/efcore",
+    topic: "migrations"
+  });
+  return libDocs;
+} catch (error) {
+  console.warn("Context7查询失败，回退到本地文档");
+  return filesystem.read_text_file({
+    path: "docs/references/efcore-migrations.md"
+  });
+}
+```
+
+---
+
+## 6. 版本历史
+
+| 版本 | 日期 | 变更说明 |
+|------|------|---------|
+| 1.0.0 | 2025-10-09 | 初始版本，包含8个MCP工具完整规范 |
+
+---
+
+## 7. 参考资料
+
+- [CLAUDE.md - MCP工具使用准则](../../CLAUDE.md#6-mcp-工具使用准则全过程协同效率优先)
+- [.claude/commands/README.md - Slash命令索引](../../.claude/commands/README.md)
+- [MCP协议规范](https://github.com/anthropics/mcp)
+
+---
+
+**📝 维护说明**:
+- 新增MCP工具时必须更新本文档
+- 工具参数变更时同步更新示例
+- 发现错误处理新模式时补充到第4节
+
+**🤖 Created with Claude Code**
+
+Version: 1.0.0 | Last Updated: 2025-10-09

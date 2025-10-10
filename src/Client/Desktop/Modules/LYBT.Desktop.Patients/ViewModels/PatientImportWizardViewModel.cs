@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Patients.Repositories;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,15 +17,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 {
 
     /// <summary>
-    /// 患者Excel导入向导视图模型
-    /// 实现4步向导UI：模板下载→文件选择→数据预览→导入执行
+    /// 患者Excel导入向导视图模型 - Phase 2模块化架构
+    /// Issue #1114 - 直接使用Repository，去除Service层
     /// </summary>
     public class PatientImportWizardViewModel : BindableBase, IDisposable
     {
 
         #region Fields
 
-        private readonly IPatientService _patientService;
+        private readonly IPatientRepository _patientRepository;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
 
         private ImportWizardStep _currentStep = ImportWizardStep.TemplateDownload;
@@ -215,12 +215,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         // TODO: Phase 4D - 考虑迁移到 UnifiedViewModelBase (需处理 IDisposable 冲突)
         // 当前继承 BindableBase + IDisposable,使用 BackgroundWorker 实现长时间导入任务
         // 若迁移,需在 UnifiedViewModelBase 添加 IDisposable 支持或在子类保留 Dispose 实现
-        // 当前构造函数已调整为: 业务服务 → 基础依赖,符合统一标准
+        // Phase 2: 直接注入Repository
         public PatientImportWizardViewModel(
-            IPatientService patientService,
+            IPatientRepository patientRepository,
             ILogger<PatientImportWizardViewModel> logger)
         {
-            _patientService = patientService;
+            _patientRepository = patientRepository;
             _logger = logger;
 
             // 初始化命令
@@ -874,9 +874,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                             AllergyHistory = row["过敏史"]?.ToString()?.Trim()
                         };
 
-                        // 调用API创建患者
-                        var result = await _patientService.CreateAsync(patientDto);
-                        if (result.IsSuccess)
+                        // Phase 2: 直接调用Repository创建患者
+                        var createdPatient = await _patientRepository.CreateAsync(patientDto);
+                        if (createdPatient != null)
                         {
                             successCount++;
                             _logger.LogInformation($"成功导入患者: {name} (第{i + 2}行)");
@@ -884,7 +884,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         else
                         {
                             failCount++;
-                            var error = $"第{i + 2}行 ({name})：{result.ErrorMessage ?? "导入失败，原因未知"}";
+                            var error = $"第{i + 2}行 ({name})：创建失败，服务器未返回数据";
                             errors.Add(error);
                             _logger.LogWarning(error);
                         }

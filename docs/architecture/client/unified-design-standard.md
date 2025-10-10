@@ -1,15 +1,15 @@
 # Client 端业务模块统一设计标准
 
-> **版本**: 1.0
-> **制定日期**: 2025-10-07
+> **版本**: 2.0
+> **制定日期**: 2025-01-09
 > **适用范围**: Desktop WPF 客户端所有业务模块
-> **关联 Issue**: #1013
+> **关联 Issue**: #1114, #1013
 
 ---
 
 ## 一、架构概览
 
-### 1.1 分层架构
+### 1.1 分层架构（模块化架构 v2.0）
 
 ```
 ┌─────────────────────────────────────────┐
@@ -20,33 +20,36 @@
 ┌───────────────▼─────────────────────────┐
 │         ViewModel                       │
 │   UI逻辑、命令、属性、状态管理           │
+│   异常处理（ViewModelBase）              │
 └───────────────┬─────────────────────────┘
-                │ 调用
-┌───────────────▼─────────────────────────┐
-│          Service                        │
-│   业务逻辑、DTO转换、异常处理            │
-└───────────────┬─────────────────────────┘
-                │ 调用
+                │ 直接调用（无Service层）
 ┌───────────────▼─────────────────────────┐
 │        Repository                       │
-│     数据访问、HTTP调用                   │
+│   数据访问、HTTP调用、ServiceResult封装   │
 └───────────────┬─────────────────────────┘
                 │ HTTP
 ┌───────────────▼─────────────────────────┐
 │         WebAPI (Server)                 │
+│   业务逻辑、数据持久化                   │
 └─────────────────────────────────────────┘
 ```
 
-### 1.2 模块组织原则
+**架构变更说明（v2.0）**：
+- ❌ **移除Service层**：Desktop端不应重复Server端业务逻辑
+- ✅ **ViewModel直调Repository**：简化调用链，提升性能
+- ✅ **Repository返回ServiceResult**：统一异常处理与结果封装
+- ✅ **异常处理下沉到ViewModelBase**：通过基类或AOP统一处理
 
-- **模块 = UI层**：仅包含 ViewModels、Views、UI专用Models
-- **业务逻辑集中**：统一在 `Desktop.Services/Business/`
-- **数据访问集中**：统一在 `Desktop.Services/Repositories/`
-- **接口统一**：使用 `Shared.Interfaces.Services`
+### 1.2 模块组织原则（模块化架构）
+
+- **模块 = 垂直切片**：每个模块包含 Models、ViewModels、Views、Repositories
+- **职责独立**：每个模块拥有独立的数据访问层（Repositories）
+- **水平分层**：技术基础设施（Foundation）、UI基础设施（Presentation）集中管理
+- **接口统一**：使用 `Shared.Interfaces.Repositories`
 
 ---
 
-## 二、目录结构标准
+## 二、目录结构标准（模块化架构 v2.0）
 
 ### 2.1 模块目录结构（强制）
 
@@ -69,39 +72,58 @@ LYBT.Desktop.{ModuleName}/
 │   ├── {Entity}DetailView.xaml         (+ .xaml.cs)
 │   └── {Action}Dialog.xaml             (+ .xaml.cs)
 │
+├── Repositories/                🆕 模块独立数据访问层
+│   ├── I{Entity}Repository.cs  (Repository接口)
+│   └── {Entity}Repository.cs   (Repository实现)
+│
 ├── {ModuleName}Module.cs        ✅ Prism模块注册
 └── README.md                    ✅ 模块说明文档
 ```
 
+**v2.0 关键变更**：
+- 🆕 **Repositories/** 目录：每个模块拥有独立的数据访问层
+- ❌ **Services/** 目录：已废弃，不再使用Service层
+
 ### 2.2 禁止的目录（已废弃）
 
-- ❌ **Interfaces/** - 接口统一在 `Shared.Interfaces.Services`
-- ❌ **Mappings/** - AutoMapper配置集中在 `Desktop.Services/Mapping/`
-- ❌ **Services/** - 业务服务统一在 `Desktop.Services/Business/`
+- ❌ **Interfaces/** - 接口统一在模块的 `Repositories/` 目录
+- ❌ **Mappings/** - AutoMapper配置已废弃（Repository直接返回DTO）
+- ❌ **Services/** - Service层已移除
 
-### 2.3 Service 层目录结构
+### 2.3 Core 层目录结构
 
 ```
-Desktop.Services/
-├── Business/                    ✅ 业务服务实现
-│   ├── AuthService.cs
-│   ├── PatientService.cs
-│   ├── UserService.cs
-│   └── ...
+Desktop/Core/
+├── Desktop.Foundation/          🆕 技术基础设施
+│   ├── Caching/
+│   ├── Configuration/
+│   ├── Diagnostics/
+│   ├── ErrorHandling/
+│   ├── Http/
+│   ├── Performance/
+│   ├── Security/
+│   ├── Session/
+│   ├── Settings/
+│   ├── HealthCheck/
+│   ├── Modules/
+│   ├── Handlers/
+│   └── Extensions/
 │
-├── Repositories/                ✅ 数据访问层
-│   ├── Interfaces/
-│   │   ├── IPatientRepository.cs
-│   │   └── ...
-│   ├── BaseApiRepository.cs
-│   ├── PatientRepository.cs
-│   └── ...
+├── Desktop.Presentation/        🆕 UI基础设施
+│   ├── Navigation/
+│   ├── Notifications/
+│   ├── Theming/
+│   ├── UserExperience/
+│   └── Print/
 │
-└── Mapping/                     ✅ AutoMapper配置
-    ├── PatientMappingProfile.cs
-    ├── UserMappingProfile.cs
-    └── ...
+├── Desktop.Infrastructure/      ✅ 保留（通用接口与基类）
+└── Desktop.Models/              ✅ 保留（共享模型）
 ```
+
+**说明**：
+- `Desktop.Services` 项目已删除
+- 技术基础设施迁移至 `Desktop.Foundation`
+- UI基础设施迁移至 `Desktop.Presentation`
 
 ---
 
@@ -115,15 +137,15 @@ Desktop.Services/
 | 详情/单项 | `UnifiedViewModelBase` | PatientDetailViewModel |
 | 对话框 | `UnifiedViewModelBase` | ConfirmDialogViewModel |
 
-### 3.2 构造函数依赖注入（强制标准）
+### 3.2 构造函数依赖注入（强制标准，v2.0）
 
 ```csharp
 /// <summary>
 /// {Entity}{ViewType}ViewModel - {简要描述}
 /// </summary>
 public XxxViewModel(
-    // 1️⃣ 核心业务服务（必需，非null）
-    IXxxService xxxService,
+    // 1️⃣ Repository依赖（必需，非null）
+    IXxxRepository xxxRepository,
 
     // 2️⃣ 基类必需依赖
     IEventAggregator eventAggregator,
@@ -132,20 +154,23 @@ public XxxViewModel(
 
     // 3️⃣ 可选依赖（末尾，使用 = null）
     ISessionManager? sessionManager = null,
-    IUserNotificationService? userNotificationService = null,
-    IMapper? mapper = null)
+    IUserNotificationService? userNotificationService = null)
     : base(eventAggregator, loggerFactory, regionManager,
            sessionManager, userNotificationService)
 {
-    _xxxService = xxxService ?? throw new ArgumentNullException(nameof(xxxService));
-    _mapper = mapper;
+    _xxxRepository = xxxRepository ?? throw new ArgumentNullException(nameof(xxxRepository));
 }
 ```
 
-**依赖顺序规则**：
-1. 业务服务优先（如 IPatientService）
+**依赖顺序规则（v2.0）**：
+1. Repository依赖优先（如 IPatientRepository）
 2. 基类必需依赖（EventAggregator, LoggerFactory, RegionManager）
-3. 可选依赖最后（SessionManager, NotificationService, Mapper）
+3. 可选依赖最后（SessionManager, NotificationService）
+
+**v2.0 关键变更**：
+- ❌ 不再注入 `IXxxService`
+- ✅ 直接注入 `IXxxRepository`
+- ❌ 不再注入 `IMapper`（Repository直接返回DTO，无需映射）
 
 ### 3.3 命令命名标准
 
@@ -167,12 +192,12 @@ public XxxViewModel(
 | 计数 | `{Noun}Count` / `Total{Noun}` | `ItemCount`, `TotalPages` |
 | UI文本 | `{Context}Text` | `PageTitle`, `StatusText`, `ErrorMessage` |
 
-### 3.5 ViewModel 示例模板
+### 3.5 ViewModel 示例模板（v2.0）
 
 ```csharp
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.{Module}.Repositories;
 using LYBT.Shared.Models.Contracts.{Module};
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -182,20 +207,20 @@ using Prism.Regions;
 namespace LYBT.Desktop.{Module}.ViewModels
 {
     /// <summary>
-    /// {Entity}管理视图模型 - 列表管理功能
+    /// {Entity}管理视图模型 - 列表管理功能（v2.0 无Service层）
     /// </summary>
     public class {Entity}ManagementViewModel : UnifiedListViewModelBase<{Entity}Dto>
     {
         #region 私有字段
 
-        private readonly I{Entity}Service _{entity}Service;
+        private readonly I{Entity}Repository _{entity}Repository;
 
         #endregion
 
         #region 构造函数
 
         public {Entity}ManagementViewModel(
-            I{Entity}Service {entity}Service,
+            I{Entity}Repository {entity}Repository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -204,7 +229,7 @@ namespace LYBT.Desktop.{Module}.ViewModels
             : base(eventAggregator, loggerFactory, regionManager,
                    sessionManager, userNotificationService)
         {
-            _{entity}Service = {entity}Service ?? throw new ArgumentNullException(nameof({entity}Service));
+            _{entity}Repository = {entity}Repository ?? throw new ArgumentNullException(nameof({entity}Repository));
 
             PageTitle = "{Entity}管理";
             InitializeCustomCommands();
@@ -217,7 +242,8 @@ namespace LYBT.Desktop.{Module}.ViewModels
         protected override async Task<IEnumerable<{Entity}Dto>> GetItemsAsync(
             int page, int pageSize, string? searchText)
         {
-            var result = await _{entity}Service.GetPagedAsync(page, pageSize, searchText);
+            // v2.0: 直接调用Repository（Repository返回ServiceResult）
+            var result = await _{entity}Repository.GetPagedAsync(page, pageSize, searchText);
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -242,33 +268,42 @@ namespace LYBT.Desktop.{Module}.ViewModels
 }
 ```
 
+**v2.0 关键变更**：
+- ❌ 移除 `using LYBT.Shared.Interfaces.Services`
+- ✅ 新增 `using LYBT.Desktop.{Module}.Repositories`
+- ❌ 移除 `I{Entity}Service` 依赖
+- ✅ 新增 `I{Entity}Repository` 依赖
+- ✅ Repository直接返回 `ServiceResult<T>`，无需Service层包装
+
 ---
 
-## 四、Service 层设计标准
+## 四、Repository 层设计标准（v2.0）
 
-### 4.1 Service 实现位置
+### 4.1 Repository 实现位置
 
-- **位置**: `Desktop.Services/Business/{Entity}Service.cs`
-- **接口**: 实现 `Shared.Interfaces.Services.I{Entity}Service`
-- **命名**: `{Entity}Service` (如 PatientService, UserService)
+- **位置**: `Desktop.{Module}/Repositories/{Entity}Repository.cs`
+- **接口**: `Desktop.{Module}/Repositories/I{Entity}Repository.cs`
+- **命名**: `{Entity}Repository` (如 PatientRepository, UserRepository)
+- **原则**: 每个模块拥有独立的Repository，不再集中管理
 
 ### 4.2 构造函数依赖（强制顺序）
 
 ```csharp
-public PatientService(
-    IPatientRepository repository,          // 1️⃣ Repository依赖
-    ILogger<PatientService> logger,         // 2️⃣ 日志
-    IExceptionHandler exceptionHandler,     // 3️⃣ 异常处理
-    IMapper mapper)                         // 4️⃣ AutoMapper（强制）
+public PatientRepository(
+    HttpClient httpClient,                  // 1️⃣ HTTP客户端（已配置BaseAddress）
+    ILogger<PatientRepository> logger)      // 2️⃣ 日志
 {
-    _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+    _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-    _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 }
 ```
 
-### 4.3 Service 方法模板（统一）
+**v2.0 关键变更**：
+- ❌ 不再注入 `IMapper`（Repository直接返回DTO）
+- ❌ 不再注入 `IExceptionHandler`（返回ServiceResult，由ViewModel基类处理）
+- ✅ 注入 `HttpClient`（通过IHttpClientFactory配置）
+
+### 4.3 Repository 方法模板（统一返回ServiceResult）
 
 ```csharp
 /// <summary>
@@ -276,70 +311,59 @@ public PatientService(
 /// </summary>
 public async Task<ServiceResult<{Entity}Dto>> {Method}Async({Request}Dto dto)
 {
-    return await _exceptionHandler.SafeExecuteAsync(async () =>
+    try
     {
         _logger.LogInformation($"{操作描述}: {dto}");
 
-        // 1. 业务验证（如需要）
-        ValidateXxx(dto);
+        // 1. 构建HTTP请求
+        var response = await _httpClient.PostAsJsonAsync("/api/{entity}/{action}", dto);
 
-        // 2. DTO → Entity（使用AutoMapper）
-        var entity = _mapper.Map<{Entity}>(dto);
-
-        // 3. 调用 Repository
-        var result = await _repository.{Method}Async(entity);
-
-        // 4. Entity → DTO（使用AutoMapper）
-        var resultDto = _mapper.Map<{Entity}Dto>(result);
-
-        return ServiceResult<{Entity}Dto>.Success(resultDto);
-
-    }, nameof({Method}Async));
-}
-```
-
-### 4.4 DTO 转换标准
-
-**强制规则**：
-- ✅ **所有 DTO 转换必须使用 AutoMapper**
-- ❌ **禁止手动字段赋值映射**
-
-**Mapping Profile 示例**：
-```csharp
-using AutoMapper;
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Entities.Patients;
-
-namespace LYBT.Desktop.Services.Mapping
-{
-    public class PatientMappingProfile : Profile
-    {
-        public PatientMappingProfile()
+        // 2. 处理响应
+        if (response.IsSuccessStatusCode)
         {
-            // Entity → Dto
-            CreateMap<Patient, PatientDto>();
-
-            // CreateDto → Entity
-            CreateMap<PatientCreateDto, Patient>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-
-            // UpdateDto → Entity (partial update)
-            CreateMap<PatientUpdateDto, Patient>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            var result = await response.Content.ReadFromJsonAsync<{Entity}Dto>();
+            return ServiceResult<{Entity}Dto>.Success(result);
         }
+
+        // 3. 处理错误
+        var error = await response.Content.ReadAsStringAsync();
+        _logger.LogError($"{Method}失败: {error}");
+        return ServiceResult<{Entity}Dto>.Failure(error);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"{Method}异常");
+        return ServiceResult<{Entity}Dto>.Failure($"{Method}失败: {ex.Message}");
     }
 }
 ```
+
+**关键设计原则**：
+- ✅ **Repository直接返回ServiceResult<T>**：封装成功/失败状态
+- ✅ **Repository处理HTTP调用**：包含重试、超时等逻辑
+- ✅ **Repository直接返回DTO**：无需映射，Server API已返回DTO
+- ❌ **Repository不处理业务验证**：业务逻辑在Server端
+
+### 4.4 Repository 返回类型标准
+
+| 场景 | 返回类型 | 说明 |
+|------|---------|------|
+| 查询单条 | `Task<ServiceResult<{Entity}Dto>>` | 返回单个实体 |
+| 查询列表 | `Task<ServiceResult<PagedResult<{Entity}Dto>>>` | 分页结果 |
+| 创建 | `Task<ServiceResult<{Entity}Dto>>` | 返回创建的实体 |
+| 更新 | `Task<ServiceResult<{Entity}Dto>>` | 返回更新的实体 |
+| 删除 | `Task<ServiceResult>` | 无返回数据 |
+
+**v2.0 废弃规则**：
+- ❌ **不再使用AutoMapper**：Repository直接从HTTP响应反序列化DTO
+- ❌ **不再返回Entity**：Desktop端不使用Entity类型
+- ❌ **不再手动映射字段**：Server API已返回标准DTO
 
 ### 4.5 DTO 使用规范
 
 **📚 权威参考**: 请参阅 [DTO 设计原则](../dto-design-principles.md) 获取完整的 DTO 设计规范。
 
-**Desktop 端 DTO 使用要点**:
+**Desktop 端 DTO 使用要点（v2.0）**:
 
 1. **DTO 来源**:
    - ✅ 使用 `Shared.Models.Contracts.*` 中的标准 DTO
@@ -347,123 +371,197 @@ namespace LYBT.Desktop.Services.Mapping
 
 2. **场景选择**:
    ```csharp
-   // ViewModel → Service (创建场景)
+   // ViewModel → Repository (创建场景)
    var createDto = new PatientCreateDto { Name = "张三", ... };
-   var result = await _patientService.CreateAsync(createDto);
+   var result = await _patientRepository.CreateAsync(createDto);
 
-   // ViewModel → Service (更新场景)
+   // ViewModel → Repository (更新场景)
    var updateDto = new PatientUpdateDto { Name = "李四", ... };
-   var result = await _patientService.UpdateAsync(id, updateDto);
+   var result = await _patientRepository.UpdateAsync(id, updateDto);
 
-   // Service → ViewModel (展示场景)
+   // Repository → ViewModel (展示场景)
    var patient = result.Data; // PatientDto
    ```
 
 3. **Repository 层数据传输**:
    - Desktop Repository 通过 HTTP 调用 Server API
-   - Repository 方法直接返回 DTO,**不返回 Entity**
-   - Service 层从 Repository 获取 DTO,无需 Entity → DTO 转换
+   - Repository 方法直接返回 DTO（从HTTP响应反序列化）
+   - **无需DTO映射**：Server API已返回标准DTO格式
 
 4. **常见错误**:
    - ❌ 在 Desktop 端使用 Entity 类型
    - ❌ 使用 `Guid.Empty` 作为默认值
    - ❌ 混用 CreateDto/UpdateDto/Dto 场景
+   - ❌ 在Repository中使用AutoMapper（已废弃）
 
-### 4.6 Service 示例模板
+### 4.6 Repository 示例模板（v2.0）
 
 ```csharp
-using AutoMapper;
-using LYBT.Desktop.Services.Exceptions;
-using LYBT.Desktop.Services.Repositories.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.{Module};
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
 
-namespace LYBT.Desktop.Services.Business
+namespace LYBT.Desktop.{Module}.Repositories
 {
     /// <summary>
-    /// {Entity}服务实现 - 统一架构标准
+    /// {Entity}Repository - 数据访问层（v2.0 模块化架构）
     /// </summary>
-    public class {Entity}Service : I{Entity}Service
+    public interface I{Entity}Repository
     {
-        private readonly ILogger<{Entity}Service> _logger;
-        private readonly I{Entity}Repository _repository;
-        private readonly IExceptionHandler _exceptionHandler;
-        private readonly IMapper _mapper;
+        Task<ServiceResult<PagedResult<{Entity}Dto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+        Task<ServiceResult<{Entity}Dto>> GetByIdAsync(Guid id);
+        Task<ServiceResult<{Entity}Dto>> CreateAsync({Entity}CreateDto dto);
+        Task<ServiceResult<{Entity}Dto>> UpdateAsync(Guid id, {Entity}UpdateDto dto);
+        Task<ServiceResult> DeleteAsync(Guid id);
+    }
 
-        public {Entity}Service(
-            I{Entity}Repository repository,
-            ILogger<{Entity}Service> logger,
-            IExceptionHandler exceptionHandler,
-            IMapper mapper)
+    /// <summary>
+    /// {Entity}Repository 实现
+    /// </summary>
+    public class {Entity}Repository : I{Entity}Repository
+    {
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<{Entity}Repository> _logger;
+        private const string ApiBase = "/api/{entity}";
+
+        public {Entity}Repository(
+            HttpClient httpClient,
+            ILogger<{Entity}Repository> logger)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<{Entity}Dto>>> GetPagedAsync(
-            int page = 1, int pageSize = 20, string? keyword = null)
+            int page, int pageSize, string? keyword)
         {
-            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            try
             {
-                var result = await _repository.GetPagedAsync(page, pageSize, keyword);
-                var dto = _mapper.Map<PagedResult<{Entity}Dto>>(result);
-                return ServiceResult<PagedResult<{Entity}Dto>>.Success(dto);
-            }, nameof(GetPagedAsync));
+                // ✅ 服务端分页：关键参数通过查询字符串传递
+                var url = $"{ApiBase}?page={page}&pageSize={pageSize}";
+                if (!string.IsNullOrEmpty(keyword))
+                    url += $"&keyword={Uri.EscapeDataString(keyword)}";
+
+                var response = await _httpClient.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<PagedResult<{Entity}Dto>>();
+                    return ServiceResult<PagedResult<{Entity}Dto>>.Success(result);
+                }
+
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"GetPagedAsync失败: {error}");
+                return ServiceResult<PagedResult<{Entity}Dto>>.Failure(error);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetPagedAsync异常");
+                return ServiceResult<PagedResult<{Entity}Dto>>.Failure($"查询失败: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<{Entity}Dto>> GetByIdAsync(Guid id)
         {
-            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            try
             {
-                var entity = await _repository.GetByIdAsync(id);
-                var dto = _mapper.Map<{Entity}Dto>(entity);
-                return ServiceResult<{Entity}Dto>.Success(dto);
-            }, nameof(GetByIdAsync));
+                var response = await _httpClient.GetAsync($"{ApiBase}/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<{Entity}Dto>();
+                    return ServiceResult<{Entity}Dto>.Success(result);
+                }
+
+                var error = await response.Content.ReadAsStringAsync();
+                return ServiceResult<{Entity}Dto>.Failure(error);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"GetByIdAsync({id})异常");
+                return ServiceResult<{Entity}Dto>.Failure($"查询失败: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<{Entity}Dto>> CreateAsync({Entity}CreateDto dto)
         {
-            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            try
             {
-                _logger.LogInformation($"创建{Entity}: {dto.Name}");
+                _logger.LogInformation($"创建{Entity}: {dto}");
 
-                var entity = _mapper.Map<{Entity}>(dto);
-                var created = await _repository.CreateAsync(entity);
-                var resultDto = _mapper.Map<{Entity}Dto>(created);
+                var response = await _httpClient.PostAsJsonAsync(ApiBase, dto);
 
-                return ServiceResult<{Entity}Dto>.Success(resultDto);
-            }, nameof(CreateAsync));
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<{Entity}Dto>();
+                    return ServiceResult<{Entity}Dto>.Success(result);
+                }
+
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"CreateAsync失败: {error}");
+                return ServiceResult<{Entity}Dto>.Failure(error);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CreateAsync异常");
+                return ServiceResult<{Entity}Dto>.Failure($"创建失败: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult<{Entity}Dto>> UpdateAsync(Guid id, {Entity}UpdateDto dto)
         {
-            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            try
             {
-                var existing = await _repository.GetByIdAsync(id);
-                _mapper.Map(dto, existing);  // 将 dto 映射到 existing
+                var response = await _httpClient.PutAsJsonAsync($"{ApiBase}/{id}", dto);
 
-                var updated = await _repository.UpdateAsync(existing);
-                var resultDto = _mapper.Map<{Entity}Dto>(updated);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<{Entity}Dto>();
+                    return ServiceResult<{Entity}Dto>.Success(result);
+                }
 
-                return ServiceResult<{Entity}Dto>.Success(resultDto);
-            }, nameof(UpdateAsync));
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"UpdateAsync({id})失败: {error}");
+                return ServiceResult<{Entity}Dto>.Failure(error);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"UpdateAsync({id})异常");
+                return ServiceResult<{Entity}Dto>.Failure($"更新失败: {ex.Message}");
+            }
         }
 
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {
-            return await _exceptionHandler.SafeExecuteAsync(async () =>
+            try
             {
-                await _repository.DeleteAsync(id);
-                return ServiceResult.Success();
-            }, nameof(DeleteAsync));
+                var response = await _httpClient.DeleteAsync($"{ApiBase}/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return ServiceResult.Success();
+                }
+
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"DeleteAsync({id})失败: {error}");
+                return ServiceResult.Failure(error);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"DeleteAsync({id})异常");
+                return ServiceResult.Failure($"删除失败: {ex.Message}");
+            }
         }
     }
 }
 ```
+
+**v2.0 关键改进**：
+- ✅ **服务端分页**：GetPagedAsync使用查询字符串传递参数，由Server端分页
+- ❌ **不再使用AutoMapper**：HTTP响应直接反序列化为DTO
+- ✅ **统一异常处理**：所有方法返回ServiceResult，由ViewModel基类统一处理
+- ✅ **接口与实现在同一模块**：模块化架构，职责清晰
 
 ---
 
@@ -612,15 +710,17 @@ namespace LYBT.Desktop.{Module}.Views
 - [ ] 使用基类的 `ShowErrorMessageAsync` 等方法显示消息
 - [ ] 重写 `OnNavigatedTo` 时调用 `base.OnNavigatedTo()`
 
-### 7.2 Service 检查清单
+### 7.2 Repository 检查清单（v2.0）
 
-- [ ] 实现 `Shared.Interfaces.Services.I{Entity}Service`
-- [ ] 构造函数依赖顺序符合标准
-- [ ] 注入 `IMapper` 并使用（不再手动映射）
+- [ ] 接口定义在模块的 `Repositories/I{Entity}Repository.cs`
+- [ ] 实现类在模块的 `Repositories/{Entity}Repository.cs`
+- [ ] 构造函数依赖顺序符合标准（HttpClient, Logger）
 - [ ] 所有方法返回 `ServiceResult<T>` 或 `ServiceResult`
-- [ ] 使用 `_exceptionHandler.SafeExecuteAsync` 包装
-- [ ] 使用 `_logger` 记录关键操作
-- [ ] DTO 转换使用 `_mapper.Map<T>()`
+- [ ] **GetPagedAsync使用服务端分页**（通过查询字符串传递page/pageSize/keyword）
+- [ ] 使用 `_logger` 记录关键操作和错误
+- [ ] HTTP响应直接反序列化为DTO（使用ReadFromJsonAsync）
+- [ ] ❌ 不使用AutoMapper
+- [ ] ❌ 不使用IExceptionHandler（由ServiceResult封装）
 
 ### 7.3 View 检查清单
 
@@ -632,59 +732,175 @@ namespace LYBT.Desktop.{Module}.Views
 - [ ] 使用 `{DynamicResource}` 引用主题资源
 - [ ] 代码后置仅包含 `InitializeComponent()`
 
-### 7.4 目录结构检查清单
+### 7.4 目录结构检查清单（v2.0）
 
-- [ ] 无 `Interfaces/` 目录
-- [ ] 无 `Mappings/` 目录
-- [ ] 无 `Services/` 目录
-- [ ] 有 `Models/`、`ViewModels/`、`Views/`
-- [ ] 有 `{Module}Module.cs` 和 `README.md`
+- [ ] ✅ 有 `Models/`、`ViewModels/`、`Views/`
+- [ ] ✅ 有 `Repositories/`（包含接口和实现）
+- [ ] ✅ 有 `{Module}Module.cs` 和 `README.md`
+- [ ] ❌ 无 `Interfaces/` 目录（接口在Repositories/内）
+- [ ] ❌ 无 `Mappings/` 目录（已废弃）
+- [ ] ❌ 无 `Services/` 目录（已废弃）
 
 ---
 
-## 八、迁移指南
+## 八、迁移指南（v1.0 → v2.0）
 
-### 8.1 从手动映射迁移到 AutoMapper
+### 8.1 从Service层迁移到Repository层
 
-**旧代码（手动映射）**：
+**旧架构（v1.0）**：
+```
+ViewModel → Service → Repository → WebAPI
+```
+
+**新架构（v2.0）**：
+```
+ViewModel → Repository → WebAPI
+```
+
+**迁移步骤**：
+
+#### Step 1：创建模块Repository目录
+```bash
+# 在模块内创建Repositories目录
+mkdir src/Client/Desktop/Modules/LYBT.Desktop.Patients/Repositories
+```
+
+#### Step 2：迁移Repository接口和实现
 ```csharp
-var patient = new PatientDto
+// 旧位置: Desktop.Services/Repositories/Interfaces/IPatientRepository.cs
+// 新位置: Desktop.Patients/Repositories/IPatientRepository.cs
+
+namespace LYBT.Desktop.Patients.Repositories
 {
-    Id = Guid.NewGuid(),
-    Name = dto.Name,
-    Gender = dto.Gender,
-    BirthDate = dto.BirthDate,
-    // ... 10+ 行字段赋值
-};
+    public interface IPatientRepository
+    {
+        // ✅ 返回ServiceResult（而非原始DTO）
+        Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page, int pageSize, string? keyword);
+        Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
+        Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+        Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
+        Task<ServiceResult> DeleteAsync(Guid id);
+    }
+}
 ```
 
-**新代码（AutoMapper）**：
+#### Step 3：更新ViewModel依赖
 ```csharp
-var patient = _mapper.Map<PatientDto>(dto);
+// ❌ 旧代码（v1.0）
+public PatientManagementViewModel(
+    IPatientService patientService,  // 删除Service依赖
+    ...)
+{
+    _patientService = patientService;
+}
+
+protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(...)
+{
+    var result = await _patientService.GetPagedAsync(...);
+    // ...
+}
+
+// ✅ 新代码（v2.0）
+public PatientManagementViewModel(
+    IPatientRepository patientRepository,  // 直接注入Repository
+    ...)
+{
+    _patientRepository = patientRepository;
+}
+
+protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(...)
+{
+    var result = await _patientRepository.GetPagedAsync(...);
+    // ...
+}
 ```
 
-**步骤**：
-1. 创建对应的 MappingProfile
-2. 在 Service 构造函数注入 `IMapper`
-3. 替换所有手动映射为 `_mapper.Map<T>()`
-4. 删除手动映射代码
+#### Step 4：修复P0性能问题（客户端分页→服务端分页）
+```csharp
+// ❌ 旧代码（PatientService.GetPagedAsync - 客户端分页）
+public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(...)
+{
+    var allPatients = await _repository.GetAllAsync();  // ❌ 获取全部10,000条
+    allPatients = allPatients.Where(...).ToList();      // 客户端过滤
+    var items = allPatients.Skip(...).Take(...);        // 客户端分页
+    // ...
+}
 
-### 8.2 从分散的 Mappings/ 迁移到集中配置
+// ✅ 新代码（Repository.GetPagedAsync - 服务端分页）
+public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(
+    int page, int pageSize, string? keyword)
+{
+    // ✅ 参数通过查询字符串传递给Server API
+    var url = $"/api/patients?page={page}&pageSize={pageSize}";
+    if (!string.IsNullOrEmpty(keyword))
+        url += $"&keyword={Uri.EscapeDataString(keyword)}";
 
-**旧位置**：
-- `LYBT.Desktop.Auth/Mappings/MappingProfile.cs`
-- `LYBT.Desktop.Herbs/Mappings/MappingProfile.cs`
+    var response = await _httpClient.GetAsync(url);
+    // Server端分页，仅返回20条
+}
+```
 
-**新位置**：
-- `Desktop.Services/Mapping/AuthMappingProfile.cs`
-- `Desktop.Services/Mapping/HerbMappingProfile.cs`
+#### Step 5：删除废弃代码
+- 删除 `Desktop.Services/Business/{Entity}Service.cs`
+- 删除 `Desktop.Services/Repositories/` 目录
+- 删除 `Desktop.Services/Mapping/` 目录
+- 最终删除整个 `Desktop.Services` 项目
 
-**步骤**：
-1. 移动文件到 `Desktop.Services/Mapping/`
-2. 重命名为 `{Entity}MappingProfile.cs`
-3. 更新命名空间为 `LYBT.Desktop.Services.Mapping`
-4. 删除原 Mappings/ 目录
-5. 更新 DI 注册（在 ServiceRegistration.cs）
+### 8.2 迁移清单（按模块）
+
+| 模块 | 旧Service位置 | 新Repository位置 | P0修复 |
+|------|-------------|----------------|--------|
+| Patients | Desktop.Services/Business/PatientService.cs | Desktop.Patients/Repositories/PatientRepository.cs | ✅ 修复GetPagedAsync客户端分页 |
+| Users | Desktop.Services/Business/UserService.cs | Desktop.Users/Repositories/UserRepository.cs | ✅ 已正确（参考实现） |
+| MedicalCase | Desktop.Services/Business/MedicalCaseService.cs | Desktop.MedicalCase/Repositories/MedicalCaseRepository.cs | - |
+| Consultation | Desktop.Services/Business/ConsultationService.cs | Desktop.Consultation/Repositories/ConsultationRepository.cs | - |
+| Prescriptions | Desktop.Services/Business/PrescriptionService.cs | Desktop.Prescriptions/Repositories/PrescriptionRepository.cs | - |
+| Herbs | Desktop.Services/Business/HerbService.cs | Desktop.Herbs/Repositories/HerbRepository.cs | - |
+| Formula | Desktop.Services/Business/FormulaService.cs | Desktop.Formula/Repositories/FormulaRepository.cs | - |
+| Auth | Desktop.Services/Business/AuthService.cs | Desktop.Auth/Repositories/AuthRepository.cs | - |
+
+### 8.3 常见问题与解决方案
+
+**Q1: Repository如何处理异常？**
+```csharp
+// ✅ 使用ServiceResult封装异常
+try
+{
+    var response = await _httpClient.GetAsync(...);
+    // ...
+    return ServiceResult<T>.Success(result);
+}
+catch (Exception ex)
+{
+    _logger.LogError(ex, "操作失败");
+    return ServiceResult<T>.Failure($"操作失败: {ex.Message}");
+}
+```
+
+**Q2: ViewModel如何处理Repository返回的ServiceResult？**
+```csharp
+// ✅ ViewModelBase已内置异常处理
+var result = await _repository.GetPagedAsync(...);
+
+if (result.IsSuccess && result.Data != null)
+{
+    TotalCount = result.Data.TotalCount;
+    return result.Data.Items;
+}
+
+// 失败时ViewModelBase会自动显示错误消息
+return Enumerable.Empty<PatientDto>();
+```
+
+**Q3: 如何确保使用服务端分页？**
+```csharp
+// ✅ 通过查询字符串传递分页参数
+var url = $"/api/patients?page={page}&pageSize={pageSize}&keyword={keyword}";
+var response = await _httpClient.GetAsync(url);
+
+// ❌ 不要调用GetAllAsync()再在客户端过滤
+var allPatients = await _repository.GetAllAsync();  // 禁止
+```
 
 ---
 
@@ -703,6 +919,7 @@ var patient = _mapper.Map<PatientDto>(dto);
 
 | 版本 | 日期 | 修订内容 | 作者 |
 |------|------|---------|------|
+| 2.0 | 2025-01-09 | **重大架构变更** - 移除Service层，实现模块化架构 (Issue #1114)<br/>- ❌ 删除Desktop.Services项目<br/>- ✅ Repository下沉到各模块<br/>- ✅ 新增Desktop.Foundation/Presentation<br/>- ✅ 修复P0性能问题（服务端分页）<br/>- ❌ 废弃AutoMapper<br/>- 更新所有代码模板与检查清单 | Claude Code |
 | 1.1 | 2025-01-09 | 添加 DTO 使用规范章节,引用 DTO 设计原则文档 (Issue #1094) | Claude Code |
 | 1.0 | 2025-10-07 | 初始版本，制定统一设计标准 | Claude Code |
 

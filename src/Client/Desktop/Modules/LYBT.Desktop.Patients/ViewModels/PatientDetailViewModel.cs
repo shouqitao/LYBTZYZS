@@ -2,8 +2,8 @@
 using AutoMapper;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Services.Print;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -14,15 +14,15 @@ namespace LYBT.Desktop.Patients.ViewModels
 {
 
     /// <summary>
-    /// 患者详情视图模型 - UltraThink v2.0架构
-    /// 提供患者详细信息查看功能
+    /// 患者详情视图模型 - Phase 2模块化架构
+    /// Issue #1114 - 直接使用Repository，去除Service层
     /// </summary>
     public class PatientDetailViewModel : UnifiedViewModelBase
     {
 
         #region 私有字段
 
-        private readonly IPatientService _patientService;
+        private readonly IPatientRepository _patientRepository;
         private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
 
@@ -96,7 +96,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 构造函数
 
         public PatientDetailViewModel(
-            IPatientService patientService,
+            IPatientRepository patientRepository,
             IMapper mapper,
             IPrescriptionPrintService printService,
             IEventAggregator eventAggregator,
@@ -106,7 +106,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
@@ -177,16 +177,16 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 IsLoading = true;
 
-                var result = await _patientService.GetByIdAsync(PatientId);
+                // Phase 2: 直接使用Repository，无ServiceResult包装
+                Patient = await _patientRepository.GetByIdAsync(PatientId);
 
-                if (result.IsSuccess && result.Data != null)
+                if (Patient != null)
                 {
-                    Patient = result.Data;
                     RefreshProperties();
                 }
                 else
                 {
-                    await ShowErrorMessageAsync($"加载患者详情失败: {result.ErrorMessage}");
+                    await ShowErrorMessageAsync("未找到该患者信息");
                 }
             }
             catch (Exception ex)
@@ -210,13 +210,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 IsLoading = true;
 
+                // Phase 2: 映射到UpdateDto后更新
                 var updateDto = _mapper.Map<PatientUpdateDto>(Patient);
+                var updatedPatient = await _patientRepository.UpdateAsync(updateDto);
 
-                var result = await _patientService.UpdateAsync(Patient.Id, updateDto);
-
-                if (result.IsSuccess && result.Data != null)
+                if (updatedPatient != null)
                 {
-                    Patient = result.Data;
+                    Patient = updatedPatient;
                     IsReadOnly = true;
                     RefreshProperties();
                     RaiseCanExecuteChanged();
@@ -225,7 +225,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
                 else
                 {
-                    await ShowErrorMessageAsync($"保存失败: {result.ErrorMessage}");
+                    await ShowErrorMessageAsync("保存失败：服务器未返回数据");
                 }
             }
             catch (Exception ex)
