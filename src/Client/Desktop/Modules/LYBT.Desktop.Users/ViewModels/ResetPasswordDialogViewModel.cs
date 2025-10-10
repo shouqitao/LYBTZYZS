@@ -1,6 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Users.Repositories;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -15,7 +15,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class ResetPasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
         private Guid _targetUserId;
 
         #region 属性
@@ -158,12 +158,12 @@ namespace LYBT.Desktop.Users.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IUserService userService,
+            IUserRepository userRepository,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 
             GeneratePasswordCommand = new DelegateCommand(GenerateRandomPassword);
 
@@ -187,15 +187,16 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 SetIsBusy(true, "正在加载用户信息...");
 
-                var result = await _userService.GetByIdAsync(userId);
-                if (result.IsSuccess && result.Data != null)
+                // Repository 模式：直接返回 UserDto?
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user != null)
                 {
-                    Username = result.Data.UserName; // 注意：UserDto 属性名是 UserName，不是 Username
+                    Username = user.UserName; // 注意：UserDto 属性名是 UserName，不是 Username
                 }
                 else
                 {
                     SetError("无法加载用户信息");
-                    Logger.LogWarning("加载用户信息失败: {ErrorMessage}", result.ErrorMessage);
+                    Logger.LogWarning("加载用户信息失败: Repository 返回 null");
                 }
             }
             catch (Exception ex)

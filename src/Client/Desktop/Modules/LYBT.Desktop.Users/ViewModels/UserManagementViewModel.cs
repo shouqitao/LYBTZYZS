@@ -1,6 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Users.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -16,9 +16,9 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
     {
-        #region ��������
+        #region 服务依赖
 
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
 
         #endregion
 
@@ -130,7 +130,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region ���캯��
 
         public UserManagementViewModel(
-            IUserService userService,
+            IUserRepository userRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 
             // ��ʼ��ѡ��
             RoleOptions = Enum.GetValues<UserRole>();
@@ -216,15 +216,13 @@ namespace LYBT.Desktop.Users.ViewModels
 
             try
             {
-                // 调用服务获取分页数据
-                var result = await _userService.GetPagedAsync(page, pageSize, searchText);
+                // 调用 Repository 获取分页数据（裸类型返回）
+                var result = await _userRepository.GetPagedAsync(page, pageSize, searchText);
 
-                if (result.IsSuccess && result.Data != null)
+                if (result != null && result.Items != null)
                 {
-                    var pagedData = result.Data;
-
-                    // �����ɸѡ�������ڿͻ��˽�һ�����ˣ�ʵ����Ŀ��Ӧ���ڷ���˴�����
-                    var filteredItems = pagedData.Items.AsEnumerable();
+                    // 应用筛选条件（在客户端进一步筛选，实际项目应该在服务端处理）
+                    var filteredItems = result.Items.AsEnumerable();
 
                     if (SelectedRole.HasValue)
                     {
@@ -241,13 +239,13 @@ namespace LYBT.Desktop.Users.ViewModels
                         filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
                     }
 
-                    // ��������
-                    TotalCount = pagedData.TotalCount;
+                    // 更新总数
+                    TotalCount = result.TotalCount;
                     return filteredItems;
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户列表失败: {ErrorMessage}", result.ErrorMessage);
+                    Logger.LogWarning("加载用户列表失败: Repository 返回 null");
                     TotalCount = 0;
                     return new List<UserDto>();
                 }
@@ -284,7 +282,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// ɾ���û�
+        /// 删除用户
         /// </summary>
         protected override async Task OnExecuteDeleteAsync(UserDto user)
         {
@@ -292,12 +290,8 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            var result = await _userService.DeleteAsync(user.Id);
-            if (!result.IsSuccess)
-            {
-                Logger.LogWarning("删除用户失败: {ErrorMessage}", result.ErrorMessage);
-                throw new InvalidOperationException($"删除用户失败: {result.ErrorMessage}");
-            }
+            // Repository 模式：直接调用，异常由 UnifiedViewModelBase 捕获
+            await _userRepository.DeleteAsync(user.Id);
 
             Logger.LogInformation("成功删除用户: {UserName}", user.UserName);
         }
@@ -315,11 +309,8 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 try
                 {
-                    var result = await _userService.DeleteAsync(user.Id);
-                    if (!result.IsSuccess)
-                    {
-                        failedUsers.Add($"{user.UserName}: {result.ErrorMessage}");
-                    }
+                    // Repository 模式：直接调用，异常表示失败
+                    await _userRepository.DeleteAsync(user.Id);
                 }
                 catch (Exception ex)
                 {
@@ -418,16 +409,12 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = newStatus
                 };
 
-                var result = await _userService.UpdateAsync(user.Id, updateDto);
-                if (result.IsSuccess)
+                // Repository 模式：直接调用，异常由 UnifiedViewModelBase 捕获
+                var updatedUser = await _userRepository.UpdateAsync(updateDto);
+                if (updatedUser != null)
                 {
                     Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
-                    await LoadPageAsync(); // ˢ������
-                }
-                else
-                {
-                    Logger.LogWarning("{Action}用户失败: {ErrorMessage}", action, result.ErrorMessage);
-                    throw new InvalidOperationException($"{action}用户失败: {result.ErrorMessage}");
+                    await LoadPageAsync(); // 刷新列表
                 }
 
             }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");

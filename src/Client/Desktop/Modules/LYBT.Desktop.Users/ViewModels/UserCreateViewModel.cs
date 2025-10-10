@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Users.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region 服务依赖
 
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
 
         #endregion
 
@@ -189,7 +189,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserCreateViewModel(
-            IUserService userService,
+            IUserRepository userRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -197,7 +197,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -238,9 +238,9 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = Status
                 };
 
-                // 调用服务创建用户
-                var result = await _userService.CreateAsync(createDto);
-                if (result.IsSuccess)
+                // 调用 Repository 创建用户
+                var createdUser = await _userRepository.CreateAsync(createDto);
+                if (createdUser != null)
                 {
                     StatusMessage = "用户创建成功";
                     System.Windows.MessageBox.Show("用户创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
@@ -250,7 +250,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    ErrorMessage = $"创建用户失败: {result.ErrorMessage}";
+                    ErrorMessage = "创建用户失败: Repository 返回 null";
                     System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }

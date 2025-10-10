@@ -3,7 +3,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Desktop.Users.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Prism.Commands;
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserProfileDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly IUserService _userService;
+        private readonly IUserRepository _userRepository;
         private readonly ISessionManager _sessionManager;
         private Guid _currentUserId;
         private string? _avatarFilePath;
@@ -193,12 +193,12 @@ namespace LYBT.Desktop.Users.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IUserService userService,
+            IUserRepository userRepository,
             ISessionManager sessionManager,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
             SelectAvatarCommand = new DelegateCommand(SelectAvatar);
@@ -225,12 +225,11 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 SetIsBusy(true, "正在加载个人资料...");
 
-                var result = await _userService.GetByIdAsync(_currentUserId);
+                // Repository 模式：直接返回 UserDto?
+                var user = await _userRepository.GetByIdAsync(_currentUserId);
 
-                if (result.IsSuccess && result.Data != null)
+                if (user != null)
                 {
-                    var user = result.Data;
-
                     Username = user.UserName; // 注意：UserDto 属性名是 UserName，不是 Username
                     RealName = user.RealName ?? string.Empty;
                     Email = user.Email ?? string.Empty;
@@ -246,8 +245,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    SetError(result.ErrorMessage ?? "加载个人资料失败");
-                    Logger.LogWarning("加载用户资料失败: {ErrorMessage}", result.ErrorMessage);
+                    SetError("加载个人资料失败");
+                    Logger.LogWarning("加载用户资料失败: Repository 返回 null");
                 }
             }
             catch (Exception ex)
