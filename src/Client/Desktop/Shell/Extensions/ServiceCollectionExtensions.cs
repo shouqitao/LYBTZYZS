@@ -1,6 +1,6 @@
 using AutoMapper;
 using LYBT.Desktop.Infrastructure.Commands;
-using LYBT.Desktop.Services.Modules;
+using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Services.Performance;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
