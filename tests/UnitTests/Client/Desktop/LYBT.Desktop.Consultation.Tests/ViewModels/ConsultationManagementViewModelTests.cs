@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
+using LYBT.Desktop.Consultation.Repositories;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
@@ -15,10 +15,11 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
     /// <summary>
     /// ConsultationManagementViewModel 单元测试
     /// 测试Desktop端Consultation模块的ViewModel业务逻辑
+    /// 更新为使用Repository模式（Phase 3迁移）
     /// </summary>
     public class ConsultationManagementViewModelTests : IDisposable
     {
-        private readonly Mock<IConsultationService> _consultationServiceMock;
+        private readonly Mock<IConsultationRepository> _consultationRepositoryMock;
         private readonly Mock<IEventAggregator> _eventAggregatorMock;
         private readonly Mock<ILoggerFactory> _loggerFactoryMock;
         private readonly Mock<ILogger<ConsultationManagementViewModel>> _loggerMock;
@@ -30,7 +31,7 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
         public ConsultationManagementViewModelTests()
         {
             // 初始化Mocks
-            _consultationServiceMock = new Mock<IConsultationService>();
+            _consultationRepositoryMock = new Mock<IConsultationRepository>();
             _eventAggregatorMock = new Mock<IEventAggregator>();
             _loggerFactoryMock = new Mock<ILoggerFactory>();
             _loggerMock = new Mock<ILogger<ConsultationManagementViewModel>>();
@@ -45,9 +46,9 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
 
             // EventAggregator不需要特殊设置，使用默认Mock行为即可
 
-            // 创建ViewModel实例
+            // 创建ViewModel实例（使用Repository）
             _viewModel = new ConsultationManagementViewModel(
-                _consultationServiceMock.Object,
+                _consultationRepositoryMock.Object,
                 _eventAggregatorMock.Object,
                 _loggerFactoryMock.Object,
                 _regionManagerMock.Object,
@@ -78,9 +79,9 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
                 PageSize = 20
             };
 
-            _consultationServiceMock
+            _consultationRepositoryMock
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                .ReturnsAsync(ServiceResult<PagedResult<ConsultationDto>>.Success(pagedResult));
+                .ReturnsAsync(pagedResult);
 
             // Act
             if (_viewModel.LoadDataCommand.CanExecute(null))
@@ -96,12 +97,12 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
         }
 
         [Fact]
-        public async Task LoadDataAsync_WhenServiceFails_ShouldHandleError()
+        public async Task LoadDataAsync_WhenRepositoryReturnsNull_ShouldHandleError()
         {
-            // Arrange
-            _consultationServiceMock
+            // Arrange - Repository 返回 null（模拟异常情况）
+            _consultationRepositoryMock
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                .ReturnsAsync(ServiceResult<PagedResult<ConsultationDto>>.Failure("服务器错误"));
+                .ReturnsAsync((PagedResult<ConsultationDto>)null!);
 
             // Act
             if (_viewModel.LoadDataCommand.CanExecute(null))
@@ -112,7 +113,7 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
 
             // Assert
             _viewModel.Consultations.Should().BeEmpty();
-            // 验证错误日志被记录
+            // Repository 模式：异常由 UnifiedViewModelBase 捕获
             _loggerMock.Verify(
                 x => x.Log(
                     LogLevel.Error,
@@ -147,9 +148,9 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
                 PageSize = 20
             };
 
-            _consultationServiceMock
+            _consultationRepositoryMock
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), keyword))
-                .ReturnsAsync(ServiceResult<PagedResult<ConsultationDto>>.Success(pagedResult));
+                .ReturnsAsync(pagedResult);
 
             // Act
             if (_viewModel.SearchCommand.CanExecute(null))
@@ -234,20 +235,19 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
 
         #endregion
 
-        #region IConsultationService Mock Tests
+        #region IConsultationRepository Mock Tests
 
         [Fact]
-        public async Task Service_GetPagedAsync_ShouldBeCalledWithCorrectParameters()
+        public async Task Repository_GetPagedAsync_ShouldBeCalledWithCorrectParameters()
         {
             // Arrange
             int expectedPage = 1;
             int expectedPageSize = 100; // ViewModel默认使用100
             string expectedKeyword = ""; // 默认SearchKeyword是空字符串
 
-            _consultationServiceMock
+            _consultationRepositoryMock
                 .Setup(x => x.GetPagedAsync(expectedPage, expectedPageSize, expectedKeyword))
-                .ReturnsAsync(ServiceResult<PagedResult<ConsultationDto>>.Success(
-                    new PagedResult<ConsultationDto> { Items = new List<ConsultationDto>() }));
+                .ReturnsAsync(new PagedResult<ConsultationDto> { Items = new List<ConsultationDto>() });
 
             // Act
             if (_viewModel.LoadDataCommand.CanExecute(null))
@@ -257,7 +257,7 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
             }
 
             // Assert
-            _consultationServiceMock.Verify(
+            _consultationRepositoryMock.Verify(
                 x => x.GetPagedAsync(expectedPage, expectedPageSize, expectedKeyword),
                 Times.AtLeastOnce());
         }

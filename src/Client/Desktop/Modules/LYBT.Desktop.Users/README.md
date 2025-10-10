@@ -22,7 +22,8 @@ LYBT.Desktop.Users/
 - **.NET 8 & WPF**: 基础框架。
 - **Prism.DryIoc**: 用于模块化、依赖注入和区域导航。
 - **LYBT.Desktop.Core**: 提供ViewModel基类和通用服务。
-- **LYBT.Desktop.Services**: 提供与后端交互的业务服务实现。
+- **LYBT.Desktop.Foundation**: 提供Repository基类和ApiClient。
+- **模块内 Repositories/**: 提供与后端交互的数据访问层实现。
 
 ## 🚀 快速开始
 
@@ -33,31 +34,46 @@ LYBT.Desktop.Users/
 dotnet build src\Client\Desktop\Modules\Users\LYBT.Desktop.Users.csproj
 ```
 
-## 🔌 API 接口
+## 🔌 数据访问层架构
 
-此项目为UI模块，不直接调用API。它通过依赖注入获取在 `LYBT.Desktop.Services` 层实现的 `IUserService` 接口，并调用该服务来完成所有用户相关的业务操作。
+此项目为UI模块，采用 **ViewModel → Repository → ApiClient** 三层架构：
+
+- **ViewModel 层**：UI业务逻辑，通过依赖注入获取 Repository
+- **Repository 层**（模块内 `Repositories/`）：数据访问与转换，调用 Foundation 层的 ApiClient
+- **ApiClient 层**（Foundation）：统一的HTTP通信封装
+
+### 代码示例
 
 ```csharp
-// UserListViewModel.cs
-public class UserListViewModel : CoreViewModel
-{
-    private readonly IUserService _userService;
+// UserManagementViewModel.cs
+using LYBT.Desktop.Users.Repositories;
 
-    public UserListViewModel(IUserService userService)
+public class UserManagementViewModel : UnifiedViewModelBase
+{
+    private readonly IUserRepository _userRepository;
+
+    public UserManagementViewModel(IUserRepository userRepository, ...)
     {
-        _userService = userService;
+        _userRepository = userRepository;
     }
 
-    private async Task LoadUsers()
+    private async Task LoadUsersAsync()
     {
-        var result = await _userService.GetPagedAsync(new PagedQueryBaseDto());
-        if(result.IsSuccess)
+        var result = await _userRepository.GetPagedAsync(1, 100);
+        if (result != null && result.Items != null)
         {
-            // ...
+            foreach (var user in result.Items)
+            {
+                Users.Add(user);
+            }
         }
     }
 }
 ```
+
+**关键差异**：
+- ❌ 禁止直接依赖 `LYBT.Desktop.Services` 的 Server Service（会导致运行时崩溃）
+- ⚠️ **注意**：Users 模块的 ViewModel 尚未完成迁移（Issue #1128），部分 ViewModel 仍使用 `IUserService`
 
 ---
 

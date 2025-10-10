@@ -1,11 +1,12 @@
 ﻿# 阶段报告索引
 
 - **维护人**：Thinker（ChatGPT）+ Claude Code
-- **最后更新**：2025-10-08
+- **最后更新**：2025-01-11
 
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-01-11 | `issue-1119-desktop-viewmodel-migration-summary.md` | **Epic #1119 Desktop ViewModel迁移完成报告** - 4个Phase全部完成（P0 Bug修复+P1-P3模块迁移+P4验证文档），29个文件修改，6个模块Repository下沉，修复DI容器类型解析失败（Issue #1118），架构测试12/12通过，编译0错误0警告，创建迁移最佳实践与FAQ |
 | 2025-10-09 | `desktop-architecture-optimization-analysis.md` | **Desktop架构优化深度分析报告** - UltraThink 28步分析，识别5个关键架构问题（P0性能问题+P1设计问题），提出彻底模块化重构方案（移除Service层、拆分Desktop.Services、Repository下沉），预期性能提升50%+（Issue #1114）|
 | 2025-10-09 | `desktop-layer-architecture-uniformity-audit.md` | **Desktop 层架构与模块统一程度审查报告** - 四层架构分析（Core/Module/Workstation/Shell），10个模块统一度94.3%，识别4类合理例外，架构测试12/12通过（Issue #1113）|
 | 2025-10-09 | `api-test-summary-2025-10-09.md` | **API集成测试汇总报告** - 核心API测试验证，Formula修复(PR #1072)，Admin认证问题(Issue #1073)，MVP发布就绪评估 |
@@ -51,6 +52,14 @@
 2. 若报告与任务/PRD 关联，请在文末"关联记录"段落列出相关路径。
 3. 当报告过期或被替换时，从表格移除并归档至 `archive/`。
 
+
+## 2025-01-11
+
+### Epic #1119 Desktop ViewModel迁移完成报告
+- **文件**: [issue-1119-desktop-viewmodel-migration-summary.md](./issue-1119-desktop-viewmodel-migration-summary.md)
+- **类型**: Epic完成总结报告
+- **关联**: Epic #1119, Issue #1118, Issue #1120, Issue #1121, Issue #1122, Issue #1123, Issue #1128, PR #1126, PR #1127, PR #1129
+- **摘要**: Desktop ViewModel从Server Service迁移到模块内Repository的完整实施报告。包含4个Phase（P0 Bug修复+P1-P3模块迁移+P4验证文档），修改29个文件，迁移6个模块的ViewModels。修复了Issue #1118（P0 DI容器类型解析失败），架构测试12/12通过，编译0错误0警告。建立了Repository vs Service模式差异、最佳实践与常见问题FAQ。
 
 ## 2025-10-08
 
