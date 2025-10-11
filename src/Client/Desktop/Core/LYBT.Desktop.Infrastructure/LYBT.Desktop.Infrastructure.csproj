@@ -48,9 +48,13 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
   </ItemGroup>
 
+  <!-- Core Dependencies -->
+  <ItemGroup Label="Core Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+  </ItemGroup>
+
   <!-- Core_New Dependencies -->
   <ItemGroup Label="Core_New Dependencies">
-    <ProjectReference Include="..\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
