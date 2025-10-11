@@ -78,10 +78,9 @@
 ### ✅ Task 9 - 文档和培训
 - **完成时间**: 2025-09-21
 - **主要成果**:
-  - 创建单元测试指南 (`unit-testing-guide.md`)
+  - 创建统一测试指南 (`testing-guide.md` - 已合并unit-testing-guide.md、testing-best-practices.md等，见Issue #1143)
   - 编写覆盖率报告指南 (`coverage-report-guide.md`)
   - 制作培训材料 (`testing-training-materials.md`)
-  - 建立最佳实践文档 (`testing-best-practices.md`)
 
 ### ✅ Task 10 - 验收和总结
 - **完成时间**: 2025-09-21
