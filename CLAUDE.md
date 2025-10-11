@@ -38,7 +38,9 @@
   - `docs/architecture/server-module-design-standard.md`（Server端模块设计标准）
   - `docs/architecture/client/unified-design-standard.md`（Client端业务模块统一设计标准）
   - `docs/development/minimal-practice.md`（Issue→清单→PR 工作法）
-  - `docs/development/documentation-guidelines.md`
+  - `docs/development/documentation-guidelines.md`（文档编写与维护指南v2.0 - SSOT原则、质量标准）
+  - `docs/development/documentation-quality-checklist.md`（文档质量检查清单 - 新建/更新/归档/合并4类）
+  - `docs/development/documentation-automation-guide.md`（文档自动化维护指南 - CI/脚本/报告）
   - `docs/PROJECT-STATUS-2025-09-27.md`（实时项目状态）
 
 > **⚠️ 处理任务前必须先查阅相关文档，未理解文档禁止开始编码或给出建议。**
