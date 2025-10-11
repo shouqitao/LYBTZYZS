@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,9 +19,13 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// </summary>
     public class FormulaDetailViewModel : UnifiedViewModelBase
     {
-        #region 服务依赖
+        #region 服务依赖与组件
 
         private readonly IFormulaRepository _formulaRepository;
+        private readonly FormulaDataManager _dataManager;
+        private readonly FormulaCommandHandler _commandHandler;
+        private readonly FormulaCalculator _calculator;
+        private readonly FormulaValidator _validator;
 
         #endregion
 
@@ -213,12 +218,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 药材数量
         /// </summary>
-        public int HerbCount => HerbItems.Count;
+        public int HerbCount => _dataManager.GetHerbItemCount(HerbItems);
 
         /// <summary>
         /// 总价格
         /// </summary>
-        public decimal TotalPrice => HerbItems.Sum(h => h.Price * h.Quantity);
+        public decimal TotalPrice => _dataManager.CalculateTotalPrice(HerbItems);
 
         /// <summary>
         /// 药材组成集合
@@ -283,6 +288,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+
+            // 初始化组件
+            var logger = loggerFactory.CreateLogger<FormulaDetailViewModel>();
+            _dataManager = new FormulaDataManager(formulaRepository, logger);
+            _commandHandler = new FormulaCommandHandler(formulaRepository, logger);
+            _calculator = new FormulaCalculator();
+            _validator = new FormulaValidator();
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -351,8 +363,16 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载配方详情...");
 
-                var formula = await _formulaRepository.GetByIdAsync(FormulaId);
-                Formula = formula;
+                var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
+                
+                if (success && formula != null)
+                {
+                    Formula = formula;
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
+                }
             }
             catch (Exception ex)
             {
@@ -380,26 +400,10 @@ namespace LYBT.Desktop.Formula.ViewModels
             IsShared = Formula.IsShared;
             Category = Formula.Category ?? string.Empty;
 
-            // 加载药材组成
-            LoadHerbItems();
+            // 使用 DataManager 加载药材组成
+            _dataManager.LoadHerbItems(HerbItems, Formula.Herbs);
 
             // 刷新显示属性
-            RefreshDisplayProperties();
-        }
-
-        /// <summary>
-        /// 加载药材组成
-        /// </summary>
-        private void LoadHerbItems()
-        {
-            HerbItems.Clear();
-            if (Formula?.Herbs != null)
-            {
-                foreach (var herb in Formula.Herbs)
-                {
-                    HerbItems.Add(herb);
-                }
-            }
             RefreshDisplayProperties();
         }
 
@@ -417,29 +421,25 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在保存配方...");
 
-                var updateDto = new FormulaUpdateDto
-                {
-                    Id = Formula.Id,
-                    Name = FormulaName!.Trim(),
-                    Effect = string.IsNullOrWhiteSpace(Effect) ? null! : Effect!.Trim(),
-                    Usage = string.IsNullOrWhiteSpace(Usage) ? null! : Usage!.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null! : Remark!.Trim(),
-                    IsShared = IsShared,
-                    Herbs = HerbItems.Select(h => new FormulaHerbItemUpdateDto
-                    {
-                        Id = h.Id,
-                        HerbId = h.HerbId,
-                        Quantity = h.Quantity,
-                        Preparation = h.Preparation,
-                        Usage = h.Usage,
-                        SortOrder = h.SortOrder
-                    }).ToList()
-                };
+                var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
+                    Formula,
+                    FormulaName,
+                    Effect,
+                    Usage,
+                    Remark,
+                    IsShared,
+                    HerbItems);
 
-                var updatedFormula = await _formulaRepository.UpdateAsync(updateDto);
-                Formula = updatedFormula;
-                IsEditMode = false;
-                await ShowSuccessMessageAsync("配方保存成功");
+                if (success && updatedFormula != null)
+                {
+                    Formula = updatedFormula;
+                    IsEditMode = false;
+                    await ShowSuccessMessageAsync("配方保存成功");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(errorMessage ?? "保存配方失败");
+                }
             }
             catch (Exception ex)
             {
@@ -463,29 +463,20 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在复制配方...");
 
-                var createDto = new FormulaCreateDto
+                var (success, newFormula, message) = await _commandHandler.CopyFormulaAsync(Formula);
+
+                if (success && newFormula != null)
                 {
-                    Name = $"{Formula.Name}_副本",
-                    Effect = Formula.Effect!,
-                    Usage = Formula.Usage!,
-                    Remark = Formula.Remark!,
-                    IsShared = false, // 副本默认不共享
-                    Herbs = Formula.Herbs?.Select(h => new FormulaHerbItemCreateDto
-                    {
-                        HerbId = h.HerbId,
-                        Quantity = h.Quantity,
-                        Preparation = h.Preparation,
-                        Usage = h.Usage,
-                        SortOrder = h.SortOrder
-                    }).ToList() ?? new List<FormulaHerbItemCreateDto>()
-                };
-
-                var newFormula = await _formulaRepository.CreateAsync(createDto);
-                await ShowSuccessMessageAsync($"配方复制成功！新配方名称：{newFormula.Name}");
-
-                // 导航到新配方
-                FormulaId = newFormula.Id;
-                await LoadDataAsync();
+                    await ShowSuccessMessageAsync(message ?? "配方复制成功");
+                    
+                    // 导航到新配方
+                    FormulaId = newFormula.Id;
+                    await LoadDataAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(message ?? "复制配方失败");
+                }
             }
             catch (Exception ex)
             {
@@ -533,16 +524,17 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private async void ExecutePrint()
         {
-            try
+            if (Formula == null) return;
+
+            var (success, errorMessage) = await _commandHandler.PrintFormulaAsync(Formula);
+            
+            if (success)
             {
-                Logger.LogInformation("打印配方: {FormulaId}", FormulaId);
-                // TODO: 实现打印逻辑
-                await ShowSuccessMessageAsync("打印功能开发中");
+                await ShowSuccessMessageAsync(errorMessage ?? "打印功能开发中");
             }
-            catch (Exception ex)
+            else
             {
-                Logger.LogError(ex, "打印配方时发生异常");
-                await ShowErrorMessageAsync("打印配方时发生系统错误");
+                await ShowErrorMessageAsync(errorMessage ?? "打印配方失败");
             }
         }
 
@@ -551,16 +543,17 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private async void ExecuteViewUsageHistory()
         {
-            try
+            if (FormulaId == Guid.Empty) return;
+
+            var (success, errorMessage) = await _commandHandler.ViewUsageHistoryAsync(FormulaId);
+            
+            if (success)
             {
-                Logger.LogInformation("查看配方使用历史: {FormulaId}", FormulaId);
-                // TODO: 实现查看使用历史逻辑
-                await ShowSuccessMessageAsync("查看使用历史功能开发中");
+                await ShowSuccessMessageAsync(errorMessage ?? "查看使用历史功能开发中");
             }
-            catch (Exception ex)
+            else
             {
-                Logger.LogError(ex, "查看使用历史时发生异常");
-                await ShowErrorMessageAsync("查看使用历史时发生系统错误");
+                await ShowErrorMessageAsync(errorMessage ?? "查看使用历史失败");
             }
         }
 

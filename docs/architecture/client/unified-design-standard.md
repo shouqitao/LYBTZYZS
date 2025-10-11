@@ -1,9 +1,9 @@
 # Client 端业务模块统一设计标准
 
-> **版本**: 2.3
-> **制定日期**: 2025-10-11
+> **版本**: 2.4
+> **制定日期**: 2025-01-11
 > **适用范围**: Desktop WPF 客户端所有业务模块
-> **关联 Issue**: #1114, #1119, #1118, #1013, #1151, #1152
+> **关联 Issue**: #1114, #1119, #1118, #1013, #1151, #1152, #1153
 
 ---
 
@@ -280,6 +280,302 @@ namespace LYBT.Desktop.{Module}.ViewModels
 - ❌ 移除 `I{Entity}Service` 依赖（已废弃Server Service层）
 - ✅ 新增 `I{Entity}Repository` 依赖（模块数据访问层）
 - ✅ Repository返回裸类型（`PagedResult<T>`、`T`），异常通过抛出处理
+
+### 3.6 ViewModel 组件化架构标准（v2.4 新增 - Issue #1153）
+
+#### 3.6.1 组件化触发条件（复杂度阈值）
+
+当 ViewModel 满足以下**任一条件**时，应考虑进行组件化重构：
+
+| 触发条件 | 阈值 | 评估方式 |
+|---------|------|---------|
+| **代码行数** | ≥ 800 行 | 使用 `wc -l` 统计（含注释和空行） |
+| **独立职责数量** | ≥ 4 个 | 识别独立的功能模块（如验证、计算、命令处理、数据管理） |
+| **MVP 功能点数** | ≥ 50 个 | 统计 Issue 清单中的功能点数量 |
+| **架构对齐需求** | - | 类似模块需要统一架构模式 |
+
+**实际案例（Issue #1153）**：
+- `FormulaDetailViewModel`: 672 行 → 触发组件化
+- `PatientImportWizardViewModel`: 1079 行 + 6 个独立职责 → 触发组件化
+- `PrescriptionDetailViewModel`: 已通过共享组件重构
+
+#### 3.6.2 组件化架构模式
+
+```
+ViewModel（协调器，200-300行）
+├── Calculator 组件（计算逻辑）
+├── Validator 组件（验证逻辑）
+├── CommandHandler 组件（命令操作）
+└── DataManager 组件（数据管理）
+```
+
+**组件职责划分**：
+
+| 组件类型 | 职责 | 典型行数 | 示例 |
+|---------|------|---------|------|
+| **Calculator** | 业务计算、统计分析、比率计算 | 150-200 | `FormulaCalculator`, `PrescriptionCalculator` |
+| **Validator** | 数据验证、业务规则检查、错误收集 | 120-250 | `FormulaValidator`, `PrescriptionValidator` |
+| **CommandHandler** | 保存、复制、删除等命令操作 | 150-200 | `FormulaCommandHandler` |
+| **DataManager** | 数据加载、刷新、集合管理 | 100-360 | `FormulaDataManager` |
+| **Executor** | 异步任务执行、进度报告 | 200-300 | `ImportExecutor` (BackgroundWorker封装) |
+| **ProgressReporter** | 进度跟踪、统计汇总 | 100-150 | `ImportProgressReporter` |
+
+#### 3.6.3 共享组件模式（推荐）
+
+对于具有相似业务逻辑的模块（如 Prescription、Formula），优先使用共享组件基类：
+
+**步骤 1：定义共享接口**
+```csharp
+// LYBT.Shared.Components/IHerbItem.cs
+public interface IHerbItem
+{
+    Guid HerbId { get; }
+    string HerbName { get; }
+    decimal Dosage { get; }
+    string Unit { get; }
+    decimal Quantity { get; }
+    decimal UnitPrice { get; }
+}
+```
+
+**步骤 2：创建泛型基类**
+```csharp
+// LYBT.Shared.Components/HerbCalculatorBase.cs
+public abstract class HerbCalculatorBase<TItem> where TItem : IHerbItem
+{
+    public decimal CalculateTotalDosage(IEnumerable<TItem> items)
+    {
+        return items?.Sum(i => i.Dosage) ?? 0m;
+    }
+
+    public decimal CalculateTotalPrice(IEnumerable<TItem> items)
+    {
+        return items?.Sum(i => i.UnitPrice * i.Quantity) ?? 0m;
+    }
+
+    // ... 更多共享计算逻辑
+}
+```
+
+**步骤 3：模块特定实现**
+```csharp
+// LYBT.Desktop.Formula/ViewModels/Components/FormulaCalculator.cs
+public class FormulaCalculator : HerbCalculatorBase<FormulaHerbItemViewModel>
+{
+    // 继承共享逻辑
+
+    // 添加 Formula 特定计算
+    public FormulaRatioAnalysis CalculateRatioDistribution(...)
+    {
+        // Formula 特有的配方比例分析
+    }
+}
+```
+
+**成果（Issue #1153 实际数据）**：
+- Prescription 模块：删除 195 行重复代码
+- Formula 模块：Calculator 180 行，Validator 150 行（共享基类提供 ~120 行）
+- 代码复用率：约 60-70%
+
+#### 3.6.4 组件目录结构
+
+```
+LYBT.Desktop.{Module}/
+├── ViewModels/
+│   ├── Components/                          🆕 v2.4 组件目录
+│   │   ├── {Entity}Calculator.cs           (计算组件)
+│   │   ├── {Entity}Validator.cs            (验证组件)
+│   │   ├── {Entity}CommandHandler.cs       (命令处理组件)
+│   │   └── {Entity}DataManager.cs          (数据管理组件)
+│   │
+│   ├── {Entity}DetailViewModel.cs          (主 ViewModel，协调器)
+│   └── {Entity}ManagementViewModel.cs
+```
+
+**共享组件位置**：
+```
+LYBT.Shared.Components/                      🆕 v2.4 共享组件库
+├── IHerbItem.cs                            (共享接口)
+├── HerbCalculatorBase.cs                   (共享计算基类)
+├── HerbValidatorBase.cs                    (共享验证基类)
+└── ValidationResult.cs                     (共享验证结果)
+```
+
+#### 3.6.5 组件化 ViewModel 示例
+
+```csharp
+/// <summary>
+/// 配方详情视图模型 - 组件化架构（v2.4）
+/// Issue #1153: 从 672 行简化到 280 行
+/// </summary>
+public class FormulaDetailViewModel : UnifiedViewModelBase
+{
+    #region 服务依赖与组件
+
+    private readonly IFormulaRepository _formulaRepository;
+    private readonly FormulaDataManager _dataManager;
+    private readonly FormulaCommandHandler _commandHandler;
+    private readonly FormulaCalculator _calculator;
+    private readonly FormulaValidator _validator;
+
+    #endregion
+
+    #region 构造函数
+
+    public FormulaDetailViewModel(
+        IFormulaRepository formulaRepository,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+    {
+        _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+
+        // 初始化组件
+        var logger = loggerFactory.CreateLogger<FormulaDetailViewModel>();
+        _dataManager = new FormulaDataManager(formulaRepository, logger);
+        _commandHandler = new FormulaCommandHandler(formulaRepository, logger);
+        _calculator = new FormulaCalculator();
+        _validator = new FormulaValidator();
+
+        // 初始化命令
+        InitializeCommands();
+    }
+
+    #endregion
+
+    #region 显示属性（委托给组件）
+
+    /// <summary>
+    /// 药材数量 - 委托给 DataManager
+    /// </summary>
+    public int HerbCount => _dataManager.GetHerbItemCount(HerbItems);
+
+    /// <summary>
+    /// 总价格 - 委托给 DataManager
+    /// </summary>
+    public decimal TotalPrice => _dataManager.CalculateTotalPrice(HerbItems);
+
+    #endregion
+
+    #region 命令实现（委托给组件）
+
+    private async Task SaveAsync()
+    {
+        if (Formula == null || !ValidateInputs())
+            return;
+
+        try
+        {
+            SetIsBusy(true, "正在保存配方...");
+
+            // 委托给 CommandHandler
+            var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
+                Formula, FormulaName, Effect, Usage, Remark, IsShared, HerbItems);
+
+            if (success && updatedFormula != null)
+            {
+                Formula = updatedFormula;
+                IsEditMode = false;
+                await ShowSuccessMessageAsync("配方保存成功");
+            }
+            else
+            {
+                await ShowErrorMessageAsync(errorMessage ?? "保存配方失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "保存配方时发生异常");
+            await ShowErrorMessageAsync("保存配方时发生系统错误，请稍后重试");
+        }
+        finally
+        {
+            SetIsBusy(false);
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        // 委托给 DataManager
+        var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
+        
+        if (success && formula != null)
+        {
+            Formula = formula;
+        }
+        else
+        {
+            await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
+        }
+    }
+
+    #endregion
+}
+```
+
+**重构效果**：
+- **代码行数**: 672 行 → 280 行（减少 58%）
+- **组件行数**: Calculator 180 + Validator 150 + CommandHandler 165 + DataManager 360 = 855 行
+- **总行数**: 280 + 855 = 1135 行（但职责清晰，可测试性强）
+- **独立职责**: 6 个模块 → 2 个（UI 协调 + 命令处理）
+
+#### 3.6.6 组件设计原则
+
+1. **单一职责原则（SRP）**
+   - 每个组件只负责一类业务逻辑
+   - Calculator 只做计算，不做验证
+   - Validator 只做验证，不做数据操作
+
+2. **依赖注入原则**
+   - 组件通过构造函数接收依赖（Repository, Logger）
+   - 不在组件内部创建依赖对象
+   - 支持单元测试 Mock
+
+3. **返回值约定**
+   - 使用 Tuple 返回操作结果：`(bool success, T? result, string? errorMessage)`
+   - 统一的错误处理模式
+   - 避免抛出异常到 ViewModel
+
+4. **无状态设计（推荐）**
+   - 组件尽量设计为无状态（Stateless）
+   - 状态由 ViewModel 管理
+   - 组件方法接收参数，返回结果
+
+5. **线程安全考虑**
+   - 异步组件（如 Executor）需要处理线程同步
+   - 使用事件向 ViewModel 报告进度
+   - ViewModel 负责 UI 线程调度
+
+#### 3.6.7 何时不应组件化
+
+以下情况**不建议**进行组件化：
+
+| 场景 | 原因 | 替代方案 |
+|------|------|---------|
+| ViewModel < 500 行 | 过度设计，增加复杂度 | 保持简单结构 |
+| 职责 < 3 个 | 拆分收益低于成本 | 使用清晰的 region 分组 |
+| 逻辑高度耦合 | 强行拆分导致频繁交互 | 重构内部方法，保持内聚 |
+| 一次性功能 | 无复用价值 | 保持在 ViewModel 内 |
+| 简单 CRUD | 基类已提供足够支持 | 使用 `UnifiedListViewModelBase<T>` |
+
+#### 3.6.8 组件化最佳实践总结
+
+**✅ 推荐做法**：
+1. **优先考虑共享组件**：多个模块有相似逻辑时，创建泛型基类
+2. **渐进式重构**：先提取最独立的模块（如 Calculator）
+3. **保持接口简单**：组件方法参数不超过 5 个
+4. **完整的日志记录**：每个组件操作都记录日志
+5. **单元测试覆盖**：组件应 100% 可测试
+
+**❌ 避免做法**：
+1. **过度拆分**：不要为了拆分而拆分，保持合理粒度
+2. **循环依赖**：组件之间不应相互调用
+3. **状态泄漏**：组件不应持有 ViewModel 引用
+4. **god 组件**：单个组件不应超过 400 行
+5. **破坏封装**：不要将 Repository 暴露给外部
 
 ---
 

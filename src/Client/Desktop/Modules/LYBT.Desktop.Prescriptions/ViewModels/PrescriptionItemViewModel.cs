@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
     /// 处方项目视图模型 - UltraThink架构实现
+    /// Issue #1153: 实现IHerbItem接口以支持共享组件
     /// </summary>
-    public class PrescriptionItemViewModel : UnifiedViewModelBase
+    public class PrescriptionItemViewModel : UnifiedViewModelBase, IHerbItem
     {
         #region 属性
 

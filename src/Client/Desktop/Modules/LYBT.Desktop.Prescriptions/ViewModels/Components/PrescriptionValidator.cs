@@ -1,10 +1,12 @@
-﻿namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
+﻿using LYBT.Shared.Components;
+
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
     /// <summary>
     /// 处方验证器 - UltraThink架构实现
-    /// 负责处方的各种验证逻辑
+    /// Issue #1153: 继承HerbValidatorBase共享基类
     /// </summary>
-    public class PrescriptionValidator
+    public class PrescriptionValidator : HerbValidatorBase<PrescriptionItemViewModel>
     {
         #region 基础验证
 
@@ -38,36 +40,8 @@
         /// </summary>
         public ValidationResult ValidatePrescriptionItems(IEnumerable<PrescriptionItemViewModel> items)
         {
-            var result = new ValidationResult();
-
-            if (items == null || !items.Any())
-            {
-                result.AddError("处方至少需要包含一味药材");
-                return result;
-            }
-
-            var itemList = items.ToList();
-
-            // 检查重复药材
-            var duplicateHerbs = itemList
-                .GroupBy(i => i.HerbId)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.First().HerbName)
-                .ToList();
-
-            if (duplicateHerbs.Any())
-            {
-                result.AddError($"处方中存在重复药材：{string.Join("、", duplicateHerbs)}");
-            }
-
-            // 验证每个项目
-            foreach (var item in itemList)
-            {
-                var itemValidation = ValidatePrescriptionItem(item);
-                result.Merge(itemValidation);
-            }
-
-            return result;
+            // 使用基类的ValidateHerbList方法（包含重复检测和必填项验证）
+            return ValidateHerbList(items, "处方");
         }
 
         /// <summary>
@@ -75,37 +49,14 @@
         /// </summary>
         public ValidationResult ValidatePrescriptionItem(PrescriptionItemViewModel item)
         {
-            var result = new ValidationResult();
+            // 使用基类的ValidateRequiredFields方法
+            var result = ValidateRequiredFields(item);
 
-            if (item == null)
+            // 添加剂量警告（使用基类方法）
+            var warning = GetDosageWarning(item, 0.1m, 500m);
+            if (!string.IsNullOrWhiteSpace(warning))
             {
-                result.AddError("处方项目不能为空");
-                return result;
-            }
-
-            if (item.HerbId == Guid.Empty)
-            {
-                result.AddError("药材不能为空");
-            }
-
-            if (string.IsNullOrWhiteSpace(item.HerbName))
-            {
-                result.AddError("药材名称不能为空");
-            }
-
-            if (item.Dosage <= 0)
-            {
-                result.AddError($"{item.HerbName} 用量必须大于0");
-            }
-
-            if (item.Dosage > 500)
-            {
-                result.AddWarning($"{item.HerbName} 用量较大（{item.Dosage}{item.Unit}），请确认是否正确");
-            }
-
-            if (string.IsNullOrWhiteSpace(item.Unit))
-            {
-                result.AddError($"{item.HerbName} 单位不能为空");
+                result.AddWarning(warning);
             }
 
             return result;
@@ -208,52 +159,7 @@
         #endregion
     }
 
-    /// <summary>
-    /// 验证结果
-    /// </summary>
-    public class ValidationResult
-    {
-        public List<string> Errors { get; set; } = new();
-        public List<string> Warnings { get; set; } = new();
-
-        public bool IsValid => !Errors.Any();
-        public bool HasWarnings => Warnings.Any();
-
-        public void AddError(string error)
-        {
-            if (!string.IsNullOrWhiteSpace(error))
-            {
-                Errors.Add(error);
-            }
-        }
-
-        public void AddWarning(string warning)
-        {
-            if (!string.IsNullOrWhiteSpace(warning))
-            {
-                Warnings.Add(warning);
-            }
-        }
-
-        public void Merge(ValidationResult other)
-        {
-            if (other != null)
-            {
-                Errors.AddRange(other.Errors);
-                Warnings.AddRange(other.Warnings);
-            }
-        }
-
-        public string GetErrorSummary()
-        {
-            return string.Join("; ", Errors);
-        }
-
-        public string GetWarningSummary()
-        {
-            return string.Join("; ", Warnings);
-        }
-    }
+    // ValidationResult类已经在HerbValidatorBase基类中定义，无需重复定义
 
     /// <summary>
     /// 药材配伍禁忌
