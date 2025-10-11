@@ -902,6 +902,89 @@ public static IServiceCollection AddConsultationModule(...)
   /// 遵循三层架构标准：Controller → Service → Repository
   ```
 
+### Q11: 什么时候使用Rules.cs，什么时候用Validator？
+**A**:
+
+**使用场景判断**：
+- ✅ **Rules.cs 适用场景**：
+  - 复杂领域逻辑验证（多字段联合校验、业务规则计算）
+  - 跨模块共享的业务规则（如中药配伍禁忌、方剂剂量计算）
+  - 需要单独单元测试的业务逻辑
+  - 纯计算逻辑（无副作用、无依赖注入）
+
+- ✅ **Validator 适用场景**：
+  - 简单的单字段验证（必填、长度、格式）
+  - 框架级验证规则定义（FluentValidation）
+  - 与DTO强绑定的验证逻辑
+
+- ❌ **都不适用场景**：
+  - 仅一个Service使用的逻辑 → 直接写在Service方法中
+
+**命名与组织规范**：
+```csharp
+// 文件位置：src/Server/Modules/LYBT.Module.Xxx/Rules/XxxRules.cs
+namespace LYBT.Module.Xxx.Rules
+{
+    /// <summary>
+    /// Xxx模块业务规则类
+    /// </summary>
+    public static class HerbRules
+    {
+        /// <summary>
+        /// 验证中药配伍禁忌
+        /// </summary>
+        public static ValidationResult ValidateHerbCompatibility(
+            IEnumerable<HerbDto> herbs)
+        {
+            // 纯业务逻辑验证
+        }
+
+        /// <summary>
+        /// 计算方剂总剂量
+        /// </summary>
+        public static decimal CalculateTotalDosage(
+            IEnumerable<PrescriptionItemDto> items)
+        {
+            // 纯计算逻辑
+        }
+    }
+}
+```
+
+**职责边界**：
+| 组件 | 职责 | 特征 | 示例 |
+|------|------|------|------|
+| **Rules** | 纯业务逻辑验证/计算 | 无副作用、无DI、static | `HerbRules.ValidateCompatibility()` |
+| **Validator** | 框架验证规则定义 | 继承AbstractValidator、DI注入 | `HerbCreateDtoValidator` |
+| **Service** | 编排业务流程 | 可调用Rules、有副作用、DI注入 | `HerbService.CreateAsync()` |
+
+**使用示例**：
+```csharp
+// Service中调用Rules
+public class PrescriptionService : IPrescriptionService
+{
+    public async Task<ServiceResult<PrescriptionDto>> CreateAsync(
+        PrescriptionCreateDto dto)
+    {
+        // 1. Validator自动验证DTO基础规则（必填、格式）
+        
+        // 2. 调用Rules验证复杂业务逻辑
+        var compatibilityResult = HerbRules.ValidateHerbCompatibility(dto.Items);
+        if (!compatibilityResult.IsValid)
+        {
+            return ServiceResult<PrescriptionDto>.Failure(
+                compatibilityResult.ErrorMessage);
+        }
+
+        // 3. Service编排业务流程
+        var totalDosage = HerbRules.CalculateTotalDosage(dto.Items);
+        // ...
+    }
+}
+```
+
+**关联决策**: Epic #1138 Phase 4 Day 1 Q10
+
 ## 10. 相关文档
 
 - [DTO 设计原则](dto-design-principles.md) - 本项目 DTO 设计规范
@@ -914,6 +997,7 @@ public static IServiceCollection AddConsultationModule(...)
 
 | 版本 | 日期 | 作者 | 变更说明 |
 |------|------|------|---------|
+| 1.4 | 2025-10-11 | Claude Code | 基于Epic #1138 Phase 4 Day 1 Q10决策补充：<br>- 9节 FAQ新增Q11：Rules.cs vs Validator使用场景判断<br>- 明确Rules适用场景（复杂领域逻辑、跨模块共享、纯计算）<br>- 明确Validator适用场景（单字段验证、框架规则、DTO绑定）<br>- 提供命名规范、职责边界表、使用示例<br>关联 [Phase 4 Day 1确认清单](../reports/2025-10-11-phase4-day1-confirmation-checklist.md) |
 | 1.3 | 2025-01-09 | Claude Code | 添加 4.9 DTO 设计规范章节,引用 DTO 设计原则文档 (Issue #1094) |
 | 1.2 | 2025-10-07 | Claude | 基于Issue #1022 Phase 2补充：<br>- 5.3 AutoMapper注册说明（集中 vs 显式）<br>- 5.4 Validator注册说明（自动扫描 vs 显式）<br>- 5.5 常见注册错误与修复<br>- 第8节 迁移指南（分步迁移、检查清单、迁移示例）<br>- 第9节 常见问题FAQ（10个常见问题解答）<br>关联 [Phase 1分析报告](../reports/server-architecture-analysis-2025-10-07.md) |
 | 1.1 | 2025-10-07 | Claude | 新增第4节"Service接口统一设计标准"（基于Issue #1008）：<br>- 4.2 Service接口设计原则（ISP/SRP/YAGNI）<br>- 4.3 标准Service接口结构（6-12方法模板）<br>- 4.4 命名约定（方法/参数/返回类型）<br>- 4.5 分页查询标准<br>- 4.6 软删除标准<br>- 4.7 CancellationToken标准<br>关联 [ADR-004](decisions/ADR-004-service-interface-unified-design-standard.md) |

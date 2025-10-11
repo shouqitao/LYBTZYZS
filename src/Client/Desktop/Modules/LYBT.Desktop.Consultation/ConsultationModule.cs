@@ -22,11 +22,9 @@ namespace LYBT.Desktop.Consultation
             containerRegistry.RegisterSingleton<IConsultationRepository, ConsultationRepository>();
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.MedicalCaseMainViewModel>();
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
 
             // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseMainView>();
             containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
         }
     }

@@ -1,5 +1,4 @@
 ﻿using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Patients.Options;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
 using Microsoft.AspNetCore.Builder;
@@ -33,11 +32,7 @@ namespace LYBT.Module.Patients
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
-            // 注册模块特定的配置(带启动验证)
-            services.AddOptions<PatientModuleOptions>()
-                .Bind(configuration.GetSection("Modules:Patients"))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+            // 模块无特殊配置需求（通用配置在appsettings.json）
 
             return services;
         }

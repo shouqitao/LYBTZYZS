@@ -6,6 +6,7 @@
 ## 最新重点报告（按日期倒序）
 | 日期 | 文档 | 范围 |
 |------|------|------|
+| 2025-10-11 | `2025-10-11-phase4-day1-code-inventory.md` | **Epic #1138 Phase 4 Day 1 代码实现盘点报告** - 16个模块（8 Server + 8 Desktop）完整扫描，识别两团队开发导致的3类差异（⚠️严重不一致：重构遗留/双ViewModel，⚡模式不一致：接口位置/Options配置/组件化架构，💡可优化：功能分级），生成12项待确认问题清单，为Day 2需求文档化与标准统一提供依据 |
 | 2025-01-11 | `issue-1119-desktop-viewmodel-migration-summary.md` | **Epic #1119 Desktop ViewModel迁移完成报告** - 4个Phase全部完成（P0 Bug修复+P1-P3模块迁移+P4验证文档），29个文件修改，6个模块Repository下沉，修复DI容器类型解析失败（Issue #1118），架构测试12/12通过，编译0错误0警告，创建迁移最佳实践与FAQ |
 | 2025-10-09 | `desktop-architecture-optimization-analysis.md` | **Desktop架构优化深度分析报告** - UltraThink 28步分析，识别5个关键架构问题（P0性能问题+P1设计问题），提出彻底模块化重构方案（移除Service层、拆分Desktop.Services、Repository下沉），预期性能提升50%+（Issue #1114）|
 | 2025-10-09 | `desktop-layer-architecture-uniformity-audit.md` | **Desktop 层架构与模块统一程度审查报告** - 四层架构分析（Core/Module/Workstation/Shell），10个模块统一度94.3%，识别4类合理例外，架构测试12/12通过（Issue #1113）|
