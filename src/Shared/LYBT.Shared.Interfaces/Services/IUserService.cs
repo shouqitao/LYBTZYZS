@@ -1,5 +1,6 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Interfaces.Services
 {
@@ -13,12 +14,19 @@ namespace LYBT.Shared.Interfaces.Services
         #region 查询操作
 
         /// <summary>
-        /// 分页获取用户列表
+        /// 分页获取用户列表（Issue #1162: 扩展支持角色和状态筛选）
         /// </summary>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字（可选，搜索用户名/邮箱/真实姓名）</param>
-        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        /// <param name="role">角色筛选（可选）</param>
+        /// <param name="status">状态筛选（可选）</param>
+        Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            UserRole? role = null,
+            CommonStatus? status = null);
 
         /// <summary>
         /// 根据ID获取用户详情
@@ -61,7 +69,19 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult> EnableAsync(Guid id);
 
         /// <summary>
-        /// 重置密码
+        /// 切换用户状态 (Issue #1162)
+        /// </summary>
+        Task<ServiceResult<UserDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 管理员重置密码（Issue #1162: 支持自动生成临时密码）
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <param name="request">重置密码请求</param>
+        Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
+
+        /// <summary>
+        /// 重置密码（向后兼容方法）
         /// </summary>
         Task<ServiceResult> ResetPasswordAsync(Guid id, string newPassword);
 
