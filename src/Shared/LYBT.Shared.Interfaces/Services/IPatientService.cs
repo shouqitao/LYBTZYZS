@@ -37,5 +37,19 @@ namespace LYBT.Shared.Interfaces.Services
         /// 搜索患者
         /// </summary>
         Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 从Excel文件导入患者数据 (Issue #1165)
+        /// </summary>
+        /// <param name="stream">Excel文件流</param>
+        /// <param name="fileName">文件名（可选，用于日志记录）</param>
+        /// <returns>导入结果，包含成功、失败数量和详细错误信息</returns>
+        Task<ServiceResult<ImportResultDto<PatientDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+
+        /// <summary>
+        /// 生成患者导入模板 (Issue #1165)
+        /// </summary>
+        /// <returns>包含示例数据的Excel模板流</returns>
+        MemoryStream GenerateImportTemplate();
     }
 }
