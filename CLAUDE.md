@@ -34,7 +34,7 @@
 - **必读文档**：
   - `README.md`（项目权威概览）
   - `docs/index.md`（文档导航体系）
-  - `docs/development/standards.md`、`docs/development/coding-and-implementation-specification.md`
+  - `docs/development/standards.md`
   - `docs/architecture/server-module-design-standard.md`（Server端模块设计标准）
   - `docs/architecture/client/unified-design-standard.md`（Client端业务模块统一设计标准）
   - `docs/development/minimal-practice.md`（Issue→清单→PR 工作法）

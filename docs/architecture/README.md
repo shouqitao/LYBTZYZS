@@ -19,7 +19,7 @@
 | **[modules/](modules/README.md)** | **模块化设计文档集合** - **Server/Client/Shared层详细设计** |
 
 ## 衔接其他资料
-- **技术标准与规范**：`docs/development/technical-standards.md`
+- **开发标准**：`docs/development/standards.md`
 - 最新架构分析报告：`docs/reports/architecture-analysis-2025-09-25.md`
 - 架构改进建议：`docs/reports/modification-suggestions-2025-09-25.md`
 - 相关任务：参见 `docs/tasks/pending/2025-09-24-all-framework-refactor-task.md`

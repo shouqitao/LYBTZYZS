@@ -9,7 +9,7 @@
 | 分类 | 文档 |
 |------|------|
 | 审计字段 | `audit-field-automation-solution.md`、`audit-field-automation-implementation-summary.md` |
-| 编码规范 | `coding-and-implementation-specification.md`、`entities-naming-standards.md`、`ENUM_CENTRALIZATION_GUIDE.md` |
+| 编码规范 | `standards.md`、`entities-naming-standards.md`、`ENUM_CENTRALIZATION_GUIDE.md` |
 | 测试指南 | `coverage-report-guide.md`、`testing-best-practices.md`、`testing-training-materials.md`、`unit-testing-guide.md` |
 | Desktop 专题 | `Desktop-Layer-Purification-Progress.md`、`Desktop-Prism-8.1.97-Optimization-Plan.md`、`Desktop-UltraThink-Refactoring-2025.md`、`Desktop-UltraThink-Refactoring-Summary.md`、`desktop-code-quality-checklist.md`、`medical-workbench-refactor-plan.md` |
 | Server 专题 | `phase2-session-management-completion-report.md`、`server-testing-architecture-completion-report.md`、`server-tests-coverage-epic-summary.md`、`stylecop-version-evaluation.md` |
