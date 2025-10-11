@@ -1,12 +1,11 @@
 {
   "description": "根目录文件白名单配置 - 仅这些文件/模式被允许存在于项目根目录",
-  "version": "1.0.0",
-  "last_updated": "2025-01-11",
-  
+  "version": "1.0.1",
+  "last_updated": "2025-10-11",
+
   "allowed_files": [
     "README.md",
     "CLAUDE.md",
-    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "LICENSE",
     ".gitignore",
@@ -33,7 +32,6 @@
     ".claude",
     ".config",
     ".githooks",
-    "_governance",
     ".git",
     ".vs",
     ".ai",

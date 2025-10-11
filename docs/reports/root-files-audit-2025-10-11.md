@@ -5,11 +5,11 @@
 
 ## 统计信息
 
-- 根目录文件总数: 16个
-- 根目录目录总数: 12个
-- 白名单文件数: 14个
+- 根目录文件总数: 15个
+- 根目录目录总数: 11个
+- 白名单文件数: 13个
 - 白名单模式数: 1个
-- 允许目录数: 14个
+- 允许目录数: 13个
 - 违规文件数: 0个
 - 违规目录数: 0个
 
@@ -22,7 +22,6 @@
 - .gitattributes
 - .gitignore
 - .runsettings
-- CHANGELOG.md
 - CLAUDE.md
 - CONTRIBUTING.md
 - Directory.Build.props
@@ -54,7 +53,6 @@
 ### 允许的文件
 - `README.md`
 - `CLAUDE.md`
-- `CHANGELOG.md`
 - `CONTRIBUTING.md`
 - `LICENSE`
 - `.gitignore`
@@ -79,7 +77,6 @@
 - `.claude/`
 - `.config/`
 - `.githooks/`
-- `_governance/`
 - `.git/`
 - `.vs/`
 - `.ai/`
@@ -88,5 +85,5 @@
 
 ---
 
-🤖 自动生成于 2025-10-11 15:18:24 UTC+8
+🤖 自动生成于 2025-10-11 15:25:55 UTC+8
 🔧 检查脚本: `scripts/maintenance/check-root-files.ps1`
