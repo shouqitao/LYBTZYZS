@@ -78,7 +78,7 @@
         /// <summary>
         /// 验证剂量合理性
         /// </summary>
-        protected List<string> ValidateDosageReasonableness(IEnumerable<TItem> items)
+        public List<string> ValidateDosageReasonableness(IEnumerable<TItem> items)
         {
             var warnings = new List<string>();
             if (items == null) return warnings;
