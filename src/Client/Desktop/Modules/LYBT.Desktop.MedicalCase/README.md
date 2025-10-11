@@ -46,7 +46,7 @@ dotnet build src\Client\Desktop\Modules\MedicalCase\LYBT.Desktop.MedicalCase.csp
 
 ```csharp
 // MedicalCaseManagementViewModel.cs
-using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.MedicalCase.Interfaces;
 
 public class MedicalCaseManagementViewModel : UnifiedViewModelBase
 {

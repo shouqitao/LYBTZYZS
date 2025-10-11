@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Desktop.Users.Repositories
+namespace LYBT.Desktop.Users.Interfaces
 {
     /// <summary>
     /// 用户数据仓储接口 - Phase 2模块化架构

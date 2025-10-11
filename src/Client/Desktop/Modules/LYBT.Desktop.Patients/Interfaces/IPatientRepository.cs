@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Desktop.Patients.Repositories
+namespace LYBT.Desktop.Patients.Interfaces
 {
     /// <summary>
     /// 患者数据仓储接口 - Phase 2模块化架构

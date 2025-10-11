@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Desktop.Herbs.Repositories
+namespace LYBT.Desktop.Herbs.Interfaces
 {
     /// <summary>
     /// 药材数据仓储接口 - Phase 2模块化架构

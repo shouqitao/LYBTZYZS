@@ -1,5 +1,6 @@
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;

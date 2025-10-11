@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Users.Repositories;
+﻿using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.ViewModels;
 using Prism.Ioc;
 using Prism.Modularity;

@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.Prescriptions.Repositories
+namespace LYBT.Desktop.Prescriptions.Interfaces
 {
     /// <summary>
     /// 处方数据仓储接口 - Phase 2模块化架构

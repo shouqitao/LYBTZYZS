@@ -3,7 +3,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Prism.Commands;

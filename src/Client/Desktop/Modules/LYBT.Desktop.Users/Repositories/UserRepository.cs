@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

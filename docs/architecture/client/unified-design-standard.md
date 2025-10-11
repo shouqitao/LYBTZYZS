@@ -1,9 +1,9 @@
 # Client 端业务模块统一设计标准
 
-> **版本**: 2.1
-> **制定日期**: 2025-01-11
+> **版本**: 2.2
+> **制定日期**: 2025-10-11
 > **适用范围**: Desktop WPF 客户端所有业务模块
-> **关联 Issue**: #1114, #1119, #1118, #1013
+> **关联 Issue**: #1114, #1119, #1118, #1013, #1151
 
 ---
 
@@ -72,8 +72,10 @@ LYBT.Desktop.{ModuleName}/
 │   ├── {Entity}DetailView.xaml         (+ .xaml.cs)
 │   └── {Action}Dialog.xaml             (+ .xaml.cs)
 │
+├── Interfaces/                  🆕 v2.2 模块接口目录
+│   └── I{Entity}Repository.cs  (Repository接口)
+│
 ├── Repositories/                🆕 模块独立数据访问层
-│   ├── I{Entity}Repository.cs  (Repository接口)
 │   └── {Entity}Repository.cs   (Repository实现)
 │
 ├── {ModuleName}Module.cs        ✅ Prism模块注册
@@ -84,9 +86,12 @@ LYBT.Desktop.{ModuleName}/
 - 🆕 **Repositories/** 目录：每个模块拥有独立的数据访问层
 - ❌ **Services/** 目录：已废弃，不再使用Service层
 
+**v2.2 架构调整**：
+- 🆕 **Interfaces/** 目录：Repository接口独立目录，对齐Server端标准
+- ✅ **Repositories/** 目录：仅包含实现类，不再混合接口
+
 ### 2.2 禁止的目录（已废弃）
 
-- ❌ **Interfaces/** - 接口统一在模块的 `Repositories/` 目录
 - ❌ **Mappings/** - AutoMapper配置已废弃（Repository直接返回DTO）
 - ❌ **Services/** - Service层已移除
 
@@ -198,7 +203,7 @@ public XxxViewModel(
 ```csharp
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.{Module}.Repositories;
+using LYBT.Desktop.{Module}.Interfaces;  // v2.2: Repository接口在独立Interfaces目录
 using LYBT.Shared.Models.Contracts.{Module};
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -280,12 +285,12 @@ namespace LYBT.Desktop.{Module}.ViewModels
 
 ## 四、Repository 层设计标准（v2.0）
 
-### 4.1 Repository 实现位置
+### 4.1 Repository 实现位置（v2.2修订）
 
-- **位置**: `Desktop.{Module}/Repositories/{Entity}Repository.cs`
-- **接口**: `Desktop.{Module}/Repositories/I{Entity}Repository.cs`
+- **接口位置**: `Desktop.{Module}/Interfaces/I{Entity}Repository.cs` （v2.2新增独立目录）
+- **实现位置**: `Desktop.{Module}/Repositories/{Entity}Repository.cs`
 - **命名**: `{Entity}Repository` (如 PatientRepository, UserRepository)
-- **原则**: 每个模块拥有独立的Repository，不再集中管理
+- **原则**: 每个模块拥有独立的Repository，接口与实现分离，对齐Server端标准
 
 ### 4.2 构造函数依赖（强制顺序）
 
@@ -381,10 +386,11 @@ public async Task<{Entity}Dto> {Method}Async({Request}Dto dto)
    - ❌ 混用 CreateDto/UpdateDto/Dto 场景
    - ❌ 在Repository中使用AutoMapper（已废弃）
 
-### 4.6 Repository 示例模板（v2.1）
+### 4.6 Repository 示例模板（v2.2修订）
 
 ```csharp
 using LYBT.Desktop.Foundation.Api;
+using LYBT.Desktop.{Module}.Interfaces;  // v2.2: 接口在独立Interfaces目录
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.{Module};
 using Microsoft.Extensions.Logging;
@@ -629,10 +635,10 @@ namespace LYBT.Desktop.{Module}.Views
 - [ ] 使用基类的 `ShowErrorMessageAsync` 等方法显示消息
 - [ ] 重写 `OnNavigatedTo` 时调用 `base.OnNavigatedTo()`
 
-### 7.2 Repository 检查清单（v2.1）
+### 7.2 Repository 检查清单（v2.2修订）
 
-- [ ] 接口定义在模块的 `Repositories/I{Entity}Repository.cs`
-- [ ] 实现类在模块的 `Repositories/{Entity}Repository.cs`
+- [ ] ✅ **v2.2**: 接口定义在模块的 `Interfaces/I{Entity}Repository.cs`
+- [ ] ✅ **v2.2**: 实现类在模块的 `Repositories/{Entity}Repository.cs`
 - [ ] 构造函数依赖顺序符合标准（`IApiClientManager`, `ILogger`）
 - [ ] ✅ **所有方法返回裸类型**（如 `Task<T>`, `Task<PagedResult<T>>`, `Task`）
 - [ ] ✅ **GetPagedAsync使用服务端分页**（通过ApiClient传递PagedQueryBaseDto）
@@ -652,12 +658,12 @@ namespace LYBT.Desktop.{Module}.Views
 - [ ] 使用 `{DynamicResource}` 引用主题资源
 - [ ] 代码后置仅包含 `InitializeComponent()`
 
-### 7.4 目录结构检查清单（v2.0）
+### 7.4 目录结构检查清单（v2.2修订）
 
 - [ ] ✅ 有 `Models/`、`ViewModels/`、`Views/`
-- [ ] ✅ 有 `Repositories/`（包含接口和实现）
+- [ ] ✅ **v2.2**: 有 `Interfaces/`（包含Repository接口）
+- [ ] ✅ 有 `Repositories/`（包含Repository实现）
 - [ ] ✅ 有 `{Module}Module.cs` 和 `README.md`
-- [ ] ❌ 无 `Interfaces/` 目录（接口在Repositories/内）
 - [ ] ❌ 无 `Mappings/` 目录（已废弃）
 - [ ] ❌ 无 `Services/` 目录（已废弃）
 
@@ -688,9 +694,10 @@ mkdir src/Client/Desktop/Modules/LYBT.Desktop.Patients/Repositories
 #### Step 2：迁移Repository接口和实现
 ```csharp
 // 旧位置: Desktop.Services/Repositories/Interfaces/IPatientRepository.cs
-// 新位置: Desktop.Patients/Repositories/IPatientRepository.cs
+// v2.0 位置: Desktop.Patients/Repositories/IPatientRepository.cs
+// v2.2 位置: Desktop.Patients/Interfaces/IPatientRepository.cs （对齐Server端标准）
 
-namespace LYBT.Desktop.Patients.Repositories
+namespace LYBT.Desktop.Patients.Interfaces  // v2.2: 接口独立目录
 {
     public interface IPatientRepository
     {
@@ -725,11 +732,11 @@ protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(...)
     }
 }
 
-// ✅ 新代码（v2.1）
-using LYBT.Desktop.Patients.Repositories;  // ✅ 模块内Repository
+// ✅ 新代码（v2.2）
+using LYBT.Desktop.Patients.Interfaces;  // ✅ v2.2: 接口在独立Interfaces目录
 
 public PatientManagementViewModel(
-    IPatientRepository patientRepository,  // 直接注入Repository
+    IPatientRepository patientRepository,  // 直接注入Repository接口
     ...)
 {
     _patientRepository = patientRepository;
@@ -872,6 +879,7 @@ var updated = await _repository.UpdateAsync(updateDto);
 
 | 版本 | 日期 | 修订内容 | 作者 |
 |------|------|---------|------|
+| 2.2 | 2025-10-11 | **接口位置统一迁移** - Issue #1151 Desktop接口位置对齐Server端标准<br/>- ✅ **Interfaces/ 目录**：Repository接口独立目录（7个模块）<br/>- ✅ **Repositories/ 目录**：仅保留实现类，不再混合接口<br/>- ✅ **架构一致性**：Desktop与Server端接口位置统一<br/>- ✅ **命名空间调整**：`LYBT.Desktop.{Module}.Repositories` → `LYBT.Desktop.{Module}.Interfaces`<br/>- 📦 **影响模块**：Patients, Users, MedicalCase, Consultation, Prescriptions, Herbs, Formula | Claude Code |
 | 2.1 | 2025-01-11 | **架构实现修订** - 基于 Issue #1119 Phase 1-4 实际迁移经验修订（Epic #1119）<br/>- ✅ **Repository 返回裸类型**（非 ServiceResult）<br/>- ✅ **UpdateAsync 方法签名调整**（dto 包含 Id，无需额外参数）<br/>- ✅ **IApiClientManager 替代 HttpClient**（Foundation 层统一API客户端）<br/>- ✅ **异常处理模式**：Repository 抛出异常，UnifiedViewModelBase 捕获<br/>- ✅ 更新所有代码示例、检查清单、迁移指南<br/>- ⚠️ 强调禁止使用 `LYBT.Shared.Interfaces.Services.*`（DI 解析失败） | Claude Code |
 | 2.0 | 2025-01-09 | **重大架构变更** - 移除Service层，实现模块化架构 (Issue #1114)<br/>- ❌ 删除Desktop.Services项目<br/>- ✅ Repository下沉到各模块<br/>- ✅ 新增Desktop.Foundation/Presentation<br/>- ✅ 修复P0性能问题（服务端分页）<br/>- ❌ 废弃AutoMapper<br/>- 更新所有代码模板与检查清单 | Claude Code |
 | 1.1 | 2025-01-09 | 添加 DTO 使用规范章节,引用 DTO 设计原则文档 (Issue #1094) | Claude Code |

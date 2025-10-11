@@ -1,5 +1,6 @@
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;

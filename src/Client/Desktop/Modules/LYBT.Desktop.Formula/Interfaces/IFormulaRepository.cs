@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
-namespace LYBT.Desktop.Formula.Repositories
+namespace LYBT.Desktop.Formula.Interfaces
 {
     /// <summary>
     /// 验方数据仓储接口 - Phase 2模块化架构
