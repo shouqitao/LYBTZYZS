@@ -14,7 +14,8 @@
 - repo/index, repo/grep, symbol/index, dependency/graph, dependency/cycles, ci/config/read, test/coverage/read
 
 ## 产出物
-- docs/architecture/overview.md
+- ~~docs/architecture/overview.md~~（已删除，空占位符无实际价值，见Issue #1145）
+- docs/architecture/README.md（架构索引，已增强）
 - docs/tasks/completed/architecture-audit-report.md
 - 附件：mcp-commands.log（命令与关键输出摘录）
 
