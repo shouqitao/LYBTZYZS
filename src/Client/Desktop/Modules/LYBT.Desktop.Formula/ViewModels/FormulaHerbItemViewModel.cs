@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Components;
 using Microsoft.Extensions.Logging;
