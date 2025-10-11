@@ -29,7 +29,6 @@
 
   <!-- Framework Dependencies -->
   <ItemGroup Label="Framework">
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
@@ -59,9 +58,6 @@
   </ItemGroup>
 
   <!-- Object Mapping -->
-  <ItemGroup Label="Object Mapping">
-    <PackageReference Include="AutoMapper" />
-  </ItemGroup>
 
   <!-- Project References -->
   <ItemGroup Label="Shared Libraries">

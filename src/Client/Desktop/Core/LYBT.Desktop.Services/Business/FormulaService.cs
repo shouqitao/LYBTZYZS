@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using LYBT.Shared.Models.Extensions;
 using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
@@ -18,18 +18,15 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<FormulaService> _logger;
         private readonly IFormulaRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-        private readonly IMapper _mapper;
 
         public FormulaService(
             IFormulaRepository repository,
             ILogger<FormulaService> logger,
-            IExceptionHandler exceptionHandler,
-            IMapper mapper)
+            IExceptionHandler exceptionHandler)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -57,8 +54,8 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建验方: {dto.Name}");
 
-                // 使用 AutoMapper 转换 DTO
-                var formula = _mapper.Map<FormulaDto>(dto);
+                // 使用扩展方法转换 DTO (Issue #1152)
+                var formula = dto.ToDto();
                 formula.Id = Guid.NewGuid();
                 formula.Herbs = new List<FormulaHerbItemDto>(); // Herbs 集合在 Profile 中 Ignore,需手动初始化
 
@@ -74,8 +71,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 使用 AutoMapper 更新字段
-                _mapper.Map(dto, existing);
+                // 使用扩展方法更新字段 (Issue #1152)
+                existing.ApplyUpdate(dto);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<FormulaDto>.Success(updated);

@@ -1,10 +1,10 @@
 ﻿using System.Windows.Input;
-using AutoMapper;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -23,7 +23,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 私有字段
 
         private readonly IPatientRepository _patientRepository;
-        private readonly IMapper _mapper;
         private readonly IPrescriptionPrintService _printService;
 
         private Guid _patientId;
@@ -97,7 +96,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientDetailViewModel(
             IPatientRepository patientRepository,
-            IMapper mapper,
             IPrescriptionPrintService printService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -107,7 +105,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
             // 初始化命令
@@ -210,8 +207,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 IsLoading = true;
 
-                // Phase 2: 映射到UpdateDto后更新
-                var updateDto = _mapper.Map<PatientUpdateDto>(Patient);
+                // Phase 2: 使用扩展方法映射到UpdateDto后更新 (Issue #1152)
+                var updateDto = Patient.ToUpdateDto();
                 var updatedPatient = await _patientRepository.UpdateAsync(updateDto);
 
                 if (updatedPatient != null)

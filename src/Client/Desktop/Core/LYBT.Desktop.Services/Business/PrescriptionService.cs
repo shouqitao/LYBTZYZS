@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using LYBT.Shared.Models.Extensions;
 using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
@@ -18,18 +18,15 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<PrescriptionService> _logger;
         private readonly IPrescriptionRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-        private readonly IMapper _mapper;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
             ILogger<PrescriptionService> logger,
-            IExceptionHandler exceptionHandler,
-            IMapper mapper)
+            IExceptionHandler exceptionHandler)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -81,8 +78,8 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建处方: 患者ID={dto.PatientId}");
 
-                // 使用 AutoMapper 转换 DTO
-                var prescription = _mapper.Map<PrescriptionDto>(dto);
+                // 使用扩展方法转换 DTO (Issue #1152)
+                var prescription = dto.ToDto();
                 prescription.Id = Guid.NewGuid();
                 prescription.Items = new List<PrescriptionItemDto>(); // Items 集合在 Profile 中 Ignore,需手动初始化
 
