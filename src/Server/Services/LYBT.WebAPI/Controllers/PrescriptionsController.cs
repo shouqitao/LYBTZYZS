@@ -252,6 +252,47 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+
+        /// <summary>
+        /// 克隆处方 - 复制处方作为新处方 (Issue #1167)
+        /// </summary>
+        /// <param name="id">原处方ID</param>
+        /// <returns>新创建的处方副本</returns>
+        [HttpPost("{id}/copy")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> CopyPrescription(Guid id)
+        {
+            try
+            {
+                var validation = ValidateGuid<PrescriptionDto>(id, "处方ID");
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                var result = await _service.CloneAsync(id);
+                
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<PrescriptionDto>(
+                        result.ErrorMessage ?? "处方不存在", 
+                        ApiErrorCodes.PRESCRIPTIONNOTFOUND);
+                }
+
+                // 记录操作日志
+                LogOperation("克隆处方", 
+                    new { OriginalId = id, NewId = result.Data.Id }, 
+                    result.Data.Id);
+
+                return Success(result.Data, "处方克隆成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "克隆处方", id);
+            }
+        }
+
         #endregion
     }
 }
