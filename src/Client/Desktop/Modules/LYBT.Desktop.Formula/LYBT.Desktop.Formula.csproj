@@ -80,6 +80,7 @@
   <ItemGroup Label="Shared Libraries">
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Components\LYBT.Shared.Components.csproj" />
   </ItemGroup>
 
 </Project>
