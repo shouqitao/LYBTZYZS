@@ -4,7 +4,7 @@
 **创建日期**: 2025-10-09
 **灵感来源**: [SuperClaude Framework](https://github.com/SuperClaude-Org/SuperClaude_Framework)
 
-本目录包含27个专业化的slash命令，用于提升LYBTZYZS项目的AI辅助开发效率。
+本目录包含25个专业化的slash命令，用于提升LYBTZYZS项目的AI辅助开发效率。
 
 ---
 
@@ -18,6 +18,7 @@
 | `/code-review` | 代码质量审查 | 代码审查、质量检查 |
 | `/analyze-complexity` | 复杂度分析 | 识别需要简化的代码 |
 | `/analyze-dependencies` | 依赖关系分析 | 检测循环依赖、违规依赖 |
+| `/code-rabbit` | CodeRabbit评审处理 | 处理CodeRabbit评审意见 |
 
 ### ⚡ 性能与安全（Performance & Security）
 
@@ -65,12 +66,14 @@
 | `/create-issue` | 创建Issue | 标准化Issue创建 |
 | `/generate-pr` | 生成PR描述 | 自动生成PR描述 |
 | `/sprint-summary` | Sprint总结 | 生成周期总结报告 |
+| `/re-init` | 更新项目规范 | 同步CLAUDE.md规范到项目 |
 
 ### 💡 通用助手（General Assistant）
 
 | 命令 | 描述 | 使用场景 |
 |------|------|---------|
 | `/ask` | 智能问答 | 项目相关问题解答 |
+| `/prompt` | 复杂提示处理 | 处理带@引用的复杂提示 |
 
 ---
 
@@ -135,7 +138,7 @@
 
 | 特性 | SuperClaude | LYBTZYZS |
 |------|-------------|----------|
-| **Slash命令数** | 25个 | 27个 ✅ |
+| **Slash命令数** | 25个 | 25个 ✅ |
 | **行为模式** | 7种 | 7种 ✅ |
 | **MCP服务器** | 8个 | 8个 ✅ |
 | **AI代理** | 15个 | 通过命令实现 ✅ |
