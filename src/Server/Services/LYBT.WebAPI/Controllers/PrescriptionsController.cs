@@ -28,15 +28,22 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取处方列表 - 支持分页和查询
+        /// 获取处方列表 - 支持分页和查询（Issue #1163: 扩展日期范围筛选）
         /// </summary>
+        /// <param name="page">页码</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键字</param>
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
         [HttpGet]
         [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
         [OutputCache(PolicyName = "PrescriptionsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<PrescriptionDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
+            [FromQuery] string? keyword = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             try
             {
@@ -45,12 +52,12 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<PrescriptionDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var pagedResult = await _service.GetPagedAsync(page, pageSize, keyword);
+                var pagedResult = await _service.GetPagedAsync(page, pageSize, keyword, startDate, endDate);
                 return HandlePagedServiceResult(pagedResult, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<PrescriptionDto>(ex, "获取处方列表", new { page, pageSize, keyword });
+                return HandleExceptionPaged<PrescriptionDto>(ex, "获取处方列表", new { page, pageSize, keyword, startDate, endDate });
             }
         }
 
@@ -176,5 +183,75 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "删除处方", id);
             }
         }
+
+        #region Issue #1163: 新增功能
+
+        /// <summary>
+        /// 生成处方编号 (Issue #1163)
+        /// </summary>
+        [HttpGet("generate-no")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        public async Task<ActionResult<ApiResponse<string>>> GeneratePrescriptionNo()
+        {
+            try
+            {
+                var result = await _service.GeneratePrescriptionNoAsync();
+                return HandleServiceResult(result, "生成成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<string>(ex, "生成处方编号");
+            }
+        }
+
+        /// <summary>
+        /// 获取处方统计数据 (Issue #1163)
+        /// </summary>
+        [HttpGet("statistics")]
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionMainStatisticsDto>), 200)]
+        public async Task<ActionResult<ApiResponse<PrescriptionMainStatisticsDto>>> GetStatistics()
+        {
+            try
+            {
+                var result = await _service.GetStatisticsAsync();
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionMainStatisticsDto>(ex, "获取处方统计");
+            }
+        }
+
+        /// <summary>
+        /// 获取日期范围统计 (Issue #1163)
+        /// </summary>
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
+        [HttpGet("statistics/range")]
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionRangeStatisticsDto>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<PrescriptionRangeStatisticsDto>>> GetRangeStatistics(
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                if (startDate > endDate)
+                {
+                    return ValidationFail<PrescriptionRangeStatisticsDto>("开始日期不能晚于结束日期");
+                }
+
+                var result = await _service.GetRangeStatisticsAsync(startDate, endDate);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionRangeStatisticsDto>(ex, "获取日期范围统计", new { startDate, endDate });
+            }
+        }
+
+        #endregion
     }
 }

@@ -507,4 +507,42 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("完成数")]
         public int CompletedCount { get; set; }
     }
+
+    /// <summary>
+    /// 处方主页统计DTO (Issue #1163)
+    /// 为Desktop端PrescriptionsMainViewModel提供统计数据
+    /// </summary>
+    public class PrescriptionMainStatisticsDto
+    {
+        /// <summary>总处方数</summary>
+        [DisplayName("总处方数")]
+        public int TotalCount { get; set; }
+
+        /// <summary>今日处方数</summary>
+        [DisplayName("今日处方数")]
+        public int TodayCount { get; set; }
+
+        /// <summary>今日总金额</summary>
+        [DisplayName("今日总金额")]
+        public decimal TodayTotalAmount { get; set; }
+    }
+
+    /// <summary>
+    /// 处方日期范围统计DTO (Issue #1163)
+    /// 为Desktop端提供日期范围统计数据
+    /// </summary>
+    public class PrescriptionRangeStatisticsDto
+    {
+        /// <summary>处方数量</summary>
+        [DisplayName("处方数量")]
+        public int Count { get; set; }
+
+        /// <summary>总金额</summary>
+        [DisplayName("总金额")]
+        public decimal TotalAmount { get; set; }
+
+        /// <summary>平均金额</summary>
+        [DisplayName("平均金额")]
+        public decimal AvgAmount { get; set; }
+    }
 }
