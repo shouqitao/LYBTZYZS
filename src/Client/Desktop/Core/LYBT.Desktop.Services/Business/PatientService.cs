@@ -1,9 +1,9 @@
-﻿using AutoMapper;
-using LYBT.Desktop.Services.Exceptions;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Business
@@ -17,18 +17,15 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<PatientService> _logger;
         private readonly IPatientRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-        private readonly IMapper _mapper;
 
         public PatientService(
             IPatientRepository repository,
             ILogger<PatientService> logger,
-            IExceptionHandler exceptionHandler,
-            IMapper mapper)
+            IExceptionHandler exceptionHandler)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -81,8 +78,8 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建患者: {dto.Name}");
 
-                // 使用 AutoMapper 转换 DTO
-                var patient = _mapper.Map<PatientDto>(dto);
+                // 使用扩展方法转换 DTO (Issue #1152)
+                var patient = dto.ToDto();
                 patient.Id = Guid.NewGuid();
 
                 var created = await _repository.CreateAsync(patient);
@@ -97,8 +94,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 使用 AutoMapper 更新字段
-                _mapper.Map(dto, existing);
+                // 使用扩展方法更新字段 (Issue #1152)
+                existing.ApplyUpdate(dto);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<PatientDto>.Success(updated);

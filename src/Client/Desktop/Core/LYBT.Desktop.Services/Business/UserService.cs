@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using LYBT.Desktop.Services.Exceptions;
+﻿using LYBT.Desktop.Services.Exceptions;
 using LYBT.Desktop.Services.Repositories.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Services.Business
@@ -19,18 +19,15 @@ namespace LYBT.Desktop.Services.Business
         private readonly ILogger<UserService> _logger;
         private readonly IUserRepository _repository;
         private readonly IExceptionHandler _exceptionHandler;
-        private readonly IMapper _mapper;
 
         public UserService(
             IUserRepository repository,
             ILogger<UserService> logger,
-            IExceptionHandler exceptionHandler,
-            IMapper mapper)
+            IExceptionHandler exceptionHandler)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         #region 查询操作
@@ -82,8 +79,8 @@ namespace LYBT.Desktop.Services.Business
             {
                 _logger.LogInformation($"创建用户: {dto.Username}");
 
-                // 使用 AutoMapper 转换 DTO
-                var user = _mapper.Map<UserDto>(dto);
+                // 使用扩展方法转换 DTO (Issue #1152)
+                var user = dto.ToDto();
                 user.Id = Guid.NewGuid();
 
                 // TODO: 密码处理应该在Repository或更底层处理
@@ -101,8 +98,8 @@ namespace LYBT.Desktop.Services.Business
                 // 先获取现有数据
                 var existing = await _repository.GetByIdAsync(id);
 
-                // 使用 AutoMapper 更新字段 (Profile 中已配置条件更新)
-                _mapper.Map(dto, existing);
+                // 使用扩展方法更新字段 (Issue #1152 - 条件更新逻辑已在扩展方法中实现)
+                existing.ApplyUpdate(dto);
 
                 var updated = await _repository.UpdateAsync(existing);
                 return ServiceResult<UserDto>.Success(updated);
