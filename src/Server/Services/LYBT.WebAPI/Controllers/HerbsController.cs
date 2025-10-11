@@ -30,15 +30,20 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取药材分页列表
+        /// 获取药材分页列表（Issue #1164: 扩展支持分类筛选）
         /// </summary>
+        /// <param name="page">页码</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键字</param>
+        /// <param name="category">分类筛选</param>
         [HttpGet]
         [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         [OutputCache(PolicyName = "HerbsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<HerbDto>>>> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? category = null)
         {
             try
             {
@@ -47,12 +52,12 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFailPaged<HerbDto>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var result = await _herbService.GetPagedAsync(page, pageSize, keyword);
+                var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
                 return HandlePagedServiceResult(result, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<HerbDto>(ex, "获取药材列表", new { page, pageSize, keyword });
+                return HandleExceptionPaged<HerbDto>(ex, "获取药材列表", new { page, pageSize, keyword, category });
             }
         }
 

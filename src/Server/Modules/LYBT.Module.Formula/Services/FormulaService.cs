@@ -27,16 +27,29 @@ namespace LYBT.Module.Formula.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
             try
             {
                 // 使用优化后的查询方法，包含Herbs集合
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
+                
+                // Issue #1164: 应用分类筛选（MVP阶段内存过滤，Formula实体有Category字段）
+                var filteredItems = pagedResult.Items.AsEnumerable();
+                
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    filteredItems = filteredItems.Where(f => 
+                        !string.IsNullOrEmpty(f.Category) && 
+                        f.Category.Contains(category, StringComparison.OrdinalIgnoreCase));
+                }
+                
+                var filteredList = filteredItems.ToList();
+                
                 var dto = new PagedResult<FormulaDto>
                 {
-                    Items = _mapper.Map<List<FormulaDto>>(pagedResult.Items),
-                    TotalCount = pagedResult.TotalCount,
+                    Items = _mapper.Map<List<FormulaDto>>(filteredList),
+                    TotalCount = !string.IsNullOrWhiteSpace(category) ? filteredList.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
