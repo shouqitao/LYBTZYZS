@@ -46,5 +46,20 @@ namespace LYBT.Shared.Interfaces.Services
         /// 克隆验方 - 复制验方并创建新实例
         /// </summary>
         Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
+
+        /// <summary>
+        /// 从Excel文件导入验方数据 (Issue #1166)
+        /// </summary>
+        Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+
+        /// <summary>
+        /// 导出验方数据到Excel (Issue #1166)
+        /// </summary>
+        Task<MemoryStream> ExportAsync(string? category = null);
+
+        /// <summary>
+        /// 生成验方导入模板 (Issue #1166)
+        /// </summary>
+        MemoryStream GenerateImportTemplate();
     }
 }
