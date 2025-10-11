@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup Label="Office and File Processing">
     <!-- Excel 处理 -->
+    <PackageVersion Include="EPPlus" Version="7.5.2" />
     <PackageVersion Include="NPOI" Version="2.7.4" />
   </ItemGroup>
   <ItemGroup Label="Code Analysis and Quality">

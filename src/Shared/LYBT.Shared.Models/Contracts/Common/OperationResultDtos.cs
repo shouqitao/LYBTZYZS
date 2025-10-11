@@ -116,6 +116,37 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
+    /// 导入结果DTO泛型版 - 用于数据导入操作的结果（支持返回导入的数据）
+    /// Issue #1165: 患者批量导入功能
+    /// </summary>
+    /// <typeparam name="T">导入数据的类型</typeparam>
+    public class ImportResultDto<T> : ImportResultDto
+    {
+        /// <summary>导入的数据列表</summary>
+        [DisplayName("导入数据")]
+        public List<T> ImportedData { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 导入行错误DTO - 用于记录Excel导入时具体行的错误
+    /// Issue #1165: 患者批量导入功能
+    /// </summary>
+    public class ImportRowErrorDto
+    {
+        /// <summary>Excel行号（从1开始，1为表头）</summary>
+        [DisplayName("行号")]
+        public int Row { get; set; }
+
+        /// <summary>错误消息</summary>
+        [DisplayName("错误消息")]
+        public string Error { get; set; } = string.Empty;
+
+        /// <summary>字段名（可选）</summary>
+        [DisplayName("字段名")]
+        public string? FieldName { get; set; }
+    }
+
+    /// <summary>
     /// 导出结果DTO - 用于数据导出操作的结果
     /// </summary>
     public class ExportResultDto : OperationResultDto
