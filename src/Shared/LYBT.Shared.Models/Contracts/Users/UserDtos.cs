@@ -297,5 +297,34 @@ namespace LYBT.Shared.Models.Contracts.Users
         public string? Bio { get; set; }
     }
 
+    /// <summary>
+    /// 管理员重置密码请求DTO (Issue #1162)
+    /// </summary>
+    public class ResetPasswordRequestDto
+    {
+        /// <summary>新密码（可选，不提供则自动生成临时密码）</summary>
+        [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
+        [DisplayName("新密码")]
+        public string? NewPassword { get; set; }
+
+        /// <summary>是否强制用户下次登录时修改密码</summary>
+        [DisplayName("强制修改密码")]
+        public bool MustChangeOnNextLogin { get; set; } = true;
+    }
+
+    /// <summary>
+    /// 管理员重置密码响应DTO (Issue #1162)
+    /// </summary>
+    public class ResetPasswordResponseDto
+    {
+        /// <summary>操作是否成功</summary>
+        [DisplayName("成功")]
+        public bool Success { get; set; }
+
+        /// <summary>临时密码（自动生成时返回）</summary>
+        [DisplayName("临时密码")]
+        public string TemporaryPassword { get; set; } = string.Empty;
+    }
+
     #endregion
 }
