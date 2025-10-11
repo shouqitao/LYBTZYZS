@@ -1,5 +1,11 @@
 ﻿---
-allowed-tools: Bash, Read, Write, LS, Task
+category: workflow
+complexity: medium
+allowed-tools: [Bash, Read, Write, LS, Task]
+mcp-servers: []
+agents: [test-runner]
+outputs: [test-results]
+modes: [testing]
 ---
 
 # Run Tests

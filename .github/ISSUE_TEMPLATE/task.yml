@@ -1,0 +1,203 @@
+name: Task Issue
+description: 创建可独立执行的Task(通常关联某个Epic)
+title: "feat|fix|refactor|test|docs: "
+labels: ["status: todo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Task创建指南
+        
+        Task是最小可交付单元,单个Task工期建议≤8小时。创建Task时请遵循以下原则:
+        
+        - **单一职责**: 每个Task只完成一个明确功能
+        - **独立可验收**: 必须有清晰的验收标准
+        - **模块化标签**: 必须包含type+module标签
+        
+        **必读文档**:
+        - [Issue工作流](.claude/core/WORKFLOW.md)
+        - [标签体系](docs/development/github-labels-guide.md)
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task类型
+      description: 选择Task的类型(会自动添加对应标签)
+      options:
+        - feature (新功能)
+        - bug (Bug修复)
+        - refactor (重构)
+        - test (测试)
+        - documentation (文档)
+        - security (安全)
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 所属模块
+      description: Task主要涉及的模块
+      options:
+        - server (后端API)
+        - desktop (WPF客户端)
+        - shared (共享模型)
+        - tests (测试项目)
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task描述
+      description: 详细说明要做什么
+      placeholder: |
+        **目标**: 实现用户登录API端点
+        
+        **背景**: 用户认证模块的核心功能
+        
+        **技术要点**:
+        - 使用JWT令牌
+        - 密码加密存储
+        - 验证用户名/密码正确性
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: 验收标准 (AC)
+      description: Task完成的定义(必须可测试、可量化)
+      placeholder: |
+        - [ ] POST /api/v1/auth/login 接口可调用
+        - [ ] 验证用户名密码正确性
+        - [ ] 返回JWT令牌(有效期24小时)
+        - [ ] 单元测试覆盖率 ≥80%
+        - [ ] API文档已更新
+      value: |
+        - [ ] 功能实现完成
+        - [ ] 单元测试通过
+        - [ ] 代码审查通过
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 优先级
+      description: 根据SLA选择优先级
+      options:
+        - P0 (24小时)
+        - P1 (3天)
+        - P2 (1周)
+        - P3 (灵活)
+      default: 1
+    validations:
+      required: true
+
+  - type: input
+    id: epic-link
+    attributes:
+      label: 关联Epic (可选)
+      description: 如果Task属于某个Epic,填写Epic Issue编号
+      placeholder: "#200"
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 依赖关系 (可选)
+      description: Task的前置依赖与后续依赖
+      placeholder: |
+        **前置Task**: 
+        - #123 (用户实体创建) - 必须先完成
+        
+        **后续Task**:
+        - #125 (用户权限验证) - 依赖本Task
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: 实现要点 (可选)
+      description: 技术实现的关键信息
+      placeholder: |
+        **文件位置**:
+        - Controller: `src/Server/Services/LYBT.WebAPI/Controllers/AuthController.cs`
+        - Service: `src/Server/Business/LYBT.Services/Auth/AuthService.cs`
+        
+        **关键逻辑**:
+        - 使用`BCrypt`加密密码
+        - JWT配置参考`appsettings.json`
+        
+        **注意事项**:
+        - 禁止使用`ServiceLocator`模式
+        - 异步方法必须使用`async/await`
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: 工期估算
+      description: Task预计耗时
+      options:
+        - 1-2小时 (XS)
+        - 2-4小时 (S)
+        - 4-8小时 (M)
+        - 需要拆分 (>8小时)
+      default: 2
+
+  - type: checkboxes
+    id: tech-compliance
+    attributes:
+      label: 技术合规检查
+      description: 确认实现符合LYBT技术标准
+      options:
+        - label: 不使用黑名单技术(Redis/CQRS/Docker/微服务/GraphQL/消息队列)
+          required: true
+        - label: 遵循三层架构(Server)或四层MVVM(Desktop)
+          required: true
+        - label: 依赖注入仅用构造函数注入
+          required: true
+        - label: 异步方法正确使用async/await
+          required: true
+        - label: 文件编码使用UTF-8 with BOM
+          required: true
+        - label: 单文件代码≤500行(超过需拆分)
+          required: true
+
+  - type: checkboxes
+    id: quality-checklist
+    attributes:
+      label: 质量检查清单
+      description: 代码提交前必须完成
+      options:
+        - label: 代码已格式化(`dotnet format`)
+        - label: 单元测试已添加并通过
+        - label: 代码注释完整(中文)
+        - label: 文档已同步更新
+        - label: 无编译警告
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🚀 下一步操作
+        
+        1. **创建Task后**:
+           - Task会自动添加`status: todo`标签
+           - 开始工作时添加`status: in-progress`标签
+        
+        2. **Task执行中**:
+           - 基于Issue建分支: `git checkout -b {type}/{issue-number}-{brief-desc}`
+           - 提交信息包含Issue编号: `{type}: {description} (#123)`
+        
+        3. **Task完成时**:
+           - 创建PR并引用Issue: `Fixes #123`
+           - PR合并后Task自动关闭并添加`status: done`标签
+        
+        **参考命令**:
+        - `/code-review` - 代码审查
+        - `/generate-tests` - 生成单元测试
+        - `/generate-pr` - 生成PR描述
+        - `/update-docs` - 更新文档

@@ -1,5 +1,9 @@
 ﻿---
-allowed-tools: Bash, Read, LS
+category: workflow
+complexity: medium
+allowed-tools: [Bash, Read, LS]
+mcp-servers: [filesystem, git]
+outputs: [loaded-context]
 ---
 
 # Prime Context

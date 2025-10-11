@@ -1,0 +1,198 @@
+name: Epic Issue
+description: 创建大型功能Epic,包含多个子Task
+title: "Epic: "
+labels: ["type:epic", "status: todo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Epic创建指南
+        
+        Epic用于跟踪大型功能开发,通常包含4-10个子Task。创建Epic后,请使用`/epic-parse`命令自动拆解为Task Issues。
+        
+        **必读文档**:
+        - [Issue工作流](.claude/core/WORKFLOW.md)
+        - [标签体系](docs/development/github-labels-guide.md)
+        - [最小实践](docs/development/minimal-practice.md)
+
+  - type: input
+    id: epic-name
+    attributes:
+      label: Epic名称
+      description: 简洁的Epic标识(用于epic:标签)
+      placeholder: "例如: user-auth, performance-opt"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Epic描述
+      description: 详细说明Epic的目标与背景
+      placeholder: |
+        **业务背景**: 为什么需要这个功能?
+        **目标用户**: 谁会使用这个功能?
+        **核心价值**: 解决什么问题?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 功能范围
+      description: 明确Epic的边界(做什么/不做什么)
+      placeholder: |
+        **核心功能**:
+        - [ ] 功能点1
+        - [ ] 功能点2
+        
+        **排除项** (明确不做):
+        - ❌ 超出MVP的功能X
+        - ❌ 依赖外部系统Y
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 优先级
+      description: 根据SLA选择优先级
+      options:
+        - P0 (24小时)
+        - P1 (3天)
+        - P2 (1周)
+        - P3 (灵活)
+      default: 1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: modules
+    attributes:
+      label: 涉及模块
+      description: 勾选Epic涉及的模块
+      options:
+        - label: Server (后端API)
+        - label: Desktop (WPF客户端)
+        - label: Shared (共享模型)
+        - label: Tests (单元/集成测试)
+
+  - type: textarea
+    id: tech-approach
+    attributes:
+      label: 技术方案概要
+      description: 高层架构设计(可选,详细方案见PRD)
+      placeholder: |
+        **架构模式**: 三层架构 / MVVM
+        **核心技术**: EF Core / Prism / xUnit
+        **关键接口**:
+        - POST /api/v1/resource
+        - IRepository<T>
+      value: |
+        > 💡 提示: 复杂方案建议先创建PRD文档(使用`/prd-new`命令),然后在此引用
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Epic验收标准
+      description: Epic完成的定义(所有子Task完成+整体验收)
+      placeholder: |
+        - [ ] 所有子Task已完成并关闭
+        - [ ] 集成测试通过(覆盖率 ≥80%)
+        - [ ] API文档已更新
+        - [ ] 用户手册已更新
+        - [ ] 性能指标达标(响应时间<500ms)
+        - [ ] 安全扫描通过(无高危漏洞)
+      value: |
+        - [ ] 所有子Task已完成并关闭
+        - [ ] 集成测试通过
+        - [ ] 文档已同步更新
+    validations:
+      required: true
+
+  - type: input
+    id: prd-link
+    attributes:
+      label: PRD文档链接
+      description: 关联的PRD文档路径(可选)
+      placeholder: "docs/requirements/epic-name.md"
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 依赖关系
+      description: Epic的前置依赖与后续依赖
+      placeholder: |
+        **前置依赖**:
+        - Epic #100 (用户认证模块)
+        - Task #200 (数据库迁移)
+        
+        **后续依赖** (依赖本Epic的工作):
+        - Epic #300 (权限管理)
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: 风险与缓解
+      description: 识别Epic的潜在风险
+      placeholder: |
+        | 风险 | 影响 | 概率 | 缓解措施 |
+        |------|------|------|----------|
+        | 性能瓶颈 | 高 | 中 | 提前进行性能测试,优化查询 |
+        | API兼容性 | 中 | 低 | 遵循版本控制规范,保留向后兼容 |
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: 工期估算
+      description: Epic预计总工期
+      options:
+        - 1-3天
+        - 3-7天
+        - 1-2周
+        - 2-4周
+        - 1个月以上
+      default: 2
+
+  - type: checkboxes
+    id: tech-compliance
+    attributes:
+      label: 技术合规检查
+      description: 确认方案符合LYBT技术标准
+      options:
+        - label: 不使用黑名单技术(Redis/CQRS/Docker/微服务/GraphQL/消息队列)
+          required: true
+        - label: 遵循三层架构(Server)或四层MVVM(Desktop)
+          required: true
+        - label: 依赖注入仅用构造函数注入
+          required: true
+        - label: 异步方法正确使用async/await
+          required: true
+        - label: 符合MVP范围,无私自扩展功能
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🚀 下一步操作
+        
+        1. **创建Epic后**:
+           - 使用`/epic-parse`命令拆解为Task Issues
+           - 或手动创建Task Issues并添加`epic:{epic-name}`标签
+        
+        2. **Epic执行中**:
+           - 使用`/epic-sync`命令同步Epic状态
+           - 定期检查Task进度与阻塞项
+        
+        3. **Epic完成时**:
+           - 确保所有验收标准已满足
+           - 运行`/epic-sync`更新最终状态
+           - Epic会自动关闭(当所有Task完成时)
+        
+        **参考命令**:
+        - `/prd-new` - 创建PRD文档
+        - `/epic-parse` - 拆解Epic为Task
+        - `/epic-sync` - 同步Epic状态
+        - `/issue-progress` - 查看进度仪表盘

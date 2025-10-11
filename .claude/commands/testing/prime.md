@@ -1,5 +1,11 @@
 ﻿---
-allowed-tools: Bash, Read, Write, LS
+category: workflow
+complexity: complex
+allowed-tools: [Bash, Read, Write, LS]
+mcp-servers: [filesystem]
+agents: [test-runner]
+outputs: [test-config]
+modes: [testing]
 ---
 
 # Prime Testing Environment

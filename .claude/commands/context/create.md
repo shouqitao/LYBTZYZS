@@ -1,5 +1,9 @@
 ﻿---
-allowed-tools: Bash, Read, Write, LS
+category: workflow
+complexity: complex
+allowed-tools: [Bash, Read, Write, LS]
+mcp-servers: [filesystem, git]
+outputs: [context-files]
 ---
 
 # Create Initial Context
