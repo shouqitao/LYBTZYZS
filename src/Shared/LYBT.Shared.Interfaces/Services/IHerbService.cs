@@ -4,14 +4,18 @@ using LYBT.Shared.Models.Contracts.Herbs;
 namespace LYBT.Shared.Interfaces.Services
 {
     /// <summary>
-    /// 药材服务接口 - 简化版，只包含基础CRUD
+    /// 药材服务接口 - 简化版，包含基础CRUD和分类筛选
     /// </summary>
     public interface IHerbService
     {
         /// <summary>
-        /// 分页查询药材
+        /// 分页查询药材（Issue #1164: 扩展支持分类筛选）
         /// </summary>
-        Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        /// <param name="page">页码</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键字</param>
+        /// <param name="category">分类筛选（可选）</param>
+        Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
         /// 根据ID获取药材详情

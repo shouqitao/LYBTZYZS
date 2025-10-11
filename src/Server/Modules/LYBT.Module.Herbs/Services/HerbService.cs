@@ -28,15 +28,26 @@ namespace LYBT.Module.Herbs.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
             try
             {
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                var dtos = _mapper.Map<List<HerbDto>>(pagedResult.Items);
+                
+                // Issue #1164: 应用分类筛选（在DTO级别过滤）
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    dtos = dtos.Where(h => 
+                        !string.IsNullOrEmpty(h.Category) && 
+                        h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                }
+                
                 var dto = new PagedResult<HerbDto>
                 {
-                    Items = _mapper.Map<List<HerbDto>>(pagedResult.Items),
-                    TotalCount = pagedResult.TotalCount,
+                    Items = dtos,
+                    TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
