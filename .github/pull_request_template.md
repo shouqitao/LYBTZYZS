@@ -35,6 +35,21 @@
 - [ ] 相关测试通过
 - [ ] 文档已同步更新
 
+## 📁 文件位置检查
+
+<!-- 确保所有文件都在正确的目录位置 -->
+- [ ] 所有新增文件位于正确目录（docs/scripts/src/tests）
+- [ ] 根目录无新增临时文件（参考白名单：`.config/root-files-whitelist.json`）
+- [ ] 已检查.gitignore覆盖临时文件模式
+- [ ] Pre-commit hook检查通过（如未通过请说明原因）
+
+**文件位置规范提醒**：
+- 📄 文档 → `docs/` 对应子目录
+- 🔧 脚本 → `scripts/` 对应子目录
+- 📊 报告 → `docs/reports/`
+- 🖼️ 截图 → `docs/assets/screenshots/`
+- ⚙️ 配置 → `.config/` 或 `config/`
+
 ## 编译与测试验证
 
 <!-- 粘贴编译和测试命令及结果 -->

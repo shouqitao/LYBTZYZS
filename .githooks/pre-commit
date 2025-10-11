@@ -1,61 +1,117 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Pre-commit Hook - 根目录文件检查
+# 防止临时文件、文档、脚本等污染项目根目录
 
-# Run documentation normalization before commit
+set -e
 
-run_pwsh() {
-  if command -v pwsh >/dev/null 2>&1; then
-    pwsh -NoLogo -NoProfile -File scripts/fix-cn-titles.ps1 -Root .
-    pwsh -NoLogo -NoProfile -File scripts/clean-module-readmes.ps1 -Root .
+# 颜色定义
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
-    # Detect touched modules and only enforce/fill for those
-    changed=$(git diff --cached --name-only | tr '\r' '\n' | sed '/^$/d')
-    server_mods=$(echo "$changed" | awk -F/ '/^src\/Server\/Modules\// {print $4}' | sort -u)
-    client_mods=$(echo "$changed" | awk -F/ '/^src\/Client\/Desktop\/Modules\// {print $6}' | sort -u)
+# 白名单配置文件路径
+WHITELIST_FILE=".config/root-files-whitelist.json"
 
-    # Enforce structure only for touched module directories
-    for m in $server_mods; do
-      [ -n "$m" ] && pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Server/Modules/$m"
-    done
-    for m in $client_mods; do
-      [ -n "$m" ] && pwsh -NoLogo -NoProfile -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m"
-    done
-
-    # Fill API/Refs only for touched modules
-    modules_list=""
-    for m in $server_mods; do [ -n "$m" ] && modules_list+=" $m"; done
-    for m in $client_mods; do [ -n "$m" ] && modules_list+=" $m"; done
-    if [ -n "$modules_list" ]; then
-      pwsh -NoLogo -NoProfile -File scripts/fill-module-readme-api.ps1 -Modules $modules_list
-    fi
-    return 0
-  elif command -v powershell >/dev/null 2>&1; then
-    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-cn-titles.ps1 -Root .
-    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-module-readmes.ps1 -Root .
-
-    $changed = git diff --cached --name-only | Out-String
-    $serverMods = ($changed -split "`n" | Where-Object { $_ -match '^src/Server/Modules/' } | ForEach-Object { ($_ -split '/') [3] } | Sort-Object -Unique)
-    $clientMods = ($changed -split "`n" | Where-Object { $_ -match '^src/Client/Desktop/Modules/' } | ForEach-Object { ($_ -split '/') [5] } | Sort-Object -Unique)
-
-    foreach ($m in $serverMods) { if ($m) { powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root "src/Server/Modules/$m" } }
-    foreach ($m in $clientMods) { if ($m) { powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ensure-module-readme-structure.ps1 -Root "src/Client/Desktop/Modules/$m" } }
-
-    $modules = @(); if ($serverMods) { $modules += $serverMods }; if ($clientMods) { $modules += $clientMods }
-    if ($modules.Count -gt 0) {
-      powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fill-module-readme-api.ps1 -Modules $modules
-    }
-    return 0
-  else
-    echo "PowerShell not found; skipping docs normalization." >&2
-    return 0
-  fi
-}
-
-run_pwsh
-
-# Re-stage changed markdown files if any
-if ! git diff --quiet -- '**/*.md'; then
-  git add **/*.md || true
+# 检查白名单配置是否存在
+if [ ! -f "$WHITELIST_FILE" ]; then
+    echo -e "${RED}错误: 白名单配置文件不存在: $WHITELIST_FILE${NC}"
+    exit 1
 fi
 
+# 读取白名单配置（使用jq或python，优先jq）
+if command -v jq &> /dev/null; then
+    # 使用jq解析JSON
+    ALLOWED_FILES=$(jq -r '.allowed_files[]' "$WHITELIST_FILE" 2>/dev/null || echo "")
+    ALLOWED_PATTERNS=$(jq -r '.allowed_patterns[]' "$WHITELIST_FILE" 2>/dev/null || echo "")
+    ALLOWED_DIRS=$(jq -r '.allowed_dirs[]' "$WHITELIST_FILE" 2>/dev/null || echo "")
+    BLOCKED_PATTERNS=$(jq -r '.blocked_patterns[]' "$WHITELIST_FILE" 2>/dev/null || echo "")
+elif command -v python &> /dev/null; then
+    # 使用python解析JSON（支持python3或python，明确指定UTF-8编码）
+    PYTHON_CMD="python"
+    ALLOWED_FILES=$(python -c "import json; config=json.load(open('$WHITELIST_FILE', 'r', encoding='utf-8')); print('\n'.join(config['allowed_files']))" 2>/dev/null || echo "")
+    ALLOWED_PATTERNS=$(python -c "import json; config=json.load(open('$WHITELIST_FILE', 'r', encoding='utf-8')); print('\n'.join(config['allowed_patterns']))" 2>/dev/null || echo "")
+    ALLOWED_DIRS=$(python -c "import json; config=json.load(open('$WHITELIST_FILE', 'r', encoding='utf-8')); print('\n'.join(config['allowed_dirs']))" 2>/dev/null || echo "")
+    BLOCKED_PATTERNS=$(python -c "import json; config=json.load(open('$WHITELIST_FILE', 'r', encoding='utf-8')); print('\n'.join(config['blocked_patterns']))" 2>/dev/null || echo "")
+else
+    echo -e "${YELLOW}警告: 未找到jq或python，跳过根目录检查${NC}"
+    exit 0
+fi
+
+# 获取本次提交新增或修改的根目录文件（不包括子目录）
+STAGED_ROOT_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -v "/" | grep -v "^\." || true)
+
+if [ -z "$STAGED_ROOT_FILES" ]; then
+    # 没有根目录文件变更，直接通过
+    exit 0
+fi
+
+# 检查违规文件
+VIOLATIONS=()
+
+for file in $STAGED_ROOT_FILES; do
+    IS_ALLOWED=false
+    
+    # 检查是否在精确白名单中
+    if echo "$ALLOWED_FILES" | grep -Fxq "$file"; then
+        IS_ALLOWED=true
+        continue
+    fi
+    
+    # 检查是否匹配允许的模式
+    for pattern in $ALLOWED_PATTERNS; do
+        # 转换glob模式为正则（简化版）
+        regex_pattern=$(echo "$pattern" | sed 's/\*/.*/')
+        if echo "$file" | grep -qE "^${regex_pattern}$"; then
+            IS_ALLOWED=true
+            break
+        fi
+    done
+    
+    if [ "$IS_ALLOWED" = false ]; then
+        # 检查是否匹配禁止模式
+        for blocked in $BLOCKED_PATTERNS; do
+            # 移除开头的/
+            blocked_clean=$(echo "$blocked" | sed 's|^/||')
+            # 转换glob为正则
+            regex_blocked=$(echo "$blocked_clean" | sed 's/\*/.*/')
+            if echo "$file" | grep -qE "^${regex_blocked}$"; then
+                VIOLATIONS+=("$file")
+                break
+            fi
+        done
+        
+        # 如果不在禁止列表，但也不在允许列表，仍然标记为违规
+        if [ "$IS_ALLOWED" = false ]; then
+            VIOLATIONS+=("$file")
+        fi
+    fi
+done
+
+# 如果有违规文件，拒绝提交
+if [ ${#VIOLATIONS[@]} -gt 0 ]; then
+    echo -e "${RED}========================================${NC}"
+    echo -e "${RED}❌ 提交被拒绝: 检测到根目录违规文件${NC}"
+    echo -e "${RED}========================================${NC}"
+    echo ""
+    echo -e "${YELLOW}以下文件不应该在项目根目录：${NC}"
+    for violation in "${VIOLATIONS[@]}"; do
+        echo -e "  ${RED}✗${NC} $violation"
+    done
+    echo ""
+    echo -e "${GREEN}请将文件移动到正确的位置：${NC}"
+    echo -e "  📄 文档 → ${GREEN}docs/${NC} 对应子目录"
+    echo -e "  🔧 脚本 → ${GREEN}scripts/${NC} 对应子目录"
+    echo -e "  📊 报告 → ${GREEN}docs/reports/${NC}"
+    echo -e "  🖼️ 截图 → ${GREEN}docs/assets/screenshots/${NC}"
+    echo -e "  ⚙️ 配置 → ${GREEN}.config/${NC} 或 ${GREEN}config/${NC}"
+    echo ""
+    echo -e "${YELLOW}根目录白名单配置：$WHITELIST_FILE${NC}"
+    echo -e "${YELLOW}查看规范：docs/development/file-organization-guidelines.md${NC}"
+    echo ""
+    exit 1
+fi
+
+# 所有检查通过
+echo -e "${GREEN}✓ 根目录文件检查通过${NC}"
 exit 0
