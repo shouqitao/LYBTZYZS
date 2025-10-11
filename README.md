@@ -281,7 +281,7 @@ dotnet format LYBT.All.sln
 
 - [系统架构设计](docs/architecture/system-architecture-design.md)
 - [功能模块设计](docs/architecture/functional-modules-design.md)
-- [技术标准规范](docs/development/technical-standards.md)
+- [开发标准](docs/development/standards.md)
 - [开发指南](docs/development/development-guide.md)
 - [API文档](docs/api/)
 - [需求文档](docs/requirements/)

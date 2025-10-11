@@ -264,7 +264,6 @@ var filteredTypes = types.Where(t =>
 - [Server模块设计标准](../server-module-design-standard.md)
 - [开发标准](../../development/standards.md)
 - [测试指南](../../development/testing-guide.md)
-- [编码规范](../../development/coding-and-implementation-specification.md)
 
 ## 更新历史
 
