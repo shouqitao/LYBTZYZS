@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Consultation.Repositories;
+﻿using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Desktop.Consultation.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
 

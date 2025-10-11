@@ -46,7 +46,7 @@ dotnet build src\Client\Desktop\Modules\Users\LYBT.Desktop.Users.csproj
 
 ```csharp
 // UserManagementViewModel.cs
-using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 
 public class UserManagementViewModel : UnifiedViewModelBase
 {

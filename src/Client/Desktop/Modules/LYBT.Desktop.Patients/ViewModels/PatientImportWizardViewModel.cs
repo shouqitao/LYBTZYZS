@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Patients.Repositories;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

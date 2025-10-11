@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.MedicalCase.Repositories
+namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
     /// 医疗案例数据仓储接口 - Phase 2模块化架构

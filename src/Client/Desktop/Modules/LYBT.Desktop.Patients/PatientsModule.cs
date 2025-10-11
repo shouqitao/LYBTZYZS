@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Patients.Repositories;
+﻿using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
 

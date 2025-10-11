@@ -46,7 +46,7 @@ dotnet build src\Client\Desktop\Modules\Prescriptions\LYBT.Desktop.Prescriptions
 
 ```csharp
 // PrescriptionManagementViewModel.cs
-using LYBT.Desktop.Prescriptions.Repositories;
+using LYBT.Desktop.Prescriptions.Interfaces;
 
 public class PrescriptionManagementViewModel : UnifiedViewModelBase
 {

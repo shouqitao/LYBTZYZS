@@ -46,7 +46,7 @@ dotnet build src\Client\Desktop\Modules\Herbs\LYBT.Desktop.Herbs.csproj
 
 ```csharp
 // HerbManagementViewModel.cs
-using LYBT.Desktop.Herbs.Repositories;
+using LYBT.Desktop.Herbs.Interfaces;
 
 public class HerbManagementViewModel : UnifiedViewModelBase
 {

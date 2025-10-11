@@ -46,7 +46,7 @@ dotnet build src\Client\Desktop\Modules\Formula\LYBT.Desktop.Formula.csproj
 
 ```csharp
 // FormulaManagementViewModel.cs
-using LYBT.Desktop.Formula.Repositories;
+using LYBT.Desktop.Formula.Interfaces;
 
 public class FormulaManagementViewModel : UnifiedViewModelBase
 {

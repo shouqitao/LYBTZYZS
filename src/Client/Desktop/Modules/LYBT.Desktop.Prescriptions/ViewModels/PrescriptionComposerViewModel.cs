@@ -2,8 +2,8 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
-using LYBT.Desktop.Prescriptions.Repositories;
-using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

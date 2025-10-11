@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Desktop.Consultation.Repositories
+namespace LYBT.Desktop.Consultation.Interfaces
 {
     /// <summary>
     /// 诊疗数据仓储接口 - Phase 2模块化架构

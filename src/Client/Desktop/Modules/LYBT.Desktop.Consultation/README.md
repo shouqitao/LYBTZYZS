@@ -47,7 +47,7 @@ dotnet build src\Client\Desktop\Modules\Consultation\LYBT.Desktop.Consultation.c
 
 ```csharp
 // ConsultationManagementViewModel.cs
-using LYBT.Desktop.Consultation.Repositories;
+using LYBT.Desktop.Consultation.Interfaces;
 
 public class ConsultationManagementViewModel : UnifiedViewModelBase
 {

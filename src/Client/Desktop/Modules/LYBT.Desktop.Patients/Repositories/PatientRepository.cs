@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Services.Http;
+﻿using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Services.Http;
 using LYBT.Desktop.Services.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
