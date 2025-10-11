@@ -41,5 +41,20 @@ namespace LYBT.Shared.Interfaces.Services
         /// 搜索药材 - 支持多条件搜索
         /// </summary>
         Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
+
+        /// <summary>
+        /// 从Excel文件导入药材数据 (Issue #1166)
+        /// </summary>
+        Task<ServiceResult<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+
+        /// <summary>
+        /// 导出药材数据到Excel (Issue #1166)
+        /// </summary>
+        Task<MemoryStream> ExportAsync(string? category = null);
+
+        /// <summary>
+        /// 生成药材导入模板 (Issue #1166)
+        /// </summary>
+        MemoryStream GenerateImportTemplate();
     }
 }

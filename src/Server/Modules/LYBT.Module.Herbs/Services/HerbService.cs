@@ -4,7 +4,9 @@ using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using OfficeOpenXml;
 
 namespace LYBT.Module.Herbs.Services
 {
@@ -142,6 +144,262 @@ namespace LYBT.Module.Herbs.Services
             {
                 _logger.LogError(ex, "搜索药材失败: {Keyword}", keyword);
                 return ServiceResult<List<HerbDto>>.Failure("搜索药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 从Excel文件导入药材数据 (Issue #1166)
+        /// </summary>
+        public async Task<ServiceResult<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        {
+            var result = new ImportResultDto<HerbDto>
+            {
+                FileName = fileName,
+                ImportTime = DateTime.Now
+            };
+
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                using var package = new ExcelPackage(stream);
+                var worksheet = package.Workbook.Worksheets.FirstOrDefault();
+
+                if (worksheet == null)
+                {
+                    result.IsSuccess = false;
+                    result.Message = "Excel文件中没有工作表";
+                    return ServiceResult<ImportResultDto<HerbDto>>.Failure("Excel文件格式错误");
+                }
+
+                var rowCount = worksheet.Dimension?.Rows ?? 0;
+                if (rowCount <= 1)
+                {
+                    result.IsSuccess = false;
+                    result.Message = "Excel文件中没有数据行";
+                    return ServiceResult<ImportResultDto<HerbDto>>.Success(result);
+                }
+
+                result.TotalCount = rowCount - 1;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    try
+                    {
+                        var name = worksheet.Cells[row, 1].Text?.Trim();
+                        var unit = worksheet.Cells[row, 2].Text?.Trim();
+                        var priceText = worksheet.Cells[row, 3].Text?.Trim();
+                        var origin = worksheet.Cells[row, 4].Text?.Trim();
+                        var spec = worksheet.Cells[row, 5].Text?.Trim();
+                        var effect = worksheet.Cells[row, 6].Text?.Trim();
+                        var usage = worksheet.Cells[row, 7].Text?.Trim();
+                        var remark = worksheet.Cells[row, 8].Text?.Trim();
+
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = $"第{row}行",
+                                ErrorMessage = "药材名称不能为空"
+                            });
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(unit))
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = $"第{row}行",
+                                ErrorMessage = "单位不能为空"
+                            });
+                            continue;
+                        }
+
+                        if (!decimal.TryParse(priceText, out var price) || price <= 0)
+                        {
+                            result.FailureCount++;
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = $"第{row}行",
+                                ErrorMessage = "单价格式错误或必须大于0"
+                            });
+                            continue;
+                        }
+
+                        var herb = new Herb
+                        {
+                            Name = name,
+                            Unit = unit,
+                            Price = price,
+                            Origin = origin,
+                            Spec = spec,
+                            Effect = effect,
+                            Usage = usage,
+                            Remark = remark,
+                            Status = CommonStatus.Enabled,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        var savedHerb = await _repository.AddAsync(herb);
+                        var herbDto = _mapper.Map<HerbDto>(savedHerb);
+
+                        result.SuccessCount++;
+                        result.SuccessfulIds.Add(savedHerb.Id);
+                        result.ImportedData.Add(herbDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        {
+                            RecordIdentifier = $"第{row}行",
+                            ErrorMessage = $"导入失败：{ex.Message}"
+                        });
+                        _logger.LogError(ex, "导入第{Row}行时发生错误", row);
+                    }
+                }
+
+                result.IsSuccess = true;
+                result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+
+                return ServiceResult<ImportResultDto<HerbDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入药材数据时发生错误");
+                result.IsSuccess = false;
+                result.Message = $"导入失败：{ex.Message}";
+                return ServiceResult<ImportResultDto<HerbDto>>.Failure($"导入失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导出药材数据到Excel (Issue #1166)
+        /// </summary>
+        public async Task<MemoryStream> ExportAsync(string? category = null)
+        {
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                var herbs = await _repository.GetAllAsync();
+                var herbDtos = _mapper.Map<List<HerbDto>>(herbs);
+
+                // 应用分类筛选
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    herbDtos = herbDtos.Where(h =>
+                        !string.IsNullOrEmpty(h.Category) &&
+                        h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                }
+
+                var stream = new MemoryStream();
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("药材列表");
+
+                    // 表头
+                    worksheet.Cells[1, 1].Value = "药材名称";
+                    worksheet.Cells[1, 2].Value = "单位";
+                    worksheet.Cells[1, 3].Value = "单价";
+                    worksheet.Cells[1, 4].Value = "产地";
+                    worksheet.Cells[1, 5].Value = "规格";
+                    worksheet.Cells[1, 6].Value = "功效";
+                    worksheet.Cells[1, 7].Value = "用法用量";
+                    worksheet.Cells[1, 8].Value = "备注";
+
+                    using (var range = worksheet.Cells[1, 1, 1, 8])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // 数据行
+                    for (int i = 0; i < herbDtos.Count; i++)
+                    {
+                        var herb = herbDtos[i];
+                        int row = i + 2;
+
+                        worksheet.Cells[row, 1].Value = herb.Name;
+                        worksheet.Cells[row, 2].Value = herb.Unit;
+                        worksheet.Cells[row, 3].Value = herb.Price;
+                        worksheet.Cells[row, 4].Value = herb.Origin;
+                        worksheet.Cells[row, 5].Value = herb.Spec;
+                        worksheet.Cells[row, 6].Value = herb.Effect;
+                        worksheet.Cells[row, 7].Value = herb.Usage;
+                        worksheet.Cells[row, 8].Value = herb.Remark;
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+                    package.Save();
+                }
+
+                stream.Position = 0;
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导出药材数据时发生错误");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 生成药材导入模板 (Issue #1166)
+        /// </summary>
+        public MemoryStream GenerateImportTemplate()
+        {
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                var stream = new MemoryStream();
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("药材信息");
+
+                    // 表头
+                    worksheet.Cells[1, 1].Value = "药材名称*";
+                    worksheet.Cells[1, 2].Value = "单位*";
+                    worksheet.Cells[1, 3].Value = "单价*";
+                    worksheet.Cells[1, 4].Value = "产地";
+                    worksheet.Cells[1, 5].Value = "规格";
+                    worksheet.Cells[1, 6].Value = "功效";
+                    worksheet.Cells[1, 7].Value = "用法用量";
+                    worksheet.Cells[1, 8].Value = "备注";
+
+                    using (var range = worksheet.Cells[1, 1, 1, 8])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // 示例数据
+                    worksheet.Cells[2, 1].Value = "人参";
+                    worksheet.Cells[2, 2].Value = "克";
+                    worksheet.Cells[2, 3].Value = 5.0;
+                    worksheet.Cells[2, 4].Value = "吉林";
+                    worksheet.Cells[2, 5].Value = "特级";
+                    worksheet.Cells[2, 6].Value = "大补元气，复脉固脱";
+                    worksheet.Cells[2, 7].Value = "3-9克";
+                    worksheet.Cells[2, 8].Value = "贵重药材";
+
+                    worksheet.Cells.AutoFitColumns();
+                    package.Save();
+                }
+
+                stream.Position = 0;
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "生成导入模板时发生错误");
+                throw;
             }
         }
     }
