@@ -1,7 +1,9 @@
 ﻿using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Repositories;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace LYBT.Desktop.Users.Repositories
 {
@@ -76,16 +78,36 @@ namespace LYBT.Desktop.Users.Repositories
             return base.SearchAsync(keyword);
         }
 
+        /// <summary>
+        /// 获取所有医生用户（Desktop端本地筛选实现）
+        /// Issue #1155 - 使用本地角色筛选替代不存在的Server API
+        /// </summary>
         public async Task<List<UserDto>> GetDoctorsAsync()
         {
             try
             {
-                var result = await _apiService.GetAsync<List<UserDto>>($"{_endpoint}/doctors");
-                return result ?? new List<UserDto>();
+                _logger.LogDebug("获取所有医生用户");
+
+                // 调用现有接口获取所有用户（第1页，100条，足够覆盖小诊所全部用户）
+                var result = await GetPagedAsync(1, 100, null);
+
+                if (result?.Items == null)
+                {
+                    _logger.LogWarning("获取用户列表失败或返回空");
+                    return new List<UserDto>();
+                }
+
+                // Desktop端本地筛选：角色=医生 && 状态=启用
+                var doctors = result.Items
+                    .Where(u => u.Role == UserRole.Doctor && u.Status == CommonStatus.Enabled)
+                    .ToList();
+
+                _logger.LogInformation("成功获取{Count}名医生用户", doctors.Count);
+                return doctors;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting doctors");
+                _logger.LogError(ex, "获取医生用户列表时发生异常");
                 return new List<UserDto>();
             }
         }

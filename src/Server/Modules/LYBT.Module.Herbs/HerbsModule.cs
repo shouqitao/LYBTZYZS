@@ -1,5 +1,4 @@
 ﻿using LYBT.Module.Herbs.Interfaces;
-using LYBT.Module.Herbs.Options;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
 using Microsoft.AspNetCore.Builder;
@@ -33,11 +32,7 @@ namespace LYBT.Module.Herbs
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
-            // 注册模块特定的配置(带启动验证)
-            services.AddOptions<HerbModuleOptions>()
-                .Bind(configuration.GetSection("Modules:Herbs"))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+            // 模块无特殊配置需求（通用配置在appsettings.json）
 
             return services;
         }
