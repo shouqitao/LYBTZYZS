@@ -29,18 +29,41 @@ namespace LYBT.Module.Prescriptions.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
         {
             try
             {
                 // 使用优化后的查询方法，包含Items集合
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
+
+                // Issue #1163: 应用日期范围筛选（MVP阶段内存过滤）
+                var filteredItems = pagedResult.Items.AsEnumerable();
+
+                if (startDate.HasValue)
+                {
+                    filteredItems = filteredItems.Where(p => p.CreatedAt >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    // 结束日期包含当天全部（到23:59:59）
+                    var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                    filteredItems = filteredItems.Where(p => p.CreatedAt <= endOfDay);
+                }
+
+                var filteredList = filteredItems.ToList();
+
                 var dto = new PagedResult<PrescriptionDto>
                 {
-                    Items = _mapper.Map<List<PrescriptionDto>>(pagedResult.Items),
-                    TotalCount = pagedResult.TotalCount,
-                    CurrentPage = pagedResult.CurrentPage,
-                    PageSize = pagedResult.PageSize
+                    Items = _mapper.Map<List<PrescriptionDto>>(filteredList),
+                    TotalCount = startDate.HasValue || endDate.HasValue ? filteredList.Count : pagedResult.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
                 };
                 return ServiceResult<PagedResult<PrescriptionDto>>.Success(dto);
             }
@@ -275,5 +298,134 @@ namespace LYBT.Module.Prescriptions.Services
 
             return sb.ToString();
         }
+
+        #region Issue #1163: 新增功能
+
+        /// <summary>
+        /// 生成处方编号 (Issue #1163)
+        /// 格式：RX + YYYYMMDD + 4位序号
+        /// </summary>
+        public async Task<ServiceResult<string>> GeneratePrescriptionNoAsync()
+        {
+            try
+            {
+                var today = DateTime.Now.ToString("yyyyMMdd");
+                var prefix = "RX";
+
+                // MVP阶段：简单数据库计数方案
+                // 注意：高并发场景需要使用 Redis 计数器或数据库序列
+                var allPrescriptions = await _repository.GetAllAsync();
+                var todayPrescriptions = allPrescriptions
+                    .Where(p => p.CreatedAt.Date == DateTime.Today)
+                    .ToList();
+
+                var sequence = todayPrescriptions.Count + 1;
+                var prescriptionNo = $"{prefix}{today}{sequence:D4}";
+
+                _logger.LogInformation("生成处方编号: {PrescriptionNo}", prescriptionNo);
+                return ServiceResult<string>.Success(prescriptionNo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "生成处方编号失败");
+                return ServiceResult<string>.Failure("生成处方编号失败");
+            }
+        }
+
+        /// <summary>
+        /// 获取处方统计数据 (Issue #1163)
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionMainStatisticsDto>> GetStatisticsAsync()
+        {
+            try
+            {
+                var allPrescriptions = await _repository.GetAllAsync();
+                var today = DateTime.Today;
+
+                // 包含处方项以计算金额
+                var todayPrescriptionsWithItems = new List<PrescriptionEntity>();
+                foreach (var p in allPrescriptions.Where(p => p.CreatedAt.Date == today))
+                {
+                    var withItems = await _repository.GetByIdWithItemsAsync(p.Id);
+                    if (withItems != null)
+                        todayPrescriptionsWithItems.Add(withItems);
+                }
+
+                // 计算今日总金额
+                decimal todayTotalAmount = 0;
+                foreach (var prescription in todayPrescriptionsWithItems)
+                {
+                    var itemsTotal = (prescription.Items ?? [])
+                        .Sum(item => item.UnitPrice * item.Quantity * prescription.DosageCount);
+                    todayTotalAmount += itemsTotal * prescription.Discount;
+                }
+
+                var statistics = new PrescriptionMainStatisticsDto
+                {
+                    TotalCount = allPrescriptions.Count(),
+                    TodayCount = todayPrescriptionsWithItems.Count,
+                    TodayTotalAmount = todayTotalAmount
+                };
+
+                return ServiceResult<PrescriptionMainStatisticsDto>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取处方统计失败");
+                return ServiceResult<PrescriptionMainStatisticsDto>.Failure("获取处方统计失败");
+            }
+        }
+
+        /// <summary>
+        /// 获取日期范围统计 (Issue #1163)
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // 结束日期包含当天全部
+                var endOfDay = endDate.Date.AddDays(1).AddTicks(-1);
+
+                var rangePrescriptions = allPrescriptions
+                    .Where(p => p.CreatedAt >= startDate && p.CreatedAt <= endOfDay)
+                    .ToList();
+
+                // 包含处方项以计算金额
+                var prescriptionsWithItems = new List<PrescriptionEntity>();
+                foreach (var p in rangePrescriptions)
+                {
+                    var withItems = await _repository.GetByIdWithItemsAsync(p.Id);
+                    if (withItems != null)
+                        prescriptionsWithItems.Add(withItems);
+                }
+
+                // 计算总金额
+                decimal totalAmount = 0;
+                foreach (var prescription in prescriptionsWithItems)
+                {
+                    var itemsTotal = (prescription.Items ?? [])
+                        .Sum(item => item.UnitPrice * item.Quantity * prescription.DosageCount);
+                    totalAmount += itemsTotal * prescription.Discount;
+                }
+
+                var statistics = new PrescriptionRangeStatisticsDto
+                {
+                    Count = prescriptionsWithItems.Count,
+                    TotalAmount = totalAmount,
+                    AvgAmount = prescriptionsWithItems.Count > 0 ? totalAmount / prescriptionsWithItems.Count : 0
+                };
+
+                return ServiceResult<PrescriptionRangeStatisticsDto>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取日期范围统计失败");
+                return ServiceResult<PrescriptionRangeStatisticsDto>.Failure("获取日期范围统计失败");
+            }
+        }
+
+        #endregion
     }
 }
