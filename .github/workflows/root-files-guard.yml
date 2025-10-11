@@ -1,0 +1,229 @@
+name: Root Directory Guard
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    # 每周日 00:00 UTC (北京时间周日08:00)
+    - cron: '0 0 * * 0'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  check-root-files:
+    name: 检查根目录文件规范
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write      # 用于提交审计报告
+      pull-requests: write # 用于PR评论
+      issues: write        # 用于创建Issue
+
+    steps:
+      - name: Checkout代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史用于趋势分析
+
+      - name: 设置PowerShell Core
+        shell: pwsh
+        run: |
+          Write-Host "✓ PowerShell版本: $($PSVersionTable.PSVersion)" -ForegroundColor Green
+          Write-Host "✓ 操作系统: $($PSVersionTable.OS)" -ForegroundColor Green
+
+      - name: 运行根目录检查脚本
+        id: check
+        shell: pwsh
+        run: |
+          # 设置输出颜色支持
+          $env:TERM = "xterm-256color"
+
+          # 运行检查脚本
+          try {
+            & ./scripts/maintenance/check-root-files.ps1 -GenerateReport:$true
+            $exitCode = $LASTEXITCODE
+
+            # 设置输出变量
+            echo "result=$exitCode" >> $env:GITHUB_OUTPUT
+
+            if ($exitCode -ne 0) {
+              echo "violations=true" >> $env:GITHUB_OUTPUT
+              Write-Host "::warning::发现根目录违规文件" -ForegroundColor Yellow
+            } else {
+              echo "violations=false" >> $env:GITHUB_OUTPUT
+            }
+
+            exit $exitCode
+          } catch {
+            Write-Host "::error::检查脚本执行失败: $($_.Exception.Message)" -ForegroundColor Red
+            exit 1
+          }
+        continue-on-error: true
+
+      - name: 读取审计报告
+        if: always()
+        id: read-report
+        shell: pwsh
+        run: |
+          $reportFile = Get-ChildItem -Path "./docs/reports" -Filter "root-files-audit-*.md" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if ($reportFile) {
+            $reportContent = Get-Content $reportFile.FullName -Raw -Encoding UTF8
+
+            # 转义特殊字符用于GitHub Actions
+            $reportContent = $reportContent -replace '%', '%25'
+            $reportContent = $reportContent -replace '\n', '%0A'
+            $reportContent = $reportContent -replace '\r', '%0D'
+
+            # 截取前3000字符（GitHub限制）
+            if ($reportContent.Length -gt 3000) {
+              $reportContent = $reportContent.Substring(0, 3000) + "`n`n... (报告过长，已截断，完整报告见文件)"
+            }
+
+            # 写入环境变量
+            "report<<EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding UTF8
+            Get-Content $reportFile.FullName -Raw -Encoding UTF8 | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding UTF8
+            "EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding UTF8
+
+            echo "report_file=$($reportFile.Name)" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: PR评论 - 检查结果
+        if: github.event_name == 'pull_request' && steps.check.outputs.violations == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report = `${{ steps.read-report.outputs.report }}`;
+            const comment = `## ❌ 根目录文件检查失败
+
+            检测到根目录违规文件，请根据以下报告进行清理：
+
+            ${report}
+
+            ---
+
+            ### 📋 清理指南
+
+            1. **文档类** → \`docs/\` 对应子目录
+            2. **脚本类** → \`scripts/\` 对应子目录
+            3. **报告类** → \`docs/reports/\`
+            4. **截图类** → \`docs/assets/screenshots/\`
+            5. **配置类** → \`.config/\` 或 \`config/\`
+
+            **白名单配置**: \`.config/root-files-whitelist.json\`
+            **检查脚本**: \`scripts/maintenance/check-root-files.ps1\`
+
+            🔧 **Pre-commit hook** 会在本地自动检查，建议先修复后再推送。
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: PR评论 - 检查通过
+        if: github.event_name == 'pull_request' && steps.check.outputs.violations == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `## ✅ 根目录文件检查通过
+
+            所有文件均符合白名单规范，根目录整洁！
+
+            📊 **检查报告**: \`${{ steps.read-report.outputs.report_file }}\`
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: 创建Issue报告异常（定时任务）
+        if: github.event_name == 'schedule' && steps.check.outputs.violations == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report = `${{ steps.read-report.outputs.report }}`;
+            const issueTitle = `[自动检测] 根目录发现违规文件 - ${new Date().toISOString().split('T')[0]}`;
+            const issueBody = `## 📋 每周审计发现异常
+
+            定时检查发现根目录存在违规文件，请及时清理。
+
+            ${report}
+
+            ---
+
+            ### 🔧 处理步骤
+
+            1. 本地运行检查脚本查看详情：
+               \`\`\`powershell
+               pwsh scripts/maintenance/check-root-files.ps1
+               \`\`\`
+
+            2. 根据报告建议移动文件到正确位置
+
+            3. 提交更改并关闭本Issue
+
+            ### 📚 参考文档
+
+            - 白名单配置: \`.config/root-files-whitelist.json\`
+            - 文件组织规范: \`docs/development/file-organization-guidelines.md\`
+            - Pre-commit hook: \`.githooks/pre-commit\`
+
+            ---
+            🤖 自动生成于 ${new Date().toISOString()}
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['type:maintenance', 'priority:p2']
+            });
+
+      - name: 提交审计报告到仓库（定时任务）
+        if: github.event_name == 'schedule'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # 添加审计报告
+          git add docs/reports/root-files-audit-*.md
+
+          # 检查是否有变更
+          if git diff --staged --quiet; then
+            echo "无新的审计报告需要提交"
+          else
+            git commit -m "docs(reports): 每周根目录审计报告 [skip ci]
+
+            🤖 自动生成的每周审计报告
+
+            Generated with GitHub Actions
+            Co-Authored-By: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+            git push
+          fi
+
+      - name: 上传审计报告为Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: root-files-audit-report
+          path: docs/reports/root-files-audit-*.md
+          retention-days: 90
+
+      - name: 检查失败处理
+        if: steps.check.outputs.result != '0'
+        run: |
+          echo "::error::根目录检查失败，发现违规文件"
+          exit 1
