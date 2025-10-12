@@ -40,24 +40,80 @@
                        Margin="0,3,0,0" />
         </StackPanel>
 
-        <!-- WebAPI 状态指示器 -->
+        <!-- WebAPI 状态指示器 - Issue #1243 优化 -->
         <Border Grid.Row="2"
                 Background="#F5F5F5"
                 CornerRadius="4"
                 Padding="12,8"
                 HorizontalAlignment="Stretch">
-            <StackPanel Orientation="Horizontal">
-                <!-- 状态指示圆点 -->
-                <Ellipse Width="8" Height="8"
-                         Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
-                         VerticalAlignment="Center"
-                         Margin="0,0,8,0" />
-                <!-- 状态文本 -->
-                <TextBlock Text="{Binding ApiStatusMessage}"
-                           FontSize="12"
-                           Foreground="#666"
-                           VerticalAlignment="Center" />
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 状态显示区域 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!-- 状态指示圆点 -->
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,8,0" />
+                    <!-- 状态文本 -->
+                    <TextBlock Text="{Binding ApiStatusMessage}"
+                               FontSize="12"
+                               Foreground="#666"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="280" />
+                </StackPanel>
+
+                <!-- 重试按钮 - Issue #1243 -->
+                <Button Grid.Column="1"
+                        Content="重试连接"
+                        FontSize="11"
+                        Padding="10,4"
+                        Margin="8,0,0,0"
+                        Background="#2E86AB"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Command="{Binding RetryHealthCheckCommand}"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <!-- 默认隐藏 -->
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="3"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#1F5F99" />
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter Property="Background" Value="#CCCCCC" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <!-- 当 ApiStatus 为 Unhealthy 时显示 -->
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ApiStatus}" Value="2">
+                                    <!-- ApiHealthStatus.Unhealthy = 2 -->
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
         </Border>
 
         <!-- 用户名输入 -->

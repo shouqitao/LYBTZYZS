@@ -49,6 +49,11 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
+            // Issue #1243: 初始化重试健康检查命令
+            RetryHealthCheckCommand = new DelegateCommand(
+                async () => await CheckApiHealthAsyncSafe(),
+                () => ApiStatus != ApiHealthStatus.Checking);
+
             // Issue #861: 在后台线程加载保存的用户名
             _ = Task.Run(async () =>
             {
@@ -60,11 +65,19 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         /// <summary>
         /// 安全启动健康检查(fire-and-forget)
+        /// Issue #1243: 支持用户手动重试
         /// </summary>
         private async Task CheckApiHealthAsyncSafe()
         {
             try
             {
+                // Issue #1243: 设置检查中状态
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Checking;
+                    ApiStatusMessage = "正在检查连接...";
+                });
+
                 await CheckApiHealthAsync();
             }
             catch (Exception ex)
@@ -148,7 +161,14 @@ namespace LYBT.Desktop.Auth.ViewModels
         public ApiHealthStatus ApiStatus
         {
             get => _apiStatus;
-            set => SetProperty(ref _apiStatus, value);
+            set
+            {
+                if (SetProperty(ref _apiStatus, value))
+                {
+                    // Issue #1243: 状态改变时刷新重试命令的可执行状态
+                    (RetryHealthCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public string ApiStatusMessage
@@ -162,6 +182,11 @@ namespace LYBT.Desktop.Auth.ViewModels
         #region Commands
 
         public ICommand LoginCommand { get; }
+
+        /// <summary>
+        /// 重试健康检查命令 - Issue #1243
+        /// </summary>
+        public ICommand RetryHealthCheckCommand { get; }
 
         #endregion
 
@@ -181,15 +206,17 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             try
             {
-                var status = await _apiHealthCheckService.CheckHealthAsync();
+                // Issue #1243: 缩短超时时间到2秒，加快失败反馈速度
+                var status = await _apiHealthCheckService.CheckHealthAsync(timeout: 2000);
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = status;
                     ApiStatusMessage = status switch
                     {
-                        ApiHealthStatus.Healthy => "WebAPI 已连接",
-                        ApiHealthStatus.Unhealthy => $"WebAPI 连接失败: {_apiHealthCheckService.LastErrorMessage}",
+                        // Issue #1243: 优化状态提示文案
+                        ApiHealthStatus.Healthy => "✓ WebAPI 已连接",
+                        ApiHealthStatus.Unhealthy => $"✗ WebAPI 未启动或无法访问\n{_apiHealthCheckService.LastErrorMessage}\n→ 请检查 WebAPI 服务是否运行在 http://localhost:5001",
                         _ => "正在检查连接..."
                     };
                 });
