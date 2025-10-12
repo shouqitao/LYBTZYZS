@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

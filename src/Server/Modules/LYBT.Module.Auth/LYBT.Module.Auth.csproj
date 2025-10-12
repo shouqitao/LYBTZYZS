@@ -22,6 +22,7 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 	</ItemGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\..\Core\LYBT.Server.Interfaces\LYBT.Server.Interfaces.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />

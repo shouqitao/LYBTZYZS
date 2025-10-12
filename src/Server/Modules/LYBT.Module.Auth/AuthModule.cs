@@ -1,6 +1,6 @@
 ﻿using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

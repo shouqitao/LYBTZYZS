@@ -3,7 +3,7 @@ using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Repositories;
 using LYBT.Module.Formula.Services;
 using LYBT.Module.Formula.Validators;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Formula

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Formula;
 using LYBT.Module.Formula.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;

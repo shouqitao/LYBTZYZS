@@ -25,7 +25,7 @@ namespace LYBT.Module.Consultation
             // services.AddScoped<IConsultationRecordRepository, ConsultationRecordRepository>();  // 不存在的类型
 
             // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IConsultationService, ConsultationService>();
+            services.AddScoped<LYBT.Server.Interfaces.Services.IConsultationService, ConsultationService>();
 
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 

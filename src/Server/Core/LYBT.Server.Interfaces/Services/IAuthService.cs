@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.Interfaces.Services
+namespace LYBT.Server.Interfaces.Services
 {
 
     /// <summary>
