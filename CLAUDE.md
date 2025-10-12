@@ -7,10 +7,13 @@
 本文档采用模块化设计，核心规则与模式定义存放在 `.claude/` 目录中：
 
 ### 核心规则（Core Modules）
-- 📐 `.claude/core/RULES.md` - 工具选择优先级、并行执行策略、文件组织、代码安全、MVP约束
+- 📐 `.claude/core/RULES.md` - 工具选择优先级、并行执行策略、代码安全、MVP约束
 - 🎯 `.claude/core/PRINCIPLES.md` - 文档先行、最小充分交付、增量优化、记录与可追溯
-- 🚩 `.claude/core/FLAGS.md` - 行为模式标志（brainstorm/introspect/task-manage）、思考强度分级（think/ultrathink）
-- 🔄 `.claude/core/WORKFLOW.md` - Issue驱动工作流（创建→清单→分支→PR→审查→合并→文档）
+- 🚩 `.claude/core/FLAGS.md` - 行为模式标志、思考强度分级（think/ultrathink）
+- 🔄 `.claude/core/WORKFLOW.md` - Issue驱动工作流（创建→清单→分支→PR→合并→文档）
+- 📁 `.claude/core/FILE-ORGANIZATION.md` - 文件创建规则与目录归档规范
+- 🖥️ `.claude/core/TOOL-ENVIRONMENT.md` - 项目环境与Claude环境区分、命令对照
+- 🚀 `.claude/core/QUICK-START.md` - 5分钟快速上手指南
 
 ### 工作模式（Specialized Modes）
 - 🔍 `.claude/modes/code-review.md` - 代码审查模式（规范检查、架构合规、安全性、性能）
@@ -34,13 +37,11 @@
 - **必读文档**：
   - `README.md`（项目权威概览）
   - `docs/index.md`（文档导航体系）
-  - `docs/development/standards.md`
-  - `docs/architecture/server-module-design-standard.md`（Server端模块设计标准）
-  - `docs/architecture/client/unified-design-standard.md`（Client端业务模块统一设计标准）
+  - `docs/development/standards.md`（编码规范）
+  - `docs/architecture/server-module-design-standard.md`（Server端三层架构标准）
+  - `docs/architecture/client/unified-design-standard.md`（Client端MVVM标准）
   - `docs/development/minimal-practice.md`（Issue→清单→PR 工作法）
-  - `docs/development/documentation-guidelines.md`（文档编写与维护指南v2.0 - SSOT原则、质量标准）
-  - `docs/development/documentation-quality-checklist.md`（文档质量检查清单 - 新建/更新/归档/合并4类）
-  - `docs/development/documentation-automation-guide.md`（文档自动化维护指南 - CI/脚本/报告）
+  - `docs/development/documentation-guidelines.md`（文档编写与维护指南）
   - `docs/PROJECT-STATUS-2025-09-27.md`（实时项目状态）
 
 > **⚠️ 处理任务前必须先查阅相关文档，未理解文档禁止开始编码或给出建议。**
@@ -98,91 +99,16 @@
 7. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
 8. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
 
-### 🚫 文件创建强制规则（AI必须遵守）
+### 文件组织规范
 
-**创建任何文件前，必须通过以下检查清单**：
+> **📖 详细规则**：参见 `.claude/core/FILE-ORGANIZATION.md`
 
-✅ **文档类文件（.md/.txt/.pdf）**
-```
-1. 是否为核心文档？（README/CLAUDE/CHANGELOG/CONTRIBUTING）
-   → 是：可放根目录
-   → 否：继续下一步
-
-2. 确定文档类型：
-   - 架构设计 → docs/architecture/
-   - API文档 → docs/api/
-   - 开发指南 → docs/development/
-   - 分析报告 → docs/reports/
-   - 任务说明 → docs/issues/
-   - 其他文档 → docs/对应分类/
-
-3. ❌ 禁止在根目录创建任何文档文件（核心文档除外）
-```
-
-✅ **脚本类文件（.ps1/.sh/.py/.js）**
-```
-1. 确定脚本用途：
-   - 构建脚本 → scripts/build/
-   - 测试脚本 → scripts/testing/
-   - 部署脚本 → scripts/deployment/
-   - 维护脚本 → scripts/maintenance/
-   - 分析脚本 → scripts/analysis/
-
-2. ❌ 禁止在根目录创建任何脚本文件
-```
-
-✅ **配置类文件（.json/.xml/.yaml）**
-```
-1. 是否为根级配置？（nuget.config/global.json等白名单）
-   → 是：可放根目录
-   → 否：放入 .config/ 或对应子目录
-
-2. ❌ 禁止在根目录创建临时配置文件
-```
-
-✅ **输出类文件（.txt/.csv/.log）**
-```
-1. 临时输出 → 使用内存或临时变量，禁止落盘
-2. 需要保留 → docs/reports/ 或 scripts/analysis/outputs/
-3. ❌ 禁止在根目录创建任何输出文件
-```
-
-✅ **截图/图片文件（.png/.jpg/.gif）**
-```
-1. 文档配图 → docs/assets/images/
-2. 调试截图 → docs/assets/screenshots/
-3. ❌ 禁止在根目录保存任何图片文件
-```
-
-**违规示例 ❌**：
-```bash
-# 错误：在根目录创建输出文件
-output.txt          → 应该：内存变量或 docs/reports/output-{date}.txt
-result.json         → 应该：docs/reports/result-{date}.json
-Screenshot.png      → 应该：docs/assets/screenshots/debug-{date}.png
-test.ps1            → 应该：scripts/testing/test.ps1
-临时文档.md          → 应该：docs/reports/临时分析-{date}.md
-```
-
-**正确示例 ✅**：
-```bash
-# 文档归档
-docs/reports/performance-analysis-2025-01-11.md
-docs/api/swagger-spec-v2.json
-
-# 脚本归档  
-scripts/testing/test-all-apis.ps1
-scripts/analysis/check-dependencies.py
-
-# 配置归档
-.config/root-files-whitelist.json
-config/appsettings.Development.json
-```
-
-**自动化防护**：
-- Pre-commit hook会自动检查根目录文件（`.githooks/pre-commit`）
-- 白名单配置：`.config/root-files-whitelist.json`
-- 违规文件会被拒绝提交，并提示正确路径
+**核心原则**：
+- ❌ 禁止在根目录创建临时文件（文档/脚本/输出/截图）
+- ✅ 文档归档到 `docs/` 对应分类目录
+- ✅ 脚本归档到 `scripts/` 对应功能目录
+- ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
+- ✅ Pre-commit hook 会自动检查根目录文件规范
 
 ### 高效执行策略
 - **并行优先**：Issue 含多个独立子任务时，优先规划并行执行（标注可并行项 + `sequential-thinking` 评估依赖）
@@ -213,163 +139,81 @@ config/appsettings.Development.json
 
 ---
 
-## 5. 开发环境约束（Windows 平台）
+## 5. 工具环境与命令
 
-### 🖥️ 操作系统与工具
+> **📖 详细说明**：参见 `.claude/core/TOOL-ENVIRONMENT.md`
 
-**强制要求**：
-- ✅ **操作系统**：Windows 10/11（项目运行在 Windows 平台）
-- ✅ **Shell 环境**：PowerShell 7.x+（默认 Shell）
-- ✅ **版本控制**：Git for Windows 2.40+
-- ✅ **开发工具**：Visual Studio 2022 或 JetBrains Rider
-- ✅ **.NET SDK**：.NET 8.0 SDK
+### 两个环境的区分
 
-### ❌ 禁止使用的命令（Linux 专有）
+| 环境 | 操作系统 | Shell | 用途 |
+|------|---------|-------|------|
+| **项目运行环境** | Windows 10/11 | PowerShell 7.x+ | 开发、编译、调试 |
+| **Claude Code 环境** | Linux | `/usr/bin/bash` | 自动化命令执行 |
 
-**以下命令在 Windows 环境下不可用，必须使用对应的 Windows/PowerShell 命令**：
+### 工具优先级（推荐）
 
-| ❌ 禁止（Linux） | ✅ 使用（Windows PowerShell） | 说明 |
-|-----------------|---------------------------|------|
-| `ls -la` | `Get-ChildItem` 或 `ls` (PowerShell alias) | 列出文件 |
-| `cat file.txt` | `Get-Content file.txt` 或 `cat file.txt` | 读取文件 |
-| `grep "pattern" file` | `Select-String "pattern" file` | 搜索文本 |
-| `find . -name "*.cs"` | `Get-ChildItem -Recurse -Filter "*.cs"` | 查找文件 |
-| `chmod +x script.sh` | N/A (Windows 无需执行权限) | 修改权限 |
-| `./script.sh` | `.\script.ps1` | 执行脚本 |
-| `export VAR=value` | `$env:VAR = "value"` | 设置环境变量 |
-| `which dotnet` | `Get-Command dotnet` | 查找命令路径 |
-| `tail -f log.txt` | `Get-Content log.txt -Wait -Tail 10` | 实时查看日志 |
-| `head -n 10 file.txt` | `Get-Content file.txt -Head 10` | 读取文件头部 |
-| `wc -l file.txt` | `(Get-Content file.txt).Length` | 统计行数 |
-| `du -sh folder` | `(Get-ChildItem folder -Recurse \| Measure-Object -Property Length -Sum).Sum / 1MB` | 计算目录大小 |
-
-### ✅ Windows 推荐命令工具链
-
-**PowerShell 核心命令**：
-```powershell
-# 文件操作
-Get-ChildItem       # 列出文件（别名: ls, dir）
-Get-Content         # 读取文件内容（别名: cat, type）
-Set-Content         # 写入文件内容
-Copy-Item           # 复制文件（别名: cp, copy）
-Move-Item           # 移动文件（别名: mv, move）
-Remove-Item         # 删除文件（别名: rm, del）
-
-# 文本搜索
-Select-String       # 类似 grep 的文本搜索
-
-# 进程管理
-Get-Process         # 列出进程
-Stop-Process        # 终止进程
-
-# 环境变量
-$env:PATH           # 访问环境变量
-[Environment]::SetEnvironmentVariable() # 设置环境变量
+```
+⭐⭐⭐ MCP 工具（filesystem, git, serena）- 跨平台，推荐优先使用
+⭐⭐ Bash 工具（cat, grep, find 等）- 标准 Unix 命令
+⚠️ PowerShell 命令（Get-*, Select-* 等）- 仅项目环境可用
 ```
 
-**Windows 原生命令**：
-```cmd
-# 网络相关（可在 PowerShell 中使用）
-netstat -ano        # 查看端口占用
-taskkill /F /PID    # 强制终止进程
+### 常用命令速查
 
-# 路径相关
-cd /d D:\path       # 切换驱动器和目录（PowerShell 中直接 cd D:\path）
-```
-
-### 🔧 MCP 工具优先级（跨平台兼容）
-
-**推荐使用 MCP 工具代替原生 Shell 命令**：
-- ✅ **文件读写**：优先使用 `filesystem` MCP 工具（跨平台）
-- ✅ **代码搜索**：优先使用 `serena` MCP 工具（语义级）
-- ✅ **Git 操作**：优先使用 `git` MCP 工具（跨平台）
-- ⚠️ **Bash 工具**：仅用于 PowerShell 兼容命令（避免 Linux 专有命令）
-
----
-
-## 6. 常用命令（PowerShell）
-
-```powershell
-# 还原/构建
+```bash
+# 项目构建（PowerShell）
 dotnet restore LYBT.All.sln
 dotnet build LYBT.Server.sln -c Release --no-restore
-dotnet build LYBT.Desktop.sln -c Release --no-restore
-
-# 运行 WebAPI
-dotnet run --project src/Server/Services/LYBT.WebAPI
-
-# 格式化与测试
-dotnet format LYBT.All.sln
 dotnet test LYBT.Server.sln -c Release
+dotnet format LYBT.All.sln
+
+# Claude Code 环境（Bash 或 MCP）
+cat file.txt                    # 或 Read tool
+grep "pattern" file.txt         # 或 Grep tool
+find . -name "*.cs"             # 或 Glob tool
+git status                      # 或 mcp__git__git_status
 ```
 
 ---
 
-## 7. MCP 工具使用准则
+## 6. MCP 工具使用准则
 
-> **📖 详细规则与工具链**：参见 `.claude/core/RULES.md`（工具优先级）、`docs/development/mcp-tools-reference.md`（完整参考手册）
+> **📖 完整工具链参考**：`.claude/core/RULES.md` + `docs/development/mcp-tools-reference.md`
 
-### 核心服务（Tool Optimization）
+### 核心工具（优先使用）
 
-| 工具 | 主要用途 | 参数约定 | 优先级 |
-|------|---------|---------|-------|
-| `filesystem` | 文件读写、目录遍历、批量操作 | camelCase | ⭐⭐⭐ MCP |
-| `git` | 版本控制（status, diff, commit, log） | camelCase | ⭐⭐⭐ MCP |
-| `serena` | 语义代码检索与编辑（基于 LSP） | snake_case | ⭐⭐⭐ MCP |
-| `context7` | 查询库文档与代码示例 | camelCase | ⭐⭐⭐ MCP |
-| `memory` | 知识图谱存储（实体-关系模型） | camelCase | ⭐⭐⭐ MCP |
-| `sequential-thinking` | 结构化推理与步骤分解 | camelCase | ⭐⭐⭐ MCP |
-| `time` | 时区转换与时间标准化 | snake_case | ⭐⭐⭐ MCP |
-| `playwright` | 浏览器自动化（按需使用） | camelCase | ⭐⭐ MCP |
-| `github-cli (gh)` | Issue/PR管理（命令行工具） | - | ⭐⭐ Native |
+- **filesystem / git / serena** - 文件操作、版本控制、语义代码编辑（⭐⭐⭐ 推荐）
+- **context7** - 查询库文档与权威资料
+- **sequential-thinking** - 结构化推理与任务拆解
+- **memory** - 知识图谱存储
+- **time** - 时间标准化
 
-### AI 辅助协同逻辑（优先使用 MCP 工具）
-1. **Context7** → 获取权威资料与代码片段
-2. **Sequential-thinking** → 拆解任务步骤
-3. **Serena** → 执行语义级代码操作（`find_symbol` → `replace_symbol_body`）
-4. **Git** → 记录变更历史
+### AI 协同流程
+
+Context7（资料） → Sequential-thinking（拆解） → Serena（代码编辑） → Git（记录）
 
 ---
 
-## 8. 工作模式（7种专业化行为模式）
+## 7. 工作模式（7种专业化模式）
 
-> **📖 详细模式定义**：参见 `.claude/modes/` 目录（每种模式含工作流程、工具链、质量标准）
+> **📖 详细定义**：参见 `.claude/modes/` 目录
 
-### 模式列表
+### 模式速查
 
-| 模式 | 触发方式 | 核心功能 | 工具链 |
-|-----|---------|---------|-------|
-| 🔍 **Code Review** | `/code-review` | 代码规范、架构合规、安全性、性能检查 | serena, context7, sequential-thinking |
-| 🏗️ **Architecture** | `/review-arch` | 三层架构验证、依赖方向检查、架构测试 | serena, git, sequential-thinking |
-| ⚡ **Performance** | `/analyze-perf` | N+1查询、内存泄漏、并发问题分析 | serena, sequential-thinking, git |
-| 🔄 **Refactoring** | `/refactor-plan` | UltraThink深度分析（20-30步）、Phase拆分 | sequential-thinking, serena, git, gh |
-| 🧪 **Testing** | `/generate-tests` | AAA模式测试生成、Mock配置、覆盖率分析 | serena, git |
-| 📝 **Documentation** | `/update-docs` | 变更检测、文档生成、索引更新、链接验证 | serena, git, filesystem |
-| 🧠 **Research** | `/deep-research` | 多源研究（WebSearch + Context7 + Serena） | WebSearch, context7, serena, sequential-thinking |
+| 模式 | 触发命令 | 用途 |
+|-----|---------|------|
+| 🔍 Code Review | `/code-review` | 代码规范、架构合规、安全性检查 |
+| 🏗️ Architecture | `/review-arch` | 三层架构验证、依赖方向检查 |
+| ⚡ Performance | `/analyze-perf` | N+1查询、内存泄漏、并发分析 |
+| 🔄 Refactoring | `/refactor-plan` | UltraThink深度分析、Phase拆分 |
+| 🧪 Testing | `/generate-tests` | AAA模式测试生成、Mock配置 |
+| 📝 Documentation | `/update-docs` | 变更检测、文档同步、链接验证 |
+| 🧠 Research | `/deep-research` | 多源研究（WebSearch + Context7） |
 
-### 模式切换与组合
-
-#### 自动模式识别
-Claude Code 会根据用户请求自动选择合适的模式：
-- "帮我审查这段代码" → **Code Review Mode**
-- "分析这个性能问题" → **Performance Mode**
-- "规划重构方案" → **Refactoring Mode** + UltraThink
-
-#### 模式组合使用
-复杂任务可组合多种模式：
-```
-Performance Mode → Create Issue → Refactoring Mode → Generate PR
-   ↓                    ↓                 ↓              ↓
-analyze-perf    create-issue        refactor-plan  generate-pr
-```
-
-#### 强制指定模式
-使用对应的 slash 命令强制切换到特定模式：
-```bash
-/review-arch        # 强制 Architecture Mode
-/analyze-perf       # 强制 Performance Mode
-/refactor-plan      # 强制 Refactoring Mode (UltraThink)
-```
+**使用说明**：
+- 自动识别：Claude 根据用户请求自动选择模式
+- 强制指定：使用 slash 命令（如 `/refactor-plan`）
+- 模式组合：复杂任务可串联多个模式（Performance → Issue → Refactoring → PR）
 
 ---
 
