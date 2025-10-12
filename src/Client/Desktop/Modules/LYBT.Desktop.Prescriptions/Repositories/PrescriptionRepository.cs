@@ -1,5 +1,5 @@
 using LYBT.Desktop.Prescriptions.Interfaces;
-using LYBT.Shared.Interfaces.Api;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
