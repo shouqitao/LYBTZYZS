@@ -1,28 +1,28 @@
-﻿using LYBT.Shared.Interfaces.Services;
+﻿using LYBT.Shared.Interfaces.Api;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services.Auth
+namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
-    /// 认证服务实现 - 适配器模式
-    /// 将 IAuthService(Shared.Interfaces) 适配为 IAuthenticationService(Desktop.Services)
-    /// Issue #835: 连接真实 AuthService
+    /// 认证服务实现 - ADR-002合规版本
+    /// Desktop端Infrastructure Service，直接调用HTTP API（IAuthApi）
+    /// 不依赖Server端Service接口，符合架构决策
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IAuthService _authService;
-        private readonly Business.ITokenStorageService _tokenStorage;
+        private readonly IAuthApi _authApi;
+        private readonly ITokenStorageService _tokenStorage;
         private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(
-            IAuthService authService,
-            Business.ITokenStorageService tokenStorage,
+            IAuthApi authApi,
+            ITokenStorageService tokenStorage,
             ILogger<AuthenticationService> logger)
         {
-            _authService = authService;
+            _authApi = authApi;
             _tokenStorage = tokenStorage;
             _logger = logger;
         }
@@ -37,15 +37,32 @@ namespace LYBT.Desktop.Services.Auth
         }
 
         /// <summary>
-        /// 用户登录
+        /// 用户登录 - 调用HTTP API
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
         {
-            return await _authService.LoginAsync(request);
+            try
+            {
+                var apiResponse = await _authApi.LoginAsync(request);
+
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    return ServiceResult<LoginResponse>.Success(apiResponse.Data, apiResponse.Message);
+                }
+                else
+                {
+                    return ServiceResult<LoginResponse>.Failure(apiResponse.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "登录失败");
+                return ServiceResult<LoginResponse>.Failure($"登录失败: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// 用户登出
+        /// 用户登出 - 调用HTTP API
         /// </summary>
         public async Task<ServiceResult> LogoutAsync()
         {
@@ -55,21 +72,21 @@ namespace LYBT.Desktop.Services.Auth
                 var loginResponse = await _tokenStorage.GetLoginResponseAsync();
                 var username = loginResponse?.User.UserName ?? "unknown";
 
-                // 调用 IAuthService.LogoutAsync(LogoutRequest)
+                // 调用 IAuthApi.LogoutAsync(LogoutRequest)
                 var logoutRequest = new LogoutRequest
                 {
                     Username = username,
                     RefreshToken = loginResponse?.RefreshToken
                 };
 
-                var result = await _authService.LogoutAsync(logoutRequest);
+                var apiResponse = await _authApi.LogoutAsync(logoutRequest);
 
                 // 清除本地 Token
                 await _tokenStorage.ClearAuthenticationAsync();
 
-                if (result.IsSuccess)
+                if (apiResponse.Success)
                 {
-                    return ServiceResult.Success("登出成功");
+                    return ServiceResult.Success(apiResponse.Message);
                 }
                 else
                 {
@@ -112,15 +129,22 @@ namespace LYBT.Desktop.Services.Auth
         }
 
         /// <summary>
-        /// 检查连接状态
+        /// 检查连接状态 - 调用健康检查API
         /// </summary>
         public async Task<bool> CheckConnectionAsync()
         {
             try
             {
-                // 简单检查:验证 Token 是否过期
+                // 先检查本地Token是否过期
                 var isExpired = await _tokenStorage.IsTokenExpiredAsync();
-                return !isExpired;
+                if (isExpired)
+                {
+                    return false;
+                }
+
+                // 调用健康检查API验证服务可用性
+                var healthResponse = await _authApi.HealthCheckAsync();
+                return healthResponse != null && healthResponse.Status == "Healthy";
             }
             catch
             {

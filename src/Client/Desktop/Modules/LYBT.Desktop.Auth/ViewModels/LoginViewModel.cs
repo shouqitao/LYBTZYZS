@@ -2,7 +2,6 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
