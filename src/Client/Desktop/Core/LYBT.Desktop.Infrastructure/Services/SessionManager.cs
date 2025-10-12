@@ -16,14 +16,18 @@ namespace LYBT.Desktop.Infrastructure.Services
         private string? _cachedToken;
 
         /// <summary>
-        /// 会话即将过期事件
+        /// 会话即将过期事件 - 暂未实现触发逻辑（Issue #1114 Phase 2快速修复）
         /// </summary>
+#pragma warning disable CS0067 // 事件从未使用
         public event EventHandler? SessionExpiring;
+#pragma warning restore CS0067
 
         /// <summary>
-        /// 会话已过期事件
+        /// 会话已过期事件 - 暂未实现触发逻辑（Issue #1114 Phase 2快速修复）
         /// </summary>
+#pragma warning disable CS0067 // 事件从未使用
         public event EventHandler? SessionExpired;
+#pragma warning restore CS0067
 
         /// <summary>
         /// 构造函数
@@ -126,8 +130,6 @@ namespace LYBT.Desktop.Infrastructure.Services
             {
                 UserRole.Admin => "管理员",
                 UserRole.Doctor => "医生",
-                UserRole.Receptionist => "前台",
-                UserRole.Pharmacist => "药剂师",
                 _ => CurrentUser.Role.ToString()
             };
         }
