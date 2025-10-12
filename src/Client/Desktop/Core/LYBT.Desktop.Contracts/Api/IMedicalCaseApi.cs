@@ -1,7 +1,7 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
-namespace LYBT.Shared.Interfaces.Api
+namespace LYBT.Desktop.Contracts.Api
 {
     /// <summary>
     /// 医疗案例API客户端接口 - 简化版，只包含基础CRUD

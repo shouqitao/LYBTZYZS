@@ -1,6 +1,6 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
-namespace LYBT.Shared.Interfaces.Api
+namespace LYBT.Desktop.Contracts.Api
 {
 
     /// <summary>
