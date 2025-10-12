@@ -1,5 +1,5 @@
-﻿using LYBT.Desktop.Services.ErrorHandling;
-using LYBT.Desktop.Services.Performance;
+﻿using LYBT.Desktop.Presentation.Notifications;
+using LYBT.Desktop.Foundation.Performance;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
 
