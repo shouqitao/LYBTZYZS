@@ -88,13 +88,16 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 初始化主窗口
-    /// Issue #1221: 重写以阻止 Prism 自动显示主窗口
+    /// Issue #1221: 调用 base 初始化，但先不显示窗口
     /// </summary>
     protected override void InitializeShell(Window shell)
     {
-        // 不调用 base.InitializeShell(shell)，因为它会自动显示窗口
-        // 将 shell 设置为 MainWindow 属性，但不显示
-        MainWindow = shell;
+        // 调用 base 以完成 Prism 的初始化（包括 DataContext 设置）
+        base.InitializeShell(shell);
+
+        // 但立即隐藏窗口，让 Splash Screen 先显示
+        // 主窗口将在 OnInitialized 的异步任务完成后显示
+        shell.Hide();
     }
 
     /// <summary>
