@@ -156,12 +156,12 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IPrescriptionPrintService,
                 LYBT.Desktop.Infrastructure.Services.PrescriptionPrintService>();
 
-            // 用户体验服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IUserExperienceService,
-                LYBT.Desktop.Infrastructure.Services.UserExperienceService>();
-
+            // 键盘快捷键服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,
                 LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
+
+            // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
+            // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
         }
 
         /// <summary>
