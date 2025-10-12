@@ -40,5 +40,11 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Delete("/api/v1/formulas/{id}")]
         Task<Refit.ApiResponse<ApiResponse>> DeleteFormulaAsync(Guid id);
+
+        /// <summary>
+        /// 克隆验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{id}/clone")]
+        Task<Refit.ApiResponse<FormulaDto>> CloneFormulaAsync(Guid id);
     }
 }
