@@ -32,13 +32,41 @@ namespace LYBT.Desktop.Services.Business
 
         #region 查询操作
 
-        public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            UserRole? role = null,
+            CommonStatus? status = null)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
-                // 直接调用Repository的服务端分页方法
+                // 直接调用Repository的服务端分页方法（基础版本）
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                return ServiceResult<PagedResult<UserDto>>.Success(pagedResult);
+                
+                // 应用角色和状态过滤 (Issue #1162)
+                var items = pagedResult.Items;
+                
+                if (role.HasValue)
+                {
+                    items = items.Where(u => u.Role == role.Value).ToList();
+                }
+                
+                if (status.HasValue)
+                {
+                    items = items.Where(u => u.Status == status.Value).ToList();
+                }
+                
+                // 更新分页结果
+                var filteredResult = new PagedResult<UserDto>
+                {
+                    Items = items,
+                    TotalCount = items.Count, // 注意：过滤后的总数可能不准确，理想情况应该在Repository层实现
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+                
+                return ServiceResult<PagedResult<UserDto>>.Success(filteredResult);
             }, nameof(GetPagedAsync));
         }
 
@@ -174,6 +202,30 @@ namespace LYBT.Desktop.Services.Business
 
                 return ServiceResult.Success();
             }, nameof(ChangeProfileAsync));
+        }
+
+        /// <summary>
+        /// 批量删除用户（软删除） - Issue #1169
+        /// </summary>
+        public Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            throw new NotImplementedException("批量删除功能待实现 (Issue #1169)");
+        }
+
+        /// <summary>
+        /// 切换用户状态 - Issue #1162
+        /// </summary>
+        public Task<ServiceResult<UserDto>> ToggleStatusAsync(Guid id)
+        {
+            throw new NotImplementedException("切换用户状态功能待实现 (Issue #1162)");
+        }
+
+        /// <summary>
+        /// 管理员重置密码（新签名） - Issue #1162
+        /// </summary>
+        public Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request)
+        {
+            throw new NotImplementedException("管理员重置密码功能待实现 (Issue #1162)");
         }
 
         #endregion

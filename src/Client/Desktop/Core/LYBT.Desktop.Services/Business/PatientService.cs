@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace LYBT.Desktop.Services.Business
 {
@@ -118,6 +119,22 @@ namespace LYBT.Desktop.Services.Business
                 var patients = await _repository.SearchAsync(keyword);
                 return ServiceResult<List<PatientDto>>.Success(patients);
             }, nameof(SearchAsync));
+        }
+
+        /// <summary>
+        /// 从Excel文件导入患者数据 - Issue #1165
+        /// </summary>
+        public Task<ServiceResult<ImportResultDto<PatientDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        {
+            throw new NotImplementedException("Excel导入功能待实现 (Issue #1165)");
+        }
+
+        /// <summary>
+        /// 生成患者导入模板 - Issue #1165
+        /// </summary>
+        public MemoryStream GenerateImportTemplate()
+        {
+            throw new NotImplementedException("生成导入模板功能待实现 (Issue #1165)");
         }
     }
 }
