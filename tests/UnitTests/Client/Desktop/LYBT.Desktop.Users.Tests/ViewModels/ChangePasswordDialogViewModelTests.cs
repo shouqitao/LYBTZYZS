@@ -1,14 +1,12 @@
 using FluentAssertions;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Users.ViewModels;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using System.Net.Http;
 using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
@@ -22,14 +20,10 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<ChangePasswordDialogViewModel>> _mockLogger;
-        private readonly Mock<ILogger<AuthService>> _mockAuthServiceLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly Mock<ISessionManager> _mockSessionManager;
         private readonly Mock<IUserNotificationService> _mockNotificationService;
-        private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
-        private readonly Mock<ITokenStorageService> _mockTokenStorage;
-        private readonly Mock<IConfiguration> _mockConfiguration;
-        private readonly Mock<AuthService> _mockAuthService;
+        private readonly Mock<IAuthenticationService> _mockAuthService;
         private readonly ChangePasswordDialogViewModel _viewModel;
 
         public ChangePasswordDialogViewModelTests()
@@ -38,28 +32,15 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<ChangePasswordDialogViewModel>>();
-            _mockAuthServiceLogger = new Mock<ILogger<AuthService>>();
             _mockRegionManager = new Mock<IRegionManager>();
             _mockSessionManager = new Mock<ISessionManager>();
             _mockNotificationService = new Mock<IUserNotificationService>();
-            _mockHttpClientFactory = new Mock<IHttpClientFactory>();
-            _mockTokenStorage = new Mock<ITokenStorageService>();
-            _mockConfiguration = new Mock<IConfiguration>();
+            _mockAuthService = new Mock<IAuthenticationService>();
 
             // Setup LoggerFactory to return mock logger
             _mockLoggerFactory
                 .Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_mockLogger.Object);
-
-            // Mock AuthService with constructor parameters
-            // Note: We don't setup ChangePasswordAsync because it's not virtual
-            // and our tests focus on password validation logic, not the actual API call
-            _mockAuthService = new Mock<AuthService>(
-                _mockAuthServiceLogger.Object,
-                _mockHttpClientFactory.Object,
-                _mockTokenStorage.Object,
-                _mockConfiguration.Object
-            );
 
             // Create ViewModel instance
             _viewModel = new ChangePasswordDialogViewModel(

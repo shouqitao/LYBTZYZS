@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
