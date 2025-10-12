@@ -145,6 +145,8 @@ nul
 # Claude Code 工具文件 - 保留本地但不上传
 .claude/
 !.claude/commands/
+!.claude/core/
+!.claude/modes/
 .serena/
 .ai/*
 !.ai/rules.json
