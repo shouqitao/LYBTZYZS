@@ -2731,7 +2731,7 @@ gh auth status
 #### 内部文档
 - [CLAUDE.md](../CLAUDE.md) - 主配置文件
 - [Issue工作流](.claude/core/WORKFLOW.md)
-- [标签体系](github-labels-guide.md)
+- [GitHub工作流程](github-workflow-guide.md) - Issue/PR/标签/自动化
 - [编码规范](standards.md)
 - [架构标准](../architecture/server-module-design-standard.md)
 
