@@ -29,7 +29,12 @@ namespace LYBT.Desktop.Services.Business
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
         }
 
-        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<PrescriptionDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
@@ -42,6 +47,16 @@ namespace LYBT.Desktop.Services.Business
                         (p.Remark != null && p.Remark.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
                         (p.Indication != null && p.Indication.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                     ).ToList();
+                }
+
+                // 应用日期范围筛选 (Issue #1163)
+                if (startDate.HasValue)
+                {
+                    allPrescriptions = allPrescriptions.Where(p => p.CreatedAt >= startDate.Value).ToList();
+                }
+                if (endDate.HasValue)
+                {
+                    allPrescriptions = allPrescriptions.Where(p => p.CreatedAt <= endDate.Value).ToList();
                 }
 
                 // 分页
@@ -130,6 +145,39 @@ namespace LYBT.Desktop.Services.Business
 
                 return ServiceResult<List<PrescriptionDto>>.Success(prescriptions);
             }, nameof(GetByMedicalCaseIdAsync));
+        }
+
+        /// <summary>
+        /// 生成处方编号 - Issue #1163
+        /// 格式：RX + YYYYMMDD + 4位序号
+        /// </summary>
+        public Task<ServiceResult<string>> GeneratePrescriptionNoAsync()
+        {
+            throw new NotImplementedException("生成处方编号功能待实现 (Issue #1163)");
+        }
+
+        /// <summary>
+        /// 克隆处方 - Issue #1167
+        /// </summary>
+        public Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        {
+            throw new NotImplementedException("克隆处方功能待实现 (Issue #1167)");
+        }
+
+        /// <summary>
+        /// 获取处方统计数据 - Issue #1168
+        /// </summary>
+        public Task<ServiceResult<PrescriptionMainStatisticsDto>> GetStatisticsAsync()
+        {
+            throw new NotImplementedException("处方统计功能待实现 (Issue #1168)");
+        }
+
+        /// <summary>
+        /// 获取日期范围统计 - Issue #1168
+        /// </summary>
+        public Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate)
+        {
+            throw new NotImplementedException("日期范围统计功能待实现 (Issue #1168)");
         }
     }
 }

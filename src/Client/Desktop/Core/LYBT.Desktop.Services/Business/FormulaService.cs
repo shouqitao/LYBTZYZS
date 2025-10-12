@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace LYBT.Desktop.Services.Business
 {
@@ -29,13 +30,30 @@ namespace LYBT.Desktop.Services.Business
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
         }
 
-        public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
         {
             return await _exceptionHandler.SafeExecuteAsync(async () =>
             {
                 // 直接调用Repository的服务端分页方法
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
-                return ServiceResult<PagedResult<FormulaDto>>.Success(pagedResult);
+
+                // 应用分类过滤 (Issue #1164)
+                var items = pagedResult.Items;
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    items = items.Where(f => f.Property != null && f.Property.Contains(category, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+
+                // 更新分页结果
+                var filteredResult = new PagedResult<FormulaDto>
+                {
+                    Items = items,
+                    TotalCount = items.Count,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                return ServiceResult<PagedResult<FormulaDto>>.Success(filteredResult);
             }, nameof(GetPagedAsync));
         }
 
@@ -146,6 +164,38 @@ namespace LYBT.Desktop.Services.Business
                 await _repository.DeleteAsync(id);
                 return ServiceResult.Success();
             }, nameof(DeleteAsync));
+        }
+
+        /// <summary>
+        /// 批量删除验方（软删除） - Issue #1169
+        /// </summary>
+        public Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            throw new NotImplementedException("批量删除功能待实现 (Issue #1169)");
+        }
+
+        /// <summary>
+        /// 从Excel文件导入验方数据 - Issue #1166
+        /// </summary>
+        public Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        {
+            throw new NotImplementedException("Excel导入功能待实现 (Issue #1166)");
+        }
+
+        /// <summary>
+        /// 导出验方数据到Excel - Issue #1166
+        /// </summary>
+        public Task<MemoryStream> ExportAsync(string? category = null)
+        {
+            throw new NotImplementedException("Excel导出功能待实现 (Issue #1166)");
+        }
+
+        /// <summary>
+        /// 生成验方导入模板 - Issue #1166
+        /// </summary>
+        public MemoryStream GenerateImportTemplate()
+        {
+            throw new NotImplementedException("生成导入模板功能待实现 (Issue #1166)");
         }
     }
 }

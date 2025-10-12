@@ -199,5 +199,13 @@ namespace LYBT.Desktop.Services.Business
                 return ServiceResult<MedicalCaseDetailDto>.Success(detailDto);
             }, nameof(GetByIdWithDetailsAsync));
         }
+
+        /// <summary>
+        /// 批量删除病历（软删除） - Issue #1169
+        /// </summary>
+        public Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            throw new NotImplementedException("批量删除功能待实现 (Issue #1169)");
+        }
     }
 }

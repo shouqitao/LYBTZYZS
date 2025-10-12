@@ -183,5 +183,13 @@ namespace LYBT.Desktop.Services.Business
                 return ServiceResult<List<ConsultationDto>>.Success(results);
             }, nameof(SearchAsync));
         }
+
+        /// <summary>
+        /// 获取诊疗统计数据 - Issue #1168
+        /// </summary>
+        public Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            throw new NotImplementedException("诊疗统计功能待实现 (Issue #1168)");
+        }
     }
 }

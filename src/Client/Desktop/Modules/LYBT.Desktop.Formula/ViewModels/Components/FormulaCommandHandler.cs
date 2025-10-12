@@ -141,7 +141,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             _logger.LogInformation("打印配方: {FormulaId} ({FormulaName})", formula.Id, formula.Name);
 
             // TODO: 实现打印逻辑
-            return Task.FromResult((true, "打印功能开发中"));
+            return Task.FromResult<(bool, string?)>((true, "打印功能开发中"));
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             _logger.LogInformation("查看配方使用历史: {FormulaId}", formulaId);
 
             // TODO: 实现查看使用历史逻辑
-            return Task.FromResult((true, "查看使用历史功能开发中"));
+            return Task.FromResult<(bool, string?)>((true, "查看使用历史功能开发中"));
         }
 
         #endregion
