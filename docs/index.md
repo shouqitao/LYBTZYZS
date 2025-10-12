@@ -35,9 +35,7 @@
 | 文档路径 | 说明 | 关键内容 |
 |----------|------|----------|
 | [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
-| [development/documentation-guidelines.md](development/documentation-guidelines.md) | **文档编写与维护指南 v2.0** 📝 | **SSOT原则、质量五维标准、合并策略、审阅流程** |
-| [development/documentation-quality-checklist.md](development/documentation-quality-checklist.md) | **文档质量检查清单** ✅ | **新建/更新/归档/合并4类检查清单** |
-| [development/documentation-automation-guide.md](development/documentation-automation-guide.md) | **文档自动化维护指南** 🤖 | **CI集成检查、维护脚本、监控报告** |
+| [development/documentation-guidelines.md](development/documentation-guidelines.md) | **文档编写与维护指南 v3.0** 📝✅🤖 | **SSOT原则、质量五维标准、6类检查清单、CI集成、维护脚本、监控报告** |
 | [development/testing-guide.md](development/testing-guide.md) | **测试运行指南** ✨ | **VS2022/CLI测试、xUnit配置、MVP覆盖度分析、最佳实践** |
 | [architecture/testing/architecture-testing-guide.md](architecture/testing/architecture-testing-guide.md) | **架构测试指南** 🏗️ | **Server/Desktop架构约束、15条规则、100%通过率** |
 | [development/ai-assisted-automation-workflow.md](development/ai-assisted-automation-workflow.md) | **AI辅助自动化工作流程** | **Issue驱动开发、Claude+Serena双重审查、GitHub自动化** |
