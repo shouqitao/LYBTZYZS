@@ -1,10 +1,10 @@
 # 单元测试指南
 
-**维护人**：Coder (Claude Code)  
-**最后更新**：2025-10-11  
-**Issue追踪**：#1143 - Phase 2 Day 2 测试指南SSOT重构
+**维护人**：Coder (Claude Code)
+**最后更新**：2025-01-12
+**Issue追踪**：#1181 - Phase 2 SSOT文档合并（整合TestCoverageStrategy）
 
-> 📚 **培训材料**：新人入职请先阅读 [testing-training-materials.md](testing-training-materials.md)  
+> 📚 **培训材料**：新人入职请先阅读 [testing-training-materials.md](testing-training-materials.md)
 > 🏗️ **架构测试**：架构约束请参考 [architecture/testing/architecture-testing-guide.md](../architecture/testing/architecture-testing-guide.md)
 
 ---
@@ -543,7 +543,37 @@ public class UserService
 
 ## 5. 覆盖率管理
 
-### 5.1 模块覆盖率目标
+### 5.1 覆盖率优先级策略
+
+#### P0 - 核心业务逻辑（必须≥90%覆盖）
+
+**Infrastructure层**：
+- AppDbContext及所有配置
+- Repository基类
+- 授权和认证逻辑
+- 缓存适配器
+
+**业务模块Services**：
+- Auth模块: JwtAuthenticationService, AuthService
+- Users模块: UserService, UserQueryService, UserBusinessService
+- Patients模块: PatientService及相关服务
+- MedicalCase模块: 所有服务类
+- Consultation模块: 所有服务类
+- Prescriptions模块: 所有服务类
+
+**WebAPI控制器**：
+- 所有Controller类
+- 全局异常处理器
+- 中间件逻辑
+
+#### P1 - 数据模型和DTO（≥80%覆盖）
+- Entities层: 所有实体类
+- Shared.Models: 所有DTO和异常类
+
+#### P2 - 工具类（≥60%覆盖）
+- Shared.Utilities: 帮助类和扩展方法
+
+### 5.2 模块覆盖率目标
 
 | 模块 | 当前覆盖率 | 目标覆盖率 | 优先级 | Epic |
 |-----|----------|----------|-------|------|
@@ -558,9 +588,69 @@ public class UserService
 
 **总体目标**：MVP阶段达到 **80%** 整体覆盖率
 
-### 5.2 CI/CD集成
+### 5.3 阶段性测试生成策略
 
-#### 5.2.1 覆盖率收集
+#### 阶段1: 基础设施测试
+```
+tests/UnitTests/Core/LYBT.Infrastructure.Tests/
+├── Data/
+│   ├── AppDbContextTests.cs
+│   ├── DatabaseInitializationServiceTests.cs
+│   └── AppDbContextFactoryTests.cs
+├── Repositories/
+│   └── OptimizedBaseRepositoryTests.cs
+├── Authorization/
+│   ├── AuthorizationPolicyExtensionsTests.cs
+│   └── AuthorizeRolesTests.cs
+├── Caching/
+│   └── MemoryCacheAdapterTests.cs
+└── Configuration/
+    ├── OptionsTests.cs
+    └── DefaultPasswordServiceTests.cs
+```
+
+#### 阶段2: 业务模块测试
+```
+tests/UnitTests/Modules/
+├── Auth.UnitTests/Services/
+│   ├── AuthServiceFullTests.cs
+│   ├── JwtAuthenticationServiceTests.cs
+│   ├── AuthQueryServiceTests.cs
+│   └── AuthBusinessServiceTests.cs
+├── Users.UnitTests/Services/
+├── Patients.UnitTests/Services/
+└── [其他模块类似结构]
+```
+
+#### 阶段3: WebAPI测试
+```
+tests/UnitTests/WebAPI/
+├── Controllers/
+│   ├── AuthControllerTests.cs
+│   ├── UsersControllerTests.cs
+│   └── [所有控制器]
+├── Middleware/
+│   └── GlobalExceptionHandlerTests.cs
+└── Extensions/
+    ├── UnifiedServiceRegistrationTests.cs
+    └── PerformanceOptimizationTests.cs
+```
+
+#### 阶段4: 实体和DTO测试
+```
+tests/UnitTests/
+├── Entities.Tests/
+│   ├── UserEntityTests.cs
+│   ├── PatientEntityTests.cs
+│   └── [所有实体]
+└── Shared.Models.Tests/
+    ├── DTOs/
+    └── Exceptions/
+```
+
+### 5.4 CI/CD集成
+
+#### 5.4.1 覆盖率收集
 
 ```powershell
 # 单个项目
@@ -574,7 +664,7 @@ dotnet test LYBT.Server.sln `
   --settings tests/.runsettings
 ```
 
-#### 5.2.2 覆盖率门禁
+#### 5.4.2 覆盖率门禁
 
 ```yaml
 # .github/workflows/test.yml
@@ -590,9 +680,9 @@ dotnet test LYBT.Server.sln `
     }
 ```
 
-### 5.3 覆盖率报告
+### 5.5 覆盖率报告
 
-#### 5.3.1 生成HTML报告
+#### 5.5.1 生成HTML报告
 
 ```powershell
 # 安装ReportGenerator（全局工具）
@@ -609,7 +699,7 @@ reportgenerator `
 start TestResults/CoverageReport/index.html
 ```
 
-#### 5.3.2 集成到VS2022
+#### 5.5.2 集成到VS2022
 
 1. 安装扩展：Fine Code Coverage
 2. 运行测试后自动显示覆盖率
