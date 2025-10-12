@@ -125,10 +125,14 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterFoundationServices(IContainerRegistry containerRegistry)
         {
             // 认证服务 - Foundation/Security
-            containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
+        containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
 
-            // Token 存储服务 - Foundation/Security
-            containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
+        // Token 存储服务 - Foundation/Security
+        containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
+
+        // API 健康检查服务 - Foundation/HealthCheck
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
+            LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();
         }
 
         /// <summary>
