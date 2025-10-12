@@ -40,5 +40,11 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Delete("/api/v1/prescriptions/{id}")]
         Task<Refit.ApiResponse<ApiResponse>> DeletePrescriptionAsync(Guid id);
+
+        /// <summary>
+        /// 根据医案ID获取处方列表
+        /// </summary>
+        [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
+        Task<Refit.ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
     }
 }
