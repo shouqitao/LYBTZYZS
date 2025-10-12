@@ -2,8 +2,8 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.Business;
 using LYBT.Desktop.Foundation.HealthCheck;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -15,14 +15,15 @@ using Prism.Regions;
 namespace LYBT.Desktop.Auth.ViewModels
 {
     /// <summary>
-    /// 登录视图模型 - 实现基于角色的导航（已统一架构）
-    /// Issue #1008: 使用ILocalAuthService（Desktop特定认证接口）
+    /// 登录视图模型 - 实现基于角色的导航（ADR-002合规）
+    /// 使用Foundation层的IAuthenticationService（Infrastructure Service）
     /// </summary>
     public class LoginViewModel : UnifiedViewModelBase
     {
-        private readonly ILocalAuthService _authService;
+        private readonly IAuthenticationService _authService;
+        private readonly ITokenStorageService _tokenStorage;
         private readonly IApiHealthCheckService? _apiHealthCheckService;
-        private readonly LYBT.Desktop.Services.Business.IUsernameStorageService? _usernameStorage;
+        private readonly IUsernameStorageService? _usernameStorage;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -32,15 +33,17 @@ namespace LYBT.Desktop.Auth.ViewModels
         private string _apiStatusMessage = "正在检查连接...";
 
         public LoginViewModel(
-            ILocalAuthService authService,
+            IAuthenticationService authService,
+            ITokenStorageService tokenStorage,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             IApiHealthCheckService? apiHealthCheckService = null,
-            LYBT.Desktop.Services.Business.IUsernameStorageService? usernameStorage = null)
+            IUsernameStorageService? usernameStorage = null)
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
             _authService = authService;
+            _tokenStorage = tokenStorage;
             _apiHealthCheckService = apiHealthCheckService;
             _usernameStorage = usernameStorage;
 
@@ -233,7 +236,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     StatusMessage = "登录成功，正在跳转...";
 
                     // 保存Token和用户信息
-                    await _authService.SaveAuthenticationAsync(response.Data);
+                    await _tokenStorage.SaveAuthenticationAsync(response.Data, RememberMe);
 
                     // Issue #861: 保存用户名（如果勾选了"记住用户名"）
                     if (_usernameStorage != null)

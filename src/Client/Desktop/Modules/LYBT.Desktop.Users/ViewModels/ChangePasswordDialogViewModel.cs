@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Services.Business;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;

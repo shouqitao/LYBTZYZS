@@ -40,5 +40,17 @@ namespace LYBT.Shared.Interfaces.Api
         /// </summary>
         [Refit.Delete("/api/v1/consultations/{id}")]
         Task<Refit.ApiResponse<ApiResponse>> DeleteConsultationAsync(Guid id);
+
+        /// <summary>
+        /// 根据医案ID获取诊疗记录列表
+        /// </summary>
+        [Refit.Get("/api/v1/consultations/medicalcase/{medicalCaseId}")]
+        Task<Refit.ApiResponse<List<ConsultationDto>>> GetConsultationsByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 启动诊疗（创建新诊疗记录并关联患者）
+        /// </summary>
+        [Refit.Post("/api/v1/consultations/start")]
+        Task<Refit.ApiResponse<ConsultationDto>> StartConsultationAsync([Refit.Body] object request);
     }
 }
