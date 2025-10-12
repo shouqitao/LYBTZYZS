@@ -35,6 +35,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterCacheServices(containerRegistry);
             RegisterHttpServices(containerRegistry, configuration);
             RegisterFoundationServices(containerRegistry);
+            RegisterPresentationServices(containerRegistry);  // Issue #1239 修复: 添加 Presentation 层服务注册
             RegisterInfrastructureServices(containerRegistry);
             RegisterCommandServices(containerRegistry);
             RegisterApplicationServices(containerRegistry);
@@ -64,7 +65,99 @@ namespace LYBT.Desktop.Shell.Extensions
                 return LoggerFactory.Create(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Information));
             });
 
-            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
+            // 注册 ILogger<T> - 为每个需要日志的服务单独注册
+            // ViewModelBase 通过 ILoggerFactory.CreateLogger(GetType()) 创建自己的 Logger
+            // 以下服务需要 ILogger<T> 构造函数注入：
+            
+            // Infrastructure 层服务
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>());
+
+            // Foundation 层服务
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.ApiService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.ApiService>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.AuthenticationService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.TokenStorageService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>());
+
+            // Issue #1245 修复: 注册 UsernameStorageService 的 Logger
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>());
+
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>());
+
+            // Presentation 层服务
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.NotificationService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.NotificationService>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>());
+
+            // Shell 层服务
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.App>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.App>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>());
+            
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>());
+
+            // Issue #1239 修复: 注册所有 Prism 模块的 ILogger<T>
+            // 业务模块 (8个)
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Auth.AuthenticationModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Auth.AuthenticationModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Users.UsersModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Users.UsersModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Patients.PatientsModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Patients.PatientsModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.ConsultationModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.ConsultationModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Herbs.HerbsModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Herbs.HerbsModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.FormulaModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.FormulaModule>());
+
+            // 工作台模块 (2个)
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.AdminWorkstation.AdminWorkstationModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.AdminWorkstation.AdminWorkstationModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.ClinicalWorkstation.ClinicalWorkstationModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.ClinicalWorkstation.ClinicalWorkstationModule>());
+
+            // Issue #1239 修复: 业务模块 Repositories (7个)
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Users.Repositories.UserRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Users.Repositories.UserRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Patients.Repositories.PatientRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Patients.Repositories.PatientRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>());
         }
 
         /// <summary>
@@ -89,34 +182,63 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
         {
-            // 创建 ServiceCollection 配置 HttpClient
-            var services = new ServiceCollection();
-
             // 获取 API 配置
             var apiBaseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
             var ignoreSslErrors = config.GetValue<bool>("ApiSettings:IgnoreSslErrors", false);
+            
+            // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
 
-            // 配置 HttpClient
-            services.AddHttpClient("ApiClient", client =>
+            // Issue #1239 修复: 手动创建带有 AuthorizationMessageHandler 的 HttpClient
+            // 不使用 ServiceCollection，因为 AuthorizationMessageHandler 依赖 Prism 容器中的服务
+            containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                var handler = new HttpClientHandler();
+                // 1. 创建基础 HttpClientHandler
+                var httpHandler = new HttpClientHandler();
                 if (ignoreSslErrors)
                 {
-                    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    httpHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
                 }
-                return handler;
+
+                // 2. 从 Prism 容器解析 AuthorizationMessageHandler
+                var authHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
+                authHandler.InnerHandler = httpHandler;
+
+                // 3. 使用 authHandler 创建 HttpClient（自动添加 Bearer Token）
+                var httpClient = new HttpClient(authHandler)
+                {
+                    BaseAddress = new Uri(apiBaseUrl),
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
+
+                return httpClient;
             });
 
-            var serviceProvider = services.BuildServiceProvider();
-            var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-
-            containerRegistry.RegisterInstance<IHttpClientFactory>(httpClientFactory);
-            containerRegistry.RegisterSingleton<HttpClient>(() => httpClientFactory.CreateClient("ApiClient"));
+            // Issue #1239 修复: 使用延迟解析注册 Refit 客户端（避免在注册阶段解析 HttpClient）
+            // 所有 Refit 客户端共享同一个 HttpClient 实例（包含 AuthorizationMessageHandler）
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IUserApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IUserApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver.Resolve<HttpClient>()));
+            
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver =>
+                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver.Resolve<HttpClient>()));
         }
 
         /// <summary>
@@ -130,9 +252,35 @@ namespace LYBT.Desktop.Shell.Extensions
         // Token 存储服务 - Foundation/Security
         containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
 
+        // Issue #1245 修复: 用户名存储服务 - Foundation/Security
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
+            LYBT.Desktop.Foundation.Security.UsernameStorageService>();
+
         // API 健康检查服务 - Foundation/HealthCheck
         containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
             LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();
+
+        // Issue #1239 修复: 注册 API 服务基类 - Foundation/Http
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.IApiService,
+            LYBT.Desktop.Foundation.Http.ApiService>();
+
+        // Issue #1239 修复: 注册启动优化服务 - Foundation/Performance
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Performance.IStartupOptimizationService,
+            LYBT.Desktop.Foundation.Performance.StartupOptimizationService>();
+        }
+
+        /// <summary>
+        /// 注册 Presentation 层服务
+        /// </summary>
+        private static void RegisterPresentationServices(IContainerRegistry containerRegistry)
+        {
+            // 通知服务 - Presentation/Notifications
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.INotificationService,
+                LYBT.Desktop.Presentation.Notifications.NotificationService>();
+
+            // 错误处理服务 - Presentation/Notifications
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.IErrorHandlingService,
+                LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>();
         }
 
         /// <summary>
