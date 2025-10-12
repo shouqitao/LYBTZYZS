@@ -1,4 +1,6 @@
-﻿using Prism.Ioc;
+﻿using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Repositories;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.MedicalCase
@@ -18,7 +20,10 @@ namespace LYBT.Desktop.MedicalCase
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Services由Core_New/Services统一注册，不在Module中注册
+            // ADR-002 架构标准：
+            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
+            // - Repository (数据访问层) 由各业务模块自行注册
+            containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
 
             // Phase 3.4: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();

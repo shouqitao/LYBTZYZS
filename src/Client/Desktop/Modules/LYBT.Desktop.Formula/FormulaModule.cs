@@ -1,4 +1,6 @@
-﻿using Prism.Ioc;
+﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.Repositories;
+using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Formula
@@ -17,7 +19,10 @@ namespace LYBT.Desktop.Formula
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Services由Core_New/Services统一注册，不在Module中注册
+            // ADR-002 架构标准：
+            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
+            // - Repository (数据访问层) 由各业务模块自行注册
+            containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.FormulaManagementViewModel>();
