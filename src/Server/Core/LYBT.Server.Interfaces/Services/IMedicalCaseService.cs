@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Shared.Interfaces.Services
+namespace LYBT.Server.Interfaces.Services
 {
     /// <summary>
     /// 医疗案例服务接口 - 简化版，只包含基础CRUD

@@ -26,7 +26,7 @@ namespace LYBT.Module.Users
             services.AddScoped<IUserRepository, UserRepository>();
 
             // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IUserService, UserService>();
+            services.AddScoped<LYBT.Server.Interfaces.Services.IUserService, UserService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<UserCreateDtoValidator>();

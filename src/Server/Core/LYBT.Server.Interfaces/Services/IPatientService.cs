@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Shared.Interfaces.Services
+namespace LYBT.Server.Interfaces.Services
 {
     /// <summary>
     /// 患者服务接口 - 简化版，只包含基础CRUD

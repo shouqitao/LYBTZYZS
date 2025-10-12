@@ -22,7 +22,7 @@ namespace LYBT.Module.Patients
             // services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 
             // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<LYBT.Shared.Interfaces.Services.IPatientService, PatientService>();
+            services.AddScoped<LYBT.Server.Interfaces.Services.IPatientService, PatientService>();
 
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 

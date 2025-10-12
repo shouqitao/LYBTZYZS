@@ -2,7 +2,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Shared.Interfaces.Services
+namespace LYBT.Server.Interfaces.Services
 {
     /// <summary>
     /// 用户服务统一接口 - 标准CRUD模式

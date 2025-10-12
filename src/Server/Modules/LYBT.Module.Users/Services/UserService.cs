@@ -1,7 +1,7 @@
 using AutoMapper;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

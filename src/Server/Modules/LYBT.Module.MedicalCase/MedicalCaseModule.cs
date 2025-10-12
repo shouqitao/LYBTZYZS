@@ -3,7 +3,7 @@ using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Module.MedicalCase.Validators;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.MedicalCase

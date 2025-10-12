@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;

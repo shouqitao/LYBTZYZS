@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Herbs;
 using LYBT.Module.Herbs.Interfaces;
-using LYBT.Shared.Interfaces.Services;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
