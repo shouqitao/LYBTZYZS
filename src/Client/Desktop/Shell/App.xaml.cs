@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Auth;
+using LYBT.Desktop.Shell.Services;
+using Microsoft.Extensions.Logging;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
@@ -30,16 +32,69 @@ namespace LYBT.Desktop.Shell;
 public partial class App : PrismApplication
 {
     private IApplicationBootstrapper? _bootstrapper;
+    private StartupPerformanceMonitor? _performanceMonitor;
+    private SplashScreenWindow? _splashScreen;
+
+    /// <summary>
+    /// 应用程序启动入口 - 性能优化版
+    /// Issue #1221: 添加 Splash Screen 和性能监控
+    /// </summary>
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        // 1. 先显示 Splash Screen
+        _splashScreen = new SplashScreenWindow();
+        _splashScreen.Show();
+        _splashScreen.UpdateStatus("正在初始化应用程序...");
+
+        // 2. 后台执行启动流程
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // 让 Splash Screen 先渲染
+                await Task.Delay(100);
+
+                // 执行 Prism 标准启动流程
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    _splashScreen?.UpdateStatus("正在加载核心服务...");
+                    base.OnStartup(e);
+                });
+            }
+            catch (Exception ex)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    System.Windows.MessageBox.Show(
+                        $"应用启动失败: {ex.Message}",
+                        "启动错误",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Error);
+                    Current.Shutdown(1);
+                });
+            }
+        });
+    }
 
     /// <summary>
     /// 创建应用程序主窗体
-    /// 从DI容器中解析MainWindow实例
-    /// 注:这是Prism框架的标准做法,此处使用Container.Resolve是必需的
+    /// Issue #1221: 不自动显示，由 OnInitialized 在启动完成后显示
     /// </summary>
-    /// <returns>应用程序主窗体实例</returns>
     protected override Window CreateShell()
     {
-        return Container.Resolve<MainWindow>();
+        var mainWindow = Container.Resolve<MainWindow>();
+        return mainWindow;
+    }
+
+    /// <summary>
+    /// 初始化主窗口
+    /// Issue #1221: 重写以阻止 Prism 自动显示主窗口
+    /// </summary>
+    protected override void InitializeShell(Window shell)
+    {
+        // 不调用 base.InitializeShell(shell)，因为它会自动显示窗口
+        // 将 shell 设置为 MainWindow 属性，但不显示
+        MainWindow = shell;
     }
 
     /// <summary>
@@ -85,11 +140,19 @@ public partial class App : PrismApplication
 
     /// <summary>
     /// 应用程序初始化完成后的回调
-    /// 使用注入的ApplicationBootstrapper服务,避免Service Locator反模式
+    /// Issue #1221: 集成性能监控和 Splash Screen
     /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        // 初始化性能监控
+        _performanceMonitor = new StartupPerformanceMonitor(Container.Resolve<ILoggerFactory>());
+        _performanceMonitor.StartMonitoring();
+        _performanceMonitor.StartStage("应用初始化");
+
+        // 更新 Splash Screen 状态
+        _splashScreen?.UpdateStatus("正在配置服务...");
 
         // 设置控制台编码为UTF-8,解决Visual Studio输出窗口中文日志乱码问题 (Issue #993)
         // WPF应用默认无控制台窗口,需try-catch保护
@@ -102,31 +165,78 @@ public partial class App : PrismApplication
             // 无控制台窗口时忽略,不影响应用运行
         }
 
-        // 使用注入的启动引导服务(避免Container.Resolve)
+        // 使用注入的启动引导服务
         try
         {
-            // 获取启动引导服务
-            // 注:此处Container.Resolve是可接受的,因为:
-            // 1. 位于组合根(App.xaml.cs)
-            // 2. OnInitialized是重写方法,无法使用构造函数注入
-            // 3. 仅在应用启动时调用一次
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
+
+            _performanceMonitor.EndStage();
+            _performanceMonitor.StartStage("错误处理初始化");
+            _splashScreen?.UpdateStatus("正在初始化错误处理...");
 
             // 初始化错误处理(同步操作)
             _bootstrapper.InitializeErrorHandlingService();
 
+            _performanceMonitor.EndStage();
+            _performanceMonitor.StartStage("模块协调器初始化");
+            _splashScreen?.UpdateStatus("正在初始化模块协调器...");
+
             // 初始化模块协调器
             _bootstrapper.InitializeSimplifiedModuleCoordinator();
 
-            // 异步初始化核心服务
+            _performanceMonitor.EndStage();
+            _performanceMonitor.StartStage("核心服务初始化");
+            _splashScreen?.UpdateStatus("正在初始化核心服务...");
+
+            // 异步初始化核心服务（现在等待完成）
             _ = Task.Run(async () =>
             {
-                await _bootstrapper.InitializeCoreServicesAsync();
-                await _bootstrapper.InitializeApplicationWarmupAsync();
+                try
+                {
+                    await _bootstrapper.InitializeCoreServicesAsync();
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _performanceMonitor?.EndStage();
+                        _performanceMonitor?.StartStage("应用预热");
+                        _splashScreen?.UpdateStatus("正在预热应用程序...");
+                    });
+
+                    await _bootstrapper.InitializeApplicationWarmupAsync();
+
+                    // 完成启动，关闭 Splash Screen，显示主窗口
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _performanceMonitor?.EndStage();
+                        _performanceMonitor?.Finish();
+
+                        // 关闭 Splash Screen
+                        _splashScreen?.Close();
+                        _splashScreen = null;
+
+                        // 显示主窗口
+                        MainWindow?.Show();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _splashScreen?.Close();
+                        System.Windows.MessageBox.Show(
+                            $"服务初始化失败: {ex.Message}",
+                            "启动错误",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                    });
+                }
             });
         }
         catch (Exception ex)
         {
+            _performanceMonitor?.Finish();
+            _splashScreen?.Close();
+
             // 降级处理:如果初始化服务未正确注册,记录错误但继续启动
             System.Diagnostics.Debug.WriteLine($"应用初始化失败: {ex.Message}");
             System.Windows.MessageBox.Show(
@@ -134,6 +244,9 @@ public partial class App : PrismApplication
                 "凌隐宝堂 - 系统错误",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);
+
+            // 仍然尝试显示主窗口（降级模式）
+            MainWindow?.Show();
         }
     }
 
