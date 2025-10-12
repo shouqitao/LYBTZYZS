@@ -5,7 +5,9 @@ using LYBT.Shared.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
+using LYBT.Shared.Models.Enums;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using PrescriptionItemEntity = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Module.Prescriptions.Services
 {
@@ -423,6 +425,79 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 _logger.LogError(ex, "获取日期范围统计失败");
                 return ServiceResult<PrescriptionRangeStatisticsDto>.Failure("获取日期范围统计失败");
+            }
+        }
+
+
+        /// <summary>
+        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        {
+            try
+            {
+                // 获取原始处方（包含药材项）
+                var originalPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                if (originalPrescription == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("未找到要克隆的处方");
+                }
+
+                // 创建克隆处方
+                var clonedPrescription = new PrescriptionEntity
+                {
+                    Id = Guid.NewGuid(),
+                    MedicalCaseId = originalPrescription.MedicalCaseId,
+                    PatientId = originalPrescription.PatientId,
+                    UserId = originalPrescription.UserId,
+                    Indication = originalPrescription.Indication,
+                    DosageCount = originalPrescription.DosageCount,
+                    Discount = originalPrescription.Discount,
+                    Advice = originalPrescription.Advice,
+                    FormulaSource = originalPrescription.FormulaSource,
+                    Status = PrescriptionStatus.Draft, // 克隆的处方默认为草稿状态
+                    Remark = originalPrescription.Remark,
+                    PrintVersion = 1, // 重置打印版本
+                    LastPrintedAt = null, // 清空打印时间
+                    PrintCount = 0, // 重置打印次数
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    
+                    // 复制药材项（稍后设置PrescriptionId）
+                    Items = new List<PrescriptionItemEntity>()
+                };
+
+                var savedPrescription = await _repository.AddAsync(clonedPrescription);
+                
+                // 复制药材项
+                if (originalPrescription.Items != null && originalPrescription.Items.Any())
+                {
+                    foreach (var item in originalPrescription.Items)
+                    {
+                        savedPrescription.Items.Add(new PrescriptionItemEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            PrescriptionId = savedPrescription.Id,
+                            HerbId = item.HerbId,
+                            HerbName = item.HerbName,
+                            Quantity = item.Quantity,
+                            Unit = item.Unit,
+                            UnitPrice = item.UnitPrice,
+                            Usage = item.Usage,
+                            Remark = item.Remark
+                        });
+                    }
+                }
+                
+                await _repository.SaveChangesAsync();
+
+                var prescriptionDto = _mapper.Map<PrescriptionDto>(savedPrescription);
+                return ServiceResult<PrescriptionDto>.Success(prescriptionDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "克隆处方时发生错误，处方ID：{PrescriptionId}", prescriptionId);
+                return ServiceResult<PrescriptionDto>.Failure($"克隆处方失败：{ex.Message}");
             }
         }
 

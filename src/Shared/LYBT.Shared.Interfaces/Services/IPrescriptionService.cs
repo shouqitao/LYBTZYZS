@@ -55,6 +55,11 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult<string>> GeneratePrescriptionNoAsync();
 
         /// <summary>
+        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// </summary>
+        Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId);
+
+        /// <summary>
         /// 获取处方统计数据 (Issue #1163)
         /// 包含总数、今日数量和今日金额
         /// </summary>
