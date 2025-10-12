@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Services.Navigation
+﻿namespace LYBT.Desktop.Shell.Services
 {
     /// <summary>
     /// 导航服务接口 - 简化版本

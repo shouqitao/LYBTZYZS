@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services.Theming
+namespace LYBT.Desktop.Shell.Services
 {
     /// <summary>
     /// 主题服务接口

@@ -1,4 +1,4 @@
-﻿namespace LYBT.Desktop.Services.Notifications
+﻿namespace LYBT.Desktop.Shell.Services
 {
     /// <summary>
     /// 通知服务接口 - 简化版本

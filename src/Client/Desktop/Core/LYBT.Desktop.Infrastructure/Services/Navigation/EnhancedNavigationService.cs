@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Services.Navigation
+namespace LYBT.Desktop.Infrastructure.Services
 {
     /// <summary>
     /// 增强导航服务接口

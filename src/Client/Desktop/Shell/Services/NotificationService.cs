@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services.Notifications
+namespace LYBT.Desktop.Shell.Services
 {
     /// <summary>
     /// 通知服务实现 - 简化版本
