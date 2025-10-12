@@ -28,8 +28,15 @@
     </Window.InputBindings>
 
     <Grid>
+        <!-- 外层布局：主内容区 + 底部状态栏（始终显示） -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />   <!-- 主内容区（登录前/登录后） -->
+            <RowDefinition Height="30" />  <!-- 底部状态栏 -->
+        </Grid.RowDefinitions>
+
+        <!-- Grid.Row="0" 主内容区 -->
         <!-- 登录界面 -->
-        <Grid Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}"
+        <Grid Grid.Row="0" Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}"
               Background="{StaticResource BackgroundBrush}">
             <Border Background="White"
                     CornerRadius="8"
@@ -48,11 +55,10 @@
         </Grid>
 
         <!-- 登录后的主界面 -->
-        <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Grid.Row="0" Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="60" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="30" />
+                <RowDefinition Height="60" />  <!-- 顶部工具栏 -->
+                <RowDefinition Height="*" />   <!-- 主内容区 -->
             </Grid.RowDefinitions>
 
             <!-- 顶部工具栏 -->
@@ -147,8 +153,10 @@
                 </Border>
             </Grid>
 
-            <!-- 底部状态栏 -->
-            <Border Grid.Row="2" Background="{StaticResource StatusBarBrush}" BorderBrush="{StaticResource AlternateBorderBrush}" BorderThickness="0,1,0,0">
+        </Grid>
+
+        <!-- 底部状态栏（Grid.Row="1"，始终显示） -->
+        <Border Grid.Row="1" Background="{StaticResource StatusBarBrush}" BorderBrush="{StaticResource AlternateBorderBrush}" BorderThickness="0,1,0,0">
                 <Grid Margin="20,5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -200,6 +208,5 @@
                     <TextBlock Grid.Column="2" Text="{Binding CurrentTime}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                 </Grid>
             </Border>
-        </Grid>
     </Grid>
 </Window>
