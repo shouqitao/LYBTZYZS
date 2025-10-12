@@ -225,5 +225,34 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException<List<ConsultationDto>>(ex, "搜索诊疗记录", new { Keyword = keyword });
             }
         }
+
+
+        /// <summary>
+        /// 获取诊疗统计数据 (Issue #1168)
+        /// </summary>
+        /// <param name="startDate">开始日期（可选）</param>
+        /// <param name="endDate">结束日期（可选）</param>
+        [HttpGet("statistics")]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationStatisticsDto>), 200)]
+        public async Task<ActionResult<ApiResponse<ConsultationStatisticsDto>>> GetStatistics(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
+        {
+            try
+            {
+                // 日期范围验证
+                if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+                {
+                    return ValidationFail<ConsultationStatisticsDto>("开始日期不能晚于结束日期");
+                }
+
+                var result = await _consultationService.GetStatisticsAsync(startDate, endDate);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ConsultationStatisticsDto>(ex, "获取诊疗统计", new { startDate, endDate });
+            }
+        }
     }
 }

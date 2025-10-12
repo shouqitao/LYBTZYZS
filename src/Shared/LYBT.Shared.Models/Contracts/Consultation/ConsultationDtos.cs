@@ -299,4 +299,32 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>错误消息</summary>
         public List<string> ErrorMessages { get; set; } = new();
     }
+
+
+    /// <summary>
+    /// 诊疗统计DTO (Issue #1168)
+    /// 为Desktop端ConsultationsMainViewModel提供统计数据
+    /// </summary>
+    public class ConsultationStatisticsDto
+    {
+        /// <summary>总诊疗数</summary>
+        [DisplayName("总诊疗数")]
+        public int TotalCount { get; set; }
+
+        /// <summary>今日诊疗数</summary>
+        [DisplayName("今日诊疗数")]
+        public int TodayCount { get; set; }
+
+        /// <summary>平均诊疗时长(分钟)</summary>
+        [DisplayName("平均诊疗时长")]
+        public double AvgDuration { get; set; }
+
+        /// <summary>按状态统计</summary>
+        [DisplayName("按状态统计")]
+        public Dictionary<string, int> ByStatus { get; set; } = new();
+
+        /// <summary>按医生统计</summary>
+        [DisplayName("按医生统计")]
+        public Dictionary<string, int> ByDoctor { get; set; } = new();
+    }
 }

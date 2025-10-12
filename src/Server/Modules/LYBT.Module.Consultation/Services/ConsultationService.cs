@@ -231,5 +231,65 @@ namespace LYBT.Module.Consultation.Services
                 return ServiceResult<List<ConsultationDto>>.Failure("搜索诊疗记录失败");
             }
         }
+
+
+        /// <summary>
+        /// 获取诊疗统计数据 (Issue #1168)
+        /// </summary>
+        public async Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                // 获取所有诊疗记录
+                var allConsultations = (await _repository.GetAllAsync()).ToList();
+                
+                // 日期范围筛选
+                var filteredConsultations = allConsultations.AsQueryable();
+                if (startDate.HasValue)
+                {
+                    filteredConsultations = filteredConsultations.Where(c => c.CreatedAt >= startDate.Value);
+                }
+                if (endDate.HasValue)
+                {
+                    var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
+                    filteredConsultations = filteredConsultations.Where(c => c.CreatedAt <= endOfDay);
+                }
+
+                var consultations = filteredConsultations.ToList();
+                var today = DateTime.Today;
+
+                // 统计今日诊疗数
+                var todayConsultations = consultations.Where(c => c.CreatedAt.Date == today).ToList();
+
+                // 按状态统计
+                var byStatus = consultations
+                    .GroupBy(c => c.Status.ToString())
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                // 按医生统计
+                var byDoctor = consultations
+                    .Where(c => c.MedicalCase != null)
+                    .GroupBy(c => c.MedicalCase!.DoctorName)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                // 注意：Consultation 实体中没有 StartTime/EndTime 字段
+                // 平均诊疗时长暂时设为 0，未来需要在实体中添加这些字段
+                var statistics = new ConsultationStatisticsDto
+                {
+                    TotalCount = consultations.Count,
+                    TodayCount = todayConsultations.Count,
+                    AvgDuration = 0, // 实体中暂无时间字段
+                    ByStatus = byStatus,
+                    ByDoctor = byDoctor
+                };
+
+                return ServiceResult<ConsultationStatisticsDto>.Success(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取诊疗统计失败");
+                return ServiceResult<ConsultationStatisticsDto>.Failure("获取诊疗统计失败");
+            }
+        }
     }
 }
