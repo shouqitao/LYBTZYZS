@@ -152,9 +152,8 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
                 LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
 
-            // 处方打印服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IPrescriptionPrintService,
-                LYBT.Desktop.Infrastructure.Services.PrescriptionPrintService>();
+            // 处方打印服务已移除（等待 Issue #1202 实现新的统一打印系统）
+            // 新的打印服务将在 Desktop.Presentation/Print/ 中实现，使用 QuestPDF
 
             // 键盘快捷键服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,

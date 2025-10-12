@@ -1,6 +1,5 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -23,9 +22,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 私有字段
 
         private readonly IPatientRepository _patientRepository;
-        private readonly IPrescriptionPrintService _printService;
 
-        private Guid _patientId;
+private Guid _patientId;
         private PatientDto? _patient;
         private bool _isLoading;
         private bool _isReadOnly = true;
@@ -96,7 +94,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientDetailViewModel(
             IPatientRepository patientRepository,
-            IPrescriptionPrintService printService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -105,9 +102,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-            _printService = printService ?? throw new ArgumentNullException(nameof(printService));
 
-            // 初始化命令
+// 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
             BackCommand = new DelegateCommand(NavigateBack);
             EditCommand = new DelegateCommand(EnableEdit, CanEdit);
@@ -259,9 +255,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
-        /// P0-03新增：患者病历打印功能
-        /// Epic 03-P0-03: 实用化患者病历打印功能，专为小诊所设计
-        /// 使用专业的IPrescriptionPrintService打印患者档案和病历信息
+        /// 患者病历打印功能（待实现 Issue #1202）
+        /// 将在 Issue #1202 中实现统一的打印系统（Desktop.Presentation/Print/，使用 QuestPDF）
         /// </summary>
         private async Task PrintPatientAsync()
         {
@@ -273,11 +268,9 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             try
             {
-                // P0-03核心：使用专业打印服务生成患者病历预览
-                // TODO: 需要修改打印服务或创建患者专用打印方法
-                // var previewResult = await _printService.PreviewPatientAsync(Patient);
-                // 暂时注释掉打印功能
-                await ShowWarningMessageAsync("打印功能正在开发中");
+                // TODO (Issue #1202): 等待新的打印系统实现后重新启用此功能
+                // 新打印服务位于 Desktop.Presentation/Print/，使用 QuestPDF
+                await ShowWarningMessageAsync("打印功能正在开发中（Issue #1202）");
                 return;
             }
             catch (Exception ex)
