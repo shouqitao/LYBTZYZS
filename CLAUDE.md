@@ -213,7 +213,81 @@ config/appsettings.Development.json
 
 ---
 
-## 5. 常用命令（PowerShell）
+## 5. 开发环境约束（Windows 平台）
+
+### 🖥️ 操作系统与工具
+
+**强制要求**：
+- ✅ **操作系统**：Windows 10/11（项目运行在 Windows 平台）
+- ✅ **Shell 环境**：PowerShell 7.x+（默认 Shell）
+- ✅ **版本控制**：Git for Windows 2.40+
+- ✅ **开发工具**：Visual Studio 2022 或 JetBrains Rider
+- ✅ **.NET SDK**：.NET 8.0 SDK
+
+### ❌ 禁止使用的命令（Linux 专有）
+
+**以下命令在 Windows 环境下不可用，必须使用对应的 Windows/PowerShell 命令**：
+
+| ❌ 禁止（Linux） | ✅ 使用（Windows PowerShell） | 说明 |
+|-----------------|---------------------------|------|
+| `ls -la` | `Get-ChildItem` 或 `ls` (PowerShell alias) | 列出文件 |
+| `cat file.txt` | `Get-Content file.txt` 或 `cat file.txt` | 读取文件 |
+| `grep "pattern" file` | `Select-String "pattern" file` | 搜索文本 |
+| `find . -name "*.cs"` | `Get-ChildItem -Recurse -Filter "*.cs"` | 查找文件 |
+| `chmod +x script.sh` | N/A (Windows 无需执行权限) | 修改权限 |
+| `./script.sh` | `.\script.ps1` | 执行脚本 |
+| `export VAR=value` | `$env:VAR = "value"` | 设置环境变量 |
+| `which dotnet` | `Get-Command dotnet` | 查找命令路径 |
+| `tail -f log.txt` | `Get-Content log.txt -Wait -Tail 10` | 实时查看日志 |
+| `head -n 10 file.txt` | `Get-Content file.txt -Head 10` | 读取文件头部 |
+| `wc -l file.txt` | `(Get-Content file.txt).Length` | 统计行数 |
+| `du -sh folder` | `(Get-ChildItem folder -Recurse \| Measure-Object -Property Length -Sum).Sum / 1MB` | 计算目录大小 |
+
+### ✅ Windows 推荐命令工具链
+
+**PowerShell 核心命令**：
+```powershell
+# 文件操作
+Get-ChildItem       # 列出文件（别名: ls, dir）
+Get-Content         # 读取文件内容（别名: cat, type）
+Set-Content         # 写入文件内容
+Copy-Item           # 复制文件（别名: cp, copy）
+Move-Item           # 移动文件（别名: mv, move）
+Remove-Item         # 删除文件（别名: rm, del）
+
+# 文本搜索
+Select-String       # 类似 grep 的文本搜索
+
+# 进程管理
+Get-Process         # 列出进程
+Stop-Process        # 终止进程
+
+# 环境变量
+$env:PATH           # 访问环境变量
+[Environment]::SetEnvironmentVariable() # 设置环境变量
+```
+
+**Windows 原生命令**：
+```cmd
+# 网络相关（可在 PowerShell 中使用）
+netstat -ano        # 查看端口占用
+taskkill /F /PID    # 强制终止进程
+
+# 路径相关
+cd /d D:\path       # 切换驱动器和目录（PowerShell 中直接 cd D:\path）
+```
+
+### 🔧 MCP 工具优先级（跨平台兼容）
+
+**推荐使用 MCP 工具代替原生 Shell 命令**：
+- ✅ **文件读写**：优先使用 `filesystem` MCP 工具（跨平台）
+- ✅ **代码搜索**：优先使用 `serena` MCP 工具（语义级）
+- ✅ **Git 操作**：优先使用 `git` MCP 工具（跨平台）
+- ⚠️ **Bash 工具**：仅用于 PowerShell 兼容命令（避免 Linux 专有命令）
+
+---
+
+## 6. 常用命令（PowerShell）
 
 ```powershell
 # 还原/构建
@@ -231,7 +305,7 @@ dotnet test LYBT.Server.sln -c Release
 
 ---
 
-## 6. MCP 工具使用准则
+## 7. MCP 工具使用准则
 
 > **📖 详细规则与工具链**：参见 `.claude/core/RULES.md`（工具优先级）、`docs/development/mcp-tools-reference.md`（完整参考手册）
 
@@ -257,7 +331,7 @@ dotnet test LYBT.Server.sln -c Release
 
 ---
 
-## 7. 工作模式（7种专业化行为模式）
+## 8. 工作模式（7种专业化行为模式）
 
 > **📖 详细模式定义**：参见 `.claude/modes/` 目录（每种模式含工作流程、工具链、质量标准）
 
@@ -299,7 +373,7 @@ analyze-perf    create-issue        refactor-plan  generate-pr
 
 ---
 
-## 8. 代码修复后的后台清理（Run-to-Completion Hygiene）
+## 9. 代码修复后的后台清理（Run-to-Completion Hygiene）
 
 为避免测试通过后遗留的运行中后台进程或临时环境状态影响后续验证，完成修复并通过测试后，必须执行以下清理：
 
