@@ -183,6 +183,105 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+
+        /// <summary>
+        /// 批量删除医疗案例（软删除）(Issue #1169)
+        /// </summary>
+        public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            const int MAX_BATCH_SIZE = 100;
+
+            try
+            {
+                // 批量大小限制
+                if (ids.Count > MAX_BATCH_SIZE)
+                {
+                    return ServiceResult<BatchOperationResultDto>.Failure($"批量操作最多支持{MAX_BATCH_SIZE}条记录");
+                }
+
+                var result = new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    IsSuccess = true,
+                    Message = "批量删除完成"
+                };
+
+                foreach (var caseId in ids)
+                {
+                    try
+                    {
+                        // 检查医疗案例是否存在
+                        var medicalCase = await _repository.GetByIdAsync(caseId);
+                        if (medicalCase == null)
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(caseId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = caseId.ToString(),
+                                ErrorMessage = "医疗案例不存在"
+                            });
+                            continue;
+                        }
+
+                        // 业务规则检查：软删除相关的诊疗和处方
+                        // 在聚合根模式下，删除医疗案例会级联软删除关联数据
+                        
+                        // 执行删除
+                        var deleteResult = await _repository.DeleteAsync(caseId);
+                        if (deleteResult)
+                        {
+                            result.SuccessCount++;
+                            result.SuccessfulIds.Add(caseId);
+                        }
+                        else
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(caseId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = caseId.ToString(),
+                                ErrorMessage = "删除失败"
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(caseId);
+                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        {
+                            RecordIdentifier = caseId.ToString(),
+                            ErrorMessage = ex.Message
+                        });
+                        _logger.LogError(ex, "批量删除医疗案例失败: {CaseId}", caseId);
+                    }
+                }
+
+                // 更新操作结果
+                result.IsSuccess = result.FailureCount == 0;
+                if (result.FailureCount > 0 && result.SuccessCount > 0)
+                {
+                    result.Message = $"部分成功：成功{result.SuccessCount}条，失败{result.FailureCount}条";
+                }
+                else if (result.FailureCount == result.TotalCount)
+                {
+                    result.Message = "批量删除失败";
+                    result.IsSuccess = false;
+                }
+
+                _logger.LogInformation("批量删除医疗案例完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                    result.TotalCount, result.SuccessCount, result.FailureCount);
+
+                return ServiceResult<BatchOperationResultDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除医疗案例异常");
+                return ServiceResult<BatchOperationResultDto>.Failure("批量删除医疗案例失败");
+            }
+        }
+
         /// <summary>
         /// 根据患者ID获取医疗案例
         /// </summary>

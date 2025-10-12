@@ -194,6 +194,17 @@ namespace LYBT.Shared.Models.Contracts.Common
         public bool IsSoftDelete { get; set; } = true;
     }
 
+
+    /// <summary>
+    /// 批量删除请求DTO - 用于批量删除操作 (Issue #1169)
+    /// </summary>
+    public class BatchDeleteRequestDto
+    {
+        /// <summary>要删除的ID列表</summary>
+        [DisplayName("ID列表")]
+        public List<Guid> Ids { get; set; } = new();
+    }
+
     /// <summary>
     /// 验证结果DTO - 用于数据验证的结果
     /// </summary>

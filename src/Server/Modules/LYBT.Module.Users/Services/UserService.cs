@@ -230,6 +230,119 @@ namespace LYBT.Module.Users.Services
             }
         }
 
+
+        /// <summary>
+        /// 批量删除用户（软删除）(Issue #1169)
+        /// </summary>
+        public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            const int MAX_BATCH_SIZE = 100;
+
+            try
+            {
+                // 批量大小限制
+                if (ids.Count > MAX_BATCH_SIZE)
+                {
+                    return ServiceResult<BatchOperationResultDto>.Failure($"批量操作最多支持{MAX_BATCH_SIZE}条记录");
+                }
+
+                var result = new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    IsSuccess = true,
+                    Message = "批量删除完成"
+                };
+
+                // 获取超级管理员用户名（可配置）
+                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+
+                foreach (var userId in ids)
+                {
+                    try
+                    {
+                        // 检查用户是否存在
+                        var user = await _repository.GetByIdAsync(userId);
+                        if (user == null)
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(userId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = userId.ToString(),
+                                ErrorMessage = "用户不存在"
+                            });
+                            continue;
+                        }
+
+                        // 检查是否是超级管理员
+                        if (user.Role == UserRole.Admin || 
+                            string.Equals(user.UserName, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(userId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = user.UserName,
+                                ErrorMessage = "不能删除超级管理员"
+                            });
+                            continue;
+                        }
+
+                        // 执行删除
+                        var deleteResult = await _repository.DeleteAsync(userId);
+                        if (deleteResult)
+                        {
+                            result.SuccessCount++;
+                            result.SuccessfulIds.Add(userId);
+                        }
+                        else
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(userId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = userId.ToString(),
+                                ErrorMessage = "删除失败"
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(userId);
+                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        {
+                            RecordIdentifier = userId.ToString(),
+                            ErrorMessage = ex.Message
+                        });
+                        _logger.LogError(ex, "批量删除用户失败: {UserId}", userId);
+                    }
+                }
+
+                // 更新操作结果
+                result.IsSuccess = result.FailureCount == 0;
+                if (result.FailureCount > 0 && result.SuccessCount > 0)
+                {
+                    result.Message = $"部分成功：成功{result.SuccessCount}条，失败{result.FailureCount}条";
+                }
+                else if (result.FailureCount == result.TotalCount)
+                {
+                    result.Message = "批量删除失败";
+                    result.IsSuccess = false;
+                }
+
+                _logger.LogInformation("批量删除用户完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                    result.TotalCount, result.SuccessCount, result.FailureCount);
+
+                return ServiceResult<BatchOperationResultDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除用户异常");
+                return ServiceResult<BatchOperationResultDto>.Failure("批量删除用户失败");
+            }
+        }
+
         /// <summary>
         /// 禁用用户
         /// </summary>

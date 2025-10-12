@@ -175,6 +175,46 @@ namespace LYBT.WebAPI.Controllers
 
 
         /// <summary>
+        /// 批量删除药材（软删除）(Issue #1169)
+        /// </summary>
+        /// <param name="request">批量删除请求</param>
+        [HttpPost("batch-delete")]
+        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<BatchOperationResultDto>>> BatchDeleteHerbs([FromBody] BatchDeleteRequestDto request)
+        {
+            try
+            {
+                // 验证请求
+                if (request.Ids == null || request.Ids.Count == 0)
+                {
+                    return ValidationFail<BatchOperationResultDto>("ID列表不能为空");
+                }
+
+                if (request.Ids.Count > 100)
+                {
+                    return ValidationFail<BatchOperationResultDto>("批量操作最多支持100条记录");
+                }
+
+                var result = await _herbService.BatchDeleteAsync(request.Ids);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("批量删除药材", 
+                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount }, 
+                        null);
+                }
+
+                return HandleServiceResult(result, result.Data?.Message ?? "批量删除完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<BatchOperationResultDto>(ex, "批量删除药材", new { IdCount = request.Ids?.Count });
+            }
+        }
+
+
+        /// <summary>
         /// 批量导入药材数据 (Issue #1166)
         /// </summary>
         /// <param name="file">Excel文件（.xlsx格式）</param>
