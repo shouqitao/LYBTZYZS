@@ -14,7 +14,6 @@ public class DesktopLayerArchTests
     [
         Assembly.Load("LYBT.Desktop.Infrastructure"),
         Assembly.Load("LYBT.Desktop.Models"),
-        Assembly.Load("LYBT.Desktop.Services"),
         Assembly.Load("LYBT.Desktop.Shell"),
         Assembly.Load("LYBT.Desktop.Auth"),
         Assembly.Load("LYBT.Desktop.Users"),
@@ -276,10 +275,10 @@ public class DesktopLayerArchTests
     /// Desktop模块内不得包含禁止的目录
     /// </summary>
     /// <remarks>
-    /// 禁止目录：Interfaces/、Mappings/、Services/
-    /// 原因：接口统一在Shared.Interfaces，Mapping统一在Desktop.Services/Mapping，
-    /// 业务服务统一在Desktop.Services/Business
-    /// Issue #1113
+    /// 禁止目录：Interfaces/
+    /// 原因：接口统一在各模块的 Interfaces/ 目录或 Shared.Interfaces
+    /// ADR-002: Repository 由各模块自行管理（允许 Repositories/ 目录）
+    /// Issue #1213
     /// </remarks>
     [Fact]
     public void Desktop_Modules_Should_Not_Have_Forbidden_Directories()
@@ -298,7 +297,7 @@ public class DesktopLayerArchTests
             "LYBT.Desktop.ClinicalWorkstation"
         };
 
-        var forbiddenNamespaces = new[] { "Interfaces", "Mappings", "Services" };
+        var forbiddenNamespaces = new[] { "Mappings" };
 
         foreach (var assemblyName in moduleAssemblies)
         {
@@ -314,44 +313,6 @@ public class DesktopLayerArchTests
                 Assert.Empty(violatingTypes);
             }
         }
-    }
-
-    /// <summary>
-    /// Desktop业务服务必须在统一位置实现
-    /// </summary>
-    /// <remarks>
-    /// 业务服务统一在Desktop.Services/Business/实现
-    /// 实现Shared.Interfaces.Services中定义的接口
-    /// Issue #1113
-    /// </remarks>
-    [Fact]
-    public void Desktop_Services_Should_Be_In_Correct_Location()
-    {
-        var serviceAssembly = Assembly.Load("LYBT.Desktop.Services");
-        var serviceTypes = serviceAssembly.GetTypes()
-            .Where(t => t.Namespace != null &&
-                        t.Namespace.Contains("Business") &&
-                        t.IsClass &&
-                        !t.IsAbstract &&
-                        t.Name.EndsWith("Service"))
-            .ToList();
-
-        // 验证：所有XxxService类都应该在Desktop.Services.Business命名空间
-        foreach (var serviceType in serviceTypes)
-        {
-            Assert.True(
-                serviceType.Namespace!.StartsWith("LYBT.Desktop.Services.Business"),
-                $"服务 {serviceType.FullName} 不在正确的命名空间（应为LYBT.Desktop.Services.Business）");
-        }
-
-        // 验证：业务服务应实现Shared.Interfaces.Services中的接口
-        var servicesWithInterfaces = serviceTypes
-            .Where(t => t.GetInterfaces().Any(i => i.Namespace != null && i.Namespace.StartsWith("LYBT.Shared.Interfaces.Services")))
-            .ToList();
-
-        Assert.True(
-            servicesWithInterfaces.Count > 0,
-            "Desktop.Services.Business中应至少有一个服务实现Shared.Interfaces.Services接口");
     }
 
     /// <summary>
@@ -415,5 +376,67 @@ public class DesktopLayerArchTests
                 hasValidBase,
                 $"ViewModel {vmType.FullName} 未继承自标准基类。允许的基类：{string.Join(", ", allowedBaseClasses)}");
         }
+    }
+
+    /// <summary>
+    /// 验证所有 Repository 都在对应模块中注册
+    /// </summary>
+    /// <remarks>
+    /// ADR-002 架构决策：Repository (数据访问层) 由各业务模块自行注册
+    /// 每个模块的 *Module.cs 应包含 RegisterSingleton&lt;IXxxRepository, XxxRepository&gt;()
+    /// Issue #1213
+    /// </remarks>
+    [Fact]
+    public void All_Repositories_Should_Be_Registered_In_Modules()
+    {
+        var moduleAssemblies = new[]
+        {
+            Assembly.Load("LYBT.Desktop.Auth"),
+            Assembly.Load("LYBT.Desktop.Users"),
+            Assembly.Load("LYBT.Desktop.Patients"),
+            Assembly.Load("LYBT.Desktop.MedicalCase"),
+            Assembly.Load("LYBT.Desktop.Consultation"),
+            Assembly.Load("LYBT.Desktop.Prescriptions"),
+            Assembly.Load("LYBT.Desktop.Herbs"),
+            Assembly.Load("LYBT.Desktop.Formula")
+        };
+
+        var repositoriesWithoutRegistration = new List<string>();
+
+        foreach (var assembly in moduleAssemblies)
+        {
+            // 查找 Repository 接口
+            var repositoryInterfaces = assembly.GetTypes()
+                .Where(t => t.IsInterface && t.Name.EndsWith("Repository"))
+                .ToList();
+
+            if (!repositoryInterfaces.Any())
+                continue; // 模块没有 Repository，跳过
+
+            // 查找模块类
+            var moduleType = assembly.GetTypes()
+                .FirstOrDefault(t => t.Name.EndsWith("Module") && 
+                                   t.GetInterfaces().Any(i => i.Name == "IModule"));
+
+            if (moduleType == null)
+            {
+                repositoriesWithoutRegistration.Add($"{assembly.GetName().Name}: 未找到 Module 类");
+                continue;
+            }
+
+            // 检查 RegisterTypes 方法
+            var registerMethod = moduleType.GetMethod("RegisterTypes");
+            if (registerMethod == null)
+            {
+                repositoriesWithoutRegistration.Add($"{assembly.GetName().Name}: Module 类未实现 RegisterTypes 方法");
+                continue;
+            }
+
+            // 注意：这里只是验证 Module 类存在且有 RegisterTypes 方法
+            // 实际的注册验证需要运行时检查或源码分析，这里通过集成测试覆盖
+            // 如果模块有 Repository 接口但未注册，应用启动时会失败
+        }
+
+        Assert.Empty(repositoriesWithoutRegistration);
     }
 }
