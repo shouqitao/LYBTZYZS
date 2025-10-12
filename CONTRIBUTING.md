@@ -98,7 +98,7 @@ Closes #<issue-number>
 
 - [最小实践指南](docs/development/minimal-practice.md) - Issue→清单→PR工作法
 - [文档规范](docs/development/documentation-guidelines.md)
-- [GitHub标签指南](docs/development/github-labels-guide.md)
+- [GitHub工作流程指南](docs/development/github-workflow-guide.md) - Issue/PR/标签/自动化
 
 ## ❓ 常见问题
 
