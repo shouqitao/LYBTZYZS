@@ -55,7 +55,6 @@
 
   <!-- Core_New Dependencies -->
   <ItemGroup Label="Core_New Dependencies">
-    <ProjectReference Include="..\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
   </ItemGroup>
 
 </Project>

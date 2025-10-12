@@ -1,8 +1,8 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;

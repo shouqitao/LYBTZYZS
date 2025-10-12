@@ -3,7 +3,7 @@ using System.Text.Json;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services.Business
+namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// Token 存储服务实现 - 使用 JSON 文件存储认证信息

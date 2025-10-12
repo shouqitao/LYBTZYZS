@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
@@ -11,11 +12,11 @@ namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
     /// 修改密码对话框 ViewModel
-    /// TODO: 当前使用简化的 AuthService Mock 实现，待后续集成真实服务
+    /// 使用 IAuthenticationService 进行密码修改
     /// </summary>
     public class ChangePasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly AuthService _authService;
+        private readonly IAuthenticationService _authService;
 
         #region 属性
 
@@ -141,7 +142,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            AuthService authService,
+            IAuthenticationService authService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)

@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Services.Business
+namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 用户名存储服务实现 - Issue #861

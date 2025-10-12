@@ -151,5 +151,38 @@ namespace LYBT.Desktop.Foundation.Security
                 return false;
             }
         }
+
+        /// <summary>
+        /// 修改密码 - 调用HTTP API
+        /// </summary>
+        public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
+        {
+            try
+            {
+                var request = new ChangeSysAdminPassword
+                {
+                    OldPassword = currentPassword,
+                    NewPassword = newPassword
+                };
+
+                var apiResponse = await _authApi.ChangeSysAdminPasswordAsync(request);
+
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("密码修改成功");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("密码修改失败: {Message}", apiResponse.Message);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修改密码时发生异常");
+                return false;
+            }
+        }
     }
 }

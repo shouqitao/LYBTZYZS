@@ -34,7 +34,6 @@
   <!-- Project References -->
   <ItemGroup Label="Core Infrastructure">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Core\LYBT.Desktop.Services\LYBT.Desktop.Services.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Interfaces\LYBT.Shared.Interfaces.csproj" />
