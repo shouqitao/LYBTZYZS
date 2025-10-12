@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -115,8 +115,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Act - 调用基类protected方法GetItemsAsync（避免WPF Dispatcher）
             var method = typeof(UserManagementViewModel).BaseType!
                 .GetMethod("GetItemsAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            var result = await (Task<IEnumerable<UserDto>>)method!.Invoke(_viewModel, new object[] { 1, 20, (string?)null })!;
+
+            var result = await (Task<IEnumerable<UserDto>>)method!.Invoke(_viewModel, new object?[] { 1, 20, null })!;
 
             // Assert - 验证Repository被调用
             _mockUserRepository.Verify(x => x.GetPagedAsync(1, 20, null), Times.Once);
@@ -169,8 +169,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Act - 直接调用GetItemsAsync，避免WPF Dispatcher
             var method = typeof(UserManagementViewModel).BaseType!
                 .GetMethod("GetItemsAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            var result = await (Task<IEnumerable<UserDto>>)method!.Invoke(_viewModel, new object[] { 1, 20, (string?)null })!;
+
+            var result = await (Task<IEnumerable<UserDto>>)method!.Invoke(_viewModel, new object?[] { 1, 20, null })!;
 
             // Assert - 应该返回空列表，而不是抛出异常
             result.Should().BeEmpty();

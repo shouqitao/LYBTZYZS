@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using LYBT.Desktop.Consultation.Repositories;
+using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Desktop.Consultation.ViewModels;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
