@@ -34,9 +34,7 @@
 - [server-module-design-standard.md](server-module-design-standard.md) - Server模块设计标准
 
 #### Desktop端
-- [desktop-core-new-architecture.md](desktop-core-new-architecture.md) - Desktop核心架构
-- [desktop-prism-refactoring-plan.md](desktop-prism-refactoring-plan.md) - Prism重构计划
-- [desktop-prism-phase3-dialog-plan.md](desktop-prism-phase3-dialog-plan.md) - 对话框系统设计
+- [desktop-core-new-architecture.md](desktop-core-new-architecture.md) - **Desktop核心架构** (权威文档，包含Issue #815完成的Core_New三层架构)
 
 #### 跨层设计
 - [dto-design-principles.md](dto-design-principles.md) - DTO设计原则
@@ -115,10 +113,9 @@ graph TB
 4. 📂 [modules/](modules/README.md) - 查看你负责的模块
 
 ### Desktop端开发者
-1. 📘 [desktop-core-new-architecture.md](desktop-core-new-architecture.md) - Desktop核心架构
-2. 📗 [desktop-prism-refactoring-plan.md](desktop-prism-refactoring-plan.md) - Prism重构计划
-3. 📂 [client/](client/) - 客户端架构详细设计
-4. 📂 [modules/](modules/README.md) - 查看你负责的模块
+1. 📘 [desktop-core-new-architecture.md](desktop-core-new-architecture.md) - Desktop核心架构（完整指南）
+2. 📂 [client/](client/) - 客户端架构详细设计
+3. 📂 [modules/](modules/README.md) - 查看你负责的模块
 
 ---
 
