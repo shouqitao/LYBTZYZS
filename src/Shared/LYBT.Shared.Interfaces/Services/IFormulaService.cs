@@ -38,6 +38,12 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
+        /// 批量删除验方（软删除）(Issue #1169)
+        /// </summary>
+        /// <param name="ids">验方ID列表</param>
+        Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
         /// 搜索验方 - 支持多条件搜索
         /// </summary>
         Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);

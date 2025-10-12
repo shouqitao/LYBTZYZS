@@ -195,6 +195,105 @@ namespace LYBT.Module.Formula.Services
 
 
         /// <summary>
+        /// 批量删除验方（软删除）(Issue #1169)
+        /// </summary>
+        public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
+        {
+            const int MAX_BATCH_SIZE = 100;
+
+            try
+            {
+                // 批量大小限制
+                if (ids.Count > MAX_BATCH_SIZE)
+                {
+                    return ServiceResult<BatchOperationResultDto>.Failure($"批量操作最多支持{MAX_BATCH_SIZE}条记录");
+                }
+
+                var result = new BatchOperationResultDto
+                {
+                    TotalCount = ids.Count,
+                    IsSuccess = true,
+                    Message = "批量删除完成"
+                };
+
+                foreach (var formulaId in ids)
+                {
+                    try
+                    {
+                        // 检查验方是否存在
+                        var formula = await _repository.GetByIdAsync(formulaId);
+                        if (formula == null)
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(formulaId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = formulaId.ToString(),
+                                ErrorMessage = "验方不存在"
+                            });
+                            continue;
+                        }
+
+                        // TODO: 检查验方是否被处方引用（后续迭代）
+                        // 现在MVP阶段直接允许删除
+
+                        // 执行删除
+                        var deleteResult = await _repository.DeleteAsync(formulaId);
+                        if (deleteResult)
+                        {
+                            result.SuccessCount++;
+                            result.SuccessfulIds.Add(formulaId);
+                        }
+                        else
+                        {
+                            result.FailureCount++;
+                            result.FailedIds.Add(formulaId);
+                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            {
+                                RecordIdentifier = formulaId.ToString(),
+                                ErrorMessage = "删除失败"
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.FailedIds.Add(formulaId);
+                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        {
+                            RecordIdentifier = formulaId.ToString(),
+                            ErrorMessage = ex.Message
+                        });
+                        _logger.LogError(ex, "批量删除验方失败: {FormulaId}", formulaId);
+                    }
+                }
+
+                // 更新操作结果
+                result.IsSuccess = result.FailureCount == 0;
+                if (result.FailureCount > 0 && result.SuccessCount > 0)
+                {
+                    result.Message = $"部分成功：成功{result.SuccessCount}条，失败{result.FailureCount}条";
+                }
+                else if (result.FailureCount == result.TotalCount)
+                {
+                    result.Message = "批量删除失败";
+                    result.IsSuccess = false;
+                }
+
+                _logger.LogInformation("批量删除验方完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                    result.TotalCount, result.SuccessCount, result.FailureCount);
+
+                return ServiceResult<BatchOperationResultDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量删除验方异常");
+                return ServiceResult<BatchOperationResultDto>.Failure("批量删除验方失败");
+            }
+        }
+
+
+        /// <summary>
         /// 从Excel文件导入验方数据 (Issue #1166)
         /// </summary>
         public async Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)

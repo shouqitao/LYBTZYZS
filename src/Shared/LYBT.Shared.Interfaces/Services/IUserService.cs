@@ -59,6 +59,12 @@ namespace LYBT.Shared.Interfaces.Services
         Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
+        /// 批量删除用户（软删除）(Issue #1169)
+        /// </summary>
+        /// <param name="ids">用户ID列表</param>
+        Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+
+        /// <summary>
         /// 禁用用户
         /// </summary>
         Task<ServiceResult> DisableAsync(Guid id);
