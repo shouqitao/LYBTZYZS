@@ -331,7 +331,183 @@ dotnet test LYBT.Server.sln -c Release
 
 ---
 
-## 8. 工作模式（7种专业化行为模式）
+## 8. Prompt Engineering 最佳实践
+
+> **📖 完整指南参考**：基于 [Anthropic 官方 Prompt Engineering 文档](https://docs.anthropic.com/build-with-claude/prompt-engineering)
+
+本章节整合 Anthropic 官方的 Prompt Engineering 最佳实践，帮助开发者充分发挥 Claude Code 的能力。
+
+### 8.1 核心原则（Be Clear and Direct）
+
+#### 明确性原则
+- ✅ **使用具体的操作动词**：避免模糊指令（如"处理"、"搞定"），使用精确动词（如"重构"、"优化"、"修复"）
+- ✅ **明确输出格式**：指定期望的输出结构（JSON、Markdown、代码片段等）
+- ✅ **提供充足上下文**：包含必要的背景信息、约束条件、相关文档链接
+
+**示例对比**：
+
+❌ **模糊指令**：
+```
+帮我处理一下这个代码
+```
+
+✅ **清晰指令**：
+```
+请重构 PatientRepository.cs 的 GetByIdAsync 方法，
+要求：
+1. 添加缓存支持（IMemoryCache）
+2. 保持 Repository 模式规范
+3. 添加完整的 XML 注释
+4. 参考 docs/architecture/server-module-design-standard.md
+```
+
+#### 直接性原则
+- ✅ **直接说明期望**：不要让 Claude 猜测你的意图
+- ✅ **明确约束条件**：如禁止使用的技术、必须遵循的规范
+- ✅ **指定工作模式**：使用 `/code-review`、`/refactor-plan` 等模式触发器
+
+### 8.2 使用 XML 标签组织复杂提示
+
+对于复杂任务，推荐使用 XML 标签结构化组织 prompt：
+
+```xml
+<context>
+项目使用 .NET 8 + EF Core 8 + Prism MVVM 架构。
+当前正在重构 Patients 模块，需要统一 Repository 层的异常处理策略。
+</context>
+
+<instructions>
+1. 分析 src/Server/Modules/LYBT.Server.Patients.Repository/ 中的所有 Repository 实现
+2. 识别异常处理不一致的地方
+3. 设计统一的异常处理策略（参考 ADR-002 架构标准）
+4. 生成重构清单（Issue 格式）
+</instructions>
+
+<constraints>
+- 必须保持现有 API 兼容性
+- 禁止使用 CQRS 模式
+- 所有 Repository 方法必须是异步的
+- 遵循 server-module-design-standard.md
+</constraints>
+
+<output_format>
+输出格式：GitHub Issue Markdown
+包含：
+- 问题描述
+- 影响范围分析
+- 重构清单（[SRV-1], [SRV-2] 格式）
+- 验收标准
+</output_format>
+
+<examples>
+示例 Repository 异常处理：
+```csharp
+public async Task<Patient?> GetByIdAsync(int id)
+{
+    try
+    {
+        return await _context.Patients.FindAsync(id);
+    }
+    catch (DbUpdateException ex)
+    {
+        _logger.LogError(ex, "获取患者 {PatientId} 失败", id);
+        throw new RepositoryException("数据库查询失败", ex);
+    }
+}
+```
+</examples>
+```
+
+### 8.3 Extended Thinking 场景（对应 sequential-thinking）
+
+Claude 的 Extended Thinking 能力适用于复杂推理任务，项目中通过 `sequential-thinking` MCP 工具实现。
+
+#### 何时使用 Extended Thinking
+
+| 场景 | 思考强度 | 对应工具 | 示例 |
+|-----|---------|---------|------|
+| 单文件修改、简单 Bug | `think` (5-10步) | Bash命令直接执行 | 修复单个方法的空指针 |
+| 跨文件重构、中等功能 | `think hard` (10-15步) | sequential-thinking | 重构 Repository 层 |
+| 跨模块需求、架构调整 | `think harder` (15-20步) | sequential-thinking + `/refactor-plan` | 统一异常处理策略 |
+| 系统级影响、高不确定性 | `ultrathink` (20-30步) | sequential-thinking + 深度分析 | 架构重构、性能优化 |
+
+#### 使用示例
+
+**场景：规划跨模块的 Repository 重构**
+
+```
+请使用 UltraThink 模式（20-30步）分析以下架构重构任务：
+
+【任务】：统一 7 个业务模块的 Repository 异常处理
+
+【要求】：
+1. 分析现有 7 个模块的 Repository 实现差异
+2. 评估统一策略对现有代码的影响范围
+3. 设计向后兼容的迁移路径
+4. 拆分为可并行执行的 Phase（Phase 1-3）
+5. 生成详细的 Issue 清单
+
+【约束】：
+- 遵循 ADR-002 架构标准
+- 不能破坏现有单元测试
+- 每个 Phase 的工作量 ≤ 4小时
+
+请使用 sequential-thinking 工具进行深度分析。
+```
+
+#### 工作模式中的 Extended Thinking
+
+以下工作模式自动启用深度思考：
+- 🔄 **Refactoring Mode** (`/refactor-plan`) - 自动 UltraThink (20-30步)
+- 🏗️ **Architecture Mode** (`/review-arch`) - think harder (15-20步)
+- ⚡ **Performance Mode** (`/analyze-perf`) - think hard (10-15步)
+
+### 8.4 Prompt Generator 使用时机
+
+Anthropic 提供的 **Prompt Generator** 工具可以帮助生成高质量的 prompt 模板。
+
+#### 何时使用 Prompt Generator
+
+1. **新任务类型**：首次遇到某类任务时，使用 [Console Prompt Generator](https://console.anthropic.com/dashboard) 生成基础模板
+2. **重复任务**：为频繁执行的任务创建可复用 prompt 模板
+3. **复杂场景**：需要结构化 prompt 但不确定如何组织时
+
+#### 使用流程
+
+```mermaid
+graph LR
+    A[识别任务类型] --> B[访问 Console Prompt Generator]
+    B --> C[输入任务描述]
+    C --> D[获取生成的 Prompt 模板]
+    D --> E[根据项目规范调整]
+    E --> F{需要保存？}
+    F -->|是| G[添加到 .claude/modes/]
+    F -->|否| H[直接使用]
+```
+
+#### 项目内的 Prompt 模板
+
+项目已预定义 7 种工作模式（位于 `.claude/modes/`），每种模式都是基于最佳实践设计的 prompt 模板：
+
+| 模式 | 文件 | 适用场景 |
+|-----|-----|---------|
+| Code Review | `.claude/modes/code-review.md` | 代码审查、规范检查 |
+| Architecture | `.claude/modes/architecture.md` | 架构验证、依赖检查 |
+| Performance | `.claude/modes/performance.md` | 性能分析、优化建议 |
+| Refactoring | `.claude/modes/refactoring.md` | 重构规划、Phase 拆分 |
+| Testing | `.claude/modes/testing.md` | 测试生成、覆盖率分析 |
+| Documentation | `.claude/modes/documentation.md` | 文档同步、索引更新 |
+| Research | `.claude/modes/research.md` | 深度研究、多源分析 |
+
+#### 学习资源
+
+- 📓 [Prompt Generator Notebook](https://anthropic.com/metaprompt-notebook/) - Google Colab 交互式笔记本
+- 📚 [Prompt Library](https://docs.anthropic.com/resources/prompt-library) - 精选 Prompt 示例库
+- 💻 [GitHub Interactive Tutorial](https://github.com/anthropics/prompt-eng-interactive-tutorial) - 交互式教程
+
+---
+
+## 9. 工作模式（7种专业化行为模式）
 
 > **📖 详细模式定义**：参见 `.claude/modes/` 目录（每种模式含工作流程、工具链、质量标准）
 
@@ -373,7 +549,7 @@ analyze-perf    create-issue        refactor-plan  generate-pr
 
 ---
 
-## 9. 代码修复后的后台清理（Run-to-Completion Hygiene）
+## 10. 代码修复后的后台清理（Run-to-Completion Hygiene）
 
 为避免测试通过后遗留的运行中后台进程或临时环境状态影响后续验证，完成修复并通过测试后，必须执行以下清理：
 
@@ -396,3 +572,53 @@ analyze-perf    create-issue        refactor-plan  generate-pr
 - Issue 默认创建在 GitHub 上
 - 积极使用 `sequential-thinking` MCP 工具和 `serena` MCP 工具
 - 所有用到时间的地方使用 `time` MCP 工具获取最新时间
+
+---
+
+## 附录B：学习资源与参考
+
+### B.1 Anthropic 官方工具
+
+| 工具 | 链接 | 说明 |
+|-----|------|------|
+| 🎯 **Anthropic Console** | [console.anthropic.com](https://console.anthropic.com/) | Prompt Generator 在线工具，快速生成高质量 prompt 模板 |
+| 📓 **Prompt Generator Notebook** | [anthropic.com/metaprompt-notebook](https://anthropic.com/metaprompt-notebook/) | Google Colab 交互式笔记本，深入学习 prompt 构建 |
+| 🔑 **API Keys** | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) | 获取 Anthropic API 密钥 |
+
+### B.2 学习教程
+
+| 资源 | 链接 | 适用人群 |
+|-----|------|---------|
+| 📚 **Prompt Engineering Guide** | [docs.anthropic.com/build-with-claude/prompt-engineering](https://docs.anthropic.com/build-with-claude/prompt-engineering) | 所有开发者 - 系统学习 prompt engineering |
+| 📖 **Prompt Library** | [docs.anthropic.com/resources/prompt-library](https://docs.anthropic.com/resources/prompt-library) | 所有开发者 - 精选 Prompt 示例库 |
+| 💻 **GitHub Interactive Tutorial** | [github.com/anthropics/prompt-eng-interactive-tutorial](https://github.com/anthropics/prompt-eng-interactive-tutorial) | 开发者 - 交互式 prompt engineering 教程 |
+| 📊 **Google Sheets Tutorial** | [docs.google.com/spreadsheets/d/19jzLgRruG9kjUQNKtCg1ZjdD6l6weA6qRXG5zLIAhC8](https://docs.google.com/spreadsheets/d/19jzLgRruG9kjUQNKtCg1ZjdD6l6weA6qRXG5zLIAhC8) | 新手 - 轻量级 prompt engineering 入门 |
+| 🧠 **Extended Thinking Docs** | [docs.anthropic.com/build-with-claude/extended-thinking](https://docs.anthropic.com/build-with-claude/extended-thinking) | 高级用户 - 深度推理能力使用指南 |
+
+### B.3 项目内部资源
+
+| 资源类型 | 位置 | 说明 |
+|---------|------|------|
+| **工作模式定义** | `.claude/modes/` | 7种专业工作模式的完整 prompt 模板和工作流程 |
+| **核心规则** | `.claude/core/RULES.md` | 工具选择优先级、并行执行策略、MVP约束 |
+| **执行原则** | `.claude/core/PRINCIPLES.md` | 文档先行、最小充分交付、增量优化原则 |
+| **工作流程** | `.claude/core/WORKFLOW.md` | Issue驱动工作流（创建→清单→分支→PR→审查→合并） |
+| **架构标准** | `docs/architecture/` | Server端/Client端设计标准、ADR文档 |
+| **开发指南** | `docs/development/` | 编码规范、文档指南、测试标准 |
+| **MCP工具手册** | `docs/development/mcp-tools-reference.md` | 完整的 MCP 工具使用参考 |
+
+### B.4 快速导航
+
+**按使用场景查找资源**：
+
+| 场景 | 推荐资源 |
+|-----|---------|
+| 🆕 **首次使用 Claude Code** | 1. [Prompt Engineering Guide](https://docs.anthropic.com/build-with-claude/prompt-engineering) → 2. `.claude/core/RULES.md` → 3. `CLAUDE.md` |
+| 🔍 **想提升 prompt 质量** | 1. [Prompt Library](https://docs.anthropic.com/resources/prompt-library) → 2. `.claude/modes/` → 3. [Console Prompt Generator](https://console.anthropic.com/) |
+| 🏗️ **规划复杂重构任务** | 1. [Extended Thinking Docs](https://docs.anthropic.com/build-with-claude/extended-thinking) → 2. `.claude/modes/refactoring.md` → 3. `sequential-thinking` MCP |
+| 📚 **学习最佳实践** | 1. [GitHub Interactive Tutorial](https://github.com/anthropics/prompt-eng-interactive-tutorial) → 2. `.claude/core/PRINCIPLES.md` |
+| 🛠️ **配置工作模式** | 1. `.claude/modes/` → 2. `docs/development/mcp-tools-reference.md` → 3. `CLAUDE.md 第8节` |
+
+### B.5 更新记录
+
+- **2025-10-12**：添加附录B，整合 Anthropic 官方资源和项目内部资源索引（Issue #1233）
