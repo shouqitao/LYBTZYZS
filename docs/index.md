@@ -25,6 +25,7 @@
 | [architecture/](architecture/README.md) | 系统架构设计文档集合 | ADR决策记录、模块化架构、多租户讨论 |
 | [architecture/server-module-design-standard.md](architecture/server-module-design-standard.md) | **Server模块设计标准** | **三层架构、CQRS禁用、目录结构、服务注册模式** |
 | [architecture/client/unified-design-standard.md](architecture/client/unified-design-standard.md) | **Client端业务模块统一设计标准 (v2.1)** ✨ | **ViewModel → Repository → ApiClient 三层架构、Repository返回裸类型、模块化Repository、依赖注入标准、XAML三段式布局、代码模板** |
+| [../src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md](../src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md) | **Desktop端架构设计标准 (v1.0)** 🏗️ | **WPF Prism MVVM完整实现、三层架构详解、Repository设计规范、ViewModel/View标准、代码示例、架构测试** |
 | [architecture/ADR-003-server-module-unified-design.md](architecture/ADR-003-server-module-unified-design.md) | **ADR-003: Server模块统一设计** | **禁止CQRS、接口统一位置、决策理由与实施方案** |
 | [architecture/functional-modules-design.md](architecture/functional-modules-design.md) | 功能模块详细设计 | 8大模块设计、数据模型、业务规则、接口定义 |
 | [architecture/tech-design/](architecture/tech-design/000-overview.md) | 本轮技术设计 | 最小闭环：端口/登录/健康检查/BaseUrl |
