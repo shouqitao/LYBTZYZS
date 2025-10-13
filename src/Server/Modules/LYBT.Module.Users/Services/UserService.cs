@@ -183,9 +183,9 @@ namespace LYBT.Module.Users.Services
                 }
                 else
                 {
-                    // 从配置读取默认密码：DefaultPasswords:NewUserPassword
-                    passwordToHash = _configuration["DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
-                    _logger.LogInformation("使用系统默认密码创建用户: {UserName}，密码配置: DefaultPasswords:NewUserPassword", dto.UserName);
+                    // 从配置读取默认密码：Lybt:Authentication:DefaultPasswords:NewUserPassword
+                    passwordToHash = _configuration["Lybt:Authentication:DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
+                    _logger.LogInformation("使用系统默认密码创建用户: {UserName}，密码配置: Lybt:Authentication:DefaultPasswords:NewUserPassword", dto.UserName);
                 }
 
                 entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordToHash);
