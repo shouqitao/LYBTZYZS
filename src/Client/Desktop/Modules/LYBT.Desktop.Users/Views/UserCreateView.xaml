@@ -1,0 +1,134 @@
+<UserControl x:Class="LYBT.Desktop.Users.Views.UserCreateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <!-- 使用统一设计系统样式 -->
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Style="{StaticResource ToolBarContainer}">
+            <TextBlock Text="新增用户" Style="{StaticResource PageTitle}" />
+        </Border>
+
+        <!-- 表单区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Style="{StaticResource Card}" MaxWidth="600" Margin="20">
+                <StackPanel>
+                    <!-- 用户名 -->
+                    <TextBlock Text="用户名 *" Style="{StaticResource LabelText}" />
+                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputTextBox}"
+                             Margin="0,5,0,5" />
+                    <TextBlock Text="{Binding Errors[Username]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[Username], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 真实姓名 -->
+                    <TextBlock Text="真实姓名 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputTextBox}"
+                             Margin="0,5,0,5" />
+                    <TextBlock Text="{Binding Errors[RealName]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[RealName], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 密码 -->
+                    <TextBlock Text="密码 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <PasswordBox x:Name="PasswordBox"
+                                 Style="{StaticResource InputPasswordBox}"
+                                 Margin="0,5,0,5"
+                                 PasswordChanged="PasswordBox_PasswordChanged" />
+                    <TextBlock Text="{Binding Errors[Password]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[Password], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 确认密码 -->
+                    <TextBlock Text="确认密码 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <PasswordBox x:Name="ConfirmPasswordBox"
+                                 Style="{StaticResource InputPasswordBox}"
+                                 Margin="0,5,0,5"
+                                 PasswordChanged="ConfirmPasswordBox_PasswordChanged" />
+                    <TextBlock Text="{Binding Errors[ConfirmPassword]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[ConfirmPassword], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 手机号码 -->
+                    <TextBlock Text="手机号码" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputTextBox}"
+                             Margin="0,5,0,5" />
+                    <TextBlock Text="{Binding Errors[PhoneNumber]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[PhoneNumber], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 邮箱地址 -->
+                    <TextBlock Text="邮箱地址" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputTextBox}"
+                             Margin="0,5,0,5" />
+                    <TextBlock Text="{Binding Errors[Email]}"
+                               Style="{StaticResource ValidationErrorText}"
+                               Visibility="{Binding HasErrors[Email], Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 用户角色 -->
+                    <TextBlock Text="用户角色 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <ComboBox ItemsSource="{Binding RoleOptions}"
+                              SelectedValue="{Binding SelectedRole}"
+                              Style="{StaticResource InputComboBox}"
+                              Margin="0,5,0,5" />
+
+                    <!-- 用户状态 -->
+                    <TextBlock Text="用户状态 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
+                    <ComboBox ItemsSource="{Binding StatusOptions}"
+                              SelectedValue="{Binding Status}"
+                              Style="{StaticResource InputComboBox}"
+                              Margin="0,5,0,5" />
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+
+        <!-- 按钮区域 -->
+        <Border Grid.Row="2" Style="{StaticResource ToolBarContainer}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="重置表单"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,10,0"
+                        Command="{Binding ResetFormCommand}" />
+                <Button Content="取消"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,10,0"
+                        Command="{Binding CancelCommand}" />
+                <Button Content="创建用户"
+                        Style="{StaticResource SuccessButton}"
+                        Command="{Binding CreateUserCommand}" />
+            </StackPanel>
+        </Border>
+
+        <!-- 加载遮罩 -->
+        <Grid Grid.RowSpan="3"
+              Background="#80000000"
+              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True"
+                             Width="200"
+                             Height="4"
+                             Background="Transparent"
+                             Foreground="White" />
+                <TextBlock Text="正在创建用户..."
+                           Foreground="White"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           Margin="0,10,0,0" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

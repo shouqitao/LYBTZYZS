@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -12,10 +13,11 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 {
     /// <summary>
     /// UserDetailViewModel 单元测试
-    /// 测试用户详情ViewModel的基本功能（Phase 4B 骨架实现）
+    /// 测试用户详情ViewModel的基本功能（Issue #1248 完整实现）
     /// </summary>
     public class UserDetailViewModelTests : IDisposable
     {
+        private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserDetailViewModel>> _mockLogger;
@@ -25,6 +27,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public UserDetailViewModelTests()
         {
             // Arrange - Setup Mocks
+            _mockUserRepository = new Mock<IUserRepository>();
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserDetailViewModel>>();
@@ -37,6 +40,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             // Create ViewModel instance
             _viewModel = new UserDetailViewModel(
+                _mockUserRepository.Object,
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
                 _mockRegionManager.Object

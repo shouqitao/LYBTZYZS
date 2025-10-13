@@ -33,6 +33,10 @@ namespace LYBT.Desktop.Users
             // 注册实际存在的视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
+            
+            // Issue #1248: 注册新增的 CRUD 视图
+            containerRegistry.RegisterForNavigation<Views.UserCreateView>();
+            containerRegistry.RegisterForNavigation<Views.UserEditView>();
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();
