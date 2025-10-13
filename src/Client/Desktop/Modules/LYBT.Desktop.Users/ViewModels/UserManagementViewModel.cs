@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
@@ -11,8 +11,8 @@ using Prism.Regions;
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// �û�������ͼģ�� - Phase 1�ܹ��ع��汾
-    /// �����µ�ListPageViewModelʵ���������û���������
+    /// 用户管理视图模型 - Phase 1核心功能版本
+    /// 基于最新的ListPageViewModel实现完整用户管理功能
     /// </summary>
     public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
     {
@@ -22,14 +22,14 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region ɸѡ����
+        #region 筛选条件
 
         private UserRole? _selectedRole;
         private CommonStatus? _selectedStatus;
         private bool _showInactiveUsers;
 
         /// <summary>
-        /// ѡ�еĽ�ɫɸѡ
+        /// 选中的角色筛选
         /// </summary>
         public UserRole? SelectedRole
         {
@@ -44,7 +44,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// ѡ�е�״̬ɸѡ
+        /// 选中的状态筛选
         /// </summary>
         public CommonStatus? SelectedStatus
         {
@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// �Ƿ���ʾ�ѽ����û�
+        /// 是否显示已禁用用户
         /// </summary>
         public bool ShowInactiveUsers
         {
@@ -74,44 +74,41 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// ��ɫѡ��
+        /// 角色选项
         /// </summary>
         public IEnumerable<UserRole> RoleOptions { get; }
 
         /// <summary>
-        /// ״̬ѡ��
+        /// 状态选项
         /// </summary>
         public IEnumerable<CommonStatus> StatusOptions { get; }
 
         #endregion
 
-        #region �û��ض�����
+        #region 用户特定命令
 
-        /// <summary>
-        /// �༭�û�����
-        /// </summary>
         /// <summary>
         /// 编辑用户命令
         /// </summary>
         public DelegateCommand<UserDto> EditCommand { get; private set; } = null!;
 
         /// <summary>
-        /// ������������
+        /// 重置密码命令
         /// </summary>
         public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; } = null!;
 
         /// <summary>
-        /// ����/�����û�����
+        /// 启用/禁用用户命令
         /// </summary>
         public DelegateCommand<UserDto> ToggleUserStatusCommand { get; private set; } = null!;
 
         /// <summary>
-        /// �鿴��������
+        /// 查看详情命令
         /// </summary>
         public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; } = null!;
 
         /// <summary>
-        /// ���ɸѡ����
+        /// 清除筛选命令
         /// </summary>
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
 
@@ -127,7 +124,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region ���캯��
+        #region 构造函数
 
         public UserManagementViewModel(
             IUserRepository userRepository,
@@ -140,15 +137,15 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 
-            // ��ʼ��ѡ��
+            // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
 
-            // ��ʼ��ҳ������
-            PageTitle = "�û�����";
+            // 初始化页面标题
+            PageTitle = "用户管理";
             PageSize = 20;
 
-            // ��ʼ���û��ض�����
+            // 初始化用户特定命令
             InitializeUserCommands();
 
             Logger.LogDebug("用户管理ViewModel已初始化");
@@ -156,7 +153,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region �����ʼ��
+        #region 命令初始化
 
         private void InitializeUserCommands()
         {
@@ -205,10 +202,10 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region ���ݼ���
+        #region 数据加载
 
         /// <summary>
-        /// ��ȡ������
+        /// 获取数据项
         /// </summary>
         protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
@@ -263,19 +260,19 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region �û�����ʵ��
+        #region 用户操作实现
 
         /// <summary>
-        /// �������û�
+        /// 添加新用户
         /// </summary>
         protected override Task OnExecuteAddAsync()
         {
             Logger.LogDebug("执行添加新用户");
 
-            // �������û�����ҳ��
+            // 导航到用户创建页面
             NavigateTo("AdminContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
             {
-                { "title", "�����û�" }
+                { "title", "创建用户" }
             });
 
             return Task.CompletedTask;
@@ -331,10 +328,10 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region �û��ض�����ʵ��
+        #region 用户特定命令实现
 
         /// <summary>
-        /// �༭�û�
+        /// 编辑用户
         /// </summary>
         private void ExecuteEditUser(UserDto user)
         {
@@ -345,12 +342,12 @@ namespace LYBT.Desktop.Users.ViewModels
             NavigateTo("AdminContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
             {
                 { "UserId", user.Id },
-                { "title", $"�༭�û� - {user.RealName}" }
+                { "title", $"编辑用户 - {user.RealName}" }
             });
         }
 
         /// <summary>
-        /// �Ƿ���Ա༭�û�
+        /// 是否可以编辑用户
         /// </summary>
         private bool CanExecuteEditUser(UserDto user)
         {
@@ -358,7 +355,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// ��������
+        /// 重置密码
         /// </summary>
         private async Task ExecuteResetPasswordAsync(UserDto user)
         {
@@ -368,21 +365,21 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogDebug("重置用户密码: {UserId} - {UserName}", user.Id, user.UserName);
 
-                // ����Ӧ�õ����������÷��񣬻��ߴ���������Ի���
-                // ��ʱ��¼��־
-                Logger.LogInformation("�û� {UserName} �����������������ύ", user.UserName);
+                // 调用应用的密码重置服务，或者打开密码重置对话框
+                // 暂时记录日志
+                Logger.LogInformation("用户 {UserName} 的密码重置请求已提交", user.UserName);
 
-                // ʵ��ʵ�ֿ�����Ҫ��
-                // 1. ����������Ի���
-                // 2. ������������API
-                // 3. ��������֪ͨ
+                // 实际实现可能需要：
+                // 1. 打开密码重置对话框
+                // 2. 调用密码重置API
+                // 3. 显示成功通知
 
                 return Task.CompletedTask;
-            }, "��������");
+            }, "重置密码");
         }
 
         /// <summary>
-        /// �Ƿ������������
+        /// 是否可以重置密码
         /// </summary>
         private bool CanExecuteResetPassword(UserDto user)
         {
@@ -390,7 +387,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// �л��û�״̬
+        /// 切换用户状态
         /// </summary>
         private async Task ExecuteToggleUserStatusAsync(UserDto user)
         {
@@ -421,7 +418,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// �Ƿ�����л��û�״̬
+        /// 是否可以切换用户状态
         /// </summary>
         private bool CanExecuteToggleUserStatus(UserDto user)
         {
@@ -429,7 +426,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// �鿴����
+        /// 查看详情
         /// </summary>
         private void ExecuteViewDetails(UserDto user)
         {
@@ -445,7 +442,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// ���ɸѡ
+        /// 清除筛选
         /// </summary>
         private void ExecuteClearFilters()
         {
@@ -456,7 +453,7 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// �Ƿ��лɸѡ
+        /// 是否有筛选
         /// </summary>
         private bool HasActiveFilters =>
             SelectedRole.HasValue ||
@@ -466,7 +463,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region ����ˢ��
+        #region 命令刷新
 
         /// <summary>
         /// 跳转首页
