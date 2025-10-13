@@ -1,5 +1,6 @@
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Users;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -49,6 +50,11 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         public DelegateCommand ResetPasswordCommand { get; }
 
+        /// <summary>
+        /// 切换状态命令（Issue #1263: 启用/禁用开关）
+        /// </summary>
+        public DelegateCommand ToggleStatusCommand { get; }
+
         public UserDetailViewModel(
             LYBT.Desktop.Users.Interfaces.IUserRepository userRepository,
             IEventAggregator eventAggregator,
@@ -63,6 +69,7 @@ namespace LYBT.Desktop.Users.ViewModels
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
             EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
             ResetPasswordCommand = new DelegateCommand(ExecuteResetPassword, CanExecuteResetPassword);
+            ToggleStatusCommand = new DelegateCommand(ExecuteToggleStatus, CanExecuteToggleStatus);
         }
 
         /// <summary>
@@ -184,6 +191,62 @@ namespace LYBT.Desktop.Users.ViewModels
             return User != null && !IsLoading;
         }
 
+        private async void ExecuteToggleStatus()
+        {
+            if (User == null)
+            {
+                Logger.LogWarning("无法切换状态：用户为空");
+                return;
+            }
+
+            try
+            {
+                IsLoading = true;
+                var newStatus = User.Status == CommonStatus.Enabled 
+                    ? CommonStatus.Disabled 
+                    : CommonStatus.Enabled;
+
+                Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}", 
+                    User.Id, User.Status, newStatus);
+
+                // 创建更新DTO
+                var updateDto = new UserUpdateDto
+                {
+                    Id = User.Id,
+                    RealName = User.RealName,
+                    Role = User.Role,
+                    Status = newStatus,
+                    PhoneNumber = User.PhoneNumber,
+                    Email = User.Email
+                };
+
+                // 调用API更新
+                var updatedUser = await _userRepository.UpdateAsync(updateDto);
+
+                // 更新本地数据
+                User = updatedUser;
+
+                var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
+                StatusMessage = $"用户状态已切换为：{statusText}";
+                Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "切换用户状态失败: UserId={UserId}", User?.Id);
+                ErrorMessage = $"切换状态失败: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+                RaiseCanExecuteChanged();
+            }
+        }
+
+        private bool CanExecuteToggleStatus()
+        {
+            return User != null && !IsLoading;
+        }
+
         /// <summary>
         /// 刷新所有命令的 CanExecute 状态
         /// </summary>
@@ -191,6 +254,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             EditUserCommand.RaiseCanExecuteChanged();
             ResetPasswordCommand.RaiseCanExecuteChanged();
+            ToggleStatusCommand.RaiseCanExecuteChanged();
         }
     }
 }
