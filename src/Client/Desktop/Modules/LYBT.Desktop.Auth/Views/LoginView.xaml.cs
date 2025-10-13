@@ -14,6 +14,20 @@ namespace LYBT.Desktop.Auth.Views
 
             // Issue #1246 修复: 监听 DataContext 变化，设置双向绑定
             DataContextChanged += OnDataContextChanged;
+            
+            // Issue #1246 关键修复: Prism 可能在 InitializeComponent 时就设置了 DataContext
+            // 此时 DataContextChanged 事件不会触发，需要手动处理当前的 DataContext
+            if (DataContext is INotifyPropertyChanged currentViewModel)
+            {
+                currentViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                
+                // 立即同步已有的密码值（处理时序竞争）
+                if (DataContext is Auth.ViewModels.LoginViewModel viewModel 
+                    && !string.IsNullOrEmpty(viewModel.Password))
+                {
+                    PasswordBox.Password = viewModel.Password;
+                }
+            }
         }
 
         /// <summary>
@@ -33,7 +47,6 @@ namespace LYBT.Desktop.Auth.Views
                 newViewModel.PropertyChanged += OnViewModelPropertyChanged;
                 
                 // Issue #1246 修复: 立即同步已有的密码值（处理时序竞争）
-                // 原因：LoadSavedCredentialsAsync 可能在 DataContextChanged 之前完成，导致 PropertyChanged 事件丢失
                 if (e.NewValue is Auth.ViewModels.LoginViewModel viewModel 
                     && !string.IsNullOrEmpty(viewModel.Password))
                 {
