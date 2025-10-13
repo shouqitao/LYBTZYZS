@@ -265,18 +265,25 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             {
                 IsLoading = true;
 
-                var items = await GetItemsAsync(CurrentPage, PageSize, SearchText);
-
-                RunOnUIThread(() =>
+                try
                 {
-                    Items.Clear();
-                    foreach (var item in items)
-                    {
-                        Items.Add(item);
-                    }
+                    var items = await GetItemsAsync(CurrentPage, PageSize, SearchText);
 
-                    RefreshPagingProperties();
-                });
+                    RunOnUIThread(() =>
+                    {
+                        Items.Clear();
+                        foreach (var item in items)
+                        {
+                            Items.Add(item);
+                        }
+
+                        RefreshPagingProperties();
+                    });
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
 
             }, "加载数据");
         }
