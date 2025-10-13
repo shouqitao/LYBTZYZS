@@ -314,11 +314,11 @@
 
                     <!-- 操作 -->
                     <DataGridTemplateColumn Header="操作" Width="280">
-                        <DataGridTemplateColumn.ElementStyle>
-                            <Style TargetType="FrameworkElement">
-                                <Setter Property="HorizontalAlignment" Value="Right" />
+                        <DataGridTemplateColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="HorizontalContentAlignment" Value="Right" />
                             </Style>
-                        </DataGridTemplateColumn.ElementStyle>
+                        </DataGridTemplateColumn.CellStyle>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
