@@ -106,33 +106,33 @@ namespace LYBT.Desktop.Consultation.ViewModels
             LastPageCommand = new DelegateCommand(ExecuteLastPage);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
             NextPageCommand = new DelegateCommand(ExecuteNextPage);
-
-            // �޸�: ʹ��Task.Run��ȫ��ʼ������ֹδ�����쳣
-            _ = Task.Run(async () => await InitializeAsync());
         }
 
-        #endregion ���캯��
+        #endregion 构造函数
 
-        #region ��ʼ��
+        #region 导航生命周期 (Issue #1240)
 
-        private async Task InitializeAsync()
+        /// &lt;summary&gt;
+        /// 异步初始化数据 - Issue #1240
+        /// &lt;/summary&gt;
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
+            await base.InitializeAsync(parameters);
+
             try
             {
                 await LoadDataAsync();
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "��ʼ�����ƹ���ʧ��");
-
-                // �ṩ�û��ѺõĴ�����ʾ
-                ShowErrorMessage("���ƹ���ģ���ʼ��ʧ�ܣ��볢��ˢ��ҳ��");
+                Logger.LogError(ex, "初始化诊疗管理失败");
+                await ShowErrorMessageAsync("诊疗管理模块初始化失败，请尝试刷新页面");
             }
         }
 
-        #endregion ��ʼ��
+        #endregion 导航生命周期
 
-        #region ���ݲ���
+        #region 数据操作
 
         private async Task LoadDataAsync()
         {

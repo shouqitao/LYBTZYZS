@@ -9,6 +9,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// <summary>
     /// 统一ViewModel基类 - UltraThink架构重构版本
     /// 提供统一的导航、错误处理、会话管理功能
+    /// Issue #1240: 添加自定义 InitializeAsync 支持，优化异步导航模式
     /// </summary>
     public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware, IRegionMemberLifetime
     {
@@ -176,7 +177,20 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             try
             {
                 ProcessNavigationParameters(navigationContext.Parameters);
-                _ = Task.Run(async () => await OnNavigatedToAsync(navigationContext));
+
+                // Issue #1240: 使用 Dispatcher.InvokeAsync 调用 InitializeAsync，避免 Task.Run
+                _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        await InitializeAsync(navigationContext.Parameters);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "InitializeAsync 执行失败");
+                        HandleError(ex, "数据初始化");
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -186,19 +200,27 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 处理导航参数
+        /// 处理导航参数（同步）
+        /// Issue #1240: 从 InitializeAsync 中分离出来，用于立即设置导航参数
         /// </summary>
         protected virtual void ProcessNavigationParameters(NavigationParameters parameters)
         {
-            // 子类可重写
+            // 子类可重写，用于立即处理导航参数（如设置 PatientId）
         }
 
+        #endregion
+
+        #region 自定义异步初始化支持
+
         /// <summary>
-        /// 异步导航处理
+        /// 自定义异步初始化（推荐使用，替代 OnNavigatedTo 中的异步逻辑）
+        /// Issue #1240: 子类应该重写此方法进行数据加载，OnNavigatedTo 会自动调用
         /// </summary>
-        protected virtual async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        /// <param name="parameters">导航参数</param>
+        /// <returns>初始化任务</returns>
+        protected virtual Task InitializeAsync(NavigationParameters parameters)
         {
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         #endregion

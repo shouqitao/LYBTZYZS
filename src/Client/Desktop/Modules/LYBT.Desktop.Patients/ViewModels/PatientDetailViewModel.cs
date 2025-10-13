@@ -115,22 +115,39 @@ private Guid _patientId;
 
         #endregion 构造函数
 
-        #region INavigationAware 实现
+        #region 导航生命周期 (Issue #1240)
 
-        /// <inheritdoc/>
-        public override void OnNavigatedTo(NavigationContext navigationContext)
+        /// <summary>
+        /// 处理导航参数（同步）- Issue #1240
+        /// </summary>
+        protected override void ProcessNavigationParameters(NavigationParameters parameters)
         {
-            if (navigationContext.Parameters.ContainsKey("PatientId"))
-            {
-                PatientId = navigationContext.Parameters.GetValue<Guid>("PatientId");
+            base.ProcessNavigationParameters(parameters);
 
-                if (navigationContext.Parameters.ContainsKey("ViewMode"))
+            // 立即设置导航参数，避免UI延迟
+            if (parameters.ContainsKey("PatientId"))
+            {
+                PatientId = parameters.GetValue<Guid>("PatientId");
+
+                if (parameters.ContainsKey("ViewMode"))
                 {
-                    var viewMode = navigationContext.Parameters.GetValue<string>("ViewMode");
+                    var viewMode = parameters.GetValue<string>("ViewMode");
                     IsReadOnly = viewMode != "Edit";
                 }
+            }
+        }
 
-                Task.Run(async () => await LoadDataAsync());
+        /// <summary>
+        /// 异步初始化数据 - Issue #1240
+        /// </summary>
+        protected override async Task InitializeAsync(NavigationParameters parameters)
+        {
+            await base.InitializeAsync(parameters);
+
+            // 在UI线程上异步加载数据
+            if (PatientId != Guid.Empty)
+            {
+                await LoadDataAsync();
             }
         }
 
@@ -149,13 +166,15 @@ private Guid _patientId;
         /// <inheritdoc/>
         public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            base.OnNavigatedFrom(navigationContext);
+
             if (!IsReadOnly && HasUnsavedChanges())
             {
                 // 可以在这里添加保存确认逻辑
             }
         }
 
-        #endregion INavigationAware 实现
+        #endregion 导航生命周期
 
         #region 数据操作
 
@@ -250,8 +269,11 @@ private Guid _patientId;
         {
             IsReadOnly = true;
 
-            // 重新加载数据以取消更改
-            Task.Run(async () => await LoadDataAsync());
+            // Issue #1240: 使用 Dispatcher.InvokeAsync 替代 Task.Run
+            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                await LoadDataAsync();
+            });
         }
 
         /// <summary>

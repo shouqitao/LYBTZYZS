@@ -43,21 +43,16 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
 
         /// <summary>
         /// 初始化核心服务
+        /// Issue #1239: 移除异常降级处理，让异常向上传播
         /// </summary>
         public async Task InitializeCoreServicesAsync()
         {
-            try
-            {
-                _logger.LogInformation("开始初始化核心服务");
-                await _initializationService.InitializeCoreServicesAsync();
-                _logger.LogInformation("核心服务初始化完成");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "核心服务初始化失败");
-                // 降级处理：记录错误但继续启动
-                System.Diagnostics.Debug.WriteLine($"应用初始化服务失败 {ex.Message}");
-            }
+            _logger.LogInformation("开始初始化核心服务");
+            
+            // ✅ 不捕获异常，让异常向上传播到 App.InitializeApplicationAsync
+            await _initializationService.InitializeCoreServicesAsync();
+            
+            _logger.LogInformation("核心服务初始化完成");
         }
 
         /// <summary>

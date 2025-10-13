@@ -166,9 +166,9 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         /// <summary>
         /// 页面加载时调用
         /// </summary>
-        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
-            await base.OnNavigatedToAsync(navigationContext);
+            await base.InitializeAsync(parameters);
 
             // 默认显示病历列表
             ShowList();

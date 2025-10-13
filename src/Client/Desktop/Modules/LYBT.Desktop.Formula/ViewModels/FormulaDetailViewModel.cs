@@ -312,24 +312,36 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #endregion
 
-        #region 导航接口实现
+        #region 导航生命周期 (Issue #1240)
 
-        /// <inheritdoc/>
-        public override void OnNavigatedTo(NavigationContext navigationContext)
+        /// <summary>
+        /// 处理导航参数（同步）- Issue #1240
+        /// </summary>
+        protected override void ProcessNavigationParameters(NavigationParameters parameters)
         {
-            base.OnNavigatedTo(navigationContext);
+            base.ProcessNavigationParameters(parameters);
 
-            if (navigationContext.Parameters.ContainsKey("FormulaId"))
+            if (parameters.ContainsKey("FormulaId"))
             {
-                FormulaId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
-                Task.Run(async () => await LoadDataAsync());
+                FormulaId = parameters.GetValue<Guid>("FormulaId");
             }
 
-            // 检查是否直接进入编辑模式
-            if (navigationContext.Parameters.ContainsKey("EditMode"))
+            if (parameters.ContainsKey("EditMode"))
             {
-                var editMode = navigationContext.Parameters.GetValue<bool>("EditMode");
-                IsEditMode = editMode;
+                IsEditMode = parameters.GetValue<bool>("EditMode");
+            }
+        }
+
+        /// <summary>
+        /// 异步初始化数据 - Issue #1240
+        /// </summary>
+        protected override async Task InitializeAsync(NavigationParameters parameters)
+        {
+            await base.InitializeAsync(parameters);
+
+            if (FormulaId != Guid.Empty)
+            {
+                await LoadDataAsync();
             }
         }
 

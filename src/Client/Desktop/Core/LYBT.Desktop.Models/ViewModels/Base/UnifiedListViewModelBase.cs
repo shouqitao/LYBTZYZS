@@ -463,10 +463,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 页面导航进入时自动加载数据
+        /// Issue #1240: 使用 InitializeAsync 替代 OnNavigatedToAsync
         /// </summary>
-        protected override async Task OnNavigatedToAsync(Prism.Regions.NavigationContext navigationContext)
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
-            await base.OnNavigatedToAsync(navigationContext);
+            await base.InitializeAsync(parameters);
 
             // 自动加载第一页数据
             await LoadPageAsync();

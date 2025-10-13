@@ -399,21 +399,21 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 页面导航时调用
         /// </summary>
-        protected override async Task OnNavigatedToAsync(NavigationContext navigationContext)
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
-            await base.OnNavigatedToAsync(navigationContext);
+            await base.InitializeAsync(parameters);
 
             try
             {
                 // 获取参数
-                if (navigationContext.Parameters.ContainsKey("MedicalCaseId"))
+                if (parameters.ContainsKey("MedicalCaseId"))
                 {
-                    MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                    MedicalCaseId = parameters.GetValue<Guid>("MedicalCaseId");
                 }
 
                 if (MedicalCaseId != Guid.Empty)
                 {
-                    await InitializeAsync();
+                    await LoadPrescriptionDataAsync();
                 }
                 else
                 {
@@ -432,9 +432,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 初始化
 
         /// <summary>
-        /// 初始化数据
+        /// 加载处方数据
         /// </summary>
-        private async Task InitializeAsync()
+        private async Task LoadPrescriptionDataAsync()
         {
             try
             {
