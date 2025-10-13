@@ -76,21 +76,19 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
         /// <summary>
         /// 初始化错误处理服务
         /// </summary>
+        /// <summary>
+        /// 初始化错误处理服务
+        /// Issue #1239: 移除异常降级处理，让异常向上传播到 Fail-Fast 机制
+        /// </summary>
         public void InitializeErrorHandlingService()
         {
-            try
-            {
-                _logger.LogInformation("注册全局异常处理器");
-                _errorHandlingService.RegisterGlobalExceptionHandlers();
-                _logger.LogInformation("全局异常处理器注册完成");
-            }
-            catch (Exception ex)
-            {
-                // 如果错误处理服务初始化失败，使用基本的错误处理
-                _logger.LogError(ex, "初始化错误处理服务失败");
-                MessageBox.Show($"系统初始化失败 {ex.Message}", "凌隐宝堂 - 系统错误",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _logger.LogInformation("注册全局异常处理器");
+            
+            // ✅ 不捕获异常，让错误处理服务初始化失败时直接终止应用
+            // 这是关键的基础设施，初始化失败应该触发 Fail-Fast
+            _errorHandlingService.RegisterGlobalExceptionHandlers();
+            
+            _logger.LogInformation("全局异常处理器注册完成");
         }
 
         /// <summary>
