@@ -16,7 +16,7 @@
 
         <!-- 标题栏 -->
         <Border Grid.Row="0" Style="{StaticResource ToolBarContainer}">
-            <TextBlock Text="新增用户" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="新增用户" Style="{StaticResource TitleText}" />
         </Border>
 
         <!-- 表单区域 -->
