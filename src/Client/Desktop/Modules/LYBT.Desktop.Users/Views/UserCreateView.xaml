@@ -26,71 +26,71 @@
                     <!-- 用户名 -->
                     <TextBlock Text="用户名 *" Style="{StaticResource LabelText}" />
                     <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource InputTextBox}"
+                             Style="{StaticResource BaseTextBox}"
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[Username]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[Username], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 真实姓名 -->
                     <TextBlock Text="真实姓名 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <TextBox Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource InputTextBox}"
+                             Style="{StaticResource BaseTextBox}"
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[RealName]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[RealName], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 密码 -->
                     <TextBlock Text="密码 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <PasswordBox x:Name="PasswordBox"
-                                 Style="{StaticResource InputPasswordBox}"
+                                 
                                  Margin="0,5,0,5"
                                  PasswordChanged="PasswordBox_PasswordChanged" />
                     <TextBlock Text="{Binding Errors[Password]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[Password], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 确认密码 -->
                     <TextBlock Text="确认密码 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <PasswordBox x:Name="ConfirmPasswordBox"
-                                 Style="{StaticResource InputPasswordBox}"
+                                 
                                  Margin="0,5,0,5"
                                  PasswordChanged="ConfirmPasswordBox_PasswordChanged" />
                     <TextBlock Text="{Binding Errors[ConfirmPassword]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[ConfirmPassword], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 手机号码 -->
                     <TextBlock Text="手机号码" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource InputTextBox}"
+                             Style="{StaticResource BaseTextBox}"
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[PhoneNumber]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[PhoneNumber], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 邮箱地址 -->
                     <TextBlock Text="邮箱地址" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource InputTextBox}"
+                             Style="{StaticResource BaseTextBox}"
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[Email]}"
-                               Style="{StaticResource ValidationErrorText}"
+                               Foreground="Red" FontSize="12"
                                Visibility="{Binding HasErrors[Email], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 用户角色 -->
                     <TextBlock Text="用户角色 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <ComboBox ItemsSource="{Binding RoleOptions}"
                               SelectedValue="{Binding SelectedRole}"
-                              Style="{StaticResource InputComboBox}"
+                              
                               Margin="0,5,0,5" />
 
                     <!-- 用户状态 -->
                     <TextBlock Text="用户状态 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
                     <ComboBox ItemsSource="{Binding StatusOptions}"
                               SelectedValue="{Binding Status}"
-                              Style="{StaticResource InputComboBox}"
+                              
                               Margin="0,5,0,5" />
                 </StackPanel>
             </Border>
