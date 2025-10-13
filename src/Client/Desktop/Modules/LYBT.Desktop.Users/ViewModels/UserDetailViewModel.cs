@@ -138,7 +138,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private void ExecuteGoBack()
         {
             Logger.LogInformation("返回用户列表");
-            NavigateBack("ContentRegion");
+            NavigateBack("AdminContentRegion");
         }
 
         private void ExecuteEditUser()
@@ -156,7 +156,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 { "UserId", User.Id }
             };
 
-            NavigateTo("ContentRegion", "UserEditView", parameters);
+            NavigateTo("AdminContentRegion", "UserEditView", parameters);
         }
 
         private bool CanExecuteEditUser()

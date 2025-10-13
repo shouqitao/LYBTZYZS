@@ -356,7 +356,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void NavigateToUserManagement()
         {
-            NavigateTo("ContentRegion", "UserManagementView");
+            NavigateTo("AdminContentRegion", "UserManagementView");
         }
 
         #endregion

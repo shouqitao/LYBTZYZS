@@ -355,7 +355,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     EventAggregator.GetEvent<PubSubEvent<string>>().Publish($"用户 {RealName} 更新成功");
 
                     // 导航回用户管理页面
-                    NavigateTo("ContentRegion", "UserManagementView");
+                    NavigateTo("AdminContentRegion", "UserManagementView");
                 }
                 else
                 {
@@ -389,7 +389,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }
 
             // 导航回用户管理页面
-            NavigateTo("ContentRegion", "UserManagementView");
+            NavigateTo("AdminContentRegion", "UserManagementView");
         }
 
         /// <summary>
