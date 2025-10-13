@@ -8,17 +8,17 @@
     <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />   <!-- 0: 标题 -->
-            <RowDefinition Height="25" />     <!-- 1: 间距 -->
+            <RowDefinition Height="32" />     <!-- 1: 间距（加大） -->
             <RowDefinition Height="Auto" />   <!-- 2: 用户名输入 -->
-            <RowDefinition Height="12" />     <!-- 3: 间距 -->
+            <RowDefinition Height="20" />     <!-- 3: 间距（加大） -->
             <RowDefinition Height="Auto" />   <!-- 4: 密码输入 -->
-            <RowDefinition Height="12" />     <!-- 5: 间距 -->
+            <RowDefinition Height="20" />     <!-- 5: 间距（加大） -->
             <RowDefinition Height="Auto" />   <!-- 6: 记住用户名 -->
-            <RowDefinition Height="8" />      <!-- 7: 间距（缩小） -->
+            <RowDefinition Height="10" />     <!-- 7: 间距 -->
             <RowDefinition Height="Auto" />   <!-- 8: 记住密码 -->
-            <RowDefinition Height="15" />     <!-- 9: 间距 -->
+            <RowDefinition Height="24" />     <!-- 9: 间距（加大） -->
             <RowDefinition Height="Auto" />   <!-- 10: 登录按钮 -->
-            <RowDefinition Height="12" />     <!-- 11: 间距 -->
+            <RowDefinition Height="16" />     <!-- 11: 间距 -->
             <RowDefinition Height="Auto" />   <!-- 12: 状态消息 -->
             <RowDefinition Height="*" />      <!-- 13: 剩余空间 -->
         </Grid.RowDefinitions>
@@ -26,29 +26,33 @@
         <!-- 标题Logo -->
         <StackPanel Grid.Row="0" HorizontalAlignment="Center">
             <TextBlock Text="凌隐宝堂中医诊所"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Foreground="#2E86AB"
+                       FontSize="26"
+                       FontWeight="SemiBold"
+                       Foreground="#0F172A"
                        HorizontalAlignment="Center" />
             <TextBlock Text="管理系统"
-                       FontSize="14"
-                       Foreground="#666"
+                       FontSize="15"
+                       Foreground="#64748B"
                        HorizontalAlignment="Center"
-                       Margin="0,3,0,0" />
+                       Margin="0,6,0,0" />
         </StackPanel>
 
         <!-- 用户名输入 -->
         <StackPanel Grid.Row="2">
-            <TextBlock Text="用户名" FontSize="14" Foreground="#333" Margin="0,0,0,5" />
+            <TextBlock Text="用户名"
+                       FontSize="15"
+                       FontWeight="Medium"
+                       Foreground="#475569"
+                       Margin="0,0,0,10" />
             <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                     Height="40"
-                     FontSize="13"
-                     Padding="12,6"
-                     BorderBrush="#DDD"
-                     BorderThickness="1"
+                     Height="46"
+                     FontSize="15"
+                     Padding="16,0"
+                     BorderBrush="#D1D5DB"
+                     BorderThickness="1.5"
                      VerticalContentAlignment="Center"
                      Background="White"
-                     Foreground="#333"
+                     Foreground="#1E293B"
                      AutomationProperties.Name="用户名">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
@@ -58,7 +62,7 @@
                                     <Border Background="{TemplateBinding Background}"
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="4">
+                                            CornerRadius="8">
                                         <ScrollViewer x:Name="PART_ContentHost"
                                                       Margin="{TemplateBinding Padding}"
                                                       VerticalAlignment="Center"
@@ -66,11 +70,11 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsFocused" Value="True">
-                                            <Setter Property="BorderBrush" Value="#2E86AB" />
+                                            <Setter Property="BorderBrush" Value="#2563EB" />
                                             <Setter Property="BorderThickness" Value="2" />
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="BorderBrush" Value="#2E86AB" />
+                                            <Setter Property="BorderBrush" Value="#3B82F6" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -88,23 +92,28 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="密码" FontSize="14" Foreground="#333" Margin="0,0,0,5" />
+                <TextBlock Grid.Column="0"
+                           Text="密码"
+                           FontSize="15"
+                           FontWeight="Medium"
+                           Foreground="#475569"
+                           Margin="0,0,0,10" />
                 <TextBlock Grid.Column="1"
                            Text="（已保存）"
-                           FontSize="12"
-                           Foreground="#2E86AB"
+                           FontSize="13"
+                           Foreground="#3B82F6"
                            HorizontalAlignment="Right"
-                           Margin="0,0,0,5"
+                           Margin="0,0,0,10"
                            Visibility="{Binding HasSavedPassword, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </Grid>
             <PasswordBox x:Name="PasswordBox"
-                         Height="40"
-                         FontSize="13"
-                         Padding="12,6"
-                         BorderBrush="#DDD"
-                         BorderThickness="1"
+                         Height="46"
+                         FontSize="15"
+                         Padding="16,0"
+                         BorderBrush="#D1D5DB"
+                         BorderThickness="1.5"
                          Background="White"
-                         Foreground="#333"
+                         Foreground="#1E293B"
                          AutomationProperties.Name="密码"
                          PasswordChanged="PasswordBox_PasswordChanged">
                 <PasswordBox.Style>
@@ -115,7 +124,7 @@
                                     <Border Background="{TemplateBinding Background}"
                                             BorderBrush="{TemplateBinding BorderBrush}"
                                             BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="4">
+                                            CornerRadius="8">
                                         <ScrollViewer x:Name="PART_ContentHost"
                                                       Margin="{TemplateBinding Padding}"
                                                       VerticalAlignment="Center"
@@ -123,11 +132,11 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsFocused" Value="True">
-                                            <Setter Property="BorderBrush" Value="#2E86AB" />
+                                            <Setter Property="BorderBrush" Value="#2563EB" />
                                             <Setter Property="BorderThickness" Value="2" />
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="BorderBrush" Value="#2E86AB" />
+                                            <Setter Property="BorderBrush" Value="#3B82F6" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -145,30 +154,30 @@
         <CheckBox Grid.Row="6"
                   Content="记住用户名"
                   IsChecked="{Binding RememberMe}"
-                  FontSize="12"
-                  Foreground="#666" />
+                  FontSize="13"
+                  Foreground="#64748B" />
 
         <!-- 记住密码 (Issue #1246) -->
         <StackPanel Grid.Row="8" Orientation="Horizontal">
             <CheckBox Content="记住密码"
                       IsChecked="{Binding RememberPassword}"
-                      FontSize="12"
-                      Foreground="#666"
+                      FontSize="13"
+                      Foreground="#64748B"
                       VerticalAlignment="Center" />
             <TextBlock Text="⚠️ 仅在可信设备使用"
-                       FontSize="11"
-                       Foreground="#FF6B35"
+                       FontSize="12"
+                       Foreground="#F59E0B"
                        VerticalAlignment="Center"
-                       Margin="5,0,0,0" />
+                       Margin="6,0,0,0" />
         </StackPanel>
 
         <!-- 登录按钮 -->
         <Button Grid.Row="10"
                 Content="登录"
-                Height="40"
-                FontSize="15"
-                FontWeight="Bold"
-                Background="#2E86AB"
+                Height="48"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Background="#3B82F6"
                 Foreground="White"
                 BorderThickness="0"
                 Command="{Binding LoginCommand}"
@@ -179,19 +188,19 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="{TemplateBinding Background}"
-                                        CornerRadius="4">
+                                        CornerRadius="8">
                                     <ContentPresenter HorizontalAlignment="Center"
                                                       VerticalAlignment="Center" />
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#1F5F99" />
+                                        <Setter Property="Background" Value="#2563EB" />
                                     </Trigger>
                                     <Trigger Property="IsPressed" Value="True">
-                                        <Setter Property="Background" Value="#164A7B" />
+                                        <Setter Property="Background" Value="#1E40AF" />
                                     </Trigger>
                                     <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Background" Value="#CCCCCC" />
+                                        <Setter Property="Background" Value="#CBD5E1" />
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -202,21 +211,27 @@
         </Button>
 
         <!-- 状态和错误消息区域 -->
-        <Border Grid.Row="12" Background="#F8F9FA" CornerRadius="4" Padding="10,5" Margin="0,5,0,0"
+        <Border Grid.Row="12"
+                Background="#F8FAFC"
+                CornerRadius="8"
+                Padding="16,12"
+                Margin="0,0,0,0"
                 Visibility="{Binding HasMessage, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel>
                 <!-- 状态消息 -->
                 <TextBlock Text="{Binding StatusMessage}"
-                           Foreground="Green"
-                           FontSize="12"
+                           Foreground="#059669"
+                           FontSize="13"
+                           FontWeight="Medium"
                            HorizontalAlignment="Center"
                            TextWrapping="Wrap"
                            Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
                 <!-- 错误消息 -->
                 <TextBlock Text="{Binding ErrorMessage}"
-                           Foreground="Red"
-                           FontSize="12"
+                           Foreground="#DC2626"
+                           FontSize="13"
+                           FontWeight="Medium"
                            HorizontalAlignment="Center"
                            TextWrapping="Wrap"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
@@ -225,20 +240,31 @@
 
         <!-- 加载遮罩 -->
         <Grid Grid.RowSpan="14"
-              Background="#80000000"
+              Background="#90000000"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar IsIndeterminate="True"
-                             Width="200"
-                             Height="4"
-                             Background="Transparent"
-                             Foreground="White" />
-                <TextBlock Text="正在登录..."
-                           Foreground="White"
-                           FontSize="14"
-                           HorizontalAlignment="Center"
-                           Margin="0,10,0,0" />
-            </StackPanel>
+            <Border Background="White"
+                    CornerRadius="16"
+                    Padding="40,32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.1" Color="#000000"/>
+                </Border.Effect>
+                <StackPanel>
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="200"
+                                 Height="6"
+                                 Background="#E5E7EB"
+                                 Foreground="#3B82F6"
+                                 BorderThickness="0" />
+                    <TextBlock Text="正在登录..."
+                               Foreground="#475569"
+                               FontSize="15"
+                               FontWeight="Medium"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>
