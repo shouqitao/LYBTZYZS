@@ -67,7 +67,7 @@
             <DataGrid.Columns>
                 <!-- 用户名 -->
                 <DataGridTextColumn Header="用户名"
-                                    Binding="{Binding Username}"
+                                    Binding="{Binding UserName}"
                                     Width="150" />
 
                 <!-- 真实姓名 -->

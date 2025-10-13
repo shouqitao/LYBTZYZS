@@ -19,7 +19,7 @@ public class UserItem : BindableBase
     }
 
     private string _username = string.Empty;
-    public string Username
+    public string UserName
     {
         get => _username;
         set => SetProperty(ref _username, value);
@@ -124,7 +124,7 @@ public class UserItem : BindableBase
         return new UserItem
         {
             Id = dto.Id,
-            Username = dto.UserName,
+            UserName = dto.UserName,
             RealName = dto.RealName,
             Role = dto.Role,
             Email = dto.Email,
@@ -146,7 +146,7 @@ public class UserItem : BindableBase
         return new UserDto
         {
             Id = Id,
-            UserName = Username,
+            UserName = UserName,
             RealName = RealName,
             Role = Role,
             Email = Email,
@@ -165,7 +165,7 @@ public class UserItem : BindableBase
     public void UpdateFromDto(UserDto dto)
     {
         Id = dto.Id;
-        Username = dto.UserName;
+        UserName = dto.UserName;
         RealName = dto.RealName;
         Role = dto.Role;
         Email = dto.Email;
@@ -236,7 +236,7 @@ public class UserItem : BindableBase
     /// <summary>
     /// 显示文本（用于ComboBox等）
     /// </summary>
-    public string DisplayText => $"{RealName}({Username}) - {RoleDisplayText}";
+    public string DisplayText => $"{RealName}({UserName}) - {RoleDisplayText}";
 
     /// <summary>
     /// 是否可以编辑
@@ -246,7 +246,7 @@ public class UserItem : BindableBase
     /// <summary>
     /// 是否可以删除
     /// </summary>
-    public bool CanDelete => !Username.Equals("sysadmin", StringComparison.OrdinalIgnoreCase); // 系统管理员不能删除
+    public bool CanDelete => !UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase); // 系统管理员不能删除
 
     /// <summary>
     /// 是否可以重置密码

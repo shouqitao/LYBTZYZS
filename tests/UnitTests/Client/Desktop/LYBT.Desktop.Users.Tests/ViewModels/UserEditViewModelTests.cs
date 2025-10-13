@@ -103,7 +103,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             // Assert
             _viewModel.IsUserLoaded.Should().BeTrue();
-            _viewModel.Username.Should().Be(testUser.UserName);
+            _viewModel.UserName.Should().Be(testUser.UserName);
             _viewModel.RealName.Should().Be(testUser.RealName);
             _viewModel.PhoneNumber.Should().Be(testUser.PhoneNumber);
             _viewModel.Email.Should().Be(testUser.Email);

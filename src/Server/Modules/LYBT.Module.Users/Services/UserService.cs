@@ -147,21 +147,21 @@ namespace LYBT.Module.Users.Services
             try
             {
                 // 获取超级管理员用户名（可配置）
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
 
                 // 检查是否尝试使用超级管理员用户名
-                if (string.Equals(dto.Username, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(dto.UserName, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogWarning("尝试创建与超级管理员相同的用户名: {Username}", dto.Username);
-                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
+                    _logger.LogWarning("尝试创建与超级管理员相同的用户名: {UserName}", dto.UserName);
+                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
                 }
 
                 // 可选：添加其他保留用户名列表
                 var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
-                if (reservedUsernames.Any(reserved => string.Equals(dto.Username, reserved, StringComparison.OrdinalIgnoreCase)))
+                if (reservedUsernames.Any(reserved => string.Equals(dto.UserName, reserved, StringComparison.OrdinalIgnoreCase)))
                 {
-                    _logger.LogWarning("尝试创建保留用户名: {Username}", dto.Username);
-                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.Username}' 为系统保留用户名，不可使用");
+                    _logger.LogWarning("尝试创建保留用户名: {UserName}", dto.UserName);
+                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
                 }
 
                 var entity = _mapper.Map<User>(dto);
@@ -175,7 +175,7 @@ namespace LYBT.Module.Users.Services
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
 
-                _logger.LogInformation("成功创建用户: {Username}, Role: {Role}", resultDto.UserName, resultDto.Role);
+                _logger.LogInformation("成功创建用户: {UserName}, Role: {Role}", resultDto.UserName, resultDto.Role);
                 return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -254,7 +254,7 @@ namespace LYBT.Module.Users.Services
                 };
 
                 // 获取超级管理员用户名（可配置）
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
 
                 foreach (var userId in ids)
                 {

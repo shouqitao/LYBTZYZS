@@ -25,7 +25,7 @@
                 <StackPanel>
                     <!-- 用户名 -->
                     <TextBlock Text="用户名 *" Style="{StaticResource LabelText}" />
-                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource InputTextBox}"
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[Username]}"

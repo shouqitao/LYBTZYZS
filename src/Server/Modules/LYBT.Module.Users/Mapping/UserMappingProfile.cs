@@ -22,7 +22,7 @@ namespace LYBT.Module.Users.Mapping
 
             // UserCreateDto转用户实体
             CreateMap<UserCreateDto, User>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)) // 映射Username到UserName
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 映射Username到UserName
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())

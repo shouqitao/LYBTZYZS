@@ -104,7 +104,7 @@ namespace LYBT.Shared.Models.Contracts.Users
         [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
         [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
         [DisplayName("用户名")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>密码</summary>
         [Required(ErrorMessage = "密码不能为空")]

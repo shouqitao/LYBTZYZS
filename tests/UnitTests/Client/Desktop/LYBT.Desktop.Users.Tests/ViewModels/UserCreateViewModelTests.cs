@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public void ValidateUsername_WithValidInput_ShouldPass()
         {
             // Act
-            _viewModel.Username = "testuser";
+            _viewModel.UserName = "testuser";
 
             // Assert
             _viewModel.HasErrors.Should().BeFalse();
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.ResetFormCommand.Execute();
 
             // Assert
-            _viewModel.Username.Should().BeEmpty();
+            _viewModel.UserName.Should().BeEmpty();
             _viewModel.RealName.Should().BeEmpty();
             _viewModel.Password.Should().BeEmpty();
             _viewModel.ConfirmPassword.Should().BeEmpty();
@@ -172,7 +172,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public void CanCreateUser_WithInvalidData_ShouldReturnFalse()
         {
             // Arrange - 密码不匹配
-            _viewModel.Username = "testuser";
+            _viewModel.UserName = "testuser";
             _viewModel.RealName = "测试用户";
             _viewModel.Password = "password123";
             _viewModel.ConfirmPassword = "different";
@@ -192,7 +192,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
         private void SetupValidUserInput()
         {
-            _viewModel.Username = "testuser";
+            _viewModel.UserName = "testuser";
             _viewModel.RealName = "测试用户";
             _viewModel.Password = "password123";
             _viewModel.ConfirmPassword = "password123";

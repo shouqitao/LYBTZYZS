@@ -39,7 +39,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         [Required(ErrorMessage = "用户名不能为空")]
         [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
-        public string Username
+        public string UserName
         {
             get => _username;
             set
@@ -229,7 +229,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 // 创建用户数据传输对象
                 var createDto = new UserCreateDto
                 {
-                    Username = Username.Trim(),
+                    UserName = UserName.Trim(),
                     RealName = RealName.Trim(),
                     Password = Password,
                     PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
@@ -271,7 +271,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private bool CanCreateUser()
         {
             return !IsBusy &&
-                   !string.IsNullOrWhiteSpace(Username) &&
+                   !string.IsNullOrWhiteSpace(UserName) &&
                    !string.IsNullOrWhiteSpace(RealName) &&
                    !string.IsNullOrWhiteSpace(Password) &&
                    !string.IsNullOrWhiteSpace(ConfirmPassword) &&
@@ -292,7 +292,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void ResetForm()
         {
-            Username = string.Empty;
+            UserName = string.Empty;
             RealName = string.Empty;
             Password = string.Empty;
             ConfirmPassword = string.Empty;

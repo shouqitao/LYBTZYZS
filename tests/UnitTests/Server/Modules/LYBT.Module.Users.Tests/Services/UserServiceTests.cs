@@ -219,7 +219,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "newuser",
+                UserName = "newuser",
                 RealName = "新用户",
                 Email = "newuser@test.com",
                 PhoneNumber = "13800138000",
@@ -229,7 +229,7 @@ namespace LYBT.Module.Users.Tests.Services
             var createdUser = new User
             {
                 Id = Guid.NewGuid(),
-                UserName = createDto.Username,
+                UserName = createDto.UserName,
                 RealName = createDto.RealName,
                 Email = createDto.Email,
                 PhoneNumber = createDto.PhoneNumber,
@@ -249,7 +249,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.UserName.Should().Be(createDto.Username);
+            result.Data!.UserName.Should().Be(createDto.UserName);
             result.Data!.RealName.Should().Be(createDto.RealName);
             result.Data!.Email.Should().Be(createDto.Email);
 
@@ -262,7 +262,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "newuser",
+                UserName = "newuser",
                 RealName = "新用户",
                 Email = "newuser@test.com"
             };
