@@ -24,10 +24,12 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly ITokenStorageService _tokenStorage;
         private readonly IApiHealthCheckService? _apiHealthCheckService;
         private readonly IUsernameStorageService? _usernameStorage;
+        private readonly ISecureCredentialStorage? _credentialStorage; // Issue #1246: 密码加密存储
 
         private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _rememberMe;
+        private bool _rememberPassword; // Issue #1246: 记住密码
         private bool _hasSavedPassword;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
@@ -39,21 +41,23 @@ namespace LYBT.Desktop.Auth.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             IApiHealthCheckService? apiHealthCheckService = null,
-            IUsernameStorageService? usernameStorage = null)
+            IUsernameStorageService? usernameStorage = null,
+            ISecureCredentialStorage? credentialStorage = null) // Issue #1246: 密码加密存储服务
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
             _authService = authService;
             _tokenStorage = tokenStorage;
             _apiHealthCheckService = apiHealthCheckService;
             _usernameStorage = usernameStorage;
+            _credentialStorage = credentialStorage; // Issue #1246
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
 
-            // Issue #861: 在后台线程加载保存的用户名
+            // Issue #861 & #1246: 在后台线程加载保存的凭据（用户名 + 密码）
             _ = Task.Run(async () =>
             {
                 await Task.Delay(100); // 短暂延迟,让 UI 先完成初始化
-                await LoadSavedUsernameAsync();
+                await LoadSavedCredentialsAsync();
                 await CheckApiHealthAsyncSafe();
             });
         }
@@ -79,33 +83,53 @@ namespace LYBT.Desktop.Auth.ViewModels
         }
 
         /// <summary>
-        /// 加载保存的用户名 - Issue #861
+        /// 加载保存的凭据 - Issue #861 & #1246
+        /// 优先加载"记住密码"的凭据（含用户名+密码），否则仅加载用户名
         /// </summary>
-        private async Task LoadSavedUsernameAsync()
+        private async Task LoadSavedCredentialsAsync()
         {
             try
             {
-                if (_usernameStorage == null)
+                // 1. 优先尝试加载"记住密码"的完整凭据（Issue #1246）
+                if (_credentialStorage != null)
                 {
-                    return;
+                    var credentials = await _credentialStorage.LoadCredentialsAsync();
+                    var isRememberPasswordEnabled = await _credentialStorage.IsRememberPasswordEnabledAsync();
+
+                    if (credentials.HasValue && !string.IsNullOrEmpty(credentials.Value.Username))
+                    {
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            Username = credentials.Value.Username;
+                            Password = credentials.Value.Password;
+                            RememberMe = true; // 记住密码时必然记住用户名
+                            RememberPassword = isRememberPasswordEnabled;
+                            Logger.LogInformation("已自动填充用户名和密码（DPAPI解密）: {Username}", credentials.Value.Username);
+                        });
+                        return; // 成功加载密码后直接返回
+                    }
                 }
 
-                var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
-                var isRememberMeEnabled = await _usernameStorage.IsRememberMeEnabledAsync();
-
-                if (!string.IsNullOrEmpty(savedUsername))
+                // 2. 降级：仅加载"记住用户名"（Issue #861）
+                if (_usernameStorage != null)
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    var savedUsername = await _usernameStorage.GetSavedUsernameAsync();
+                    var isRememberMeEnabled = await _usernameStorage.IsRememberMeEnabledAsync();
+
+                    if (!string.IsNullOrEmpty(savedUsername))
                     {
-                        Username = savedUsername;
-                        RememberMe = isRememberMeEnabled;
-                        Logger.LogInformation("已自动填充用户名: {Username}", savedUsername);
-                    });
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            Username = savedUsername;
+                            RememberMe = isRememberMeEnabled;
+                            Logger.LogInformation("已自动填充用户名: {Username}", savedUsername);
+                        });
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载保存的用户名失败");
+                Logger.LogError(ex, "加载保存的凭据失败");
             }
         }
 
@@ -135,6 +159,26 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             get => _rememberMe;
             set => SetProperty(ref _rememberMe, value);
+        }
+
+        /// <summary>
+        /// 记住密码 - Issue #1246
+        /// 勾选时自动勾选"记住用户名"
+        /// </summary>
+        public bool RememberPassword
+        {
+            get => _rememberPassword;
+            set
+            {
+                if (SetProperty(ref _rememberPassword, value))
+                {
+                    // 勾选"记住密码"时，自动勾选"记住用户名"
+                    if (value && !RememberMe)
+                    {
+                        RememberMe = true;
+                    }
+                }
+            }
         }
 
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -238,10 +282,25 @@ namespace LYBT.Desktop.Auth.ViewModels
                     // 保存Token和用户信息
                     await _tokenStorage.SaveAuthenticationAsync(response.Data, RememberMe);
 
-                    // Issue #861: 保存用户名（如果勾选了"记住用户名"）
-                    if (_usernameStorage != null)
+                    // Issue #1246: 保存凭据（用户名 + 密码）如果勾选了"记住密码"
+                    if (_credentialStorage != null && RememberPassword)
                     {
-                        await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
+                        await _credentialStorage.SaveCredentialsAsync(Username, Password, RememberPassword);
+                        Logger.LogInformation("凭据已保存（DPAPI加密）");
+                    }
+                    else
+                    {
+                        // Issue #861: 仅保存用户名（如果勾选了"记住用户名"但未勾选"记住密码"）
+                        if (_usernameStorage != null && RememberMe && !RememberPassword)
+                        {
+                            await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
+                        }
+
+                        // 如果取消勾选"记住密码"，清除已保存的密码
+                        if (_credentialStorage != null && !RememberPassword)
+                        {
+                            await _credentialStorage.ClearCredentialsAsync();
+                        }
                     }
 
                     // 根据角色导航到对应的工作台
