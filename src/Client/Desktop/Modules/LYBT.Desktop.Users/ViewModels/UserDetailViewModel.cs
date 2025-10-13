@@ -130,6 +130,8 @@ namespace LYBT.Desktop.Users.ViewModels
             finally
             {
                 IsLoading = false;
+                // 刷新命令状态（数据加载完成后，按钮应变为可用）
+                RaiseCanExecuteChanged();
             }
         }
 
@@ -180,6 +182,15 @@ namespace LYBT.Desktop.Users.ViewModels
         private bool CanExecuteResetPassword()
         {
             return User != null && !IsLoading;
+        }
+
+        /// <summary>
+        /// 刷新所有命令的 CanExecute 状态
+        /// </summary>
+        private void RaiseCanExecuteChanged()
+        {
+            EditUserCommand.RaiseCanExecuteChanged();
+            ResetPasswordCommand.RaiseCanExecuteChanged();
         }
     }
 }
