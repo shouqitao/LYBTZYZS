@@ -344,7 +344,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             NavigateTo("AdminContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
             {
-                { "userId", user.Id },
+                { "UserId", user.Id },
                 { "title", $"�༭�û� - {user.RealName}" }
             });
         }
