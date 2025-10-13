@@ -1,9 +1,9 @@
 # Desktop 层深度架构分析报告
 
-**报告日期**: 2025-10-12  
-**分析范围**: LYBTZYZS Desktop 层（WPF Prism MVVM）  
-**分析目的**: 全面诊断架构问题，为重构提供技术支撑  
-**关联文档**: ADR-002、TWO_LAYER_ARCHITECTURE_STANDARD.md、client/unified-design-standard.md
+**报告日期**: 2025-10-12
+**分析范围**: LYBTZYZS Desktop 层（WPF Prism MVVM）
+**分析目的**: 全面诊断架构问题，为重构提供技术支撑
+**关联文档**: ADR-002、docs/architecture/server/two-layer-architecture-standard.md（Server端）、client/unified-design-standard.md（Client端）
 
 ---
 

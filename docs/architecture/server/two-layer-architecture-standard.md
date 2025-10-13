@@ -1,5 +1,14 @@
 ﻿# 模块化双层架构标准
 
+> **⚠️ 适用范围说明**
+>
+> **本标准仅适用于 Server 端模块架构设计**（src/Server/）
+>
+> - ✅ **适用于**: Server 端业务模块（Users、Herbs、Formula、Prescriptions 等）
+> - ❌ **不适用于**: Desktop Client 端（Desktop 使用 MVVM 三层架构，参见 `client/unified-design-standard.md`）
+> - 📍 **当前位置**: `docs/architecture/server/two-layer-architecture-standard.md`
+> - 🔗 **相关文档**: [Server 模块设计标准](../server-module-design-standard.md) | [Desktop 统一设计标准](../client/unified-design-standard.md)
+
 ## 架构设计原则
 
 ### 双层架构模式
