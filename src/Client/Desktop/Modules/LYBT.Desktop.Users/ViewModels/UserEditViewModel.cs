@@ -238,10 +238,10 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             base.ProcessNavigationParameters(parameters);
 
-            // 获取用户ID
-            if (parameters.TryGetValue("userId", out object userIdObj) && userIdObj is Guid userId)
+            // 获取用户ID（Issue #1261: 统一使用大写 UserId）
+            if (parameters.ContainsKey("UserId"))
             {
-                UserId = userId;
+                UserId = parameters.GetValue<Guid>("UserId");
                 Logger.LogDebug("获取到用户ID: {UserId}", UserId);
             }
             else

@@ -95,18 +95,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         // 这是一个已知问题，应在后续修复
         // 当前测试验证实际行为而非期望行为
 
-        [Fact]
-        public void ValidatePassword_WithConfirmMismatch_ShouldFail()
-        {
-            // Arrange
-            _viewModel.Password = "password123";
-
-            // Act
-            _viewModel.ConfirmPassword = "different";
-
-            // Assert
-            _viewModel.HasErrors.Should().BeTrue();
-        }
+        // Issue #1261/#1262: 密码验证测试已移除
+        // 新用户创建不再需要密码输入，使用系统默认密码
 
         [Theory]
         [InlineData("12345678901")] // 无效格式
@@ -159,8 +149,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Assert
             _viewModel.UserName.Should().BeEmpty();
             _viewModel.RealName.Should().BeEmpty();
-            _viewModel.Password.Should().BeEmpty();
-            _viewModel.ConfirmPassword.Should().BeEmpty();
+            // Issue #1261/#1262: 移除密码字段断言（新用户使用系统默认密码）
             _viewModel.PhoneNumber.Should().BeNull();
             _viewModel.Email.Should().BeNull();
             _viewModel.SelectedRole.Should().Be(UserRole.Doctor);
@@ -171,11 +160,9 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         [Fact]
         public void CanCreateUser_WithInvalidData_ShouldReturnFalse()
         {
-            // Arrange - 密码不匹配
-            _viewModel.UserName = "testuser";
-            _viewModel.RealName = "测试用户";
-            _viewModel.Password = "password123";
-            _viewModel.ConfirmPassword = "different";
+            // Arrange - 缺少必填字段（Issue #1261/#1262: 移除密码验证，使用用户名/姓名验证）
+            _viewModel.UserName = ""; // 用户名为空
+            _viewModel.RealName = ""; // 真实姓名为空
 
             // Act
             var method = typeof(UserCreateViewModel)
@@ -194,8 +181,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             _viewModel.UserName = "testuser";
             _viewModel.RealName = "测试用户";
-            _viewModel.Password = "password123";
-            _viewModel.ConfirmPassword = "password123";
+            // Issue #1261/#1262: 移除密码字段设置（新用户使用系统默认密码）
             _viewModel.PhoneNumber = "13800138000";
             _viewModel.Email = "test@example.com";
             _viewModel.SelectedRole = UserRole.Doctor;

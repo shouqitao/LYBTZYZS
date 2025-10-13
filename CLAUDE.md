@@ -58,10 +58,10 @@
 
 ### 2.1 任务启动前置检查
 1. `git pull` → 获取最新主分支
-2. `dotnet build LYBT.All.sln` → 若失败，优先修复再继续任务
-3. `dotnet test LYBT.Server.sln -c Release` → 记录基线失败项，评估是否影响任务
+2. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
+3. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
    - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
-   - **注意**：Desktop测试当前阻塞（需单独修复Issue），仅运行Server端测试
+   - **注意**：统一编译和测试使用 LYBT.All.sln 方案
 
 ### 2.2 Issue 生命周期（核心要点）
 - **单一事实源**：所有改动必须先有 GitHub Issue（含验收标准）
@@ -161,10 +161,10 @@
 ### 常用命令速查
 
 ```bash
-# 项目构建（PowerShell）
+# 项目构建（统一使用 LYBT.All.sln）
 dotnet restore LYBT.All.sln
-dotnet build LYBT.Server.sln -c Release --no-restore
-dotnet test LYBT.Server.sln -c Release
+dotnet build LYBT.All.sln -c Release --no-restore
+dotnet test LYBT.All.sln -c Release
 dotnet format LYBT.All.sln
 
 # Claude Code 环境（Bash 或 MCP）
