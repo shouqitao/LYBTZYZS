@@ -94,13 +94,14 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var result = await _consultationService.CreateAsync(dto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("创建诊疗记录", dto, result.Data.Id);
+                    // Issue #1262: 添加 version 参数以匹配版本化路由
                     return CreatedAtAction(
                         nameof(GetById),
-                        new { id = result.Data.Id },
+                        new { id = result.Data.Id, version = "1" },
                         ApiResponse<ConsultationDto>.CreateSuccess(result.Data));
                 }
                 

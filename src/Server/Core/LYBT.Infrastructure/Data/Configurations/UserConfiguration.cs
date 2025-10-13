@@ -15,9 +15,9 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.ToTable("Users");
             entity.HasKey(u => u.Id);
 
-            // 明确配置字段映射以解决命名冲突 - 统一为Username列名
+            // Issue #1262: 数据库列名升级为 UserName（与实体属性一致）
             entity.HasIndex(u => u.UserName).IsUnique();
-            entity.Property(u => u.UserName).HasMaxLength(50).HasColumnName("Username");
+            entity.Property(u => u.UserName).HasMaxLength(50);
             entity.Property(u => u.RealName).HasMaxLength(50);
             entity.Property(u => u.PasswordHash).HasMaxLength(256);
 

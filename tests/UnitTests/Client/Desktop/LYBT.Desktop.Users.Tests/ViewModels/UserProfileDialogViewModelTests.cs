@@ -153,7 +153,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             await (Task)method!.Invoke(_viewModel, null)!;
 
             // Assert
-            _viewModel.Username.Should().Be(testUser.UserName);
+            _viewModel.UserName.Should().Be(testUser.UserName);
             _viewModel.RealName.Should().Be(testUser.RealName);
             _viewModel.Email.Should().Be(testUser.Email);
             _viewModel.PhoneNumber.Should().Be(testUser.PhoneNumber);
@@ -194,7 +194,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _viewModel.HasAvatar = false;
 
             // Act - 设置Username会触发UpdateAvatarInitial
-            _viewModel.Username = "testuser";
+            _viewModel.UserName = "testuser";
 
             // Assert
             _viewModel.AvatarInitial.Should().Be("T"); // 首字母大写
@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public void RemoveAvatarCommand_ShouldClearAvatarAndSetInitial()
         {
             // Arrange
-            _viewModel.Username = "testuser";
+            _viewModel.UserName = "testuser";
             _viewModel.HasAvatar = true; // 先设置有头像
 
             // Act

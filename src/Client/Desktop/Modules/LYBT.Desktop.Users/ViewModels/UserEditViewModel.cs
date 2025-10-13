@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 用户名（只读）
         /// </summary>
-        public string Username
+        public string UserName
         {
             get => _username;
             private set => SetProperty(ref _username, value);
@@ -251,8 +251,14 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        protected async Task OnInitializeDataAsync()
+        /// &lt;summary&gt;
+        /// 异步初始化数据
+        /// Issue #1261: 使用 InitializeAsync 模式替代自定义的 OnInitializeDataAsync
+        /// &lt;/summary&gt;
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
+            await base.InitializeAsync(parameters);
+
             if (UserId != Guid.Empty)
             {
                 await LoadUserAsync();
@@ -283,7 +289,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                     PageTitle = $"编辑用户 - {_originalUser.RealName}";
 
-                    Logger.LogDebug("成功加载用户数据: {Username} - {RealName}", _originalUser.UserName, _originalUser.RealName);
+                    Logger.LogDebug("成功加载用户数据: {UserName} - {RealName}", _originalUser.UserName, _originalUser.RealName);
                 }
                 else
                 {
@@ -299,7 +305,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void LoadUserData(UserDto user)
         {
-            Username = user.UserName;
+            UserName = user.UserName;
             RealName = user.RealName;
             PhoneNumber = user.PhoneNumber;
             Email = user.Email;
@@ -329,7 +335,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogDebug("开始更新用户: {UserId} - {Username}", UserId, Username);
+                Logger.LogDebug("开始更新用户: {UserId} - {UserName}", UserId, UserName);
 
                 var updateDto = new UserUpdateDto
                 {
@@ -349,13 +355,13 @@ namespace LYBT.Desktop.Users.ViewModels
                     _originalUser = updatedUser;
                     LoadUserData(_originalUser);
 
-                    Logger.LogInformation("成功更新用户: {Username} - {RealName}", Username, RealName);
+                    Logger.LogInformation("成功更新用户: {UserName} - {RealName}", UserName, RealName);
 
                     // 发布用户更新成功事件
                     EventAggregator.GetEvent<PubSubEvent<string>>().Publish($"用户 {RealName} 更新成功");
 
                     // 导航回用户管理页面
-                    NavigateTo("ContentRegion", "UserManagementView");
+                    NavigateTo("AdminContentRegion", "UserManagementView");
                 }
                 else
                 {
@@ -389,7 +395,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }
 
             // 导航回用户管理页面
-            NavigateTo("ContentRegion", "UserManagementView");
+            NavigateTo("AdminContentRegion", "UserManagementView");
         }
 
         /// <summary>
@@ -411,11 +417,11 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             await ExecuteSafelyAsync(() =>
             {
-                Logger.LogDebug("重置用户密码: {UserId} - {Username}", UserId, Username);
+                Logger.LogDebug("重置用户密码: {UserId} - {UserName}", UserId, UserName);
 
                 // 这里应该调用密码重置服务，或者打开重置密码对话框
                 // 暂时记录日志
-                Logger.LogInformation("用户 {Username} 的密码重置请求已提交", Username);
+                Logger.LogInformation("用户 {UserName} 的密码重置请求已提交", UserName);
 
                 // 实际实现可能需要：
                 // 1. 打开重置密码对话框
@@ -545,6 +551,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 or nameof(SelectedRole) or nameof(Status))
             {
                 RefreshPropertyChanged();
+                RefreshCanExecuteChanged(); // Issue #1262: 刷新命令状态，使保存按钮可用
             }
         }
 

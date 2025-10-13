@@ -273,7 +273,7 @@ namespace LYBT.Desktop.Users.ViewModels
             Logger.LogDebug("执行添加新用户");
 
             // �������û�����ҳ��
-            NavigateTo("ContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
+            NavigateTo("AdminContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
             {
                 { "title", "�����û�" }
             });
@@ -342,7 +342,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            NavigateTo("ContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
+            NavigateTo("AdminContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
             {
                 { "userId", user.Id },
                 { "title", $"�༭�û� - {user.RealName}" }
@@ -437,10 +437,10 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
 
-            NavigateTo("ContentRegion", "UserDetailsView", new Prism.Regions.NavigationParameters
+            NavigateTo("AdminContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
             {
-                { "userId", user.Id },
-                { "title", $"�û����� - {user.RealName}" }
+                { "UserId", user.Id },
+                { "title", $"用户详情 - {user.RealName}" }
             });
         }
 

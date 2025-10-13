@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 目标用户名（只读显示）
         /// </summary>
-        public string Username
+        public string UserName
         {
             get => _username;
             set => SetProperty(ref _username, value);
@@ -138,9 +138,9 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
 
                 // 可选参数
-                if (parameters.TryGetValue("Username", out string username))
+                if (parameters.TryGetValue("UserName", out string username))
                 {
-                    Username = username;
+                    UserName = username;
                 }
             }
             catch (Exception ex)
@@ -191,7 +191,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user != null)
                 {
-                    Username = user.UserName; // 注意：UserDto 属性名是 UserName，不是 Username
+                    UserName = user.UserName; // 注意：UserDto 属性名是 UserName，不是 UserName
                 }
                 else
                 {

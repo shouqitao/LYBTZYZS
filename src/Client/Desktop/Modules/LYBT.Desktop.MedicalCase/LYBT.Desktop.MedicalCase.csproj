@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="LYBT.Desktop.MedicalCase.csproj.Backup.tmp" />
     <None Remove="LYBT.Desktop.MedicalCase.xml" />
   </ItemGroup>
 

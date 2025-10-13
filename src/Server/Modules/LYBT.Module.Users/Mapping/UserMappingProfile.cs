@@ -17,12 +17,24 @@ namespace LYBT.Module.Users.Mapping
             // ==================== 现代化映射配置（UserMutationDto） ====================
 
             // 用户实体转UserDto（API响应和业务逻辑）
+            // Issue #1262: 显式映射所有字段，确保序列化成功
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)); // 统一命名
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+                .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
+                .ForMember(dest => dest.FailedLoginCount, opt => opt.MapFrom(src => src.FailedLoginCount))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
             // UserCreateDto转用户实体
             CreateMap<UserCreateDto, User>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username)) // 映射Username到UserName
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 映射Username到UserName
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())

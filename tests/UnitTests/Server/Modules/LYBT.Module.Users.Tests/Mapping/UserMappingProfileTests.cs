@@ -118,7 +118,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "newuser",
+                UserName = "newuser",
                 RealName = "新用户",
                 Email = "newuser@test.com",
                 PhoneNumber = "13900139000",
@@ -132,7 +132,7 @@ namespace LYBT.Module.Users.Tests.Mapping
 
             // Assert
             user.Should().NotBeNull();
-            user.UserName.Should().Be(createDto.Username); // Username映射到UserName
+            user.UserName.Should().Be(createDto.UserName); // Username映射到UserName
             user.RealName.Should().Be(createDto.RealName);
             user.Email.Should().Be(createDto.Email);
             user.PhoneNumber.Should().Be(createDto.PhoneNumber);
@@ -145,7 +145,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "testuser",
+                UserName = "testuser",
                 RealName = "测试",
                 Password = "PlainPassword123!",
                 ConfirmPassword = "PlainPassword123!"
@@ -164,7 +164,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "autotest",
+                UserName = "autotest",
                 RealName = "自动测试",
                 Password = "Pass123!",
                 ConfirmPassword = "Pass123!"
@@ -318,7 +318,7 @@ namespace LYBT.Module.Users.Tests.Mapping
             // Arrange
             var createDto = new UserCreateDto
             {
-                Username = "minimal",
+                UserName = "minimal",
                 RealName = "最小数据",
                 Password = "Pass123!",
                 ConfirmPassword = "Pass123!"

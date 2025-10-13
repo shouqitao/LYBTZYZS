@@ -19,8 +19,8 @@ namespace LYBT.Shared.Models.Extensions
 
             return new UserDto
             {
-                // 用户名映射：Username → UserName
-                UserName = dto.Username,
+                // 用户名映射：UserName → UserName
+                UserName = dto.UserName,
 
                 // 基本信息
                 RealName = dto.RealName,

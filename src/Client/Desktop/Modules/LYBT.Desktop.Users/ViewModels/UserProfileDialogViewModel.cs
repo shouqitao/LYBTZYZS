@@ -59,7 +59,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 用户名（只读）
         /// </summary>
-        public string Username
+        public string UserName
         {
             get => _username;
             set
@@ -230,7 +230,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (user != null)
                 {
-                    Username = user.UserName; // 注意：UserDto 属性名是 UserName，不是 Username
+                    UserName = user.UserName; // 注意：UserDto 属性名是 UserName，不是 UserName
                     RealName = user.RealName ?? string.Empty;
                     Email = user.Email ?? string.Empty;
                     PhoneNumber = user.PhoneNumber ?? string.Empty;
@@ -265,9 +265,9 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void UpdateAvatarInitial()
         {
-            if (!HasAvatar && !string.IsNullOrEmpty(Username))
+            if (!HasAvatar && !string.IsNullOrEmpty(UserName))
             {
-                AvatarInitial = Username.Substring(0, 1).ToUpper();
+                AvatarInitial = UserName.Substring(0, 1).ToUpper();
             }
         }
 

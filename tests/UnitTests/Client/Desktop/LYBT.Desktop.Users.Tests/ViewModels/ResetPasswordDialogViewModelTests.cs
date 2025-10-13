@@ -132,14 +132,14 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             var parameters = new DialogParameters
             {
                 { "UserId", userId },
-                { "Username", username }
+                { "UserName", username }
             };
 
             // Act
             _viewModel.OnDialogOpened(parameters);
 
             // Assert
-            _viewModel.Username.Should().Be(username);
+            _viewModel.UserName.Should().Be(username);
         }
 
         #endregion
@@ -163,7 +163,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             await (Task)method!.Invoke(_viewModel, new object[] { userId })!;
 
             // Assert
-            _viewModel.Username.Should().Be(testUser.UserName);
+            _viewModel.UserName.Should().Be(testUser.UserName);
             _viewModel.HasError.Should().BeFalse();
         }
 

@@ -97,6 +97,10 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// <summary>
     /// 用户创建DTO - 继承输入基础DTO
     /// </summary>
+    /// <summary>
+    /// 用户创建DTO - 继承输入基础DTO
+    /// Issue #1262: 密码改为可选，Server端使用默认值
+    /// </summary>
     public class UserCreateDto : UserInputBaseDto
     {
         /// <summary>用户名</summary>
@@ -104,19 +108,23 @@ namespace LYBT.Shared.Models.Contracts.Users
         [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
         [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
         [DisplayName("用户名")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
-        /// <summary>密码</summary>
-        [Required(ErrorMessage = "密码不能为空")]
+        /// <summary>
+        /// 密码（可选）
+        /// Issue #1262: 如果不提供密码，Server端将使用配置的默认密码
+        /// </summary>
         [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
         [DisplayName("密码")]
-        public string Password { get; set; } = string.Empty;
+        public string? Password { get; set; }
 
-        /// <summary>确认密码</summary>
-        [Required(ErrorMessage = "确认密码不能为空")]
+        /// <summary>
+        /// 确认密码（可选）
+        /// Issue #1262: 仅当提供密码时需要确认
+        /// </summary>
         [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
         [DisplayName("确认密码")]
-        public string ConfirmPassword { get; set; } = string.Empty;
+        public string? ConfirmPassword { get; set; }
     }
 
     /// <summary>
