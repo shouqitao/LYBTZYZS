@@ -251,8 +251,14 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        protected async Task OnInitializeDataAsync()
+        /// &lt;summary&gt;
+        /// 异步初始化数据
+        /// Issue #1261: 使用 InitializeAsync 模式替代自定义的 OnInitializeDataAsync
+        /// &lt;/summary&gt;
+        protected override async Task InitializeAsync(NavigationParameters parameters)
         {
+            await base.InitializeAsync(parameters);
+
             if (UserId != Guid.Empty)
             {
                 await LoadUserAsync();
@@ -545,6 +551,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 or nameof(SelectedRole) or nameof(Status))
             {
                 RefreshPropertyChanged();
+                RefreshCanExecuteChanged(); // Issue #1262: 刷新命令状态，使保存按钮可用
             }
         }
 

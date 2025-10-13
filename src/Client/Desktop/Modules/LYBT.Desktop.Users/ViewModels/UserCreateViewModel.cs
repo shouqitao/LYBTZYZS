@@ -27,8 +27,6 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private string _username = string.Empty;
         private string _realName = string.Empty;
-        private string _password = string.Empty;
-        private string _confirmPassword = string.Empty;
         private string? _phoneNumber;
         private string? _email;
         private UserRole _selectedRole = UserRole.Doctor;
@@ -62,41 +60,6 @@ namespace LYBT.Desktop.Users.ViewModels
             set
             {
                 if (SetProperty(ref _realName, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 密码
-        /// </summary>
-        [Required(ErrorMessage = "密码不能为空")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度必须在6-100个字符之间")]
-        public string Password
-        {
-            get => _password;
-            set
-            {
-                if (SetProperty(ref _password, value))
-                {
-                    ValidateProperty();
-                    // 当密码改变时，重新验证确认密码
-                    ValidateProperty(nameof(ConfirmPassword));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 确认密码
-        /// </summary>
-        [Required(ErrorMessage = "确认密码不能为空")]
-        public string ConfirmPassword
-        {
-            get => _confirmPassword;
-            set
-            {
-                if (SetProperty(ref _confirmPassword, value))
                 {
                     ValidateProperty();
                 }
@@ -218,6 +181,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 创建用户
+        /// Issue #1262: 优化成功后的流程，先清理状态再导航
         /// </summary>
         private async Task CreateUserAsync()
         {
@@ -227,11 +191,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 StatusMessage = "正在创建用户...";
 
                 // 创建用户数据传输对象
+                // Issue #1261: 移除 Password 字段，使用系统默认密码
                 var createDto = new UserCreateDto
                 {
                     UserName = UserName.Trim(),
                     RealName = RealName.Trim(),
-                    Password = Password,
                     PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
                     Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
                     Role = SelectedRole,
@@ -242,40 +206,62 @@ namespace LYBT.Desktop.Users.ViewModels
                 var createdUser = await _userRepository.CreateAsync(createDto);
                 if (createdUser != null)
                 {
-                    StatusMessage = "用户创建成功";
-                    System.Windows.MessageBox.Show("用户创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    Logger.LogInformation("用户创建成功: {UserName} (ID: {UserId})", createdUser.UserName, createdUser.Id);
 
-                    // 创建成功后导航回用户管理页面
+                    // Issue #1262: 清理状态并导航
+                    IsBusy = false;
+                    StatusMessage = string.Empty;
+
+                    // 显示成功消息
+                    System.Windows.MessageBox.Show(
+                        $"用户 '{createdUser.UserName}' 创建成功！\n真实姓名：{createdUser.RealName}",
+                        "创建成功",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
+
+                    // 导航回用户管理页面
                     NavigateToUserManagement();
                 }
                 else
                 {
+                    IsBusy = false;
                     ErrorMessage = "创建用户失败: Repository 返回 null";
+                    Logger.LogError("创建用户失败: Repository 返回 null");
                     System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
+            catch (LYBT.Shared.Models.Exceptions.ApiException apiEx)
+            {
+                // Issue #1262: 提取友好的业务错误消息
+                IsBusy = false;
+                var errorMessage = ExtractFriendlyErrorMessage(apiEx);
+                Logger.LogWarning(apiEx, "创建用户业务失败: {ErrorMessage}", errorMessage);
+
+                ErrorMessage = errorMessage;
+                System.Windows.MessageBox.Show(errorMessage, "提示",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+            }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "创建用户时发生异常");
-                HandleError(ex, "创建用户");
-            }
-            finally
-            {
                 IsBusy = false;
+                Logger.LogError(ex, "创建用户时发生系统异常");
+                HandleError(ex, "创建用户");
             }
         }
 
         /// <summary>
         /// 检查是否可以创建用户
         /// </summary>
+        /// &lt;summary&gt;
+        /// 检查是否可以创建用户
+        /// Issue #1261: 移除密码验证，新用户使用系统默认密码
+        /// &lt;/summary&gt;
         private bool CanCreateUser()
         {
             return !IsBusy &&
                    !string.IsNullOrWhiteSpace(UserName) &&
                    !string.IsNullOrWhiteSpace(RealName) &&
-                   !string.IsNullOrWhiteSpace(Password) &&
-                   !string.IsNullOrWhiteSpace(ConfirmPassword) &&
-                   Password == ConfirmPassword &&
                    !HasErrors;
         }
 
@@ -290,12 +276,14 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 重置表单
         /// </summary>
+        /// &lt;summary&gt;
+        /// 重置表单
+        /// Issue #1261: 移除密码字段重置
+        /// &lt;/summary&gt;
         private void ResetForm()
         {
             UserName = string.Empty;
             RealName = string.Empty;
-            Password = string.Empty;
-            ConfirmPassword = string.Empty;
             PhoneNumber = null;
             Email = null;
             SelectedRole = UserRole.Doctor;
@@ -312,19 +300,13 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 验证确认密码
         /// </summary>
+        /// &lt;summary&gt;
+        /// 验证属性
+        /// Issue #1261: 移除密码验证逻辑
+        /// &lt;/summary&gt;
         protected override void ValidateProperty([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
         {
             // 基础验证通过DataAnnotations自动处理
-
-            // 特殊验证：确认密码
-            if (propertyName == nameof(ConfirmPassword))
-            {
-                ClearValidationErrors(nameof(ConfirmPassword));
-                if (Password != ConfirmPassword)
-                {
-                    AddValidationError(nameof(ConfirmPassword), "两次输入的密码不一致");
-                }
-            }
 
             // 特殊验证：手机号码格式
             if (propertyName == nameof(PhoneNumber) && !string.IsNullOrWhiteSpace(PhoneNumber))
@@ -353,10 +335,71 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 导航到用户管理页面
+        /// Issue #1262: 添加详细日志以追踪导航问题
         /// </summary>
         private void NavigateToUserManagement()
         {
-            NavigateTo("AdminContentRegion", "UserManagementView");
+            Logger.LogInformation("开始导航到用户管理页面 (Region: AdminContentRegion, View: UserManagementView)");
+            try
+            {
+                NavigateTo("AdminContentRegion", "UserManagementView");
+                Logger.LogInformation("导航请求已发送");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到用户管理页面失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 从 ApiException 提取友好的错误消息
+        /// Issue #1262: 优先显示业务错误消息，健壮处理各种响应格式
+        /// </summary>
+        private string ExtractFriendlyErrorMessage(LYBT.Shared.Models.Exceptions.ApiException apiEx)
+        {
+            // 优先使用 ResponseContent（可能包含 JSON 格式的业务错误消息）
+            if (!string.IsNullOrWhiteSpace(apiEx.ResponseContent))
+            {
+                try
+                {
+                    // 尝试解析 JSON 响应
+                    var jsonDoc = System.Text.Json.JsonDocument.Parse(apiEx.ResponseContent);
+
+                    // 尝试提取 message 字段
+                    if (jsonDoc.RootElement.TryGetProperty("message", out var messageProperty))
+                    {
+                        var message = messageProperty.GetString();
+                        if (!string.IsNullOrWhiteSpace(message))
+                        {
+                            return message;
+                        }
+                    }
+
+                    // 尝试提取 title 字段（ProblemDetails 格式）
+                    if (jsonDoc.RootElement.TryGetProperty("title", out var titleProperty))
+                    {
+                        var title = titleProperty.GetString();
+                        if (!string.IsNullOrWhiteSpace(title))
+                        {
+                            return title;
+                        }
+                    }
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    // JSON 解析失败，忽略并回退到其他方式
+                    Logger.LogDebug("无法解析 API 错误响应为 JSON，使用异常消息");
+                }
+                catch (Exception ex)
+                {
+                    // 其他异常也记录但不影响流程
+                    Logger.LogWarning(ex, "提取错误消息时发生异常");
+                }
+            }
+
+            // 回退到异常消息
+            return apiEx.Message ?? "API 调用失败";
         }
 
         #endregion

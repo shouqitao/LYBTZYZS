@@ -54,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="LYBT.Desktop.Users.csproj.Backup.tmp" />
     <None Remove="LYBT.Desktop.Users.xml" />
   </ItemGroup>
 

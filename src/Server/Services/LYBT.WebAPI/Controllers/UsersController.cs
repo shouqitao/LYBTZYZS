@@ -141,11 +141,13 @@ namespace LYBT.WebAPI.Controllers
                 if (validationResult != null) return validationResult;
 
                 var result = await _userService.CreateAsync(dto);
-                
+
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("创建用户", dto, result.Data.Id);
-                    return CreatedAtAction(nameof(GetUser), new { id = result.Data.Id },
+                    // Issue #1262: 添加 version 参数以匹配版本化路由
+                    return CreatedAtAction(nameof(GetUser),
+                        new { id = result.Data.Id, version = "1" },
                         ApiResponse<UserDto>.CreateSuccess(result.Data));
                 }
                 

@@ -164,13 +164,31 @@ namespace LYBT.Module.Users.Services
                     return ServiceResult<UserDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
                 }
 
+                // Issue #1262: 检查用户名是否已存在（唯一性验证）
+                var existingUser = await _repository.ExistsAsync(u => u.UserName == dto.UserName);
+                if (existingUser)
+                {
+                    _logger.LogWarning("尝试创建重复的用户名: {UserName}", dto.UserName);
+                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.UserName}' 已存在，请使用其他用户名");
+                }
+
                 var entity = _mapper.Map<User>(dto);
 
-                // 对密码进行哈希处理
-                if (!string.IsNullOrEmpty(dto.Password))
+                // Issue #1262: 对密码进行哈希处理，如果未提供密码则使用默认密码
+                string passwordToHash;
+                if (!string.IsNullOrWhiteSpace(dto.Password))
                 {
-                    entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                    passwordToHash = dto.Password;
+                    _logger.LogDebug("使用用户提供的密码创建用户: {UserName}", dto.UserName);
                 }
+                else
+                {
+                    // 从配置读取默认密码：DefaultPasswords:NewUserPassword
+                    passwordToHash = _configuration["DefaultPasswords:NewUserPassword"] ?? "Lybt2025@TempPass!";
+                    _logger.LogInformation("使用系统默认密码创建用户: {UserName}，密码配置: DefaultPasswords:NewUserPassword", dto.UserName);
+                }
+
+                entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordToHash);
 
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);

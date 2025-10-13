@@ -101,17 +101,21 @@ namespace LYBT.Desktop.Foundation.Http
 
         /// <summary>
         /// 判断是否应该重试
+        /// Issue #1262: 移除对 500 InternalServerError 的重试，避免非幂等请求（POST/PUT/DELETE）被重复执行
+        /// 只重试网关错误和服务不可用等临时性问题
         /// </summary>
         private static bool ShouldRetry(HttpStatusCode statusCode)
         {
             return statusCode switch
             {
-                HttpStatusCode.InternalServerError => true,
-                HttpStatusCode.BadGateway => true,
-                HttpStatusCode.ServiceUnavailable => true,
-                HttpStatusCode.GatewayTimeout => true,
-                HttpStatusCode.RequestTimeout => true,
-                HttpStatusCode.TooManyRequests => true,
+                // Issue #1262: 不再重试 500 InternalServerError
+                // 500 通常表示服务器逻辑错误，重试无意义且对 POST 不安全
+                // HttpStatusCode.InternalServerError => true,
+                HttpStatusCode.BadGateway => true,              // 502
+                HttpStatusCode.ServiceUnavailable => true,      // 503
+                HttpStatusCode.GatewayTimeout => true,          // 504
+                HttpStatusCode.RequestTimeout => true,          // 408
+                HttpStatusCode.TooManyRequests => true,         // 429
                 _ => false
             };
         }

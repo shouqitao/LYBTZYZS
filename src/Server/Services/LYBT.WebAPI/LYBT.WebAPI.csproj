@@ -22,9 +22,14 @@
 
 	<ItemGroup>
 	  <None Remove=".encryption-key" />
+	  <None Remove="appsettings.ClinicOptimized.json.backup" />
+	  <None Remove="appsettings.json.backup" />
+	  <None Remove="appsettings.Production.json.backup" />
 	  <None Remove="current-startup.log" />
 	  <None Remove="nul" />
 	  <None Remove="webapi-start.log" />
+	  <None Remove="webapi-startup.log" />
+	  <None Remove="webapi.log" />
 	</ItemGroup>
 
 	<ItemGroup>

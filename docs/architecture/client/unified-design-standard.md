@@ -577,6 +577,279 @@ public class FormulaDetailViewModel : UnifiedViewModelBase
 4. **god 组件**：单个组件不应超过 400 行
 5. **破坏封装**：不要将 Repository 暴露给外部
 
+### 3.7 ViewModel 数据绑定模式标准（v2.5 新增 - Issue #1260）
+
+#### 3.7.1 两种标准绑定模式
+
+本项目根据ViewModel的**职责**采用两种不同的数据绑定模式，这是基于单一职责原则的合理差异，**不应强制统一**。
+
+**模式A：DTO属性包装模式（DetailViewModel）**
+
+**适用场景**：
+- 只读详情查看
+- 可切换编辑模式的详情页
+- 不需要复杂验证的简单编辑
+
+**核心特征**：
+```csharp
+public class UserDetailViewModel : UnifiedViewModelBase
+{
+    // 单一DTO属性
+    private UserDto? _user;
+    public UserDto? User
+    {
+        get => _user;
+        set => SetProperty(ref _user, value);
+    }
+
+    // 可选：计算属性用于格式化显示
+    public string StatusText => User?.IsActive == true ? "正常" : "已禁用";
+    public int Age => User?.Age ?? 0;
+}
+```
+
+**View绑定语法**：
+```xml
+<!-- DTO属性绑定 -->
+<TextBlock Text="{Binding User.UserName}" />
+<TextBlock Text="{Binding User.RealName}" />
+<TextBox Text="{Binding User.PhoneNumber, Mode=TwoWay}" IsReadOnly="{Binding IsReadOnly}" />
+
+<!-- 计算属性绑定 -->
+<TextBlock Text="{Binding StatusText}" />
+<TextBlock Text="{Binding Age}" />
+```
+
+**优点**：
+- ✅ 代码量最少（约减少30-40%代码）
+- ✅ 数据加载简单：`User = await _repository.GetByIdAsync(id);`
+- ✅ 无需属性同步
+- ✅ 适合只读或简单编辑场景
+
+**局限**：
+- ❌ DTOs在Shared.Models层，无法实现`INotifyDataErrorInfo`
+- ❌ 不支持属性级验证（可通过DTO-level验证补充）
+- ❌ 无法单独控制属性变更通知
+
+---
+
+**模式B：独立属性模式（Create/EditViewModel）**
+
+**适用场景**：
+- 创建新记录表单
+- 编辑现有记录表单
+- 需要复杂验证的场景
+- 需要属性级控制的场景
+
+**核心特征**：
+```csharp
+public class UserCreateViewModel : UnifiedViewModelBase
+{
+    // 每个字段独立属性
+    private string _userName = "";
+    public string UserName
+    {
+        get => _userName;
+        set
+        {
+            SetProperty(ref _userName, value);
+            ValidateProperty(value);  // 属性级验证
+        }
+    }
+
+    private string _realName = "";
+    public string RealName
+    {
+        get => _realName;
+        set
+        {
+            SetProperty(ref _realName, value);
+            ValidateProperty(value);
+        }
+    }
+
+    private UserRole _selectedRole;
+    public UserRole SelectedRole
+    {
+        get => _selectedRole;
+        set => SetProperty(ref _selectedRole, value);
+    }
+
+    // 数据收集方法
+    private UserCreateDto BuildCreateDto()
+    {
+        return new UserCreateDto
+        {
+            UserName = this.UserName,
+            RealName = this.RealName,
+            Role = this.SelectedRole,
+            // ...
+        };
+    }
+}
+```
+
+**View绑定语法**：
+```xml
+<!-- 直接绑定ViewModel属性 -->
+<TextBox Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+<TextBox Text="{Binding RealName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+<ComboBox SelectedValue="{Binding SelectedRole}" />
+```
+
+**优点**：
+- ✅ 完整的WPF验证支持（INotifyDataErrorInfo）
+- ✅ 属性级控制和变更通知
+- ✅ 灵活的双向绑定
+- ✅ 单元测试友好
+
+**代价**：
+- ⚠️ 代码量较大（需要每个属性的getter/setter）
+- ⚠️ 需要Load和Build方法同步DTO↔属性
+
+#### 3.7.2 模式选择决策树
+
+```
+                           ViewModel职责
+                                |
+                    ┌───────────┴───────────┐
+                    |                       |
+              需要验证？                只读/简单显示？
+                    |                       |
+                ┌───┴───┐                  YES
+              YES      NO                   |
+                |       |              DTO属性包装模式
+        独立属性模式  根据复杂度           (DetailViewModel)
+      (Create/Edit)     |
+                    ┌───┴───┐
+                  复杂    简单
+                    |       |
+            独立属性模式  DTO属性包装模式
+```
+
+#### 3.7.3 实际应用示例
+
+**Users模块标准实现**（已验证，作为参考模板）：
+
+| ViewModel | 模式 | 绑定语法示例 | 代码量 |
+|-----------|------|------------|--------|
+| `UserDetailViewModel` | DTO属性包装 | `{Binding User.UserName}` | ~280行 |
+| `UserCreateViewModel` | 独立属性 | `{Binding UserName}` | ~350行 |
+| `UserEditViewModel` | 独立属性 | `{Binding UserName}` | ~380行 |
+
+**Patients模块验证**（与Users保持一致）：
+
+| ViewModel | 模式 | 绑定语法 |
+|-----------|------|---------|
+| `PatientDetailViewModel` | DTO属性包装 + 计算属性 | `{Binding Patient.IdNumber}` + `{Binding PatientName}` |
+| `PatientCreateViewModel` | 独立属性 | `{Binding Name}` |
+| `PatientEditViewModel` | 独立属性 | `{Binding Name}` |
+
+#### 3.7.4 常见错误与解决方案
+
+**❌ 错误1：强制统一所有ViewModel使用相同模式**
+```csharp
+// ❌ 错误：Detail也用独立属性（过度设计）
+public class UserDetailViewModel
+{
+    // 无谓的代码重复
+    private string _userName = "";
+    public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
+    // ... 每个字段都这样写
+}
+```
+
+**✅ 正确做法：**
+```csharp
+// ✅ 正确：Detail用DTO包装（简洁高效）
+public class UserDetailViewModel
+{
+    public UserDto? User { get; set; }
+    public string StatusText => User?.IsActive == true ? "正常" : "已禁用";
+}
+```
+
+---
+
+**❌ 错误2：绑定路径不一致**
+```xml
+<!-- ❌ 错误：DetailView使用错误的绑定路径 -->
+<TextBlock Text="{Binding UserName}" />  <!-- 应该是 User.UserName -->
+
+<!-- ❌ 错误：CreateView使用错误的绑定路径 -->
+<TextBox Text="{Binding User.UserName}" />  <!-- 应该是 UserName -->
+```
+
+**✅ 正确做法：**
+```xml
+<!-- ✅ DetailView：DTO属性包装模式 -->
+<TextBlock Text="{Binding User.UserName}" />
+<TextBlock Text="{Binding User.RealName}" />
+
+<!-- ✅ CreateView：独立属性模式 -->
+<TextBox Text="{Binding UserName, Mode=TwoWay}" />
+<TextBox Text="{Binding RealName, Mode=TwoWay}" />
+```
+
+---
+
+**❌ 错误3：DTOs实现INotifyPropertyChanged**
+```csharp
+// ❌ 错误：尝试让Shared.Models中的DTO实现WPF接口
+namespace LYBT.Shared.Models.Contracts.Users
+{
+    public class UserDto : INotifyPropertyChanged  // ❌ 破坏跨平台兼容性
+    {
+        // ...
+    }
+}
+```
+
+**✅ 正确做法：**
+- Shared.Models中的DTO保持为POCO
+- 需要验证时使用独立属性模式
+- 不需要验证时使用DTO属性包装模式
+
+#### 3.7.5 设计原则总结
+
+1. **单一职责原则（SRP）**
+   - Detail = 展示 → DTO属性包装
+   - Create/Edit = 编辑+验证 → 独立属性
+
+2. **最小充分原则**
+   - 不要过度设计
+   - 够用即好，避免强制统一
+
+3. **架构一致性**
+   - 同一模块内的同类ViewModel保持一致
+   - 跨模块遵循相同的模式选择原则
+   - 参考已验证的Users和Patients模块
+
+4. **约束意识**
+   - DTOs在Shared.Models层不能实现WPF接口
+   - 这是架构约束，不是设计缺陷
+   - 选择模式时考虑这个约束
+
+5. **文档先行**
+   - 新模块开发前参考本标准
+   - 模式选择有疑问时查阅Users模块实现
+   - 保持项目内一致性
+
+#### 3.7.6 检查清单
+
+**DetailViewModel 检查清单**：
+- [ ] 使用单一DTO属性（如 `User: UserDto?`）
+- [ ] 计算属性仅用于格式化显示
+- [ ] View绑定使用 `{Binding User.PropertyName}` 或 `{Binding ComputedProperty}`
+- [ ] 可编辑字段使用 `Mode=TwoWay`，只读字段使用 `Mode=OneWay`
+
+**Create/Edit ViewModel 检查清单**：
+- [ ] 每个可编辑字段有独立属性
+- [ ] 属性setter中调用验证方法
+- [ ] 提供 `Build{Entity}Dto()` 方法收集数据
+- [ ] 如需加载数据，提供 `LoadFrom(Dto)` 方法
+- [ ] View绑定使用 `{Binding PropertyName}`
+
 ---
 
 ## 四、Repository 层设计标准（v2.0）
@@ -1175,6 +1448,7 @@ var updated = await _repository.UpdateAsync(updateDto);
 
 | 版本 | 日期 | 修订内容 | 作者 |
 |------|------|---------|------|
+| 2.5 | 2025-10-13 | **ViewModel 数据绑定模式标准化** - Issue #1260 Users模块设计分析与标准化<br/>- ✅ **新增 3.7 节**：ViewModel数据绑定模式标准<br/>- ✅ **模式A（DTO属性包装）**：DetailViewModel使用单一DTO属性 + 计算属性<br/>- ✅ **模式B（独立属性）**：Create/EditViewModel使用独立属性支持验证<br/>- ✅ **设计原则**：基于单一职责，不强制统一，遵循最小充分原则<br/>- ✅ **参考实现**：Users和Patients模块作为标准模板<br/>- ✅ **决策树与检查清单**：提供模式选择指南和验证标准 | Claude Code |
 | 2.2 | 2025-10-11 | **接口位置统一迁移** - Issue #1151 Desktop接口位置对齐Server端标准<br/>- ✅ **Interfaces/ 目录**：Repository接口独立目录（7个模块）<br/>- ✅ **Repositories/ 目录**：仅保留实现类，不再混合接口<br/>- ✅ **架构一致性**：Desktop与Server端接口位置统一<br/>- ✅ **命名空间调整**：`LYBT.Desktop.{Module}.Repositories` → `LYBT.Desktop.{Module}.Interfaces`<br/>- 📦 **影响模块**：Patients, Users, MedicalCase, Consultation, Prescriptions, Herbs, Formula | Claude Code |
 | 2.1 | 2025-01-11 | **架构实现修订** - 基于 Issue #1119 Phase 1-4 实际迁移经验修订（Epic #1119）<br/>- ✅ **Repository 返回裸类型**（非 ServiceResult）<br/>- ✅ **UpdateAsync 方法签名调整**（dto 包含 Id，无需额外参数）<br/>- ✅ **IApiClientManager 替代 HttpClient**（Foundation 层统一API客户端）<br/>- ✅ **异常处理模式**：Repository 抛出异常，UnifiedViewModelBase 捕获<br/>- ✅ 更新所有代码示例、检查清单、迁移指南<br/>- ⚠️ 强调禁止使用 `LYBT.Shared.Interfaces.Services.*`（DI 解析失败） | Claude Code |
 | 2.0 | 2025-01-09 | **重大架构变更** - 移除Service层，实现模块化架构 (Issue #1114)<br/>- ❌ 删除Desktop.Services项目<br/>- ✅ Repository下沉到各模块<br/>- ✅ 新增Desktop.Foundation/Presentation<br/>- ✅ 修复P0性能问题（服务端分页）<br/>- ❌ 废弃AutoMapper<br/>- 更新所有代码模板与检查清单 | Claude Code |
