@@ -87,7 +87,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Path x:Name="Arrow"
                                                   Grid.Column="1"
-                                                  HorizontalAlignment="Center"
+                                                  HorizontalAlignment="Right"
                                                   VerticalAlignment="Center"
                                                   Data="M 0 0 L 4 4 L 8 0 Z"
                                                   Fill="#6B7280"
@@ -424,42 +424,23 @@
                 BorderBrush="#E5E7EB"
                 BorderThickness="0,1,0,0"
                 Padding="40,24">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <!-- 左侧：取消/返回 -->
-                <Button Grid.Column="0"
-                        Content="取消"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="重置表单"
                         Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,16,0"
                         Height="48"
-                        MinWidth="140"
+                        MinWidth="130"
                         FontSize="15"
                         FontWeight="Medium"
-                        Command="{Binding CancelCommand}" />
-
-                <!-- 右侧：操作按钮 -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Content="重置表单"
-                            Style="{StaticResource SecondaryButton}"
-                            Margin="0,0,16,0"
-                            Height="48"
-                            MinWidth="140"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Command="{Binding ResetFormCommand}" />
-                    <Button Content="创建用户"
-                            Style="{StaticResource SuccessButton}"
-                            Height="48"
-                            MinWidth="140"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Command="{Binding CreateUserCommand}" />
-                </StackPanel>
-            </Grid>
+                        Command="{Binding ResetFormCommand}" />
+                <Button Content="创建用户"
+                        Style="{StaticResource SuccessButton}"
+                        Height="48"
+                        MinWidth="130"
+                        FontSize="15"
+                        FontWeight="Medium"
+                        Command="{Binding CreateUserCommand}" />
+            </StackPanel>
         </Border>
 
         <!-- 加载遮罩 -->

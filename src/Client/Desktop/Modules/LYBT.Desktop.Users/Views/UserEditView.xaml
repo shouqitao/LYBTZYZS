@@ -495,48 +495,29 @@
             </Grid>
         </ScrollViewer>
 
-        <!-- 按钮区域 - 两端对齐 -->
+        <!-- 按钮区域 - 右对齐 -->
         <Border Grid.Row="2"
                 Background="White"
                 BorderBrush="#E5E7EB"
                 BorderThickness="0,1,0,0"
                 Padding="40,24">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <!-- 左侧：取消 -->
-                <Button Grid.Column="0"
-                        Content="取消"
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="重置表单"
                         Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,16,0"
                         Height="48"
-                        MinWidth="140"
+                        MinWidth="130"
                         FontSize="15"
                         FontWeight="Medium"
-                        Command="{Binding CancelCommand}" />
-
-                <!-- 右侧：操作按钮 -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Content="重置表单"
-                            Style="{StaticResource SecondaryButton}"
-                            Margin="0,0,16,0"
-                            Height="48"
-                            MinWidth="130"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Command="{Binding ResetCommand}" />
-                    <Button Content="保存修改"
-                            Style="{StaticResource SuccessButton}"
-                            Height="48"
-                            MinWidth="130"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Command="{Binding SaveCommand}" />
-                </StackPanel>
-            </Grid>
+                        Command="{Binding ResetCommand}" />
+                <Button Content="保存修改"
+                        Style="{StaticResource SuccessButton}"
+                        Height="48"
+                        MinWidth="130"
+                        FontSize="15"
+                        FontWeight="Medium"
+                        Command="{Binding SaveCommand}" />
+            </StackPanel>
         </Border>
 
         <!-- 加载遮罩 -->

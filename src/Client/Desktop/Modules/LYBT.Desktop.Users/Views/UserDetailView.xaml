@@ -9,12 +9,22 @@
              d:DesignHeight="600" d:DesignWidth="800">
 
     <UserControl.Resources>
-        <!-- 卡片阴影 -->
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="16"
-                          ShadowDepth="2"
-                          Opacity="0.05"
-                          Color="#000000"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 引入基础设施转换器 -->
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- 首字符转换器（用于头像显示） -->
+            <infrastructure:FirstCharacterConverter x:Key="FirstCharacterConverter"
+                                                     xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
+
+            <!-- 卡片阴影 -->
+            <DropShadowEffect x:Key="CardShadow"
+                              BlurRadius="16"
+                              ShadowDepth="2"
+                              Opacity="0.05"
+                              Color="#000000"/>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">

@@ -439,8 +439,8 @@ namespace LYBT.Desktop.Users.ViewModels
 
             NavigateTo("AdminContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
             {
-                { "userId", user.Id },
-                { "title", $"�û����� - {user.RealName}" }
+                { "UserId", user.Id },
+                { "title", $"用户详情 - {user.RealName}" }
             });
         }
 
