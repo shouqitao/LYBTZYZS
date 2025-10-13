@@ -96,6 +96,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>());
 
+            // Issue #1246 修复: 注册 SecureCredentialStorage 的 Logger
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>());
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>());
             
@@ -255,6 +259,10 @@ namespace LYBT.Desktop.Shell.Extensions
         // Issue #1245 修复: 用户名存储服务 - Foundation/Security
         containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
             LYBT.Desktop.Foundation.Security.UsernameStorageService>();
+
+        // Issue #1246 修复: 安全凭据存储服务（密码加密）- Foundation/Security
+        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.ISecureCredentialStorage,
+            LYBT.Desktop.Foundation.Security.SecureCredentialStorage>();
 
         // API 健康检查服务 - Foundation/HealthCheck
         containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
