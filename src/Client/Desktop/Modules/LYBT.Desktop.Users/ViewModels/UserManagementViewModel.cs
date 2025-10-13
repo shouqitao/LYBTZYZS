@@ -437,7 +437,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
 
-            NavigateTo("ContentRegion", "UserDetailsView", new Prism.Regions.NavigationParameters
+            NavigateTo("ContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
             {
                 { "userId", user.Id },
                 { "title", $"�û����� - {user.RealName}" }
