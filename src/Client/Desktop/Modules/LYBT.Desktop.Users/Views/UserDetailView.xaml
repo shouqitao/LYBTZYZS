@@ -118,7 +118,7 @@
                                 CornerRadius="50"
                                 Background="#2E86AB"
                                 Margin="0,0,30,0">
-                            <TextBlock Text="{Binding User.Username, Converter={StaticResource FirstCharacterConverter}}"
+                            <TextBlock Text="{Binding User.UserName, Converter={StaticResource FirstCharacterConverter}}"
                                        FontSize="40"
                                        FontWeight="Bold"
                                        Foreground="White"
@@ -145,7 +145,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名："
                                        Foreground="#666" VerticalAlignment="Center" />
                             <TextBlock Grid.Row="0" Grid.Column="1"
-                                       Text="{Binding User.Username}"
+                                       Text="{Binding User.UserName}"
                                        FontWeight="Bold" VerticalAlignment="Center" />
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="真实姓名："
@@ -204,37 +204,7 @@
                                         </TextBlock.Style>
                                     </TextBlock>
                                 </Border>
-                                <Border CornerRadius="12"
-                                        Padding="10,4">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding User.IsOnline}" Value="True">
-                                                    <Setter Property="Background" Value="#E8F5E9" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding User.IsOnline}" Value="False">
-                                                    <Setter Property="Background" Value="#F5F5F5" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <TextBlock FontSize="12">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding User.IsOnline}" Value="True">
-                                                        <Setter Property="Text" Value="在线" />
-                                                        <Setter Property="Foreground" Value="#388E3C" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding User.IsOnline}" Value="False">
-                                                        <Setter Property="Text" Value="离线" />
-                                                        <Setter Property="Foreground" Value="#666" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </Border>
+
                             </StackPanel>
 
                             <!-- 第二列 -->

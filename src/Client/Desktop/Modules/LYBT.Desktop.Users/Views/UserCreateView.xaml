@@ -28,9 +28,9 @@
                     <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource BaseTextBox}"
                              Margin="0,5,0,5" />
-                    <TextBlock Text="{Binding Errors[Username]}"
+                    <TextBlock Text="{Binding Errors[UserName]}"
                                Foreground="Red" FontSize="12"
-                               Visibility="{Binding HasErrors[Username], Converter={StaticResource BooleanToVisibilityConverter}}" />
+                               Visibility="{Binding HasErrors[UserName], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 真实姓名 -->
                     <TextBlock Text="真实姓名 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
