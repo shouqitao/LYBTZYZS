@@ -31,6 +31,14 @@ namespace LYBT.Desktop.Auth.Views
             if (e.NewValue is INotifyPropertyChanged newViewModel)
             {
                 newViewModel.PropertyChanged += OnViewModelPropertyChanged;
+                
+                // Issue #1246 修复: 立即同步已有的密码值（处理时序竞争）
+                // 原因：LoadSavedCredentialsAsync 可能在 DataContextChanged 之前完成，导致 PropertyChanged 事件丢失
+                if (e.NewValue is Auth.ViewModels.LoginViewModel viewModel 
+                    && !string.IsNullOrEmpty(viewModel.Password))
+                {
+                    PasswordBox.Password = viewModel.Password;
+                }
             }
         }
 
