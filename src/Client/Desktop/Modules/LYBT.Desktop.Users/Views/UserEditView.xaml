@@ -38,7 +38,7 @@
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[RealName]}"
                                Foreground="Red" FontSize="12"
-                               Visibility="{Binding HasErrors[RealName], Converter={StaticResource BooleanToVisibilityConverter}}" />
+                               Visibility="{Binding HasErrorsDictionary[RealName], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 手机号码 -->
                     <TextBlock Text="手机号码" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
@@ -47,7 +47,7 @@
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[PhoneNumber]}"
                                Foreground="Red" FontSize="12"
-                               Visibility="{Binding HasErrors[PhoneNumber], Converter={StaticResource BooleanToVisibilityConverter}}" />
+                               Visibility="{Binding HasErrorsDictionary[PhoneNumber], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 邮箱地址 -->
                     <TextBlock Text="邮箱地址" Style="{StaticResource LabelText}" Margin="0,15,0,0" />
@@ -56,7 +56,7 @@
                              Margin="0,5,0,5" />
                     <TextBlock Text="{Binding Errors[Email]}"
                                Foreground="Red" FontSize="12"
-                               Visibility="{Binding HasErrors[Email], Converter={StaticResource BooleanToVisibilityConverter}}" />
+                               Visibility="{Binding HasErrorsDictionary[Email], Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                     <!-- 用户角色 -->
                     <TextBlock Text="用户角色 *" Style="{StaticResource LabelText}" Margin="0,15,0,0" />

@@ -114,6 +114,52 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             return _validationErrors.TryGetValue(propertyName, out var errors) ? errors : Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// 用于XAML绑定的验证错误访问器（支持索引器语法）
+        /// 使用示例: {Binding Errors[PropertyName]}
+        /// </summary>
+        public ValidationErrorsAccessor Errors { get; }
+
+        /// <summary>
+        /// 用于XAML绑定的属性错误状态访问器（支持索引器语法）
+        /// 使用示例: {Binding HasErrorsDictionary[PropertyName]}
+        /// </summary>
+        public ValidationHasErrorsAccessor HasErrorsDictionary { get; }
+
+        /// <summary>
+        /// 验证错误访问器 - 支持 XAML 索引器绑定
+        /// </summary>
+        public class ValidationErrorsAccessor
+        {
+            private readonly Dictionary<string, List<string>> _errors;
+
+            public ValidationErrorsAccessor(Dictionary<string, List<string>> errors)
+            {
+                _errors = errors;
+            }
+
+            public string this[string propertyName] =>
+                _errors.TryGetValue(propertyName, out var errors) && errors.Count > 0
+                    ? errors[0]
+                    : string.Empty;
+        }
+
+        /// <summary>
+        /// 验证错误状态访问器 - 支持 XAML 索引器绑定
+        /// </summary>
+        public class ValidationHasErrorsAccessor
+        {
+            private readonly Dictionary<string, List<string>> _errors;
+
+            public ValidationHasErrorsAccessor(Dictionary<string, List<string>> errors)
+            {
+                _errors = errors;
+            }
+
+            public bool this[string propertyName] =>
+                _errors.ContainsKey(propertyName) && _errors[propertyName].Count > 0;
+        }
+
         #endregion
 
         #region 构造函数
@@ -125,6 +171,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             EventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             Logger = loggerFactory.CreateLogger(GetType());
+
+            // 初始化验证访问器
+            Errors = new ValidationErrorsAccessor(_validationErrors);
+            HasErrorsDictionary = new ValidationHasErrorsAccessor(_validationErrors);
 
             InitializeCommands();
             SubscribeToEvents();
