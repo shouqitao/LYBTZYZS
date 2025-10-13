@@ -7,21 +7,29 @@
 ## 模块位置
 
 ```
-src/Client/Desktop/Modules/Users/
+src/Client/Desktop/Modules/LYBT.Desktop.Users/
 ├── LYBT.Desktop.Users.csproj
-├── UsersModule.cs
-├── Views/
-│   ├── UserManagementView.xaml
-│   ├── UserEditView.xaml
-│   ├── UserCreateView.xaml
-│   └── UserDetailView.xaml
-├── ViewModels/
-│   ├── UserManagementViewModel.cs
-│   ├── UserEditViewModel.cs
-│   ├── UserCreateViewModel.cs
-│   └── UserDetailViewModel.cs
-└── Services/
-    └── UserService.cs
+├── UsersModule.cs                      # 模块注册
+├── Views/                              # ✅ 已实现
+│   ├── UserManagementView.xaml         # 用户列表视图
+│   ├── UserCreateView.xaml             # 创建用户表单（Issue #1248）
+│   ├── UserEditView.xaml               # 编辑用户表单（Issue #1248）
+│   ├── UserDetailView.xaml             # 用户详情视图
+│   ├── ChangePasswordDialog.xaml       # 修改密码对话框
+│   ├── ResetPasswordDialog.xaml        # 重置密码对话框
+│   └── UserProfileDialog.xaml          # 用户资料对话框
+├── ViewModels/                         # ✅ 已实现
+│   ├── UserManagementViewModel.cs      # 列表管理
+│   ├── UserCreateViewModel.cs          # 创建用户
+│   ├── UserEditViewModel.cs            # 编辑用户
+│   ├── UserDetailViewModel.cs          # 用户详情（Issue #1248 完善）
+│   ├── ChangePasswordDialogViewModel.cs
+│   ├── ResetPasswordDialogViewModel.cs
+│   └── UserProfileDialogViewModel.cs
+├── Repositories/                       # ADR-002 架构
+│   └── UserRepository.cs               # Repository 模式（无 Service 层）
+└── Interfaces/
+    └── IUserRepository.cs              # Repository 接口
 ```
 
 ## 核心功能
@@ -43,33 +51,69 @@ src/Client/Desktop/Modules/Users/
 - **默认密码**：新用户使用系统配置的默认密码
 - **首次登录**：提示用户修改默认密码
 
-## 服务层实现
+## Repository 模式实现（ADR-002 架构）
 
-### UserService
+### UserRepository
 ```csharp
-public class UserService : IUserService
+public class UserRepository : BaseApiRepository, IUserRepository
 {
-    private readonly IHttpClientService _httpClient;
+    // ✅ 返回裸类型（无 ServiceResult 包装）
+    // ✅ 异常向上抛出，由 ViewModel 统一处理
 
     // 获取用户列表（分页）
-    Task<ServiceResult<PagedResult<UserDto>>> GetPagedAsync(UserQueryDto query);
+    Task<PagedResult<UserDto>> GetPagedAsync(UserQueryDto query);
+
+    // 根据 ID 获取用户
+    Task<UserDto?> GetByIdAsync(Guid id);
 
     // 创建新用户
-    Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto);
+    Task<UserDto> CreateAsync(UserCreateDto dto);
 
     // 更新用户信息
-    Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto);
+    Task<UserDto> UpdateAsync(Guid id, UserUpdateDto dto);
 
     // 删除用户
-    Task<ServiceResult<bool>> DeleteAsync(Guid id);
-
-    // 重置密码
-    Task<ServiceResult<bool>> ResetPasswordAsync(Guid id);
-
-    // 切换用户状态
-    Task<ServiceResult<bool>> ToggleStatusAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id);
 }
 ```
+
+**架构说明**（根据 ADR-002）：
+- ✅ **无 Service 层**：Desktop 端移除 Service 层，ViewModel 直接调用 Repository
+- ✅ **Repository 返回裸类型**：不使用 `ServiceResult<T>` 包装，异常向上传递
+- ✅ **异常处理在 ViewModel**：`UnifiedViewModelBase` 统一处理异常并显示用户友好消息
+
+## 视图导航架构
+
+```mermaid
+graph TD
+    A[UserManagementView<br/>用户列表] -->|新增用户| B[UserCreateView<br/>创建表单]
+    A -->|编辑用户| C[UserEditView<br/>编辑表单]
+    A -->|查看详情| D[UserDetailView<br/>用户详情]
+    A -->|删除用户| E[确认对话框]
+
+    D -->|编辑信息| C
+    D -->|重置密码| F[ResetPasswordDialog<br/>重置密码对话框]
+    D -->|返回列表| A
+
+    B -->|提交成功/取消| A
+    C -->|保存成功/取消| A
+    C -->|重置密码| F
+
+    F -->|完成| A
+
+    style A fill:#E3F2FD
+    style B fill:#C8E6C9
+    style C fill:#FFF9C4
+    style D fill:#FFE0B2
+    style F fill:#FFCCBC
+```
+
+**导航流程**：
+1. **UserManagementView**（主列表）→ 新增/编辑/详情/删除
+2. **UserCreateView**（创建表单）→ 提交成功后返回列表并刷新
+3. **UserEditView**（编辑表单）→ 保存成功后返回列表并刷新
+4. **UserDetailView**（用户详情）→ 可跳转到编辑页面或重置密码对话框
+5. **ResetPasswordDialog**（重置密码）→ Prism Dialog Service
 
 ## 视图模型架构
 
@@ -80,33 +124,52 @@ public class UserService : IUserService
 - 导航到创建/编辑/详情页面
 - 快速操作（状态切换、密码重置）
 
-### UserEditViewModel
-编辑视图模型，负责：
-- 加载现有用户数据
-- 验证输入数据
-- 保存更改
-- 角色权限修改
-
 ### UserCreateViewModel
 创建视图模型，负责：
 - 初始化新用户表单
 - 用户名唯一性验证
 - 保留用户名检查
+- 密码强度验证
 - 创建用户并设置默认密码
 
-## 数据流
+### UserEditViewModel
+编辑视图模型，负责：
+- 加载现有用户数据
+- 验证输入数据（真实姓名、手机号、邮箱格式）
+- 保存更改
+- 角色权限修改
+- 重置密码功能触发
+
+### UserDetailViewModel（Issue #1248 完整实现）
+用户详情视图模型，负责：
+- **数据加载**：使用 Issue #1240 异步导航模式
+  - `ProcessNavigationParameters()`：同步处理 UserId 参数
+  - `InitializeAsync()`：异步调用 `LoadUserAsync()` 加载数据
+- **导航功能**：
+  - `GoBackCommand`：返回用户列表（UserManagementView）
+  - `EditUserCommand`：跳转编辑页面（UserEditView）
+  - `ResetPasswordCommand`：打开重置密码对话框
+- **依赖注入**：`IUserRepository`、`IEventAggregator`、`ILogger`、`IRegionManager`
+
+## 数据流（ADR-002 架构）
 
 ```
 View (XAML)
-    ↓ 绑定
-ViewModel (MVVM)
-    ↓ 调用
-UserService
-    ↓ HTTP请求
-HttpClientService
-    ↓ API调用
+    ↓ 数据绑定
+ViewModel
+    ↓ 直接调用
+UserRepository
+    ↓ HTTP 请求
+BaseApiRepository (Refit)
+    ↓ API 调用
 WebAPI (/api/v1/users)
 ```
+
+**架构特点**（根据 ADR-002）：
+- ✅ **三层 MVVM**：View → ViewModel → Repository
+- ✅ **移除 Service 层**：Desktop 端不再使用 Service 层，简化架构
+- ✅ **异常处理**：Repository 不捕获异常，由 `UnifiedViewModelBase` 统一处理
+- ✅ **Refit 客户端**：`BaseApiRepository` 封装 Refit HTTP 客户端
 
 ## 安全特性
 
@@ -178,8 +241,7 @@ private static readonly HashSet<string> ReservedUsernames = new()
 
 ### 内部依赖
 - `LYBT.Desktop.Core` - 基础框架
-- `LYBT.Desktop.Infrastructure` - 基础设施
-- `LYBT.Desktop.Services` - 共享服务
+- `LYBT.Desktop.Infrastructure` - 基础设施（含 BaseApiRepository）
 
 ### 外部依赖
 - `LYBT.Shared.Models` - 数据契约
@@ -212,9 +274,10 @@ private static readonly HashSet<string> ReservedUsernames = new()
 ## 测试覆盖
 
 ### 单元测试
-- UserService 方法测试
+- UserRepository 方法测试
 - ViewModel 逻辑测试
 - 数据验证测试
+- 命令执行测试（Issue #1248）
 
 ### 集成测试
 - API 调用测试
