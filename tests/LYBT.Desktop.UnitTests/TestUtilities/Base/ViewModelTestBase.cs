@@ -2,23 +2,27 @@ using System;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
-using LYBT.Desktop.Core.ViewModels.Base.RefactoredBase;
-using LYBT.Desktop.Core.Services.ErrorHandling;
+using Prism.Regions;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Xunit;
 
 namespace LYBT.Desktop.UnitTests.TestUtilities.Base
 {
     /// <summary>
-    /// ViewModel测试基类 - UltraThink专门化测试框架
+    /// ViewModel测试基类 - 统一测试框架
     /// 提供标准化的测试环境和Mock对象管理
+    /// 支持UnifiedViewModelBase和其子类
     /// </summary>
-    public abstract class ViewModelTestBase<TViewModel> : IDisposable 
-        where TViewModel : ModernViewModelBase
+    public abstract class ViewModelTestBase<TViewModel> : IDisposable
+        where TViewModel : UnifiedViewModelBase
     {
         protected Mock<IEventAggregator> MockEventAggregator { get; private set; } = null!;
         protected Mock<ILoggerFactory> MockLoggerFactory { get; private set; } = null!;
         protected Mock<ILogger> MockLogger { get; private set; } = null!;
-        protected Mock<IErrorHandlingService> MockErrorHandlingService { get; private set; } = null!;
+        protected Mock<IRegionManager> MockRegionManager { get; private set; } = null!;
+        protected Mock<ISessionManager> MockSessionManager { get; private set; } = null!;
+        protected Mock<IUserNotificationService> MockUserNotificationService { get; private set; } = null!;
         protected TViewModel ViewModel { get; set; } = null!;
 
         protected ViewModelTestBase()
@@ -34,7 +38,9 @@ namespace LYBT.Desktop.UnitTests.TestUtilities.Base
             // 初始化Mock对象
             MockEventAggregator = new Mock<IEventAggregator>();
             MockLoggerFactory = new Mock<ILoggerFactory>();
-            MockErrorHandlingService = new Mock<IErrorHandlingService>();
+            MockRegionManager = new Mock<IRegionManager>();
+            MockSessionManager = new Mock<ISessionManager>();
+            MockUserNotificationService = new Mock<IUserNotificationService>();
             MockLogger = new Mock<ILogger>();
 
             // 配置LoggerFactory返回Mock Logger
@@ -45,9 +51,9 @@ namespace LYBT.Desktop.UnitTests.TestUtilities.Base
                 .Setup(x => x.CreateLogger(It.IsAny<Type>()))
                 .Returns(MockLogger.Object);
 
-            // 设置错误处理默认行为
-            MockErrorHandlingService
-                .Setup(x => x.HandleErrorAsync(It.IsAny<Exception>(), It.IsAny<string>()))
+            // 设置通知服务默认行为
+            MockUserNotificationService
+                .Setup(x => x.HandleExceptionAsync(It.IsAny<Exception>(), It.IsAny<string>()))
                 .ReturnsAsync((Exception ex, string context) =>
                 {
                     // 记录错误以便测试验证
@@ -71,11 +77,13 @@ namespace LYBT.Desktop.UnitTests.TestUtilities.Base
         {
             ViewModel?.Dispose();
             ViewModel = null!;
-            
+
             MockEventAggregator = null!;
             MockLoggerFactory = null!;
             MockLogger = null!;
-            MockErrorHandlingService = null!;
+            MockRegionManager = null!;
+            MockSessionManager = null!;
+            MockUserNotificationService = null!;
         }
 
         public void Dispose()

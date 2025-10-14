@@ -1,6 +1,6 @@
-﻿using LYBT.Desktop.Patients.Interfaces;
-using LYBT.Desktop.Foundation.Http;
-using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Infrastructure.Repositories;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
@@ -8,69 +8,67 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.Patients.Repositories
 {
     /// <summary>
-    /// 患者数据仓储实现 - Phase 2模块化架构
-    /// Issue #1114 - 支持CreateDto和UpdateDto
+    /// 患者数据仓储实现 - RepositoryBase统一架构
+    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class PatientRepository : BaseApiRepository<PatientDto>, IPatientRepository
+    public class PatientRepository : RepositoryBase<PatientDto, PatientCreateDto, PatientUpdateDto, IPatientApi>, IPatientRepository
     {
         public PatientRepository(
-            IApiService apiService,
+            IPatientApi patientApi,
             ILogger<PatientRepository> logger)
-            : base(apiService, logger, "api/v1/patients")
+            : base(patientApi, logger)
         {
-        }
-
-        public override Task<List<PatientDto>> GetAllAsync()
-        {
-            return base.GetAllAsync();
-        }
-
-        public override Task<PatientDto> GetByIdAsync(Guid id)
-        {
-            return base.GetByIdAsync(id);
         }
 
         /// <summary>
-        /// 创建新患者（使用CreateDto）
+        /// 获取所有患者（通过分页获取第一页的大量数据）
         /// </summary>
-        public async Task<PatientDto> CreateAsync(PatientCreateDto patient)
+        public async Task<List<PatientDto>> GetAllAsync()
         {
-            if (patient == null)
-                throw new ArgumentNullException(nameof(patient));
-
-            return (await _apiService.PostAsync<PatientCreateDto, PatientDto>(_endpoint, patient))!;
-        }
-
-        /// <summary>
-        /// 更新患者信息（使用UpdateDto）
-        /// </summary>
-        public async Task<PatientDto> UpdateAsync(PatientUpdateDto patient)
-        {
-            if (patient?.Id == null || patient.Id == Guid.Empty)
+            try
             {
-                _logger.LogError("Cannot update patient with null or invalid id");
-                throw new ArgumentException("Patient ID is required", nameof(patient));
+                var pagedResult = await GetPagedAsync(1, 10000);
+                return pagedResult.Items ?? new List<PatientDto>();
             }
-
-            return (await _apiService.PutAsync<PatientUpdateDto, PatientDto>($"{_endpoint}/{patient.Id}", patient))!;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取所有患者失败");
+                return new List<PatientDto>();
+            }
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
+        #region RepositoryBase抽象方法实现
+
+        protected override Task<Refit.ApiResponse<PatientDto>> CallApiGetByIdAsync(Guid id)
         {
-            return base.DeleteAsync(id);
+            return _api.GetPatientByIdAsync(id);
         }
 
-        public override Task<List<PatientDto>> SearchAsync(string keyword)
+        protected override Task<Refit.ApiResponse<PagedResult<PatientDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
-            return base.SearchAsync(keyword);
+            return _api.GetPatientsAsync(page, pageSize, keyword);
         }
 
-        /// <summary>
-        /// 分页查询患者列表（服务端分页）- P0性能修复
-        /// </summary>
-        public override Task<PagedResult<PatientDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        protected override Task<Refit.ApiResponse<PatientDto>> CallApiCreateAsync(PatientCreateDto dto)
         {
-            return base.GetPagedAsync(page, pageSize, keyword);
+            return _api.CreatePatientAsync(dto);
         }
+
+        protected override Task<Refit.ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientUpdateDto dto)
+        {
+            return _api.UpdatePatientAsync(id, dto);
+        }
+
+        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        {
+            return _api.DeletePatientAsync(id);
+        }
+
+        protected override Guid? GetIdFromUpdateDto(PatientUpdateDto dto)
+        {
+            return dto?.Id;
+        }
+
+        #endregion
     }
 }

@@ -852,7 +852,143 @@ namespace LYBT.Shared.Models.Contracts.Users
 
 ---
 
-## 四、Repository 层设计标准（v2.0）
+## 四、Repository 层设计标准（v3.0 - Project Standardization 3.0）
+
+### 4.1 RepositoryBase统一架构（新增）
+
+**核心组件**：
+- **Client端**: `RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>` (LYBT.Desktop.Infrastructure.Repositories)
+- **Server端**: `BaseRepository<TEntity>` (LYBT.Infrastructure.Repositories) - 已有
+
+**设计目标**：
+- ✅ **代码统一**: 所有Repository遵循相同的CRUD模式
+- ✅ **减少重复**: 消除各Repository中的重复代码
+- ✅ **易于维护**: 集中管理通用逻辑
+- ✅ **类型安全**: 泛型约束确保编译时类型安全
+
+### 4.2 Client端RepositoryBase（Task 1.2完成）
+
+**位置**: `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Repositories/RepositoryBase.cs`
+
+**核心功能**：
+```csharp
+public abstract class RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>
+    where TApi : class
+    where TDto : class
+    where TCreateDto : class
+    where TUpdateDto : class
+{
+    // 标准CRUD方法
+    public virtual async Task<TDto?> GetByIdAsync(Guid id)
+    public virtual async Task<PagedResult<TDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+    public virtual async Task<TDto> CreateAsync(TCreateDto dto)
+    public virtual async Task<TDto> UpdateAsync(TUpdateDto dto)
+    public virtual async Task<bool> DeleteAsync(Guid id)
+    public virtual async Task<List<TDto>> SearchAsync(string keyword)
+    
+    // 抽象方法 - 子类实现
+    protected abstract Task<Refit.ApiResponse<TDto>> CallApiGetByIdAsync(Guid id);
+    protected abstract Task<Refit.ApiResponse<PagedResult<TDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword);
+    protected abstract Task<Refit.ApiResponse<TDto>> CallApiCreateAsync(TCreateDto dto);
+    protected abstract Task<Refit.ApiResponse<TDto>> CallApiUpdateAsync(Guid id, TUpdateDto dto);
+    protected abstract Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id);
+    protected abstract Guid? GetIdFromUpdateDto(TUpdateDto dto);
+}
+```
+
+**已迁移模块**（Task 1.3完成）：
+- ✅ ConsultationRepository → RepositoryBase<ConsultationDto, ConsultationCreateDto, ConsultationUpdateDto, IConsultationApi>
+- ✅ PatientRepository → RepositoryBase<PatientDto, PatientCreateDto, PatientUpdateDto, IPatientApi>
+- ✅ PrescriptionRepository → RepositoryBase<PrescriptionDto, PrescriptionCreateDto, PrescriptionUpdateDto, IPrescriptionApi>
+- ✅ FormulaRepository → RepositoryBase<FormulaDto, FormulaCreateDto, FormulaUpdateDto, IFormulaApi>
+- ✅ HerbRepository → RepositoryBase<HerbDto, HerbCreateDto, HerbUpdateDto, IHerbApi>
+- ✅ MedicalCaseRepository → RepositoryBase<MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseUpdateDto, IMedicalCaseApi>
+- ✅ UserRepository → RepositoryBase<UserDto, UserCreateDto, UserUpdateDto, IUserApi>
+
+### 4.3 Server端Specification模式支持（Task 1.4完成）
+
+**Specification接口**:
+```csharp
+public interface ISpecification<T> where T : class
+{
+    Expression<Func<T, bool>> Criteria { get; }
+    List<Expression<Func<T, object>>> Includes { get; }
+    List<string> IncludeStrings { get; }
+    List<(Expression<Func<T, object>> KeySelector, bool Ascending)> OrderByClauses { get; }
+    Expression<Func<T, object>>? GroupBy { get; }
+    (int Skip, int Take)? Pagination { get; }
+    bool AsNoTracking { get; }
+    bool UseCache { get; }
+    int CacheExpirationSeconds { get; }
+}
+```
+
+**BaseSpecification实现**:
+```csharp
+public abstract class BaseSpecification<T> : ISpecification<T> where T : class
+{
+    public Expression<Func<T, bool>> Criteria { get; protected set; }
+    public List<Expression<Func<T, object>>> Includes { get; } = new();
+    public List<string> IncludeStrings { get; } = new();
+    public List<(Expression<Func<T, object>> KeySelector, bool Ascending)> OrderByClauses { get; } = new();
+    
+    // 构建器方法
+    public BaseSpecification<T> OrderBy(Expression<Func<T, object>> keySelector) { /* 实现 */ }
+    public BaseSpecification<T> WithInclude(Expression<Func<T, object>> include) { /* 实现 */ }
+    public BaseSpecification<T> WithPagination(int pageNumber, int pageSize) { /* 实现 */ }
+    public BaseSpecification<T> WithCache(int expirationSeconds = 300) { /* 实现 */ }
+}
+```
+
+### 4.4 统一依赖注入配置（Task 1.5完成）
+
+**Server端扩展方法**:
+```csharp
+// 位置: src/Server/Core/LYBT.Infrastructure/DependencyInjection/RepositoryServiceCollectionExtensions.cs
+services.AddRepositories();  // 自动扫描注册
+services.AddRepository<IUserRepository, UserRepository>();
+services.AddRepositorySupportServices();
+```
+
+**Client端扩展方法**:
+```csharp
+// 位置: src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/DependencyInjection/RepositoryContainerRegistryExtensions.cs
+containerRegistry.RegisterRepositories();  // 自动扫描注册
+containerRegistry.RegisterRepository<IUserRepository, UserRepository>();
+containerRegistry.RegisterClientRepositories();
+```
+
+**模块示例**（已更新）：
+```csharp
+// Server端 - UsersModule.cs
+services.AddRepository<IUserRepository, UserRepository>();
+
+// Client端 - UsersModule.cs  
+containerRegistry.RegisterRepository<IUserRepository, UserRepository>();
+```
+
+### 4.5 Repository性能和监控增强（Task 1.4完成）
+
+**新增支持功能**：
+- ✅ **Specification查询**: 复杂查询逻辑封装
+- ✅ **性能监控**: 查询执行时间跟踪和统计
+- ✅ **批量操作**: 高性能批量插入/更新/删除
+- ✅ **查询缓存**: 内存缓存支持
+- ✅ **类型安全Include**: 编译时类型检查的Include操作
+- ✅ **异步流式**: 大数据集的流式处理
+
+**使用示例**:
+```csharp
+// Specification查询
+var spec = new DirectSpecification<Patient>(p => p.IsActive && p.Name.Contains(keyword));
+var patients = await patientRepository.FindAsync(spec);
+
+// 缓存查询
+var cachedPatients = await patientRepository.FindWithCacheAsync(predicate);
+
+// 批量操作
+await patientRepository.BulkInsertAsync(patients);
+```
 
 ### 4.1 Repository 实现位置（v2.2修订）
 

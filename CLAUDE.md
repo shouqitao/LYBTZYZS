@@ -14,6 +14,8 @@
 - 📁 `.claude/core/FILE-ORGANIZATION.md` - 文件创建规则与目录归档规范
 - 🖥️ `.claude/core/TOOL-ENVIRONMENT.md` - 项目环境与Claude环境区分、命令对照
 - 🚀 `.claude/core/QUICK-START.md` - 5分钟快速上手指南
+- 📋 `.claude/core/SPEC-WORKFLOW.md` - Spec-Driven 开发流程（Steering→需求→设计→任务→实施→文档）
+- 🔧 `.claude/core/MCP-TOOLS-ORCHESTRATION.md` - MCP 工具协同指南（工具分类、阶段映射、协同模式、实战案例）
 
 ### 工作模式（Specialized Modes）
 - 🔍 `.claude/modes/code-review.md` - 代码审查模式（规范检查、架构合规、安全性、性能）
@@ -52,6 +54,70 @@
 
 ---
 
+## 1.5 Spec-Driven 与 Issue-Driven 双轨工作流
+
+本项目采用 **Spec-Driven + Issue-Driven** 双轨开发模式，充分利用 spec-workflow-mcp 工具链实现"想清楚再做"的高质量开发流程。
+
+### 工作流关系图
+
+```
+阶段划分：
+
+Spec-Driven（前置思考阶段）
+  ├─ 阶段 1：项目初始化
+  │   └─ 创建 Steering Documents (product.md, tech.md, structure.md)
+  │
+  ├─ 阶段 2：需求分析
+  │   └─ 创建 requirements.md → Dashboard 审批
+  │
+  ├─ 阶段 3：设计
+  │   └─ 创建 design.md → Dashboard 审批
+  │
+  └─ 阶段 4：任务分解
+      └─ 创建 tasks.md → Dashboard 审批 → 生成 GitHub Issues
+                    ↓
+Issue-Driven（执行实施阶段）
+  ├─ 阶段 5：开发实施
+  │   └─ 基于 GitHub Issues 进行代码开发
+  │
+  ├─ 阶段 6：测试验证
+  │   └─ 单元测试 + 集成测试 + E2E 测试
+  │
+  └─ 阶段 7：PR 审查与文档
+      └─ 创建 PR → 代码审查 → 合并 → 文档更新
+```
+
+### 双轨模式使用场景
+
+| 场景类型 | Spec-Driven | Issue-Driven | 说明 |
+|---------|------------|-------------|------|
+| **新功能开发** | ✅ 必须 | ✅ 必须 | 完整流程：Spec → Issue → 实现 |
+| **重大重构** | ✅ 必须 | ✅ 必须 | 需求+设计审批后分解任务 |
+| **Bug 修复** | ❌ 可选 | ✅ 必须 | 简单 Bug 直接 Issue，复杂 Bug 需 Spec |
+| **文档更新** | ❌ 不需要 | ✅ 必须 | 直接创建 Issue |
+| **性能优化** | ✅ 推荐 | ✅ 必须 | 建议先设计方案再实施 |
+
+### 核心工具与使用指引
+
+- **📋 Spec-Workflow**：完整工作流指南参见 `.claude/core/SPEC-WORKFLOW.md`
+- **🔄 Issues 同步**：`spec-workflow-mcp: manage-tasks` 同步 GitHub Issues 到 tasks.md
+- **🔧 MCP 工具协同**：工具选择与协同模式参见 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`
+- **🔄 Issue 管理**：Issue 驱动流程参见下方"## 2. Issue 驱动工作流"
+
+### Dashboard 访问
+
+```bash
+# 自动启动（推荐）
+# MCP 配置中添加 --AutoStartDashboard 参数
+
+# 手动启动
+npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
+
+# 默认地址：http://localhost:3000
+```
+
+---
+
 ## 2. Issue 驱动工作流
 
 > **📖 完整工作流定义**：参见 `.claude/core/WORKFLOW.md`
@@ -63,10 +129,50 @@
    - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
    - **注意**：统一编译和测试使用 LYBT.All.sln 方案
 
-### 2.2 Issue 生命周期（核心要点）
+### 2.2 GitHub Issues 创建流程（从 Spec 到 Issue）
+
+#### 2.2.1 批量创建 Issues（Epic + 子任务）
+1. **从 tasks.md 生成 Issues**：
+   - 创建 Epic Issue：`[Epic] 功能名称 (SPEC-编号)`
+   - 为每个 Task 创建子 Issue：`[Spec: feature-name] [类型-N] 任务描述`
+   - 关联 Spec 文档链接（requirements.md / design.md / tasks.md）
+
+2. **Issue 内容标准**：
+   ```
+   ## 📋 关联 Spec
+   - Epic: #链接
+   - 需求文档: path/to/requirements.md
+   - 设计文档: path/to/design.md
+   - 任务文档: path/to/tasks.md
+
+   ## 📝 任务描述
+   [详细描述]
+
+   ## ✅ 验收标准
+   - [ ] 标准1
+   - [ ] 标准2
+
+   ## 🔗 依赖任务
+   - Depends on: #链接
+
+   ## ⏱️ 工作量估算
+   X小时/天
+
+   ## 📚 参考资料
+   ```
+
+3. **标签体系**：
+   - 必选：`type:task/epic`, `module:*`
+   - 推荐：`priority:*`, `epic:*`
+
+#### 2.2.2 更新 tasks.md 添加 Issue 链接
+- 为每个任务添加 Issue 链接：`- [ ] Task N: 描述 (#编号)`
+- 在文档顶部添加 Epic Issue 链接
+- 保持任务状态与 Issue 同步
+
+#### 2.2.3 Issue 生命周期管理
 - **单一事实源**：所有改动必须先有 GitHub Issue（含验收标准）
 - **模块化清单**：生成带前缀的条目（`[SRV-1]`、`[CLI-1]`、`[DOC-1]`）
-- **标签体系**：必选标签（type:*、module:*）+ 推荐标签（priority:*、epic:*）
 - **状态标签**：`status:todo` → `status:in-progress` → `status:done`
 - **自动化**：PR关联校验、关单兜底、状态同步
 
@@ -178,19 +284,45 @@ git status                      # 或 mcp__git__git_status
 
 ## 6. MCP 工具使用准则
 
-> **📖 完整工具链参考**：`.claude/core/RULES.md` + `docs/development/mcp-tools-reference.md`
+> **📖 完整工具链参考**：
+> - `.claude/core/RULES.md` - 工具选择优先级与执行策略
+> - `.claude/core/MCP-TOOLS-ORCHESTRATION.md` - 工具协同指南（⭐ 必读）
+> - `docs/development/mcp-tools-reference.md` - 工具快速参考
 
 ### 核心工具（优先使用）
 
-- **filesystem / git / serena** - 文件操作、版本控制、语义代码编辑（⭐⭐⭐ 推荐）
-- **context7** - 查询库文档与权威资料
-- **sequential-thinking** - 结构化推理与任务拆解
-- **memory** - 知识图谱存储
-- **time** - 时间标准化
+| 工具类别 | 核心工具 | 能力 | 优先级 |
+|---------|---------|------|--------|
+| **开发工具** | serena, filesystem, git, ide | 语义代码编辑、文件操作、版本控制 | ⭐⭐⭐ |
+| **知识工具** | context7, microsoft_docs_mcp, memory | 文档查询、知识管理 | ⭐⭐⭐ |
+| **工作流工具** | spec-workflow, github, sequential-thinking | Spec流程、任务管理、推理 | ⭐⭐⭐ |
+| **测试工具** | playwright | E2E测试、浏览器自动化 | ⭐⭐ |
+| **时间工具** | time | 时间标准化 | ⭐⭐ |
 
-### AI 协同流程
+### 工具协同流程
 
-Context7（资料） → Sequential-thinking（拆解） → Serena（代码编辑） → Git（记录）
+**深度分析模式**：
+```
+sequential-thinking（推理） → context7（验证） → serena（分析） → memory（记录）
+```
+
+**快速开发模式**：
+```
+serena（定位） → context7（查询） → serena（编辑） → ide（验证） → git（提交）
+```
+
+**Spec-Driven 完整流程**：
+```
+spec-workflow（需求/设计） → sequential-thinking（分析） → github（任务） →
+serena（开发） → git（提交） → github（PR） → filesystem（文档）
+```
+
+> **💡 详细工具协同模式**：参见 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`，包含：
+> - 工具分类与能力矩阵
+> - 7 个阶段的工具映射
+> - 5 种协同模式详解
+> - 10 个核心工具使用指南
+> - 完整实战案例
 
 ---
 
@@ -237,6 +369,9 @@ Context7（资料） → Sequential-thinking（拆解） → Serena（代码编�
 以上约束如需调整，须先在 GitHub Issue 中提出并获批准，再同步更新本文档及相关标准。
 
 **📌 快速参考**：
-- Issue 默认创建在 GitHub 上
-- 积极使用 `sequential-thinking` MCP 工具和 `serena` MCP 工具
-- 所有用到时间的地方使用 `time` MCP 工具获取最新时间
+- **新功能/重构**：必须先走 Spec-Driven 流程（requirements → design → tasks → 审批）
+- **Issue 管理**：所有任务默认创建在 GitHub 上
+- **Dashboard**：访问 http://localhost:3000 进行 Spec 文档审批
+- **核心工具**：积极使用 `sequential-thinking`、`serena`、`spec-workflow` MCP 工具
+- **时间标准**：所有时间相关操作使用 `time` MCP 工具获取标准时间
+- **工具协同**：参考 `.claude/core/MCP-TOOLS-ORCHESTRATION.md` 选择最优工具组合

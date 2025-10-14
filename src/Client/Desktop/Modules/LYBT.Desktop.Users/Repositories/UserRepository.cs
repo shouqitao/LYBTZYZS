@@ -1,82 +1,60 @@
-﻿using LYBT.Desktop.Foundation.Http;
-using LYBT.Desktop.Foundation.Repositories;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace LYBT.Desktop.Users.Repositories
 {
     /// <summary>
-    /// 用户数据仓储实现 - Phase 2模块化架构
-    /// Issue #1114 - 支持CreateDto和UpdateDto
+    /// 用户数据仓储实现 - RepositoryBase统一架构
+    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class UserRepository : BaseApiRepository<UserDto>, IUserRepository
+    public class UserRepository : RepositoryBase<UserDto, UserCreateDto, UserUpdateDto, IUserApi>, IUserRepository
     {
         public UserRepository(
-            IApiService apiService,
+            IUserApi userApi,
             ILogger<UserRepository> logger)
-            : base(apiService, logger, "api/v1/users")
+            : base(userApi, logger)
         {
-        }
-
-        public override Task<List<UserDto>> GetAllAsync()
-        {
-            return base.GetAllAsync();
-        }
-
-        public override Task<UserDto> GetByIdAsync(Guid id)
-        {
-            return base.GetByIdAsync(id);
         }
 
         /// <summary>
-        /// 创建新用户（使用CreateDto）
+        /// 获取所有用户（通过分页获取第一页的大量数据）
         /// </summary>
-        public async Task<UserDto> CreateAsync(UserCreateDto user)
+        public async Task<List<UserDto>> GetAllAsync()
         {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
-
-            return (await _apiService.PostAsync<UserCreateDto, UserDto>(_endpoint, user))!;
-        }
-
-        /// <summary>
-        /// 更新用户信息（使用UpdateDto）
-        /// </summary>
-        public async Task<UserDto> UpdateAsync(UserUpdateDto user)
-        {
-            if (user?.Id == null || user.Id == Guid.Empty)
+            try
             {
-                _logger.LogError("Cannot update user with null or invalid id");
-                throw new ArgumentException("User ID is required", nameof(user));
+                var pagedResult = await GetPagedAsync(1, 1000);
+                return pagedResult.Items ?? new List<UserDto>();
             }
-
-            return (await _apiService.PutAsync<UserUpdateDto, UserDto>($"{_endpoint}/{user.Id}", user))!;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取所有用户失败");
+                return new List<UserDto>();
+            }
         }
 
-        public override Task<bool> DeleteAsync(Guid id)
-        {
-            return base.DeleteAsync(id);
-        }
-
+        /// <summary>
+        /// 根据用户名获取用户
+        /// </summary>
         public async Task<UserDto> GetByUsernameAsync(string username)
         {
             try
             {
-                return (await _apiService.GetAsync<UserDto>($"{_endpoint}/username/{username}"))!;
+                // 由于IUserApi没有GetByUsernameAsync方法，使用搜索方式
+                var searchResult = await SearchAsync(username);
+                return searchResult.FirstOrDefault(u => u.UserName == username) 
+                    ?? throw new InvalidOperationException($"用户 {username} 不存在");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"根据用户名获取用户失败: {username}");
                 throw;
             }
-        }
-
-        public override Task<List<UserDto>> SearchAsync(string keyword)
-        {
-            return base.SearchAsync(keyword);
         }
 
         /// <summary>
@@ -89,7 +67,7 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 _logger.LogDebug("获取所有医生用户");
 
-                // 调用现有接口获取所有用户（第1页，100条，足够覆盖小诊所全部用户）
+                // 获取所有用户（第1页，100条，足够覆盖小诊所全部用户）
                 var result = await GetPagedAsync(1, 100, null);
 
                 if (result?.Items == null)
@@ -112,5 +90,39 @@ namespace LYBT.Desktop.Users.Repositories
                 return new List<UserDto>();
             }
         }
+
+        #region RepositoryBase抽象方法实现
+
+        protected override Task<Refit.ApiResponse<UserDto>> CallApiGetByIdAsync(Guid id)
+        {
+            return _api.GetUserByIdAsync(id);
+        }
+
+        protected override Task<Refit.ApiResponse<PagedResult<UserDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        {
+            return _api.GetUsersAsync(page, pageSize, keyword);
+        }
+
+        protected override Task<Refit.ApiResponse<UserDto>> CallApiCreateAsync(UserCreateDto dto)
+        {
+            return _api.CreateUserAsync(dto);
+        }
+
+        protected override Task<Refit.ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserUpdateDto dto)
+        {
+            return _api.UpdateUserAsync(id, dto);
+        }
+
+        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        {
+            return _api.DeleteUserAsync(id);
+        }
+
+        protected override Guid? GetIdFromUpdateDto(UserUpdateDto dto)
+        {
+            return dto?.Id;
+        }
+
+        #endregion
     }
 }

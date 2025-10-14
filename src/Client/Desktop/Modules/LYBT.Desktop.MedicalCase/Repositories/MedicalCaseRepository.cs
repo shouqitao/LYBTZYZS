@@ -1,5 +1,6 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -9,37 +10,16 @@ using Microsoft.Extensions.Logging;
 namespace LYBT.Desktop.MedicalCase.Repositories
 {
     /// <summary>
-    /// 医疗案例数据仓储实现 - ADR-002合规版本
-    /// 直接调用IMedicalCaseApi（Refit HTTP客户端），符合架构决策
+    /// 医疗案例数据仓储实现 - RepositoryBase统一架构
+    /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class MedicalCaseRepository : IMedicalCaseRepository
+    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseUpdateDto, IMedicalCaseApi>, IMedicalCaseRepository
     {
-        private readonly IMedicalCaseApi _medicalCaseApi;
-        private readonly ILogger<MedicalCaseRepository> _logger;
-
         public MedicalCaseRepository(
             IMedicalCaseApi medicalCaseApi,
             ILogger<MedicalCaseRepository> logger)
+            : base(medicalCaseApi, logger)
         {
-            _medicalCaseApi = medicalCaseApi;
-            _logger = logger;
-        }
-
-        /// <summary>
-        /// 根据ID获取医疗案例详情
-        /// </summary>
-        public async Task<MedicalCaseDto> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var response = await _medicalCaseApi.GetMedicalCaseByIdAsync(id);
-                return response.Content ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取医疗案例详情失败，ID: {Id}", id);
-                throw;
-            }
         }
 
         /// <summary>
@@ -49,7 +29,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         {
             try
             {
-                var response = await _medicalCaseApi.GetMedicalCaseByIdWithDetailsAsync(id);
+                var response = await _api.GetMedicalCaseByIdWithDetailsAsync(id);
                 return response.Content ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
             }
             catch (Exception ex)
@@ -66,32 +46,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         {
             try
             {
-                var response = await _medicalCaseApi.GetMedicalCasesByPatientIdAsync(patientId);
+                var response = await _api.GetMedicalCasesByPatientIdAsync(patientId);
                 return response.Content ?? new List<MedicalCaseDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "根据患者ID获取医疗案例列表失败，PatientId: {PatientId}", patientId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 创建新医疗案例（使用CreateDto）
-        /// </summary>
-        public async Task<MedicalCaseDto> CreateAsync(MedicalCaseCreateDto medicalCase)
-        {
-            if (medicalCase == null)
-                throw new ArgumentNullException(nameof(medicalCase));
-
-            try
-            {
-                var response = await _medicalCaseApi.CreateMedicalCaseAsync(medicalCase);
-                return response.Content ?? throw new InvalidOperationException("创建医疗案例失败，服务器未返回数据");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建医疗案例失败");
                 throw;
             }
         }
@@ -119,7 +79,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     Prescription = prescriptionDto
                 };
 
-                var response = await _medicalCaseApi.CreateMedicalCaseWithDetailsAsync(request);
+                var response = await _api.CreateMedicalCaseWithDetailsAsync(request);
                 return response.Content ?? throw new InvalidOperationException("创建完整医疗案例失败，服务器未返回数据");
             }
             catch (Exception ex)
@@ -129,68 +89,38 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <summary>
-        /// 更新医疗案例信息（使用UpdateDto）
-        /// </summary>
-        public async Task<MedicalCaseDto> UpdateAsync(MedicalCaseUpdateDto medicalCase)
-        {
-            if (medicalCase?.Id == null || medicalCase.Id == Guid.Empty)
-            {
-                _logger.LogError("Cannot update medical case with null or invalid id");
-                throw new ArgumentException("MedicalCase ID is required", nameof(medicalCase));
-            }
+        #region RepositoryBase抽象方法实现
 
-            try
-            {
-                var response = await _medicalCaseApi.UpdateMedicalCaseAsync(medicalCase.Id, medicalCase);
-                return response.Content ?? throw new InvalidOperationException($"更新医疗案例失败，ID: {medicalCase.Id}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新医疗案例失败，ID: {Id}", medicalCase.Id);
-                throw;
-            }
+        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
+        {
+            return _api.GetMedicalCaseByIdAsync(id);
         }
 
-        /// <summary>
-        /// 删除医疗案例（软删除）
-        /// </summary>
-        public async Task<bool> DeleteAsync(Guid id)
+        protected override Task<Refit.ApiResponse<PagedResult<MedicalCaseDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
-            try
-            {
-                var response = await _medicalCaseApi.DeleteMedicalCaseAsync(id);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除医疗案例失败，ID: {Id}", id);
-                return false;
-            }
+            return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
 
-        /// <summary>
-        /// 分页查询医疗案例列表（服务端分页）
-        /// </summary>
-        public async Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseCreateDto dto)
         {
-            try
-            {
-                var response = await _medicalCaseApi.GetMedicalCasesAsync(page, pageSize, keyword);
-                return response.Content ?? new PagedResult<MedicalCaseDto>
-                {
-                    Items = new List<MedicalCaseDto>(),
-                    TotalCount = 0,
-                    CurrentPage = page,
-                    PageSize = pageSize
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "分页查询医疗案例失败，Page: {Page}, PageSize: {PageSize}, Keyword: {Keyword}",
-                    page, pageSize, keyword);
-                throw;
-            }
+            return _api.CreateMedicalCaseAsync(dto);
         }
+
+        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseUpdateDto dto)
+        {
+            return _api.UpdateMedicalCaseAsync(id, dto);
+        }
+
+        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        {
+            return _api.DeleteMedicalCaseAsync(id);
+        }
+
+        protected override Guid? GetIdFromUpdateDto(MedicalCaseUpdateDto dto)
+        {
+            return dto?.Id;
+        }
+
+        #endregion
     }
 }

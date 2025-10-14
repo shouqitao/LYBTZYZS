@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/project-standardization-v3/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T05:41:11.397Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760420471381_6fkdzzz4x",
+      "approvalTitle": "Project Standardization 3.0 - 基于完整三端架构的标准化需求"
+    }
+  ]
+}

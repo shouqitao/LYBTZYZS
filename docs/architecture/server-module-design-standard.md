@@ -993,10 +993,764 @@ public class PrescriptionService : IPrescriptionService
 - [ADR-003 Server模块统一设计](decisions/ADR-003-server-module-unified-design.md) - 架构决策记录
 - [功能模块设计](functional-modules-design.md) - 模块化设计详解
 
-## 11. 变更历史
+## 11. Repository架构标准化
+
+> **版本**: 2.0
+> **更新日期**: 2025-10-14
+> **关联**: Project Standardization 3.0 - Task 1.6 (#1281)
+
+### 11.1 Repository统一架构设计
+
+Project Standardization 3.0对Server端Repository架构进行了全面标准化，实现了：
+
+- **Specification模式**：复杂查询逻辑封装
+- **统一依赖注入**：标准化DI配置扩展方法
+- **BaseRepository增强**：Include、AsNoTracking、批量操作支持
+- **性能监控**：查询性能和缓存管理
+
+#### 11.1.1 Specification模式接口
+
+```csharp
+// 文件位置: src/Server/Core/LYBT.Infrastructure/Specifications/ISpecification.cs
+namespace LYBT.Infrastructure.Specifications
+{
+    /// <summary>
+    /// Specification模式接口 - 封装复杂查询逻辑
+    /// </summary>
+    public interface ISpecification<T> where T : class
+    {
+        Expression<Func<T, bool>> Criteria { get; }
+        List<Expression<Func<T, object>>> Includes { get; }
+        List<string> IncludeStrings { get; }
+        List<(Expression<Func<T, object>> KeySelector, bool Ascending)> OrderByClauses { get; }
+        Expression<Func<T, object>>? GroupBy { get; }
+        (int Skip, int Take)? Pagination { get; }
+        bool AsNoTracking { get; }
+        bool UseCache { get; }
+        int CacheExpirationSeconds { get; }
+    }
+}
+```
+
+#### 11.1.2 Specification基类实现
+
+```csharp
+// 文件位置: src/Server/Core/LYBT.Infrastructure/Specifications/BaseSpecification.cs
+namespace LYBT.Infrastructure.Specifications
+{
+    /// <summary>
+    /// Specification模式基类实现
+    /// </summary>
+    public abstract class BaseSpecification<T> : ISpecification<T> where T : class
+    {
+        public Expression<Func<T, bool>> Criteria { get; }
+        public List<Expression<Func<T, object>>> Includes { get; } = new();
+        public List<string> IncludeStrings { get; } = new();
+        public List<(Expression<Func<T, object>> KeySelector, bool Ascending)> OrderByClauses { get; } = new();
+        public Expression<Func<T, object>>? GroupBy { get; private set; }
+        public (int Skip, int Take)? Pagination { get; private set; }
+        public bool AsNoTracking { get; protected set; } = true;
+        public bool UseCache { get; protected set; }
+        public int CacheExpirationSeconds { get; protected set; } = 300;
+
+        protected BaseSpecification(Expression<Func<T, bool>> criteria)
+        {
+            Criteria = criteria;
+        }
+
+        // 流畅式API方法
+        public ISpecification<T> Include(Expression<Func<T, object>> includeExpression)
+        {
+            Includes.Add(includeExpression);
+            return this;
+        }
+
+        public ISpecification<T> Include(string includeString)
+        {
+            IncludeStrings.Add(includeString);
+            return this;
+        }
+
+        public ISpecification<T> OrderBy(Expression<Func<T, object>> orderByExpression)
+        {
+            OrderByClauses.Add((orderByExpression, true));
+            return this;
+        }
+
+        public ISpecification<T> OrderByDescending(Expression<Func<T, object>> orderByExpression)
+        {
+            OrderByClauses.Add((orderByExpression, false));
+            return this;
+        }
+
+        public ISpecification<T> GroupBy(Expression<Func<T, object>> groupByExpression)
+        {
+            GroupBy = groupByExpression;
+            return this;
+        }
+
+        public ISpecification<T> Skip(int skip)
+        {
+            Pagination = (skip, Pagination?.Take ?? 20);
+            return this;
+        }
+
+        public ISpecification<T> Take(int take)
+        {
+            Pagination = (Pagination?.Skip ?? 0, take);
+            return this;
+        }
+
+        public ISpecification<T> EnableCache(int expirationSeconds = 300)
+        {
+            UseCache = true;
+            CacheExpirationSeconds = expirationSeconds;
+            return this;
+        }
+
+        public ISpecification<T> DisableTracking()
+        {
+            AsNoTracking = true;
+            return this;
+        }
+    }
+}
+```
+
+#### 11.1.3 Repository扩展方法
+
+```csharp
+// 文件位置: src/Server/Core/LYBT.Infrastructure/Extensions/RepositoryExtensions.cs
+namespace LYBT.Infrastructure.Extensions
+{
+    /// <summary>
+    /// Repository扩展方法 - 支持Specification模式查询
+    /// </summary>
+    public static class RepositoryExtensions
+    {
+        /// <summary>
+        /// 根据Specification查询实体
+        /// </summary>
+        public static async Task<IReadOnlyList<T>> ListAsync<T>(
+            this IRepository<T> repository,
+            ISpecification<T> specification,
+            CancellationToken cancellationToken = default) where T : class
+        {
+            return await repository.GetQueryable(specification)
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 根据Specification查询单个实体
+        /// </summary>
+        public static async Task<T?> FirstOrDefaultAsync<T>(
+            this IRepository<T> repository,
+            ISpecification<T> specification,
+            CancellationToken cancellationToken = default) where T : class
+        {
+            return await repository.GetQueryable(specification)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 根据Specification查询数量
+        /// </summary>
+        public static async Task<int> CountAsync<T>(
+            this IRepository<T> repository,
+            ISpecification<T> specification,
+            CancellationToken cancellationToken = default) where T : class
+        {
+            return await repository.GetQueryable(specification)
+                .CountAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 检查是否存在满足条件的实体
+        /// </summary>
+        public static async Task<bool> AnyAsync<T>(
+            this IRepository<T> repository,
+            ISpecification<T> specification,
+            CancellationToken cancellationToken = default) where T : class
+        {
+            return await repository.GetQueryable(specification)
+                .AnyAsync(cancellationToken);
+        }
+    }
+}
+```
+
+### 11.2 统一依赖注入配置
+
+#### 11.2.1 Server端Repository DI扩展
+
+```csharp
+// 文件位置: src/Server/Core/LYBT.Infrastructure/DependencyInjection/RepositoryServiceCollectionExtensions.cs
+namespace LYBT.Infrastructure.DependencyInjection
+{
+    /// <summary>
+    /// Repository依赖注入统一扩展方法（Server端）
+    /// Project Standardization 3.0 - Task 1.5 (#1280)
+    /// </summary>
+    public static class RepositoryServiceCollectionExtensions
+    {
+        /// <summary>
+        /// 注册Repository服务
+        /// </summary>
+        public static IServiceCollection AddRepository<TRepository, TImplementation>(
+            this IServiceCollection services,
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TRepository : class
+            where TImplementation : class, TRepository
+        {
+            switch (lifetime)
+            {
+                case ServiceLifetime.Singleton:
+                    services.AddSingleton<TRepository, TImplementation>();
+                    break;
+                case ServiceLifetime.Transient:
+                    services.AddTransient<TRepository, TImplementation>();
+                    break;
+                case ServiceLifetime.Scoped:
+                default:
+                    services.AddScoped<TRepository, TImplementation>();
+                    break;
+            }
+            return services;
+        }
+
+        /// <summary>
+        /// 注册所有Repository服务
+        /// 自动扫描并注册所有Repository实现
+        /// </summary>
+        public static IServiceCollection AddRepositories(
+            this IServiceCollection services,
+            params Assembly[] assemblies)
+        {
+            var assembliesToScan = assemblies.Length > 0
+                ? assemblies
+                : new[] { Assembly.GetCallingAssembly() };
+
+            foreach (var assembly in assembliesToScan)
+            {
+                var repositoryTypes = assembly.GetTypes()
+                    .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+                    .ToList();
+
+                foreach (var repositoryType in repositoryTypes)
+                {
+                    var interfaceType = repositoryType.GetInterfaces()
+                        .FirstOrDefault(i => i.Name.EndsWith("Repository") && i.IsInterface);
+
+                    if (interfaceType != null)
+                    {
+                        services.AddScoped(interfaceType, repositoryType);
+                    }
+                }
+            }
+
+            return services;
+        }
+
+        /// <summary>
+        /// 注册Repository支持服务
+        /// </summary>
+        public static IServiceCollection AddRepositorySupportServices(this IServiceCollection services)
+        {
+            // 注册Specification Evaluator
+            services.AddScoped<ISpecificationEvaluator, SpecificationEvaluator>();
+
+            return services;
+        }
+    }
+}
+```
+
+#### 11.2.2 Client端Repository DI扩展
+
+```csharp
+// 文件位置: src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/DependencyInjection/RepositoryContainerRegistryExtensions.cs
+namespace LYBT.Desktop.Infrastructure.DependencyInjection
+{
+    /// <summary>
+    /// Repository依赖注入统一扩展方法（Client端）
+    /// Project Standardization 3.0 - Task 1.5 (#1280)
+    /// </summary>
+    public static class RepositoryContainerRegistryExtensions
+    {
+        /// <summary>
+        /// 注册指定类型的Repository
+        /// </summary>
+        public static IContainerRegistry RegisterRepository<TRepository, TImplementation>(
+            this IContainerRegistry containerRegistry,
+            bool useSingleton = true)
+            where TRepository : class
+            where TImplementation : class, TRepository
+        {
+            if (useSingleton)
+            {
+                containerRegistry.RegisterSingleton<TRepository, TImplementation>();
+            }
+            else
+            {
+                containerRegistry.Register<TRepository, TImplementation>();
+            }
+            return containerRegistry;
+        }
+
+        /// <summary>
+        /// 注册所有Repository服务
+        /// 自动扫描并注册所有Repository实现
+        /// </summary>
+        public static IContainerRegistry RegisterRepositories(
+            this IContainerRegistry containerRegistry,
+            params Assembly[] assemblies)
+        {
+            var assembliesToScan = assemblies.Length > 0
+                ? assemblies
+                : new[] { Assembly.GetExecutingAssembly() };
+
+            foreach (var assembly in assembliesToScan)
+            {
+                var repositoryTypes = assembly.GetTypes()
+                    .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+                    .ToList();
+
+                foreach (var repositoryType in repositoryTypes)
+                {
+                    var interfaceType = repositoryType.GetInterfaces()
+                        .FirstOrDefault(i => i.Name.EndsWith("Repository") && i.IsInterface);
+
+                    if (interfaceType != null)
+                    {
+                        containerRegistry.RegisterSingleton(interfaceType, repositoryType);
+                    }
+                }
+            }
+
+            return containerRegistry;
+        }
+    }
+}
+```
+
+### 11.3 Repository标准使用模式
+
+#### 11.3.1 基础CRUD操作
+
+```csharp
+// Repository接口定义示例
+public interface IPatientRepository : IRepository<PatientEntity>
+{
+    // 基础CRUD已由IRepository提供
+    // 这里添加特定的业务查询方法
+    Task<PatientEntity?> GetByMedicalRecordNumberAsync(string medicalRecordNumber);
+    Task<List<PatientEntity>> GetActivePatientsAsync();
+}
+
+// Repository实现示例
+public class PatientRepository : BaseRepository<PatientEntity>, IPatientRepository
+{
+    public PatientRepository(ApplicationDbContext context, ILogger<PatientRepository> logger)
+        : base(context, logger)
+    {
+    }
+
+    public async Task<PatientEntity?> GetByMedicalRecordNumberAsync(string medicalRecordNumber)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.MedicalRecordNumber == medicalRecordNumber && !p.IsDeleted);
+    }
+
+    public async Task<List<PatientEntity>> GetActivePatientsAsync()
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.IsActive)
+            .OrderBy(p => p.Name)
+            .ToListAsync();
+    }
+}
+```
+
+#### 11.3.2 Specification模式查询
+
+```csharp
+// 定义Specification
+public class ActivePatientsSpecification : BaseSpecification<PatientEntity>
+{
+    public ActivePatientsSpecification(string? keyword = null)
+        : base(p => !p.IsDeleted && p.IsActive)
+    {
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            Criteria = p => !p.IsDeleted && p.IsActive &&
+                           (p.Name.Contains(keyword) || p.MedicalRecordNumber.Contains(keyword));
+        }
+
+        OrderBy(p => p.Name);
+        EnableCache(600); // 缓存10分钟
+    }
+}
+
+// 在Service中使用Specification
+public class PatientService : IPatientService
+{
+    private readonly IPatientRepository _repository;
+    private readonly ISpecificationEvaluator _evaluator;
+
+    public async Task<ServiceResult<PagedResult<PatientDto>>> GetActivePatientsAsync(
+        int page = 1,
+        int pageSize = 20,
+        string? keyword = null)
+    {
+        try
+        {
+            var specification = new ActivePatientsSpecification(keyword)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize);
+
+            var patients = await _repository.ListAsync(specification);
+            var totalCount = await _repository.CountAsync(specification);
+
+            var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+
+            var pagedResult = new PagedResult<PatientDto>
+            {
+                Items = patientDtos,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
+
+            return ServiceResult<PagedResult<PatientDto>>.Success(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取活跃患者列表失败");
+            return ServiceResult<PagedResult<PatientDto>>.Failure("获取患者列表失败");
+        }
+    }
+}
+```
+
+#### 11.3.3 复杂查询Specification
+
+```csharp
+// 复杂查询示例：处方查询Specification
+public class PrescriptionSearchSpecification : BaseSpecification<PrescriptionEntity>
+{
+    public PrescriptionSearchSpecification(
+        Guid? patientId = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string? doctorName = null)
+        : base(p => !p.IsDeleted)
+    {
+        // 条件构建
+        if (patientId.HasValue)
+            Criteria = p => !p.IsDeleted && p.PatientId == patientId.Value;
+
+        if (startDate.HasValue)
+            Criteria = Criteria.And(p => p.CreatedAt >= startDate.Value);
+
+        if (endDate.HasValue)
+            Criteria = Criteria.And(p => p.CreatedAt <= endDate.Value);
+
+        if (!string.IsNullOrWhiteSpace(doctorName))
+            Criteria = Criteria.And(p => p.Doctor.Name.Contains(doctorName));
+
+        // Include关联数据
+        Include(p => p.Patient);
+        Include(p => p.Doctor);
+        Include(p => p.PrescriptionItems).ThenInclude(pi => pi.Herb);
+
+        // 排序
+        OrderByDescending(p => p.CreatedAt);
+
+        // 性能优化
+        DisableTracking();
+        EnableCache(300);
+    }
+}
+```
+
+### 11.4 Repository性能优化
+
+#### 11.4.1 查询性能优化指南
+
+```csharp
+// ✅ 推荐：使用AsNoTracking进行只读查询
+public async Task<List<PatientDto>> GetAllPatientsAsync()
+{
+    var patients = await _context.Set<PatientEntity>()
+        .AsNoTracking() // 提升查询性能
+        .Where(p => !p.IsDeleted)
+        .ProjectTo<PatientDto>(_mapper.ConfigurationProvider) // 直接映射到DTO
+        .ToListAsync();
+
+    return patients;
+}
+
+// ✅ 推荐：使用Select只查询需要的字段
+public async Task<List<PatientSummaryDto>> GetPatientSummariesAsync()
+{
+    var summaries = await _context.Set<PatientEntity>()
+        .AsNoTracking()
+        .Where(p => !p.IsDeleted)
+        .Select(p => new PatientSummaryDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            MedicalRecordNumber = p.MedicalRecordNumber,
+            IsActive = p.IsActive
+        })
+        .ToListAsync();
+
+    return summaries;
+}
+
+// ❌ 避免：查询出不需要的字段
+public async Task<List<PatientEntity>> GetPatientsBadExample()
+{
+    // 这会查询所有字段，包括可能很大的字段
+    var patients = await _context.Set<PatientEntity>()
+        .Where(p => !p.IsDeleted)
+        .ToListAsync();
+
+    return patients;
+}
+```
+
+#### 11.4.2 批量操作优化
+
+```csharp
+// ✅ 推荐：批量更新
+public async Task<bool> BatchUpdatePatientStatusAsync(List<Guid> patientIds, bool isActive)
+{
+    var patients = await _context.Set<PatientEntity>()
+        .Where(p => patientIds.Contains(p.Id))
+        .ToListAsync();
+
+    foreach (var patient in patients)
+    {
+        patient.IsActive = isActive;
+        patient.UpdatedAt = DateTime.UtcNow;
+    }
+
+    await _context.SaveChangesAsync();
+    return true;
+}
+
+// ✅ 推荐：批量删除（软删除）
+public async Task<bool> BatchSoftDeletePatientsAsync(List<Guid> patientIds)
+{
+    var patients = await _context.Set<PatientEntity>()
+        .Where(p => patientIds.Contains(p.Id))
+        .ToListAsync();
+
+    foreach (var patient in patients)
+    {
+        patient.IsDeleted = true;
+        patient.DeletedAt = DateTime.UtcNow;
+    }
+
+    await _context.SaveChangesAsync();
+    return true;
+}
+```
+
+#### 11.4.3 缓存策略
+
+```csharp
+// Repository级别的缓存实现
+public class CachedPatientRepository : IPatientRepository
+{
+    private readonly IPatientRepository _repository;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<CachedPatientRepository> _logger;
+
+    public async Task<PatientEntity?> GetByIdAsync(Guid id)
+    {
+        string cacheKey = $"Patient_{id}";
+
+        if (_cache.TryGetValue(cacheKey, out PatientEntity? cachedPatient))
+        {
+            return cachedPatient;
+        }
+
+        var patient = await _repository.GetByIdAsync(id);
+
+        if (patient != null)
+        {
+            _cache.Set(cacheKey, patient, TimeSpan.FromMinutes(30));
+        }
+
+        return patient;
+    }
+
+    public async Task<bool> UpdateAsync(PatientEntity entity)
+    {
+        var result = await _repository.UpdateAsync(entity);
+
+        if (result)
+        {
+            // 清除相关缓存
+            _cache.Remove($"Patient_{entity.Id}");
+            _cache.Remove("ActivePatients_List");
+        }
+
+        return result;
+    }
+}
+```
+
+### 11.5 Repository架构最佳实践
+
+#### 11.5.1 命名约定
+
+| 组件类型 | 命名模式 | 示例 |
+|---------|---------|------|
+| Repository接口 | `I{Entity}Repository` | `IPatientRepository` |
+| Repository实现 | `{Entity}Repository` | `PatientRepository` |
+| Specification类 | `{Entity}{Purpose}Specification` | `ActivePatientsSpecification` |
+| Specification基类 | `BaseSpecification<T>` | `BaseSpecification<PatientEntity>` |
+
+#### 11.5.2 职责边界
+
+| 层级 | 职责 | 不应包含 |
+|------|------|---------|
+| **Repository** | 数据访问、查询封装、持久化 | 业务逻辑、数据验证 |
+| **Service** | 业务逻辑、事务控制、数据转换 | 直接的数据库访问 |
+| **Specification** | 查询条件封装、可重用查询 | 业务规则、数据修改 |
+
+#### 11.5.3 错误处理
+
+```csharp
+// Repository层错误处理
+public async Task<PatientEntity?> GetByIdAsync(Guid id)
+{
+    try
+    {
+        var patient = await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+
+        return patient;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "根据ID查询患者失败: {PatientId}", id);
+        throw new RepositoryException($"查询患者失败: {id}", ex);
+    }
+}
+
+// Service层错误处理
+public async Task<ServiceResult<PatientDto>> GetPatientByIdAsync(Guid id)
+{
+    try
+    {
+        var patient = await _repository.GetByIdAsync(id);
+
+        if (patient == null)
+            return ServiceResult<PatientDto>.Failure("患者不存在");
+
+        var patientDto = _mapper.Map<PatientDto>(patient);
+        return ServiceResult<PatientDto>.Success(patientDto);
+    }
+    catch (RepositoryException ex)
+    {
+        _logger.LogError(ex, "获取患者信息失败: {PatientId}", id);
+        return ServiceResult<PatientDto>.Failure("获取患者信息失败");
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "处理患者查询时发生未知错误: {PatientId}", id);
+        return ServiceResult<PatientDto>.Failure("系统错误");
+    }
+}
+```
+
+### 11.6 迁移到标准化Repository架构
+
+#### 11.6.1 现有Repository迁移步骤
+
+1. **分析现有Repository**
+   ```bash
+   # 查找所有Repository文件
+   find src/Server/Modules -name "*Repository.cs" -type f
+
+   # 分析Repository接口和实现
+   grep -r "interface.*Repository" src/Server/Modules/
+   ```
+
+2. **引入Specification模式**
+   ```csharp
+   // 为复杂查询创建Specification类
+   public class ComplexQuerySpecification : BaseSpecification<EntityType>
+   {
+       public ComplexQuerySpecification(SearchParameters parameters)
+           : base(e => !e.IsDeleted)
+       {
+           // 构建查询条件
+           if (!string.IsNullOrEmpty(parameters.Keyword))
+               Criteria = e => !e.IsDeleted && e.Name.Contains(parameters.Keyword);
+
+           // 添加Include
+           Include(e => e.RelatedEntity);
+
+           // 排序
+           OrderBy(e => e.CreatedAt);
+       }
+   }
+   ```
+
+3. **更新DI配置**
+   ```csharp
+   // 在模块注册中使用统一扩展方法
+   public static IServiceCollection AddXxxModule(this IServiceCollection services, IConfiguration configuration)
+   {
+       // 使用统一Repository注册
+       services.AddRepository<IXxxRepository, XxxRepository>();
+
+       // 注册Repository支持服务
+       services.AddRepositorySupportServices();
+
+       return services;
+   }
+   ```
+
+4. **性能优化**
+   - 添加AsNoTracking到只读查询
+   - 使用Select投影减少数据传输
+   - 实现适当的缓存策略
+
+#### 11.6.2 验收清单
+
+**架构合规性**：
+- [ ] Repository接口继承自IRepository<T>
+- [ ] Repository实现继承自BaseRepository<T>
+- [ ] 复杂查询使用Specification模式
+- [ ] 使用统一的DI扩展方法注册
+
+**性能优化**：
+- [ ] 只读查询使用AsNoTracking
+- [ ] 避免N+1查询问题
+- [ ] 实现适当的缓存策略
+- [ ] 使用批量操作代替循环操作
+
+**代码质量**：
+- [ ] 错误处理和日志记录完善
+- [ ] 命名约定符合标准
+- [ ] 职责边界清晰
+- [ ] 单元测试覆盖核心功能
+
+## 12. 变更历史
 
 | 版本 | 日期 | 作者 | 变更说明 |
 |------|------|------|---------|
+| 2.0 | 2025-10-14 | Claude Code | Project Standardization 3.0 Repository架构标准化：<br>- 新增第11节"Repository架构标准化"<br>- 11.1 Specification模式接口和实现<br>- 11.2 统一依赖注入配置（Client/Server端）<br>- 11.3 Repository标准使用模式<br>- 11.4 Repository性能优化指南<br>- 11.5 Repository架构最佳实践<br>- 11.6 现有Repository迁移步骤<br>关联Tasks 1.2-1.5 (#1277-#1280) |
 | 1.4 | 2025-10-11 | Claude Code | 基于Epic #1138 Phase 4 Day 1 Q10决策补充：<br>- 9节 FAQ新增Q11：Rules.cs vs Validator使用场景判断<br>- 明确Rules适用场景（复杂领域逻辑、跨模块共享、纯计算）<br>- 明确Validator适用场景（单字段验证、框架规则、DTO绑定）<br>- 提供命名规范、职责边界表、使用示例<br>关联 [Phase 4 Day 1确认清单](../reports/2025-10-11-phase4-day1-confirmation-checklist.md) |
 | 1.3 | 2025-01-09 | Claude Code | 添加 4.9 DTO 设计规范章节,引用 DTO 设计原则文档 (Issue #1094) |
 | 1.2 | 2025-10-07 | Claude | 基于Issue #1022 Phase 2补充：<br>- 5.3 AutoMapper注册说明（集中 vs 显式）<br>- 5.4 Validator注册说明（自动扫描 vs 显式）<br>- 5.5 常见注册错误与修复<br>- 第8节 迁移指南（分步迁移、检查清单、迁移示例）<br>- 第9节 常见问题FAQ（10个常见问题解答）<br>关联 [Phase 1分析报告](../reports/server-architecture-analysis-2025-10-07.md) |
