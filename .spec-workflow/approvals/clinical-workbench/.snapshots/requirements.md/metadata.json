@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/clinical-workbench/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T15:19:23.225Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760455163169_8x20c7mb1",
+      "approvalTitle": "需求文档审批：中医临床工作台 (SPEC-2025-003) - 依赖 SPEC-2025-002"
+    }
+  ]
+}

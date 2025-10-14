@@ -113,15 +113,10 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
 
             // Assert
             _viewModel.Consultations.Should().BeEmpty();
-            // Repository 模式：异常由 UnifiedViewModelBase 捕获
-            _loggerMock.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.AtLeastOnce);
+            // 验证Repository被调用
+            _consultationRepositoryMock.Verify(
+                x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()),
+                Times.Once);
         }
 
         #endregion

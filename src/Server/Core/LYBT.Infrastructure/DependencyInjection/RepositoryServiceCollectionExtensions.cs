@@ -1,0 +1,138 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Reflection;
+
+namespace LYBT.Infrastructure.DependencyInjection
+{
+    /// <summary>
+    /// Repository依赖注入统一扩展方法
+    /// Project Standardization 3.0 - Task 1.5 Repository依赖注入标准化
+    /// </summary>
+    public static class RepositoryServiceCollectionExtensions
+    {
+        /// <summary>
+        /// 注册所有Repository服务
+        /// 自动扫描并注册所有Repository实现
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <param name="assemblies">要扫描的程序集，默认为当前程序集</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddRepositories(this IServiceCollection services, params Assembly[] assemblies)
+        {
+            var assembliesToScan = assemblies.Length > 0
+                ? assemblies
+                : new[] { Assembly.GetExecutingAssembly() };
+
+            return AddRepositoriesInternal(services, assembliesToScan);
+        }
+
+        /// <summary>
+        /// 注册指定类型的Repository
+        /// </summary>
+        /// <typeparam name="TRepository">Repository接口类型</typeparam>
+        /// <typeparam name="TImplementation">Repository实现类型</typeparam>
+        /// <param name="services">服务集合</param>
+        /// <param name="lifetime">服务生命周期，默认为Scoped</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddRepository<TRepository, TImplementation>(
+            this IServiceCollection services,
+            ServiceLifetime lifetime = ServiceLifetime.Scoped)
+            where TRepository : class
+            where TImplementation : class, TRepository
+        {
+            switch (lifetime)
+            {
+                case ServiceLifetime.Singleton:
+                    services.AddSingleton<TRepository, TImplementation>();
+                    break;
+                case ServiceLifetime.Transient:
+                    services.AddTransient<TRepository, TImplementation>();
+                    break;
+                case ServiceLifetime.Scoped:
+                default:
+                    services.AddScoped<TRepository, TImplementation>();
+                    break;
+            }
+
+            return services;
+        }
+
+        /// <summary>
+        /// 注册Server端核心Repository（基于BaseRepository）
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddServerRepositories(this IServiceCollection services)
+        {
+            // 注册核心Repository（如果存在）
+            // 这里可以手动添加已知的Repository
+            // services.AddScoped<IUserRepository, UserRepository>();
+            // services.AddScoped<IPatientRepository, PatientRepository>();
+            // 等等...
+
+            return services;
+        }
+
+        /// <summary>
+        /// 注册Repository支持的辅助服务
+        /// </summary>
+        /// <param name="services">服务集合</param>
+        /// <returns>服务集合</returns>
+        public static IServiceCollection AddRepositorySupportServices(this IServiceCollection services)
+        {
+            // 注册Specification相关服务（如果需要）
+            // services.AddScoped<ISpecificationEvaluator, SpecificationEvaluator>();
+
+            // 注册性能监控服务（如果需要）
+            // services.AddScoped<IQueryPerformanceMonitor, QueryPerformanceMonitor>();
+
+            // 注册缓存服务（如果需要）
+            // services.AddScoped<IQueryCache, MemoryQueryCache>();
+
+            return services;
+        }
+
+        #region 私有方法
+
+        /// <summary>
+        /// 内部Repository注册实现
+        /// </summary>
+        private static IServiceCollection AddRepositoriesInternal(IServiceCollection services, Assembly[] assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                // 扫描Repository接口和实现
+                var repositoryTypes = assembly.GetTypes()
+                    .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+                    .ToList();
+
+                foreach (var repositoryType in repositoryTypes)
+                {
+                    // 查找对应的接口
+                    var interfaceType = repositoryType.GetInterfaces()
+                        .FirstOrDefault(i => i.Name.EndsWith("Repository") && i.IsInterface);
+
+                    if (interfaceType != null)
+                    {
+                        // 默认使用Scoped生命周期注册
+                        services.AddScoped(interfaceType, repositoryType);
+                    }
+                }
+            }
+
+            return services;
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 服务生命周期枚举（兼容.NET Core）
+    /// </summary>
+    public enum ServiceLifetime
+    {
+        Singleton,
+        Scoped,
+        Transient
+    }
+}

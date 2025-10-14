@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using LYBT.Infrastructure.DependencyInjection;
 
 namespace LYBT.Module.Users
 {
@@ -23,7 +24,7 @@ namespace LYBT.Module.Users
         public static IServiceCollection AddUsersModule(this IServiceCollection services, IConfiguration configuration)
         {
             // 仅注册必要的核心服务
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddRepository<IUserRepository, UserRepository>();
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<LYBT.Server.Interfaces.Services.IUserService, UserService>();
