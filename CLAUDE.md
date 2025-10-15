@@ -38,19 +38,25 @@
 - **定位**：Claude Code 作为智能顾问，负责方案筹划、代码实现、初步审查与文档同步；最终合并由人工审核决定。
 - **必读文档**：
   - `README.md`（项目权威概览）
-  - `docs/index.md`（文档导航体系）
-  - `docs/development/standards.md`（编码规范）
-  - `docs/architecture/server-module-design-standard.md`（Server端三层架构标准）
+  - `docs/index.md`（文档导航体系，v4.0精简版）
+  - `docs/architecture/server/design-standard.md`（Server端三层架构标准）⭐v4.0更新
   - `docs/architecture/client/unified-design-standard.md`（Client端MVVM标准）
-  - `docs/development/minimal-practice.md`（Issue→清单→PR 工作法）
-  - `docs/development/documentation-guidelines.md`（文档编写与维护指南）
-  - `docs/PROJECT-STATUS-2025-09-27.md`（实时项目状态）
+  - `docs/development/shared/documentation-guidelines.md`（文档编写与维护指南）⭐v4.0更新
+
+- **快速参考**（v4.0新增）：
+  - `docs/quick-reference/README.md` - 快速参考文档中心（解决80%日常需求）
+  - `docs/quick-reference/api_reference.md` - API快速参考
+  - `docs/quick-reference/config_templates.md` - 配置模板
+  - `docs/quick-reference/code_patterns.md` - 代码模式
+  - `docs/quick-reference/troubleshooting.md` - 问题解决方案
+  - `docs/quick-reference/development_checklist.md` - 开发检查清单
 
 > **⚠️ 处理任务前必须先查阅相关文档，未理解文档禁止开始编码或给出建议。**
 >
 > **架构设计标准**：
-> - Server 端开发必须遵循 `server-module-design-standard.md`（三层架构、禁止CQRS、接口统一位置）
-> - Client 端开发必须遵循 `client/unified-design-standard.md`（MVVM三层、依赖注入标准、AutoMapper强制、代码模板）
+> - Server 端开发必须遵循 `docs/architecture/server/design-standard.md`（三层架构、禁止CQRS、接口统一位置）⭐v4.0对齐架构
+> - Client 端开发必须遵循 `docs/architecture/client/unified-design-standard.md`（MVVM三层、依赖注入标准、AutoMapper强制、代码模板）
+> - 共享架构标准参考 `docs/architecture/shared/README.md`（跨端架构决策、技术标准）⭐v4.0新增
 
 ---
 
@@ -183,11 +189,27 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 4. **合并与关闭**：人工审核后合并，Workflow 自动关单
 
 ### 2.4 完成后的文档系统更新
-- 更新相关模块文档（`docs/architecture/modules/<module>/README.md`）
-- 更新需求/功能清单（`docs/issues/`）
-- 更新 API/流程/标准文档（`docs/api/`、`docs/development/`、`docs/architecture/`）
-- 归档分析报告（`docs/reports/` + `INDEX.md`）
-- 更新导航索引（`docs/index.md`）
+
+**🔄 代码与文档并行开发要求**：
+- **强制性同步**：代码变更后必须立即更新相关文档，不允许延迟
+- **影响评估**：实施前评估文档影响范围，列出需要更新的文档清单
+- **及时更新**：开发过程中文档同步进行，不积累到项目结束
+
+**📋 具体更新要求**：
+- **架构文档**：更新 `docs/architecture/server/` 或 `docs/architecture/client/` 对应模块文档
+- **开发指南**：更新 `docs/development/server/`、`docs/development/client/` 或 `docs/development/shared/` 相关指南
+- **API文档**：更新 `docs/api/` 接口文档和Swagger规范
+- **快速参考**：影响Level 1文档时，同步更新 `docs/quick-reference/` 相关内容
+- **导航索引**：更新 `docs/index.md` 和相关README文档
+- **模块文档**：更新对应模块的README和实施指南
+
+**✅ 文档同步检查清单**：
+- [ ] 架构设计文档是否反映最新代码结构
+- [ ] 开发指南是否包含最新的开发流程
+- [ ] API文档是否与实际接口一致
+- [ ] 快速参考是否包含新增API或配置
+- [ ] 导航链接是否有效且指向正确路径
+- [ ] 所有相关README是否已更新
 
 ---
 
@@ -205,13 +227,21 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 7. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
 8. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
 
+### 文档架构原则（4条）⭐v4.0新增
+9. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构
+10. **代码文档并行**：代码变更必须同步更新文档，不允许滞后
+11. **路径一致性**：所有文档引用必须使用对齐后的新路径格式
+12. **定期清理**：及时删除过时文档，保持文档体系精简高效
+
 ### 文件组织规范
 
 > **📖 详细规则**：参见 `.claude/core/FILE-ORGANIZATION.md`
 
 **核心原则**：
 - ❌ 禁止在根目录创建临时文件（文档/脚本/输出/截图）
-- ✅ 文档归档到 `docs/` 对应分类目录
+- ✅ 文档归档到 `docs/` 对应分类目录，遵循Server/Client/Shared对齐架构
+- ✅ 架构文档：`docs/architecture/server/`、`docs/architecture/client/`、`docs/architecture/shared/`
+- ✅ 开发指南：`docs/development/server/`、`docs/development/client/`、`docs/development/shared/`
 - ✅ 脚本归档到 `scripts/` 对应功能目录
 - ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
 - ✅ Pre-commit hook 会自动检查根目录文件规范
@@ -240,8 +270,10 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 - **异步约定**：涉及 I/O 必须 async/await，避免阻塞
 - **文件体量**：单文件建议 ≤500 行，复杂逻辑拆分模块
 - **测试**：新增/修改核心逻辑需补充单元或集成测试
-- **文档同步**：改动涉及架构/接口/流程时更新对应 README/索引
+- **文档同步**：改动涉及架构/接口/流程时更新对应 README/索引，遵循Server/Client/Shared对齐路径
 - **脚本归档**：新增或调整自动化脚本时，必须放置在 `scripts/` 目录
+- **文档影响评估**：实施前必须评估需要更新的文档清单，代码变更后立即执行文档更新
+- **路径标准化**：所有新增文档必须遵循对齐架构路径，禁止随意放置
 
 ---
 

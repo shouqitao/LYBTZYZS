@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/steering/structure.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-15T00:41:18.703Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760488878643_spfmj6dpf",
+      "approvalTitle": "项目结构与组织指南文档 - Steering/Structure.md"
+    }
+  ]
+}
