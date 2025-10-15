@@ -5,9 +5,20 @@
 - 路由模板: `api/v{version:apiVersion}/[controller]`
 - 前端调用: 固定 `/api/v1/*`（大小写不敏感，前端统一小写）
 
-## 模块与控制器
-- AuthController、UsersController、PatientsController、MedicalCaseController、ConsultationController、PrescriptionsController、HerbsController、FormulasController
-- 系统健康: HealthController（已提供）；Monitoring/Security/Cache/Performance 控制器规划中
+## 模块与控制器 ⭐v4.0对齐架构
+
+### Server端三层架构模块
+- **认证模块**: AuthController、UsersController
+- **患者管理**: PatientsController
+- **病历管理**: MedicalCaseController（聚合根）
+- **诊疗管理**: ConsultationController
+- **处方管理**: PrescriptionsController
+- **药材管理**: HerbsController
+- **方剂管理**: FormulasController
+
+### 系统监控
+- HealthController（已提供）
+- Monitoring/Security/Cache/Performance 控制器规划中
 
 ## 统一序列化
 - System.Text.Json（前后端一致）；Refit 使用 `SystemTextJsonContentSerializer`
@@ -28,12 +39,17 @@ curl http://localhost:5001/swagger/v1/swagger.json -o docs/api/openapi.v1.json
 curl -k https://localhost:7001/swagger/v1/swagger.json -o docs/api/openapi.v1.json
 ```
 
-## 认证与授权
+## 认证与授权 ⭐v4.0双轨认证架构
+
+### 双轨认证设计
+- **超级管理员**: AdminSecrets表物理隔离，专用登录端点
+- **普通用户**: Users表标准认证流程
 
 ### JWT Bearer Token
 - **获取 Token**: POST `/api/v1/auth/login`
+- **超级管理员登录**: POST `/api/v1/auth/admin/login`（隐藏端点）
 - **刷新 Token**: POST `/api/v1/auth/refresh`
-- **Token 有效期**: 8小时（Remember Me: 30天）
+- **Token 有效期**: AccessToken 2小时，RefreshToken 7天
 
 ### 请求头格式
 ```http
@@ -42,8 +58,9 @@ Authorization: Bearer <your-jwt-token>
 
 ## 核心接口列表
 
-### 认证模块 (Auth)
-- `POST /api/v1/auth/login` - 用户登录
+### 认证模块 (Auth) ⭐v4.0双轨认证
+- `POST /api/v1/auth/login` - 普通用户登录
+- `POST /api/v1/auth/admin/login` - 超级管理员登录（隐藏端点）
 - `POST /api/v1/auth/refresh` - 刷新令牌
 - `POST /api/v1/auth/logout` - 用户登出
 

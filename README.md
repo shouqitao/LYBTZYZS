@@ -9,7 +9,7 @@
 
 **面向中医诊所的企业级管理解决方案**
 
-[快速开始](#快速开始) • [架构设计](docs/architecture/system-architecture-design.md) • [开发指南](docs/development/development-guide.md) • [API文档](docs/api/)
+[快速开始](#快速开始) • [文档中心](docs/index.md) • [架构设计](docs/architecture/README.md) • [开发指南](docs/development/README.md) • [API文档](docs/api/)
 
 </div>
 
@@ -277,14 +277,23 @@ dotnet format LYBT.All.sln
 - 响应时间：<200ms（缓存命中）
 - 数据规模：<10万条记录
 
-## 📚 文档资源
+## 📚 文档资源 ⭐v4.0对齐架构
 
-- [系统架构设计](docs/architecture/system-architecture-design.md)
-- [功能模块设计](docs/architecture/functional-modules-design.md)
-- [开发标准](docs/development/standards.md)
-- [开发指南](docs/development/development-guide.md)
-- [API文档](docs/api/)
-- [需求文档](docs/requirements/)
+### 📋 文档导航
+- **[文档中心](docs/index.md)** - 统一文档导航入口 ⭐
+- **[架构设计](docs/architecture/README.md)** - Server/Client/Shared三层架构
+- **[开发指南](docs/development/README.md)** - 开发规范与最佳实践
+- **[API文档](docs/api/)** - RESTful接口文档
+
+### 🎯 核心架构文档
+- **[Server端架构](docs/architecture/server/README.md)** - 三层架构设计标准
+- **[Client端架构](docs/architecture/client/README.md)** - MVVM架构规范
+- **[共享架构](docs/architecture/shared/README.md)** - 跨端技术决策
+
+### 🛠️ 开发资源
+- **[测试指南](docs/development/shared/testing-guide.md)** - 测试架构与实施
+- **[代码规范](docs/development/shared/standards.md)** - 编码标准
+- **[文档规范](docs/development/shared/documentation-guidelines.md)** - 文档编写标准
 
 ## 🤝 贡献指南
 
