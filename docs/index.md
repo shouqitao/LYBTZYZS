@@ -1,171 +1,321 @@
-﻿# 凌隐宝堂中医诊所文档中心
+# 凌隐宝堂中医诊所文档中心
 
-**文档版本**：v2.0
-**创建时间**：2025-09-25
-**最后更新**：2025-10-12（Epic #1138 完成 - 文档SSOT整理，文件数 281→196，-30.2%）
-**维护负责**：Claude Code + Thinker
+**文档版本**：v3.0  
+**创建时间**：2025-09-25  
+**最后更新**：2025-10-15（统一文档导航门户上线）  
+**维护负责**：Claude Code + Thinker  
 **关联文档**：[项目README](../README.md), [开发者指导](DEVELOPER_GUIDE.md)
 
-## 🎯 文档系统概览
+## 🎯 统一文档导航门户
 
-本文档中心采用**三层架构**设计，为开发者提供从项目概览到实施细节的完整导航路径：
+**核心目标**：消除"开发时标准错乱"问题，为所有角色提供**统一的文档入口**，确保在3次点击内找到任何需要的文档。
 
-### 📋 L1: 项目总览层（必读）
-| 文档 | 说明 | 维护者 |
-|------|------|--------|
-| [**README.md**](../README.md) | 📌 **项目权威总览** - 系统架构、技术栈、当前状态 | Thinker |
-| [**CLAUDE.md**](../CLAUDE.md) | 📌 **Claude Code开发约束** - 技术限制、开发规范、禁止事项 | Claude Code |
-| [**DEVELOPER_GUIDE.md**](DEVELOPER_GUIDE.md) | 📌 **开发者统一入口** - 快速开始、环境配置、常用任务 | Claude Code |
+### 🏗️ 文档体系架构
 
-### 🏗 L2: 领域专题层（按需查阅）
+项目采用**双轨文档体系**，通过统一门户实现无缝导航：
 
-#### 架构与设计
-| 文档路径 | 说明 | 关键内容 |
-|----------|------|----------|
-| [architecture/](architecture/README.md) | 系统架构设计文档集合 | ADR决策记录、模块化架构、多租户讨论 |
-| [architecture/server-module-design-standard.md](architecture/server-module-design-standard.md) | **Server模块设计标准** | **三层架构、CQRS禁用、目录结构、服务注册模式** |
-| [architecture/client/unified-design-standard.md](architecture/client/unified-design-standard.md) | **Client端业务模块统一设计标准 (v2.1)** ✨ | **ViewModel → Repository → ApiClient 三层架构、Repository返回裸类型、模块化Repository、依赖注入标准、XAML三段式布局、代码模板** |
-| [../src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md](../src/Client/Desktop/DESKTOP_ARCHITECTURE_STANDARD.md) | **Desktop端架构设计标准 (v1.0)** 🏗️ | **WPF Prism MVVM完整实现、三层架构详解、Repository设计规范、ViewModel/View标准、代码示例、架构测试** |
-| [architecture/ADR-003-server-module-unified-design.md](architecture/ADR-003-server-module-unified-design.md) | **ADR-003: Server模块统一设计** | **禁止CQRS、接口统一位置、决策理由与实施方案** |
-| [architecture/functional-modules-design.md](architecture/functional-modules-design.md) | 功能模块详细设计 | 8大模块设计、数据模型、业务规则、接口定义 |
-| [architecture/tech-design/](architecture/tech-design/000-overview.md) | 本轮技术设计 | 最小闭环：端口/登录/健康检查/BaseUrl |
-| [architecture/modules/](architecture/modules/README.md) | **模块化设计文档** | **Server/Client/Shared层详细设计，依赖关系图** |
-| [api/](api/README.md) | API接口规范与文档 | RESTful接口、Swagger文档、认证授权 |
+| 体系 | 用途 | 内容类型 | 维护方式 |
+|------|------|----------|----------|
+| **docs/** | 开发标准和指南 | 架构标准、开发规范、操作指南（HOW） | 人工维护，长期参考 |
+| **spec-workflow/** | 项目决策和规格 | 需求分析、设计记录、项目报告（WHAT/WHY） | 审批流程，有生命周期 |
 
-#### 开发与质量
-| 文档路径 | 说明 | 关键内容 |
-|----------|------|----------|
-| [development/](development/README.md) | 开发规范指导集合 | 编码标准、测试指南、审计字段、枚举规范 |
-| [development/documentation-guidelines.md](development/documentation-guidelines.md) | **文档编写与维护指南 v3.0** 📝✅🤖 | **SSOT原则、质量五维标准、6类检查清单、CI集成、维护脚本、监控报告** |
-| [development/testing-guide.md](development/testing-guide.md) | **测试运行指南** ✨ | **VS2022/CLI测试、xUnit配置、MVP覆盖度分析、最佳实践** |
-| [architecture/testing/architecture-testing-guide.md](architecture/testing/architecture-testing-guide.md) | **架构测试指南** 🏗️ | **Server/Desktop架构约束、15条规则、100%通过率** |
-| [development/ai-assisted-automation-workflow.md](development/ai-assisted-automation-workflow.md) | **AI辅助自动化工作流程** | **Issue驱动开发、Claude+Serena双重审查、GitHub自动化** |
-| [security/](security/) | 安全指导文档 | JWT安全配置、安全加固指南 |
-| [deployment/](deployment/) | **部署与配置指南** | **Production环境配置、环境变量设置、配置验证脚本** |
-| GitHub Issues | 需求与任务单一事实源 | 需求、讨论、验收、进度（替代本地 PRD） |
+---
 
-#### 任务与交付
-| 文档路径 | 说明 | 关键内容 |
-|----------|------|----------|
-| [issues/](issues/) | Issue追踪文档 | 问题分析、技术方案、验收标准 |
-| [issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md](issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md) | **Desktop架构适度优化Issue #815** | **Core层重组、业务模块标准化、工作台层独立** |
-| [tasks/](tasks/) | 任务管理系统 | pending/待办任务、completed/完成总结 |
-| [reports/](reports/) | 分析报告文档 | 架构分析、规范性报告、长期参考（阶段性计划已迁移到 Issues） |
-|   ├── [project-standardization-v3-completion-report.md](reports/project-standardization-v3-completion-report.md) | **Project Standardization 3.0完成报告** ✅ | **14个任务100%完成，测试覆盖率80-83%，Repository/ViewModel/Testing三层架构标准化** |
-|   └── [test-coverage-improvement-report.md](reports/test-coverage-improvement-report.md) | **测试覆盖率改进报告** ✅ | **159个测试100%通过，覆盖率从65%提升到80-83%** |
+## 👥 角色导航
 
-### 🔧 L3: 实施细节层（开发时查阅）
+### 🛠️ 开发者导航
+*面向日常开发工作的快速通道 - 基于文档分析280个开发者相关文档优化*
 
-#### 源码文档结构
-```
-src/
-├── Server/                  # 后端项目文档
-│   ├── README.md           # Server层总览
-│   ├── Core/               # 核心基础设施文档  
-│   ├── Modules/            # 各业务模块文档
-│   └── Services/           # API服务层文档
-├── Client/Desktop/         # 前端项目文档
-│   ├── README.md          # Desktop层总览
-│   ├── Shell/             # 应用程序壳文档
-│   ├── Core/              # 前端基础设施文档
-│   └── Modules/           # 各UI模块文档
-└── Shared/                 # 共享层文档
-    ├── README.md          # 共享层总览
-    ├── Models/            # DTO模型文档
-    └── Interfaces/        # API接口文档
-```
+#### 📋 必读核心标准 (开发者必备)
+- [**Server模块设计标准**](architecture/server-module-design-standard.md) - 三层架构、接口规范 ⭐
+- [**Client端设计标准**](architecture/client/unified-design-standard.md) - MVVM架构、依赖注入 ⭐
+- [**开发规范集**](development/README.md) - 编码标准、测试指南、最佳实践 ⭐
+- [**CLAUDE.md**](../CLAUDE.md) - 开发约束、双轨工作流、执行原则 ⭐
 
-## 🚀 快速导航路径
+#### 🏗️ 架构设计与实现 (56个文档)
+- [**系统架构总览**](architecture/README.md) - 架构决策、模块化设计
+- [**Server端架构**](architecture/server-module-design-standard.md) - 三层架构详细说明
+- [**Client端架构**](architecture/client/unified-design-standard.md) - WPF Prism MVVM实现
+- [**架构测试指南**](architecture/testing/architecture-testing-guide.md) - 15条架构约束验证
+- [**模块化设计**](architecture/modules/README.md) - 16个业务模块详细设计
+- [**ADR决策记录**](architecture/ADR-003-server-module-unified-design.md) - 禁止CQRS等重要决策
 
-### 🆕 新开发者入门
-1. [项目README](../README.md) → 了解项目全貌
-2. [CLAUDE.md](../CLAUDE.md) → 掌握开发约束  
-3. [开发者指导](DEVELOPER_GUIDE.md) → 环境配置和开发实践
-4. [开发规范](development/README.md) → 编码标准和最佳实践
-5. [最小实践指南](development/minimal-practice.md) → Issue → 清单 → PR → 交付
+#### 🔧 开发实施指南 (32个文档)
+- [**开发规范总览**](development/README.md) - 编码标准、测试指南、最佳实践
+- [**测试运行指南**](development/testing-guide.md) - VS2022/CLI测试、覆盖率分析
+- [**测试架构标准**](development/test-architecture-standard.md) - 测试分层、标准规范
+- [**文档编写指南**](development/documentation-guidelines.md) - 文档质量标准、维护流程
+- [**依赖注入指南**](development/repository-dependency-injection-guide.md) - Repository统一DI配置
+- [**AI辅助工作流**](development/ai-assisted-automation-workflow.md) - Issue驱动开发流程
 
-### 🔧 日常开发任务
-1. [API开发](api/README.md) → 接口设计和实现
-2. [架构参考](architecture/README.md) → 设计决策和模式
-3. [模块设计](architecture/modules/README.md) → **16个业务模块详细设计**
-4. [任务管理](tasks/) → 当前任务和优先级（需求与讨论在 GitHub Issues）
-5. [测试指导](development/testing/README.md) → 质量保证
+#### 📡 API与接口开发
+- [**API接口文档**](api/README.md) - RESTful接口、Swagger文档
+- [**在线API文档**](http://localhost:5001/swagger) - 开发环境API交互界面
 
-### 📊 项目管理视角
-1. GitHub Issues → 需求/变更/讨论/验收（单一事实源）
-2. [任务跟踪](tasks/) → 进度和完成状态（计划与总结同步）
-3. [分析报告](reports/) → 项目健康度和改进建议
-4. [架构治理](architecture/) → 技术债务和优化方向
+#### 🔄 开发工作流程
+- **🚀 开发新功能** → [需求模板](../.spec-workflow/templates/requirements-template.md) → [设计模板](../.spec-workflow/templates/design-template.md) → [任务模板](../.spec-workflow/templates/tasks-template.md) → [实施开发](architecture/) → [测试验证](development/testing-guide.md)
+- **🐛 修复Bug** → [问题排查指南](development/) → [测试验证](development/testing-guide.md) → [代码审查](architecture/testing/) → [部署更新](deployment/)
+- **🏗️ 架构设计** → [架构标准](architecture/) → [ADR流程](architecture/ADR-003-server-module-unified-design.md) → [设计模板](../.spec-workflow/templates/design-template.md) → [架构测试](architecture/testing/)
+- **📝 维护文档** → [文档指南](development/documentation-guidelines.md) → [维护流程](../CLAUDE.md) → [质量检查](scripts/documentation-maintenance/)
 
-## 📋 文档标准说明
+#### ⚡ 快速访问 (开发者常用)
+- 🛠️ **[环境配置](DEVELOPER_GUIDE.md)** - 5分钟快速开始
+- 📝 **[代码规范](development/README.md)** - 编码标准和最佳实践
+- 🧪 **[测试运行](development/testing-guide.md)** - 本地测试和覆盖率分析
+- 📋 **[项目管理](tasks/)** - 任务跟踪和进度管理
+- 🔧 **[GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues)** - 需求和问题跟踪
+- 📊 **[项目状态](PROJECT-STATUS-2025-09-27.md)** - 当前项目状态和进度
 
-### 维护责任分工
-| 责任范围 | 负责角色 | 主要文档类型 |
-|----------|----------|--------------|
-| **架构决策、需求管理** | Thinker | README.md, architecture/, prd/, tasks/pending/ |
-| **开发实现、技术文档** | Claude Code | CLAUDE.md, development/, api/, src/*/README.md |
-| **完成总结、实施报告** | Claude Code | tasks/completed/, reports/ |
+### 🏗️ 架构师导航
+*面向技术决策和系统设计*
 
-### 文档更新触发规则（收敛）
-- 架构变更 → 更新 architecture/ 与根 README.md
-- API 变更 → 更新 api/README.md 与 Swagger
-- 模块重构 → 更新相关 src/*/README.md
-- 任务完成 → 在 tasks/completed/ 添加总结（需求/讨论在 Issues）
+#### 架构决策资源
+- [**架构设计标准**](architecture/README.md) - ADR决策、模块化架构
+- [**技术决策记录**](../.spec-workflow/specs/) - 项目设计文档、决策历史
+- [**架构测试指南**](architecture/testing/architecture-testing-guide.md) - 架构约束验证
 
-### 文档质量标准
-每个README文件必须包含：
-- **元信息**：版本、创建时间、维护负责人
-- **功能说明**：范围、目标、关键特性
-- **导航链接**：上级文档、平级文档、下级文档  
-- **维护规则**：更新条件、归档策略
+#### 设计流程
+- **架构设计** → [架构标准](architecture/) + [设计决策流程](../.spec-workflow/templates/)
+- **技术选型** → [ADR记录](architecture/) + [项目技术文档](../.spec-workflow/steering/tech.md)
+- **架构审查** → [架构测试](architecture/testing/) + [设计文档](../.spec-workflow/specs/)
 
-> 文档白名单：仅保留“架构与决策（ADR/overview）”“开发规范与指南”“技术与安全”“任务（plan/completed）”。PRD/阶段性计划统一走 GitHub Issues。
+#### 快速链接
+- [模块化设计](architecture/modules/README.md) | [架构决策记录](../.spec-workflow/specs/) | [系统架构图](../README.md)
 
-## 🛠 文档工具和自动化
+### 📊 项目经理导航
+*面向项目管理和进度跟踪*
 
-### 文档验证脚本（规划中）
-```powershell
-# 文档系统健康检查
-.\scripts\DocumentationHealthCheck.ps1
-- 检查README完整性和标准符合度
-- 验证交叉引用链接有效性
-- 识别过期文档（超过30天未更新）
-- 生成文档覆盖率报告
-```
+#### 项目管理资源
+- [**项目总览**](../README.md) - 系统架构、技术栈、当前状态
+- [**项目需求文档**](../.spec-workflow/specs/) - 需求分析、功能规格
+- [**项目完成报告**](../.spec-workflow/archive/) - 项目成果、完成总结
+- [**GitHub Issues**](https://github.com/shouqitao/LYBTZYZS/issues) - 需求与任务单一事实源
 
-### 自动化生成
-- **API文档**：通过Swagger/OpenAPI自动导出
-- **代码文档**：通过XML注释和工具生成  
-- **依赖图**：通过分析工具生成项目依赖关系
+#### 项目流程
+- **需求管理** → [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues) + [需求文档](../.spec-workflow/specs/)
+- **进度跟踪** → [项目状态](../README.md) + [任务管理](tasks/)
+- **交付管理** → [完成报告](../.spec-workflow/archive/) + [质量报告](reports/)
 
-## ⚠️ 重要提醒
+#### 快速链接
+- [项目里程碑](../README.md) | [需求跟踪](../.spec-workflow/specs/) | [团队协作](../CLAUDE.md)
 
-### 文档即标准
-📌 **本文档系统不仅是说明，更是开发工作的权威标准和限制**：
-- README中的技术约束具有**强制执行力**
-- 架构决策文档是设计变更的**必要依据**
-- 开发规范是代码审查的**硬性标准**
+### 🔧 测试工程师导航
+*面向质量保证和测试工作*
 
-### 实时性要求
-📅 **文档必须与代码保持同步**：
-- 代码变更时必须同时更新相关文档
-- 超过7天未更新的文档将被标记为可能过期
-- 断链和错误引用将影响文档系统的可信度
+#### 测试资源
+- [**测试架构标准**](development/test-architecture-standard.md) - 测试分层、标准规范
+- [**测试运行指南**](development/testing-guide.md) - VS2022/CLI测试、覆盖率分析
+- [**质量报告**](reports/) - 测试覆盖率、质量指标分析
+- [**架构测试**](architecture/testing/architecture-testing-guide.md) - 架构约束验证
 
-### 贡献要求
-🤝 **每个开发者都是文档系统的维护者**：
-- 发现文档错误时有责任修正或报告
-- 实施新功能时必须更新相关技术文档
-- 完成任务后必须提交完成总结和经验沉淀
+#### 测试流程
+- **测试计划** → [测试标准](development/test-architecture-standard.md) + [测试工具](development/testing-guide.md)
+- **测试执行** → [测试运行](development/testing-guide.md) + [覆盖率分析](reports/)
+- **质量报告** → [测试报告](reports/) + [架构验证](architecture/testing/)
+
+#### 快速链接
+- [测试环境配置](development/testing-guide.md) | [覆盖率分析](reports/test-coverage-improvement-report.md) | [质量标准](development/test-architecture-standard.md)
+
+---
+
+## 🎯 任务类型导航
+
+*基于实际工作流程优化，为每种任务类型提供详细的执行指导和资源链接*
+
+### 🚀 开发新功能
+**完整流程**：Spec-Workflow + 技术标准 + 开发实施 - *基于文档分析优化*
+
+#### 📋 Phase 1: 需求分析 (1-2天)
+- **🎯 创建需求文档** → [需求文档模板](../.spec-workflow/templates/requirements-template.md)
+- **📊 功能分析** → [项目状态文档](PROJECT-STATUS-2025-09-27.md) + [现有模块清单](architecture/modules/README.md)
+- **👥 角色协作** → 开发者主导，架构师技术评审，项目经理需求确认
+
+#### 🏗️ Phase 2: 设计规划 (2-3天)
+- **📐 技术设计** → [设计文档模板](../.spec-workflow/templates/design-template.md)
+- **🔧 架构评审** → [Server设计标准](architecture/server-module-design-standard.md) + [Client设计标准](architecture/client/unified-design-standard.md)
+- **🧪 测试规划** → [测试架构标准](development/test-architecture-standard.md)
+
+#### 📝 Phase 3: 任务分解 (0.5天)
+- **✨ 任务清单** → [任务模板](../.spec-workflow/templates/tasks-template.md)
+- **🔗 GitHub创建** → 基于任务清单创建GitHub Issues，关联标签和里程碑
+- **📊 工作量评估** → 结合[项目状态](PROJECT-STATUS-2025-09-27.md)评估开发资源
+
+#### 🛠️ Phase 4: 开发实施 (按任务复杂度)
+- **🏗️ Server端开发** → [Server模块设计标准](architecture/server-module-design-standard.md) + [三层架构指南](architecture/)
+- **💻 Client端开发** → [Client端MVVM标准](architecture/client/unified-design-standard.md) + [依赖注入指南](development/repository-dependency-injection-guide.md)
+- **🧪 测试开发** → [测试运行指南](development/testing-guide.md) + [覆盖率分析](reports/test-coverage-improvement-report.md)
+
+#### ✅ Phase 5: 验证与交付 (1-2天)
+- **🔍 代码审查** → [架构测试指南](architecture/testing/architecture-testing-guide.md)
+- **🚀 部署验证** → [部署指南](deployment/) + [API文档更新](api/README.md)
+- **📝 文档同步** → 更新[模块文档](architecture/modules/)和[导航索引](#-完整文档索引)
+
+---
+
+### 🐛 修复Bug
+**快速响应**：问题定位 → 根因分析 → 解决实施 → 预防措施 - *基于文档分析优化*
+
+#### 🔍 Phase 1: 问题定位 (0.5-1天)
+- **📊 问题复现** → [测试运行指南](development/testing-guide.md) + [日志分析](deployment/)
+- **🎯 影响评估** → 检查[架构约束](architecture/testing/architecture-testing-guide.md)和[业务影响]
+- **🔍 根因分析** → 结合[开发规范](development/README.md)分析代码问题
+
+#### 🛠️ Phase 2: 解决方案设计 (0.5天)
+- **💡 解决方案** → 基于现有[架构标准](architecture/)设计修复方案
+- **⚡ 快速修复** → 简单Bug直接修复，复杂Bug需设计方案
+- **🧪 测试策略** → [测试架构标准](development/test-architecture-standard.md)制定回归测试
+
+#### 🔧 Phase 3: 实施与验证 (1-2天)
+- **🏗️ 代码修复** → 遵循[编码规范](development/README.md)实施修复
+- **🧪 测试验证** → [测试运行指南](development/testing-guide.md) + [覆盖率分析](reports/)
+- **📋 代码审查** → [架构测试](architecture/testing/)确保修复不影响系统架构
+
+#### 📊 Phase 4: 预防与总结 (0.5天)
+- **🛡️ 预防措施** → 更新[最佳实践](development/)和[检查清单]
+- **📝 知识沉淀** → 更新相关[模块文档](architecture/modules/)和[故障排查指南]
+- **🔄 流程改进** → 优化[开发工作流](development/ai-assisted-automation-workflow.md)
+
+---
+
+### 🏗️ 架构设计
+**系统思维**：架构决策 → 技术选型 → 设计实施 → 架构验证 - *基于文档分析优化*
+
+#### 📐 Phase 1: 架构分析 (1-2天)
+- **🎯 需求理解** → [架构设计标准](architecture/README.md) + [系统架构总览](architecture/README.md)
+- **🔍 现状分析** → [现有架构决策](../.spec-workflow/specs/) + [模块化现状](architecture/modules/README.md)
+- **📊 技术债务** → [架构测试](architecture/testing/)评估现有架构约束
+
+#### 🏛️ Phase 2: 架构决策 (1-2天)
+- **📋 ADR流程** → [ADR决策记录](architecture/ADR-003-server-module-unified-design.md)
+- **🔧 技术选型** → [项目技术文档](../.spec-workflow/steering/tech.md) + [最佳实践](development/)
+- **🎯 架构原则** → 三层架构、模块化设计、依赖方向控制
+
+#### 📝 Phase 3: 设计实施 (2-3天)
+- **🏗️ 架构设计** → [设计文档模板](../.spec-workflow/templates/design-template.md)
+- **📋 接口设计** → [API设计规范](api/README.md) + [模块接口标准](architecture/)
+- **🧪 架构验证** → [架构测试指南](architecture/testing/architecture-testing-guide.md)
+
+#### ✅ Phase 4: 评审与确认 (1天)
+- **👥 技术评审** → 架构师主导，开发者参与，项目经理确认
+- **📊 影响评估** → 评估对现有系统和开发流程的影响
+- **🔄 持续优化** → 建立[架构演进路线图](../.spec-workflow/specs/)
+
+---
+
+### 📝 维护文档
+**持续改进**：文档更新 → 质量检查 → 知识管理 → 流程优化 - *基于文档分析优化*
+
+#### 📝 Phase 1: 文档更新 (按需)
+- **🔄 变更检测** → [文档指南](development/documentation-guidelines.md)识别需要更新的文档
+- **📋 内容更新** → 基于[代码变更](../CLAUDE.md)同步更新相关文档
+- **🔗 链接维护** → 检查和修复文档间的引用链接
+
+#### 🔍 Phase 2: 质量检查 (定期)
+- **🛠️ 健康检查** → [健康检查脚本](scripts/documentation-maintenance/) + [链接验证](development/)
+- **📊 质量评估** → [文档质量标准](development/documentation-guidelines.md)评估文档完整性
+- **🎯 用户体验** → 收集反馈，优化[导航结构](#-角色导航)
+
+#### 📚 Phase 3: 知识管理 (持续)
+- **🗂️ 归档管理** → [项目档案](../.spec-workflow/archive/) + [报告归档](reports/)
+- **🔍 知识检索** → 优化[搜索体验](#-搜索和帮助)和[分类索引](#-完整文档索引)
+- **📖 培训支持** → 基于[新用户指南](#-新用户快速开始)制作培训材料
+
+#### 🔄 Phase 4: 流程优化 (持续)
+- **⚡ 效率提升** → 基于[AI辅助工作流](development/ai-assisted-automation-workflow.md)优化维护流程
+- **📊 指标监控** → 跟踪[成功指标](#-设计原则)和用户满意度
+- **🎯 持续改进** → 基于[GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues)反馈持续优化
+
+---
+
+## 📚 完整文档索引
+
+### 🏗️ 架构与设计 (docs/)
+- [architecture/](architecture/README.md) - 系统架构设计文档集合
+- [api/](api/README.md) - API接口规范与文档
+- [架构决策记录](../.spec-workflow/specs/) - 项目设计文档和决策历史
+
+### 🛠️ 开发与质量 (docs/)
+- [development/](development/README.md) - 开发规范指导集合
+- [testing/](development/testing-guide.md) - 测试运行指南和最佳实践
+- [security/](security/) - 安全指导文档
+- [deployment/](deployment/) - 部署与配置指南
+
+### 📊 项目管理 (跨体系)
+- [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues) - 需求与任务单一事实源
+- [tasks/](tasks/) - 任务管理系统
+- [reports/](reports/) - 分析报告文档
+- [项目规格](../.spec-workflow/specs/) - 需求分析和设计文档
+- [项目档案](../.spec-workflow/archive/) - 已完成项目文档
+
+### 🔧 开发资源 (源码文档)
+- [src/](../src/) - 源码目录结构
+  - [Server/](../src/Server/) - 后端项目文档
+  - [Client/Desktop/](../src/Client/Desktop/) - 前端项目文档
+  - [Shared/](../src/Shared/) - 共享层文档
+
+---
+
+## 🆕 新用户快速开始
+
+### 🎯 5分钟快速上手
+1. **了解项目** → [项目README](../README.md) (1分钟)
+2. **掌握规范** → [CLAUDE.md](../CLAUDE.md) (2分钟)
+3. **环境配置** → [开发者指南](DEVELOPER_GUIDE.md) (1分钟)
+4. **选择导航** → 根据你的角色选择上方角色导航 (1分钟)
+
+### 🎮 根据你的角色开始
+- **我是开发者** → 🛠️ [开发者导航](#-️-开发者导航)
+- **我是架构师** → 🏗️ [架构师导航](#️-架构师导航)
+- **我是项目经理** → 📊 [项目经理导航](#-项目-经理导航)
+- **我是测试工程师** → 🔧 [测试工程师导航](#-测试工程师导航)
+
+---
+
+## ⚡ 搜索和帮助
+
+### 🔍 快速查找
+- **按文档类型** → 查看[完整文档索引](#-完整文档索引)
+- **按任务类型** → 查看[任务类型导航](#-任务类型导航)
+- **按角色查找** → 查看[角色导航](#-角色导航)
+- **关键词搜索** → 使用IDE/Git的全文搜索功能
+
+### 🆘 获取帮助
+- **文档问题** → 在[GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues)提交文档改进建议
+- **开发问题** → 查看相关开发规范或联系技术负责人
+- **流程问题** → 查看[CLAUDE.md](../CLAUDE.md)中的工作流程定义
+
+---
+
+## 📈 文档体系说明
+
+### 🎯 设计原则
+- **统一入口**：docs/index.md作为唯一文档入口
+- **角色导向**：按用户角色组织导航，提高查找效率
+- **任务驱动**：根据具体任务提供相关文档和工作流
+- **双轨整合**：无缝连接docs/和spec-workflow/两个体系
+
+### 📊 成功指标
+- ✅ **3次点击内**找到任何需要的文档
+- ✅ **5分钟内**理解导航结构
+- ✅ **消除标准错乱**问题
+- ✅ **统一文档门户**成为团队主要入口
+
+### 🔄 维护机制
+- **实时更新**：文档变更时同步更新导航
+- **定期审查**：每月检查链接有效性和内容准确性
+- **持续优化**：根据用户反馈不断改进导航体验
 
 ---
 
 ## 🔗 相关资源
 
-- [文档系统架构设计](DOCUMENTATION_SYSTEM.md) - 本系统的设计理念和实施计划
-- [项目Git仓库](https://github.com/shouqitao/LYBTZYZS) - 代码和文档的版本管理
+- [项目Git仓库](https://github.com/shouqitao/LYBTZYZS) - 代码和文档版本管理
+- [Spec-Workflow Dashboard](http://localhost:3000) - 规格文档审批和管理
 - [API在线文档](http://localhost:5001/swagger) - 开发环境API交互界面
+- [文档系统架构](DOCUMENTATION_SYSTEM.md) - 本导航系统的设计理念
 
 ---
 
-*本文档索引将随着项目发展持续更新，确保文档导航的完整性和准确性。如需增加新的文档分类或修改导航结构，请遵循文档系统变更流程。*
+*本统一文档导航门户旨在解决"开发时标准错乱"问题。如果在使用过程中遇到任何问题或有改进建议，请通过GitHub Issues反馈。*
+
+**最后更新：2025-10-15 - 统一文档导航门户v3.0正式上线** 🎉
