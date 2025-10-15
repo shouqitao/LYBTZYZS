@@ -314,6 +314,55 @@
 
 ---
 
+## 🔗 智能文档推荐
+
+*基于交叉引用分析的智能文档推荐系统 - 已分析280个文档，建立37,183个引用关系*
+
+### 📊 推荐统计
+- **分析文档总数**: 280个
+- **建立引用关系**: 37,183个
+- **显式链接**: 418个
+- **内容提及**: 121个
+- **语义关联**: 36,644个
+
+### 🎯 热门推荐文档
+
+#### 🏗️ 架构设计相关
+- **[凌隐宝堂系统架构文档](ARCHITECTURE.md)** - 系统整体架构设计
+  - 推荐: [DTO设计原则](architecture/dto-design-principles.md), [技术标准](development/standards.md)
+- **[Server模块设计标准](architecture/server-module-design-standard.md)** - 三层架构详细规范
+  - 推荐: [Client端设计标准](architecture/client/unified-design-standard.md), [架构测试指南](architecture/testing/architecture-testing-guide.md)
+- **[Client端设计标准](architecture/client/unified-design-standard.md)** - WPF Prism MVVM实现
+  - 推荐: [依赖注入指南](development/repository-dependency-injection-guide.md), [测试架构标准](development/test-architecture-standard.md)
+
+#### 🔧 开发实施相关
+- **[环境配置指南](DEVELOPER_GUIDE.md)** - 5分钟快速开始
+  - 推荐: [技术标准](development/standards.md), [项目状态](PROJECT-STATUS-2025-09-27.md)
+- **[测试运行指南](development/testing-guide.md)** - VS2022/CLI测试、覆盖率分析
+  - 推荐: [测试架构标准](development/test-architecture-standard.md), [覆盖率改进报告](reports/test-coverage-improvement-report.md)
+- **[依赖注入指南](development/repository-dependency-injection-guide.md)** - Repository统一DI配置
+  - 推荐: [Server模块设计标准](architecture/server-module-design-standard.md), [配置优化指南](development/configuration-optimization.md)
+
+#### 📊 项目管理相关
+- **[项目状态文档](PROJECT-STATUS-2025-09-27.md)** - 详细进度、资源状态
+  - 推荐: [技术决策记录](../.spec-workflow/specs/), [任务管理系统](tasks/)
+- **[任务管理系统](tasks/)** - 任务分解、进度跟踪、状态管理
+  - 推荐: [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues), [质量报告](reports/)
+
+### 🔍 交叉引用分析报告
+
+完整的交叉引用分析结果已生成：
+- **[JSON数据文件](../scripts/documentation-maintenance/cross-references.json)** - 完整的结构化数据
+- **[分析报告](../scripts/documentation-maintenance/cross-references.md)** - 人类可读的详细报告
+
+**如何使用推荐系统**：
+1. 查看上述热门推荐，快速访问核心文档
+2. 阅读详细分析报告了解文档间关联关系
+3. 基于语义关联发现相关技术文档
+4. 利用交叉引用快速找到相关标准和规范
+
+---
+
 ## 📚 完整文档索引
 
 ### 🏗️ 架构与设计 (docs/)
