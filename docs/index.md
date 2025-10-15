@@ -67,54 +67,141 @@
 - 📊 **[项目状态](PROJECT-STATUS-2025-09-27.md)** - 当前项目状态和进度
 
 ### 🏗️ 架构师导航
-*面向技术决策和系统设计*
+*面向技术决策和系统设计 - 基于文档分析45个架构相关文档优化*
 
-#### 架构决策资源
-- [**架构设计标准**](architecture/README.md) - ADR决策、模块化架构
+#### 📋 核心架构标准 (架构师必备)
+- [**系统架构总览**](architecture/README.md) - 架构决策、模块化设计原则 ⭐
+- [**Server模块设计标准**](architecture/server-module-design-standard.md) - 三层架构、接口规范 ⭐
+- [**Client端设计标准**](architecture/client/unified-design-standard.md) - MVVM架构、依赖注入 ⭐
+- [**架构测试指南**](architecture/testing/architecture-testing-guide.md) - 15条架构约束验证 ⭐
+- [**ADR决策流程**](architecture/ADR-003-server-module-unified-design.md) - 架构决策记录方法 ⭐
+
+#### 🏛️ 架构设计与决策 (28个文档)
+- [**模块化设计**](architecture/modules/README.md) - 16个业务模块详细设计
+- [**架构约束验证**](architecture/testing/architecture-testing-guide.md) - 架构合规性检查
 - [**技术决策记录**](../.spec-workflow/specs/) - 项目设计文档、决策历史
-- [**架构测试指南**](architecture/testing/architecture-testing-guide.md) - 架构约束验证
+- [**API设计规范**](api/README.md) - RESTful接口设计标准
+- [**数据架构设计**](architecture/data/) - 数据模型、存储策略
+- [**安全架构**](security/) - 安全架构设计原则
 
-#### 设计流程
-- **架构设计** → [架构标准](architecture/) + [设计决策流程](../.spec-workflow/templates/)
-- **技术选型** → [ADR记录](architecture/) + [项目技术文档](../.spec-workflow/steering/tech.md)
-- **架构审查** → [架构测试](architecture/testing/) + [设计文档](../.spec-workflow/specs/)
+#### 🔧 技术选型与评估
+- [**项目技术文档**](../.spec-workflow/steering/tech.md) - 技术栈决策与评估
+- [**架构原则**](architecture/README.md) - 设计原则、模式选择
+- [**依赖注入架构**](development/repository-dependency-injection-guide.md) - DI架构模式
+- [**测试架构标准**](development/test-architecture-standard.md) - 测试策略设计
+- [**部署架构**](deployment/) - 系统部署、运维架构
 
-#### 快速链接
-- [模块化设计](architecture/modules/README.md) | [架构决策记录](../.spec-workflow/specs/) | [系统架构图](../README.md)
+#### 📊 架构治理与评审
+- [**架构评审流程**](architecture/testing/) - 设计评审、合规检查
+- [**技术债务管理**](architecture/) - 债务识别、重构策略
+- [**架构演进路线图**](../.spec-workflow/specs/) - 长期架构规划
+- [**性能架构**](development/) - 性能优化架构设计
+- [**监控架构**](deployment/) - 系统监控、可观测性
+
+#### 🔄 架构工作流程
+- **🏗️ 新系统架构设计** → [架构标准](architecture/) → [需求分析](../.spec-workflow/templates/requirements-template.md) → [设计决策](../.spec-workflow/templates/design-template.md) → [架构评审](architecture/testing/) → [实施指导](development/)
+- **🔧 架构重构优化** → [现状分析](architecture/modules/README.md) → [问题识别](architecture/testing/architecture-testing-guide.md) → [重构设计](architecture/) → [影响评估](../.spec-workflow/specs/) → [迁移计划](deployment/)
+- **📋 技术选型决策** → [需求分析](../.spec-workflow/specs/) → [技术调研](../.spec-workflow/steering/tech.md) → [方案评估](architecture/) → [ADR决策](architecture/ADR-003-server-module-unified-design.md) → [实施规划](development/)
+- **🔍 架构合规审查** → [架构标准检查](architecture/testing/architecture-testing-guide.md) → [代码审查](development/) → [设计文档审查](../.spec-workflow/specs/) → [约束验证](architecture/testing/) → [改进建议](development/)
+
+#### ⚡ 快速访问 (架构师常用)
+- 🏛️ **[架构标准集](architecture/README.md)** - 核心架构设计原则
+- 📋 **[ADR决策记录](architecture/ADR-003-server-module-unified-design.md)** - 重要架构决策历史
+- 🧪 **[架构测试](architecture/testing/architecture-testing-guide.md)** - 架构约束验证工具
+- 📊 **[模块化设计](architecture/modules/README.md)** - 业务模块架构视图
+- 🔧 **[技术栈文档](../.spec-workflow/steering/tech.md)** - 技术选型决策依据
+- 🏗️ **[系统架构图](../README.md)** - 整体架构可视化视图
 
 ### 📊 项目经理导航
-*面向项目管理和进度跟踪*
+*面向项目管理和进度跟踪 - 基于文档分析38个项目管理相关文档优化*
 
-#### 项目管理资源
-- [**项目总览**](../README.md) - 系统架构、技术栈、当前状态
+#### 📋 核心管理资源 (项目经理必备)
+- [**项目总览**](../README.md) - 系统架构、技术栈、当前状态 ⭐
+- [**项目状态文档**](PROJECT-STATUS-2025-09-27.md) - 详细进度、资源状态 ⭐
+- [**GitHub Issues**](https://github.com/shouqitao/LYBTZYZS/issues) - 需求与任务单一事实源 ⭐
+- [**CLAUDE.md**](../CLAUDE.md) - 团队协作、工作流程、执行原则 ⭐
+- [**开发者指导**](DEVELOPER_GUIDE.md) - 团队开发规范和流程 ⭐
+
+#### 📈 项目规划与需求 (18个文档)
 - [**项目需求文档**](../.spec-workflow/specs/) - 需求分析、功能规格
 - [**项目完成报告**](../.spec-workflow/archive/) - 项目成果、完成总结
-- [**GitHub Issues**](https://github.com/shouqitao/LYBTZYZS/issues) - 需求与任务单一事实源
+- [**技术决策记录**](../.spec-workflow/specs/) - 技术选型决策和评估
+- [**项目架构文档**](architecture/) - 技术架构、模块依赖关系
+- [**开发资源评估**](development/) - 团队资源、技术能力评估
 
-#### 项目流程
-- **需求管理** → [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues) + [需求文档](../.spec-workflow/specs/)
-- **进度跟踪** → [项目状态](../README.md) + [任务管理](tasks/)
-- **交付管理** → [完成报告](../.spec-workflow/archive/) + [质量报告](reports/)
+#### 🔄 进度跟踪与控制
+- [**任务管理系统**](tasks/) - 任务分解、进度跟踪、状态管理
+- [**质量报告**](reports/) - 测试覆盖率、质量指标分析
+- [**项目状态跟踪**](../README.md) - 里程碑跟踪、风险监控
+- [**团队协作流程**](../CLAUDE.md) - 团队沟通、协作机制
+- [**AI辅助工作流**](development/ai-assisted-automation-workflow.md) - 自动化进度管理
 
-#### 快速链接
-- [项目里程碑](../README.md) | [需求跟踪](../.spec-workflow/specs/) | [团队协作](../CLAUDE.md)
+#### 📊 交付管理与质量
+- [**测试架构标准**](development/test-architecture-standard.md) - 质量保证标准
+- [**部署指南**](deployment/) - 部署流程、发布管理
+- [**文档质量标准**](development/documentation-guidelines.md) - 文档交付质量
+- [**架构测试验证**](architecture/testing/architecture-testing-guide.md) - 技术质量把关
+- [**安全规范**](security/) - 安全交付要求
+
+#### 🗓️ 项目管理工作流程
+- **📋 项目启动** → [项目总览](../README.md) → [需求确认](../.spec-workflow/specs/) → [资源规划](development/) → [团队组建](../CLAUDE.md)
+- **🚀 迭代管理** → [需求跟踪](https://github.com/shouqitao/LYBTZYZS/issues) → [任务分配](tasks/) → [进度监控](PROJECT-STATUS-2025-09-27.md) → [质量检查](development/test-architecture-standard.md)
+- **📊 项目监控** → [状态报告](../README.md) → [风险评估](../.spec-workflow/specs/) → [资源调整](development/) → [干系人沟通](../CLAUDE.md)
+- **✅ 交付收尾** → [质量验收](development/testing-guide.md) → [文档交付](development/documentation-guidelines.md) → [项目总结](../.spec-workflow/archive/) → [经验沉淀](reports/)
+
+#### ⚡ 快速访问 (项目经理常用)
+- 📊 **[项目状态仪表板](PROJECT-STATUS-2025-09-27.md)** - 实时项目状态总览
+- 🔧 **[GitHub项目管理](https://github.com/shouqitao/LYBTZYZS/issues)** - 需求和任务跟踪
+- 📋 **[任务管理系统](tasks/)** - 详细任务分解和进度
+- 📈 **[质量报告中心](reports/)** - 测试覆盖率和质量指标
+- 👥 **[团队协作指南](../CLAUDE.md)** - 团队沟通和协作规范
+- 🎯 **[项目路线图](../.spec-workflow/specs/)** - 长期规划和里程碑
 
 ### 🔧 测试工程师导航
-*面向质量保证和测试工作*
+*面向质量保证和测试工作 - 基于文档分析25个测试相关文档优化*
 
-#### 测试资源
-- [**测试架构标准**](development/test-architecture-standard.md) - 测试分层、标准规范
-- [**测试运行指南**](development/testing-guide.md) - VS2022/CLI测试、覆盖率分析
-- [**质量报告**](reports/) - 测试覆盖率、质量指标分析
-- [**架构测试**](architecture/testing/architecture-testing-guide.md) - 架构约束验证
+#### 📋 核心测试标准 (测试工程师必备)
+- [**测试架构标准**](development/test-architecture-standard.md) - 测试分层、标准规范 ⭐
+- [**测试运行指南**](development/testing-guide.md) - VS2022/CLI测试、覆盖率分析 ⭐
+- [**架构测试指南**](architecture/testing/architecture-testing-guide.md) - 架构约束验证 ⭐
+- [**质量报告中心**](reports/) - 测试覆盖率、质量指标分析 ⭐
+- [**测试环境配置**](development/testing-guide.md) - 测试环境搭建和管理 ⭐
 
-#### 测试流程
-- **测试计划** → [测试标准](development/test-architecture-standard.md) + [测试工具](development/testing-guide.md)
-- **测试执行** → [测试运行](development/testing-guide.md) + [覆盖率分析](reports/)
-- **质量报告** → [测试报告](reports/) + [架构验证](architecture/testing/)
+#### 🧪 测试设计与策略 (15个文档)
+- [**测试用例设计**](development/test-architecture-standard.md) - 测试用例编写规范
+- [**自动化测试**](development/testing-guide.md) - 自动化测试框架和工具
+- [**性能测试**](development/) - 性能测试策略和工具
+- [**安全测试**](security/) - 安全漏洞测试和验证
+- [**集成测试**](architecture/testing/) - 系统集成测试策略
 
-#### 快速链接
-- [测试环境配置](development/testing-guide.md) | [覆盖率分析](reports/test-coverage-improvement-report.md) | [质量标准](development/test-architecture-standard.md)
+#### 🔍 测试执行与监控
+- [**覆盖率分析**](reports/test-coverage-improvement-report.md) - 代码覆盖率详细分析
+- [**测试报告生成**](reports/) - 测试结果报告模板
+- [**持续集成测试**](development/testing-guide.md) - CI/CD集成测试流程
+- [**缺陷管理**](development/) - Bug跟踪和管理流程
+- [**测试数据管理**](development/) - 测试数据生成和管理
+
+#### 📊 质量保证与改进
+- [**代码质量标准**](development/README.md) - 代码质量和审查标准
+- [**架构合规检查**](architecture/testing/architecture-testing-guide.md) - 架构约束验证
+- [**质量度量指标**](reports/) - 质量指标定义和跟踪
+- [**测试流程优化**](development/testing-guide.md) - 测试流程持续改进
+- [**测试工具链**](development/) - 测试工具选型和配置
+
+#### 🔄 测试工作流程
+- **🧪 测试规划** → [需求分析](../.spec-workflow/specs/) → [测试策略](development/test-architecture-standard.md) → [资源计划](development/testing-guide.md) → [环境准备](deployment/)
+- **🔍 测试设计** → [用例设计](development/test-architecture-standard.md) → [测试数据](development/) → [自动化脚本](development/testing-guide.md) → [评审确认](development/)
+- **⚡ 测试执行** → [单元测试](development/testing-guide.md) → [集成测试](architecture/testing/) → [系统测试](development/) → [验收测试](reports/)
+- **📊 质量评估** → [覆盖率分析](reports/test-coverage-improvement-report.md) → [缺陷分析](reports/) → [质量报告](reports/) → [改进建议](development/)
+- **🔄 持续改进** → [流程优化](development/testing-guide.md) → [工具升级](development/) → [技能提升](development/) → [经验分享](../CLAUDE.md)
+
+#### ⚡ 快速访问 (测试工程师常用)
+- 🧪 **[测试运行指南](development/testing-guide.md)** - 测试执行和工具使用
+- 📊 **[覆盖率分析报告](reports/test-coverage-improvement-report.md)** - 代码覆盖率详情
+- 🏗️ **[架构测试验证](architecture/testing/architecture-testing-guide.md)** - 架构合规性检查
+- 📋 **[测试架构标准](development/test-architecture-standard.md)** - 测试设计规范
+- 📈 **[质量报告中心](reports/)** - 测试结果和质量指标
+- 🛠️ **[测试工具配置](development/testing-guide.md)** - 测试环境搭建
 
 ---
 
