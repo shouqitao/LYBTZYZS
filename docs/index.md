@@ -28,6 +28,16 @@
 
 👉 **[查看完整快速参考文档中心](quick-reference/README.md)**
 
+#### 任务与交付
+| 文档路径 | 说明 | 关键内容 |
+|----------|------|----------|
+| [issues/](issues/) | Issue追踪文档 | 问题分析、技术方案、验收标准 |
+| [issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md](issues/ISSUE_808_DESKTOP_ARCHITECTURE_OPTIMIZATION.md) | **Desktop架构适度优化Issue #815** | **Core层重组、业务模块标准化、工作台层独立** |
+| [tasks/](tasks/) | 任务管理系统 | pending/待办任务、completed/完成总结 |
+| [reports/](reports/) | 分析报告文档 | 架构分析、规范性报告、长期参考（阶段性计划已迁移到 Issues） |
+|   ├── [project-standardization-v3-completion-report.md](reports/project-standardization-v3-completion-report.md) | **Project Standardization 3.0完成报告** ✅ | **14个任务100%完成，测试覆盖率80-83%，Repository/ViewModel/Testing三层架构标准化** |
+|   └── [test-coverage-improvement-report.md](reports/test-coverage-improvement-report.md) | **测试覆盖率改进报告** ✅ | **159个测试100%通过，覆盖率从65%提升到80-83%** |
+
 ---
 
 ## 👥 核心导航

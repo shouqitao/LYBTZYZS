@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/patient-selector/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T15:33:36.765Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760456016741_nd6z8axnz",
+      "approvalTitle": "任务分解文档审批：患者选择器组件 (SPEC-2025-002)"
+    }
+  ]
+}

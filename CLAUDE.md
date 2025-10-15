@@ -124,6 +124,70 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 
 ---
 
+## 1.5 Spec-Driven 与 Issue-Driven 双轨工作流
+
+本项目采用 **Spec-Driven + Issue-Driven** 双轨开发模式，充分利用 spec-workflow-mcp 工具链实现"想清楚再做"的高质量开发流程。
+
+### 工作流关系图
+
+```
+阶段划分：
+
+Spec-Driven（前置思考阶段）
+  ├─ 阶段 1：项目初始化
+  │   └─ 创建 Steering Documents (product.md, tech.md, structure.md)
+  │
+  ├─ 阶段 2：需求分析
+  │   └─ 创建 requirements.md → Dashboard 审批
+  │
+  ├─ 阶段 3：设计
+  │   └─ 创建 design.md → Dashboard 审批
+  │
+  └─ 阶段 4：任务分解
+      └─ 创建 tasks.md → Dashboard 审批 → 生成 GitHub Issues
+                    ↓
+Issue-Driven（执行实施阶段）
+  ├─ 阶段 5：开发实施
+  │   └─ 基于 GitHub Issues 进行代码开发
+  │
+  ├─ 阶段 6：测试验证
+  │   └─ 单元测试 + 集成测试 + E2E 测试
+  │
+  └─ 阶段 7：PR 审查与文档
+      └─ 创建 PR → 代码审查 → 合并 → 文档更新
+```
+
+### 双轨模式使用场景
+
+| 场景类型 | Spec-Driven | Issue-Driven | 说明 |
+|---------|------------|-------------|------|
+| **新功能开发** | ✅ 必须 | ✅ 必须 | 完整流程：Spec → Issue → 实现 |
+| **重大重构** | ✅ 必须 | ✅ 必须 | 需求+设计审批后分解任务 |
+| **Bug 修复** | ❌ 可选 | ✅ 必须 | 简单 Bug 直接 Issue，复杂 Bug 需 Spec |
+| **文档更新** | ❌ 不需要 | ✅ 必须 | 直接创建 Issue |
+| **性能优化** | ✅ 推荐 | ✅ 必须 | 建议先设计方案再实施 |
+
+### 核心工具与使用指引
+
+- **📋 Spec-Workflow**：完整工作流指南参见 `.claude/core/SPEC-WORKFLOW.md`
+- **🔄 Issues 同步**：`spec-workflow-mcp: manage-tasks` 同步 GitHub Issues 到 tasks.md
+- **🔧 MCP 工具协同**：工具选择与协同模式参见 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`
+- **🔄 Issue 管理**：Issue 驱动流程参见下方"## 2. Issue 驱动工作流"
+
+### Dashboard 访问
+
+```bash
+# 自动启动（推荐）
+# MCP 配置中添加 --AutoStartDashboard 参数
+
+# 手动启动
+npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
+
+# 默认地址：http://localhost:3000
+```
+
+---
+
 ## 2. Issue 驱动工作流
 
 > **📖 完整工作流定义**：参见 `.claude/core/WORKFLOW.md`
