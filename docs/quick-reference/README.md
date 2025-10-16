@@ -1,64 +1,98 @@
-# 快速参考文档中心
+# 快速参考中心
 
-**更新时间**: 2025-10-15 18:11:07
-**文档数量**: 5 个
-**条目总数**: 90 个
+**📋 Level 1 - 解决80%日常需求** - 精简实用文档，快速查找和使用
 
-## 🎯 使用说明
+## 🎯 快速参考概述
 
-这些快速参考文档是为了解决日常开发中的**80%常见需求**而设计的。
-每个文档都控制在 **100KB以内**，确保快速加载和浏览。
+凌隐宝堂中医诊所管理系统快速参考中心为开发团队提供日常开发中最常用的API接口、配置模板、代码模式和问题解决方案。所有文档都基于实际项目代码编写，确保准确性和实用性。
 
-### 📚 文档列表
+## 📚 快速参考文档列表
 
-#### API快速参考
-- **描述**: 最常用的API接口和调用示例
-- **链接**: [api_reference.md](api_reference.md)
-- **大小**: < 100KB
+### 🔌 API接口参考
+- **[API快速参考](api-reference.md)** - 12个核心控制器的完整API文档
+  - 认证授权API
+  - 患者管理API
+  - 医案管理API
+  - 诊疗记录API
+  - 处方管理API
+  - 药材管理API
+  - 验方管理API
+  - 用户管理API
 
-#### 配置模板
-- **描述**: 常用配置文件模板和示例
-- **链接**: [config_templates.md](config_templates.md)
-- **大小**: < 100KB
+### ⚙️ 配置文件模板
+- **[配置模板](config-templates.md)** - 3个环境的完整配置文件模板
+  - 开发环境配置
+  - 测试环境配置
+  - 生产环境配置
+  - 数据库连接配置
+  - JWT认证配置
+  - 日志配置
 
-#### 开发检查清单
-- **描述**: 开发流程和质量检查清单
-- **链接**: [development_checklist.md](development_checklist.md)
-- **大小**: < 100KB
+### 💻 代码模式库
+- **[代码模式](code-patterns.md)** - 8个业务模块的常用代码模式
+  - 服务层模式
+  - 仓储模式
+  - DTO转换模式
+  - 验证器模式
+  - 异常处理模式
+  - 分页查询模式
+  - 缓存模式
+  - 导出导入模式
 
-#### 快速问题解决
-- **描述**: 常见问题和快速解决方案
-- **链接**: [troubleshooting.md](troubleshooting.md)
-- **大小**: < 100KB
+### 🔧 问题解决方案
+- **[问题解决](troubleshooting.md)** - 常见问题和快速解决方案
+  - 数据库连接问题
+  - API调用错误
+  - 认证授权问题
+  - 性能优化问题
+  - 部署配置问题
+  - 常见错误代码
 
-#### 代码模式
-- **描述**: 常用的代码模式和模板
-- **链接**: [code_patterns.md](code_patterns.md)
-- **大小**: < 100KB
+### ✅ 开发检查清单
+- **[开发清单](development-checklist.md)** - 开发流程和质量检查清单
+  - 代码开发前检查
+  - 功能实现检查
+  - 测试验证检查
+  - 文档同步检查
+  - 部署前检查
 
-## 🔍 快速导航
+## 🚀 使用指南
 
-### 根据需求快速选择:
+### 🎯 快速查找
+1. **API接口** → [API快速参考](api-reference.md)
+2. **配置问题** → [配置模板](config-templates.md)
+3. **代码实现** → [代码模式](code-patterns.md)
+4. **遇到问题** → [问题解决](troubleshooting.md)
+5. **质量检查** → [开发清单](development-checklist.md)
 
-- **查API接口** → [api_reference.md](api_reference.md)
-- **找配置模板** → [config_templates.md](config_templates.md)
-- **开发检查清单** → [development_checklist.md](development_checklist.md)
-- **解决常见问题** → [troubleshooting.md](troubleshooting.md)
-- **代码模式参考** → [code_patterns.md](code_patterns.md)
+### 📖 文档特点
+- ✅ **基于实际代码**：所有示例都来自真实项目
+- ✅ **即开即用**：提供完整的代码片段和配置
+- ✅ **准确无误**：与项目架构完全一致
+- ✅ **持续更新**：与代码变更同步维护
 
-### 按使用场景选择:
+### 👥 适合人群
+- **开发人员**：日常开发参考
+- **测试人员**：测试环境配置
+- **运维人员**：生产部署配置
+- **新团队成员**：快速上手指南
 
-- **新功能开发** → api_reference.md + code_patterns.md
-- **环境配置** → config_templates.md + troubleshooting.md
-- **代码审查** → development_checklist.md + code_patterns.md
-- **问题排查** → troubleshooting.md (主要)
+## 🔗 相关资源
+
+### 📋 深度文档
+- [架构指南](../architecture/README.md) - 系统架构设计
+- [深度参考](../deep/README.md) - 完整技术文档
+
+### 🛠️ 开发工具
+- [GitHub仓库](https://github.com/shouqitao/凌隐宝堂中医诊所) - 源代码
+- [在线API文档](http://localhost:5001/swagger) - API交互界面
+
+### 📞 支持渠道
+- [GitHub Issues](https://github.com/shouqitao/凌隐宝堂中医诊所/issues) - 问题反馈
+- [文档反馈](../support/documentation-metrics.md) - 文档改进建议
 
 ---
 
-## 📈 性能优化
+**快速参考中心** - 让开发更高效，让问题解决更快速 🚀
 
-- ✅ **加载速度**: 每个文档 < 2秒
-- ✅ **查找效率**: 3次点击内找到信息
-- ✅ **文件大小**: 每个文档 < 100KB
-- ✅ **内容密度**: 只保留最实用的20%内容
-
+*如有问题或建议，请通过相应渠道反馈，我们会及时更新和完善。*

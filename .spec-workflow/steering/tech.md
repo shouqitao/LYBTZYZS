@@ -133,34 +133,184 @@
 
 ## 🔐 安全架构
 
-### 认证与授权
+### 双轨认证系统设计
 
-1. **JWT Token认证**
-   - 使用Bearer Token进行身份认证
-   - Token包含用户ID、角色、过期时间等基本信息
-   - 支持Token刷新机制
+**物理隔离的双轨架构**：
+- **普通用户轨道**: Users表标准认证流程
+  - 支持用户注册、密码重置、账户锁定
+  - JWT Token认证，包含用户基本信息
+  - RefreshToken机制，延长登录会话
 
-2. **基于角色的授权**
-   - 使用Role-Based Access Control (RBAC)
-   - 角色：管理员、医生、护士、药剂师等
-   - 细粒度权限控制到具体操作
+- **超级管理员轨道**: AdminSecrets表物理隔离
+  - 用户名从配置文件读取，数据库中只存储密码哈希
+  - 专用隐藏端点 `/api/v1/auth/admin/login`
+  - 用户名保护机制，防止用户名冲突
 
-3. **API安全**
-   - 所有API端点都需要认证（除登录外）
+### JWT Token机制
+
+1. **AccessToken**:
+   - 有效期：2小时
+   - 包含：用户ID、角色、权限信息
+   - 用于API访问认证
+
+2. **RefreshToken**:
+   - 有效期：7天
+   - 支持撤销机制
+   - 用于Token续期更新
+
+3. **Token验证**:
+   - 支持GET和POST两种验证方式
+   - 自动检测Token过期
+   - 详细的错误信息返回
+
+### 基于角色的授权
+
+**角色权限矩阵**：
+- **Admin**: 系统配置、用户管理、数据维护、审计日志
+- **Doctor**: 患者管理、诊疗流程、处方管理、报表查看
+- **权限控制粒度**：到具体的API端点和业务操作
+
+### API安全防护
+
+1. **认证要求**:
+   - 所有API端点都需要认证（除登录相关端点外）
+   - 支持Bearer Token认证
+   - 隐藏敏感端点（如超级管理员登录）
+
+2. **安全机制**:
    - 使用HTTPS加密传输
-   - 实施API限流和防护
+   - 实施API限流防护
+   - 输入验证和SQL注入防护
+   - 跨站请求伪造(CSRF)防护
 
 ### 数据安全
 
-1. **敏感数据加密**
+1. **敏感数据保护**:
    - 患者敏感信息加密存储
    - 数据库连接字符串加密
    - 配置文件敏感信息保护
+   - 日志中敏感信息脱敏
 
-2. **访问控制**
+2. **访问控制**:
    - 基于角色的数据访问控制
-   - 审计日志记录
+   - 审计日志记录所有关键操作
    - 数据备份和恢复策略
+   - 定期安全审计
+
+## 🏗️ 数据库架构设计
+
+### 实体关系模型
+
+**11个核心实体**：
+```mermaid
+erDiagram
+    UserModel ||--o{ MedicalCaseModel : creates
+    PatientModel ||--o{ MedicalCaseModel : has
+    MedicalCaseModel ||--|| ConsultationModel : has
+    ConsultationModel ||--o{ PrescriptionModel : may_have
+    PrescriptionModel ||--o{ PrescriptionItemModel : contains
+    HerbModel ||--o{ PrescriptionItemModel : used_in
+    FormulaModel ||--o{ FormulaHerbItem : contains
+    UserModel ||--o{ AuthSessionModel : has_sessions
+    AdminSecretModel ||--o{ UserModel : admin_account
+```
+
+### 数据库设计原则
+
+1. **实体关系**:
+   - 一病历一诊断：MedicalCase与Consultation一对一关系
+   - 一医案多处方：MedicalCase与Prescription一对多关系
+   - 处方与药材多对多：通过PrescriptionItem关联
+   - 验方与药材多对多：通过FormulaHerbItem关联
+
+2. **业务规则约束**:
+   - 当天可改过期锁定：医案在当天可修改，过期后锁定
+   - 医师权限：医生只能操作自己的医案
+   - 管理员权限：管理员可以操作所有医案
+   - 数据完整性：外键约束和业务规则验证
+
+3. **索引策略**:
+   - 患者手机号索引（唯一性验证）
+   - 医案状态和创建时间索引（状态查询）
+   - 用户ID和会话ID索引（用户会话管理）
+   - 处方ID和药材ID索引（处方查询优化）
+
+## 🎯 客户端架构设计
+
+### WPF五层架构
+
+**Client端实际架构**：
+```
+LYBT.Desktop/
+├── Shell/                        # 启动层
+│   ├── LYBT.Desktop.Shell/         # 应用程序壳
+│   └── Views/                    # 主窗口和启动视图
+├── Core_New/                      # 核心层
+│   ├── LYBT.Desktop.Infrastructure/   # 基础设施层
+│   │   ├── Commands/             # 命令系统
+│   │   ├── Events/               # 事件系统
+│   │   ├── Interfaces/           # 核心接口
+│   │   └── Themes/               # 主题和样式
+│   ├── LYBT.Desktop.Models/       # 模型层
+│   │   ├── ViewModels/           # ViewModel基类
+│   │   ├── Models/               # UI模型
+│   │   └── Mappings/            # 映射配置
+│   └── LYBT.Desktop.Services/     # 服务层
+│       ├── Business/            # 业务服务
+│       ├── Repositories/        # 仓储实现
+│       ├── Http/               # HTTP客户端
+│       └── Navigation/          # 导航服务
+├── Modules/                      # 业务模块层
+│   ├── LYBT.Desktop.Auth/          # 认证模块
+│   ├── LYBT.Desktop.Patients/       # 患者管理模块
+│   ├── LYBT.Desktop.MedicalCase/    # 医案管理模块
+│   ├── LYBT.Desktop.Consultation/   # 诊疗模块
+│   ├── LYBT.Desktop.Prescriptions/ # 处方管理模块
+│   ├── LYBT.Desktop.Herbs/          # 药材管理模块
+│   └── LYBT.Desktop.Formula/        # 验方管理模块
+└── Workstations/                # 工作台层
+    ├── LYBT.Desktop.ClinicalWorkstation/  # 诊疗工作台
+    └── LYBT.Desktop.AdminWorkstation/     # 管理工作台
+```
+
+### MVVM架构实现
+
+1. **ViewModel设计**:
+   - 继承自ViewModelBase
+   - 使用Prism的依赖注入
+   - 实现INotifyPropertyChanged
+   - 支持命令模式(ICommand)
+
+2. **视图模型管理**:
+   - 使用IEventAggregator进行模块间通信
+   - 通过RegionManager管理视图导航
+   - 实现对话框和窗口服务
+
+3. **数据绑定**:
+   - 双向数据绑定
+   - 集值转换器(ValueConverter)
+   - 验证规则(ValidationRule)
+
+## 📊 性能架构
+
+### 缓存策略
+
+1. **内存缓存**:
+   - 使用IMemoryCache缓存常用数据
+   - 缓存患者基本信息、药材字典、用户会话
+   - 设置合理的过期时间和清理策略
+
+2. **查询优化**:
+   - 使用Entity Framework的查询优化功能
+   - 避免N+1查询问题
+   - 实施延迟加载和预加载策略
+   - 使用投影查询减少数据传输
+
+3. **API优化**:
+   - 统一的API响应格式
+   - 分页查询和过滤
+   - 适当的并发控制
+   - 响应压缩和缓存
 
 ## 📊 性能架构
 
