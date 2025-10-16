@@ -256,6 +256,36 @@ namespace LYBT.Module.Formula.Services
 
 
         /// <summary>
+        /// 获取待验证的验方列表 (Issue #1349)
+        /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
+        /// </summary>
+        public async Task<ServiceResult<List<FormulaDto>>> GetPendingValidationFormulasAsync()
+        {
+            try
+            {
+                // 查询所有Draft状态的验方（使用GetAllAsync预加载Herbs避免N+1查询）
+                var allFormulas = await _repository.GetAllAsync();
+                
+                // 过滤出Draft状态的验方
+                var pendingFormulas = allFormulas
+                    .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
+                    .ToList();
+
+                // 映射为DTO
+                var formulaDtos = _mapper.Map<List<FormulaDto>>(pendingFormulas);
+
+                _logger.LogInformation("查询到 {Count} 个待验证验方", formulaDtos.Count);
+                return ServiceResult<List<FormulaDto>>.Success(formulaDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取待验证验方列表失败");
+                return ServiceResult<List<FormulaDto>>.Failure("获取待验证验方列表失败");
+            }
+        }
+
+
+        /// <summary>
         /// 批量删除验方（软删除）(Issue #1169)
         /// </summary>
         public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
