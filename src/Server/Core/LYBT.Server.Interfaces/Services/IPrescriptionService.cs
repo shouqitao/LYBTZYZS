@@ -72,5 +72,12 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
         Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate);
+
+        /// <summary>
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// </summary>
+        /// <param name="prescriptionId">处方ID</param>
+        /// <param name="formulaId">验方ID</param>
+        Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
     }
 }
