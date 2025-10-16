@@ -199,6 +199,63 @@ namespace LYBT.Module.Formula.Services
 
 
         /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// </summary>
+        public async Task<ServiceResult> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId)
+        {
+            try
+            {
+                // 1. 查询验方（包含所有药材）
+                var formula = await _repository.GetByIdWithHerbsAsync(formulaId);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                // 2. 查找待验证的药材项
+                var herbItem = formula.Herbs.FirstOrDefault(h => h.Id == herbItemId);
+                if (herbItem == null)
+                {
+                    return ServiceResult.Failure("药材项不存在");
+                }
+
+                // 3. 查询选定的药材
+                var selectedHerb = await _herbRepository.GetByIdAsync(selectedHerbId);
+                if (selectedHerb == null)
+                {
+                    return ServiceResult.Failure("所选药材不存在");
+                }
+
+                // 4. 更新药材项的验证信息
+                herbItem.HerbId = selectedHerbId;
+                herbItem.HerbName = selectedHerb.Name;
+                herbItem.IsValidated = true;
+
+                // 5. 检查该验方的所有药材是否都已验证
+                bool allValidated = formula.Herbs.All(h => h.IsValidated);
+                if (allValidated)
+                {
+                    // 所有药材都已验证，更新验方状态
+                    formula.ValidationStatus = FormulaValidationStatus.Validated;
+                    _logger.LogInformation("验方 {FormulaId} 所有药材已验证，状态更新为Validated", formulaId);
+                }
+
+                // 6. 保存变更
+                await _repository.UpdateAsync(formula);
+                await _repository.SaveChangesAsync();
+
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "验证验方药材失败：formulaId={FormulaId}, herbItemId={HerbItemId}, selectedHerbId={SelectedHerbId}", 
+                    formulaId, herbItemId, selectedHerbId);
+                return ServiceResult.Failure("验证验方药材失败");
+            }
+        }
+
+
+        /// <summary>
         /// 批量删除验方（软删除）(Issue #1169)
         /// </summary>
         public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
