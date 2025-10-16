@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -18,15 +19,18 @@ namespace LYBT.Module.Prescriptions.Services
     public class PrescriptionService : IPrescriptionService
     {
         private readonly IPrescriptionRepository _repository;
+        private readonly IFormulaRepository _formulaRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
+            IFormulaRepository formulaRepository,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
             _repository = repository;
+            _formulaRepository = formulaRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -498,6 +502,71 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 _logger.LogError(ex, "克隆处方时发生错误，处方ID：{PrescriptionId}", prescriptionId);
                 return ServiceResult<PrescriptionDto>.Failure($"克隆处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// </summary>
+        public async Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(
+            Guid prescriptionId,
+            Guid formulaId)
+        {
+            try
+            {
+                // 获取验方
+                var formula = await _formulaRepository.GetByIdAsync(formulaId);
+                if (formula == null)
+                {
+                    return ServiceResult.Failure("验方不存在");
+                }
+
+                // 检查验方状态
+                if (formula.ValidationStatus == FormulaValidationStatus.Draft)
+                {
+                    var unvalidatedHerbs = formula.Herbs
+                        .Where(h => !h.IsValidated)
+                        .Select(h => h.OriginalHerbName)
+                        .ToList();
+
+                    return ServiceResult.Failure(
+                        $"验方\"{formula.Name}\"包含未校验的药材，请先在验方管理中完成校验。未校验药材：{string.Join("、", unvalidatedHerbs)}");
+                }
+
+                // 获取处方
+                var prescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                if (prescription == null)
+                {
+                    return ServiceResult.Failure("处方不存在");
+                }
+
+                // 导入药材到处方
+                foreach (var herbItem in formula.Herbs)
+                {
+                    var prescriptionItem = new PrescriptionItemEntity
+                    {
+                        Id = Guid.NewGuid(),
+                        PrescriptionId = prescriptionId,
+                        HerbId = herbItem.HerbId!.Value,  // Validated状态下HerbId必有值
+                        HerbName = herbItem.OriginalHerbName,
+                        Quantity = herbItem.Quantity,
+                        Unit = herbItem.Unit,
+                        UnitPrice = 0,  // 价格需要单独查询herb表或后续设置
+                        Usage = herbItem.Usage ?? string.Empty,
+                        Remark = string.Empty
+                    };
+
+                    prescription.Items.Add(prescriptionItem);
+                }
+
+                await _repository.UpdateAsync(prescription);
+
+                return ServiceResult.Success($"验方\"{formula.Name}\"已导入到处方，共{formula.Herbs.Count}味药材");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入验方到处方时发生错误，处方ID：{PrescriptionId}，验方ID：{FormulaId}", prescriptionId, formulaId);
+                return ServiceResult.Failure($"导入失败：{ex.Message}");
             }
         }
 

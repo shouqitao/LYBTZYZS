@@ -37,6 +37,7 @@
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 
     <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
   </ItemGroup>
 
   <ItemGroup>
