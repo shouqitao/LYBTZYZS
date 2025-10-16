@@ -67,5 +67,13 @@ namespace LYBT.Server.Interfaces.Services
         /// 生成验方导入模板 (Issue #1166)
         /// </summary>
         MemoryStream GenerateImportTemplate();
+
+        /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// </summary>
+        /// <param name="formulaId">验方ID</param>
+        /// <param name="herbItemId">待验证的药材项ID</param>
+        /// <param name="selectedHerbId">选中的系统药材ID</param>
+        Task<ServiceResult> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
     }
 }
