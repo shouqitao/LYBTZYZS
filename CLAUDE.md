@@ -36,155 +36,213 @@
 ## 1. 角色定位与必读资料
 
 - **定位**：Claude Code 作为智能顾问，负责方案筹划、代码实现、初步审查与文档同步；最终合并由人工审核决定。
-- **必读文档**：
-  - `README.md`（项目权威概览）
-  - `docs/index.md`（文档导航体系，v4.0精简版）
-  - `docs/architecture/server/design-standard.md`（Server端三层架构标准）⭐v4.0更新
-  - `docs/architecture/client/unified-design-standard.md`（Client端MVVM标准）
-  - `docs/development/shared/documentation-guidelines.md`（文档编写与维护指南）⭐v4.0更新
 
-- **快速参考**（v4.0新增）：
-  - `docs/quick-reference/README.md` - 快速参考文档中心（解决80%日常需求）
-  - `docs/quick-reference/api_reference.md` - API快速参考
-  - `docs/quick-reference/config_templates.md` - 配置模板
-  - `docs/quick-reference/code_patterns.md` - 代码模式
+### 📚 v5.0 文档体系（三层对齐架构）
+
+**必读文档**：
+  - `README.md` - 项目权威概览
+  - `docs/index.md` - 文档导航体系（v5.0彻底重构版，三层对齐架构）
+  - `.spec-workflow/steering/structure.md` - 项目结构与组织指南
+
+**Level 1：快速参考（解决80%日常需求）**：
+  - `docs/quick-reference/README.md` - 快速参考中心导航
+  - `docs/quick-reference/api-reference.md` - API快速参考
+  - `docs/quick-reference/config-templates.md` - 配置模板
+  - `docs/quick-reference/code-patterns.md` - 代码模式
   - `docs/quick-reference/troubleshooting.md` - 问题解决方案
-  - `docs/quick-reference/development_checklist.md` - 开发检查清单
+  - `docs/quick-reference/development-checklist.md` - 开发检查清单
+
+**Level 2：架构指南（三层对齐）**：
+  - `docs/architecture/README.md` - 架构总览（Server/Client/Shared对齐）⭐v5.0核心
+  - `docs/architecture/server/README.md` - Server端三层架构（8个模块、服务标准）⭐v5.0
+  - `docs/architecture/client/README.md` - Client端MVVM架构（五层设计、UI标准）⭐v5.0
+  - `docs/architecture/shared/README.md` - 共享架构（跨端组件、双轨认证）⭐v5.0
+  - `docs/development/README.md` - 开发指南总览
+  - `docs/development/server/README.md` - Server端开发规范
+  - `docs/development/client/README.md` - Client端开发规范
+  - `docs/development/shared/README.md` - 共享开发规范
+
+**Level 3：深度参考（5%深度需求）**：
+  - `docs/deep/` - 高级设计模式、性能优化、测试策略、部署指南、API最佳实践
+  - `docs/api/README.md` - 完整API文档
+  - `docs/modules/README.md` - 8个业务模块详细说明
 
 > **⚠️ 处理任务前必须先查阅相关文档，未理解文档禁止开始编码或给出建议。**
 >
-> **架构设计标准**：
-> - Server 端开发必须遵循 `docs/architecture/server/design-standard.md`（三层架构、禁止CQRS、接口统一位置）⭐v4.0对齐架构
-> - Client 端开发必须遵循 `docs/architecture/client/unified-design-standard.md`（MVVM三层、依赖注入标准、AutoMapper强制、代码模板）
-> - 共享架构标准参考 `docs/architecture/shared/README.md`（跨端架构决策、技术标准）⭐v4.0新增
+> **v5.0 架构设计标准（三层对齐）**：
+> - **Server端**：必须遵循 `docs/architecture/server/README.md`（三层架构、8个模块、服务标准）
+> - **Client端**：必须遵循 `docs/architecture/client/README.md`（MVVM五层、WPF标准、UI规范）
+> - **共享层**：必须遵循 `docs/architecture/shared/README.md`（跨端组件、双轨认证、技术决策）
+> - **核心原则**：所有文档严格对应代码架构，100%准确同步
 
 ---
 
-## 1.5 Spec-Driven 与 Issue-Driven 双轨工作流
+## 1.5 Spec-Driven 与 Issue-Driven 双轨工作流（方案3：分场景使用）
 
-本项目采用 **Spec-Driven + Issue-Driven** 双轨开发模式，充分利用 spec-workflow-mcp 工具链实现"想清楚再做"的高质量开发流程。
+本项目采用 **Spec-Driven + Issue-Driven** 双轨开发模式，结合 **Constitution + Quality Checklists** 双重质量保障机制（借鉴spec-workflow-mcp和spec-kit最佳实践）。
 
-### 工作流关系图
+### 质量保障机制（v6.0增强）⭐新增
 
-```
-阶段划分：
+**核心机制**：
+- **🏛️ Constitution（项目宪法）**：`.spec-workflow/steering/constitution.md`
+  - 定义项目强制性原则（架构、代码质量、安全、开发流程）
+  - 分级执行（MUST/SHOULD/MAY）
+  - 所有新功能/重构前必须先检查Constitution合规性
 
-Spec-Driven（前置思考阶段）
-  ├─ 阶段 1：项目初始化
-  │   └─ 创建 Steering Documents (product.md, tech.md, structure.md)
-  │
-  ├─ 阶段 2：需求分析
-  │   └─ 创建 requirements.md → Dashboard 审批
-  │
-  ├─ 阶段 3：设计
-  │   └─ 创建 design.md → Dashboard 审批
-  │
-  └─ 阶段 4：任务分解
-      └─ 创建 tasks.md → Dashboard 审批 → 生成 GitHub Issues
-                    ↓
-Issue-Driven（执行实施阶段）
-  ├─ 阶段 5：开发实施
-  │   └─ 基于 GitHub Issues 进行代码开发
-  │
-  ├─ 阶段 6：测试验证
-  │   └─ 单元测试 + 集成测试 + E2E 测试
-  │
-  └─ 阶段 7：PR 审查与文档
-      └─ 创建 PR → 代码审查 → 合并 → 文档更新
-```
-
-### 双轨模式使用场景
-
-| 场景类型 | Spec-Driven | Issue-Driven | 说明 |
-|---------|------------|-------------|------|
-| **新功能开发** | ✅ 必须 | ✅ 必须 | 完整流程：Spec → Issue → 实现 |
-| **重大重构** | ✅ 必须 | ✅ 必须 | 需求+设计审批后分解任务 |
-| **Bug 修复** | ❌ 可选 | ✅ 必须 | 简单 Bug 直接 Issue，复杂 Bug 需 Spec |
-| **文档更新** | ❌ 不需要 | ✅ 必须 | 直接创建 Issue |
-| **性能优化** | ✅ 推荐 | ✅ 必须 | 建议先设计方案再实施 |
-
-### 核心工具与使用指引
-
-- **📋 Spec-Workflow**：完整工作流指南参见 `.claude/core/SPEC-WORKFLOW.md`
-- **🔄 Issues 同步**：`spec-workflow-mcp: manage-tasks` 同步 GitHub Issues 到 tasks.md
-- **🔧 MCP 工具协同**：工具选择与协同模式参见 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`
-- **🔄 Issue 管理**：Issue 驱动流程参见下方"## 2. Issue 驱动工作流"
-
-### Dashboard 访问
-
-```bash
-# 自动启动（推荐）
-# MCP 配置中添加 --AutoStartDashboard 参数
-
-# 手动启动
-npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
-
-# 默认地址：http://localhost:3000
-```
+- **✅ Quality Checklists（质量检查清单）**：`.spec-workflow/templates/checklists/`
+  - 必选清单：`requirements-checklist.md`、`security-checklist.md`
+  - 可选清单：`ux-checklist.md`、`performance-checklist.md`、`accessibility-checklist.md`
+  - 每个Spec目录创建对应checklists/子目录，复制模板并逐项验证
+  - Implementation完成后必须通过Checklist验证（≥90%）才能提交PR
 
 ---
 
-## 1.5 Spec-Driven 与 Issue-Driven 双轨工作流
+### 工作流分场景策略（方案3）⭐重要
 
-本项目采用 **Spec-Driven + Issue-Driven** 双轨开发模式，充分利用 spec-workflow-mcp 工具链实现"想清楚再做"的高质量开发流程。
+根据任务类型选择合适的流程：
 
-### 工作流关系图
+#### 场景1：MVP功能实现（当前阶段 #1343，57个任务）🎯
+
+**简化流程**（无需spec-workflow-mcp工具，无需Dashboard审批）：
 
 ```
-阶段划分：
+Constitution检查 → Issue创建 →
+创建Spec目录 + 复制Checklist模板 →
+（可选）编写requirements.md/design.md →
+填写Checklist（自我验证，≥90%） →
+开发实施（参考Checklist） →
+Checklist最终验证（≥90%） →
+文档同步 →
+创建PR（附Checklist结果） → PR审查 → 合并
+```
 
-Spec-Driven（前置思考阶段）
-  ├─ 阶段 1：项目初始化
-  │   └─ 创建 Steering Documents (product.md, tech.md, structure.md)
-  │
-  ├─ 阶段 2：需求分析
-  │   └─ 创建 requirements.md → Dashboard 审批
-  │
-  ├─ 阶段 3：设计
-  │   └─ 创建 design.md → Dashboard 审批
-  │
-  └─ 阶段 4：任务分解
-      └─ 创建 tasks.md → Dashboard 审批 → 生成 GitHub Issues
+**特点**：
+- ✅ 保留Constitution检查（质量底线）
+- ✅ 保留Checklist验证（多维度质量保障）
+- ❌ **跳过Dashboard审批**（加快迭代速度）
+- ❌ **不需要启动spec-workflow-mcp工具**
+- ⚡ 快速迭代，适合单人开发
+
+---
+
+#### 场景2：重大功能/架构调整（MVP完成后）
+
+**完整流程**（启用spec-workflow-mcp工具 + Dashboard审批）：
+
+```
+Spec-Driven（前置思考 + Dashboard审批）
+  ├─ 阶段0：Constitution检查
+  ├─ 阶段1：创建requirements.md + Checklist
+  ├─ 阶段2：Dashboard审批requirements.md ⭐启用
+  ├─ 阶段3：创建design.md + 更新Checklist
+  ├─ 阶段4：Dashboard审批design.md ⭐启用
+  ├─ 阶段5：创建tasks.md + 可选Checklist
+  └─ 阶段6：Dashboard审批tasks.md → 生成GitHub Issues ⭐启用
                     ↓
-Issue-Driven（执行实施阶段）
-  ├─ 阶段 5：开发实施
-  │   └─ 基于 GitHub Issues 进行代码开发
-  │
-  ├─ 阶段 6：测试验证
-  │   └─ 单元测试 + 集成测试 + E2E 测试
-  │
-  └─ 阶段 7：PR 审查与文档
-      └─ 创建 PR → 代码审查 → 合并 → 文档更新
+Issue-Driven（执行实施 + 质量验证）
+  ├─ 开发实施（参考Checklist）
+  ├─ 测试验证 + Checklist验证（≥90%）
+  └─ 创建PR → 审查 → 合并
 ```
 
-### 双轨模式使用场景
+**判断标准**（满足任一条件则启用完整流程）：
+- ❓ 是否影响核心架构（三层架构调整）？
+- ❓ 是否涉及数据模型重大变更（新增表/重要字段）？
+- ❓ 是否引入新技术栈/第三方库？
+- ❓ 是否影响安全模型（双轨认证变更）？
+- ❓ 是否为跨模块重构（影响≥3个模块）？
 
-| 场景类型 | Spec-Driven | Issue-Driven | 说明 |
-|---------|------------|-------------|------|
-| **新功能开发** | ✅ 必须 | ✅ 必须 | 完整流程：Spec → Issue → 实现 |
-| **重大重构** | ✅ 必须 | ✅ 必须 | 需求+设计审批后分解任务 |
-| **Bug 修复** | ❌ 可选 | ✅ 必须 | 简单 Bug 直接 Issue，复杂 Bug 需 Spec |
-| **文档更新** | ❌ 不需要 | ✅ 必须 | 直接创建 Issue |
-| **性能优化** | ✅ 推荐 | ✅ 必须 | 建议先设计方案再实施 |
+**工具要求**：
+- ✅ 启动spec-workflow-mcp工具
+- ✅ 访问Dashboard审批 (http://localhost:3000)
+- ✅ 完整Spec-Driven流程
+
+---
+
+#### 场景3：简单Bug/文档更新
+
+**最小流程**（Issue驱动）：
+
+```
+Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合并
+```
+
+**特点**：
+- ✅ 快速响应
+- ❌ 无需Spec
+- ❌ 无需Checklist（简单任务）
+- ✅ 保留Constitution基本检查
+
+---
+
+### 当前MVP阶段工作流（#1343，57个任务）
+
+**适用场景1流程**，具体步骤：
+
+#### 阶段0：任务启动
+- [ ] Constitution合规性检查（技术黑名单、MVP原则、三层架构）
+- [ ] Issue已存在（来自Epic #1343的子任务）
+- [ ] 环境检查（git pull、build、test）
+
+#### 阶段1：创建Spec结构（手动，无需工具）
+- [ ] 创建目录：`.spec-workflow/specs/{spec-name}/checklists/`
+- [ ] 复制模板：`requirements-checklist.md`、`security-checklist.md`
+- [ ] 可选：复制`ux-checklist.md`、`performance-checklist.md`（根据功能类型）
+
+#### 阶段2：需求与设计（简化，可选）
+- [ ] **可选**：编写`requirements.md`（简单功能可跳过，直接填Checklist）
+- [ ] **可选**：编写`design.md`（简单功能可跳过）
+- [ ] **必须**：填写`requirements-checklist.md`（自我验证）
+- [ ] **必须**：填写`security-checklist.md`（自我验证）
+- [ ] **跳过**：~~Dashboard审批~~（MVP阶段不需要）
+
+#### 阶段3：开发实施
+- [ ] 创建功能分支：`feature/{issue-id}-{description}`
+- [ ] 参考Checklist要求实施代码
+- [ ] 编写单元测试（覆盖率≥80%核心逻辑）
+- [ ] 本地验证（build + test + 功能测试）
+
+#### 阶段4：质量验证
+- [ ] 填写Checklist实施阶段检查项
+- [ ] 计算通过率（必选≥90%，可选≥80%）
+- [ ] 文档同步（如影响架构/API）
+
+#### 阶段5：PR提交
+- [ ] 创建PR，附上Checklist验证结果摘要
+- [ ] PR描述包含：
+  - Checklist通过率
+  - 未通过项说明
+  - 测试覆盖率
+  - 文档变更清单
+- [ ] PR审查 → 合并 → Issue自动关闭
+
+---
 
 ### 核心工具与使用指引
 
-- **📋 Spec-Workflow**：完整工作流指南参见 `.claude/core/SPEC-WORKFLOW.md`
-- **🔄 Issues 同步**：`spec-workflow-mcp: manage-tasks` 同步 GitHub Issues 到 tasks.md
-- **🔧 MCP 工具协同**：工具选择与协同模式参见 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`
-- **🔄 Issue 管理**：Issue 驱动流程参见下方"## 2. Issue 驱动工作流"
+**当前MVP阶段（场景1）**：
+- **🏛️ Constitution**：`.spec-workflow/steering/constitution.md`（必读）
+- **✅ Checklists**：`.spec-workflow/templates/checklists/`（必用）
+- **📋 任务流程**：`docs/development/shared/task-workflow-checklist.md`（执行参考）
+- **🔄 GitHub Issues**：Epic #1343及57个子任务
+- **🔧 MCP工具**：serena、filesystem、git、sequential-thinking、context7
 
-### Dashboard 访问
+**MVP完成后（场景2）**：
+- **📋 spec-workflow-mcp**：启动Dashboard审批
+- **🔄 Issues同步**：`spec-workflow-mcp: manage-tasks`
+- **🌐 Dashboard**：http://localhost:3000
 
-```bash
-# 自动启动（推荐）
-# MCP 配置中添加 --AutoStartDashboard 参数
+---
 
-# 手动启动
-npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
+### 双轨模式使用场景总结
 
-# 默认地址：http://localhost:3000
-```
+| 场景类型 | Constitution | Checklist | Dashboard审批 | spec-workflow-mcp工具 | 说明 |
+|---------|-------------|-----------|--------------|---------------------|------|
+| **MVP功能** | ✅ 必须 | ✅ 必须 | ❌ 跳过 | ❌ 不需要 | 当前阶段（#1343） |
+| **重大功能/架构** | ✅ 必须 | ✅ 必须 | ✅ 必须 | ✅ 启动 | MVP完成后 |
+| **复杂Bug** | ✅ 必须 | ✅ 推荐 | ❌ 跳过 | ❌ 不需要 | 根据影响范围 |
+| **简单Bug** | ✅ 快速 | ❌ 不需要 | ❌ 跳过 | ❌ 不需要 | 最小流程 |
+| **文档更新** | ✅ 快速 | ❌ 不需要 | ❌ 跳过 | ❌ 不需要 | 直接Issue |
 
 ---
 
@@ -192,7 +250,46 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 
 > **📖 完整工作流定义**：参见 `.claude/core/WORKFLOW.md`
 
+### ⚠️ 强制性要求：所有任务必须GitHub Issue跟踪
+
+**核心原则**：
+- ✅ **所有代码变更**：必须先有GitHub Issue，无Issue禁止任何改动
+- ✅ **所有文档修正**：必须先创建GitHub Issue，说明修正原因和范围
+- ✅ **所有Bug修复**：必须先创建GitHub Issue，记录复现步骤和修复方案
+- ✅ **所有重构优化**：必须先创建GitHub Issue，说明重构目标和影响范围
+- ❌ **禁止无Issue工作**：任何"顺手修改"、"临时调整"都必须先创建Issue
+
+**Issue模板要求**：
+```markdown
+## 📝 任务描述
+[清晰描述要做什么]
+
+## 🎯 目标
+[要达成什么目标]
+
+## ✅ 验收标准
+- [ ] 标准1
+- [ ] 标准2
+
+## 📚 参考资料
+[相关文档、验证报告、代码位置]
+```
+
+**工作流程**：
+1. **创建Issue** → 2. **创建分支** → 3. **实现变更** → 4. **创建PR** → 5. **审查合并** → 6. **关闭Issue**
+
+---
+
 ### 2.1 任务启动前置检查
+
+#### 质量检查（v6.0新增）⭐
+0. **Constitution合规性检查** - 新功能/重构前必须检查：
+   - 是否违反技术黑名单（Redis/CQRS/MediatR/Docker/GraphQL等）
+   - 是否符合MVP优先原则（够用即好，避免过度设计）
+   - 是否符合三层对齐架构规范
+   - 参考：`.spec-workflow/steering/constitution.md`
+
+#### 环境检查
 1. `git pull` → 获取最新主分支
 2. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
 3. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
@@ -246,11 +343,16 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 - **状态标签**：`status:todo` → `status:in-progress` → `status:done`
 - **自动化**：PR关联校验、关单兜底、状态同步
 
-### 2.3 PR 与代码审查（关键流程）
+### 2.3 PR 与代码审查（关键流程 - v6.0质量增强）
 1. **分支与提交**：基于 Issue 建分支，提交信息用中文、包含清单编号
-2. **PR 模板**：Claude 自动生成草稿（含关单关键字、编译摘要）
-3. **AI 审查**：GitHub Copilot 初审（自动） + Claude Code 二审（评论模式，可选）
-4. **合并与关闭**：人工审核后合并，Workflow 自动关单
+2. **Checklist验证**（⭐新增必选步骤）：
+   - 完成 `.spec-workflow/specs/{spec-name}/checklists/` 下所有检查项
+   - 必选清单通过率必须≥90%（requirements + security）
+   - 可选清单根据功能类型选择（ux/performance/accessibility）
+   - 在PR描述中附上Checklist验证结果摘要
+3. **PR 模板**：Claude 自动生成草稿（含关单关键字、编译摘要、Checklist摘要）
+4. **AI 审查**：GitHub Copilot 初审（自动） + Claude Code 二审（评论模式，可选）
+5. **合并与关闭**：人工审核后合并，Workflow 自动关单
 
 ### 2.4 完成后的文档系统更新
 
@@ -291,21 +393,23 @@ npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard
 7. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
 8. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
 
-### 文档架构原则（4条）⭐v4.0新增
-9. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构
-10. **代码文档并行**：代码变更必须同步更新文档，不允许滞后
-11. **路径一致性**：所有文档引用必须使用对齐后的新路径格式
-12. **定期清理**：及时删除过时文档，保持文档体系精简高效
+### 文档架构原则（4条）⭐v5.0三层对齐
+9. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构（v5.0彻底重构）
+10. **代码文档并行**：代码变更必须同步更新文档，不允许滞后（100%准确同步）
+11. **路径一致性**：所有文档引用必须使用对齐后的新路径格式（17个核心文档）
+12. **定期清理**：及时删除过时文档，保持文档体系精简高效（已删除50+过时文档）
 
 ### 文件组织规范
 
 > **📖 详细规则**：参见 `.claude/core/FILE-ORGANIZATION.md`
 
-**核心原则**：
+**核心原则（v5.0三层对齐架构）**：
 - ❌ 禁止在根目录创建临时文件（文档/脚本/输出/截图）
-- ✅ 文档归档到 `docs/` 对应分类目录，遵循Server/Client/Shared对齐架构
-- ✅ 架构文档：`docs/architecture/server/`、`docs/architecture/client/`、`docs/architecture/shared/`
-- ✅ 开发指南：`docs/development/server/`、`docs/development/client/`、`docs/development/shared/`
+- ✅ 文档归档到 `docs/` 对应分类目录，严格遵循Server/Client/Shared三层对齐架构
+- ✅ **Level 1**：快速参考 `docs/quick-reference/`（80%日常需求）
+- ✅ **Level 2**：架构指南 `docs/architecture/server|client|shared/`（15%学习需求）
+- ✅ **Level 2**：开发指南 `docs/development/server|client|shared/`（15%学习需求）
+- ✅ **Level 3**：深度参考 `docs/deep/`、`docs/api/`、`docs/modules/`（5%深度需求）
 - ✅ 脚本归档到 `scripts/` 对应功能目录
 - ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
 - ✅ Pre-commit hook 会自动检查根目录文件规范
@@ -464,10 +568,77 @@ serena（开发） → git（提交） → github（PR） → filesystem（文�
 
 以上约束如需调整，须先在 GitHub Issue 中提出并获批准，再同步更新本文档及相关标准。
 
-**📌 快速参考**：
-- **新功能/重构**：必须先走 Spec-Driven 流程（requirements → design → tasks → 审批）
-- **Issue 管理**：所有任务默认创建在 GitHub 上
-- **Dashboard**：访问 http://localhost:3000 进行 Spec 文档审批
-- **核心工具**：积极使用 `sequential-thinking`、`serena`、`spec-workflow` MCP 工具
-- **时间标准**：所有时间相关操作使用 `time` MCP 工具获取标准时间
-- **工具协同**：参考 `.claude/core/MCP-TOOLS-ORCHESTRATION.md` 选择最优工具组合
+---
+
+## 📌 v5.0 文档体系快速参考
+
+### 文档体系结构（三层对齐）
+```
+docs/
+├── index.md                          # 文档中心导航（入口）
+├── quick-reference/                  # Level 1: 快速参考（80%需求）
+│   ├── README.md                     # 快速参考中心
+│   ├── api-reference.md              # API快速参考
+│   ├── config-templates.md           # 配置模板
+│   ├── code-patterns.md              # 代码模式
+│   ├── troubleshooting.md            # 问题解决
+│   └── development-checklist.md      # 开发清单
+├── architecture/                     # Level 2: 架构指南（15%需求）
+│   ├── README.md                     # 架构总览
+│   ├── server/README.md              # Server端架构⭐
+│   ├── client/README.md              # Client端架构⭐
+│   └── shared/README.md              # 共享架构⭐
+├── development/                      # Level 2: 开发指南（15%需求）
+│   ├── README.md                     # 开发总览
+│   ├── server/README.md              # Server端开发
+│   ├── client/README.md              # Client端开发
+│   └── shared/README.md              # 共享开发
+├── deep/                             # Level 3: 深度参考（5%需求）
+│   ├── advanced-patterns.md          # 高级设计模式
+│   ├── performance-optimization.md   # 性能优化
+│   ├── testing-strategies.md         # 测试策略
+│   ├── deployment-guide.md           # 部署指南
+│   └── api-design-best-practices.md  # API最佳实践
+├── api/README.md                     # Level 3: 完整API文档
+├── modules/README.md                 # Level 3: 8个业务模块
+└── support/                          # Level 4: 支撑体系
+    ├── documentation-metrics.md      # 文档使用指标
+    └── documentation-maintenance.md  # 文档维护指南
+```
+
+### 核心特性
+- ✅ **100%代码同步**：所有文档基于实际代码分析创建
+- ✅ **三层对齐架构**：Server/Client/Shared严格对应代码结构
+- ✅ **17个核心文档**：从100+精简到17个，删除50+过时文档
+- ✅ **80/15/5需求分层**：快速参考解决80%日常需求
+- ✅ **3次点击定位**：任何文档3次点击内找到
+- ✅ **双轨认证系统**：Users表 + AdminSecrets表物理隔离
+- ✅ **8个业务模块**：Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula
+
+### 工作流快速参考（v6.0质量增强 - 方案3分场景）
+
+**当前MVP阶段**（#1343，57个任务）：
+- **Constitution检查**：任务前必查 `.spec-workflow/steering/constitution.md`（技术黑名单、MVP原则、架构）
+- **Quality Checklists**：从 `.spec-workflow/templates/checklists/` 复制到Spec目录，填写验证（≥90%）
+- **简化流程**：Constitution检查 → Spec目录 → Checklist验证 → 开发 → PR（无需Dashboard审批）
+- **spec-workflow-mcp工具**：**MVP阶段不需要启动**，手动创建Spec目录结构即可
+- **任务流程参考**：`docs/development/shared/task-workflow-checklist.md`
+
+**MVP完成后**（重大功能/架构调整）：
+- **完整Spec-Driven流程**：requirements → design → tasks → Dashboard审批 → Issue
+- **启动spec-workflow-mcp**：`npx -y @pimzino/spec-workflow-mcp@latest D:\source\repos\LYBTZYZS --dashboard`
+- **Dashboard审批**：访问 http://localhost:3000 进行文档审批
+- **判断标准**：影响架构/数据模型/新技术栈/安全模型/跨模块重构
+
+**通用指引**：
+- **Issue管理**：所有任务必须有GitHub Issue
+- **核心MCP工具**：serena、filesystem、git、sequential-thinking、context7
+- **时间标准**：使用 `time` MCP工具获取标准时间
+- **工具协同**：参考 `.claude/core/MCP-TOOLS-ORCHESTRATION.md`
+- **文档导航**：从 `docs/index.md` 开始，选择对应Level
+
+### 架构标准速查
+- **Server端**：`docs/architecture/server/README.md` - 三层架构、8个模块
+- **Client端**：`docs/architecture/client/README.md` - MVVM五层、WPF标准
+- **共享层**：`docs/architecture/shared/README.md` - 跨端组件、双轨认证
+- **快速查询**：`docs/quick-reference/` - 日常开发80%问题

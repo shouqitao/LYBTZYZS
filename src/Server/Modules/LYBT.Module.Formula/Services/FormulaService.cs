@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Formula;
 using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -17,15 +18,18 @@ namespace LYBT.Module.Formula.Services
     public class FormulaService : IFormulaService
     {
         private readonly IFormulaRepository _repository;
+        private readonly IHerbRepository _herbRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
+            IHerbRepository herbRepository,
             IMapper mapper,
             ILogger<FormulaService> logger)
         {
             _repository = repository;
+            _herbRepository = herbRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -294,7 +298,8 @@ namespace LYBT.Module.Formula.Services
 
 
         /// <summary>
-        /// 从Excel文件导入验方数据 (Issue #1166)
+        /// 从Excel文件导入验方数据 (Issue #1347: 重写为主-从表格式，支持延迟绑定)
+        /// 格式：Sheet1=验方信息，Sheet2=药材明细
         /// </summary>
         public async Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
         {
@@ -309,44 +314,60 @@ namespace LYBT.Module.Formula.Services
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
                 using var package = new ExcelPackage(stream);
-                var worksheet = package.Workbook.Worksheets.FirstOrDefault();
 
-                if (worksheet == null)
+                // 获取Sheet1：验方信息
+                var formulaSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("验方") || ws.Index == 0);
+                if (formulaSheet == null)
                 {
                     result.IsSuccess = false;
-                    result.Message = "Excel文件中没有工作表";
+                    result.Message = "未找到验方信息工作表";
                     return ServiceResult<ImportResultDto<FormulaDto>>.Failure("Excel文件格式错误");
                 }
 
-                var rowCount = worksheet.Dimension?.Rows ?? 0;
-                if (rowCount <= 1)
+                // 获取Sheet2：药材明细
+                var herbSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("药材") || ws.Index == 1);
+                if (herbSheet == null)
                 {
                     result.IsSuccess = false;
-                    result.Message = "Excel文件中没有数据行";
+                    result.Message = "未找到药材明细工作表";
+                    return ServiceResult<ImportResultDto<FormulaDto>>.Failure("Excel文件格式错误");
+                }
+
+                var formulaRowCount = formulaSheet.Dimension?.Rows ?? 0;
+                if (formulaRowCount <= 1)
+                {
+                    result.IsSuccess = false;
+                    result.Message = "验方信息表中没有数据行";
                     return ServiceResult<ImportResultDto<FormulaDto>>.Success(result);
                 }
 
-                result.TotalCount = rowCount - 1;
+                result.TotalCount = formulaRowCount - 1;
 
-                for (int row = 2; row <= rowCount; row++)
+                // 第一步：解析Sheet2药材明细，按验方编号分组
+                var herbItemsByFormulaCode = ParseHerbItems(herbSheet);
+
+                // 第二步：逐行导入验方及其药材
+                for (int row = 2; row <= formulaRowCount; row++)
                 {
                     try
                     {
-                        var name = worksheet.Cells[row, 1].Text?.Trim();
-                        var category = worksheet.Cells[row, 2].Text?.Trim();
-                        var effect = worksheet.Cells[row, 3].Text?.Trim();
-                        var usage = worksheet.Cells[row, 4].Text?.Trim();
-                        var property = worksheet.Cells[row, 5].Text?.Trim();
-                        var formulaTypeText = worksheet.Cells[row, 6].Text?.Trim();
-                        var isSharedText = worksheet.Cells[row, 7].Text?.Trim();
-                        var remark = worksheet.Cells[row, 8].Text?.Trim();
+                        // 读取验方基础信息
+                        var formulaCode = formulaSheet.Cells[row, 1].Text?.Trim();
+                        var name = formulaSheet.Cells[row, 2].Text?.Trim();
+                        var category = formulaSheet.Cells[row, 3].Text?.Trim();
+                        var effect = formulaSheet.Cells[row, 4].Text?.Trim();
+                        var usage = formulaSheet.Cells[row, 5].Text?.Trim();
+                        var property = formulaSheet.Cells[row, 6].Text?.Trim();
+                        var formulaTypeText = formulaSheet.Cells[row, 7].Text?.Trim();
+                        var isSharedText = formulaSheet.Cells[row, 8].Text?.Trim();
+                        var remark = formulaSheet.Cells[row, 9].Text?.Trim();
 
                         if (string.IsNullOrWhiteSpace(name))
                         {
                             result.FailureCount++;
                             result.Errors.Add(new BatchOperationResultDto.ErrorDetail
                             {
-                                RecordIdentifier = $"第{row}行",
+                                RecordIdentifier = $"验方表第{row}行",
                                 ErrorMessage = "验方名称不能为空"
                             });
                             continue;
@@ -369,6 +390,7 @@ namespace LYBT.Module.Formula.Services
                                       isSharedText.Equals("共享", StringComparison.OrdinalIgnoreCase);
                         }
 
+                        // 创建验方实体
                         var formula = new FormulaEntity
                         {
                             Name = name,
@@ -380,8 +402,35 @@ namespace LYBT.Module.Formula.Services
                             IsShared = isShared,
                             Remark = remark,
                             Status = CommonStatus.Enabled,
-                            CreatedAt = DateTime.Now
+                            ValidationStatus = FormulaValidationStatus.Draft, // 导入的验方初始为Draft
+                            CreatedAt = DateTime.Now,
+                            Herbs = new List<FormulaHerbItem>()
                         };
+
+                        // 第三步：关联药材明细（如果有验方编号）
+                        if (!string.IsNullOrWhiteSpace(formulaCode) && herbItemsByFormulaCode.ContainsKey(formulaCode))
+                        {
+                            var herbItems = herbItemsByFormulaCode[formulaCode];
+                            foreach (var herbItem in herbItems)
+                            {
+                                // 尝试自动匹配药材
+                                var matchedHerb = await TryMatchHerbAsync(herbItem.HerbName);
+
+                                formula.Herbs.Add(new FormulaHerbItem
+                                {
+                                    Id = Guid.NewGuid(),
+                                    HerbId = matchedHerb?.Id,
+                                    HerbName = herbItem.HerbName,
+                                    OriginalHerbName = herbItem.HerbName, // 保存原始名称
+                                    IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
+                                    Quantity = herbItem.Quantity,
+                                    Unit = herbItem.Unit ?? "g",
+                                    Usage = herbItem.Usage,
+                                    ProcessingMethod = herbItem.ProcessingMethod,
+                                    Remark = herbItem.Remark
+                                });
+                            }
+                        }
 
                         var savedFormula = await _repository.AddAsync(formula);
                         var formulaDto = _mapper.Map<FormulaDto>(savedFormula);
@@ -395,7 +444,7 @@ namespace LYBT.Module.Formula.Services
                         result.FailureCount++;
                         result.Errors.Add(new BatchOperationResultDto.ErrorDetail
                         {
-                            RecordIdentifier = $"第{row}行",
+                            RecordIdentifier = $"验方表第{row}行",
                             ErrorMessage = $"导入失败：{ex.Message}"
                         });
                         _logger.LogError(ex, "导入第{Row}行时发生错误", row);
@@ -414,6 +463,92 @@ namespace LYBT.Module.Formula.Services
                 result.Message = $"导入失败：{ex.Message}";
                 return ServiceResult<ImportResultDto<FormulaDto>>.Failure($"导入失败：{ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 解析Sheet2药材明细，按验方编号分组
+        /// </summary>
+        private Dictionary<string, List<HerbItemData>> ParseHerbItems(ExcelWorksheet herbSheet)
+        {
+            var result = new Dictionary<string, List<HerbItemData>>();
+            var rowCount = herbSheet.Dimension?.Rows ?? 0;
+
+            for (int row = 2; row <= rowCount; row++)
+            {
+                var formulaCode = herbSheet.Cells[row, 1].Text?.Trim();
+                var herbName = herbSheet.Cells[row, 2].Text?.Trim();
+                var quantityText = herbSheet.Cells[row, 3].Text?.Trim();
+                var unit = herbSheet.Cells[row, 4].Text?.Trim();
+                var usage = herbSheet.Cells[row, 5].Text?.Trim();
+                var processingMethod = herbSheet.Cells[row, 6].Text?.Trim();
+                var remark = herbSheet.Cells[row, 7].Text?.Trim();
+
+                if (string.IsNullOrWhiteSpace(formulaCode) || string.IsNullOrWhiteSpace(herbName))
+                    continue;
+
+                int.TryParse(quantityText, out int quantity);
+                if (quantity <= 0) quantity = 1;
+
+                if (!result.ContainsKey(formulaCode))
+                {
+                    result[formulaCode] = new List<HerbItemData>();
+                }
+
+                result[formulaCode].Add(new HerbItemData
+                {
+                    HerbName = herbName,
+                    Quantity = quantity,
+                    Unit = unit,
+                    Usage = usage,
+                    ProcessingMethod = processingMethod,
+                    Remark = remark
+                });
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 尝试自动匹配药材（按名称或拼音码）
+        /// </summary>
+        private async Task<LYBT.Entities.Herbs.Herb?> TryMatchHerbAsync(string herbName)
+        {
+            if (string.IsNullOrWhiteSpace(herbName))
+                return null;
+
+            try
+            {
+                // 1. 精确匹配名称
+                var herb = await _herbRepository.GetByNameAsync(herbName);
+                if (herb != null)
+                    return herb;
+
+                // 2. 模糊匹配拼音码（获取所有药材，内存过滤）
+                var allHerbs = await _herbRepository.GetAllAsync();
+                herb = allHerbs.FirstOrDefault(h =>
+                    !string.IsNullOrEmpty(h.PinYinCode) &&
+                    h.PinYinCode.Equals(herbName, StringComparison.OrdinalIgnoreCase));
+
+                return herb;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "药材匹配失败：{HerbName}", herbName);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 药材明细数据临时类
+        /// </summary>
+        private class HerbItemData
+        {
+            public string HerbName { get; set; } = string.Empty;
+            public int Quantity { get; set; }
+            public string? Unit { get; set; }
+            public string? Usage { get; set; }
+            public string? ProcessingMethod { get; set; }
+            public string? Remark { get; set; }
         }
 
         /// <summary>
@@ -489,7 +624,8 @@ namespace LYBT.Module.Formula.Services
         }
 
         /// <summary>
-        /// 生成验方导入模板 (Issue #1166)
+        /// 生成验方导入模板 (Issue #1347: 更新为主-从表格式)
+        /// 格式：Sheet1=验方信息，Sheet2=药材明细
         /// </summary>
         public MemoryStream GenerateImportTemplate()
         {
@@ -500,19 +636,21 @@ namespace LYBT.Module.Formula.Services
                 var stream = new MemoryStream();
                 using (var package = new ExcelPackage(stream))
                 {
-                    var worksheet = package.Workbook.Worksheets.Add("验方信息");
+                    // Sheet1：验方信息
+                    var formulaSheet = package.Workbook.Worksheets.Add("验方信息");
 
                     // 表头
-                    worksheet.Cells[1, 1].Value = "验方名称*";
-                    worksheet.Cells[1, 2].Value = "分类";
-                    worksheet.Cells[1, 3].Value = "功效";
-                    worksheet.Cells[1, 4].Value = "用法";
-                    worksheet.Cells[1, 5].Value = "性味归经";
-                    worksheet.Cells[1, 6].Value = "方剂类型";
-                    worksheet.Cells[1, 7].Value = "是否共享";
-                    worksheet.Cells[1, 8].Value = "备注";
+                    formulaSheet.Cells[1, 1].Value = "验方编号*";
+                    formulaSheet.Cells[1, 2].Value = "验方名称*";
+                    formulaSheet.Cells[1, 3].Value = "分类";
+                    formulaSheet.Cells[1, 4].Value = "功效";
+                    formulaSheet.Cells[1, 5].Value = "用法";
+                    formulaSheet.Cells[1, 6].Value = "性味归经";
+                    formulaSheet.Cells[1, 7].Value = "方剂类型";
+                    formulaSheet.Cells[1, 8].Value = "是否共享";
+                    formulaSheet.Cells[1, 9].Value = "备注";
 
-                    using (var range = worksheet.Cells[1, 1, 1, 8])
+                    using (var range = formulaSheet.Cells[1, 1, 1, 9])
                     {
                         range.Style.Font.Bold = true;
                         range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
@@ -520,16 +658,64 @@ namespace LYBT.Module.Formula.Services
                     }
 
                     // 示例数据
-                    worksheet.Cells[2, 1].Value = "小柴胡汤";
-                    worksheet.Cells[2, 2].Value = "和解剂";
-                    worksheet.Cells[2, 3].Value = "和解少阳，扶正祛邪";
-                    worksheet.Cells[2, 4].Value = "水煎服，日三次";
-                    worksheet.Cells[2, 5].Value = "性平，归肝、胆经";
-                    worksheet.Cells[2, 6].Value = "经典方";
-                    worksheet.Cells[2, 7].Value = "是";
-                    worksheet.Cells[2, 8].Value = "《伤寒论》经典名方";
+                    formulaSheet.Cells[2, 1].Value = "F001";
+                    formulaSheet.Cells[2, 2].Value = "小柴胡汤";
+                    formulaSheet.Cells[2, 3].Value = "和解剂";
+                    formulaSheet.Cells[2, 4].Value = "和解少阳，扶正祛邪";
+                    formulaSheet.Cells[2, 5].Value = "水煎服，日三次";
+                    formulaSheet.Cells[2, 6].Value = "性平，归肝、胆经";
+                    formulaSheet.Cells[2, 7].Value = "经典方";
+                    formulaSheet.Cells[2, 8].Value = "是";
+                    formulaSheet.Cells[2, 9].Value = "《伤寒论》经典名方";
 
-                    worksheet.Cells.AutoFitColumns();
+                    formulaSheet.Cells.AutoFitColumns();
+
+                    // Sheet2：药材明细
+                    var herbSheet = package.Workbook.Worksheets.Add("药材明细");
+
+                    // 表头
+                    herbSheet.Cells[1, 1].Value = "验方编号*";
+                    herbSheet.Cells[1, 2].Value = "药材名称*";
+                    herbSheet.Cells[1, 3].Value = "剂量*";
+                    herbSheet.Cells[1, 4].Value = "单位";
+                    herbSheet.Cells[1, 5].Value = "用法";
+                    herbSheet.Cells[1, 6].Value = "炮制方法";
+                    herbSheet.Cells[1, 7].Value = "备注";
+
+                    using (var range = herbSheet.Cells[1, 1, 1, 7])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // 示例数据
+                    herbSheet.Cells[2, 1].Value = "F001";
+                    herbSheet.Cells[2, 2].Value = "柴胡";
+                    herbSheet.Cells[2, 3].Value = "24";
+                    herbSheet.Cells[2, 4].Value = "g";
+                    herbSheet.Cells[2, 5].Value = "";
+                    herbSheet.Cells[2, 6].Value = "";
+                    herbSheet.Cells[2, 7].Value = "";
+
+                    herbSheet.Cells[3, 1].Value = "F001";
+                    herbSheet.Cells[3, 2].Value = "黄芩";
+                    herbSheet.Cells[3, 3].Value = "9";
+                    herbSheet.Cells[3, 4].Value = "g";
+                    herbSheet.Cells[3, 5].Value = "";
+                    herbSheet.Cells[3, 6].Value = "";
+                    herbSheet.Cells[3, 7].Value = "";
+
+                    herbSheet.Cells[4, 1].Value = "F001";
+                    herbSheet.Cells[4, 2].Value = "半夏";
+                    herbSheet.Cells[4, 3].Value = "12";
+                    herbSheet.Cells[4, 4].Value = "g";
+                    herbSheet.Cells[4, 5].Value = "";
+                    herbSheet.Cells[4, 6].Value = "";
+                    herbSheet.Cells[4, 7].Value = "";
+
+                    herbSheet.Cells.AutoFitColumns();
+
                     package.Save();
                 }
 

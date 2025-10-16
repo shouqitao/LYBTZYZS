@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/documentation-system-comprehensive-enhancement/design.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-15T12:08:01.607Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760530081586_nli36pbr3",
+      "approvalTitle": "文档系统全面完善设计文档 - documentation-system-comprehensive-enhancement"
+    }
+  ]
+}
