@@ -38,6 +38,13 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("是否共享")]
         public bool IsShared { get; set; } = false;
 
+        /// <summary>
+        /// 验证状态 - 标识验方是否已验证（Draft=草稿/未验证，Validated=已验证）
+        /// 从老系统导入的验方初始为Draft状态，经过医生审核后标记为Validated
+        /// </summary>
+        [DisplayName("验证状态")]
+        public FormulaValidationStatus ValidationStatus { get; set; } = FormulaValidationStatus.Draft;
+
         [DisplayName("来源")]
         [StringLength(100, ErrorMessage = "来源长度不能超过100个字符")]
         public string? Source { get; set; }
