@@ -12,5 +12,12 @@ namespace LYBT.Module.Herbs.Interfaces
         /// 根据名称获取药材
         /// </summary>
         Task<Herb?> GetByNameAsync(string name);
+
+        /// <summary>
+        /// 按名称或拼音码查询药材 (Issue #1351)
+        /// 优先精确匹配名称，其次模糊匹配拼音码
+        /// </summary>
+        /// <param name="searchTerm">搜索词（药材名称或拼音码）</param>
+        Task<Herb?> GetByNameOrPinyinAsync(string searchTerm);
     }
 }
