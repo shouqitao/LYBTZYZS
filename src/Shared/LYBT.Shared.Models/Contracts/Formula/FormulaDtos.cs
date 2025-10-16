@@ -164,11 +164,27 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
     /// <summary>
     /// 验方中药材组成项DTO - 继承基础DTO提供ID
+    /// 支持延迟绑定：允许先保存原始药材名称，稍后再绑定到药材库
     /// </summary>
     public class FormulaHerbItemDto : BaseDto
     {
+        /// <summary>
+        /// 药材ID（可空，支持延迟绑定）
+        /// </summary>
         [DisplayName("中药材ID")]
-        public Guid HerbId { get; set; }
+        public Guid? HerbId { get; set; }
+
+        /// <summary>
+        /// 原始药材名称（从老系统导入时保存，用于延迟绑定）
+        /// </summary>
+        [DisplayName("原始药材名称")]
+        public string? OriginalHerbName { get; set; }
+
+        /// <summary>
+        /// 是否已验证绑定（true表示HerbId已绑定到药材库）
+        /// </summary>
+        [DisplayName("已验证")]
+        public bool IsValidated { get; set; }
 
         [DisplayName("中药材名称")]
         public string HerbName { get; set; } = string.Empty;
@@ -277,12 +293,14 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
     /// <summary>
     /// 创建验方药材组成项DTO
+    /// 支持延迟绑定：HerbId可空
     /// </summary>
     public class FormulaHerbItemCreateDto
     {
-
-        [Required]
-        public Guid HerbId { get; set; }
+        /// <summary>
+        /// 药材ID（可空，支持延迟绑定）
+        /// </summary>
+        public Guid? HerbId { get; set; }
 
         [Required]
         [Range(0.1, 1000)]
@@ -317,13 +335,16 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
     /// <summary>
     /// 更新验方药材组成项DTO
+    /// 支持延迟绑定：HerbId可空
     /// </summary>
     public class FormulaHerbItemUpdateDto
     {
         public Guid? Id { get; set; }
 
-        [Required]
-        public Guid HerbId { get; set; }
+        /// <summary>
+        /// 药材ID（可空，支持延迟绑定）
+        /// </summary>
+        public Guid? HerbId { get; set; }
 
         [Required]
         [Range(0.1, 1000)]

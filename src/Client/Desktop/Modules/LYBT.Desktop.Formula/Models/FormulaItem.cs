@@ -342,11 +342,12 @@ public class FormulaItem : BindableBase
 
 /// <summary>
 /// 验方中的药材项
+/// 支持延迟绑定：HerbId可空
 /// </summary>
 public class FormulaHerbItem : BindableBase
 {
-    private Guid _herbId;
-    public Guid HerbId
+    private Guid? _herbId;
+    public Guid? HerbId
     {
         get => _herbId;
         set => SetProperty(ref _herbId, value);
