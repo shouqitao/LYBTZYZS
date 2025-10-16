@@ -75,5 +75,11 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="herbItemId">待验证的药材项ID</param>
         /// <param name="selectedHerbId">选中的系统药材ID</param>
         Task<ServiceResult> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
+
+        /// <summary>
+        /// 获取待验证的验方列表 (Issue #1349)
+        /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
+        /// </summary>
+        Task<ServiceResult<List<FormulaDto>>> GetPendingValidationFormulasAsync();
     }
 }
