@@ -1,7 +1,7 @@
 {
   "description": "根目录文件白名单配置 - 仅这些文件/模式被允许存在于项目根目录",
-  "version": "1.0.1",
-  "last_updated": "2025-10-11",
+  "version": "1.0.2",
+  "last_updated": "2025-10-16",
 
   "allowed_files": [
     "README.md",
@@ -27,6 +27,7 @@
     "src",
     "tests",
     "docs",
+    "docs-archive",
     "scripts",
     ".github",
     ".claude",
@@ -36,7 +37,8 @@
     ".vs",
     ".ai",
     ".serena",
-    "BIN"
+    "BIN",
+    ".spec-workflow"
   ],
   
   "blocked_patterns": [
