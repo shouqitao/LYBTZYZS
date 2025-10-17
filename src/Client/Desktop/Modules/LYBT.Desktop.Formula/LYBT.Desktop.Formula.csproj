@@ -85,4 +85,8 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Components\LYBT.Shared.Components.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Module Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+  </ItemGroup>
+
 </Project>
