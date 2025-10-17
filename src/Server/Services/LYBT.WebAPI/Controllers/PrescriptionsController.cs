@@ -293,6 +293,50 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+
+        /// <summary>
+        /// 导入验方到处方 (ENTRY-10)
+        /// </summary>
+        /// <param name="prescriptionId">处方ID</param>
+        /// <param name="formulaId">验方ID</param>
+        [HttpPost("{prescriptionId}/import-formula/{formulaId}")]
+        [ProducesResponseType(typeof(ApiResponse<ServiceResult>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<ServiceResult>>> ImportFormula(
+            Guid prescriptionId,
+            Guid formulaId)
+        {
+            try
+            {
+                var prescriptionValidation = ValidateGuid<ServiceResult>(prescriptionId, "处方ID");
+                if (prescriptionValidation != null)
+                {
+                    return prescriptionValidation;
+                }
+
+                var formulaValidation = ValidateGuid<ServiceResult>(formulaId, "验方ID");
+                if (formulaValidation != null)
+                {
+                    return formulaValidation;
+                }
+
+                var result = await _service.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+
+                if (!result.IsSuccess)
+                {
+                    return BusinessFail<ServiceResult>(result.ErrorMessage ?? "导入验方失败", ApiErrorCodes.DATASAVEFAILED);
+                }
+
+                LogOperation("导入验方到处方成功", new { prescriptionId, formulaId }, prescriptionId);
+                return Success(result, result.ErrorMessage ?? "导入成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ServiceResult>(ex, "导入验方", new { prescriptionId, formulaId });
+            }
+        }
+
         #endregion
     }
 }

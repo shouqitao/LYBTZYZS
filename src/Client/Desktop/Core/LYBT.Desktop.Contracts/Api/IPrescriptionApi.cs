@@ -6,6 +6,9 @@ namespace LYBT.Desktop.Contracts.Api
     /// <summary>
     /// 处方API客户端接口 - 简化版，只包含基础CRUD
     /// </summary>
+    /// <summary>
+    /// 处方API客户端接口 - 简化版，只包含基础CRUD
+    /// </summary>
     public interface IPrescriptionApi
     {
         /// <summary>
@@ -46,5 +49,12 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
         Task<Refit.ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 导入验方到处方
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
+        /// </summary>
+        [Refit.Post("/api/v1/prescriptions/{prescriptionId}/import-formula/{formulaId}")]
+        Task<Refit.ApiResponse<ServiceResult>> ImportFormulaAsync(Guid prescriptionId, Guid formulaId);
     }
 }

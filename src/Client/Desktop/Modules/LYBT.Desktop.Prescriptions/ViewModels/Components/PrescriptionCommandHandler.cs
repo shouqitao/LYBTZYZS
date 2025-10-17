@@ -33,6 +33,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// 处方清空事件
         /// </summary>
         public event Action? OnPrescriptionCleared;
+
+        /// <summary>
+        /// 导入验方请求事件
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
+        /// </summary>
+        public event Action? OnImportFormulaRequested;
         #endregion
 
         #region 命令定义
@@ -284,10 +290,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
         /// <summary>
         /// 执行导入验方
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
         /// </summary>
         private void ExecuteImportFormula()
         {
             _logger.LogInformation("执行导入验方");
+            OnImportFormulaRequested?.Invoke();
         }
 
         /// <summary>

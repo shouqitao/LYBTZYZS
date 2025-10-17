@@ -508,6 +508,9 @@ namespace LYBT.Module.Prescriptions.Services
         /// <summary>
         /// 导入验方到处方 - 校验验方状态 (Issue #1350)
         /// </summary>
+        /// <summary>
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350, ENTRY-8)
+        /// </summary>
         public async Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(
             Guid prescriptionId,
             Guid formulaId)
@@ -557,6 +560,25 @@ namespace LYBT.Module.Prescriptions.Services
                     };
 
                     prescription.Items.Add(prescriptionItem);
+                }
+
+                // ENTRY-8: 更新 FormulaSource 字段（支持多次导入，逗号分隔）
+                if (string.IsNullOrWhiteSpace(prescription.FormulaSource))
+                {
+                    prescription.FormulaSource = formula.Name;
+                }
+                else
+                {
+                    // 检查是否已经包含该验方名称，避免重复
+                    var existingSources = prescription.FormulaSource
+                        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .ToList();
+
+                    if (!existingSources.Contains(formula.Name))
+                    {
+                        prescription.FormulaSource = $"{prescription.FormulaSource},{formula.Name}";
+                    }
                 }
 
                 await _repository.UpdateAsync(prescription);

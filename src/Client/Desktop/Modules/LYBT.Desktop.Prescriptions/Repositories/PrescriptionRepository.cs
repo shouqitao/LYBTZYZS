@@ -62,6 +62,24 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             }
         }
 
+        /// <summary>
+        /// 导入验方到处方
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
+        /// </summary>
+        public async Task<ServiceResult> ImportFormulaAsync(Guid prescriptionId, Guid formulaId)
+        {
+            try
+            {
+                var response = await _api.ImportFormulaAsync(prescriptionId, formulaId);
+                return response.Content ?? ServiceResult.Failure("导入验方失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入验方失败: PrescriptionId={PrescriptionId}, FormulaId={FormulaId}", prescriptionId, formulaId);
+                return ServiceResult.Failure($"导入验方失败：{ex.Message}");
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
@@ -25,6 +26,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         private readonly IPrescriptionRepository _prescriptionRepository;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IHerbRepository _herbRepository;
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -393,6 +395,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IPrescriptionRepository prescriptionRepository,
             IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -408,6 +411,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -602,6 +606,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             // 订阅清空事件
             _commandHandler.OnPrescriptionCleared += OnPrescriptionCleared;
 
+            // 订阅导入验方请求事件（ENTRY-10）
+            _commandHandler.OnImportFormulaRequested += OnImportFormulaRequested;
+
             // 订阅处方项集合变化事件（Issue #1360）
             PrescriptionItems.CollectionChanged += (s, e) => RefreshItemRows();
         }
@@ -621,6 +628,89 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             // 处方清空后的操作
             RecalculatePrice();
+        }
+
+        /// <summary>
+        /// 处理导入验方请求
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
+        /// </summary>
+        private async void OnImportFormulaRequested()
+        {
+            try
+            {
+                // 显示验方模板选择对话框
+                _dialogService.ShowDialog(
+                    nameof(FormulaTemplateDialogViewModel),
+                    null,
+                    async (result) =>
+                    {
+                        if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedFormula"))
+                        {
+                            var selectedFormula = result.Parameters.GetValue<Shared.Models.Contracts.Formula.FormulaDto>("SelectedFormula");
+                            if (selectedFormula != null)
+                            {
+                                await ImportFormulaAsync(selectedFormula.Id);
+                            }
+                        }
+                    });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "显示验方选择对话框时发生异常");
+                await ShowErrorMessageAsync("打开验方选择对话框失败");
+            }
+        }
+
+        /// <summary>
+        /// 导入验方
+        /// ENTRY-10: 集成导入命令到PrescriptionComposerViewModel
+        /// </summary>
+        private async Task ImportFormulaAsync(Guid formulaId)
+        {
+            try
+            {
+                SetIsBusy(true, "正在导入验方...");
+
+                // 获取当前处方ID
+                var prescriptionId = _dataManager.PrescriptionId;
+                if (prescriptionId == Guid.Empty)
+                {
+                    await ShowErrorMessageAsync("当前没有有效的处方，无法导入验方");
+                    return;
+                }
+
+                // 调用Repository导入验方
+                var result = await _prescriptionRepository.ImportFormulaAsync(prescriptionId, formulaId);
+
+                if (result.IsSuccess)
+                {
+                    // 重新加载处方数据（通过重新初始化DataManager）
+                    await _dataManager.InitializeAsync(MedicalCaseId);
+
+                    // 刷新ItemRows
+                    RefreshItemRows();
+
+                    // 重新计算价格
+                    RecalculatePrice();
+
+                    await ShowSuccessMessageAsync(result.ErrorMessage ?? "验方导入成功");
+                    Logger.LogInformation("验方导入成功：FormulaId={FormulaId}, PrescriptionId={PrescriptionId}", formulaId, prescriptionId);
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "导入验方失败");
+                    Logger.LogWarning("验方导入失败：{ErrorMessage}", result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入验方时发生异常：FormulaId={FormulaId}", formulaId);
+                await ShowErrorMessageAsync("导入验方时发生系统错误，请稍后重试");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
         }
 
         #endregion
@@ -793,6 +883,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     _commandHandler.OnPriceRecalculated -= OnPriceRecalculated;
                     _commandHandler.OnPrescriptionSaved -= OnPrescriptionSaved;
                     _commandHandler.OnPrescriptionCleared -= OnPrescriptionCleared;
+                    _commandHandler.OnImportFormulaRequested -= OnImportFormulaRequested;
                 }
 
                 // 清理事件协调器
