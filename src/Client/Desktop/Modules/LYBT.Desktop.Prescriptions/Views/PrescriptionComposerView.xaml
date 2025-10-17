@@ -151,12 +151,17 @@
 
                     <DataGrid.Columns>
                         <!-- 药材1 -->
+                        <!-- Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤 -->
                         <DataGridTemplateColumn Header="药材1" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox IsEditable="True"
+                                             ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             DisplayMemberPath="Name"
                                              Text="{Binding Item1.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                             BorderThickness="0" Background="Transparent" />
+                                             BorderThickness="0" Background="Transparent"
+                                             Loaded="HerbComboBox_Loaded"
+                                             x:Name="HerbComboBox1" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -172,12 +177,17 @@
                         </DataGridTemplateColumn>
 
                         <!-- 药材2 -->
+                        <!-- Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤 -->
                         <DataGridTemplateColumn Header="药材2" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox IsEditable="True"
+                                             ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             DisplayMemberPath="Name"
                                              Text="{Binding Item2.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                             BorderThickness="0" Background="Transparent" />
+                                             BorderThickness="0" Background="Transparent"
+                                             Loaded="HerbComboBox_Loaded"
+                                             x:Name="HerbComboBox2" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -193,12 +203,17 @@
                         </DataGridTemplateColumn>
 
                         <!-- 药材3 -->
+                        <!-- Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤 -->
                         <DataGridTemplateColumn Header="药材3" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox IsEditable="True"
+                                             ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             DisplayMemberPath="Name"
                                              Text="{Binding Item3.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                             BorderThickness="0" Background="Transparent" />
+                                             BorderThickness="0" Background="Transparent"
+                                             Loaded="HerbComboBox_Loaded"
+                                             x:Name="HerbComboBox3" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -214,12 +229,17 @@
                         </DataGridTemplateColumn>
 
                         <!-- 药材4 -->
+                        <!-- Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤 -->
                         <DataGridTemplateColumn Header="药材4" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox IsEditable="True"
+                                             ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             DisplayMemberPath="Name"
                                              Text="{Binding Item4.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                             BorderThickness="0" Background="Transparent" />
+                                             BorderThickness="0" Background="Transparent"
+                                             Loaded="HerbComboBox_Loaded"
+                                             x:Name="HerbComboBox4" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
