@@ -142,45 +142,94 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 药材列表 -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding PrescriptionItems}"
+                <!-- 药材列表 (8列表格布局) -->
+                <!-- Issue #1361: [ENTRY-3] 设计8列DataGrid XAML布局 -->
+                <DataGrid Grid.Row="1" ItemsSource="{Binding ItemRows}"
                          AutoGenerateColumns="False" CanUserAddRows="False"
-                         GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                         GridLinesVisibility="All" HeadersVisibility="Column"
                          Background="White" AlternatingRowBackground="#F8F9FA">
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="序号" Width="60" IsReadOnly="True"
-                                           Binding="{Binding Id}" />
-
-                        <DataGridTextColumn Header="药材名称" Binding="{Binding HerbName}" Width="150" IsReadOnly="True" />
-
-                        <DataGridTextColumn Header="用量" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                           Width="100" />
-
-                        <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" IsReadOnly="True" />
-
-                        <DataGridTextColumn Header="单价" Binding="{Binding UnitPrice, StringFormat=C}"
-                                           Width="100" IsReadOnly="True" />
-
-                        <DataGridTextColumn Header="小计" Width="100" IsReadOnly="True">
-                            <DataGridTextColumn.Binding>
-                                <Binding Path="Subtotal" StringFormat="C" />
-                            </DataGridTextColumn.Binding>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="用法说明" Binding="{Binding Usage}" Width="*" />
-
-                        <DataGridTemplateColumn Header="操作" Width="120">
+                        <!-- 药材1 -->
+                        <DataGridTemplateColumn Header="药材1" Width="2*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="编辑" Padding="8,2" Margin="0,0,5,0"
-                                               Command="{Binding DataContext.EditHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}" />
-                                        <Button Content="删除" Padding="8,2" Background="#E74C3C"
-                                               Command="{Binding DataContext.RemoveHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}" />
-                                    </StackPanel>
+                                    <ComboBox IsEditable="True"
+                                             Text="{Binding Item1.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 用量1 -->
+                        <DataGridTemplateColumn Header="用量1" Width="1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Item1.Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                            BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 药材2 -->
+                        <DataGridTemplateColumn Header="药材2" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                             Text="{Binding Item2.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 用量2 -->
+                        <DataGridTemplateColumn Header="用量2" Width="1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Item2.Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                            BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 药材3 -->
+                        <DataGridTemplateColumn Header="药材3" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                             Text="{Binding Item3.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 用量3 -->
+                        <DataGridTemplateColumn Header="用量3" Width="1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Item3.Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                            BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 药材4 -->
+                        <DataGridTemplateColumn Header="药材4" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                             Text="{Binding Item4.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderThickness="0" Background="Transparent" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 用量4 -->
+                        <DataGridTemplateColumn Header="用量4" Width="1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Item4.Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                            BorderThickness="0" Background="Transparent" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
