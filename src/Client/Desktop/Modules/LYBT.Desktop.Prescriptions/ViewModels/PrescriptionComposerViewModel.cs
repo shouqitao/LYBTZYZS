@@ -93,6 +93,18 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public ObservableCollection<PrescriptionItemViewModel> PrescriptionItems => _dataManager.PrescriptionItems;
 
+        private ObservableCollection<PrescriptionItemRow> _itemRows = new();
+
+        /// <summary>
+        /// 处方项行集合（用于8列表格布局）
+        /// Issue #1360: [ENTRY-2] 实现Items→ItemRows转换逻辑
+        /// </summary>
+        public ObservableCollection<PrescriptionItemRow> ItemRows
+        {
+            get => _itemRows;
+            set => SetProperty(ref _itemRows, value);
+        }
+
         /// <summary>
         /// 选中的处方项
         /// </summary>
@@ -449,6 +461,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 // 初始计算
                 RecalculatePrice();
 
+                // 初始化ItemRows（Issue #1360）
+                RefreshItemRows();
+
                 Logger.LogInformation("处方编写器初始化完成");
             }
             catch (Exception ex)
@@ -495,6 +510,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
             // 订阅清空事件
             _commandHandler.OnPrescriptionCleared += OnPrescriptionCleared;
+
+            // 订阅处方项集合变化事件（Issue #1360）
+            PrescriptionItems.CollectionChanged += (s, e) => RefreshItemRows();
         }
 
         private void OnPriceRecalculated()
@@ -635,6 +653,36 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             // 命令状态由各自的CanExecute方法控制
             // 这里可以添加额外的状态更新逻辑
+        }
+
+        /// <summary>
+        /// 刷新处方项行集合（Items → ItemRows转换）
+        /// Issue #1360: [ENTRY-2] 实现Items→ItemRows转换逻辑
+        /// </summary>
+        private void RefreshItemRows()
+        {
+            ItemRows.Clear();
+
+            var items = PrescriptionItems;
+            if (items == null || items.Count == 0)
+            {
+                return;
+            }
+
+            // 每4个项目组成一行
+            for (int i = 0; i < items.Count; i += 4)
+            {
+                var row = new PrescriptionItemRow
+                {
+                    Item1 = i < items.Count ? items[i] : null,
+                    Item2 = i + 1 < items.Count ? items[i + 1] : null,
+                    Item3 = i + 2 < items.Count ? items[i + 2] : null,
+                    Item4 = i + 3 < items.Count ? items[i + 3] : null
+                };
+                ItemRows.Add(row);
+            }
+
+            Logger.LogDebug($"已刷新处方项行集合，共 {items.Count} 个项目，{ItemRows.Count} 行");
         }
 
         #endregion
