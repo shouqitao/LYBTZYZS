@@ -62,6 +62,57 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             }
         }
 
+        /// <summary>
+        /// 获取患者最近处方列表 (ENTRY-13)
+        /// </summary>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5)
+        {
+            try
+            {
+                var response = await _api.GetPatientRecentPrescriptionsAsync(patientId, count);
+                return response.Content ?? ServiceResult<List<PrescriptionSearchResultDto>>.Failure("获取患者最近处方失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近处方失败: PatientId={PatientId}", patientId);
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"获取患者最近处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 搜索处方 (ENTRY-14)
+        /// </summary>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(string? patientName = null, string? symptomKeyword = null)
+        {
+            try
+            {
+                var response = await _api.SearchPrescriptionsAsync(patientName, symptomKeyword);
+                return response.Content ?? ServiceResult<List<PrescriptionSearchResultDto>>.Failure("搜索处方失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索处方失败: PatientName={PatientName}, SymptomKeyword={SymptomKeyword}", patientName, symptomKeyword);
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"搜索处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 复制处方到新处方 (ENTRY-15)
+        /// </summary>
+        public async Task<ServiceResult<string>> ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetPrescriptionId)
+        {
+            try
+            {
+                var response = await _api.ClonePrescriptionAsync(sourcePrescriptionId, targetPrescriptionId);
+                return response.Content ?? ServiceResult<string>.Failure("复制处方失败");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "复制处方失败: SourceId={SourceId}, TargetId={TargetId}", sourcePrescriptionId, targetPrescriptionId);
+                return ServiceResult<string>.Failure($"复制处方失败：{ex.Message}");
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)

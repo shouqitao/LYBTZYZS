@@ -7,6 +7,8 @@ using FluentAssertions;
 using LYBT.Entities.Prescriptions;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;
+using LYBT.Module.Formula.Interfaces;
+using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Tests.Common;
@@ -25,15 +27,24 @@ namespace LYBT.Module.Prescriptions.Tests.Services
     {
         private readonly PrescriptionService _prescriptionService;
         private readonly Mock<IPrescriptionRepository> _repositoryMock;
+        private readonly Mock<IFormulaRepository> _formulaRepositoryMock;
+        private readonly Mock<IConsultationService> _consultationServiceMock;
+        private readonly Mock<IPatientService> _patientServiceMock;
         private readonly Mock<ILogger<PrescriptionService>> _loggerMock;
 
         public PrescriptionServiceTests()
         {
             _repositoryMock = CreateMock<IPrescriptionRepository>();
+            _formulaRepositoryMock = CreateMock<IFormulaRepository>();
+            _consultationServiceMock = CreateMock<IConsultationService>();
+            _patientServiceMock = CreateMock<IPatientService>();
             _loggerMock = CreateLoggerMock<PrescriptionService>();
 
             _prescriptionService = new PrescriptionService(
                 _repositoryMock.Object,
+                _formulaRepositoryMock.Object,
+                _consultationServiceMock.Object,
+                _patientServiceMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }

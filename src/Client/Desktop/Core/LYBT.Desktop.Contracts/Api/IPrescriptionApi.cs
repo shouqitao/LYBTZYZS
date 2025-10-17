@@ -46,5 +46,29 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
         Task<Refit.ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (ENTRY-13)
+        /// </summary>
+        [Refit.Get("/api/v1/prescriptions/patient/{patientId}/recent")]
+        Task<Refit.ApiResponse<ServiceResult<List<PrescriptionSearchResultDto>>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            [Refit.Query] int count = 5);
+
+        /// <summary>
+        /// 搜索处方 (ENTRY-14)
+        /// </summary>
+        [Refit.Get("/api/v1/prescriptions/search")]
+        Task<Refit.ApiResponse<ServiceResult<List<PrescriptionSearchResultDto>>>> SearchPrescriptionsAsync(
+            [Refit.Query] string? patientName = null,
+            [Refit.Query] string? symptomKeyword = null);
+
+        /// <summary>
+        /// 复制处方到新处方 (ENTRY-15)
+        /// </summary>
+        [Refit.Post("/api/v1/prescriptions/clone")]
+        Task<Refit.ApiResponse<ServiceResult<string>>> ClonePrescriptionAsync(
+            [Refit.Query] Guid sourcePrescriptionId,
+            [Refit.Query] Guid targetPrescriptionId);
     }
 }

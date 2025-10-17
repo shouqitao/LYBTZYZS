@@ -15,5 +15,20 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         Task<PrescriptionDto> UpdateAsync(Guid id, PrescriptionUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<PrescriptionDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (ENTRY-13)
+        /// </summary>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5);
+
+        /// <summary>
+        /// 搜索处方 (ENTRY-14)
+        /// </summary>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(string? patientName = null, string? symptomKeyword = null);
+
+        /// <summary>
+        /// 复制处方到新处方 (ENTRY-15)
+        /// </summary>
+        Task<ServiceResult<string>> ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetPrescriptionId);
     }
 }

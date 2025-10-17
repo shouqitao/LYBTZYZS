@@ -7,6 +7,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -231,6 +232,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #endregion
 
+        #region 历史处方数据 (ENTRY-16: 集成患者历史处方下拉框)
+
+        private ObservableCollection<PrescriptionSearchResultDto> _recentPrescriptions = new();
+        private PrescriptionSearchResultDto? _selectedHistoryPrescription;
+
+        /// <summary>
+        /// 患者最近处方列表（用于下拉框）
+        /// </summary>
+        public ObservableCollection<PrescriptionSearchResultDto> RecentPrescriptions
+        {
+            get => _recentPrescriptions;
+            set => SetProperty(ref _recentPrescriptions, value);
+        }
+
+        /// <summary>
+        /// 选中的历史处方
+        /// </summary>
+        public PrescriptionSearchResultDto? SelectedHistoryPrescription
+        {
+            get => _selectedHistoryPrescription;
+            set => SetProperty(ref _selectedHistoryPrescription, value);
+        }
+
+        #endregion
+
         #region 药材过滤数据 (Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤)
 
         private List<HerbDto> _allHerbs = new();
@@ -385,6 +411,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand<PrescriptionItemViewModel> EditHerbCommand { get; }
 
+        /// <summary>
+        /// 导入历史处方命令 (ENTRY-16)
+        /// </summary>
+        public DelegateCommand ImportHistoryCommand { get; }
+
+        /// <summary>
+        /// 高级查询命令 (ENTRY-16)
+        /// </summary>
+        public DelegateCommand AdvancedSearchCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -426,6 +462,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft, CanSaveDraft);
             SavePrescriptionCommand = SaveCommand; // 别名
             EditHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(ExecuteEditHerb, item => item != null && !IsBusy);
+
+            // ENTRY-16: 初始化历史处方命令
+            ImportHistoryCommand = new DelegateCommand(async () => await ExecuteImportHistoryAsync(), CanImportHistory);
+            AdvancedSearchCommand = new DelegateCommand(ExecuteAdvancedSearch);
 
             // 订阅事件
             SubscribeToEvents();
@@ -496,6 +536,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
                 // 初始化ItemRows（Issue #1360）
                 RefreshItemRows();
+
+                // ENTRY-16: 加载患者历史处方
+                await LoadRecentPrescriptionsAsync();
 
                 Logger.LogInformation("处方编写器初始化完成");
             }
@@ -581,6 +624,45 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "过滤药材时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 加载患者最近处方列表（ENTRY-16）
+        /// </summary>
+        private async Task LoadRecentPrescriptionsAsync()
+        {
+            try
+            {
+                if (CurrentMedicalCase == null || CurrentMedicalCase.PatientId == Guid.Empty)
+                {
+                    Logger.LogWarning("患者ID为空，无法加载历史处方");
+                    return;
+                }
+
+                // 调用Server端GetPatientRecentPrescriptionsAsync（默认5条）
+                var result = await _prescriptionRepository.GetPatientRecentPrescriptionsAsync(
+                    CurrentMedicalCase.PatientId,
+                    5);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    RecentPrescriptions.Clear();
+                    foreach (var prescription in result.Data)
+                    {
+                        RecentPrescriptions.Add(prescription);
+                    }
+
+                    Logger.LogInformation("已加载患者最近处方 {Count} 条", RecentPrescriptions.Count);
+                }
+                else
+                {
+                    Logger.LogWarning("加载患者历史处方失败：{Message}", result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载患者历史处方时发生异常");
             }
         }
 
@@ -700,6 +782,79 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 Logger.LogError(ex, "编辑药材时发生异常");
                 ShowErrorMessage("编辑药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 导入历史处方（ENTRY-16）
+        /// </summary>
+        private async Task ExecuteImportHistoryAsync()
+        {
+            if (SelectedHistoryPrescription == null || _dataManager.PrescriptionId == Guid.Empty)
+            {
+                ShowInfoMessage("请先选择历史处方");
+                return;
+            }
+
+            try
+            {
+                SetIsBusy(true, "正在导入历史处方...");
+
+                // 调用Server端ClonePrescriptionAsync
+                var result = await _prescriptionRepository.ClonePrescriptionAsync(
+                    SelectedHistoryPrescription.PrescriptionId,
+                    _dataManager.PrescriptionId);
+
+                if (result.IsSuccess)
+                {
+                    // 重新加载处方数据
+                    await _dataManager.InitializeAsync(MedicalCaseId);
+                    RefreshItemRows();
+                    RecalculatePrice();
+
+                    ShowInfoMessage($"成功导入历史处方：{result.Data}");
+                    Logger.LogInformation("导入历史处方成功：SourceId={SourceId}, TargetId={TargetId}",
+                        SelectedHistoryPrescription.PrescriptionId, _dataManager.PrescriptionId);
+                }
+                else
+                {
+                    ShowErrorMessage($"导入失败：{result.Message}");
+                    Logger.LogWarning("导入历史处方失败：{Message}", result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入历史处方时发生异常");
+                ShowErrorMessage("导入历史处方失败");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 检查是否可以导入历史处方（ENTRY-16）
+        /// </summary>
+        private bool CanImportHistory()
+        {
+            return !IsBusy && SelectedHistoryPrescription != null && _dataManager.PrescriptionId != Guid.Empty;
+        }
+
+        /// <summary>
+        /// 高级查询处方（ENTRY-16）
+        /// </summary>
+        private void ExecuteAdvancedSearch()
+        {
+            try
+            {
+                Logger.LogInformation("执行高级查询处方");
+                ShowInfoMessage("高级查询功能开发中（ENTRY-17）");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "高级查询处方时发生异常");
+                ShowErrorMessage("高级查询失败");
             }
         }
 
