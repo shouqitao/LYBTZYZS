@@ -136,6 +136,15 @@ namespace LYBT.Module.Consultation.Services
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
 
+                // RULE-3: 当天可改隔日锁定（Issue #1423）
+                if (entity.CreatedAt.Date != DateTime.Today)
+                {
+                    _logger.LogWarning("尝试修改非当天创建的诊疗记录，诊疗ID：{ConsultationId}，创建日期：{CreatedAt}",
+                        id, entity.CreatedAt.Date);
+                    return ServiceResult<ConsultationDto>.Failure(
+                        $"该诊疗记录创建于 {entity.CreatedAt:yyyy-MM-dd}，已超过可修改期限（仅限创建当天可修改）");
+                }
+
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<ConsultationDto>(result);

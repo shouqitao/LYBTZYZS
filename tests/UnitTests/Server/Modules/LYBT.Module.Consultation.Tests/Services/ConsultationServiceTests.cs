@@ -416,6 +416,167 @@ namespace LYBT.UnitTests.Core.Services
 
         #endregion
 
+        #region Business Rules Tests (Issue #1423)
+
+        /// <summary>
+        /// RULE-1: 一病案一诊断约束 - 医案不存在时应失败
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_WhenMedicalCaseNotExists_ShouldReturnFailure()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var createDto = new ConsultationCreateDto
+            {
+                MedicalCaseId = medicalCaseId,
+                ChiefComplaint = "测试主诉"
+            };
+
+#pragma warning disable CS8620
+            _medicalCaseRepositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync((MedicalCase?)null);
+#pragma warning restore CS8620
+
+            // Act
+            var result = await _service.CreateAsync(createDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Be("医疗案例不存在，无法创建诊疗记录");
+        }
+
+        /// <summary>
+        /// RULE-1: 一病案一诊断约束 - 已有诊断时应失败
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_WhenConsultationAlreadyExists_ShouldReturnFailure()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var createDto = new ConsultationCreateDto
+            {
+                MedicalCaseId = medicalCaseId,
+                ChiefComplaint = "测试主诉"
+            };
+
+            var medicalCase = new MedicalCase
+            {
+                Id = medicalCaseId,
+                PatientName = "测试患者",
+                DoctorName = "测试医生"
+            };
+
+            var existingConsultation = new Consultation
+            {
+                Id = medicalCaseId, // 共享主键
+                ChiefComplaint = "已存在的诊断"
+            };
+
+            _medicalCaseRepositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync(existingConsultation);
+
+            // Act
+            var result = await _service.CreateAsync(createDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Be("该医疗案例已有诊疗记录，不可重复创建");
+        }
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 创建当天可以修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedToday_ShouldReturnSuccess()
+        {
+            // Arrange
+            var consultationId = Guid.NewGuid();
+            var existingConsultation = new Consultation
+            {
+                Id = consultationId,
+                ChiefComplaint = "原始主诉",
+                CreatedAt = DateTime.Today.AddHours(10) // 今天创建
+            };
+
+            var updateDto = new ConsultationUpdateDto
+            {
+                ChiefComplaint = "更新后的主诉",
+                TCMDiagnosis = "更新后的诊断"
+            };
+
+            var updatedConsultation = new Consultation
+            {
+                Id = consultationId,
+                ChiefComplaint = "更新后的主诉",
+                TCMDiagnosis = "更新后的诊断",
+                CreatedAt = DateTime.Today.AddHours(10)
+            };
+
+            var resultDto = new ConsultationDto
+            {
+                Id = consultationId,
+                ChiefComplaint = "更新后的主诉",
+                TCMDiagnosis = "更新后的诊断"
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
+                .ReturnsAsync(existingConsultation);
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Consultation>()))
+                .ReturnsAsync(updatedConsultation);
+            _mapperMock.Setup(x => x.Map(updateDto, existingConsultation));
+            _mapperMock.Setup(x => x.Map<ConsultationDto>(updatedConsultation))
+                .Returns(resultDto);
+
+            // Act
+            var result = await _service.UpdateAsync(consultationId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.ChiefComplaint.Should().Be("更新后的主诉");
+        }
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 隔日后不可修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedYesterday_ShouldReturnFailure()
+        {
+            // Arrange
+            var consultationId = Guid.NewGuid();
+            var existingConsultation = new Consultation
+            {
+                Id = consultationId,
+                ChiefComplaint = "原始主诉",
+                CreatedAt = DateTime.Today.AddDays(-1).AddHours(10) // 昨天创建
+            };
+
+            var updateDto = new ConsultationUpdateDto
+            {
+                ChiefComplaint = "尝试更新的主诉",
+                TCMDiagnosis = "尝试更新的诊断"
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(consultationId))
+                .ReturnsAsync(existingConsultation);
+
+            // Act
+            var result = await _service.UpdateAsync(consultationId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("已超过可修改期限");
+            result.Message.Should().Contain("仅限创建当天可修改");
+        }
+
+        #endregion
+
         public void Dispose()
         {
             // Clean up any resources if needed

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
+using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -25,15 +26,19 @@ namespace LYBT.Module.Prescriptions.Tests.Services
     {
         private readonly PrescriptionService _prescriptionService;
         private readonly Mock<IPrescriptionRepository> _repositoryMock;
+        private readonly Mock<IFormulaRepository> _formulaRepositoryMock;
         private readonly Mock<ILogger<PrescriptionService>> _loggerMock;
 
         public PrescriptionServiceTests()
         {
             _repositoryMock = CreateMock<IPrescriptionRepository>();
+            _formulaRepositoryMock = CreateMock<IFormulaRepository>();
             _loggerMock = CreateLoggerMock<PrescriptionService>();
 
+            // 修复构造函数调用：添加所有必需参数
             _prescriptionService = new PrescriptionService(
                 _repositoryMock.Object,
+                _formulaRepositoryMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }
@@ -575,6 +580,102 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().Contain("折扣");
             result.Data.Should().Contain("85%");
+        }
+
+        #endregion
+
+        #region Business Rules Tests (Issue #1423)
+
+        /// <summary>
+        /// RULE-2: 一诊断一处方约束 - 暂不测试（MVP阶段处方可独立创建）
+        /// 注意：此规则在医案聚合根层面控制，PrescriptionService允许独立创建
+        /// </summary>
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 创建当天可以修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedToday_ShouldReturnSuccess()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var existingPrescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                Advice = "原始医嘱",
+                CreatedAt = DateTime.Today.AddHours(10) // 今天创建
+            };
+
+            var updateDto = new PrescriptionUpdateDto
+            {
+                Advice = "更新后的医嘱",
+                Discount = 0.9m,
+                Remark = "更新备注",
+                DosageCount = 10
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(prescriptionId))
+                .ReturnsAsync(existingPrescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Prescription>()))
+                .ReturnsAsync(existingPrescription);
+
+            // Act
+            var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Once);
+        }
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 隔日后不可修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedYesterday_ShouldReturnFailure()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var existingPrescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                Advice = "原始医嘱",
+                CreatedAt = DateTime.Today.AddDays(-1).AddHours(10) // 昨天创建
+            };
+
+            var updateDto = new PrescriptionUpdateDto
+            {
+                Advice = "尝试更新的医嘱",
+                Discount = 0.9m
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(prescriptionId))
+                .ReturnsAsync(existingPrescription);
+
+            // Act
+            var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("已超过可修改期限");
+            result.Message.Should().Contain("仅限创建当天可修改");
+
+            // 验证UpdateAsync不应被调用
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Never);
         }
 
         #endregion

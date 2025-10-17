@@ -130,6 +130,15 @@ namespace LYBT.Module.Prescriptions.Services
                 if (entity == null)
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
 
+                // RULE-3: 当天可改隔日锁定（Issue #1423）
+                if (entity.CreatedAt.Date != DateTime.Today)
+                {
+                    _logger.LogWarning("尝试修改非当天创建的处方，处方ID：{PrescriptionId}，创建日期：{CreatedAt}",
+                        id, entity.CreatedAt.Date);
+                    return ServiceResult<PrescriptionDto>.Failure(
+                        $"该处方创建于 {entity.CreatedAt:yyyy-MM-dd}，已超过可修改期限（仅限创建当天可修改）");
+                }
+
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<PrescriptionDto>(result);
