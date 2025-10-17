@@ -20,6 +20,21 @@ namespace LYBT.Desktop.Prescriptions.Views
         }
 
         /// <summary>
+        /// 用量TextBox的Enter键处理
+        /// Issue #1363: [ENTRY-5] 实现焦点自动跳转逻辑
+        /// </summary>
+        private void QuantityTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && sender is TextBox textBox)
+            {
+                // Enter键：移动焦点到下一个控件（通常是下一个药材ComboBox或下一行第一个药材）
+                // WPF的Tab顺序会自动处理跨行跳转
+                textBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
         /// ComboBox加载完成事件处理
         /// Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤
         /// </summary>
