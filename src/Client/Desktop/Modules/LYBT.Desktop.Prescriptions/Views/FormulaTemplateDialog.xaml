@@ -12,6 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -41,8 +42,17 @@
                     ToolTip="刷新" Margin="8,0,0,0" Content="刷新" />
         </Grid>
 
+        <!-- 验证状态提示 Issue #1355 -->
+        <Border Grid.Row="2" Background="#E3F2FD" Padding="12,8" Margin="16,0,16,8"
+                BorderBrush="#2196F3" BorderThickness="1" CornerRadius="4">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <TextBlock Text="仅显示已验证的验方" FontSize="14" Foreground="#1976D2" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
         <!-- 验方列表 -->
-        <DataGrid Grid.Row="2" ItemsSource="{Binding FilteredFormulas}"
+        <DataGrid Grid.Row="3" ItemsSource="{Binding FilteredFormulas}"
                   SelectedItem="{Binding SelectedFormula}"
                   AutoGenerateColumns="False" CanUserAddRows="False"
                   IsReadOnly="True" Margin="16,0,16,8">
@@ -94,7 +104,7 @@
         </DataGrid>
 
         <!-- 按钮栏 -->
-        <Grid Grid.Row="3" Margin="16,0,16,16">
+        <Grid Grid.Row="4" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
