@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     public class PrescriptionCommandHandler
     {
         private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionPrintService _printService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
 
         #region 事件定义
@@ -95,10 +97,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
         public PrescriptionCommandHandler(
             IPrescriptionRepository prescriptionService,
+            IPrescriptionPrintService printService,
             ILogger<PrescriptionCommandHandler> logger,
             ISessionManager sessionManager)
         {
             _prescriptionRepository = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _printService = printService ?? throw new ArgumentNullException(nameof(printService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
@@ -240,11 +244,40 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
         /// <summary>
         /// 执行打印预览
+        /// Issue #1381: PRINT-4 集成打印服务
         /// </summary>
-        private void ExecutePrintPreview()
+        private async void ExecutePrintPreview()
         {
             _logger.LogInformation("执行打印预览");
-            // 打印预览逻辑将在后续实现
+
+            try
+            {
+                // MVP阶段：需要先保存处方才能打印
+                // TODO: PRINT-5优化 - 支持未保存处方的打印预览
+                if (_dataManager == null || _dataManager.PrescriptionId == Guid.Empty)
+                {
+                    _logger.LogWarning("无法打印预览：处方未保存");
+                    // TODO: 使用通知服务提示用户
+                    return;
+                }
+
+                // 获取完整的处方数据
+                var prescription = await _prescriptionRepository.GetByIdAsync(_dataManager.PrescriptionId);
+                if (prescription == null)
+                {
+                    _logger.LogWarning("无法打印预览：未找到处方 ID={PrescriptionId}", _dataManager.PrescriptionId);
+                    return;
+                }
+
+                // 调用打印服务进行预览
+                await _printService.PreviewPrescriptionAsync(prescription);
+                _logger.LogInformation("打印预览完成");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "打印预览失败");
+                // TODO: 使用通知服务显示错误信息
+            }
         }
 
         /// <summary>
