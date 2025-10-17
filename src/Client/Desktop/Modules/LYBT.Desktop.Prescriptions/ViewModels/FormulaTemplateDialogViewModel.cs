@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -221,7 +222,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
                 var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 FormulaTemplates.Clear();
-                foreach (var item in pagedData.Items)
+                // Issue #1354: 只显示已验证的验方
+                foreach (var item in pagedData.Items.Where(f => f.ValidationStatus == FormulaValidationStatus.Validated))
                 {
                     FormulaTemplates.Add(item);
                 }
@@ -250,6 +252,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
                 var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 var filtered = allFormulas.Items.AsEnumerable();
+
+                // Issue #1354: 只显示已验证的验方
+                filtered = filtered.Where(f => f.ValidationStatus == FormulaValidationStatus.Validated);
 
                 // 按关键字筛选
                 if (!string.IsNullOrWhiteSpace(SearchText))
