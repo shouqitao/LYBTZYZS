@@ -167,11 +167,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- 用量1 -->
+                        <!-- Issue #1363: [ENTRY-5] 实现焦点自动跳转逻辑 -->
                         <DataGridTemplateColumn Header="用量1" Width="1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Item1.Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                            BorderThickness="0" Background="Transparent" />
+                                            BorderThickness="0" Background="Transparent"
+                                            PreviewKeyDown="QuantityTextBox_PreviewKeyDown" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -193,11 +195,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- 用量2 -->
+                        <!-- Issue #1363: [ENTRY-5] 实现焦点自动跳转逻辑 -->
                         <DataGridTemplateColumn Header="用量2" Width="1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Item2.Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                            BorderThickness="0" Background="Transparent" />
+                                            BorderThickness="0" Background="Transparent"
+                                            PreviewKeyDown="QuantityTextBox_PreviewKeyDown" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -219,11 +223,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- 用量3 -->
+                        <!-- Issue #1363: [ENTRY-5] 实现焦点自动跳转逻辑 -->
                         <DataGridTemplateColumn Header="用量3" Width="1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Item3.Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                            BorderThickness="0" Background="Transparent" />
+                                            BorderThickness="0" Background="Transparent"
+                                            PreviewKeyDown="QuantityTextBox_PreviewKeyDown" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -245,11 +251,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- 用量4 -->
+                        <!-- Issue #1363: [ENTRY-5] 实现焦点自动跳转逻辑 -->
                         <DataGridTemplateColumn Header="用量4" Width="1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Item4.Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                            BorderThickness="0" Background="Transparent" />
+                                            BorderThickness="0" Background="Transparent"
+                                            PreviewKeyDown="QuantityTextBox_PreviewKeyDown" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
