@@ -40,6 +40,7 @@ namespace LYBT.Desktop.Prescriptions
             containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
             containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
+            containerRegistry.RegisterDialog<Views.PrescriptionSearchDialog, PrescriptionSearchDialogViewModel>();
         }
     }
 }

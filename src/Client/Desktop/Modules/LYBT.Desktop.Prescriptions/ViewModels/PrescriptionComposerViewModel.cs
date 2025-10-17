@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         private readonly IPrescriptionRepository _prescriptionRepository;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IHerbRepository _herbRepository;
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -429,6 +431,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IPrescriptionRepository prescriptionRepository,
             IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -444,6 +447,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -842,19 +846,90 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         }
 
         /// <summary>
-        /// 高级查询处方（ENTRY-16）
+        /// 高级查询处方（ENTRY-17）
         /// </summary>
         private void ExecuteAdvancedSearch()
         {
             try
             {
-                Logger.LogInformation("执行高级查询处方");
-                ShowInfoMessage("高级查询功能开发中（ENTRY-17）");
+                Logger.LogInformation("打开高级查询对话框");
+
+                // 准备对话框参数
+                var parameters = new DialogParameters();
+
+                // 打开PrescriptionSearchDialog对话框
+                _dialogService.ShowDialog("PrescriptionSearchDialog", parameters, result =>
+                {
+                    try
+                    {
+                        if (result.Result == ButtonResult.OK)
+                        {
+                            // 获取选中的处方
+                            var selectedPrescription = result.Parameters.GetValue<PrescriptionSearchResultDto>("SelectedPrescription");
+                            if (selectedPrescription != null && _dataManager.PrescriptionId != Guid.Empty)
+                            {
+                                // 异步导入选中的处方
+                                _ = Task.Run(async () => await ImportSelectedPrescriptionAsync(selectedPrescription));
+                            }
+                        }
+                        else
+                        {
+                            Logger.LogInformation("用户取消了高级查询");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "处理高级查询结果时发生异常");
+                        ShowErrorMessage("处理查询结果失败");
+                    }
+                });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "高级查询处方时发生异常");
-                ShowErrorMessage("高级查询失败");
+                Logger.LogError(ex, "打开高级查询对话框时发生异常");
+                ShowErrorMessage("打开查询对话框失败");
+            }
+        }
+
+        /// <summary>
+        /// 导入选中的处方（ENTRY-17）
+        /// </summary>
+        private async Task ImportSelectedPrescriptionAsync(PrescriptionSearchResultDto prescription)
+        {
+            try
+            {
+                SetIsBusy(true, "正在导入选中的处方...");
+
+                // 调用Server端ClonePrescriptionAsync
+                var result = await _prescriptionRepository.ClonePrescriptionAsync(
+                    prescription.PrescriptionId,
+                    _dataManager.PrescriptionId);
+
+                if (result.IsSuccess)
+                {
+                    // 重新加载处方数据
+                    await _dataManager.InitializeAsync(MedicalCaseId);
+                    RefreshItemRows();
+                    RecalculatePrice();
+
+                    ShowInfoMessage($"成功导入处方：{result.Data}");
+                    Logger.LogInformation("从高级查询导入处方成功：SourceId={SourceId}, TargetId={TargetId}",
+                        prescription.PrescriptionId, _dataManager.PrescriptionId);
+                }
+                else
+                {
+                    ShowErrorMessage($"导入失败：{result.Message}");
+                    Logger.LogWarning("从高级查询导入处方失败：{Message}", result.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "从高级查询导入处方时发生异常");
+                ShowErrorMessage("导入处方失败");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 

@@ -1,0 +1,152 @@
+﻿<UserControl x:Class="LYBT.Desktop.Prescriptions.Views.PrescriptionSearchDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900"
+             MinWidth="800" MinHeight="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#2196F3" Padding="16">
+            <TextBlock Text="高级查询历史处方" FontSize="20" FontWeight="Medium" Foreground="White" />
+        </Border>
+
+        <!-- 搜索条件栏 -->
+        <Grid Grid.Row="1" Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 患者姓名 -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="患者姓名："
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Text="{Binding PatientName, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,16,8" />
+
+            <!-- 症状关键词 -->
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Text="症状关键词："
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Text="{Binding SymptomKeyword, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,16,8" />
+
+            <!-- 搜索按钮 -->
+            <Button Grid.Row="0" Grid.Column="2" Grid.RowSpan="2"
+                    Command="{Binding SearchCommand}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="搜索"
+                    VerticalAlignment="Center"
+                    MinWidth="100" />
+
+            <!-- 提示信息 -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                       Text="提示：可以只填写患者姓名或症状关键词，或者两者都填写进行组合查询"
+                       FontSize="12"
+                       Foreground="Gray"
+                       Margin="0,4,0,0" />
+        </Grid>
+
+        <!-- 搜索结果列表 -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1" Margin="16,0,16,8">
+            <DataGrid ItemsSource="{Binding SearchResults}"
+                      SelectedItem="{Binding SelectedPrescription}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="患者姓名" Binding="{Binding PatientName}" Width="120" />
+                    <DataGridTextColumn Header="处方日期" Binding="{Binding PrescriptionDate, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
+                    <DataGridTextColumn Header="中医诊断" Binding="{Binding TCMDiagnosis}" Width="250" />
+                    <DataGridTextColumn Header="药材数量" Binding="{Binding HerbCount}" Width="80" />
+                    <DataGridTemplateColumn Header="处方详情" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Items}" MaxHeight="100">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Margin="2">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0} {1}{2};">
+                                                        <Binding Path="HerbName" />
+                                                        <Binding Path="Quantity" />
+                                                        <Binding Path="Unit" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- 按钮栏 -->
+        <Grid Grid.Row="3" Margin="16,0,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 加载进度条 -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="{Binding IsBusy}"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             Width="200"
+                             Height="4"
+                             Margin="0,0,8,0" />
+                <TextBlock Text="{Binding BusyMessage}"
+                           Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           Foreground="Gray" />
+            </StackPanel>
+
+            <!-- 选择按钮 -->
+            <Button Grid.Column="1"
+                    Command="{Binding SelectCommand}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Content="选择导入"
+                    Margin="0,0,8,0"
+                    MinWidth="100" />
+
+            <!-- 取消按钮 -->
+            <Button Grid.Column="2"
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Content="取消"
+                    MinWidth="100" />
+        </Grid>
+    </Grid>
+</UserControl>
