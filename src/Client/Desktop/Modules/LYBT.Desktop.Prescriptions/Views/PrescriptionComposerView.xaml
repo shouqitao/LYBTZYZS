@@ -120,6 +120,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
@@ -136,15 +137,36 @@
                                    Style="{StaticResource ButtonStyle}" Margin="0,0,10,0" />
                             <Button Content="导入验方" Command="{Binding ImportFormulaCommand}"
                                    Style="{StaticResource ButtonStyle}" Margin="0,0,10,0" />
+                            <Button Content="从历史导入" Command="{Binding AdvancedSearchCommand}"
+                                   Style="{StaticResource ButtonStyle}" Margin="0,0,10,0" />
                             <Button Content="清空处方" Command="{Binding ClearAllCommand}"
                                    Style="{StaticResource SecondaryButtonStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
+                <!-- 快速输入预留区 (ENTRY-19) -->
+                <Border Grid.Row="1" Background="#FFF9E6" BorderBrush="#FFE5B4" BorderThickness="0,1,0,1" Padding="15,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="快速输入：" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" />
+                            <TextBox Width="500" IsEnabled="False"
+                                     Style="{StaticResource InputStyle}"
+                                     Text="当归10 白芍15 川芎6..."
+                                     Foreground="#95A5A6" />
+                            <Button Content="提交" IsEnabled="False"
+                                    Style="{StaticResource ButtonStyle}"
+                                    Margin="10,0,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="（此功能将在后续版本开放）"
+                                   FontSize="12" Foreground="#7F8C8D"
+                                   Margin="75,5,0,0" />
+                    </StackPanel>
+                </Border>
+
                 <!-- 药材列表 (8列表格布局) -->
                 <!-- Issue #1361: [ENTRY-3] 设计8列DataGrid XAML布局 -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding ItemRows}"
+                <DataGrid Grid.Row="2" ItemsSource="{Binding ItemRows}"
                          AutoGenerateColumns="False" CanUserAddRows="False"
                          GridLinesVisibility="All" HeadersVisibility="Column"
                          Background="White" AlternatingRowBackground="#F8F9FA">
