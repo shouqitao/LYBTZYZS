@@ -734,11 +734,11 @@ public class BulkPurchasePriceCalculationStrategy : IPriceCalculationStrategy
 
         try
         {
-            // 检查是否所有药材都有足够的库存
+            // 检查是否所有药材都存在
             foreach (var item in prescription.Items)
             {
                 var herb = await _herbService.GetByIdAsync(item.HerbId);
-                if (!herb.IsSuccess || herb.Data!.Stock < item.Quantity * prescription.DosageCount)
+                if (!herb.IsSuccess)
                 {
                     return false;
                 }
@@ -1285,70 +1285,6 @@ public class CompatibilityCheckDecorator : PrescriptionDecorator
 }
 
 /// <summary>
-/// 药材库存检查增强器
-/// </summary>
-public class StockCheckDecorator : PrescriptionDecorator
-{
-    private readonly IHerbService _herbService;
-    private readonly ILogger<StockCheckDecorator> _logger;
-
-    public StockCheckDecorator(
-        Prescription prescription,
-        IHerbService herbService,
-        ILogger<StockCheckDecorator> logger) 
-        : base(prescription)
-    {
-        _herbService = herbService;
-        _logger = logger;
-    }
-
-    public override Prescription GetPrescription()
-    {
-        var enhancedPrescription = (Prescription)base.GetPrescription();
-        
-        var stockIssues = new List<string>();
-        var lowStockItems = new List<PrescriptionItem>();
-
-        foreach (var item in enhancedPrescription.Items)
-        {
-            var herb = await _herbService.GetByIdAsync(item.HerbId);
-            if (!herb.IsSuccess)
-            {
-                stockIssues.Add($"{item.HerbName}: 药材不存在");
-                continue;
-            }
-
-            var requiredQuantity = item.Quantity * enhancedPrescription.DosageCount;
-            var availableStock = herb.Data.Stock ?? 0;
-
-            if (availableStock < requiredQuantity)
-            {
-                lowStockItems.Add(item);
-                stockIssues.Add($"{item.HerbName}: 库存不足 (需要 {requiredQuantity}{item.Unit}，当前库存 {availableStock}{item.Unit})");
-            }
-        }
-
-        if (stockIssues.Any())
-        {
-            enhancedPrescription.Status = PrescriptionStatus.StockIssue;
-            enhancedPrescription.StockWarnings = stockIssues;
-            enhancedPrescription.LowStockItems = lowStockItems;
-            enhancedPrescription.Notes = $"库存警告: {string.Join("; ", stockIssues)}";
-            
-            _logger.LogWarning("处方 {PrescriptionId} 检测到库存问题: {Warnings}", 
-                enhancedPrescription.Id, string.Join("; ", stockIssues));
-        }
-        else
-        {
-            enhancedPrescription.StockWarnings = new List<string>();
-            enhancedPrescription.LowStockItems = new List<PrescriptionItem>();
-        }
-
-        return enhancedPrescription;
-    }
-}
-
-/// <summary>
 /// 处方装饰器工厂
 /// </summary>
 public class PrescriptionDecoratorFactory
@@ -1366,10 +1302,9 @@ public class PrescriptionDecoratorFactory
     /// 创建增强处方
     /// </summary>
     public Prescription CreateEnhancedPrescription(
-        Prescription prescription, 
+        Prescription prescription,
         bool enableAllergyCheck = true,
-        bool enableCompatibilityCheck = true,
-        bool enableStockCheck = true)
+        bool enableCompatibilityCheck = true)
     {
         Prescription enhancedPrescription = prescription;
 
@@ -1385,12 +1320,6 @@ public class PrescriptionDecoratorFactory
             enhancedPrescription = new CompatibilityCheckDecorator(enhancedPrescription, compatibilityService, _logger);
         }
 
-        if (enableStockCheck)
-        {
-            var herbService = _serviceProvider.GetService<IHerbService>();
-            enhancedPrescription = new StockCheckDecorator(enhancedPrescription, herbService, _logger);
-        }
-
         return enhancedPrescription;
     }
 
@@ -1400,10 +1329,9 @@ public class PrescriptionDecoratorFactory
     public Prescription CreateEnhancedPrescription(Prescription prescription, PrescriptionEnhancementConfig config)
     {
         return CreateEnhancedPrescription(
-            prescription, 
+            prescription,
             config.EnableAllergyCheck,
-            config.EnableCompatibilityCheck,
-            config.EnableStockCheck);
+            config.EnableCompatibilityCheck);
     }
 }
 
@@ -1414,7 +1342,6 @@ public class PrescriptionEnhancementConfig
 {
     public bool EnableAllergyCheck { get; set; } = true;
     public bool EnableCompatibilityCheck { get; set; } = true;
-    public bool EnableStockCheck { get; set; } = true;
 }
 ```
 
@@ -1955,12 +1882,11 @@ public class MedicalCaseService : IMedicalCaseService
             }
 
             // 3. 创建增强处方（应用装饰器模式）
-            var enhancedPrescriptions = prescriptions.Select(p => 
+            var enhancedPrescriptions = prescriptions.Select(p =>
                 _decoratorFactory.CreateEnhancedPrescription(
                     p,
                     enableAllergyCheck: true,
-                    enableCompatibilityCheck: true,
-                    enableStockCheck: true
+                    enableCompatibilityCheck: true
                 )).ToList();
 
             // 4. 更新医案状态

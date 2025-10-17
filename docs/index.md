@@ -66,7 +66,7 @@
 - **[医案模块](modules/medical-case/)** - 医案状态管理、业务流程
 - **[诊疗模块](modules/consultation/)** - 四诊合参、辨证论治、诊断记录
 - **[处方模块](modules/prescriptions/)** - 四种录入方式、药材配伍、价格计算
-- **[药材模块](modules/herbs/)** - 药材字典、拼音码检索、库存管理
+- **[药材模块](modules/herbs/)** - 药材字典、拼音码检索、价格管理
 - **[验方模块](modules/formula/)** - 验方模板、智能推荐、统计分析
 - **[用户模块](modules/users/)** - 用户管理、角色权限、密码安全
 
