@@ -79,5 +79,28 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="formulaId">验方ID</param>
         Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (ENTRY-13)
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5);
+
+        /// <summary>
+        /// 搜索处方 (ENTRY-14)
+        /// 支持按患者姓名或症状/诊断关键词搜索
+        /// </summary>
+        /// <param name="patientName">患者姓名（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键词（可空）</param>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(string? patientName = null, string? symptomKeyword = null);
+
+        /// <summary>
+        /// 复制处方到新处方（支持跨患者）(ENTRY-15)
+        /// 将源处方的所有药材复制到目标处方
+        /// </summary>
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetPrescriptionId">目标处方ID</param>
+        Task<ServiceResult> ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetPrescriptionId);
     }
 }

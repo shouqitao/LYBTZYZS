@@ -545,4 +545,35 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("平均金额")]
         public decimal AvgAmount { get; set; }
     }
+
+    /// <summary>
+    /// 处方搜索结果DTO (ENTRY-12)
+    /// 用于处方历史查询返回的数据结构
+    /// </summary>
+    public class PrescriptionSearchResultDto
+    {
+        /// <summary>处方ID</summary>
+        [DisplayName("处方ID")]
+        public Guid PrescriptionId { get; set; }
+
+        /// <summary>患者姓名</summary>
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        /// <summary>处方日期</summary>
+        [DisplayName("处方日期")]
+        public DateTime PrescriptionDate { get; set; }
+
+        /// <summary>中医诊断（来自Consultation）</summary>
+        [DisplayName("中医诊断")]
+        public string? TCMDiagnosis { get; set; }
+
+        /// <summary>药材数量</summary>
+        [DisplayName("药材数量")]
+        public int HerbCount { get; set; }
+
+        /// <summary>处方项目列表</summary>
+        [DisplayName("处方项目")]
+        public List<PrescriptionItemDto> Items { get; set; } = new();
+    }
 }
