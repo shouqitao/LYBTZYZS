@@ -589,6 +589,45 @@ namespace LYBT.Module.Prescriptions.Tests.Services
 
         #endregion
 
+        #region SearchPrescriptionsAsync Tests
+
+        [Fact]
+        public async Task SearchPrescriptionsAsync_WithNoParameters_ShouldReturnEmptyList()
+        {
+            // Arrange - 无需参数
+
+            // Act
+            var result = await _prescriptionService.SearchPrescriptionsAsync(null, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchPrescriptionsAsync_WithEmptyStrings_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var emptyPatientName = "   ";
+            var emptySymptomKeyword = "";
+
+            // Act
+            var result = await _prescriptionService.SearchPrescriptionsAsync(emptyPatientName, emptySymptomKeyword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Should().BeEmpty();
+        }
+
+        // Note: 完整的集成测试将在IntegrationTests项目中进行
+        // 这里的单元测试仅验证基本逻辑和边界条件
+
+        #endregion
+
         public override void Dispose()
         {
             base.Dispose();
