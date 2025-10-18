@@ -735,6 +735,101 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        /// <returns>患者最近处方列表（按日期倒序）</returns>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            int count = 5)
+        {
+            try
+            {
+                // 获取所有处方
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // 获取所有病历（用于关联患者）
+                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
+                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+
+                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
+                var allConsultations = await _consultationRepository.GetAllAsync();
+                var consultationDict = allConsultations.ToDictionary(c => c.Id);
+
+                // 获取患者信息
+                var patient = await _patientRepository.GetByIdAsync(patientId);
+                if (patient == null)
+                {
+                    return ServiceResult<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
+                }
+
+                // 内存过滤：找到该患者的所有处方
+                var patientPrescriptions = new List<PrescriptionSearchResultDto>();
+
+                foreach (var prescription in allPrescriptions)
+                {
+                    // 关联病历
+                    if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
+                    {
+                        continue; // 找不到关联病历，跳过
+                    }
+
+                    // 筛选该患者的处方
+                    if (medicalCase.PatientId != patientId)
+                    {
+                        continue; // 不是该患者的处方，跳过
+                    }
+
+                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
+                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
+
+                    // 获取处方项以计算药材数量（Issue #1370 ENTRY-12 新增需求）
+                    var prescriptionWithItems = await _repository.GetByIdWithItemsAsync(prescription.Id);
+                    var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
+
+                    // 构建搜索结果
+                    var prescriptionDto = new PrescriptionSearchResultDto
+                    {
+                        Id = prescription.Id,
+                        CreatedAt = prescription.CreatedAt,
+                        PatientId = patient.Id,
+                        PatientName = patient.Name ?? string.Empty,
+                        Indication = prescription.Indication,
+                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        DosageCount = prescription.DosageCount,
+                        Advice = prescription.Advice,
+                        FormulaSource = prescription.FormulaSource,
+                        Remark = prescription.Remark,
+                        HerbCount = herbCount, // Issue #1370 新增
+                        Items = prescriptionWithItems?.Items != null
+                            ? _mapper.Map<List<PrescriptionItemDto>>(prescriptionWithItems.Items)
+                            : new List<PrescriptionItemDto>() // Issue #1370 新增
+                    };
+
+                    patientPrescriptions.Add(prescriptionDto);
+                }
+
+                // 按创建日期倒序排列，取前count条
+                var recentPrescriptions = patientPrescriptions
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(count)
+                    .ToList();
+
+                _logger.LogInformation("获取患者最近处方完成，患者ID：{PatientId}，患者姓名：{PatientName}，请求数量：{RequestCount}，实际返回：{ActualCount}",
+                    patientId, patient.Name ?? "(空)", count, recentPrescriptions.Count);
+
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(recentPrescriptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近处方时发生错误，患者ID：{PatientId}", patientId);
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"获取患者最近处方失败：{ex.Message}");
+            }
+        }
+
         #endregion
     }
 }
