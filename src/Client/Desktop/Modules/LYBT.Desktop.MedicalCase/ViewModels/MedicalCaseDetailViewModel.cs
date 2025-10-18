@@ -357,6 +357,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 // 重新加载病历数据
                 var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCase.Id);
+                if (medicalCase == null)
+                {
+                    await ShowErrorMessageAsync("未找到病历数据");
+                    return;
+                }
                 LoadMedicalCase(medicalCase);
                 await ShowSuccessMessageAsync("数据刷新成功");
             }

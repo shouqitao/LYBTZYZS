@@ -11,7 +11,7 @@ using Prism.Regions;
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
-    /// 处方管理视图模型 - UltraThink精简架构
+    /// 处方管理视图模型 - UltraThink精简架构 (Issue #1477 #1479)
     /// 作为处方模块的主导航和管理容器
     /// Issue #1445 (ARCH-3): 统一导航目标到PrescriptionView（已删除空骨架）
     /// </summary>
@@ -20,6 +20,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 服务依赖
 
         private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IFeatureToggleService _featureToggleService;
 
         #endregion
 
@@ -111,6 +112,40 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             get => _pageSize;
             set => SetProperty(ref _pageSize, value);
         }
+
+        #endregion
+
+        #region 功能开关属性 (Issue #1477 #1479)
+
+        /// <summary>
+        /// 是否允许创建处方（MVP禁用）
+        /// </summary>
+        public bool CanCreate => _featureToggleService.IsEnabled("Prescription.Create");
+
+        /// <summary>
+        /// 是否允许删除处方（MVP禁用）
+        /// </summary>
+        public bool CanDelete => _featureToggleService.IsEnabled("Prescription.Delete");
+
+        /// <summary>
+        /// 是否允许复制处方（MVP启用）
+        /// </summary>
+        public bool CanClone => _featureToggleService.IsEnabled("Prescription.Clone");
+
+        /// <summary>
+        /// 是否允许导出处方（MVP启用）
+        /// </summary>
+        public bool CanExport => _featureToggleService.IsEnabled("Prescription.Export");
+
+        /// <summary>
+        /// 是否允许查看详情（MVP启用）
+        /// </summary>
+        public bool CanViewDetail => _featureToggleService.IsEnabled("Prescription.ViewDetail");
+
+        /// <summary>
+        /// 是否允许搜索（MVP启用）
+        /// </summary>
+        public bool CanSearch => _featureToggleService.IsEnabled("Prescription.Search");
 
         #endregion
 
@@ -213,6 +248,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         public PrescriptionManagementViewModel(
             IPrescriptionRepository prescriptionRepository,
+            IFeatureToggleService featureToggleService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -221,30 +257,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _featureToggleService = featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
 
-            // 初始化命令
+            // 初始化命令（基于功能开关）
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            SearchCommand = new DelegateCommand(async () => await SearchAsync());
-            CreateCommand = new DelegateCommand(Create);
+            SearchCommand = new DelegateCommand(async () => await SearchAsync(), () => CanSearch);
+            CreateCommand = new DelegateCommand(Create, () => CanCreate);
             AddPrescriptionCommand = CreateCommand; // 别名
-            EditCommand = new DelegateCommand(Edit, CanEdit);
-            DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), CanDelete);
-            ViewDetailCommand = new DelegateCommand(ViewDetail, CanViewDetail);
+            EditCommand = new DelegateCommand(Edit, CanEditInternal);
+            DeleteCommand = new DelegateCommand(async () => await DeleteAsync(), CanDeleteInternal);
+            ViewDetailCommand = new DelegateCommand(ViewDetail, CanViewDetailInternal);
             PrintCommand = new DelegateCommand(Print, CanPrint);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), CanPreviousPage);
             NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), CanNextPage);
 
-            // DataGrid 行命令
-            ViewPrescriptionCommand = new DelegateCommand<PrescriptionDto>(ViewPrescriptionItem, item => item != null);
+            // DataGrid 行命令（基于功能开关）
+            ViewPrescriptionCommand = new DelegateCommand<PrescriptionDto>(ViewPrescriptionItem, item => item != null && CanViewDetail);
             ViewPatientHistoryCommand = new DelegateCommand<PrescriptionDto>(ViewPatientHistory, item => item != null);
             EditPrescriptionCommand = new DelegateCommand<PrescriptionDto>(EditPrescriptionItem, item => item != null && !IsBusy);
-            CopyPrescriptionCommand = new DelegateCommand<PrescriptionDto>(CopyPrescription, item => item != null && !IsBusy);
-            DeletePrescriptionCommand = new DelegateCommand<PrescriptionDto>(async item => await DeletePrescriptionItemAsync(item), item => item != null && !IsBusy);
+            CopyPrescriptionCommand = new DelegateCommand<PrescriptionDto>(CopyPrescription, item => item != null && !IsBusy && CanClone);
+            DeletePrescriptionCommand = new DelegateCommand<PrescriptionDto>(async item => await DeletePrescriptionItemAsync(item), item => item != null && !IsBusy && CanDelete);
 
-            // 其他命令
+            // 其他命令（基于功能开关）
             ClearFiltersCommand = new DelegateCommand(ClearFilters, () => !string.IsNullOrEmpty(SearchText) || StartDate.HasValue || EndDate.HasValue);
-            ExportPrescriptionsCommand = new DelegateCommand(async () => await ExportPrescriptionsAsync(), () => Prescriptions.Count > 0 && !IsBusy);
+            ExportPrescriptionsCommand = new DelegateCommand(async () => await ExportPrescriptionsAsync(), () => Prescriptions.Count > 0 && !IsBusy && CanExport);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -522,9 +559,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             }
         }
 
-        private bool CanEdit() => SelectedPrescription != null && !IsBusy;
-        private bool CanDelete() => SelectedPrescription != null && !IsBusy;
-        private bool CanViewDetail() => SelectedPrescription != null;
+        private bool CanEditInternal() => SelectedPrescription != null && !IsBusy;
+        private bool CanDeleteInternal() => SelectedPrescription != null && !IsBusy && CanDelete;
+        private bool CanViewDetailInternal() => SelectedPrescription != null && CanViewDetail;
         private bool CanPrint() => SelectedPrescription != null;
         private bool CanPreviousPage() => CurrentPage > 1 && !IsBusy;
         private bool CanNextPage()

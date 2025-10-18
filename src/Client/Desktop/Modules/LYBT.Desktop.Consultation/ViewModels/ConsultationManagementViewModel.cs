@@ -13,17 +13,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
 {
 
     /// <summary>
-    /// ���Ƽ�¼������ͼģ�� - �򻯰�
-    /// ֻ������ʾ�ͻ����������Ƽ�¼�����������ӵ����̿���
+    /// 诊疗记录管理视图模型 - 简化版 (Issue #1477 #1479)
+    /// 只支持查看和基本操作，诊疗记录的创建由病案流程控制
     /// </summary>
     public class ConsultationManagementViewModel : UnifiedViewModelBase
     {
 
-        #region ��������
+        #region 私有字段
 
         private readonly IConsultationRepository _consultationRepository;
+        private readonly IFeatureToggleService _featureToggleService;
 
-        #endregion ��������
+        #endregion 私有字段
 
         #region ����
 
@@ -59,7 +60,21 @@ namespace LYBT.Desktop.Consultation.ViewModels
             set => SetProperty(ref _searchKeyword, value);
         }
 
-        #endregion ����
+        #endregion 属性
+
+        #region 功能开关属性 (Issue #1477 #1479)
+
+        /// <summary>
+        /// 是否允许查看详情
+        /// </summary>
+        public bool CanViewDetail => _featureToggleService.IsEnabled("Consultation.ViewDetail");
+
+        /// <summary>
+        /// 是否允许搜索
+        /// </summary>
+        public bool CanSearch => _featureToggleService.IsEnabled("Consultation.Search");
+
+        #endregion 功能开关属性
 
         #region ����
 
@@ -79,10 +94,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #endregion ����
 
-        #region ���캯��
+        #region 构造函数
 
         public ConsultationManagementViewModel(
         IConsultationRepository consultationRepository,
+        IFeatureToggleService featureToggleService,
         IEventAggregator eventAggregator,
         ILoggerFactory loggerFactory,
         IRegionManager regionManager,
@@ -91,11 +107,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
         : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
+            _featureToggleService = featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            SearchCommand = new DelegateCommand(async () => await SearchAsync());
+            SearchCommand = new DelegateCommand(async () => await SearchAsync(), () => CanSearch);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ViewDetailsCommand = new DelegateCommand<ConsultationDto>(ViewDetails, item => item != null);
+            ViewDetailsCommand = new DelegateCommand<ConsultationDto>(ViewDetails, item => item != null && CanViewDetail);
 
             ViewPrescriptionCommand = new DelegateCommand<ConsultationDto>(ViewPrescription, item => item != null);
             PrintCommand = new DelegateCommand<ConsultationDto>(Print, item => item != null);
