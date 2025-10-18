@@ -16,10 +16,11 @@ using Prism.Regions;
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
-    /// 处方编写器视图模型 - UltraThink精简架构
-    /// 核心处方编写界面，整合所有处方组件
+    /// 处方视图模型 - 统一架构实现
+    /// Issue #1445 (ARCH-2): 已废弃Phase 4B骨架，统一到PrescriptionComposerView重命名版本
+    /// 完整实现包含：8列DataGrid、验方导入、价格计算、历史复制等功能
     /// </summary>
-    public class PrescriptionComposerViewModel : UnifiedViewModelBase
+    public class PrescriptionViewModel : UnifiedViewModelBase
     {
         #region 服务依赖
 
@@ -424,7 +425,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #region 构造函数
 
-        public PrescriptionComposerViewModel(
+        public PrescriptionViewModel(
             IPrescriptionRepository prescriptionRepository,
             IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,

@@ -7,14 +7,15 @@ namespace LYBT.Desktop.Prescriptions.Views
 {
 
     /// <summary>
-    /// PrescriptionComposerView - 处方组成编辑器主界面
-    /// UltraThink简化版本：专注于处方组成编辑，不包含历史管理等复杂功能
+    /// PrescriptionView - 处方编辑主界面
+    /// 统一架构实现（原PrescriptionComposerView，Issue #1445 ARCH-2重命名）
+    /// 完整实现包含：8列DataGrid、验方导入、价格计算、历史复制等功能
     /// Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤
     /// </summary>
-    public partial class PrescriptionComposerView : UserControl
+    public partial class PrescriptionView : UserControl
     {
 
-        public PrescriptionComposerView()
+        public PrescriptionView()
         {
             InitializeComponent();
         }
@@ -51,7 +52,7 @@ namespace LYBT.Desktop.Prescriptions.Views
                     // 添加TextChanged事件处理，触发过滤
                     textBox.TextChanged += (s, args) =>
                     {
-                        if (DataContext is PrescriptionComposerViewModel viewModel)
+                        if (DataContext is PrescriptionViewModel viewModel)
                         {
                             viewModel.FilterHerbs(textBox.Text);
                         }
