@@ -308,7 +308,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         private void Create()
         {
-            NavigateTo("MainRegion", "PrescriptionComposerView");
+            NavigateTo("MainRegion", "PrescriptionView");
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 {
                     { "PrescriptionId", SelectedPrescription.Id }
                 };
-                NavigateTo("MainRegion", "PrescriptionComposerView", parameters);
+                NavigateTo("MainRegion", "PrescriptionView", parameters);
             }
         }
 

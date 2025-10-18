@@ -187,8 +187,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             try
             {
-                NavigateTo("PrescriptionContentRegion", "PrescriptionComposerView");
-                ActiveView = "PrescriptionComposerView";
+                NavigateTo("PrescriptionContentRegion", "PrescriptionView");
+                ActiveView = "PrescriptionView";
             }
             catch (Exception ex)
             {
@@ -339,8 +339,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     { "PrescriptionId", prescriptionId }
                 };
 
-                NavigateTo("PrescriptionContentRegion", "PrescriptionComposerView", parameters);
-                ActiveView = "PrescriptionComposerView";
+                NavigateTo("PrescriptionContentRegion", "PrescriptionView", parameters);
+                ActiveView = "PrescriptionView";
             }
             catch (Exception ex)
             {
