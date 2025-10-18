@@ -10,7 +10,7 @@ namespace LYBT.Desktop.MedicalCase
     /// </summary>
     [Module(ModuleName = nameof(MedicalCaseModule))]
     [ModuleDependency("PatientsModule")] // 病历依赖患者
-    [ModuleDependency("ConsultationModule")] // 病历依赖诊疗
+    // ✅ 移除ConsultationModule依赖 - MedicalCase是聚合根，不应依赖子实体模块 (Issue #1463)
     public class MedicalCaseModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
@@ -29,11 +29,13 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
 
             // 注册视图模型 - MVP核心功能
+            containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入
             // TODO: 修复编译错误后再启用
             // containerRegistry.Register<MedicalCaseManagementViewModel>();
             // containerRegistry.Register<MedicalCaseListViewModel>();
 
             // 注册视图用于导航 - 需要对应视图文件存在
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseListView>();
         }
