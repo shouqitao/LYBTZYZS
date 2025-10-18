@@ -243,13 +243,14 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
                 UpdateSelectionState(targetView);
 
                 // 根据参数映射视图
+                // Issue #1454: 修正DiagnosisView → ConsultationManagementView
                 string viewName = targetView switch
                 {
-                    "Diagnosis" => "DiagnosisView",
+                    "Diagnosis" => "ConsultationManagementView",  // ✅ 修正：使用实际存在的视图
                     "Prescription" => "PrescriptionView",
                     "PatientManagement" => "PatientManagementView",
                     "History" => "HistoryView",
-                    _ => "DiagnosisView"
+                    _ => "ConsultationManagementView"  // ✅ 默认也修正
                 };
 
                 _regionManager.RequestNavigate("ClinicalContentRegion", viewName);
