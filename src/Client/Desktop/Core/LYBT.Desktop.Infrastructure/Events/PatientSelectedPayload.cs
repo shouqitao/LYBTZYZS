@@ -15,12 +15,12 @@ namespace LYBT.Desktop.Infrastructure.Events
         /// <summary>
         /// 患者姓名
         /// </summary>
-        public string PatientName { get; set; }
+        public required string PatientName { get; set; }
 
         /// <summary>
         /// 患者性别
         /// </summary>
-        public string Gender { get; set; }
+        public required string Gender { get; set; }
 
         /// <summary>
         /// 患者年龄
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Infrastructure.Events
         /// <summary>
         /// 患者手机号码
         /// </summary>
-        public string PhoneNumber { get; set; }
+        public required string PhoneNumber { get; set; }
 
         /// <summary>
         /// 最后就诊日期
@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Infrastructure.Events
         /// <summary>
         /// 过敏史
         /// </summary>
-        public string AllergyHistory { get; set; }
+        public required string AllergyHistory { get; set; }
 
         /// <summary>
         /// 选择时间

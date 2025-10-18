@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
     public interface IPrescriptionRepository
     {
         Task<PagedResult<PrescriptionDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<PrescriptionDto> GetByIdAsync(Guid id);
+        Task<PrescriptionDto?> GetByIdAsync(Guid id);
         Task<PrescriptionDto> CreateAsync(PrescriptionCreateDto dto);
         Task<PrescriptionDto> UpdateAsync(Guid id, PrescriptionUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);

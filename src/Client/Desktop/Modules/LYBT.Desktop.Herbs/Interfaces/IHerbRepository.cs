@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Herbs.Interfaces
     public interface IHerbRepository
     {
         Task<PagedResult<HerbDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<HerbDto> GetByIdAsync(Guid id);
+        Task<HerbDto?> GetByIdAsync(Guid id);
         Task<HerbDto> CreateAsync(HerbCreateDto dto);
         Task<HerbDto> UpdateAsync(HerbUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);

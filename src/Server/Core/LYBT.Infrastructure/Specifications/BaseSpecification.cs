@@ -9,7 +9,7 @@ namespace LYBT.Infrastructure.Specifications
     /// <typeparam name="T">实体类型</typeparam>
     public abstract class BaseSpecification<T> : ISpecification<T> where T : class
     {
-        public Expression<Func<T, bool>> Criteria { get; protected set; }
+        public Expression<Func<T, bool>>? Criteria { get; protected set; }
         public List<Expression<Func<T, object>>> Includes { get; } = new List<Expression<Func<T, object>>>();
         public List<string> IncludeStrings { get; } = new List<string>();
         public List<(Expression<Func<T, object>> KeySelector, bool Ascending)> OrderByClauses { get; } = new List<(Expression<Func<T, object>>, bool)>();

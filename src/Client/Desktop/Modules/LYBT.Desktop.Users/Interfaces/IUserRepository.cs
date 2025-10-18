@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Users.Interfaces
     {
         Task<List<UserDto>> GetAllAsync();
         Task<PagedResult<UserDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<UserDto> GetByIdAsync(Guid id);
+        Task<UserDto?> GetByIdAsync(Guid id);
         Task<UserDto> CreateAsync(UserCreateDto user);
         Task<UserDto> UpdateAsync(UserUpdateDto user);
         Task<bool> DeleteAsync(Guid id);

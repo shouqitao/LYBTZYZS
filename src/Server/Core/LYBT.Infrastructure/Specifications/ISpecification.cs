@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Specifications
         /// <summary>
         /// 获取查询表达式
         /// </summary>
-        Expression<Func<T, bool>> Criteria { get; }
+        Expression<Func<T, bool>>? Criteria { get; }
 
         /// <summary>
         /// 获取Include表达式列表
