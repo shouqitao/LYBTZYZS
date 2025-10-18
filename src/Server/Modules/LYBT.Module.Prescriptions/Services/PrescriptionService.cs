@@ -564,9 +564,10 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
-        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350, Issue #1366 ENTRY-8)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
         /// </summary>
-        public async Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(
+        public async Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
             Guid prescriptionId,
             Guid formulaId)
         {
@@ -576,7 +577,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var formula = await _formulaRepository.GetByIdAsync(formulaId);
                 if (formula == null)
                 {
-                    return ServiceResult.Failure("验方不存在");
+                    return ServiceResult<PrescriptionDto>.Failure("验方不存在");
                 }
 
                 // 检查验方状态
@@ -587,7 +588,7 @@ namespace LYBT.Module.Prescriptions.Services
                         .Select(h => h.OriginalHerbName)
                         .ToList();
 
-                    return ServiceResult.Failure(
+                    return ServiceResult<PrescriptionDto>.Failure(
                         $"验方\"{formula.Name}\"包含未校验的药材，请先在验方管理中完成校验。未校验药材：{string.Join("、", unvalidatedHerbs)}");
                 }
 
@@ -595,7 +596,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
                 if (prescription == null)
                 {
-                    return ServiceResult.Failure("处方不存在");
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
                 }
 
                 // 导入药材到处方
@@ -606,7 +607,7 @@ namespace LYBT.Module.Prescriptions.Services
                         Id = Guid.NewGuid(),
                         PrescriptionId = prescriptionId,
                         HerbId = herbItem.HerbId!.Value,  // Validated状态下HerbId必有值
-                        HerbName = herbItem.OriginalHerbName,
+                        HerbName = herbItem.OriginalHerbName ?? string.Empty,  // Issue #1366: null安全
                         Quantity = herbItem.Quantity,
                         Unit = herbItem.Unit,
                         UnitPrice = 0,  // 价格需要单独查询herb表或后续设置
@@ -617,14 +618,32 @@ namespace LYBT.Module.Prescriptions.Services
                     prescription.Items.Add(prescriptionItem);
                 }
 
+                // 更新ReferencedFormulas字段（追加验方名称，逗号分隔）(Issue #1366 ENTRY-8)
+                if (string.IsNullOrWhiteSpace(prescription.ReferencedFormulas))
+                {
+                    prescription.ReferencedFormulas = formula.Name;
+                }
+                else if (!prescription.ReferencedFormulas.Split(',').Contains(formula.Name))
+                {
+                    // 避免重复添加相同验方名称
+                    prescription.ReferencedFormulas += $",{formula.Name}";
+                }
+
                 await _repository.UpdateAsync(prescription);
 
-                return ServiceResult.Success($"验方\"{formula.Name}\"已导入到处方，共{formula.Herbs.Count}味药材");
+                // 返回更新后的处方DTO (Issue #1366 ENTRY-8)
+                var updatedPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                var prescriptionDto = _mapper.Map<PrescriptionDto>(updatedPrescription);
+
+                _logger.LogInformation("验方\"{FormulaName}\"已导入到处方，共{Count}味药材", formula.Name, formula.Herbs.Count);
+                return ServiceResult<PrescriptionDto>.Success(
+                    prescriptionDto,
+                    $"验方\"{formula.Name}\"已导入到处方，共{formula.Herbs.Count}味药材");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入验方到处方时发生错误，处方ID：{PrescriptionId}，验方ID：{FormulaId}", prescriptionId, formulaId);
-                return ServiceResult.Failure($"导入失败：{ex.Message}");
+                return ServiceResult<PrescriptionDto>.Failure($"导入失败：{ex.Message}");
             }
         }
 

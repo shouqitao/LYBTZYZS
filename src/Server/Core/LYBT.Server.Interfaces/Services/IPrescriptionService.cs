@@ -87,11 +87,13 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate);
 
         /// <summary>
-        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350, Issue #1366 ENTRY-8)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
         /// </summary>
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="formulaId">验方ID</param>
-        Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+        /// <returns>更新后的处方DTO</returns>
+        Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
 
         /// <summary>
         /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
