@@ -91,9 +91,13 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 新增处方
+        /// 新增处方（已废弃）
         /// </summary>
+        /// <remarks>
+        /// ⚠️ 已废弃：请使用 POST /api/medicalcases/with-details 创建完整病案（含处方）。Prescription模块仅提供查询和辅助功能。
+        /// </remarks>
         [HttpPost]
+        [Obsolete("请使用 POST /api/medicalcases/with-details 创建完整病案（含处方）。Prescription模块仅提供查询和辅助功能。", true)]
         public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Add([FromBody] PrescriptionCreateDto dto)
         {
             try
@@ -120,9 +124,13 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 编辑处方
+        /// 编辑处方（已废弃）
         /// </summary>
+        /// <remarks>
+        /// ⚠️ 已废弃：请使用 PUT /api/medicalcases/{id}/prescription 更新处方信息。Prescription模块仅提供查询和辅助功能。
+        /// </remarks>
         [HttpPut("{id}")]
+        [Obsolete("请使用 PUT /api/medicalcases/{id}/prescription 更新处方信息。Prescription模块仅提供查询和辅助功能。", true)]
         public async Task<ActionResult<ApiResponse<PrescriptionDto>>> Update(Guid id, [FromBody] PrescriptionUpdateDto dto)
         {
             try
@@ -156,9 +164,13 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除处方
+        /// 删除处方（已废弃）
         /// </summary>
+        /// <remarks>
+        /// ⚠️ 已废弃：请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除处方）。Prescription模块仅提供查询和辅助功能。
+        /// </remarks>
         [HttpDelete("{id}")]
+        [Obsolete("请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除处方）。Prescription模块仅提供查询和辅助功能。", true)]
         public async Task<ActionResult<ApiResponse>> Delete(Guid id)
         {
             try
@@ -205,11 +217,15 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取处方统计数据 (Issue #1163)
+        /// 获取处方统计数据（已废弃 - MVP过度开发）
         /// </summary>
+        /// <remarks>
+        /// ⚠️ 已废弃：统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。
+        /// </remarks>
         [HttpGet("statistics")]
         [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionMainStatisticsDto>), 200)]
+        [Obsolete("统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。", true)]
         public async Task<ActionResult<ApiResponse<PrescriptionMainStatisticsDto>>> GetStatistics()
         {
             try
@@ -224,14 +240,18 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取日期范围统计 (Issue #1163)
+        /// 获取日期范围统计（已废弃 - MVP过度开发）
         /// </summary>
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
+        /// <remarks>
+        /// ⚠️ 已废弃：统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。
+        /// </remarks>
         [HttpGet("statistics/range")]
         [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionRangeStatisticsDto>), 200)]
         [ProducesResponseType(400)]
+        [Obsolete("统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。", true)]
         public async Task<ActionResult<ApiResponse<PrescriptionRangeStatisticsDto>>> GetRangeStatistics(
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate)
@@ -298,18 +318,24 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 克隆处方到指定诊疗记录 - 支持从历史处方复制 (Issue #1373 ENTRY-15)
+        /// 克隆处方到指定病案 - 支持从历史处方复制 (Issue #1373 ENTRY-15, Issue #1477 架构纠正v2)
         /// </summary>
         /// <param name="sourcePrescriptionId">源处方ID</param>
-        /// <param name="targetConsultationId">目标诊疗记录ID</param>
+        /// <param name="targetMedicalCaseId">目标病案ID（修改：原为targetConsultationId）</param>
         /// <returns>新创建的处方副本</returns>
-        [HttpPost("{sourcePrescriptionId}/clone-to/{targetConsultationId}")]
+        /// <remarks>
+        /// 架构变更说明（Issue #1477）：
+        /// - 参数由targetConsultationId改为targetMedicalCaseId
+        /// - 通过MedicalCase聚合根更新处方（保持聚合根边界）
+        /// - MedicalCase.Id == Consultation.Id == Prescription.Id（1:1:1共享主键）
+        /// </remarks>
+        [HttpPost("{sourcePrescriptionId}/clone-to-medicalcase/{targetMedicalCaseId}")]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ClonePrescriptionTo(
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ClonePrescriptionToMedicalCase(
             Guid sourcePrescriptionId,
-            Guid targetConsultationId)
+            Guid targetMedicalCaseId)
         {
             try
             {
@@ -319,13 +345,16 @@ namespace LYBT.WebAPI.Controllers
                     return sourceValidation;
                 }
 
-                var targetValidation = ValidateGuid<PrescriptionDto>(targetConsultationId, "目标诊疗记录ID");
+                var targetValidation = ValidateGuid<PrescriptionDto>(targetMedicalCaseId, "目标病案ID");
                 if (targetValidation != null)
                 {
                     return targetValidation;
                 }
 
-                var result = await _service.ClonePrescriptionAsync(sourcePrescriptionId, targetConsultationId);
+                // TODO (#1477 Phase 1): 当前仍使用旧Service方法（参数为ConsultationId）
+                // 因为1:1:1关系，MedicalCaseId == ConsultationId，暂时兼容
+                // Phase 2需要调整Service层，通过MedicalCaseService更新处方
+                var result = await _service.ClonePrescriptionAsync(sourcePrescriptionId, targetMedicalCaseId);
 
                 if (!result.IsSuccess || result.Data == null)
                 {
@@ -335,15 +364,15 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 记录操作日志
-                LogOperation("克隆处方到新诊疗",
-                    new { SourcePrescriptionId = sourcePrescriptionId, TargetConsultationId = targetConsultationId, NewPrescriptionId = result.Data.Id },
+                LogOperation("克隆处方到病案",
+                    new { SourcePrescriptionId = sourcePrescriptionId, TargetMedicalCaseId = targetMedicalCaseId, NewPrescriptionId = result.Data.Id },
                     result.Data.Id);
 
                 return Success(result.Data, "处方克隆成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDto>(ex, "克隆处方到新诊疗", new { sourcePrescriptionId, targetConsultationId });
+                return HandleException<PrescriptionDto>(ex, "克隆处方到病案", new { sourcePrescriptionId, targetMedicalCaseId });
             }
         }
 

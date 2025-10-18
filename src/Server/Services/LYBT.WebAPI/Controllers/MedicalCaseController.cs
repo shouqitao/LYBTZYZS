@@ -2,7 +2,9 @@
 using LYBT.Infrastructure.Web;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -225,6 +227,107 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        #region Issue #1477: 子实体更新API（架构纠正v2）
+
+        /// <summary>
+        /// 更新病案的诊断信息 (Issue #1477 架构纠正v2)
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <param name="dto">诊断更新信息</param>
+        /// <returns>更新后的诊断信息</returns>
+        /// <remarks>
+        /// 架构说明：
+        /// - MedicalCase是聚合根，所有写入操作必须通过它进行
+        /// - Consultation作为子实体，通过此API更新（而非ConsultationController）
+        /// - 1:1:1关系：MedicalCase.Id == Consultation.Id == Prescription.Id
+        /// </remarks>
+        [HttpPut("{id}/consultation")]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<ConsultationDto>>> UpdateConsultation(
+            Guid id,
+            [FromBody] ConsultationUpdateDto dto)
+        {
+            try
+            {
+                var idValidation = ValidateGuid<ConsultationDto>(id, "病案ID");
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
+
+                var modelValidation = ValidateModel<ConsultationDto>();
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
+
+                var result = await _medicalCaseService.UpdateConsultationAsync(id, dto);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("更新病案诊断信息", result.Data, id);
+                }
+
+                return HandleServiceResult(result, "诊断信息更新成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ConsultationDto>(ex, "更新病案诊断信息", new { id, dto });
+            }
+        }
+
+        /// <summary>
+        /// 更新病案的处方信息 (Issue #1477 架构纠正v2)
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <param name="dto">处方更新信息</param>
+        /// <returns>更新后的处方信息</returns>
+        /// <remarks>
+        /// 架构说明：
+        /// - MedicalCase是聚合根，所有写入操作必须通过它进行
+        /// - Prescription作为子实体，通过此API更新（而非PrescriptionsController）
+        /// - 1:1:1关系：MedicalCase.Id == Consultation.Id == Prescription.Id
+        /// </remarks>
+        [HttpPut("{id}/prescription")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> UpdatePrescription(
+            Guid id,
+            [FromBody] PrescriptionUpdateDto dto)
+        {
+            try
+            {
+                var idValidation = ValidateGuid<PrescriptionDto>(id, "病案ID");
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
+
+                var modelValidation = ValidateModel<PrescriptionDto>();
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
+
+                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, dto);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("更新病案处方信息", result.Data, id);
+                }
+
+                return HandleServiceResult(result, "处方信息更新成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "更新病案处方信息", new { id, dto });
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 批量删除医疗案例（软删除）(Issue #1169)
