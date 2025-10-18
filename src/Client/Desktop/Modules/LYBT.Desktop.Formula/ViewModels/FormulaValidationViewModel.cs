@@ -4,11 +4,13 @@ using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -22,6 +24,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private readonly IFormulaRepository _formulaRepository;
         private readonly IHerbRepository _herbRepository;
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -115,6 +118,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public FormulaValidationViewModel(
             IFormulaRepository formulaRepository,
             IHerbRepository herbRepository,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -124,6 +128,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "验方校验管理";
 
@@ -268,40 +273,54 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
 
-                // TODO: 打开药材选择对话框（Issue #1353） - 需要创建HerbSelectionDialog
-                // 暂时使用临时Guid模拟选择（实际应由对话框返回）
-                // 示例：用户应从药材库中选择一个药材ID
+                // 打开药材选择对话框 (Issue #1353 - FORMULA-13)
+                var parameters = new DialogParameters
+                {
+                    { "AllowMultipleSelection", false },  // 单选模式
+                    { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+                };
 
-                // 临时提示：功能部分完成，等待UI对话框
-                await ShowWarningMessageAsync(
-                    $"药材校验API已实现\n" +
-                    $"原始名称：{herbItem.OriginalHerbName ?? herbItem.HerbName}\n" +
-                    $"待完成：\n" +
-                    $"1. 创建药材选择对话框（Issue #1353）\n" +
-                    $"2. 集成对话框返回的药材ID");
+                _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+                        if (selectedHerbs != null && selectedHerbs.Any())
+                        {
+                            var selectedHerbId = selectedHerbs.First().Id;
 
-                Logger.LogInformation(
-                    "等待药材选择对话框实现 - 验方ID: {FormulaId}, 药材: {HerbName}",
-                    SelectedFormula.Id,
-                    herbItem.HerbName);
+                            Logger.LogInformation(
+                                "用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}",
+                                SelectedFormula.Name,
+                                herbItem.OriginalHerbName ?? herbItem.HerbName,
+                                selectedHerbId);
 
-                // 以下代码等待对话框实现后启用：
-                // var selectedHerbId = await OpenHerbSelectionDialogAsync(herbItem.OriginalHerbName);
-                // if (selectedHerbId.HasValue)
-                // {
-                //     bool success = await _formulaRepository.ValidateFormulaHerbAsync(
-                //         SelectedFormula.Id, herbItem.Id, selectedHerbId.Value);
-                //
-                //     if (success)
-                //     {
-                //         await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName}」已成功映射");
-                //         await LoadPendingFormulasAsync(); // 刷新列表
-                //     }
-                //     else
-                //     {
-                //         await ShowErrorMessageAsync("药材映射失败，请重试");
-                //     }
-                // }
+                            // 调用验证API (FORMULA-10)
+                            bool success = await _formulaRepository.ValidateFormulaHerbAsync(
+                                SelectedFormula.Id,
+                                herbItem.Id,
+                                selectedHerbId);
+
+                            if (success)
+                            {
+                                await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
+
+                                // 刷新待校验列表
+                                await LoadPendingFormulasAsync();
+                            }
+                            else
+                            {
+                                await ShowErrorMessageAsync("药材映射失败，请重试");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("用户取消了药材选择");
+                    }
+
+                    SetIsBusy(false);
+                });
             }
             catch (Exception ex)
             {

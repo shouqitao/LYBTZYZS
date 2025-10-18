@@ -850,6 +850,54 @@ namespace LYBT.Module.Formula.Tests.Services
             result.ErrorMessage.Should().Contain("所选药材不存在");
         }
 
+        [Fact]
+        public async Task ValidateFormulaHerbAsync_WithAlreadyValidatedHerb_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var herbItemId = Guid.NewGuid();
+            var selectedHerbId = Guid.NewGuid();
+
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "测试验方",
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                {
+                    new()
+                    {
+                        Id = herbItemId,
+                        HerbId = Guid.NewGuid(),
+                        HerbName = "人参",
+                        IsValidated = true, // 已经验证过
+                        Quantity = 10
+                    }
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            var formulaService = new FormulaService(
+                _repositoryMock.Object,
+                herbRepositoryMock.Object,
+                Mapper,
+                _loggerMock.Object);
+
+            // Act
+            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("该药材已校验，无需重复操作");
+
+            // 验证未调用更新操作（因为已校验，应该直接返回）
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
+            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+        }
+
         #endregion
 
         #region Excel导入验方测试
