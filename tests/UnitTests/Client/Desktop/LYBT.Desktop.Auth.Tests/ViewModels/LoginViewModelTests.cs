@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Foundation.HealthCheck;
@@ -90,11 +90,11 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
             var propertyChanged = false;
             
             // Act - 设置属性值
-            // _viewModel.Username = "testuser";
+            // _viewModel.UserName = "testuser";
             
             // Assert - 验证属性变更通知
             // propertyChanged.Should().BeTrue();
-            // _viewModel.Username.Should().Be("testuser");
+            // _viewModel.UserName.Should().Be("testuser");
             
             // 演示模式
             true.Should().BeTrue();
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
         public void Command_WithValidInput_ShouldBeExecutable()
         {
             // Arrange - 设置有效输入
-            // _viewModel.Username = "testuser";
+            // _viewModel.UserName = "testuser";
             // _viewModel.Password = "password123";
             
             // Act & Assert - 验证命令可执行
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
         public void Command_WithInvalidInput_ShouldNotBeExecutable()
         {
             // Arrange - 设置无效输入
-            // _viewModel.Username = string.Empty;
+            // _viewModel.UserName = string.Empty;
             // _viewModel.Password = "password123";
             
             // Act & Assert - 验证命令不可执行

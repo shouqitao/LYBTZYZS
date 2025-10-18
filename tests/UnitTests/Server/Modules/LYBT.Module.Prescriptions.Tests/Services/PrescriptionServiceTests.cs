@@ -33,11 +33,17 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             _repositoryMock = CreateMock<IPrescriptionRepository>();
             _formulaRepositoryMock = CreateMock<IFormulaRepository>();
+            var medicalCaseRepositoryMock = CreateMock<LYBT.Module.MedicalCase.Interfaces.IMedicalCaseRepository>();
+            var patientRepositoryMock = CreateMock<LYBT.Module.Patients.Interfaces.IPatientRepository>();
+            var consultationRepositoryMock = CreateMock<LYBT.Module.Consultation.Interfaces.IConsultationRepository>();
             _loggerMock = CreateLoggerMock<PrescriptionService>();
 
             _prescriptionService = new PrescriptionService(
                 _repositoryMock.Object,
                 _formulaRepositoryMock.Object,
+                medicalCaseRepositoryMock.Object,
+                patientRepositoryMock.Object,
+                consultationRepositoryMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }

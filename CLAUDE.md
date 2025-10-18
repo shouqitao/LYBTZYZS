@@ -282,17 +282,29 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 
 ### 2.1 任务启动前置检查
 
+#### 验证优先策略（v6.0新增）⭐⭐⭐
+0. **问题验证优先于修复实施** - 避免无效工作的核心原则：
+   - **原则**：对于报告中描述的"问题"，先验证问题是否真实存在，再决定是否修复
+   - **方法**：使用grep/Read/Bash等工具对比契约、配置、依赖关系，生成验证报告
+   - **决策**：
+     - ✅ 如验证确认问题存在 → 创建Issue，按Issue驱动流程修复
+     - ✅ 如验证证明问题不存在 → 标记为"已验证无需执行"，更新报告
+     - ⚠️ 如验证无法确定（编译通过但需运行时验证）→ 标记为"条件执行"
+   - **工具链**：sequential-thinking（深度分析） → grep/Read（对比验证） → 生成验证报告
+   - **实战案例**：参见 `docs/reports/contract-verification-report-2025-10-18.md`
+   - **核心价值**：保持0警告基线、避免过度工程、聚焦真实问题
+
 #### 质量检查（v6.0新增）⭐
-0. **Constitution合规性检查** - 新功能/重构前必须检查：
+1. **Constitution合规性检查** - 新功能/重构前必须检查：
    - 是否违反技术黑名单（Redis/CQRS/MediatR/Docker/GraphQL等）
    - 是否符合MVP优先原则（够用即好，避免过度设计）
    - 是否符合三层对齐架构规范
    - 参考：`.spec-workflow/steering/constitution.md`
 
 #### 环境检查
-1. `git pull` → 获取最新主分支
-2. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
-3. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
+2. `git pull` → 获取最新主分支
+3. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
+4. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
    - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
    - **注意**：统一编译和测试使用 LYBT.All.sln 方案
 
@@ -383,15 +395,19 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 
 > **📖 完整原则定义**：参见 `.claude/core/PRINCIPLES.md` 和 `.claude/core/FLAGS.md`
 
-### 核心原则（8条）
-1. **文档先行**：方案、审查、实现均以 `docs/` 现有规范为最高准则
-2. **最小充分交付**：遵循"完成导向、够用即好"，避免超前设计
-3. **增量优化**：禁止无指令的推倒重写；建议以 diff 形式描述
-4. **记录与可追溯**：任何决策、范围变化须回写至 Issue/文档
-5. **文档归位**：按 `documentation-guidelines.md` 与 `file-organization-guidelines.md` 存放
-6. **MVP 约束**：禁止私自扩展或新增功能；需先更新 MVP 文档/Issue
-7. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
-8. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
+### 核心原则（9条）
+1. **验证优先**：对于任何"问题报告"，先验证问题真实性再实施修复，避免无效工作（v6.0新增⭐⭐⭐）
+   - 使用 sequential-thinking 深度分析 → grep/Read 对比验证 → 生成验证报告
+   - 决策：问题存在→修复；问题不存在→标记"已验证无需执行"；不确定→标记"条件执行"
+   - 实战案例：`docs/reports/contract-verification-report-2025-10-18.md`
+2. **文档先行**：方案、审查、实现均以 `docs/` 现有规范为最高准则
+3. **最小充分交付**：遵循"完成导向、够用即好"，避免超前设计
+4. **增量优化**：禁止无指令的推倒重写；建议以 diff 形式描述
+5. **记录与可追溯**：任何决策、范围变化须回写至 Issue/文档
+6. **文档归位**：按 `documentation-guidelines.md` 与 `file-organization-guidelines.md` 存放，过时文档归档到 `docs/archive/`
+7. **MVP 约束**：禁止私自扩展或新增功能；需先更新 MVP 文档/Issue
+8. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
+9. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
 
 ### 文档架构原则（4条）⭐v5.0三层对齐
 9. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构（v5.0彻底重构）
@@ -410,8 +426,12 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 - ✅ **Level 2**：架构指南 `docs/architecture/server|client|shared/`（15%学习需求）
 - ✅ **Level 2**：开发指南 `docs/development/server|client|shared/`（15%学习需求）
 - ✅ **Level 3**：深度参考 `docs/deep/`、`docs/api/`、`docs/modules/`（5%深度需求）
+- ✅ **归档目录**：`docs/archive/`（过时文档/旧清单/历史报告）
+  - `docs/archive/tasks/` - 已完成或废弃的任务清单
+  - `docs/archive/reports/` - 历史验证报告（可选）
+  - `docs/archive/specs/` - 已实施完成的Spec文档（可选）
 - ✅ 脚本归档到 `scripts/` 对应功能目录
-- ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
+- ✅ 输出文件归档到 `docs/reports/`（当前报告） 或 `scripts/analysis/outputs/`（分析输出）
 - ✅ Pre-commit hook 会自动检查根目录文件规范
 
 ### 高效执行策略
@@ -431,7 +451,21 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
   - 使用 `dotnet build LYBT.All.sln -c Release --no-restore` 验证
   - 任何警告（CS8xxx、CS0xxx 等）必须在提交前修复
   - 禁止提交包含编译警告的代码
+- **警告主动修复策略**（v6.0新增）：
+  - ✅ **少量警告直接修复**：如果编译警告≤20个，或警告类型相对较少（如仅1-2种类型），不管是否本次任务引入，都应尽可能在当前任务中直接修复
+  - ⚠️ **大量警告需Issue跟踪**：如果警告数量>20个，或警告类型复杂多样，必须创建单独的GitHub Issue进行跟踪处理，不应在当前任务中强行修复
+  - 🎯 **判断标准**：
+    - 警告数量：≤20个 → 直接修复；>20个 → 创建Issue
+    - 警告类型：1-2种类型 → 直接修复；≥3种复杂类型 → 创建Issue
+    - 修复复杂度：简单修改（如添加null检查）→ 直接修复；需要架构调整 → 创建Issue
+  - 📋 **Issue模板**（大量警告时）：标题格式 `[Tech Debt] 修复XX类型编译警告（N个）`，包含警告清单和影响范围
 - **语言统一**：代码注释、终端输出、提交信息均使用中文
+- **Emoji使用规范**（v6.0新增）：
+  - ❌ **代码中禁用Emoji**：C#代码（.cs文件）、配置文件（.json/.xml）、数据库字符串中不允许使用Emoji字符
+  - ✅ **文档中允许Emoji**：Markdown文档（.md文件）、CLAUDE.md、README、Issue/PR描述中可以使用Emoji增强可读性
+  - 🎯 **示例**：
+    - 代码注释：`// 验证失败`（正确） vs `// ❌ 验证失败`（错误）
+    - 文档标题：`## 验证优先策略（v6.0新增）⭐⭐⭐`（正确，文档允许）
 - **文件编码**：所有文本文件使用 `UTF-8 with BOM`
 - **命名规范**：
   - 类型与公开成员：`PascalCase`

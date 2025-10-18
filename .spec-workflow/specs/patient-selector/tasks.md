@@ -239,7 +239,7 @@
 
 ### Task 4: 创建 XAML 视图
 
-- [-] **Task 4: 创建 PatientSelectorControl XAML 视图** (#1296)
+- [x] **Task 4: 创建 PatientSelectorControl XAML 视图** (#1296)
   - **文件**:
     - `src/Client/Desktop/Core/LYBT.Desktop.Common/Components/PatientSelector/PatientSelectorControl.xaml`
   - **描述**: 创建 WPF UserControl 视图,实现搜索框、结果列表和快速创建面板 UI
@@ -316,7 +316,7 @@
 
 ### Task 5: 创建 Code-behind 和密码框处理
 
-- [ ] **Task 5: 创建 PatientSelectorControl Code-behind** (#1297)
+- [x] **Task 5: 创建 PatientSelectorControl Code-behind** (#1297)
   - **文件**:
     - `src/Client/Desktop/Core/LYBT.Desktop.Common/Components/PatientSelector/PatientSelectorControl.xaml.cs`
   - **描述**: 创建 Code-behind 文件,处理 DataContext 绑定和特殊UI逻辑
@@ -379,7 +379,7 @@
 
 ### Task 6: 配置依赖注入和 AutoMapper
 
-- [ ] **Task 6: 配置依赖注入和 AutoMapper 映射** (#1298)
+- [x] **Task 6: 配置依赖注入和 AutoMapper 映射** (#1298) - 采用手动映射方案,避免循环依赖
   - **文件**:
     - `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Mapping/PatientMappingProfile.cs` (新建)
     - `src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/DependencyInjection/InfrastructureModule.cs` (修改,如果存在)
@@ -449,7 +449,7 @@
 
 ### Task 7: 创建 ViewModel 单元测试
 
-- [ ] **Task 7: 创建 PatientSelectorViewModel 单元测试** (#1299)
+- [x] **Task 7: 创建 PatientSelectorViewModel 单元测试** (#1299) - 已完成20个测试用例,全部通过
   - **文件**:
     - `tests/UnitTests/Client/Desktop/LYBT.Desktop.Common.Tests/Components/PatientSelector/PatientSelectorViewModelTests.cs`
   - **描述**: 创建全面的 ViewModel 单元测试,覆盖搜索、选择、创建逻辑
@@ -528,10 +528,10 @@
 
 ### Task 8: 创建集成测试和文档
 
-- [ ] **Task 8: 创建集成测试和组件文档** (#1300)
+- [x] **Task 8: 创建集成测试和组件文档** (#1300) - 已完成7个集成测试(全部通过)和README.md文档
   - **文件**:
-    - `tests/IntegrationTests/Client/Desktop/LYBT.Desktop.Common.IntegrationTests/Components/PatientSelectorIntegrationTests.cs`
-    - `src/Client/Desktop/Core/LYBT.Desktop.Common/Components/PatientSelector/README.md`
+    - `tests/IntegrationTests/Client/Desktop/LYBT.Desktop.PatientSelector.IntegrationTests/PatientSelectorIntegrationTests.cs`
+    - `src/Client/Desktop/Core/LYBT.Desktop.Presentation/Components/PatientSelector/README.md`
   - **描述**: 创建集成测试验证组件端到端功能,编写组件使用文档
   - **依赖**: Task 1-7 全部完成
   - **优先级**: P1
@@ -641,15 +641,15 @@ graph TD
 
 ### 总体进度
 - **总任务数**: 8
-- **已完成**: 0
+- **已完成**: 8
 - **进行中**: 0
-- **待开始**: 8
-- **完成度**: 0%
+- **待开始**: 0
+- **完成度**: 100% ✅
 
 ### Phase 进度
-- **Phase 1** (基础架构): 0/3 (0%)
-- **Phase 2** (核心组件): 0/3 (0%)
-- **Phase 3** (测试验证): 0/2 (0%)
+- **Phase 1** (基础架构): 3/3 (100%) ✅
+- **Phase 2** (核心组件): 3/3 (100%) ✅
+- **Phase 3** (测试验证): 2/2 (100%) ✅
 
 ---
 

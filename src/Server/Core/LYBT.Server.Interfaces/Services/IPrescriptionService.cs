@@ -79,5 +79,15 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="formulaId">验方ID</param>
         Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+
+        /// <summary>
+        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
+        /// <returns>处方搜索结果列表</returns>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+            string? patientName = null,
+            string? symptomKeyword = null);
     }
 }

@@ -11,7 +11,7 @@ namespace LYBT.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "Username",
+                name: "UserName",
                 table: "Users",
                 newName: "UserName");
         }
@@ -22,7 +22,7 @@ namespace LYBT.Infrastructure.Migrations
             migrationBuilder.RenameColumn(
                 name: "UserName",
                 table: "Users",
-                newName: "Username");
+                newName: "UserName");
         }
     }
 }
