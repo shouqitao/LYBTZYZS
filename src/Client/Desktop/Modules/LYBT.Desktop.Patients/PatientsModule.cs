@@ -31,6 +31,9 @@ namespace LYBT.Desktop.Patients
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
             containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
+
+            // 注册对话框 - Issue #1457: 患者选择对话框
+            containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
         }
     }
 }

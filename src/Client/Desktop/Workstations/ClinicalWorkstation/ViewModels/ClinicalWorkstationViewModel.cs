@@ -3,11 +3,13 @@ using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 {
@@ -17,9 +19,11 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     public class ClinicalWorkstationViewModel : UnifiedViewModelBase
     {
         private readonly IRegionManager _regionManager;
+        private readonly IDialogService _dialogService;
 
         private string _currentUserName = string.Empty;
         private string _currentPatientName = "未选择";
+        private PatientDto? _currentPatient;
         private bool _isInitialized = false;
 
         // 菜单选中状态
@@ -43,12 +47,14 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         public ClinicalWorkstationViewModel(
             IRegionManager regionManager,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
         {
             _regionManager = regionManager;
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化导航服务
             NavigationService = new Navigation.ClinicalNavigator(regionManager);
@@ -292,9 +298,20 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("Select patient");
-                // TODO: 打开患者选择对话框
-                CurrentPatientName = "张三（测试）";
+                Logger.LogInformation("打开患者选择对话框");
+
+                // Issue #1457: 打开患者选择对话框
+                _dialogService.ShowDialog("PatientSelectionDialog", result =>
+                {
+                    if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedPatient"))
+                    {
+                        _currentPatient = result.Parameters.GetValue<PatientDto>("SelectedPatient");
+                        CurrentPatientName = _currentPatient.Name;
+
+                        Logger.LogInformation("患者已选择: {PatientName} (ID: {PatientId})",
+                            _currentPatient.Name, _currentPatient.Id);
+                    }
+                });
             }
             catch (Exception ex)
             {
