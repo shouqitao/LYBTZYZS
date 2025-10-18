@@ -250,16 +250,24 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
                 // 根据参数映射视图
                 // Issue #1454: 修正DiagnosisView → ConsultationManagementView
+                // Issue #1459: 更新"Diagnosis"导航到ConsultationEntryView (诊疗录入)
                 string viewName = targetView switch
                 {
-                    "Diagnosis" => "ConsultationManagementView",  // ✅ 修正：使用实际存在的视图
+                    "Diagnosis" => "ConsultationEntryView",  // ✅ Issue #1459: 诊疗录入视图
                     "Prescription" => "PrescriptionView",
                     "PatientManagement" => "PatientManagementView",
-                    "History" => "HistoryView",
-                    _ => "ConsultationManagementView"  // ✅ 默认也修正
+                    "History" => "ConsultationManagementView",  // ✅ 历史记录移到History菜单
+                    _ => "ConsultationEntryView"  // ✅ 默认也改为诊疗录入
                 };
 
-                _regionManager.RequestNavigate("ClinicalContentRegion", viewName);
+                // Issue #1459: 传递当前选中患者到ConsultationEntryView
+                NavigationParameters parameters = new();
+                if (_currentPatient != null && viewName == "ConsultationEntryView")
+                {
+                    parameters.Add("Patient", _currentPatient);
+                }
+
+                _regionManager.RequestNavigate("ClinicalContentRegion", viewName, parameters);
             }
             catch (Exception ex)
             {

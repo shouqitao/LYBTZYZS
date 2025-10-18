@@ -24,9 +24,11 @@ namespace LYBT.Desktop.Consultation
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
+            containerRegistry.Register<ViewModels.ConsultationEntryViewModel>();
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
+            containerRegistry.RegisterForNavigation<Views.ConsultationEntryView>(); // Issue #1459
         }
     }
 }
