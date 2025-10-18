@@ -12,7 +12,6 @@
 中医诊所系统常见的性能瓶颈：
 - 患者历史记录查询（10年以上的数据）
 - 复杂处方价格计算（涉及多种折扣规则）
-- 药材库存实时查询
 - 医生排班与预约冲突检测
 
 #### 优化方案
@@ -44,10 +43,6 @@ CREATE INDEX IX_PrescriptionItems_HerbId_Active ON PrescriptionItems(HerbID, IsA
 -- 药材表索引
 CREATE INDEX IX_Herbs_Name_Code ON Herbs(Name, HerbCode);
 CREATE INDEX IX_Herbs_Category_Active ON Herbs(Category, IsActive);
-CREATE INDEX IX_Herbs_Stock_Price ON Herbs(CurrentStock, UnitPrice);
-
--- 库存变动记录索引
-CREATE INDEX IX_HerbInventory_HerbId_Date ON HerbInventory(HerbID, TransactionDate DESC);
 ```
 
 **1.2 查询优化示例**

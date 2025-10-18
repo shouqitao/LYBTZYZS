@@ -406,10 +406,7 @@ CREATE TABLE Herbs (
     Grade NVARCHAR(50) NULL, -- 等级
     Unit NVARCHAR(20) NOT NULL DEFAULT '克',
     Price DECIMAL(18,4) NOT NULL DEFAULT 0.0000, -- 单价
-    Stock DECIMAL(18,2) NULL, -- 库存数量
-    MinStock DECIMAL(18,2) NULL, -- 最低库存
-    MaxStock DECIMAL(18,2) NULL, -- 最高库存
-    
+
     -- 供应商信息
     SupplierId UNIQUEIDENTIFIER NULL,
     SupplierName NVARCHAR(200) NULL,
@@ -433,7 +430,6 @@ CREATE TABLE Herbs (
     
     -- 约束
     CONSTRAINT CK_Herbs_Price CHECK (Price >= 0),
-    CONSTRAINT CK_Herbs_Stock CHECK (Stock >= 0),
     CONSTRAINT CK_Herbs_Status CHECK (Status IN (0, 1, 2)),
     CONSTRAINT CK_Herbs_Expiry CHECK (ExpiryDate IS NULL OR ExpiryDate > GETDATE()),
     
@@ -442,7 +438,6 @@ CREATE TABLE Herbs (
     INDEX IX_Herbs_PinYinCode (PinYinCode),
     INDEX IX_Herbs_Category (Category),
     INDEX IX_Herbs_Status (Status),
-    INDEX IX_Herbs_Stock (Stock),
     INDEX IX_Herbs_Price (Price),
     INDEX IX_Herbs_Search (Name, PinYinCode, Category),
     INDEX IX_Herbs_Expiry (ExpiryDate)
@@ -450,10 +445,9 @@ CREATE TABLE Herbs (
 
 -- 药材表设计说明
 -- 1. 中医特色：完整的药性、药味、归经信息
--- 2. 库存管理：支持库存预警和采购管理
--- 3. 质量控制：批次号、有效期、质量标准
--- 4. 快速检索：拼音码支持快速输入
--- 5. 成本管理：采购价格和销售价格分离
+-- 2. 质量控制：批次号、有效期、质量标准
+-- 3. 快速检索：拼音码支持快速输入
+-- 4. 成本管理：采购价格和销售价格分离
 ```
 
 #### Formulas 表 - 验方模板

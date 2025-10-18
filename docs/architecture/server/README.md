@@ -170,11 +170,11 @@ src/Server/
 - **关键特性**：四种录入方式、配伍检查、自动计价
 
 #### 7. 药材管理模块 (Herbs Module)
-**职责**：药材信息管理、库存监控、拼音检索
-- **服务层**：HerbService、HerbInventoryService、HerbSearchService
-- **数据层**：HerbRepository、HerbInventoryRepository
-- **核心实体**：Herb、HerbInventory、HerbCategory
-- **关键特性**：2000+药材、拼音码检索、库存预警
+**职责**：药材信息管理、拼音检索、价格管理
+- **服务层**：HerbService、HerbSearchService
+- **数据层**：HerbRepository
+- **核心实体**：Herb、HerbCategory
+- **关键特性**：2000+药材、拼音码检索、价格管理
 
 #### 8. 验方管理模块 (Formula Module)
 **职责**：验方模板管理、智能推荐、统计分析

@@ -276,14 +276,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("批号")]
         public string? BatchNo { get; set; }
 
-        /// <summary>库存范围-最小值</summary>
-        [DisplayName("最小库存")]
-        public int? MinStock { get; set; }
-
-        /// <summary>库存范围-最大值</summary>
-        [DisplayName("最大库存")]
-        public int? MaxStock { get; set; }
-
         /// <summary>是否包含过期药材</summary>
         [DisplayName("包含过期")]
         public bool IncludeExpired { get; set; } = false;
@@ -298,9 +290,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
 
         [DisplayName("可用药材数量")]
         public int AvailableCount { get; set; }
-
-        [DisplayName("缺货药材数量")]
-        public int OutOfStockCount { get; set; }
 
         [DisplayName("即将过期药材数量")]
         public int NearExpiryCount { get; set; }

@@ -470,8 +470,6 @@ CREATE TABLE Herbs (
     Category NVARCHAR(100) NULL,
     LatinName NVARCHAR(200) NULL,
     Description NVARCHAR(1000) NULL,
-    CurrentStock DECIMAL(10,2) NOT NULL DEFAULT 0,
-    MinStockLevel DECIMAL(10,2) NOT NULL DEFAULT 0,
     Unit NVARCHAR(20) NOT NULL DEFAULT 'g',
     UnitPrice DECIMAL(10,2) NOT NULL DEFAULT 0,
     Supplier NVARCHAR(200) NULL,
@@ -574,13 +572,13 @@ VALUES
 GO
 
 -- 插入初始药材数据
-INSERT INTO Herbs (Name, HerbCode, Category, LatinName, CurrentStock, MinStockLevel, Unit, UnitPrice, Supplier)
+INSERT INTO Herbs (Name, HerbCode, Category, LatinName, Unit, UnitPrice, Supplier)
 VALUES
-    ('人参', 'RS001', '补气药', 'Panax ginseng', 500, 100, 'g', 8.50, '北京药材批发市场'),
-    ('白术', 'BS001', '补气药', 'Atractylodes macrocephala', 300, 50, 'g', 3.20, '北京药材批发市场'),
-    ('茯苓', 'FL001', '利水渗湿药', 'Poria cocos', 200, 50, 'g', 2.80, '北京药材批发市场'),
-    ('当归', 'DG001', '补血药', 'Angelica sinensis', 150, 30, 'g', 6.50, '四川药材公司'),
-    ('黄芪', 'HQ001', '补气药', 'Astragalus membranaceus', 400, 80, 'g', 4.20, '甘肃药材基地');
+    ('人参', 'RS001', '补气药', 'Panax ginseng', 'g', 8.50, '北京药材批发市场'),
+    ('白术', 'BS001', '补气药', 'Atractylodes macrocephala', 'g', 3.20, '北京药材批发市场'),
+    ('茯苓', 'FL001', '利水渗湿药', 'Poria cocos', 'g', 2.80, '北京药材批发市场'),
+    ('当归', 'DG001', '补血药', 'Angelica sinensis', 'g', 6.50, '四川药材公司'),
+    ('黄芪', 'HQ001', '补气药', 'Astragalus membranaceus', 'g', 4.20, '甘肃药材基地');
 GO
 
 -- 插入系统管理员用户
