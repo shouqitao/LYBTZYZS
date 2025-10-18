@@ -378,6 +378,43 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13, Issue #1374 ENTRY-16)
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        /// <returns>患者最近处方列表</returns>
+        [HttpGet("patient/{patientId}/recent")]
+        [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "patientId", "count" })]
+        [ProducesResponseType(typeof(ApiResponse<List<PrescriptionSearchResultDto>>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionSearchResultDto>>>> GetPatientRecentPrescriptions(
+            Guid patientId,
+            [FromQuery] int count = 5)
+        {
+            try
+            {
+                var validation = ValidateGuid<List<PrescriptionSearchResultDto>>(patientId, "患者ID");
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                if (count <= 0 || count > 100)
+                {
+                    return ValidationFail<List<PrescriptionSearchResultDto>>("返回数量必须在1-100之间");
+                }
+
+                var result = await _service.GetPatientRecentPrescriptionsAsync(patientId, count);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PrescriptionSearchResultDto>>(ex, "获取患者最近处方", new { patientId, count });
+            }
+        }
+
         #endregion
     }
 }

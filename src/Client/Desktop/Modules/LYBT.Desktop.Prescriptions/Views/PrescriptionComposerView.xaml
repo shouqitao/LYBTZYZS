@@ -136,6 +136,29 @@
                                    Style="{StaticResource ButtonStyle}" Margin="0,0,10,0" />
                             <Button Content="导入验方" Command="{Binding ImportFormulaCommand}"
                                    Style="{StaticResource ButtonStyle}" Margin="0,0,10,0" />
+
+                            <!-- 历史处方下拉框 (Issue #1374 ENTRY-16) -->
+                            <StackPanel Margin="0,0,10,0">
+                                <TextBlock Text="历史处方" FontSize="10" Foreground="#7F8C8D" Margin="0,0,0,2" />
+                                <ComboBox Width="250" Height="32"
+                                         ItemsSource="{Binding RecentPrescriptions}"
+                                         SelectedItem="{Binding SelectedRecentPrescription, Mode=TwoWay}"
+                                         ToolTip="选择患者历史处方快速复制">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBlock>
+                                                    <Run Text="{Binding PrescriptionNo}" FontWeight="Bold" />
+                                                    <Run Text=" - " />
+                                                    <Run Text="{Binding PrescriptionDate, StringFormat='yyyy-MM-dd'}" />
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Diagnosis}" FontSize="11" Foreground="Gray" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
                             <Button Content="清空处方" Command="{Binding ClearAllCommand}"
                                    Style="{StaticResource SecondaryButtonStyle}" />
                         </StackPanel>

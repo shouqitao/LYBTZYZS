@@ -62,6 +62,23 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             }
         }
 
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13, Issue #1374 ENTRY-16)
+        /// </summary>
+        public async Task<List<PrescriptionSearchResultDto>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5)
+        {
+            try
+            {
+                var response = await _api.GetPatientRecentPrescriptionsAsync(patientId, count);
+                return response.Content ?? new List<PrescriptionSearchResultDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近处方失败: PatientId={PatientId}, Count={Count}", patientId, count);
+                return new List<PrescriptionSearchResultDto>();
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)

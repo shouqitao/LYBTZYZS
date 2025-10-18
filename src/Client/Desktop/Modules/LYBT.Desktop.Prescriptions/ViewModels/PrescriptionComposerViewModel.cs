@@ -7,6 +7,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -254,6 +255,35 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             set => SetProperty(ref _filteredHerbs, value);
         }
 
+        private ObservableCollection<PrescriptionSearchResultDto> _recentPrescriptions = new();
+
+        /// <summary>
+        /// 患者最近处方列表 (Issue #1374 ENTRY-16)
+        /// </summary>
+        public ObservableCollection<PrescriptionSearchResultDto> RecentPrescriptions
+        {
+            get => _recentPrescriptions;
+            set => SetProperty(ref _recentPrescriptions, value);
+        }
+
+        private PrescriptionSearchResultDto? _selectedRecentPrescription;
+
+        /// <summary>
+        /// 选中的历史处方 (Issue #1374 ENTRY-16)
+        /// </summary>
+        public PrescriptionSearchResultDto? SelectedRecentPrescription
+        {
+            get => _selectedRecentPrescription;
+            set
+            {
+                if (SetProperty(ref _selectedRecentPrescription, value) && value != null)
+                {
+                    // 选中后自动复制
+                    CopyFromHistoryCommand?.Execute(value);
+                }
+            }
+        }
+
         #endregion
 
         #region 计算属性
@@ -385,6 +415,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand<PrescriptionItemViewModel> EditHerbCommand { get; }
 
+        /// <summary>
+        /// 从历史处方复制命令 (Issue #1374 ENTRY-16)
+        /// </summary>
+        public DelegateCommand<PrescriptionSearchResultDto> CopyFromHistoryCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -426,6 +461,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft, CanSaveDraft);
             SavePrescriptionCommand = SaveCommand; // 别名
             EditHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(ExecuteEditHerb, item => item != null && !IsBusy);
+            CopyFromHistoryCommand = new DelegateCommand<PrescriptionSearchResultDto>(ExecuteCopyFromHistory, prescription => prescription != null && !IsBusy);
 
             // 订阅事件
             SubscribeToEvents();
@@ -487,6 +523,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
                 // 加载药材数据 (Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤)
                 await LoadAllHerbsAsync();
+
+                // 加载患者历史处方 (Issue #1374 ENTRY-16)
+                await LoadRecentPrescriptionsAsync();
 
                 // 初始化处方数据管理器
                 await _dataManager.InitializeAsync(MedicalCaseId);
@@ -581,6 +620,38 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "过滤药材时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 加载患者最近处方列表 (Issue #1374 ENTRY-16)
+        /// </summary>
+        private async Task LoadRecentPrescriptionsAsync()
+        {
+            try
+            {
+                if (CurrentMedicalCase?.PatientId == null || CurrentMedicalCase.PatientId == Guid.Empty)
+                {
+                    Logger.LogWarning("无法加载历史处方：患者ID无效");
+                    return;
+                }
+
+                var recentPrescriptions = await _prescriptionRepository.GetPatientRecentPrescriptionsAsync(
+                    CurrentMedicalCase.PatientId, 
+                    count: 5);
+
+                RecentPrescriptions.Clear();
+                foreach (var prescription in recentPrescriptions)
+                {
+                    RecentPrescriptions.Add(prescription);
+                }
+
+                Logger.LogInformation("已加载患者最近处方，共 {Count} 条", recentPrescriptions.Count);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载患者最近处方失败");
+                // 不抛出异常，避免影响主流程
             }
         }
 
@@ -700,6 +771,60 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 Logger.LogError(ex, "编辑药材时发生异常");
                 ShowErrorMessage("编辑药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 从历史处方复制 (Issue #1374 ENTRY-16)
+        /// </summary>
+        private void ExecuteCopyFromHistory(PrescriptionSearchResultDto prescription)
+        {
+            if (prescription == null) return;
+
+            try
+            {
+                Logger.LogInformation("从历史处方复制，处方ID: {PrescriptionId}, 患者: {PatientName}",
+                    prescription.Id, prescription.PatientName);
+
+                // 清空当前处方项
+                _dataManager.Clear();
+
+                // 复制处方项
+                foreach (var item in prescription.Items)
+                {
+                    var newItem = new PrescriptionItemViewModel(
+                        EventAggregator,
+                        LoggerFactory,
+                        RegionManager,
+                        SessionManager,
+                        UserNotificationService)
+                    {
+                        HerbId = item.HerbId,
+                        HerbName = item.HerbName,
+                        Dosage = item.Dosage,
+                        Unit = item.Unit,
+                        UnitPrice = item.UnitPrice,
+                        Remark = item.Remark
+                    };
+                    _dataManager.PrescriptionItems.Add(newItem);
+                }
+
+                // 重新计算价格
+                RecalculatePrice();
+
+                // 刷新ItemRows
+                RefreshItemRows();
+
+                // 清空选择（避免重复触发）
+                SelectedRecentPrescription = null;
+
+                ShowInfoMessage($"已从历史处方复制 {prescription.Items.Count} 味药材");
+                Logger.LogInformation("历史处方复制完成，共 {Count} 味药材", prescription.Items.Count);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "从历史处方复制时发生异常");
+                ShowErrorMessage("复制历史处方失败");
             }
         }
 

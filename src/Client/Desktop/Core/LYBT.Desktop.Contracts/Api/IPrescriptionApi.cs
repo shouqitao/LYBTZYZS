@@ -46,5 +46,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
         Task<Refit.ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// </summary>
+        [Refit.Get("/api/v1/prescriptions/patient/{patientId}/recent")]
+        Task<Refit.ApiResponse<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            [Refit.Query] int count = 5);
     }
 }
