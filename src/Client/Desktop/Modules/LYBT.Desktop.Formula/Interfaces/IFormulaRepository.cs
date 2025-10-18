@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Formula.Interfaces
     public interface IFormulaRepository
     {
         Task<PagedResult<FormulaDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<FormulaDto> GetByIdAsync(Guid id);
+        Task<FormulaDto?> GetByIdAsync(Guid id);
         Task<FormulaDto> CreateAsync(FormulaCreateDto dto);
         Task<FormulaDto> UpdateAsync(FormulaUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);

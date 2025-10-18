@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Patients.Interfaces
     public interface IPatientRepository
     {
         Task<List<PatientDto>> GetAllAsync();
-        Task<PatientDto> GetByIdAsync(Guid id);
+        Task<PatientDto?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新患者（使用CreateDto）

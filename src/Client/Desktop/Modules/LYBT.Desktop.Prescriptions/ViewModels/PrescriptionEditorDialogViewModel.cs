@@ -375,6 +375,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 SetIsBusy(true, "正在加载处方信息...");
 
                 var prescription = await _prescriptionRepository.GetByIdAsync(PrescriptionId);
+                if (prescription == null)
+                {
+                    await ShowErrorMessageAsync("处方不存在");
+                    return;
+                }
+
                 OriginalPrescription = prescription;
                 LoadFromPrescription(OriginalPrescription);
                 Logger.LogInformation("处方信息加载完成");

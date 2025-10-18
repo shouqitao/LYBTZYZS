@@ -427,6 +427,10 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 ## 4. 编码与交付要求
 
 - **Issue 驱动开发**：无 Issue 禁止改动
+- **编译质量标准**：所有代码提交前必须通过编译认证，要求 **0 errors, 0 warnings**
+  - 使用 `dotnet build LYBT.All.sln -c Release --no-restore` 验证
+  - 任何警告（CS8xxx、CS0xxx 等）必须在提交前修复
+  - 禁止提交包含编译警告的代码
 - **语言统一**：代码注释、终端输出、提交信息均使用中文
 - **文件编码**：所有文本文件使用 `UTF-8 with BOM`
 - **命名规范**：

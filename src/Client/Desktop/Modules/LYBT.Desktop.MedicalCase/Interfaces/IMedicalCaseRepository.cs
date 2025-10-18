@@ -12,7 +12,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     public interface IMedicalCaseRepository
     {
         Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<MedicalCaseDto> GetByIdAsync(Guid id);
+        Task<MedicalCaseDto?> GetByIdAsync(Guid id);
         Task<MedicalCaseDto> CreateAsync(MedicalCaseCreateDto dto);
         Task<MedicalCaseDto> UpdateAsync(MedicalCaseUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);

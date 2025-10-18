@@ -136,6 +136,12 @@ namespace LYBT.Desktop.Formula.ViewModels
                 SetIsBusy(true, "正在加载验方详情...");
 
                 var formula = await _formulaRepository.GetByIdAsync(_formulaId);
+                if (formula == null)
+                {
+                    await ShowErrorMessageAsync("验方不存在");
+                    return;
+                }
+
                 Formula = formula;
                 HerbItems = new ObservableCollection<FormulaHerbItemDto>();
                 CalculateTotalCost();

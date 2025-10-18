@@ -294,6 +294,12 @@ namespace LYBT.Desktop.Formula.ViewModels
                     SetIsBusy(true, "正在加载配方信息...");
 
                     var formula = await _formulaRepository.GetByIdAsync(formulaId.Value);
+                    if (formula == null)
+                    {
+                        await ShowErrorMessageAsync("配方不存在");
+                        return;
+                    }
+
                     FormulaName = formula.Name ?? string.Empty;
                     Description = formula.Remark ?? string.Empty;
                     Status = formula.Status;
