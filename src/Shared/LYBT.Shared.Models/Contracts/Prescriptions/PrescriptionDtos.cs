@@ -40,6 +40,13 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("验方来源")]
         public string? FormulaSource { get; set; }
 
+        /// <summary>
+        /// 引用的验方名称列表，逗号分隔 (Issue #1365 ENTRY-7)
+        /// </summary>
+        [DisplayName("引用验方")]
+        [StringLength(500, ErrorMessage = "引用验方名称长度不能超过500个字符")]
+        public string? ReferencedFormulas { get; set; }
+
         /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
