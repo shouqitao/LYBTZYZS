@@ -37,6 +37,9 @@
 - **[Client端架构](architecture/client/README.md)** - MVVM架构、5层设计、UI标准 ⭐
 - **[共享架构](architecture/shared/README.md)** - 跨端组件、认证系统、技术决策 ⭐
 
+### 业务架构文档
+- **[看诊流程实体关系](architecture/shared/clinical-workflow-entity-relationships.md)** - 挂号/医案/诊断/处方实体关系与状态机设计 ⭐⭐⭐ **权威文档**
+
 ### 开发指南文档
 - **[开发指南总览](development/README.md)** - 开发规范和流程指导
 - **[Server端开发](development/server/README.md)** - Server开发规范和实践
