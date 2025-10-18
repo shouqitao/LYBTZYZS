@@ -10,6 +10,7 @@ namespace LYBT.Desktop.Consultation
     /// </summary>
     [Module(ModuleName = nameof(ConsultationModule))]
     [ModuleDependency("PatientsModule")] // 诊疗依赖患者
+    [ModuleDependency("MedicalCaseModule")] // 诊疗依赖医疗案例 (Issue #1459修复)
     public class ConsultationModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
@@ -24,11 +25,11 @@ namespace LYBT.Desktop.Consultation
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
-            containerRegistry.Register<ViewModels.ConsultationEntryViewModel>();
+            // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
-            containerRegistry.RegisterForNavigation<Views.ConsultationEntryView>(); // Issue #1459
+            // ✅ Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }
 }

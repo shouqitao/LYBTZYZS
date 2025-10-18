@@ -945,6 +945,110 @@ public class PatientManagementViewModelTests
 - **资源释放**：及时释放不再使用的资源
 - **延迟加载**：大数据集使用分页或虚拟化
 
+### 4. 聚合根设计模式（Issue #1463）
+
+**核心原则**：MedicalCase是聚合根，统一管理Consultation和Prescription的生命周期。
+
+#### ❌ 错误实现
+```csharp
+public class ConsultationEntryViewModel
+{
+    private readonly IConsultationRepository _consultationRepository;
+    private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+    // ❌ 错误：分两步创建，破坏聚合根模式
+    private async Task SaveAsync()
+    {
+        // 1. 单独创建MedicalCase
+        if (!MedicalCaseId.HasValue)
+        {
+            var medicalCase = await _medicalCaseRepository.CreateAsync(medicalCaseDto);
+            MedicalCaseId = medicalCase.Id;
+        }
+
+        // 2. 单独创建Consultation
+        consultationDto.MedicalCaseId = MedicalCaseId.Value;
+        await _consultationRepository.CreateAsync(consultationDto);
+    }
+}
+```
+
+**问题**：
+- 破坏原子性（两次API调用，可能部分失败）
+- 违反DDD聚合根模式（子实体独立创建）
+- 依赖混乱（同时注入MedicalCase和Consultation的Repository）
+
+#### ✅ 正确实现
+```csharp
+public class ConsultationEntryViewModel
+{
+    // ✅ 只依赖聚合根Repository
+    private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+    private async Task SaveAsync()
+    {
+        if (!ValidateInput()) return;
+
+        // 构造聚合根数据
+        var medicalCaseDto = new MedicalCaseCreateDto
+        {
+            PatientId = CurrentPatient!.Id,
+            DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+            ChiefComplaint = ChiefComplaint,
+            Remark = $"创建于: {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+        };
+
+        // 构造子实体数据
+        var consultationDto = new ConsultationCreateDto
+        {
+            PatientId = CurrentPatient!.Id,
+            UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+            PatientName = CurrentPatient.Name,
+            DoctorName = SessionManager?.CurrentUser?.RealName ?? "未知医生",
+            ChiefComplaint = ChiefComplaint,
+            PresentIllness = PresentIllness,
+            Inspection = Inspection,
+            AuscultationOlfaction = AuscultationOlfaction,
+            Inquiry = Inquiry,
+            Palpation = Palpation,
+            TCMDiagnosis = TCMDiagnosis,
+            TreatmentPrinciple = TreatmentPrinciple,
+            Remark = Remarks,
+            StartTime = DateTime.Now
+        };
+
+        // ✅ 使用聚合根方法一次性创建（原子操作）
+        var result = await _medicalCaseRepository.CreateWithDetailsAsync(
+            medicalCaseDto,
+            consultationDto,
+            null // 暂无处方
+        );
+
+        MedicalCaseId = result.Id;
+
+        Logger.LogInformation("诊疗记录保存成功, MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}",
+            result.Id, CurrentPatient.Name);
+    }
+}
+```
+
+**优势**：
+- ✅ **原子性**：一次API调用完成整个聚合创建
+- ✅ **一致性**：Server端保证MedicalCase和Consultation的共享主键关系
+- ✅ **符合DDD**：聚合根统一管理子实体生命周期
+- ✅ **简化依赖**：ViewModel只需注入IMedicalCaseRepository
+
+#### 架构规范
+1. **聚合识别**：MedicalCase = Consultation + Prescription（一对一关系，共享主键）
+2. **创建规则**：必须通过`IMedicalCaseRepository.CreateWithDetailsAsync()`创建
+3. **禁止模式**：禁止ViewModel直接调用`IConsultationRepository.CreateAsync()`
+4. **模块依赖**：ConsultationModule保留`[ModuleDependency("MedicalCaseModule")]`确保初始化顺序
+
+**参考**：
+- Server端实现：`LYBT.Module.MedicalCase.Services.MedicalCaseService:CreateWithDetailsAsync()`
+- Desktop端实现：`LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository:CreateWithDetailsAsync()`
+- 修复Issue：#1463
+
 ## 🔗 相关文档
 
 - **[架构总览](../README.md)** - 三层对齐架构设计原理

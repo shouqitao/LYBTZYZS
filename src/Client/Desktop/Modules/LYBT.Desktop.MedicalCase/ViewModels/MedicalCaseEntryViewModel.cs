@@ -1,4 +1,3 @@
-using LYBT.Desktop.Consultation.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -11,18 +10,17 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.Consultation.ViewModels
+namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 诊疗录入视图模型 - Issue #1459
-    /// 实现基于四诊数据的诊疗记录录入功能
+    /// 病案录入视图模型 - Issue #1463: 以MedicalCase为中心的激进重构
+    /// 实现基于四诊数据的病案记录录入功能
     /// Epic #1456: 临床工作台看诊流程完整实现
     /// </summary>
-    public class ConsultationEntryViewModel : UnifiedViewModelBase, INavigationAware
+    public class MedicalCaseEntryViewModel : UnifiedViewModelBase, INavigationAware
     {
         #region 服务依赖
 
-        private readonly IConsultationRepository _consultationRepository;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IDialogService _dialogService;
 
@@ -169,7 +167,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 命令
 
         /// <summary>
-        /// 保存诊断命令
+        /// 保存病案命令
         /// </summary>
         public DelegateCommand SaveCommand { get; }
 
@@ -192,8 +190,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 构造函数
 
-        public ConsultationEntryViewModel(
-            IConsultationRepository consultationRepository,
+        public MedicalCaseEntryViewModel(
             IMedicalCaseRepository medicalCaseRepository,
             IDialogService dialogService,
             IEventAggregator eventAggregator,
@@ -203,7 +200,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
@@ -234,7 +230,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (navigationContext.Parameters.ContainsKey("Patient"))
                 {
                     CurrentPatient = navigationContext.Parameters.GetValue<PatientDto>("Patient");
-                    Logger.LogInformation("诊疗录入界面加载, 患者: {PatientName} (ID: {PatientId})",
+                    Logger.LogInformation("病案录入界面加载, 患者: {PatientName} (ID: {PatientId})",
                         CurrentPatient.Name, CurrentPatient.Id);
                 }
 
@@ -247,7 +243,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到诊疗录入界面时发生异常");
+                Logger.LogError(ex, "导航到病案录入界面时发生异常");
                 ShowErrorMessage("初始化失败, 请稍后重试");
             }
         }
@@ -267,13 +263,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 保存诊断
+        /// 保存病案 - Issue #1463: 使用聚合根模式
         /// </summary>
         private async Task SaveAsync()
         {
             try
             {
-                SetIsBusy(true, "正在保存诊疗记录...");
+                SetIsBusy(true, "正在保存病案记录...");
 
                 // 1. 验证必填字段
                 if (!ValidateInput())
@@ -281,16 +277,18 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     return;
                 }
 
-                // 2. 创建或获取MedicalCase
-                if (!MedicalCaseId.HasValue)
+                // 2. 构造MedicalCase数据（聚合根）
+                var medicalCaseDto = new MedicalCaseCreateDto
                 {
-                    await CreateMedicalCaseAsync();
-                }
+                    PatientId = CurrentPatient!.Id,
+                    DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                    ChiefComplaint = ChiefComplaint,
+                    Remark = $"创建于: {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
+                };
 
-                // 3. 创建Consultation记录
+                // 3. 构造Consultation数据（子实体）
                 var consultationDto = new ConsultationCreateDto
                 {
-                    MedicalCaseId = MedicalCaseId!.Value,
                     PatientId = CurrentPatient!.Id,
                     UserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
                     PatientName = CurrentPatient.Name,
@@ -307,42 +305,29 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     StartTime = DateTime.Now
                 };
 
-                var result = await _consultationRepository.CreateAsync(consultationDto);
+                // 4. 使用聚合根方法一次性创建（原子操作）
+                var result = await _medicalCaseRepository.CreateWithDetailsAsync(
+                    medicalCaseDto,
+                    consultationDto,
+                    null // 暂无处方
+                );
 
-                Logger.LogInformation("诊疗记录保存成功, ConsultationId: {ConsultationId}, 患者: {PatientName}",
+                MedicalCaseId = result.Id;
+
+                Logger.LogInformation("病案记录保存成功, MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}",
                     result.Id, CurrentPatient.Name);
 
-                await ShowSuccessMessageAsync("诊疗记录已保存");
+                await ShowSuccessMessageAsync("病案记录已保存");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "保存诊疗记录时发生异常");
+                Logger.LogError(ex, "保存病案记录时发生异常");
                 await ShowErrorMessageAsync($"保存失败: {ex.Message}");
             }
             finally
             {
                 SetIsBusy(false);
             }
-        }
-
-        /// <summary>
-        /// 创建MedicalCase (自动管理)
-        /// </summary>
-        private async Task CreateMedicalCaseAsync()
-        {
-            var medicalCaseDto = new MedicalCaseCreateDto
-            {
-                PatientId = CurrentPatient!.Id,
-                DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
-                ChiefComplaint = ChiefComplaint,
-                Remark = $"创建于: {DateTime.Now:yyyy-MM-dd HH:mm:ss}"
-            };
-
-            var result = await _medicalCaseRepository.CreateAsync(medicalCaseDto);
-            MedicalCaseId = result.Id;
-
-            Logger.LogInformation("自动创建医疗案例, MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}",
-                MedicalCaseId, CurrentPatient.Name);
         }
 
         /// <summary>
@@ -386,7 +371,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             TreatmentPrinciple = string.Empty;
             Remarks = string.Empty;
 
-            Logger.LogInformation("已清空诊疗录入内容");
+            Logger.LogInformation("已清空病案录入内容");
         }
 
         /// <summary>
@@ -396,7 +381,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (!MedicalCaseId.HasValue)
             {
-                ShowErrorMessage("请先保存诊疗记录");
+                ShowErrorMessage("请先保存病案记录");
                 return;
             }
 

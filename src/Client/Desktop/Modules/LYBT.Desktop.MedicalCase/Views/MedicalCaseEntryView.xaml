@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Consultation.Views.ConsultationEntryView"
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseEntryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
@@ -254,7 +254,7 @@
                         Style="{StaticResource ActionButton}"
                         Background="#FFC107"
                         Foreground="White"/>
-                <Button Content="保存诊断"
+                <Button Content="保存病案"
                         Command="{Binding SaveCommand}"
                         Style="{StaticResource ActionButton}"
                         Background="#4CAF50"
