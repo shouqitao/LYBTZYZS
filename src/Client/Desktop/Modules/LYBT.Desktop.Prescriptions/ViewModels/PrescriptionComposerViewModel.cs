@@ -673,6 +673,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             // 订阅清空事件
             _commandHandler.OnPrescriptionCleared += OnPrescriptionCleared;
 
+            // 订阅验方导入成功事件 (Issue #1368 ENTRY-10)
+            _commandHandler.OnFormulaImported += OnFormulaImported;
+
             // 订阅处方项集合变化事件（Issue #1360）
             PrescriptionItems.CollectionChanged += (s, e) => RefreshItemRows();
         }
@@ -692,6 +695,39 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             // 处方清空后的操作
             RecalculatePrice();
+        }
+
+        /// <summary>
+        /// 验方导入成功后刷新处方数据 (Issue #1368 ENTRY-10)
+        /// </summary>
+        private async void OnFormulaImported()
+        {
+            Logger.LogInformation("验方导入成功，重新加载处方数据");
+            
+            try
+            {
+                SetIsBusy(true, "正在刷新处方数据...");
+
+                // 直接重新初始化数据管理器，会自动加载最新的处方数据
+                await _dataManager.InitializeAsync(MedicalCaseId);
+
+                // 刷新显示行
+                RefreshItemRows();
+
+                // 重新计算价格
+                RecalculatePrice();
+
+                Logger.LogInformation("处方数据刷新完成");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新处方数据时发生异常");
+                await ShowErrorMessageAsync("刷新处方数据失败，请重新加载页面");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
         }
 
         #endregion
