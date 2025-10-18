@@ -641,17 +641,9 @@ namespace LYBT.Module.Formula.Services
 
             try
             {
-                // 1. 精确匹配名称
-                var herb = await _herbRepository.GetByNameAsync(herbName);
-                if (herb != null)
-                    return herb;
-
-                // 2. 模糊匹配拼音码（获取所有药材，内存过滤）
-                var allHerbs = await _herbRepository.GetAllAsync();
-                herb = allHerbs.FirstOrDefault(h =>
-                    !string.IsNullOrEmpty(h.PinYinCode) &&
-                    h.PinYinCode.Equals(herbName, StringComparison.OrdinalIgnoreCase));
-
+                // Issue #1469 (FORMULA-8): 使用智能药材匹配
+                // 优先精确匹配名称，其次模糊匹配拼音码
+                var herb = await _herbRepository.GetByNameOrPinyinAsync(herbName);
                 return herb;
             }
             catch (Exception ex)
