@@ -102,5 +102,16 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
             string? patientName = null,
             string? symptomKeyword = null);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// 按日期倒序排列，包含诊断信息
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        /// <returns>患者最近处方列表</returns>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            int count = 5);
     }
 }
