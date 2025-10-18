@@ -322,6 +322,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,
                 LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
 
+            // 功能开关服务 (Issue #1477 #1479 架构纠正v2)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IFeatureToggleService,
+                LYBT.Desktop.Infrastructure.Services.FeatureToggleService>();
+
             // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
             // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
         }
