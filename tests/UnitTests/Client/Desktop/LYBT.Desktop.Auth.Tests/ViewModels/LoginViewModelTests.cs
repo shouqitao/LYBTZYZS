@@ -87,8 +87,8 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
         public void Property_WhenSet_ShouldNotifyPropertyChanged()
         {
             // Arrange - 设置属性变更监听
-            var propertyChanged = false;
-            
+            // var propertyChanged = false;
+
             // Act - 设置属性值
             // _viewModel.UserName = "testuser";
             

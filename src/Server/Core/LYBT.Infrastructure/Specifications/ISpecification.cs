@@ -92,7 +92,7 @@ namespace LYBT.Infrastructure.Specifications
             // 应用排序
             if (specification.OrderByClauses.Any())
             {
-                IOrderedQueryable<T> orderedQuery = null;
+                IOrderedQueryable<T>? orderedQuery = null;
 
                 foreach (var (keySelector, ascending) in specification.OrderByClauses)
                 {
