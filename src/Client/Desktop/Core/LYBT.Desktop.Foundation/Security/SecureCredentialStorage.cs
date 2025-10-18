@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -48,7 +48,7 @@ namespace LYBT.Desktop.Foundation.Security
         {
             try
             {
-                _logger.LogInformation("🔐 [SaveCredentials] 开始保存凭据 - Username: {Username}, RememberPassword: {RememberPassword}", username, rememberPassword);
+                _logger.LogInformation("🔐 [SaveCredentials] 开始保存凭据 - UserName: {UserName}, RememberPassword: {RememberPassword}", username, rememberPassword);
 
                 if (rememberPassword && !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                 {
@@ -90,7 +90,7 @@ namespace LYBT.Desktop.Foundation.Security
                         RememberPassword = true
                     };
 
-                    _logger.LogInformation("✅ [SaveCredentials] 凭据已保存并加密（DPAPI）: {Username}, 文件路径: {Path}", username, _storageFilePath);
+                    _logger.LogInformation("✅ [SaveCredentials] 凭据已保存并加密（DPAPI）: {UserName}, 文件路径: {Path}", username, _storageFilePath);
                 }
                 else
                 {
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Foundation.Security
                 // 1. 优先返回内存缓存
                 if (_cachedCredentials != null && _cachedCredentials.RememberPassword)
                 {
-                    _logger.LogInformation("✅ [LoadCredentials] 从内存缓存加载: {Username}", _cachedCredentials.Username);
+                    _logger.LogInformation("✅ [LoadCredentials] 从内存缓存加载: {UserName}", _cachedCredentials.Username);
                     return (_cachedCredentials.Username, _cachedCredentials.Password);
                 }
 
@@ -149,7 +149,7 @@ namespace LYBT.Desktop.Foundation.Security
                     return null;
                 }
 
-                _logger.LogInformation("✅ [LoadCredentials] JSON反序列化成功，Username: {Username}", storage.Username);
+                _logger.LogInformation("✅ [LoadCredentials] JSON反序列化成功，UserName: {UserName}", storage.Username);
 
                 // 3. 解密密码（使用 DPAPI）
                 var encryptedBytes = Convert.FromBase64String(storage.EncryptedPassword);
@@ -171,7 +171,7 @@ namespace LYBT.Desktop.Foundation.Security
                     RememberPassword = true
                 };
 
-                _logger.LogInformation("✅ [LoadCredentials] 从本地加载凭据（已解密）: {Username}", storage.Username);
+                _logger.LogInformation("✅ [LoadCredentials] 从本地加载凭据（已解密）: {UserName}", storage.Username);
                 return (storage.Username, password);
             }
             catch (CryptographicException ex)

@@ -176,27 +176,18 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载待校验验方...");
 
-                // TODO: 等待 API 端点实现（Issue #1349 GetPendingValidationFormulasAsync）
-                // 暂时使用 GetPagedAsync 获取所有验方，然后筛选 Draft 状态
-                var pagedResult = await _formulaRepository.GetPagedAsync(1, 100);
+                var draftFormulas = await _formulaRepository.GetPendingValidationFormulasAsync();
 
                 PendingFormulas.Clear();
 
-                if (pagedResult?.Items != null && pagedResult.Items.Any())
+                if (draftFormulas != null && draftFormulas.Any())
                 {
-                    // 筛选 Draft 状态的验方（临时方案）
-                    var draftFormulas = pagedResult.Items
-                        .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
-                        .ToList();
-
                     foreach (var formula in draftFormulas)
                     {
                         PendingFormulas.Add(formula);
                     }
 
                     PendingFormulaCount = draftFormulas.Count;
-                    // TODO: 等待 FormulaDto 添加 UnvalidatedHerbsCount 属性（Issue #1344）
-                    // 暂时计算未校验药材数量
                     TotalUnvalidatedHerbsCount = draftFormulas.Sum(f =>
                         f.Herbs?.Count(h => !h.IsValidated) ?? 0);
 
@@ -277,23 +268,40 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
 
-                // TODO: 打开药材选择对话框（Issue #1353）
-                // TODO: 调用 API 端点验证药材（Issue #1348 ValidateFormulaHerbAsync）
-                // TODO: 使用 GetByNameOrPinyinAsync 查找药材（Issue #1351）
+                // TODO: 打开药材选择对话框（Issue #1353） - 需要创建HerbSelectionDialog
+                // 暂时使用临时Guid模拟选择（实际应由对话框返回）
+                // 示例：用户应从药材库中选择一个药材ID
 
-                // 暂时显示功能开发中的提示
+                // 临时提示：功能部分完成，等待UI对话框
                 await ShowWarningMessageAsync(
-                    $"药材校验功能开发中\n" +
+                    $"药材校验API已实现\n" +
                     $"原始名称：{herbItem.OriginalHerbName ?? herbItem.HerbName}\n" +
-                    $"待实现功能：\n" +
-                    $"1. 打开药材选择对话框\n" +
-                    $"2. 调用API验证药材映射\n" +
-                    $"3. 更新验方状态");
+                    $"待完成：\n" +
+                    $"1. 创建药材选择对话框（Issue #1353）\n" +
+                    $"2. 集成对话框返回的药材ID");
 
                 Logger.LogInformation(
-                    "药材校验功能尚未实现 - 验方ID: {FormulaId}, 药材: {HerbName}",
+                    "等待药材选择对话框实现 - 验方ID: {FormulaId}, 药材: {HerbName}",
                     SelectedFormula.Id,
                     herbItem.HerbName);
+
+                // 以下代码等待对话框实现后启用：
+                // var selectedHerbId = await OpenHerbSelectionDialogAsync(herbItem.OriginalHerbName);
+                // if (selectedHerbId.HasValue)
+                // {
+                //     bool success = await _formulaRepository.ValidateFormulaHerbAsync(
+                //         SelectedFormula.Id, herbItem.Id, selectedHerbId.Value);
+                //
+                //     if (success)
+                //     {
+                //         await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName}」已成功映射");
+                //         await LoadPendingFormulasAsync(); // 刷新列表
+                //     }
+                //     else
+                //     {
+                //         await ShowErrorMessageAsync("药材映射失败，请重试");
+                //     }
+                // }
             }
             catch (Exception ex)
             {

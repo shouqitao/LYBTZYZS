@@ -2,6 +2,9 @@
 using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -20,17 +23,26 @@ namespace LYBT.Module.Prescriptions.Services
     {
         private readonly IPrescriptionRepository _repository;
         private readonly IFormulaRepository _formulaRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        private readonly IPatientRepository _patientRepository;
+        private readonly IConsultationRepository _consultationRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
             IFormulaRepository formulaRepository,
+            IMedicalCaseRepository medicalCaseRepository,
+            IPatientRepository patientRepository,
+            IConsultationRepository consultationRepository,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
             _repository = repository;
             _formulaRepository = formulaRepository;
+            _medicalCaseRepository = medicalCaseRepository;
+            _patientRepository = patientRepository;
+            _consultationRepository = consultationRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -567,6 +579,113 @@ namespace LYBT.Module.Prescriptions.Services
             {
                 _logger.LogError(ex, "导入验方到处方时发生错误，处方ID：{PrescriptionId}，验方ID：{FormulaId}", prescriptionId, formulaId);
                 return ServiceResult.Failure($"导入失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
+        /// <returns>处方搜索结果列表</returns>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+            string? patientName = null,
+            string? symptomKeyword = null)
+        {
+            try
+            {
+                // 如果两个参数都为空，返回空列表
+                if (string.IsNullOrWhiteSpace(patientName) && string.IsNullOrWhiteSpace(symptomKeyword))
+                {
+                    return ServiceResult<List<PrescriptionSearchResultDto>>.Success(new List<PrescriptionSearchResultDto>());
+                }
+
+                // 获取所有处方
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // 获取所有病历（用于关联患者）
+                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
+                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+
+                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
+                var allConsultations = await _consultationRepository.GetAllAsync();
+                var consultationDict = allConsultations.ToDictionary(c => c.Id);
+
+                // 获取所有患者（用于关联 PatientName）
+                var allPatients = await _patientRepository.GetAllAsync();
+                var patientDict = allPatients.ToDictionary(p => p.Id);
+
+                // 内存过滤与关联
+                var searchResults = new List<PrescriptionSearchResultDto>();
+
+                foreach (var prescription in allPrescriptions)
+                {
+                    // 关联病历
+                    if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
+                    {
+                        continue; // 找不到关联病历，跳过
+                    }
+
+                    // 关联患者
+                    if (!patientDict.TryGetValue(medicalCase.PatientId, out var patient))
+                    {
+                        continue; // 找不到关联患者，跳过
+                    }
+
+                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
+                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
+
+                    // 按患者姓名筛选
+                    if (!string.IsNullOrWhiteSpace(patientName))
+                    {
+                        if (patient.Name == null || !patient.Name.Contains(patientName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // 患者姓名不匹配，跳过
+                        }
+                    }
+
+                    // 按症状/诊断关键字筛选
+                    if (!string.IsNullOrWhiteSpace(symptomKeyword))
+                    {
+                        var matchedInDiagnosis = consultation?.TCMDiagnosis != null &&
+                            consultation.TCMDiagnosis.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
+
+                        var matchedInIndication = prescription.Indication != null &&
+                            prescription.Indication.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
+
+                        if (!matchedInDiagnosis && !matchedInIndication)
+                        {
+                            continue; // 症状/诊断不匹配，跳过
+                        }
+                    }
+
+                    // 构建搜索结果
+                    searchResults.Add(new PrescriptionSearchResultDto
+                    {
+                        Id = prescription.Id,
+                        CreatedAt = prescription.CreatedAt,
+                        PatientId = patient.Id,
+                        PatientName = patient.Name ?? string.Empty,
+                        Indication = prescription.Indication,
+                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        DosageCount = prescription.DosageCount,
+                        Advice = prescription.Advice,
+                        FormulaSource = prescription.FormulaSource,
+                        Remark = prescription.Remark
+                    });
+                }
+
+                _logger.LogInformation("处方搜索完成，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}，结果数量：{Count}",
+                    patientName ?? "(空)", symptomKeyword ?? "(空)", searchResults.Count);
+
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(searchResults);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索处方时发生错误，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}",
+                    patientName ?? "(空)", symptomKeyword ?? "(空)");
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"搜索处方失败：{ex.Message}");
             }
         }
 

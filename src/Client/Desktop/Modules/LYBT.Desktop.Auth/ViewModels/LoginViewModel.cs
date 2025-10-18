@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                             Password = credentials.Value.Password;
                             RememberMe = true; // 记住密码时必然记住用户名
                             RememberPassword = isRememberPasswordEnabled;
-                            Logger.LogInformation("已自动填充用户名和密码（DPAPI解密）: {Username}", credentials.Value.Username);
+                            Logger.LogInformation("已自动填充用户名和密码（DPAPI解密）: {UserName}", credentials.Value.Username);
                         });
                         return; // 成功加载密码后直接返回
                     }
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                         {
                             Username = savedUsername;
                             RememberMe = isRememberMeEnabled;
-                            Logger.LogInformation("已自动填充用户名: {Username}", savedUsername);
+                            Logger.LogInformation("已自动填充用户名: {UserName}", savedUsername);
                         });
                     }
                 }
@@ -267,7 +267,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 // 构造登录请求
                 var loginRequest = new LoginRequest
                 {
-                    Username = Username,
+                    UserName = Username,
                     Password = Password,
                     RememberMe = RememberMe
                 };

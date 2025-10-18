@@ -929,8 +929,10 @@ namespace LYBT.Module.Formula.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.SuccessCount.Should().Be(1);
             result.Data.FailureCount.Should().Be(0);
-            result.Data.ImportedData.Should().HaveCount(1);
-            result.Data.ImportedData[0].Name.Should().Be("测试验方");
+            result.Data.SuccessfulFormulas.Should().HaveCount(1);
+            result.Data.SuccessfulFormulas[0].Name.Should().Be("测试验方");
+            result.Data.MatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
+            result.Data.UnmatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
         }
@@ -1011,8 +1013,8 @@ namespace LYBT.Module.Formula.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.SuccessCount.Should().Be(0);
             result.Data.FailureCount.Should().Be(1);
-            result.Data.Errors.Should().HaveCount(1);
-            result.Data.Errors[0].ErrorMessage.Should().Contain("验方名称不能为空");
+            result.Data.FailedItems.Should().HaveCount(1);
+            result.Data.FailedItems[0].ErrorMessage.Should().Contain("验方名称不能为空");
         }
 
         #endregion

@@ -676,6 +676,14 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("导入结束时间")]
         public DateTime EndTime { get; set; }
 
+        /// <summary>成功匹配的药材数量（自动匹配到药材库）</summary>
+        [DisplayName("成功匹配药材数")]
+        public int MatchedHerbsCount { get; set; }
+
+        /// <summary>未匹配的药材数量（需要手动校验）</summary>
+        [DisplayName("未匹配药材数")]
+        public int UnmatchedHerbsCount { get; set; }
+
         /// <summary>成功的验方列表</summary>
         [DisplayName("成功的验方列表")]
         public List<FormulaDto> SuccessfulFormulas { get; set; } = new();

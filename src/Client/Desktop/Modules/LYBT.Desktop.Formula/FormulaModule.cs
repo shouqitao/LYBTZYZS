@@ -27,10 +27,12 @@ namespace LYBT.Desktop.Formula
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.FormulaManagementViewModel>();
             containerRegistry.Register<ViewModels.FormulaDetailViewModel>();
+            containerRegistry.Register<ViewModels.FormulaValidationViewModel>(); // FORMULA-10: 验方校验视图模型
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
             containerRegistry.RegisterForNavigation<Views.FormulaDetailView>();
+            containerRegistry.RegisterForNavigation<Views.FormulaValidationView>(); // FORMULA-10: 验方校验视图
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();

@@ -54,9 +54,10 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
 
         /// <summary>
-        /// 从Excel文件导入验方数据 (Issue #1166)
+        /// 从Excel文件导入验方数据 (Issue #1166, #1347)
+        /// 返回FormulaImportResultDto包含药材匹配统计
         /// </summary>
-        Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+        Task<ServiceResult<FormulaImportResultDto>> ImportFromExcelAsync(Stream stream, string? fileName = null);
 
         /// <summary>
         /// 导出验方数据到Excel (Issue #1166)

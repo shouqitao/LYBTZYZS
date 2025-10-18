@@ -55,7 +55,7 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 // 从配置获取超级管理员用户名
-                var configUsername = _configuration["Lybt:Business:SystemAdmin:Username"];
+                var configUsername = _configuration["Lybt:Business:SystemAdmin:UserName"];
                 if (string.IsNullOrEmpty(configUsername))
                 {
                     _logger.LogWarning("配置中未找到超级管理员用户名");
@@ -107,35 +107,35 @@ namespace LYBT.Module.Auth.Services
         /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
+            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
                 return ServiceResult<string>.Failure("用户名和密码不能为空");
 
             try
             {
                 // 首先检查是否是超级管理员登录
-                if (await IsSuperAdminCredentials(request.Username, request.Password, cancellationToken))
+                if (await IsSuperAdminCredentials(request.UserName, request.Password, cancellationToken))
                 {
-                    _logger.LogInformation("超级管理员认证成功 [用户名: {Username}] [时间: {Timestamp}]",
-                    request.Username, DateTime.UtcNow);
+                    _logger.LogInformation("超级管理员认证成功 [用户名: {UserName}] [时间: {Timestamp}]",
+                    request.UserName, DateTime.UtcNow);
                     // 返回特殊的超级管理员标识
-                    return ServiceResult<string>.Success("SUPER_ADMIN:" + request.Username);
+                    return ServiceResult<string>.Success("SUPER_ADMIN:" + request.UserName);
                 }
 
                 // 普通用户认证流程 - 直接调用Repository
-                var userEntity = await _userRepository.GetByUsernameAsync(request.Username);
+                var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                 if (userEntity == null)
                     return ServiceResult<string>.Failure("用户名或密码错误");
 
                 // 直接使用BCrypt验证密码
                 if (BCrypt.Net.BCrypt.Verify(request.Password, userEntity.PasswordHash))
                 {
-                    _logger.LogInformation("用户认证成功 [用户名: {Username}] [时间: {Timestamp}]",
-                    request.Username, DateTime.UtcNow);
+                    _logger.LogInformation("用户认证成功 [用户名: {UserName}] [时间: {Timestamp}]",
+                    request.UserName, DateTime.UtcNow);
                     return ServiceResult<string>.Success(userEntity.Id.ToString());
                 }
 
-                _logger.LogWarning("用户认证失败 [用户名: {Username}] [原因: 密码错误] [时间: {Timestamp}]",
-                request.Username, DateTime.UtcNow);
+                _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: 密码错误] [时间: {Timestamp}]",
+                request.UserName, DateTime.UtcNow);
                 return ServiceResult<string>.Failure("用户名或密码错误");
             }
             catch (Exception ex)
@@ -210,7 +210,7 @@ namespace LYBT.Module.Auth.Services
                 else
                 {
                     // 普通用户登录流程 - Issue #1008: 改为直接调用Repository
-                    var userEntity = await _userRepository.GetByUsernameAsync(request.Username);
+                    var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                     if (userEntity == null)
                         return ServiceResult<LoginResponse>.Failure("获取用户信息失败");
 
@@ -230,8 +230,8 @@ namespace LYBT.Module.Auth.Services
                         ExpiresAt = DateTime.UtcNow.AddHours(8) // 简化：固定8小时过期
                     };
 
-                    _logger.LogInformation("用户登录成功 [用户名: {Username}] [时间: {Timestamp}]",
-                    request.Username, DateTime.UtcNow);
+                    _logger.LogInformation("用户登录成功 [用户名: {UserName}] [时间: {Timestamp}]",
+                    request.UserName, DateTime.UtcNow);
                 }
 
                 return ServiceResult<LoginResponse>.Success(response);
