@@ -30,10 +30,12 @@ namespace LYBT.Desktop.Prescriptions
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<PrescriptionManagementViewModel>();
             containerRegistry.Register<PrescriptionsMainViewModel>();
+            containerRegistry.Register<PrescriptionViewModel>(); // Issue #1461
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
             containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
+            containerRegistry.RegisterForNavigation<Views.PrescriptionView>(); // Issue #1461
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
