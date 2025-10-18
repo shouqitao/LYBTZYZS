@@ -265,6 +265,45 @@ Modules/
 └── Formula/                # 验方模块
 ```
 
+#### 📋 Prescriptions模块架构演化（Issue #1445）
+
+**重要变更**：处方模块视图架构已于2025-10-18统一，删除了Phase 4B空骨架实现。
+
+| 演化阶段 | 视图实现 | 状态 | 问题 |
+|---------|---------|------|------|
+| **Phase 4B**（已废弃） | PrescriptionView（434行空骨架） | 2025-10-18删除 | 导航错误导致空白界面 |
+| **统一架构**（当前） | PrescriptionView（932行完整实现） | 当前使用 | 重命名自PrescriptionComposerView |
+
+**架构清理过程**（Epic #1445）：
+- ✅ **ARCH-1** (#1446): 删除Phase 4B空骨架（PrescriptionView.xaml/cs/ViewModel）
+- ✅ **ARCH-2** (#1447): 重命名PrescriptionComposerView → PrescriptionView
+- ✅ **ARCH-3** (#1448): 更新所有导航配置引用
+- 🔄 **ARCH-4** (#1449): 更新架构文档（本文档）
+
+**当前Prescriptions视图结构**：
+```
+Modules/Prescriptions/
+├── Views/
+│   ├── PrescriptionView.xaml          # 处方编辑主界面（8列DataGrid，完整实现）
+│   ├── PrescriptionManagementView.xaml # 处方列表管理界面
+│   ├── PrescriptionDetailView.xaml    # 处方详情查看界面
+│   └── FormulaTemplateSelectionDialog.xaml  # 验方模板选择对话框
+├── ViewModels/
+│   ├── PrescriptionViewModel.cs        # 处方编辑ViewModel（包含组件化架构）
+│   ├── PrescriptionManagementViewModel.cs
+│   ├── PrescriptionsMainViewModel.cs
+│   └── FormulaTemplateSelectionDialogViewModel.cs
+└── Components/                         # 组件化设计（PrescriptionViewModel依赖）
+    ├── PrescriptionDataManager.cs      # 数据管理组件
+    ├── PrescriptionCommandHandler.cs   # 命令处理组件
+    └── FormulaImportService.cs         # 验方导入服务
+```
+
+**导航配置**：
+- 创建新处方：`NavigateTo("MainRegion", "PrescriptionView")`
+- 编辑处方：`NavigateTo("MainRegion", "PrescriptionView", parameters)`
+- 管理列表：`NavigateTo("PrescriptionContentRegion", "PrescriptionManagementView")`
+
 **模块基类**：
 ```csharp
 // Modules/ModuleBase.cs
