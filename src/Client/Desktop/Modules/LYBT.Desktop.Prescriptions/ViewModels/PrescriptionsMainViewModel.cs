@@ -12,6 +12,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     /// <summary>
     /// 处方主视图模型 - UltraThink精简架构
     /// 作为处方模块的入口和主导航容器
+    /// Issue #1445 (ARCH-3): 统一导航目标到PrescriptionView（已删除空骨架）
     /// </summary>
     public class PrescriptionsMainViewModel : UnifiedViewModelBase
     {
