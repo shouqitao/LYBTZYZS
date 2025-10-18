@@ -446,49 +446,65 @@ namespace LYBT.Module.Prescriptions.Services
 
 
         /// <summary>
-        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// 克隆处方 - 复制处方到指定诊疗记录 (Issue #1373 ENTRY-15)
+        /// 支持从历史处方复制到新的诊疗记录/病历
         /// </summary>
-        public async Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetConsultationId">目标诊疗记录ID（与MedicalCase共享主键）</param>
+        /// <returns>新创建的处方DTO</returns>
+        public async Task<ServiceResult<PrescriptionDto>> ClonePrescriptionAsync(
+            Guid sourcePrescriptionId,
+            Guid targetConsultationId)
         {
             try
             {
-                // 获取原始处方（包含药材项）
-                var originalPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
-                if (originalPrescription == null)
+                // 获取源处方（包含药材项）
+                var sourcePrescription = await _repository.GetByIdWithItemsAsync(sourcePrescriptionId);
+                if (sourcePrescription == null)
                 {
                     return ServiceResult<PrescriptionDto>.Failure("未找到要克隆的处方");
                 }
 
-                // 创建克隆处方
+                // 根据targetConsultationId找到目标MedicalCase（Consultation与MedicalCase共享主键）
+                var targetMedicalCase = await _medicalCaseRepository.GetByIdAsync(targetConsultationId);
+                if (targetMedicalCase == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure($"未找到目标诊疗记录对应的病历（ID: {targetConsultationId}）");
+                }
+
+                // 创建克隆处方，关联到目标病历
                 var clonedPrescription = new PrescriptionEntity
                 {
                     Id = Guid.NewGuid(),
-                    MedicalCaseId = originalPrescription.MedicalCaseId,
-                    PatientId = originalPrescription.PatientId,
-                    UserId = originalPrescription.UserId,
-                    Indication = originalPrescription.Indication,
-                    DosageCount = originalPrescription.DosageCount,
-                    Discount = originalPrescription.Discount,
-                    Advice = originalPrescription.Advice,
-                    FormulaSource = originalPrescription.FormulaSource,
+                    MedicalCaseId = targetMedicalCase.Id, // 关联到目标病历
+                    PatientId = targetMedicalCase.PatientId, // 使用目标病历的患者
+                    UserId = sourcePrescription.UserId, // 保留原开方医生
+                    Indication = sourcePrescription.Indication, // 保留适应症
+                    DosageCount = sourcePrescription.DosageCount,
+                    Discount = sourcePrescription.Discount,
+                    Advice = sourcePrescription.Advice,
+
+                    // TODO: ENTRY-7完成后，这里改为ReferencedFormulas字段
+                    FormulaSource = sourcePrescription.FormulaSource, // 保留验方来源
+
                     Status = PrescriptionStatus.Draft, // 克隆的处方默认为草稿状态
-                    Remark = originalPrescription.Remark,
+                    Remark = sourcePrescription.Remark,
                     PrintVersion = 1, // 重置打印版本
                     LastPrintedAt = null, // 清空打印时间
                     PrintCount = 0, // 重置打印次数
+                    IsPrinted = false, // 重置打印状态
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
-                    
-                    // 复制药材项（稍后设置PrescriptionId）
+
                     Items = new List<PrescriptionItemEntity>()
                 };
 
                 var savedPrescription = await _repository.AddAsync(clonedPrescription);
-                
-                // 复制药材项
-                if (originalPrescription.Items != null && originalPrescription.Items.Any())
+
+                // 克隆所有药材项
+                if (sourcePrescription.Items != null && sourcePrescription.Items.Any())
                 {
-                    foreach (var item in originalPrescription.Items)
+                    foreach (var item in sourcePrescription.Items)
                     {
                         savedPrescription.Items.Add(new PrescriptionItemEntity
                         {
@@ -504,11 +520,41 @@ namespace LYBT.Module.Prescriptions.Services
                         });
                     }
                 }
-                
+
                 await _repository.SaveChangesAsync();
+
+                _logger.LogInformation("处方克隆成功，源处方ID：{SourceId}，目标诊疗ID：{TargetConsultationId}，新处方ID：{NewId}，药材数量：{ItemCount}",
+                    sourcePrescriptionId, targetConsultationId, savedPrescription.Id, savedPrescription.Items.Count);
 
                 var prescriptionDto = _mapper.Map<PrescriptionDto>(savedPrescription);
                 return ServiceResult<PrescriptionDto>.Success(prescriptionDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "克隆处方时发生错误，源处方ID：{SourceId}，目标诊疗ID：{TargetConsultationId}",
+                    sourcePrescriptionId, targetConsultationId);
+                return ServiceResult<PrescriptionDto>.Failure($"克隆处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
+        /// 已弃用，请使用 ClonePrescriptionAsync
+        /// </summary>
+        [Obsolete("请使用 ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetConsultationId) 替代")]
+        public async Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        {
+            try
+            {
+                // 获取原始处方
+                var originalPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                if (originalPrescription == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("未找到要克隆的处方");
+                }
+
+                // 调用新版克隆方法，克隆到同一MedicalCase
+                return await ClonePrescriptionAsync(prescriptionId, originalPrescription.MedicalCaseId);
             }
             catch (Exception ex)
             {

@@ -55,9 +55,22 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<string>> GeneratePrescriptionNoAsync();
 
         /// <summary>
-        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
+        /// 已弃用，请使用 ClonePrescriptionAsync
         /// </summary>
+        [Obsolete("请使用 ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetConsultationId) 替代")]
         Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId);
+
+        /// <summary>
+        /// 克隆处方 - 复制处方到指定诊疗记录 (Issue #1373 ENTRY-15)
+        /// 支持从历史处方复制到新的诊疗记录/病历
+        /// </summary>
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetConsultationId">目标诊疗记录ID（与MedicalCase共享主键）</param>
+        /// <returns>新创建的处方DTO</returns>
+        Task<ServiceResult<PrescriptionDto>> ClonePrescriptionAsync(
+            Guid sourcePrescriptionId,
+            Guid targetConsultationId);
 
         /// <summary>
         /// 获取处方统计数据 (Issue #1163)

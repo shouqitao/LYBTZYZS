@@ -254,13 +254,15 @@ namespace LYBT.WebAPI.Controllers
 
 
         /// <summary>
-        /// 克隆处方 - 复制处方作为新处方 (Issue #1167)
+        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
+        /// 已弃用，请使用 ClonePrescriptionTo
         /// </summary>
         /// <param name="id">原处方ID</param>
         /// <returns>新创建的处方副本</returns>
         [HttpPost("{id}/copy")]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
         [ProducesResponseType(404)]
+        [Obsolete("请使用 POST /prescriptions/{id}/clone-to/{targetConsultationId} 替代")]
         public async Task<ActionResult<ApiResponse<PrescriptionDto>>> CopyPrescription(Guid id)
         {
             try
@@ -271,18 +273,20 @@ namespace LYBT.WebAPI.Controllers
                     return validation;
                 }
 
+                #pragma warning disable CS0618 // 类型或成员已过时
                 var result = await _service.CloneAsync(id);
-                
+                #pragma warning restore CS0618
+
                 if (!result.IsSuccess || result.Data == null)
                 {
                     return NotFound<PrescriptionDto>(
-                        result.ErrorMessage ?? "处方不存在", 
+                        result.ErrorMessage ?? "处方不存在",
                         ApiErrorCodes.PRESCRIPTIONNOTFOUND);
                 }
 
                 // 记录操作日志
-                LogOperation("克隆处方", 
-                    new { OriginalId = id, NewId = result.Data.Id }, 
+                LogOperation("克隆处方（同一病历）",
+                    new { OriginalId = id, NewId = result.Data.Id },
                     result.Data.Id);
 
                 return Success(result.Data, "处方克隆成功");
@@ -290,6 +294,56 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<PrescriptionDto>(ex, "克隆处方", id);
+            }
+        }
+
+        /// <summary>
+        /// 克隆处方到指定诊疗记录 - 支持从历史处方复制 (Issue #1373 ENTRY-15)
+        /// </summary>
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetConsultationId">目标诊疗记录ID</param>
+        /// <returns>新创建的处方副本</returns>
+        [HttpPost("{sourcePrescriptionId}/clone-to/{targetConsultationId}")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ClonePrescriptionTo(
+            Guid sourcePrescriptionId,
+            Guid targetConsultationId)
+        {
+            try
+            {
+                var sourceValidation = ValidateGuid<PrescriptionDto>(sourcePrescriptionId, "源处方ID");
+                if (sourceValidation != null)
+                {
+                    return sourceValidation;
+                }
+
+                var targetValidation = ValidateGuid<PrescriptionDto>(targetConsultationId, "目标诊疗记录ID");
+                if (targetValidation != null)
+                {
+                    return targetValidation;
+                }
+
+                var result = await _service.ClonePrescriptionAsync(sourcePrescriptionId, targetConsultationId);
+
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<PrescriptionDto>(
+                        result.ErrorMessage ?? "克隆处方失败",
+                        ApiErrorCodes.PRESCRIPTIONNOTFOUND);
+                }
+
+                // 记录操作日志
+                LogOperation("克隆处方到新诊疗",
+                    new { SourcePrescriptionId = sourcePrescriptionId, TargetConsultationId = targetConsultationId, NewPrescriptionId = result.Data.Id },
+                    result.Data.Id);
+
+                return Success(result.Data, "处方克隆成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "克隆处方到新诊疗", new { sourcePrescriptionId, targetConsultationId });
             }
         }
 
