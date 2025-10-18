@@ -20,5 +20,11 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
         /// </summary>
         Task<List<PrescriptionSearchResultDto>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5);
+
+        /// <summary>
+        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
+        /// </summary>
+        Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
     }
 }

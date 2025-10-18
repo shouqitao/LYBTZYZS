@@ -415,6 +415,57 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
+        /// </summary>
+        /// <param name="prescriptionId">处方ID</param>
+        /// <param name="formulaId">验方ID</param>
+        /// <returns>更新后的处方DTO</returns>
+        [HttpPost("{prescriptionId}/import-formula/{formulaId}")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ImportFormulaIntoPrescription(
+            Guid prescriptionId,
+            Guid formulaId)
+        {
+            try
+            {
+                var prescriptionValidation = ValidateGuid<PrescriptionDto>(prescriptionId, "处方ID");
+                if (prescriptionValidation != null)
+                {
+                    return prescriptionValidation;
+                }
+
+                var formulaValidation = ValidateGuid<PrescriptionDto>(formulaId, "验方ID");
+                if (formulaValidation != null)
+                {
+                    return formulaValidation;
+                }
+
+                var result = await _service.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<PrescriptionDto>(
+                        result.ErrorMessage ?? "导入验方失败",
+                        ApiErrorCodes.DATASAVEFAILED);
+                }
+
+                // 记录操作日志
+                LogOperation("导入验方到处方",
+                    new { PrescriptionId = prescriptionId, FormulaId = formulaId },
+                    prescriptionId);
+
+                return Success(result.Data, result.Message ?? "验方导入成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "导入验方到处方", new { prescriptionId, formulaId });
+            }
+        }
+
         #endregion
     }
 }

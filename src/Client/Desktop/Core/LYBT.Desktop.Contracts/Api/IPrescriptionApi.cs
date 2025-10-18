@@ -54,5 +54,14 @@ namespace LYBT.Desktop.Contracts.Api
         Task<Refit.ApiResponse<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
             Guid patientId,
             [Refit.Query] int count = 5);
+
+        /// <summary>
+        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
+        /// </summary>
+        [Refit.Post("/api/v1/prescriptions/{prescriptionId}/import-formula/{formulaId}")]
+        Task<Refit.ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+            Guid prescriptionId,
+            Guid formulaId);
     }
 }

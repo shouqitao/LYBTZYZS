@@ -79,6 +79,35 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             }
         }
 
+        /// <summary>
+        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
+        /// </summary>
+        public async Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId)
+        {
+            if (prescriptionId == Guid.Empty)
+            {
+                _logger.LogError("Cannot import formula with invalid prescription id");
+                throw new ArgumentException("Prescription ID is required", nameof(prescriptionId));
+            }
+            if (formulaId == Guid.Empty)
+            {
+                _logger.LogError("Cannot import formula with invalid formula id");
+                throw new ArgumentException("Formula ID is required", nameof(formulaId));
+            }
+
+            try
+            {
+                var response = await _api.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+                return response.Content ?? throw new InvalidOperationException($"导入验方失败，处方ID: {prescriptionId}, 验方ID: {formulaId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入验方失败，处方ID: {PrescriptionId}, 验方ID: {FormulaId}", prescriptionId, formulaId);
+                throw;
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)
