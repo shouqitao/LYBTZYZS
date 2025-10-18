@@ -347,6 +347,37 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
+        /// <returns>处方搜索结果列表</returns>
+        [HttpGet("search")]
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
+        [ProducesResponseType(typeof(ApiResponse<List<PrescriptionSearchResultDto>>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionSearchResultDto>>>> Search(
+            [FromQuery] string? patientName = null,
+            [FromQuery] string? symptomKeyword = null)
+        {
+            try
+            {
+                // 至少需要一个搜索条件
+                if (string.IsNullOrWhiteSpace(patientName) && string.IsNullOrWhiteSpace(symptomKeyword))
+                {
+                    return ValidationFail<List<PrescriptionSearchResultDto>>("请至少提供一个搜索条件（患者姓名或症状关键字）");
+                }
+
+                var result = await _service.SearchPrescriptionsAsync(patientName, symptomKeyword);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PrescriptionSearchResultDto>>(ex, "搜索处方", new { patientName, symptomKeyword });
+            }
+        }
+
         #endregion
     }
 }
