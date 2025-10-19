@@ -36,6 +36,7 @@ namespace LYBT.Desktop.MedicalCase
 
             // 注册视图用于导航 - 需要对应视图文件存在
             containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseListView>();
         }
