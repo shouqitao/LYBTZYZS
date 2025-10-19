@@ -1,21 +1,23 @@
+using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// Step 1 - 患者选择ViewModel（Epic #1494 - Task #1497）
-    /// 支持搜索、新建患者、选择患者
+    /// 患者选择视图模型 - Epic #1494 Task #1497
+    /// 用于医案流程Step 1：患者选择
+    /// 支持搜索、新建患者、选择患者后通知父ViewModel
     /// </summary>
-    public class PatientSelectionViewModel : UnifiedViewModelBase, IValidatable
+    public class PatientSelectionViewModel : UnifiedViewModelBase
     {
         #region 字段
 
@@ -25,6 +27,26 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         #region 属性
+
+        private string _searchKeyword = string.Empty;
+        /// <summary>
+        /// 搜索关键字（支持姓名/拼音码/手机号）
+        /// </summary>
+        public string SearchKeyword
+        {
+            get => _searchKeyword;
+            set
+            {
+                if (SetProperty(ref _searchKeyword, value))
+                {
+                    // 实时搜索
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        _ = LoadPatientsAsync();
+                    }
+                }
+            }
+        }
 
         private ObservableCollection<PatientDto> _patients = new();
         /// <summary>
@@ -38,7 +60,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private PatientDto? _selectedPatient;
         /// <summary>
-        /// 当前选中的患者
+        /// 选中的患者
         /// </summary>
         public PatientDto? SelectedPatient
         {
@@ -48,24 +70,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (SetProperty(ref _selectedPatient, value))
                 {
                     SelectPatientCommand.RaiseCanExecuteChanged();
-                    RaisePropertyChanged(nameof(ValidationMessage));
-                }
-            }
-        }
-
-        private string _searchKeyword = string.Empty;
-        /// <summary>
-        /// 搜索关键字（姓名/拼音码/手机号）
-        /// </summary>
-        public string SearchKeyword
-        {
-            get => _searchKeyword;
-            set
-            {
-                if (SetProperty(ref _searchKeyword, value))
-                {
-                    // 实时搜索
-                    _ = SearchPatientsAsync();
                 }
             }
         }
@@ -100,24 +104,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _totalCount, value);
         }
 
-        private const int PageSize = 50; // 每页显示50条记录（Issue #1497要求）
-
-        #endregion
-
-        #region IValidatable实现
-
         /// <summary>
-        /// 验证是否已选择患者
+        /// 每页显示记录数
         /// </summary>
-        public bool Validate()
-        {
-            return SelectedPatient != null;
-        }
-
-        /// <summary>
-        /// 验证错误消息
-        /// </summary>
-        public string ValidationMessage => SelectedPatient == null ? "请选择一位患者" : string.Empty;
+        public int PageSize { get; } = 50;
 
         #endregion
 
@@ -125,16 +115,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public DelegateCommand SearchCommand { get; }
         public DelegateCommand NewPatientCommand { get; }
-        public DelegateCommand<PatientDto> SelectPatientCommand { get; }
-        public DelegateCommand PreviousPageCommand { get; }
+        public DelegateCommand SelectPatientCommand { get; }
+        public DelegateCommand RefreshCommand { get; }
+        public DelegateCommand<PatientDto> DoubleClickSelectCommand { get; }
         public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand PreviousPageCommand { get; }
 
         #endregion
 
         #region 事件
 
         /// <summary>
-        /// 患者选择事件（通知父ViewModel）
+        /// 患者选择事件 - 通知父ViewModel（MedicalCaseFlowViewModel）
         /// </summary>
         public event EventHandler<PatientDto>? PatientSelected;
 
@@ -154,38 +146,41 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化命令
-            SearchCommand = new DelegateCommand(async () => await SearchPatientsAsync());
+            SearchCommand = new DelegateCommand(async () => await SearchAsync());
             NewPatientCommand = new DelegateCommand(ExecuteNewPatient);
-            SelectPatientCommand = new DelegateCommand<PatientDto>(ExecuteSelectPatient, CanExecuteSelectPatient);
-            PreviousPageCommand = new DelegateCommand(async () => await ExecutePreviousPageAsync(), CanExecutePreviousPage);
-            NextPageCommand = new DelegateCommand(async () => await ExecuteNextPageAsync(), CanExecuteNextPage);
+            SelectPatientCommand = new DelegateCommand(ExecuteSelectPatient, CanSelectPatient);
+            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            DoubleClickSelectCommand = new DelegateCommand<PatientDto>(ExecuteDoubleClickSelect, p => p != null);
+            NextPageCommand = new DelegateCommand(async () => await NextPageAsync(), CanNextPage);
+            PreviousPageCommand = new DelegateCommand(async () => await PreviousPageAsync(), CanPreviousPage);
 
             Logger.LogInformation("PatientSelectionViewModel已初始化");
-
-            // 自动加载第一页数据
-            _ = LoadPatientsAsync();
         }
 
         #endregion
 
-        #region 命令实现
+        #region 公共方法
 
         /// <summary>
-        /// 搜索患者
+        /// 初始化加载数据 - 由MedicalCaseFlowViewModel调用
         /// </summary>
-        private async Task SearchPatientsAsync()
+        public async Task InitializeAsync()
         {
             try
             {
-                CurrentPage = 1; // 重置到第一页
+                Logger.LogInformation("初始化患者选择视图");
                 await LoadPatientsAsync();
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "搜索患者失败，关键字：{SearchKeyword}", SearchKeyword);
-                await ShowErrorMessageAsync($"搜索失败：{ex.Message}");
+                Logger.LogError(ex, "初始化患者选择视图失败");
+                await ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
+
+        #endregion
+
+        #region 数据加载
 
         /// <summary>
         /// 加载患者列表（分页）
@@ -196,35 +191,31 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在加载患者列表...");
 
-                Logger.LogInformation("加载患者列表，页码：{CurrentPage}，每页：{PageSize}，关键字：{SearchKeyword}",
-                    CurrentPage, PageSize, SearchKeyword);
-
-                var result = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword);
+                var pagedResult = await _patientRepository.GetPagedAsync(
+                    CurrentPage,
+                    PageSize,
+                    string.IsNullOrWhiteSpace(SearchKeyword) ? null : SearchKeyword);
 
                 Patients.Clear();
-                if (result.Items != null)
+                foreach (var patient in pagedResult.Items)
                 {
-                    foreach (var patient in result.Items)
-                    {
-                        Patients.Add(patient);
-                    }
+                    Patients.Add(patient);
                 }
 
-                TotalCount = result.TotalCount;
-                TotalPages = result.TotalPages;
-                CurrentPage = result.CurrentPage;
+                TotalCount = pagedResult.TotalCount;
+                TotalPages = pagedResult.TotalPages;
 
-                Logger.LogInformation("加载患者列表成功，共{TotalCount}条记录，当前第{CurrentPage}页/{TotalPages}页",
+                Logger.LogInformation("患者列表加载完成，共 {TotalCount} 人，当前第 {CurrentPage}/{TotalPages} 页",
                     TotalCount, CurrentPage, TotalPages);
 
                 // 更新分页命令状态
-                PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
+                PreviousPageCommand.RaiseCanExecuteChanged();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载患者列表失败");
-                await ShowErrorMessageAsync($"加载失败：{ex.Message}");
+                await ShowErrorMessageAsync("加载患者列表失败，请稍后重试");
             }
             finally
             {
@@ -233,83 +224,47 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 新建患者
+        /// 搜索患者
         /// </summary>
-        private async void ExecuteNewPatient()
+        private async Task SearchAsync()
         {
             try
             {
-                Logger.LogInformation("打开新建患者对话框");
+                Logger.LogInformation("搜索患者，关键字: {SearchKeyword}", SearchKeyword);
 
-                // TODO: Task #1497实现后，打开快速新建患者对话框
-                // var result = _dialogService.ShowDialog("PatientQuickCreateDialog");
-                // if (result.Success)
-                // {
-                //     var newPatient = result.Data as PatientDto;
-                //     Patients.Insert(0, newPatient); // 添加到列表顶部
-                //     SelectedPatient = newPatient; // 自动选中
-                // }
-
-                await _dialogService.ShowWarningAsync("新建患者功能待实现（需要创建快速新建对话框）");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "新建患者失败");
-            }
-        }
-
-        /// <summary>
-        /// 选择患者
-        /// </summary>
-        private void ExecuteSelectPatient(PatientDto? patient)
-        {
-            if (patient == null)
-            {
-                Logger.LogWarning("选择患者失败：患者为空");
-                return;
-            }
-
-            try
-            {
-                Logger.LogInformation("选择患者：{PatientName}（Id: {PatientId}）", patient.Name, patient.Id);
-
-                SelectedPatient = patient;
-
-                // 触发事件，通知父ViewModel
-                PatientSelected?.Invoke(this, patient);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "选择患者失败");
-            }
-        }
-
-        private bool CanExecuteSelectPatient(PatientDto? patient)
-        {
-            return patient != null;
-        }
-
-        /// <summary>
-        /// 上一页
-        /// </summary>
-        private async Task ExecutePreviousPageAsync()
-        {
-            if (CurrentPage > 1)
-            {
-                CurrentPage--;
+                // 重置到第一页
+                CurrentPage = 1;
                 await LoadPatientsAsync();
             }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "搜索患者失败，关键字: {SearchKeyword}", SearchKeyword);
+                await ShowErrorMessageAsync("搜索失败，请稍后重试");
+            }
         }
 
-        private bool CanExecutePreviousPage()
+        /// <summary>
+        /// 刷新
+        /// </summary>
+        private async Task RefreshAsync()
         {
-            return CurrentPage > 1;
+            try
+            {
+                Logger.LogInformation("刷新患者列表");
+                SearchKeyword = string.Empty;
+                CurrentPage = 1;
+                await LoadPatientsAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新患者列表失败");
+            }
         }
 
         /// <summary>
         /// 下一页
         /// </summary>
-        private async Task ExecuteNextPageAsync()
+        private async Task NextPageAsync()
         {
             if (CurrentPage < TotalPages)
             {
@@ -318,10 +273,73 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        private bool CanExecuteNextPage()
+        /// <summary>
+        /// 上一页
+        /// </summary>
+        private async Task PreviousPageAsync()
         {
-            return CurrentPage < TotalPages;
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                await LoadPatientsAsync();
+            }
         }
+
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 新建患者
+        /// </summary>
+        private void ExecuteNewPatient()
+        {
+            try
+            {
+                Logger.LogInformation("打开新建患者对话框");
+                // TODO: Task #1497+ - 实现快速新建患者对话框
+                _dialogService.ShowInfoAsync("快速新建患者功能开发中...", "新建患者");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开新建患者对话框失败");
+            }
+        }
+
+        /// <summary>
+        /// 选择患者
+        /// </summary>
+        private void ExecuteSelectPatient()
+        {
+            if (SelectedPatient != null)
+            {
+                Logger.LogInformation("选择患者: {PatientName} (ID: {PatientId})",
+                    SelectedPatient.Name, SelectedPatient.Id);
+
+                // 触发事件，通知父ViewModel（MedicalCaseFlowViewModel）
+                PatientSelected?.Invoke(this, SelectedPatient);
+            }
+        }
+
+        /// <summary>
+        /// 双击选择患者
+        /// </summary>
+        private void ExecuteDoubleClickSelect(PatientDto patient)
+        {
+            if (patient != null)
+            {
+                SelectedPatient = patient;
+                ExecuteSelectPatient();
+            }
+        }
+
+        #endregion
+
+        #region 命令状态检查
+
+        private bool CanSelectPatient() => SelectedPatient != null && !IsBusy;
+        private bool CanNextPage() => CurrentPage < TotalPages && !IsBusy;
+        private bool CanPreviousPage() => CurrentPage > 1 && !IsBusy;
 
         #endregion
     }

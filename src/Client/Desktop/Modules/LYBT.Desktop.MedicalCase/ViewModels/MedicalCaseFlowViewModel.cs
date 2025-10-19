@@ -381,6 +381,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     // 监听患者选择事件
                     patientSelectionVM.PatientSelected += OnPatientSelected;
 
+                    // 初始化加载患者列表（Fire-and-Forget模式）
+                    _ = patientSelectionVM.InitializeAsync();
+
                     CurrentStepViewModel = patientSelectionVM;
                     break;
 
