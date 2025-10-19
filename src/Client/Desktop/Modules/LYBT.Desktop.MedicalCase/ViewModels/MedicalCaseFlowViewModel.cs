@@ -1,6 +1,8 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Patients;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -17,6 +19,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
+        private readonly IServiceProvider _serviceProvider; // Task #1497/#1498 - 用于动态解析Step ViewModel
 
         #endregion
 
@@ -129,11 +132,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
+            IServiceProvider serviceProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -380,8 +385,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.FillConsultation:
                     Logger.LogInformation("导航到诊断录入步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "ConsultationFormView");
-                    CurrentStepViewModel = null; // 占位，待Task #1498实现
+
+                    // Task #1498 - 创建ConsultationFormViewModel实例
+                    var consultationFormVM = _serviceProvider.GetRequiredService<ConsultationFormViewModel>();
+
+                    // 设置MedicalCaseId（从Step 1创建的医案）
+                    consultationFormVM.SetMedicalCaseId(MedicalCaseId);
+
+                    CurrentStepViewModel = consultationFormVM;
                     break;
 
                 case FlowStep.FillPrescription:
