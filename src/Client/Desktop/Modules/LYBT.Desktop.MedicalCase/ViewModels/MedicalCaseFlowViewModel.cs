@@ -1,6 +1,7 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -17,6 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
+        private readonly IServiceProvider _serviceProvider; // Task #1499 - 用于动态解析Step ViewModel
 
         #endregion
 
@@ -129,11 +131,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
+            IServiceProvider serviceProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)); // Task #1499
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -386,8 +390,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.FillPrescription:
                     Logger.LogInformation("导航到处方编辑步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PrescriptionEditorView");
-                    CurrentStepViewModel = null; // 占位，待Task #1499实现
+
+                    // Task #1499 - 创建PrescriptionEditorViewModel实例
+                    var prescriptionEditorVM = _serviceProvider.GetRequiredService<PrescriptionEditorViewModel>();
+
+                    // 设置MedicalCaseId和PatientId（从Step 1创建的医案）
+                    prescriptionEditorVM.SetMedicalCaseIdAndPatientId(MedicalCaseId, Guid.Empty); // TODO: PatientId
+
+                    CurrentStepViewModel = prescriptionEditorVM;
                     break;
 
                 case FlowStep.CompleteMedicalCase:

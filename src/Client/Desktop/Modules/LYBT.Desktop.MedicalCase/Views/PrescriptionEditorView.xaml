@@ -1,0 +1,273 @@
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.PrescriptionEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid Background="White" Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+            <RowDefinition Height="*"/>     <!-- TabControl -->
+            <RowDefinition Height="Auto"/>  <!-- 统计信息 -->
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: 工具栏 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+            <Button Content="清空表单" Command="{Binding ClearCommand}" Padding="15,5" Margin="5,0"/>
+        </StackPanel>
+
+        <!-- Row 1: TabControl（手工录入、验方导入、历史复制） -->
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
+            
+            <!-- Tab 1: 手工录入（默认） -->
+            <TabItem Header="手工录入">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- DataGrid工具栏 -->
+                        <RowDefinition Height="*"/>     <!-- DataGrid -->
+                        <RowDefinition Height="Auto"/>  <!-- 剂数、用法、备注 -->
+                    </Grid.RowDefinitions>
+
+                    <!-- DataGrid工具栏 -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,10,0,5">
+                        <Button Content="添加行" Command="{Binding AddRowCommand}" Padding="10,5" Margin="0,0,5,0"/>
+                        <Button Content="删除选中行" Command="{Binding DeleteRowCommand}" 
+                                CommandParameter="{Binding SelectedItem, ElementName=PrescriptionDataGrid}" 
+                                Padding="10,5"/>
+                    </StackPanel>
+
+                    <!-- DataGrid：8列布局（每行4个药材） -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="PrescriptionDataGrid" 
+                                  ItemsSource="{Binding ItemRows}" 
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  CanUserSortColumns="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="All"
+                                  RowHeight="30"
+                                  MinHeight="300"
+                                  MinWidth="1200">
+
+                            <!-- 列定义：药材1+用量1+药材2+用量2+药材3+用量3+药材4+用量4 -->
+                            
+                            <!-- 药材1 -->
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="药材1" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataContext.AllHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      SelectedItem="{Binding Herb1.Herb, UpdateSourceTrigger=PropertyChanged}"
+                                                      DisplayMemberPath="Name"
+                                                      IsEditable="True"
+                                                      BorderThickness="0"
+                                                      Padding="5,2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="用量1(克)" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Herb1.Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=N1}"
+                                                     BorderThickness="0"
+                                                     Padding="5,2"
+                                                     TextAlignment="Right"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- 药材2 -->
+                                <DataGridTemplateColumn Header="药材2" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataContext.AllHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      SelectedItem="{Binding Herb2.Herb, UpdateSourceTrigger=PropertyChanged}"
+                                                      DisplayMemberPath="Name"
+                                                      IsEditable="True"
+                                                      BorderThickness="0"
+                                                      Padding="5,2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="用量2(克)" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Herb2.Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=N1}"
+                                                     BorderThickness="0"
+                                                     Padding="5,2"
+                                                     TextAlignment="Right"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- 药材3 -->
+                                <DataGridTemplateColumn Header="药材3" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataContext.AllHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      SelectedItem="{Binding Herb3.Herb, UpdateSourceTrigger=PropertyChanged}"
+                                                      DisplayMemberPath="Name"
+                                                      IsEditable="True"
+                                                      BorderThickness="0"
+                                                      Padding="5,2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="用量3(克)" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Herb3.Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=N1}"
+                                                     BorderThickness="0"
+                                                     Padding="5,2"
+                                                     TextAlignment="Right"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- 药材4 -->
+                                <DataGridTemplateColumn Header="药材4" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding DataContext.AllHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      SelectedItem="{Binding Herb4.Herb, UpdateSourceTrigger=PropertyChanged}"
+                                                      DisplayMemberPath="Name"
+                                                      IsEditable="True"
+                                                      BorderThickness="0"
+                                                      Padding="5,2"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="用量4(克)" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Herb4.Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=N1}"
+                                                     BorderThickness="0"
+                                                     Padding="5,2"
+                                                     TextAlignment="Right"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </ScrollViewer>
+
+                    <!-- 剂数、用法、备注 -->
+                    <Grid Grid.Row="2" Margin="0,10,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 剂数 + 用法 -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="剂数：" VerticalAlignment="Center" FontWeight="Bold"/>
+                            <TextBox Grid.Column="1" Text="{Binding DosageCount, UpdateSourceTrigger=PropertyChanged}" 
+                                     VerticalAlignment="Center" Padding="5,2"/>
+
+                            <TextBlock Grid.Column="3" Text="用法：" VerticalAlignment="Center" FontWeight="Bold" Margin="10,0,0,0"/>
+                            <TextBox Grid.Column="4" Text="{Binding Usage, UpdateSourceTrigger=PropertyChanged}" 
+                                     VerticalAlignment="Center" Padding="5,2"/>
+                        </Grid>
+
+                        <!-- 备注 -->
+                        <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                            <TextBlock Text="备注：" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" 
+                                     Height="60" 
+                                     TextWrapping="Wrap" 
+                                     AcceptsReturn="True" 
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab 2: 验方导入（占位） -->
+            <TabItem Header="验方导入">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="验方导入功能" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <Button Content="选择验方" Command="{Binding ImportFormulaCommand}" Padding="20,10"/>
+                        <TextBlock Text="TODO: 实现验方搜索和选择对话框" 
+                                   Foreground="Gray" 
+                                   Margin="0,20,0,0" 
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab 3: 历史复制（占位） -->
+            <TabItem Header="历史复制">
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="历史处方复制" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <Button Content="选择历史处方" Command="{Binding ImportHistoryCommand}" Padding="20,10"/>
+                        <TextBlock Text="TODO: 实现患者历史处方列表对话框" 
+                                   Foreground="Gray" 
+                                   Margin="0,20,0,0" 
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Row 2: 统计信息 -->
+        <Border Grid.Row="2" 
+                BorderBrush="#CCCCCC" 
+                BorderThickness="0,1,0,0" 
+                Padding="0,10,0,0" 
+                Margin="0,10,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0">
+                    <TextBlock Text="药材总数：" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding HerbCount}" 
+                               FontWeight="Bold" 
+                               Foreground="#0078D4" 
+                               VerticalAlignment="Center"
+                               Margin="5,0,0,0"/>
+                    <TextBlock Text="味" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">
+                    <TextBlock Text="单剂价格：" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SingleDosagePrice, StringFormat=￥{0:F2}}" 
+                               FontWeight="Bold" 
+                               Foreground="#0078D4" 
+                               FontSize="16"
+                               VerticalAlignment="Center"
+                               Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal">
+                    <TextBlock Text="总价格：" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalPrice, StringFormat=￥{0:F2}}" 
+                               FontWeight="Bold" 
+                               Foreground="#E74856" 
+                               FontSize="18"
+                               VerticalAlignment="Center"
+                               Margin="5,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
