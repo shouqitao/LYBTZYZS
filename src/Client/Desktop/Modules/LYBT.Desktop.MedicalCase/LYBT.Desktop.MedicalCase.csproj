@@ -81,4 +81,9 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Module Dependencies - Task #1497">
+    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj" />
+  </ItemGroup>
+
 </Project>
