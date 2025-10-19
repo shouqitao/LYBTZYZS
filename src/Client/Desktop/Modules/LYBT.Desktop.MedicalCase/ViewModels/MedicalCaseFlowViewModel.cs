@@ -1,3 +1,4 @@
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
@@ -137,7 +138,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
             PreviousStepCommand = new DelegateCommand(ExecutePreviousStep, CanExecutePreviousStep);
-            NextStepCommand = new DelegateCommand(ExecuteNextStep, CanExecuteNextStep);
+            NextStepCommand = new DelegateCommand(async () => await ExecuteNextStepAsync(), CanExecuteNextStep);
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
@@ -193,9 +194,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 下一步
+        /// 下一步（Task #1501 - 状态机逻辑）
         /// </summary>
-        private void ExecuteNextStep()
+        private async Task ExecuteNextStepAsync()
         {
             if (CurrentStep >= FlowStep.CompleteMedicalCase)
             {
@@ -207,6 +208,61 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
+                SetIsBusy(true, "正在处理...");
+
+                // 1. 验证当前步骤
+                if (CurrentStepViewModel is IValidatable validatable)
+                {
+                    Logger.LogInformation("验证Step {CurrentStep}数据", CurrentStep);
+                    if (!validatable.Validate())
+                    {
+                        Logger.LogWarning("Step {CurrentStep}验证失败：{Message}", CurrentStep, validatable.ValidationMessage);
+                        await ShowErrorMessageAsync(validatable.ValidationMessage);
+                        return;
+                    }
+                }
+
+                // 2. 保存当前步骤
+                if (CurrentStepViewModel is ISaveable saveable)
+                {
+                    Logger.LogInformation("保存Step {CurrentStep}数据", CurrentStep);
+                    var saveResult = await saveable.SaveAsync();
+                    if (!saveResult)
+                    {
+                        Logger.LogWarning("Step {CurrentStep}保存失败", CurrentStep);
+                        await ShowErrorMessageAsync("保存失败，请检查数据后重试");
+                        return;
+                    }
+                }
+
+                // 3. 关键步骤自动创建实体
+                if (CurrentStep == FlowStep.SelectPatient)
+                {
+                    // Step 1 → Step 2: 自动创建MedicalCase
+                    Logger.LogInformation("Step 1完成，准备创建MedicalCase");
+
+                    // TODO: Task #1497实现PatientSelectionViewModel后，获取SelectedPatient
+                    // var patientVM = CurrentStepViewModel as PatientSelectionViewModel;
+                    // var selectedPatient = patientVM.SelectedPatient;
+
+                    // 创建MedicalCase
+                    var medicalCaseId = await CreateMedicalCaseAsync(Guid.Empty); // TODO: 传入真实PatientId
+                    if (medicalCaseId == Guid.Empty)
+                    {
+                        Logger.LogError("创建MedicalCase失败");
+                        await ShowErrorMessageAsync("创建医案失败，请重试");
+                        return;
+                    }
+
+                    MedicalCaseId = medicalCaseId;
+                    Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", MedicalCaseId);
+
+                    // TODO: Task #1497实现后，更新患者信息条
+                    // SelectedPatientName = selectedPatient.Name;
+                    // SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+                }
+
+                // 4. 跳转到下一步
                 var nextStep = (FlowStep)((int)CurrentStep + 1);
                 Logger.LogInformation("从 {CurrentStep} 前进到 {NextStep}", CurrentStep, nextStep);
                 NavigateToStep(nextStep);
@@ -214,6 +270,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "执行下一步时发生异常");
+                await ShowErrorMessageAsync($"操作失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
@@ -265,6 +326,40 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         #region 辅助方法
+
+        /// <summary>
+        /// 创建MedicalCase（Task #1501 - Step 1 → Step 2 自动创建）
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>创建成功返回MedicalCaseId，失败返回Guid.Empty</returns>
+        private async Task<Guid> CreateMedicalCaseAsync(Guid patientId)
+        {
+            try
+            {
+                Logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
+
+                // TODO: Task #1497实现后，调用真实API创建MedicalCase
+                // var request = new CreateMedicalCaseRequest
+                // {
+                //     PatientId = patientId,
+                //     DoctorId = _sessionManager.CurrentUser.Id,
+                //     VisitDate = DateTime.Now
+                // };
+                // var response = await _medicalCaseRepository.CreateAsync(request);
+                // return response.Id;
+
+                // 临时模拟：返回新GUID
+                await Task.Delay(500); // 模拟网络延迟
+                var medicalCaseId = Guid.NewGuid();
+                Logger.LogInformation("MedicalCase创建成功（模拟），ID: {MedicalCaseId}", medicalCaseId);
+                return medicalCaseId;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "创建MedicalCase失败，PatientId: {PatientId}", patientId);
+                return Guid.Empty;
+            }
+        }
 
         /// <summary>
         /// 导航到指定步骤
