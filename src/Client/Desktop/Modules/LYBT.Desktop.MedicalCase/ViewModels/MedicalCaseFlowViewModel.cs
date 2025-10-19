@@ -1,6 +1,7 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -17,6 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
+        private readonly IServiceProvider _serviceProvider; // Task #1500 - 用于动态解析Step ViewModel
 
         #endregion
 
@@ -129,11 +131,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
+            IServiceProvider serviceProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)); // Task #1500
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -392,8 +396,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.CompleteMedicalCase:
                     Logger.LogInformation("导航到完成医案步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "CompletionView");
-                    CurrentStepViewModel = null; // 占位，待Task #1500实现
+
+                    // Task #1500 - 创建CompletionViewModel实例
+                    var completionVM = _serviceProvider.GetRequiredService<CompletionViewModel>();
+
+                    // 初始化（异步调用，Fire-and-Forget模式）
+                    // TODO: 改进为async/await模式以更好地处理异常
+                    _ = completionVM.InitializeAsync(MedicalCaseId);
+
+                    CurrentStepViewModel = completionVM;
                     break;
 
                 default:
