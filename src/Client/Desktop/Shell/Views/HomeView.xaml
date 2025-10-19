@@ -4,591 +4,16 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="#2E86AB" Padding="20">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="凌隐宝堂中医诊所"
-                              FontSize="24"
-                              FontWeight="Bold"
-                              Foreground="White" />
-                    <TextBlock Text="{Binding SubTitle}"
-                              FontSize="16"
-                              Foreground="#B3D9F2"
-                              VerticalAlignment="Center"
-                              Margin="20,0,0,0" />
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock Text="{Binding WelcomeMessage}"
-                              Foreground="White"
-                              VerticalAlignment="Center"
-                              Margin="0,0,20,0" />
-                    <Button Content="退出登录"
-                           Command="{Binding LogoutCommand}"
-                           Background="Transparent"
-                           Foreground="White"
-                           BorderBrush="White"
-                           BorderThickness="1"
-                           Padding="10,5"
-                           Cursor="Hand" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- 主内容区 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="40">
-                <!-- 医生界面 -->
-                <Grid Visibility="{Binding IsDoctorRole, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <!-- 主要操作区 -->
-                    <Border Grid.Row="0" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,0,0,20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                      Text="快速开始"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Margin="20,15,20,10" />
-
-                            <Button Grid.Row="1"
-                                   Command="{Binding StartConsultationCommand}"
-                                   Margin="20,10,20,20"
-                                   Height="80"
-                                   Background="#2E86AB"
-                                   Foreground="White"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Cursor="Hand">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🩺" FontSize="28" Margin="0,0,10,0" />
-                                    <TextBlock Text="开始诊疗" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- 今日统计 -->
-                    <Border Grid.Row="1" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,0,0,20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                      Text="今日统计"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Margin="20,15,20,10" />
-
-                            <Grid Grid.Row="1" Margin="20,10,20,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding TodayCompletedCount}"
-                                              FontSize="36"
-                                              FontWeight="Bold"
-                                              Foreground="#52C41A"
-                                              HorizontalAlignment="Center" />
-                                    <TextBlock Text="已完成" HorizontalAlignment="Center" />
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding TodayInProgressCount}"
-                                              FontSize="36"
-                                              FontWeight="Bold"
-                                              Foreground="#FAAD14"
-                                              HorizontalAlignment="Center" />
-                                    <TextBlock Text="进行中" HorizontalAlignment="Center" />
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding TodayTotalAmount}"
-                                              FontSize="36"
-                                              FontWeight="Bold"
-                                              Foreground="#2E86AB"
-                                              HorizontalAlignment="Center" />
-                                    <TextBlock Text="今日收入(元)" HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                    </Border>
-
-                    <!-- 今日患者列表 -->
-                    <Border Grid.Row="2" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,0,0,20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <!-- 标题和快速统计 -->
-                            <Grid Grid.Row="0" Margin="20,15,20,10">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <!-- 标题和刷新按钮 -->
-                                <Grid Grid.Row="0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0"
-                                              Text="今日患者"
-                                              FontSize="18"
-                                              FontWeight="Bold"
-                                              VerticalAlignment="Center" />
-
-                                    <Button Grid.Column="1"
-                                           Command="{Binding RefreshTodayPatientsCommand}"
-                                           Content="🔄 刷新"
-                                           Background="Transparent"
-                                           BorderBrush="#2E86AB"
-                                           BorderThickness="1"
-                                           Foreground="#2E86AB"
-                                           Padding="8,4"
-                                           FontSize="12"
-                                           Cursor="Hand" />
-                                </Grid>
-
-                                <!-- 快速统计 -->
-                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
-                                    <Border Background="#E3F2FD" CornerRadius="15" Padding="8,4" Margin="0,0,8,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="📋" FontSize="12" Margin="0,0,5,0" />
-                                            <TextBlock Text="{Binding TodayPatients.Count}" FontWeight="Bold" FontSize="12" />
-                                            <TextBlock Text="人总计" FontSize="12" Margin="2,0,0,0" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Background="#FFF3E0" CornerRadius="15" Padding="8,4" Margin="0,0,8,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="⏳" FontSize="12" Margin="0,0,5,0" />
-                                            <TextBlock Text="{Binding TodayInProgressCount}" FontWeight="Bold" FontSize="12" />
-                                            <TextBlock Text="待诊" FontSize="12" Margin="2,0,0,0" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Background="#E8F5E8" CornerRadius="15" Padding="8,4" Margin="0,0,8,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="✅" FontSize="12" Margin="0,0,5,0" />
-                                            <TextBlock Text="{Binding TodayCompletedCount}" FontWeight="Bold" FontSize="12" />
-                                            <TextBlock Text="已完成" FontSize="12" Margin="2,0,0,0" />
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- 患者列表 -->
-                            <ScrollViewer Grid.Row="1" MaxHeight="400" VerticalScrollBarVisibility="Auto">
-                                <ItemsControl ItemsSource="{Binding TodayPatients}" Margin="20,0,20,20">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="White"
-                                                   BorderBrush="#F0F0F0"
-                                                   BorderThickness="1"
-                                                   CornerRadius="5"
-                                                   Margin="0,0,0,8"
-                                                   Padding="15">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- 患者信息 -->
-                                                    <Grid Grid.Column="0">
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto" />
-                                                            <RowDefinition Height="Auto" />
-                                                        </Grid.RowDefinitions>
-
-                                                        <!-- 第一行：姓名、年龄、性别、状态 -->
-                                                        <StackPanel Grid.Row="0" Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding Name}"
-                                                                      FontSize="16"
-                                                                      FontWeight="Bold"
-                                                                      Margin="0,0,15,0" />
-
-                                                            <TextBlock FontSize="14" Foreground="#666">
-                                                                <Run Text="{Binding Age}" />
-                                                                <Run Text="岁" />
-                                                                <Run Text=" · " />
-                                                                <Run Text="{Binding GenderDisplay}" />
-                                                            </TextBlock>
-
-                                                            <Border Background="{Binding StatusColor}"
-                                                                   CornerRadius="10"
-                                                                   Padding="8,2"
-                                                                   Margin="15,0,0,0">
-                                                                <TextBlock Text="{Binding Status}"
-                                                                          Foreground="White"
-                                                                          FontSize="12"
-                                                                          FontWeight="Bold" />
-                                                            </Border>
-
-                                                            <!-- 添加紧急提醒图标 -->
-                                                            <TextBlock Text="🔴" FontSize="14" Margin="10,0,0,0"
-                                                                      Visibility="{Binding IsInConsultation, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                                      ToolTip="正在诊疗中，请优先处理" />
-                                                        </StackPanel>
-
-                                                        <!-- 第二行：电话、时间、医生 -->
-                                                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0">
-                                                            <TextBlock Text="📞" FontSize="12" Margin="0,0,5,0" />
-                                                            <TextBlock Text="{Binding PhoneNumber}"
-                                                                      FontSize="13"
-                                                                      Foreground="#666"
-                                                                      Margin="0,0,15,0" />
-
-                                                            <TextBlock Text="⏰" FontSize="12" Margin="0,0,5,0" />
-                                                            <TextBlock Text="{Binding CreateTimeDisplay}"
-                                                                      FontSize="13"
-                                                                      Foreground="#666"
-                                                                      Margin="0,0,15,0" />
-
-                                                            <TextBlock Text="👨‍⚕️" FontSize="12" Margin="0,0,5,0" />
-                                                            <TextBlock Text="{Binding DoctorName}"
-                                                                      FontSize="13"
-                                                                      Foreground="#666" />
-                                                        </StackPanel>
-                                                    </Grid>
-
-                                                    <!-- 操作按钮 -->
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                        <!-- 开始诊疗按钮（仅已挂号状态显示） -->
-                                                        <Button Command="{Binding DataContext.StartConsultationForPatientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                               CommandParameter="{Binding}"
-                                                               Content="开始诊疗"
-                                                               Background="#2E86AB"
-                                                               Foreground="White"
-                                                               BorderThickness="0"
-                                                               Padding="12,6"
-                                                               FontSize="12"
-                                                               Margin="0,0,8,0"
-                                                               Cursor="Hand"
-                                                               Visibility="{Binding CanStartConsultation, Converter={StaticResource BooleanToVisibilityConverter}}" />
-
-                                                        <!-- 继续诊疗按钮（诊疗中状态显示） -->
-                                                        <Button Command="{Binding DataContext.StartConsultationForPatientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                               CommandParameter="{Binding}"
-                                                               Content="继续诊疗"
-                                                               Background="#FF6347"
-                                                               Foreground="White"
-                                                               BorderThickness="0"
-                                                               Padding="12,6"
-                                                               FontSize="12"
-                                                               Margin="0,0,8,0"
-                                                               Cursor="Hand"
-                                                               FontWeight="Bold"
-                                                               Visibility="{Binding IsInConsultation, Converter={StaticResource BooleanToVisibilityConverter}}" />
-
-                                                        <Button Command="{Binding DataContext.ViewPatientDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                               CommandParameter="{Binding}"
-                                                               Content="查看详情"
-                                                               Background="Transparent"
-                                                               Foreground="#666"
-                                                               BorderBrush="#DDD"
-                                                               BorderThickness="1"
-                                                               Padding="12,6"
-                                                               FontSize="12"
-                                                               Cursor="Hand" />
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-
-                                    <!-- 无数据提示 -->
-                                    <ItemsControl.Style>
-                                        <Style TargetType="ItemsControl">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding TodayPatients.Count}" Value="0">
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate>
-                                                                <Border Background="#F9F9F9"
-                                                                       BorderBrush="#E0E0E0"
-                                                                       BorderThickness="1"
-                                                                       CornerRadius="5"
-                                                                       Padding="40"
-                                                                       HorizontalAlignment="Center">
-                                                                    <StackPanel HorizontalAlignment="Center">
-                                                                        <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10" />
-                                                                        <TextBlock Text="今日暂无患者就诊"
-                                                                                  FontSize="16"
-                                                                                  Foreground="#999"
-                                                                                  HorizontalAlignment="Center" />
-                                                                        <TextBlock Text="点击上方'开始诊疗'接待新患者"
-                                                                                  FontSize="14"
-                                                                                  Foreground="#CCC"
-                                                                                  HorizontalAlignment="Center"
-                                                                                  Margin="0,5,0,0" />
-                                                                    </StackPanel>
-                                                                </Border>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ItemsControl.Style>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </Grid>
-                    </Border>
-
-                    <!-- 快捷入口 -->
-                    <Border Grid.Row="3" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,0,0,20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                      Text="功能入口"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Margin="20,15,20,10" />
-
-                            <UniformGrid Grid.Row="1" Rows="2" Columns="3" Margin="20,10,20,20">
-                                <Button Command="{Binding NavigateToPatientReceptionCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="🏥" FontSize="24" />
-                                        <TextBlock Text="患者接待" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToMedicalCaseCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="📋" FontSize="24" />
-                                        <TextBlock Text="医疗案例" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToPrescriptionQueryCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="💊" FontSize="24" />
-                                        <TextBlock Text="处方查询" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToPatientManagementCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="👥" FontSize="24" />
-                                        <TextBlock Text="患者管理" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToHerbsCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="🌿" FontSize="24" />
-                                        <TextBlock Text="药材查看" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToFormulasCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="📜" FontSize="24" />
-                                        <TextBlock Text="验方库" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                        </Grid>
-                    </Border>
-                </Grid>
-
-                <!-- 管理员界面 -->
-                <Grid Visibility="{Binding IsAdminRole, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <!-- 系统管理入口 -->
-                    <Border Grid.Row="0" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,0,0,20">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                      Text="系统管理"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Margin="20,15,20,10" />
-
-                            <Button Grid.Row="1"
-                                   Command="{Binding EnterSystemManagementCommand}"
-                                   Margin="20,10,20,20"
-                                   Height="80"
-                                   Background="#8B4513"
-                                   Foreground="White"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Cursor="Hand">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="⚙️" FontSize="28" Margin="0,0,10,0" />
-                                    <TextBlock Text="进入系统管理中心" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- 基础数据管理 -->
-                    <Border Grid.Row="1" Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                      Text="基础数据维护"
-                                      FontSize="18"
-                                      FontWeight="Bold"
-                                      Margin="20,15,20,10" />
-
-                            <UniformGrid Grid.Row="1" Rows="2" Columns="3" Margin="20,10,20,20">
-                                <Button Command="{Binding NavigateToUserManagementCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="👤" FontSize="24" />
-                                        <TextBlock Text="用户管理" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToHerbManagementCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="🌿" FontSize="24" />
-                                        <TextBlock Text="药材管理" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToFormulaManagementCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="📜" FontSize="24" />
-                                        <TextBlock Text="验方管理" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToPatientManagementCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="👥" FontSize="24" />
-                                        <TextBlock Text="患者档案" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToSystemSettingsCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="⚙️" FontSize="24" />
-                                        <TextBlock Text="系统设置" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-
-                                <Button Command="{Binding NavigateToDataBackupCommand}"
-                                       Style="{StaticResource QuickAccessButtonStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="💾" FontSize="24" />
-                                        <TextBlock Text="数据备份" Margin="0,5,0,0" />
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                        </Grid>
-                    </Border>
-                </Grid>
-            </Grid>
-        </ScrollViewer>
-
-        <!-- 状态栏 -->
-        <Border Grid.Row="2" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
-            <Grid Margin="10,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" />
-                <TextBlock Grid.Column="2" Text="{Binding CurrentDateTime}" />
-            </Grid>
-        </Border>
-    </Grid>
-
     <UserControl.Resources>
-        <Style x:Key="QuickAccessButtonStyle" TargetType="Button">
+        <!-- 次要功能按钮样式 -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
             <Setter Property="Margin" Value="5" />
-            <Setter Property="Padding" Value="15" />
+            <Setter Property="Padding" Value="15,10" />
             <Setter Property="Background" Value="White" />
             <Setter Property="BorderBrush" Value="#E0E0E0" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -601,7 +26,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F0F0F0" />
+                                <Setter Property="Background" Value="#F5F5F5" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="#E0E0E0" />
@@ -612,4 +37,233 @@
             </Setter>
         </Style>
     </UserControl.Resources>
+
+    <Grid Background="#F9F9F9">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 中心内容区 -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel MaxWidth="800" Margin="40">
+                <!-- Logo区域 -->
+                <TextBlock Text="凌隐宝堂中医诊所"
+                          FontSize="32"
+                          FontWeight="Bold"
+                          Foreground="#2E86AB"
+                          HorizontalAlignment="Center"
+                          Margin="0,0,0,10" />
+                <TextBlock Text="临床工作站"
+                          FontSize="18"
+                          Foreground="#666"
+                          HorizontalAlignment="Center"
+                          Margin="0,0,0,40" />
+
+                <!-- 开始看诊按钮（核心功能） -->
+                <Button Command="{Binding StartConsultationCommand}"
+                       Width="200"
+                       Height="80"
+                       Background="#4CAF50"
+                       BorderThickness="0"
+                       Foreground="White"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Cursor="Hand"
+                       Margin="0,0,0,30">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                   CornerRadius="10"
+                                   Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#45A049" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#3D8B40" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock Text="开始看诊" />
+                </Button>
+
+                <!-- 快速搜索框 -->
+                <Border Background="White"
+                       BorderBrush="#E0E0E0"
+                       BorderThickness="1"
+                       CornerRadius="5"
+                       Margin="0,0,0,30">
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="16"
+                                BorderThickness="0"
+                                VerticalAlignment="Center">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchKeyword}" Value="">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <VisualBrush Stretch="None" AlignmentX="Left">
+                                                        <VisualBrush.Visual>
+                                                            <TextBlock Text="快速查找患者（姓名/拼音/手机号）"
+                                                                      Foreground="#999"
+                                                                      FontSize="16" />
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <Button Grid.Column="1"
+                               Command="{Binding QuickSearchCommand}"
+                               Content="搜索"
+                               Background="#2E86AB"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Padding="20,8"
+                               FontSize="14"
+                               Cursor="Hand"
+                               Margin="10,0,0,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                           CornerRadius="5"
+                                           Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#27749A" />
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Background" Value="#CCC" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- 今日统计卡片 -->
+                <Border Background="White"
+                       BorderBrush="#E0E0E0"
+                       BorderThickness="1"
+                       CornerRadius="5"
+                       Margin="0,0,0,30">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                  Text="今日统计"
+                                  FontSize="18"
+                                  FontWeight="Bold"
+                                  Margin="0,0,0,15" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding TodayConsultationCount}"
+                                          FontSize="36"
+                                          FontWeight="Bold"
+                                          Foreground="#4CAF50"
+                                          HorizontalAlignment="Center" />
+                                <TextBlock Text="今日接诊"
+                                          FontSize="14"
+                                          Foreground="#666"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,5,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding PendingCaseCount}"
+                                          FontSize="36"
+                                          FontWeight="Bold"
+                                          Foreground="#FF9800"
+                                          HorizontalAlignment="Center" />
+                                <TextBlock Text="待完成医案"
+                                          FontSize="14"
+                                          Foreground="#666"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,5,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 其他功能折叠区域 -->
+                <Expander Header="其他功能" FontSize="16" FontWeight="Bold" Margin="0,0,0,20">
+                    <Border Background="White"
+                           BorderBrush="#E0E0E0"
+                           BorderThickness="1"
+                           CornerRadius="5"
+                           Margin="0,10,0,0">
+                        <UniformGrid Rows="2" Columns="2" Margin="15">
+                            <Button Command="{Binding NavigateToPatientManagementCommand}"
+                                   Style="{StaticResource SecondaryButtonStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" />
+                                    <TextBlock Text="患者管理" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding NavigateToPrescriptionQueryCommand}"
+                                   Style="{StaticResource SecondaryButtonStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="💊" FontSize="24" HorizontalAlignment="Center" />
+                                    <TextBlock Text="处方查询" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding NavigateToHerbsCommand}"
+                                   Style="{StaticResource SecondaryButtonStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="🌿" FontSize="24" HorizontalAlignment="Center" />
+                                    <TextBlock Text="药材管理" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding NavigateToSystemSettingsCommand}"
+                                   Style="{StaticResource SecondaryButtonStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="⚙️" FontSize="24" HorizontalAlignment="Center" />
+                                    <TextBlock Text="系统设置" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </Border>
+                </Expander>
+
+                <!-- 底部提示 -->
+                <TextBlock Text="提示：点击【开始看诊】进入4步流程（患者选择 → 诊断录入 → 处方开具 → 完成医案）"
+                          FontSize="12"
+                          Foreground="#999"
+                          HorizontalAlignment="Center"
+                          TextWrapping="Wrap"
+                          TextAlignment="Center"
+                          Margin="0,20,0,0" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
