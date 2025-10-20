@@ -67,6 +67,9 @@ Server API (REST Endpoint)
 ## 📐 架构层次详解
 
 ### 1. Shell层 - 应用程序容器
+
+> **📚 详细设计文档**：[Shell层架构设计](shell-layer-design.md) - 职责边界、组件结构、交互模式、禁止模式
+
 **职责**：应用程序启动、窗口管理、主题配置
 
 **核心组件**：
@@ -1051,13 +1054,15 @@ public class ConsultationEntryViewModel
 
 ## 🔗 相关文档
 
+- **[Shell层架构设计](shell-layer-design.md)** - Shell层职责边界、组件结构、交互模式详解
 - **[架构总览](../README.md)** - 三层对齐架构设计原理
 - **[Server端架构](../server/README.md)** - 服务端三层架构实现
 - **[共享架构](../shared/README.md)** - 跨端组件和标准
 - **[Client端开发指南](../../development/client/README.md)** - WPF开发规范和实践
 - **[模块设计指南](../module-design-guide.md)** - 业务模块化设计标准
+- **[ADR-003 Workstation架构重构](../decisions/adr-003-workstation-refactoring.md)** - Shell层架构决策记录
 
 ---
 
-**文档维护**：架构组 | **最后更新**：2025-10-15  
+**文档维护**：架构组 | **最后更新**：2025-10-20
 **适用版本**：v5.0 对齐架构版 | **审核状态**：已审核
