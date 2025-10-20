@@ -111,12 +111,19 @@
                              MaxHeight="500"
                              Margin="10">
                         <DataGrid.Columns>
-                            <!-- 药材1 -->
+                            <!-- 药材1 - Epic #1540: ComboBox + 拼音码过滤 -->
                             <DataGridTemplateColumn Header="药材1" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Item1.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                                Padding="5,3"/>
+                                        <ComboBox ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 DisplayMemberPath="Name"
+                                                 SelectedValue="{Binding Item1.HerbId, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedValuePath="Id"
+                                                 IsEditable="True"
+                                                 Text="{Binding Item1.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Tag="Herb1"
+                                                 TextSearch.TextPath="Name"
+                                                 Padding="5,3"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -124,12 +131,19 @@
                             <!-- 用量1 -->
                             <DataGridTextColumn Header="用量1" Binding="{Binding Item1.Dosage, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
 
-                            <!-- 药材2 -->
+                            <!-- 药材2 - Epic #1540: ComboBox + 拼音码过滤 -->
                             <DataGridTemplateColumn Header="药材2" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Item2.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                                Padding="5,3"/>
+                                        <ComboBox ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 DisplayMemberPath="Name"
+                                                 SelectedValue="{Binding Item2.HerbId, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedValuePath="Id"
+                                                 IsEditable="True"
+                                                 Text="{Binding Item2.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Tag="Herb2"
+                                                 TextSearch.TextPath="Name"
+                                                 Padding="5,3"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -137,12 +151,19 @@
                             <!-- 用量2 -->
                             <DataGridTextColumn Header="用量2" Binding="{Binding Item2.Dosage, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
 
-                            <!-- 药材3 -->
+                            <!-- 药材3 - Epic #1540: ComboBox + 拼音码过滤 -->
                             <DataGridTemplateColumn Header="药材3" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Item3.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                                Padding="5,3"/>
+                                        <ComboBox ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 DisplayMemberPath="Name"
+                                                 SelectedValue="{Binding Item3.HerbId, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedValuePath="Id"
+                                                 IsEditable="True"
+                                                 Text="{Binding Item3.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Tag="Herb3"
+                                                 TextSearch.TextPath="Name"
+                                                 Padding="5,3"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -150,12 +171,19 @@
                             <!-- 用量3 -->
                             <DataGridTextColumn Header="用量3" Binding="{Binding Item3.Dosage, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
 
-                            <!-- 药材4 -->
+                            <!-- 药材4 - Epic #1540: ComboBox + 拼音码过滤 -->
                             <DataGridTemplateColumn Header="药材4" Width="*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Item4.HerbName, UpdateSourceTrigger=PropertyChanged}"
-                                                Padding="5,3"/>
+                                        <ComboBox ItemsSource="{Binding DataContext.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 DisplayMemberPath="Name"
+                                                 SelectedValue="{Binding Item4.HerbId, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedValuePath="Id"
+                                                 IsEditable="True"
+                                                 Text="{Binding Item4.HerbName, UpdateSourceTrigger=PropertyChanged}"
+                                                 Tag="Herb4"
+                                                 TextSearch.TextPath="Name"
+                                                 Padding="5,3"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -214,7 +242,7 @@
                               VerticalAlignment="Center"
                               Margin="0,10,20,0">
                         <Run Text="¥" FontSize="14"/>
-                        <Run Text="{Binding SingleDosagePrice, StringFormat=F2}" FontWeight="Bold" Foreground="#4CAF50" FontSize="16"/>
+                        <Run Text="{Binding SingleDosagePrice, Mode=OneWay, StringFormat=F2}" FontWeight="Bold" Foreground="#4CAF50" FontSize="16"/>
                     </TextBlock>
 
                     <TextBlock Grid.Row="1" Grid.Column="2" Text="总价格：" Style="{StaticResource FieldLabelStyle}" Margin="0,10,10,0"/>
@@ -222,7 +250,7 @@
                               VerticalAlignment="Center"
                               Margin="0,10,0,0">
                         <Run Text="¥" FontSize="14"/>
-                        <Run Text="{Binding TotalPrice, StringFormat=F2}" FontWeight="Bold" Foreground="#2E86AB" FontSize="18"/>
+                        <Run Text="{Binding TotalPrice, Mode=OneWay, StringFormat=F2}" FontWeight="Bold" Foreground="#2E86AB" FontSize="18"/>
                         <Run Text="（自动计算）" FontSize="12" Foreground="#666"/>
                     </TextBlock>
                 </Grid>
