@@ -1,9 +1,11 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
@@ -17,6 +19,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
+        private readonly IContainerProvider _containerProvider;
 
         #endregion
 
@@ -87,6 +90,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _medicalCaseId, value);
         }
 
+        private PatientDto? _currentPatient;
+        /// <summary>
+        /// 当前选择的患者信息（用于传递给子步骤ViewModel）
+        /// </summary>
+        public PatientDto? CurrentPatient
+        {
+            get => _currentPatient;
+            set => SetProperty(ref _currentPatient, value);
+        }
+
         /// <summary>
         /// 是否可以返回上一步
         /// </summary>
@@ -129,11 +142,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
+            IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -386,8 +401,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.FillPrescription:
                     Logger.LogInformation("导航到处方编辑步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PrescriptionEditorView");
-                    CurrentStepViewModel = null; // 占位，待Task #1499实现
+                    // Task #1499: 创建PrescriptionEditorViewModel实例
+                    var prescriptionEditorViewModel = _containerProvider.Resolve<PrescriptionEditorViewModel>();
+                    prescriptionEditorViewModel.CurrentPatient = CurrentPatient;
+                    prescriptionEditorViewModel.MedicalCaseId = MedicalCaseId;
+                    CurrentStepViewModel = prescriptionEditorViewModel;
+                    Logger.LogInformation("PrescriptionEditorViewModel已创建，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                     break;
 
                 case FlowStep.CompleteMedicalCase:
