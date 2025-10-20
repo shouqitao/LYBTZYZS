@@ -174,6 +174,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         private bool _hasChanges;
         private bool _isValidationEnabled = true;
+        private bool _isReadOnly;
+        private string _readOnlyReason = string.Empty;
 
         /// <summary>
         /// 是否有更改
@@ -194,9 +196,39 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         }
 
         /// <summary>
+        /// 是否为只读模式（Issue #1423 RULE-4）
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                if (SetProperty(ref _isReadOnly, value))
+                {
+                    UpdateCommandStates();
+                    RaisePropertyChanged(nameof(CanEdit));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 只读原因说明（Issue #1423 RULE-4）
+        /// </summary>
+        public string ReadOnlyReason
+        {
+            get => _readOnlyReason;
+            set => SetProperty(ref _readOnlyReason, value);
+        }
+
+        /// <summary>
+        /// 是否可以编辑（Issue #1423 RULE-4）
+        /// </summary>
+        public bool CanEdit => !IsReadOnly && !IsBusy;
+
+        /// <summary>
         /// 变更信息
         /// </summary>
-        public string ChangeInfo => HasChanges ? "有未保存的更改" : "无更改";
+        public string ChangeInfo => IsReadOnly ? ReadOnlyReason : (HasChanges ? "有未保存的更改" : "无更改");
 
         #endregion
 
@@ -398,6 +430,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         /// <summary>
         /// 从处方对象加载数据
+        /// Issue #1423 RULE-4: 添加只读模式检测
         /// </summary>
         private void LoadFromPrescription(PrescriptionDto prescription)
         {
@@ -406,6 +439,20 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             try
             {
                 IsValidationEnabled = false;
+
+                // RULE-4: 检查是否为创建当天，隔日后进入只读模式
+                if (prescription.CreatedAt.Date != DateTime.Today)
+                {
+                    IsReadOnly = true;
+                    ReadOnlyReason = $"只读模式：该处方创建于 {prescription.CreatedAt:yyyy-MM-dd}，已超过可修改期限（仅限创建当天可修改）";
+                    Logger.LogInformation("处方 {PrescriptionId} 进入只读模式，创建日期：{CreatedDate}",
+                        prescription.Id, prescription.CreatedAt.Date);
+                }
+                else
+                {
+                    IsReadOnly = false;
+                    ReadOnlyReason = string.Empty;
+                }
 
                 // PrescriptionNo字段已删除
                 // PrescriptionNo = prescription.PrescriptionNo ?? string.Empty;
@@ -431,11 +478,19 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         /// <summary>
         /// 保存
+        /// Issue #1423 RULE-4: 只读模式禁止保存
         /// </summary>
         private async Task SaveAsync()
         {
             try
             {
+                // RULE-4: 只读模式检查
+                if (IsReadOnly)
+                {
+                    await ShowWarningMessageAsync(ReadOnlyReason);
+                    return;
+                }
+
                 if (!ValidateAll())
                 {
                     await ShowWarningMessageAsync("请修正输入错误后再保存");
@@ -560,8 +615,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #region 命令状态检查
 
-        private bool CanSave() => HasChanges && !IsBusy && !HasErrors;
-        private bool CanReset() => HasChanges && OriginalPrescription != null;
+        /// <summary>
+        /// 是否可以保存（Issue #1423 RULE-4: 只读模式禁止保存）
+        /// </summary>
+        private bool CanSave() => !IsReadOnly && HasChanges && !IsBusy && !HasErrors;
+
+        /// <summary>
+        /// 是否可以重置
+        /// </summary>
+        private bool CanReset() => !IsReadOnly && HasChanges && OriginalPrescription != null;
 
         private void UpdateCommandStates()
         {

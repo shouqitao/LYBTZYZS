@@ -96,6 +96,33 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _status, value);
         }
 
+        private bool _isReadOnly;
+        private string _readOnlyReason = string.Empty;
+
+        /// <summary>
+        /// 是否为只读模式（Issue #1423 RULE-4）
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                if (SetProperty(ref _isReadOnly, value))
+                {
+                    UpdateCommandStates();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 只读原因说明（Issue #1423 RULE-4）
+        /// </summary>
+        public string ReadOnlyReason
+        {
+            get => _readOnlyReason;
+            set => SetProperty(ref _readOnlyReason, value);
+        }
+
         #endregion
 
         #region 命令
@@ -238,11 +265,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 检查是否可以保存
+        /// 检查是否可以保存（Issue #1423 RULE-4: 只读模式禁止保存）
         /// </summary>
         private bool CanSave()
         {
-            return !IsBusy &&
+            return !IsReadOnly &&
+                   !IsBusy &&
                    !string.IsNullOrWhiteSpace(CaseNumber) &&
                    !string.IsNullOrWhiteSpace(PatientName) &&
                    !string.IsNullOrWhiteSpace(ChiefComplaint) &&
@@ -283,11 +311,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 检查是否可以编辑
+        /// 检查是否可以编辑（Issue #1423 RULE-4: 只读模式禁止编辑）
         /// </summary>
         private bool CanEdit()
         {
-            return !IsBusy && MedicalCase != null;
+            return !IsReadOnly && !IsBusy && MedicalCase != null;
         }
 
         /// <summary>
@@ -444,6 +472,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 加载医疗案例
+        /// Issue #1423 RULE-4: 添加只读模式检测
         /// </summary>
         private void LoadMedicalCase(MedicalCaseDto medicalCase)
         {
@@ -452,6 +481,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             PatientName = medicalCase.PatientName ?? string.Empty;
             ChiefComplaint = medicalCase.ChiefComplaint ?? string.Empty;
             Status = (CaseStatus)medicalCase.CaseStatus;
+
+            // RULE-4: 检查是否为创建当天，隔日后进入只读模式
+            if (medicalCase.CreatedAt.Date != DateTime.Today)
+            {
+                IsReadOnly = true;
+                ReadOnlyReason = $"只读模式：该医案创建于 {medicalCase.CreatedAt:yyyy-MM-dd}，已超过可修改期限（仅限创建当天可修改）";
+                Logger.LogInformation("医案 {MedicalCaseId} 进入只读模式，创建日期：{CreatedDate}",
+                    medicalCase.Id, medicalCase.CreatedAt.Date);
+            }
+            else
+            {
+                IsReadOnly = false;
+                ReadOnlyReason = string.Empty;
+            }
         }
 
         #endregion
