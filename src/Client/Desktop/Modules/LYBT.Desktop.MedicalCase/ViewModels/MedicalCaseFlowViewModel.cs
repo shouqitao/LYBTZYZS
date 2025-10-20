@@ -254,27 +254,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (CurrentStep == FlowStep.SelectPatient)
                 {
                     // Step 1 → Step 2: 自动创建MedicalCase
-                    Logger.LogInformation("Step 1完成，准备创建MedicalCase");
+                    Logger.LogInformation("Step 1完成，准备创建MedicalCase，患者：{PatientName}", CurrentPatient?.Name);
 
-                    // TODO: Task #1497实现PatientSelectionViewModel后，获取SelectedPatient
-                    // var patientVM = CurrentStepViewModel as PatientSelectionViewModel;
-                    // var selectedPatient = patientVM.SelectedPatient;
+                    if (CurrentPatient == null)
+                    {
+                        Logger.LogError("CurrentPatient为空，无法创建MedicalCase");
+                        await ShowErrorMessageAsync("患者信息丢失，请重新选择患者");
+                        return;
+                    }
 
                     // 创建MedicalCase
-                    var medicalCaseId = await CreateMedicalCaseAsync(Guid.Empty); // TODO: 传入真实PatientId
+                    var medicalCaseId = await CreateMedicalCaseAsync(CurrentPatient.Id);
                     if (medicalCaseId == Guid.Empty)
                     {
-                        Logger.LogError("创建MedicalCase失败");
+                        Logger.LogError("创建MedicalCase失败，PatientId: {PatientId}", CurrentPatient.Id);
                         await ShowErrorMessageAsync("创建医案失败，请重试");
                         return;
                     }
 
                     MedicalCaseId = medicalCaseId;
-                    Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", MedicalCaseId);
-
-                    // TODO: Task #1497实现后，更新患者信息条
-                    // SelectedPatientName = selectedPatient.Name;
-                    // SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+                    Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}, 患者: {PatientName}",
+                        MedicalCaseId, CurrentPatient.Name);
                 }
 
                 // 4. 跳转到下一步
@@ -389,8 +389,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 case FlowStep.SelectPatient:
                     Logger.LogInformation("导航到患者选择步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PatientSelectionView");
-                    CurrentStepViewModel = null; // 占位，待Task #1497实现
+                    // Task #1497: 创建PatientSelectionViewModel实例
+                    var patientSelectionViewModel = _containerProvider.Resolve<PatientSelectionViewModel>();
+
+                    // 监听患者选择事件
+                    patientSelectionViewModel.PatientSelected += async (sender, selectedPatient) =>
+                    {
+                        Logger.LogInformation("患者选择事件触发，患者：{PatientName}（ID: {PatientId}）",
+                            selectedPatient.Name, selectedPatient.Id);
+
+                        // 更新CurrentPatient
+                        CurrentPatient = selectedPatient;
+
+                        // 更新患者信息条
+                        SelectedPatientName = selectedPatient.Name;
+                        SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+
+                        // 触发NextStep，自动创建MedicalCase并跳转到Step 2
+                        await ExecuteNextStepAsync();
+                    };
+
+                    CurrentStepViewModel = patientSelectionViewModel;
+                    Logger.LogInformation("PatientSelectionViewModel已创建");
                     break;
 
                 case FlowStep.FillConsultation:
