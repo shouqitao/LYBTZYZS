@@ -1,6 +1,8 @@
-﻿using LYBT.Desktop.Modules.Prescriptions.ViewModels;
+﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Prescriptions.Repositories;
+using LYBT.Desktop.Prescriptions.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -26,6 +28,10 @@ namespace LYBT.Desktop.Prescriptions
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IPrescriptionRepository, PrescriptionRepository>();
+
+            // Epic #1540: 注册处方编辑器服务（方案B - 包装模式）
+            // 实现依赖倒置：MedicalCase模块依赖IPrescriptionEditorService接口
+            containerRegistry.RegisterSingleton<IPrescriptionEditorService, PrescriptionEditorService>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<PrescriptionManagementViewModel>();
