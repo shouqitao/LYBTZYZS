@@ -5,59 +5,7 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              Width="800" Height="600">
 
-    <UserControl.Resources>
-        <!-- 标题样式 -->
-        <Style x:Key="DialogTitleTextBlock" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-        </Style>
-
-        <!-- 搜索框样式 -->
-        <Style x:Key="SearchTextBox" TargetType="TextBox">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <!-- 按钮样式 -->
-        <Style x:Key="DialogButton" TargetType="Button">
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="MinWidth" Value="80"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="5,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <!-- DataGrid样式 -->
-        <Style x:Key="PatientDataGrid" TargetType="DataGrid">
-            <Setter Property="AutoGenerateColumns" Value="False"/>
-            <Setter Property="CanUserAddRows" Value="False"/>
-            <Setter Property="CanUserDeleteRows" Value="False"/>
-            <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="AlternatingRowBackground" Value="#F9F9F9"/>
-            <Setter Property="RowHeight" Value="40"/>
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
-
-        <!-- DataGrid Header样式 -->
-        <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#E8E8E8"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="10,0"/>
-        </Style>
-    </UserControl.Resources>
+    <!-- Issue #1487: 移除自定义样式，使用全局样式系统 (Issue #1484) -->
 
     <Border Background="White" Padding="20" CornerRadius="8">
         <Grid>
@@ -68,12 +16,12 @@
                 <RowDefinition Height="Auto"/> <!-- 操作按钮 -->
             </Grid.RowDefinitions>
 
-            <!-- Row 0: 标题 -->
+            <!-- Row 0: 标题 (Issue #1487: 使用全局样式) -->
             <TextBlock Grid.Row="0"
                        Text="{Binding Title}"
-                       Style="{StaticResource DialogTitleTextBlock}"/>
+                       Style="{StaticResource H1TextBlock}"/>
 
-            <!-- Row 1: 搜索栏 -->
+            <!-- Row 1: 搜索栏 (Issue #1487: 拼音码提示水印 + 全局样式) -->
             <Grid Grid.Row="1" Margin="0,0,0,15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -81,34 +29,74 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0"
-                         Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource SearchTextBox}">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                <!-- 搜索框容器 (支持水印提示) -->
+                <Grid Grid.Column="0">
+                    <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                             Height="36"
+                             FontSize="14"
+                             Padding="10,8"
+                             VerticalContentAlignment="Center"
+                             BorderBrush="{StaticResource BorderBrush}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+
+                    <!-- 水印提示文字 (Issue #1487: 拼音码提示) -->
+                    <TextBlock Text="姓名/拼音码/手机号"
+                               FontSize="14"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               IsHitTestVisible="False"
+                               Padding="12,10"
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchKeyword}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
 
                 <Button Grid.Column="1"
                         Content="搜索"
                         Command="{Binding SearchCommand}"
-                        Style="{StaticResource DialogButton}"
+                        Style="{StaticResource SecondaryButton}"
+                        Width="80"
                         Margin="10,0,0,0"/>
 
                 <Button Grid.Column="2"
                         Content="刷新"
                         Command="{Binding RefreshCommand}"
-                        Style="{StaticResource DialogButton}"/>
+                        Style="{StaticResource SecondaryButton}"
+                        Width="80"
+                        Margin="10,0,0,0"/>
             </Grid>
 
-            <!-- Row 2: 患者列表 (DataGrid) -->
+            <!-- Row 2: 患者列表 (Issue #1487: 启用虚拟化) -->
             <Border Grid.Row="2"
-                    BorderBrush="#CCCCCC"
+                    BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
                     Margin="0,0,0,15">
                 <DataGrid ItemsSource="{Binding Patients}"
                           SelectedItem="{Binding SelectedPatient}"
-                          Style="{StaticResource PatientDataGrid}">
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Background="White"
+                          AlternatingRowBackground="{StaticResource AlternateSurfaceBrush}"
+                          RowHeight="40"
+                          FontSize="14"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling">
                     <DataGrid.InputBindings>
                         <!-- 双击选择 -->
                         <MouseBinding MouseAction="LeftDoubleClick"
@@ -120,8 +108,7 @@
                         <!-- 姓名 -->
                         <DataGridTextColumn Header="姓名"
                                             Binding="{Binding Name}"
-                                            Width="120"
-                                            HeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                                            Width="120">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -133,8 +120,7 @@
                         <!-- 性别 -->
                         <DataGridTextColumn Header="性别"
                                             Binding="{Binding Gender}"
-                                            Width="80"
-                                            HeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                                            Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -145,8 +131,7 @@
                         <!-- 年龄 -->
                         <DataGridTextColumn Header="年龄"
                                             Binding="{Binding Age}"
-                                            Width="80"
-                                            HeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                                            Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -157,8 +142,7 @@
                         <!-- 手机号 -->
                         <DataGridTextColumn Header="手机号码"
                                             Binding="{Binding PhoneNumber}"
-                                            Width="150"
-                                            HeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                                            Width="150">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -169,8 +153,7 @@
                         <!-- 最近就诊 -->
                         <DataGridTextColumn Header="最近就诊"
                                             Binding="{Binding LastVisitDate, StringFormat='yyyy-MM-dd'}"
-                                            Width="*"
-                                            HeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
+                                            Width="*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -181,21 +164,24 @@
                 </DataGrid>
             </Border>
 
-            <!-- Row 3: 操作按钮 -->
+            <!-- Row 3: 操作按钮 (Issue #1487: 使用全局样式) -->
             <StackPanel Grid.Row="3"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <Button Content="新建患者"
                         Command="{Binding NewPatientCommand}"
-                        Style="{StaticResource DialogButton}"/>
+                        Style="{StaticResource SecondaryButton}"
+                        Width="100"
+                        Margin="0,0,10,0"/>
                 <Button Content="确定"
                         Command="{Binding ConfirmCommand}"
-                        Style="{StaticResource DialogButton}"
-                        Background="#007ACC"
-                        Foreground="White"/>
+                        Style="{StaticResource PrimaryButton}"
+                        Width="80"
+                        Margin="0,0,10,0"/>
                 <Button Content="取消"
                         Command="{Binding CancelCommand}"
-                        Style="{StaticResource DialogButton}"/>
+                        Style="{StaticResource SecondaryButton}"
+                        Width="80"/>
             </StackPanel>
         </Grid>
     </Border>
