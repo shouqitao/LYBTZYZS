@@ -21,6 +21,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 服务依赖
 
         private readonly IPatientRepository _patientRepository;
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -117,6 +118,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientSelectionDialogViewModel(
             IPatientRepository patientRepository,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -125,6 +127,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -291,14 +294,58 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
-        /// 新建患者 (快速创建)
+        /// 新建患者 (快速创建) - Issue #1487
         /// </summary>
         private void NewPatient()
         {
-            // TODO: 打开快速创建患者对话框
-            // 暂时提示功能开发中
-            ShowInfoMessage("快速新建患者功能开发中...");
-            Logger.LogInformation("打开快速新建患者对话框 (功能开发中)");
+            try
+            {
+                Logger.LogInformation("打开快速创建患者对话框");
+
+                // 打开QuickCreatePatientDialog
+                var parameters = new DialogParameters();
+                _dialogService.ShowDialog("QuickCreatePatientDialog", parameters, async result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        // 获取新创建的患者
+                        var newPatient = result.Parameters.GetValue<PatientDto>("NewPatient");
+                        if (newPatient != null)
+                        {
+                            Logger.LogInformation("患者创建成功: {PatientName} (ID: {PatientId})", newPatient.Name, newPatient.Id);
+
+                            // 刷新患者列表
+                            await SearchAsync();
+
+                            // 自动选中新创建的患者
+                            SelectedPatient = Patients.FirstOrDefault(p => p.Id == newPatient.Id);
+
+                            // Issue #1487: 创建成功后自动关闭PatientSelectionDialog并返回选中患者
+                            if (SelectedPatient != null)
+                            {
+                                var returnParameters = new DialogParameters
+                                {
+                                    { "SelectedPatient", SelectedPatient }
+                                };
+                                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, returnParameters));
+                            }
+                        }
+                        else
+                        {
+                            Logger.LogWarning("QuickCreatePatientDialog返回OK但未提供患者信息");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("取消快速创建患者");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开快速创建患者对话框时发生异常");
+                ShowErrorMessage("打开对话框失败，请稍后重试");
+            }
         }
 
         /// <summary>

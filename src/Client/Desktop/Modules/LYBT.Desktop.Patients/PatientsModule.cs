@@ -34,6 +34,9 @@ namespace LYBT.Desktop.Patients
 
             // 注册对话框 - Issue #1457: 患者选择对话框
             containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
+
+            // Issue #1487: 快速创建患者对话框
+            containerRegistry.RegisterDialog<Views.QuickCreatePatientDialog, ViewModels.QuickCreatePatientDialogViewModel>();
         }
     }
 }
