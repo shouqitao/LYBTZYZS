@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.MedicalCase.Services;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -25,6 +26,9 @@ namespace LYBT.Desktop.MedicalCase
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
+
+            // Issue #1502: 自动保存草稿功能 - 本地存储服务
+            containerRegistry.RegisterSingleton<ILocalStorageService, LocalStorageService>();
 
             // Phase 3.4: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
