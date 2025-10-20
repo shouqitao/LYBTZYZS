@@ -4,6 +4,7 @@ using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
@@ -17,6 +18,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
+        private readonly IContainerProvider _containerProvider;
 
         #endregion
 
@@ -88,6 +90,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
+        /// 当前患者信息（用于传递给各个Step）
+        /// </summary>
+        private Shared.Models.Contracts.Patients.PatientDto? _currentPatient;
+        public Shared.Models.Contracts.Patients.PatientDto? CurrentPatient
+        {
+            get => _currentPatient;
+            set => SetProperty(ref _currentPatient, value);
+        }
+
+        /// <summary>
         /// 是否可以返回上一步
         /// </summary>
         public bool CanGoBack => CurrentStep > FlowStep.SelectPatient;
@@ -129,11 +141,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
+            IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -241,12 +255,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     // Step 1 → Step 2: 自动创建MedicalCase
                     Logger.LogInformation("Step 1完成，准备创建MedicalCase");
 
-                    // TODO: Task #1497实现PatientSelectionViewModel后，获取SelectedPatient
-                    // var patientVM = CurrentStepViewModel as PatientSelectionViewModel;
-                    // var selectedPatient = patientVM.SelectedPatient;
+                    // Task #1497: 验证患者已选择（由OnPatientSelected事件处理器设置）
+                    if (CurrentPatient == null)
+                    {
+                        Logger.LogError("CurrentPatient为空，无法创建MedicalCase");
+                        await ShowErrorMessageAsync("请先选择患者");
+                        return;
+                    }
 
                     // 创建MedicalCase
-                    var medicalCaseId = await CreateMedicalCaseAsync(Guid.Empty); // TODO: 传入真实PatientId
+                    var medicalCaseId = await CreateMedicalCaseAsync(CurrentPatient.Id);
                     if (medicalCaseId == Guid.Empty)
                     {
                         Logger.LogError("创建MedicalCase失败");
@@ -257,9 +275,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     MedicalCaseId = medicalCaseId;
                     Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", MedicalCaseId);
 
-                    // TODO: Task #1497实现后，更新患者信息条
-                    // SelectedPatientName = selectedPatient.Name;
-                    // SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+                    // 患者信息条已在OnPatientSelected中更新
                 }
 
                 // 4. 跳转到下一步
@@ -374,14 +390,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 case FlowStep.SelectPatient:
                     Logger.LogInformation("导航到患者选择步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PatientSelectionView");
-                    CurrentStepViewModel = null; // 占位，待Task #1497实现
+                    // Task #1497: 创建PatientSelectionViewModel实例
+                    var patientSelectionViewModel = _containerProvider.Resolve<PatientSelectionViewModel>();
+                    // 监听患者选择事件
+                    patientSelectionViewModel.PatientSelected += OnPatientSelected;
+                    CurrentStepViewModel = patientSelectionViewModel;
+                    Logger.LogInformation("PatientSelectionViewModel已创建");
                     break;
 
                 case FlowStep.FillConsultation:
                     Logger.LogInformation("导航到诊断录入步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "ConsultationFormView");
-                    CurrentStepViewModel = null; // 占位，待Task #1498实现
+                    // Task #1498: 创建ConsultationFormViewModel实例
+                    var consultationFormViewModel = _containerProvider.Resolve<ConsultationFormViewModel>();
+                    consultationFormViewModel.CurrentPatient = CurrentPatient;
+                    consultationFormViewModel.MedicalCaseId = MedicalCaseId;
+                    CurrentStepViewModel = consultationFormViewModel;
+                    Logger.LogInformation("ConsultationFormViewModel已创建，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                     break;
 
                 case FlowStep.FillPrescription:
@@ -399,6 +423,38 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 default:
                     Logger.LogWarning("未知步骤：{Step}", step);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 患者选择事件处理（Task #1497 - 从PatientSelectionViewModel接收选中患者）
+        /// </summary>
+        private void OnPatientSelected(object? sender, Shared.Models.Contracts.Patients.PatientDto patient)
+        {
+            try
+            {
+                Logger.LogInformation("接收到患者选择事件，患者：{PatientName} (ID: {PatientId})",
+                    patient.Name, patient.Id);
+
+                // 保存选中的患者信息
+                CurrentPatient = patient;
+
+                // 更新患者信息条显示
+                SelectedPatientName = patient.Name;
+                SelectedPatientInfo = $"{patient.Gender} | {patient.Age}岁 | {patient.PhoneNumber}";
+
+                Logger.LogInformation("患者信息已更新，准备触发下一步操作");
+
+                // 自动触发下一步（创建MedicalCase并跳转到Step 2）
+                if (NextStepCommand.CanExecute())
+                {
+                    NextStepCommand.Execute();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "处理患者选择事件时发生异常");
+                ShowErrorMessage($"处理患者选择失败：{ex.Message}");
             }
         }
 

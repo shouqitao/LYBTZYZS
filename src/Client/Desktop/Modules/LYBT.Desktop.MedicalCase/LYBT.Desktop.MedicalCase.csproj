@@ -81,4 +81,9 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
+  <!-- Module Dependencies - Task #1497: MedicalCase依赖Patients模块 -->
+  <ItemGroup Label="Module Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+  </ItemGroup>
+
 </Project>

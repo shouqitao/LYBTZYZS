@@ -1,0 +1,184 @@
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.PatientSelectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <UserControl.Resources>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="5,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: 标题 -->
+        <TextBlock Grid.Row="0"
+                  Text="患者选择"
+                  FontSize="18"
+                  FontWeight="Bold"
+                  Foreground="#2E86AB"
+                  Margin="0,0,0,20"/>
+
+        <!-- Row 1: 搜索框 -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                      Text="搜索："
+                      FontSize="14"
+                      VerticalAlignment="Center"
+                      Margin="0,0,10,0"/>
+
+            <TextBox Grid.Column="1"
+                    Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
+                    FontSize="14"
+                    Padding="8"
+                    VerticalContentAlignment="Center">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+
+            <Button Grid.Column="2"
+                   Content="搜索"
+                   Command="{Binding SearchCommand}"
+                   Style="{StaticResource ActionButtonStyle}"
+                   Background="#2196F3"
+                   Foreground="White"
+                   BorderThickness="0"/>
+
+            <Button Grid.Column="3"
+                   Content="+ 新建患者"
+                   Command="{Binding NewPatientCommand}"
+                   Style="{StaticResource ActionButtonStyle}"
+                   Background="#4CAF50"
+                   Foreground="White"
+                   BorderThickness="0"/>
+        </Grid>
+
+        <!-- Row 2: 患者列表（DataGrid） -->
+        <Border Grid.Row="2"
+               BorderBrush="#E0E0E0"
+               BorderThickness="1"
+               Background="White">
+            <DataGrid ItemsSource="{Binding Patients}"
+                     SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
+                     AutoGenerateColumns="False"
+                     IsReadOnly="True"
+                     SelectionMode="Single"
+                     GridLinesVisibility="Horizontal"
+                     HeadersVisibility="Column"
+                     RowHeaderWidth="0"
+                     EnableRowVirtualization="True"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     BorderThickness="0">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction Command="{Binding RowDoubleClickCommand}"
+                                              CommandParameter="{Binding SelectedPatient}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="100"/>
+                    <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="60"/>
+                    <DataGridTextColumn Header="年龄" Binding="{Binding Age}" Width="60"/>
+                    <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="120"/>
+                    <DataGridTextColumn Header="最近就诊" Binding="{Binding LastVisitTime, StringFormat={}{0:yyyy-MM-dd}}" Width="110"/>
+                    <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="80"/>
+
+                    <DataGridTemplateColumn Header="操作" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="选择"
+                                       Command="{Binding DataContext.SelectPatientCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                       Padding="10,5"
+                                       FontSize="12"
+                                       Background="#4CAF50"
+                                       Foreground="White"
+                                       BorderThickness="0"
+                                       Cursor="Hand"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Row 3: 分页控件 -->
+        <Grid Grid.Row="3" Margin="0,15,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="上一页"
+                       Command="{Binding PreviousPageCommand}"
+                       Style="{StaticResource ActionButtonStyle}"
+                       Background="#E0E0E0"
+                       Foreground="#333"
+                       BorderThickness="0"/>
+                <Button Content="下一页"
+                       Command="{Binding NextPageCommand}"
+                       Style="{StaticResource ActionButtonStyle}"
+                       Background="#E0E0E0"
+                       Foreground="#333"
+                       BorderThickness="0"/>
+            </StackPanel>
+
+            <TextBlock Grid.Column="2"
+                      VerticalAlignment="Center"
+                      FontSize="13"
+                      Foreground="#666">
+                <Run Text="第"/>
+                <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
+                <Run Text="/"/>
+                <Run Text="{Binding TotalPages, Mode=OneWay}"/>
+                <Run Text="页，共"/>
+                <Run Text="{Binding TotalCount, Mode=OneWay}"/>
+                <Run Text="条记录"/>
+            </TextBlock>
+        </Grid>
+
+        <!-- Row 4: 提示信息 -->
+        <Border Grid.Row="4"
+               Background="#FFF3E0"
+               BorderBrush="#FFB74D"
+               BorderThickness="1"
+               CornerRadius="3"
+               Padding="10"
+               Margin="0,15,0,0">
+            <StackPanel>
+                <TextBlock Text="提示：" FontWeight="Bold" FontSize="13" Foreground="#F57C00"/>
+                <TextBlock Text="• 双击患者行或点击【选择】按钮进入看诊流程"
+                          FontSize="12"
+                          Foreground="#666"
+                          Margin="0,5,0,0"/>
+                <TextBlock Text="• 选择后将自动创建医案（MedicalCase），进入诊断录入（Step 2）"
+                          FontSize="12"
+                          Foreground="#666"
+                          Margin="0,3,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
