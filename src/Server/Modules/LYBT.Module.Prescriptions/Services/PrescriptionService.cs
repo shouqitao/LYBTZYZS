@@ -147,6 +147,10 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <summary>
+        /// 更新处方
+        /// Issue #1423: RULE-3 - 当天可改隔日锁定
+        /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
         {
             try
@@ -154,6 +158,13 @@ namespace LYBT.Module.Prescriptions.Services
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+
+                // RULE-3: 当天可改隔日锁定 - 只能修改创建当天的记录
+                if (entity.CreatedAt.Date != DateTime.Today)
+                {
+                    _logger.LogWarning("更新处方失败：记录 {PrescriptionId} 创建于 {CreatedDate}，已过可修改期限", id, entity.CreatedAt.Date);
+                    return ServiceResult<PrescriptionDto>.Failure("该处方已超过可修改期限（仅限创建当天可修改）");
+                }
 
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
