@@ -202,7 +202,6 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Effect = "活血行气，祛风止痛",
                 Unit = "g",
                 Price = 1.2m,
-                Stock = 500,
                 BatchNo = "2025-01",
                 ExpireDate = DateTime.Now.AddYears(2),
                 Remark = "川芎辛散温燥，阴虚火旺者慎用"
@@ -385,8 +384,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             {
                 Name = "最简药材",
                 Price = 0.1m,
-                Unit = "g",
-                Stock = 100
+                Unit = "g"
             };
 
             // Act

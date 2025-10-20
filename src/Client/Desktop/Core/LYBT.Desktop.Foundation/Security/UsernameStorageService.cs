@@ -56,7 +56,7 @@ namespace LYBT.Desktop.Foundation.Security
 
                     await File.WriteAllTextAsync(_storageFilePath, json, System.Text.Encoding.UTF8);
                     _cachedStorage = storage;
-                    _logger.LogInformation("用户名已保存: {Username}", username);
+                    _logger.LogInformation("用户名已保存: {UserName}", username);
                 }
                 else
                 {
@@ -92,7 +92,7 @@ namespace LYBT.Desktop.Foundation.Security
 
                     if (_cachedStorage?.RememberMe == true)
                     {
-                        _logger.LogInformation("从本地加载用户名: {Username}", _cachedStorage.Username);
+                        _logger.LogInformation("从本地加载用户名: {UserName}", _cachedStorage.Username);
                         return _cachedStorage.Username;
                     }
                 }

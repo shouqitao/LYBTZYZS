@@ -46,5 +46,20 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/formulas/{id}/clone")]
         Task<Refit.ApiResponse<FormulaDto>> CloneFormulaAsync(Guid id);
+
+        /// <summary>
+        /// 获取待校验的验方列表 (Issue #1349)
+        /// </summary>
+        [Refit.Get("/api/v1/formulas/pending-validation")]
+        Task<Refit.ApiResponse<List<FormulaDto>>> GetPendingValidationFormulasAsync();
+
+        /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{formulaId}/herbs/{herbItemId}/validate")]
+        Task<Refit.ApiResponse<ApiResponse>> ValidateFormulaHerbAsync(
+            Guid formulaId,
+            Guid herbItemId,
+            [Refit.Body] Guid selectedHerbId);
     }
 }

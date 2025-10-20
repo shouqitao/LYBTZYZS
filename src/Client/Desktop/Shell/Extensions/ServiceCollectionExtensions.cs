@@ -289,6 +289,9 @@ namespace LYBT.Desktop.Shell.Extensions
             // 错误处理服务 - Presentation/Notifications
             containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.IErrorHandlingService,
                 LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>();
+
+            // 注意：PatientSelector组件使用反射进行手动映射,不需要AutoMapper配置
+            // 原因：Presentation层不能引用Modules层(避免循环依赖)
         }
 
         /// <summary>
@@ -318,6 +321,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 键盘快捷键服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,
                 LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
+
+            // 功能开关服务 (Issue #1477 #1479 架构纠正v2)
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IFeatureToggleService,
+                LYBT.Desktop.Infrastructure.Services.FeatureToggleService>();
 
             // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
             // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()

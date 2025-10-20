@@ -20,6 +20,7 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
     public class ConsultationManagementViewModelTests : IDisposable
     {
         private readonly Mock<IConsultationRepository> _consultationRepositoryMock;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<IEventAggregator> _eventAggregatorMock;
         private readonly Mock<ILoggerFactory> _loggerFactoryMock;
         private readonly Mock<ILogger<ConsultationManagementViewModel>> _loggerMock;
@@ -32,6 +33,7 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
         {
             // 初始化Mocks
             _consultationRepositoryMock = new Mock<IConsultationRepository>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
             _eventAggregatorMock = new Mock<IEventAggregator>();
             _loggerFactoryMock = new Mock<ILoggerFactory>();
             _loggerMock = new Mock<ILogger<ConsultationManagementViewModel>>();
@@ -44,11 +46,20 @@ namespace LYBT.Desktop.Consultation.Tests.ViewModels
                 .Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_loggerMock.Object);
 
+            // 设置FeatureToggleService默认行为（MVP配置：ViewDetail和Search启用）
+            _featureToggleServiceMock
+                .Setup(x => x.IsEnabled("Consultation.ViewDetail"))
+                .Returns(true);
+            _featureToggleServiceMock
+                .Setup(x => x.IsEnabled("Consultation.Search"))
+                .Returns(true);
+
             // EventAggregator不需要特殊设置，使用默认Mock行为即可
 
             // 创建ViewModel实例（使用Repository）
             _viewModel = new ConsultationManagementViewModel(
                 _consultationRepositoryMock.Object,
+                _featureToggleServiceMock.Object,
                 _eventAggregatorMock.Object,
                 _loggerFactoryMock.Object,
                 _regionManagerMock.Object,

@@ -73,19 +73,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 创建诊疗记录
+        /// 创建诊疗记录（已废弃）
         /// </summary>
         /// <param name="dto">诊疗创建信息</param>
         /// <returns>创建的诊疗信息</returns>
         /// <remarks>
-        /// ⚠️ 不推荐使用：请通过 MedicalCaseController 创建医疗案例，系统会自动创建关联的诊疗记录。
-        /// MedicalCase 是聚合根，Consultation 作为其一部分使用共享主键模式（Consultation.Id == MedicalCase.Id）。
-        /// 独立创建 Consultation 违反了聚合根架构原则。
+        /// ⚠️ 已废弃：请使用 POST /api/medicalcases/with-details 创建完整病案。Consultation模块仅提供查询功能。
         /// </remarks>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 201)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
-        [Obsolete("不推荐使用。请通过 POST /api/medicalcases 创建医疗案例，系统会自动创建诊疗记录。此端点仅保留用于向后兼容。", false)]
+        [Obsolete("请使用 POST /api/medicalcases/with-details 创建完整病案。Consultation模块仅提供查询功能。", true)]
         public async Task<ActionResult<ApiResponse<ConsultationDto>>> CreateConsultation([FromBody] ConsultationCreateDto dto)
         {
             try
@@ -114,15 +112,19 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 更新诊疗信息
+        /// 更新诊疗信息（已废弃）
         /// </summary>
         /// <param name="id">诊疗ID</param>
         /// <param name="dto">诊疗更新信息</param>
         /// <returns>更新后的诊疗信息</returns>
+        /// <remarks>
+        /// ⚠️ 已废弃：请使用 PUT /api/medicalcases/{id}/consultation 更新诊断信息。Consultation模块仅提供查询功能。
+        /// </remarks>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<object>), 400)]
         [ProducesResponseType(404)]
+        [Obsolete("请使用 PUT /api/medicalcases/{id}/consultation 更新诊断信息。Consultation模块仅提供查询功能。", true)]
         public async Task<ActionResult<ApiResponse<ConsultationDto>>> UpdateConsultation(Guid id, [FromBody] ConsultationUpdateDto dto)
         {
             try
@@ -149,13 +151,17 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除诊疗记录（软删除）
+        /// 删除诊疗记录（已废弃）
         /// </summary>
         /// <param name="id">诊疗ID</param>
         /// <returns>操作结果</returns>
+        /// <remarks>
+        /// ⚠️ 已废弃：请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除）。Consultation模块仅提供查询功能。
+        /// </remarks>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
+        [Obsolete("请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除）。Consultation模块仅提供查询功能。", true)]
         public async Task<ActionResult<ApiResponse>> DeleteConsultation(Guid id)
         {
             try
@@ -229,12 +235,16 @@ namespace LYBT.WebAPI.Controllers
 
 
         /// <summary>
-        /// 获取诊疗统计数据 (Issue #1168)
+        /// 获取诊疗统计数据（已废弃 - MVP过度开发）
         /// </summary>
         /// <param name="startDate">开始日期（可选）</param>
         /// <param name="endDate">结束日期（可选）</param>
+        /// <remarks>
+        /// ⚠️ 已废弃：统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。
+        /// </remarks>
         [HttpGet("statistics")]
         [ProducesResponseType(typeof(ApiResponse<ConsultationStatisticsDto>), 200)]
+        [Obsolete("统计功能在MVP版本中属于过度开发，暂不提供。Post-MVP阶段将重新评估需求。", true)]
         public async Task<ActionResult<ApiResponse<ConsultationStatisticsDto>>> GetStatistics(
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)

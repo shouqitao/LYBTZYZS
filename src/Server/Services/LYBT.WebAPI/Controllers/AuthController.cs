@@ -58,7 +58,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<LoginResponse>("登录请求不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(request.Username))
+                if (string.IsNullOrWhiteSpace(request.UserName))
                 {
                     return ValidationFail<LoginResponse>("用户名不能为空");
                 }
@@ -110,12 +110,12 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // 从配置获取超级管理员用户名
-                var sysAdminUsername = Configuration["Lybt:Business:SystemAdmin:Username"] ?? "clinic_admin";
+                var sysAdminUsername = Configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
 
                 // 构造标准登录请求
                 var loginRequest = new LoginRequest
                 {
-                    Username = sysAdminUsername,
+                    UserName = sysAdminUsername,
                     Password = request.Password,
                     RememberMe = false
                 };

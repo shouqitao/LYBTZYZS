@@ -59,6 +59,14 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("验方来源")]
         public string? FormulaSource { get; set; }
 
+        /// <summary>
+        /// 引用的验方名称列表，逗号分隔 (Issue #1365 ENTRY-7)
+        /// 用于记录从哪些验方导入了药材，例如："逍遥散,六味地黄丸"
+        /// </summary>
+        [StringLength(500)]
+        [DisplayName("引用验方")]
+        public string? ReferencedFormulas { get; set; }
+
         /// <summary>处方状态</summary>
         [DisplayName("处方状态")]
         public PrescriptionStatus Status { get; set; } = PrescriptionStatus.Draft;

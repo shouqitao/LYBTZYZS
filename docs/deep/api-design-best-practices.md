@@ -18,7 +18,7 @@
 - **数据安全性**：患者隐私保护，符合HIPAA等法规要求
 - **操作审计**：关键操作必须记录详细的审计日志
 - **数据完整性**：确保医疗数据的准确性和一致性
-- **实时性要求**：处方计算、库存更新等需要实时响应
+- **实时性要求**：处方计算等需要实时响应
 
 ### 2. API命名规范
 
@@ -38,7 +38,6 @@
 
 // 操作性资源（动词+名词）
 /api/prescriptions/{id}/calculate-price    // 计算处方价格
-/api/herbs/check-inventory                 // 检查库存
 ```
 
 #### 2.2 HTTP方法使用规范
@@ -145,7 +144,6 @@ public static class ErrorCodes
     public const string DUPLICATE_PATIENT = "2002";
     public const string INVALID_MEDICAL_CASE = "2003";
     public const string PRESCRIPTION_CALCULATION_ERROR = "2004";
-    public const string INSUFFICIENT_INVENTORY = "2005";
 
     // 系统错误 (5000-5999)
     public const string DATABASE_ERROR = "5001";
@@ -315,19 +313,13 @@ public class PrescriptionValidationService
     {
         var errors = new List<string>();
 
-        // 验证药材库存
+        // 验证药材存在性
         foreach (var item in request.Items)
         {
             var herb = await _herbService.GetHerbAsync(item.HerbId);
             if (herb == null)
             {
                 errors.Add($"药材ID {item.HerbId} 不存在");
-                continue;
-            }
-
-            if (herb.CurrentStock < item.Quantity)
-            {
-                errors.Add($"药材 {herb.Name} 库存不足，当前库存: {herb.CurrentStock}{herb.Unit}，需要: {item.Quantity}{item.Unit}");
             }
         }
 
@@ -804,108 +796,6 @@ public class PrescriptionCalculationController : ControllerBase
             {
                 Code = ErrorCodes.INTERNAL_SERVER_ERROR,
                 Message = "批量计算失败"
-            });
-        }
-    }
-}
-```
-
-#### 1.2 库存管理API
-```csharp
-[ApiController]
-[Route("api/inventory")]
-public class InventoryController : ControllerBase
-{
-    private readonly IInventoryService _inventoryService;
-    private readonly ILogger<InventoryController> _logger;
-
-    [HttpPost]
-    [Route("update")]
-    public async Task<ActionResult<InventoryUpdateResult>> UpdateInventory(
-        [FromBody] UpdateInventoryRequest request)
-    {
-        _logger.LogInformation("更新库存 - HerbId: {HerbId}, QuantityChange: {QuantityChange}, Type: {TransactionType}",
-            request.HerbId, request.QuantityChange, request.TransactionType);
-
-        try
-        {
-            // 验证库存更新
-            var validation = await _inventoryService.ValidateInventoryUpdateAsync(request);
-            if (!validation.IsValid)
-            {
-                return BadRequest(new ErrorResponse
-                {
-                    Code = ErrorCodes.VALIDATION_ERROR,
-                    Message = validation.ErrorMessage
-                });
-            }
-
-            // 执行库存更新
-            var result = await _inventoryService.UpdateInventoryAsync(request);
-
-            // 检查低库存警告
-            if (result.IsLowStock)
-            {
-                _logger.LogWarning("库存不足警告 - HerbId: {HerbId}, CurrentStock: {CurrentStock}, MinStock: {MinStock}",
-                    request.HerbId, result.NewStockLevel, result.MinStockLevel);
-
-                // 发送低库存通知
-                await _notificationService.SendLowStockAlertAsync(result.HerbId, result.NewStockLevel);
-            }
-
-            return Ok(new ApiResponse<InventoryUpdateResult>
-            {
-                Success = true,
-                Data = result,
-                Message = "库存更新成功"
-            });
-        }
-        catch (InsufficientInventoryException ex)
-        {
-            _logger.LogWarning(ex, "库存不足 - HerbId: {HerbId}", request.HerbId);
-            return BadRequest(new ErrorResponse
-            {
-                Code = ErrorCodes.INSUFFICIENT_INVENTORY,
-                Message = ex.Message
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "库存更新异常 - HerbId: {HerbId}", request.HerbId);
-            return StatusCode(500, new ErrorResponse
-            {
-                Code = ErrorCodes.INTERNAL_SERVER_ERROR,
-                Message = "库存更新失败"
-            });
-        }
-    }
-
-    [HttpGet]
-    [Route("low-stock")]
-    public async Task<ActionResult<LowStockReport>> GetLowStockReport(
-        [FromQuery] double thresholdPercent = 0.2)
-    {
-        try
-        {
-            var report = await _inventoryService.GetLowStockReportAsync(thresholdPercent);
-
-            _logger.LogInformation("获取低库存报告 - 阈值: {ThresholdPercent}%, 低库存项数: {Count}",
-                thresholdPercent * 100, report.LowStockItems.Count);
-
-            return Ok(new ApiResponse<LowStockReport>
-            {
-                Success = true,
-                Data = report,
-                Message = "低库存报告获取成功"
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "获取低库存报告失败");
-            return StatusCode(500, new ErrorResponse
-            {
-                Code = ErrorCodes.INTERNAL_SERVER_ERROR,
-                Message = "获取低库存报告失败"
             });
         }
     }

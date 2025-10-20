@@ -229,27 +229,27 @@ namespace LYBT.WebAPI.Controllers
         /// <returns>导入结果，包含成功/失败数量和详细错误信息</returns>
         [HttpPost("import")]
         [RequestSizeLimit(10 * 1024 * 1024)] // 限制10MB
-        public async Task<ActionResult<ApiResponse<ImportResultDto<FormulaDto>>>> Import(IFormFile file)
+        public async Task<ActionResult<ApiResponse<FormulaImportResultDto>>> Import(IFormFile file)
         {
             try
             {
                 // 验证文件
                 if (file == null || file.Length == 0)
                 {
-                    return ValidationFail<ImportResultDto<FormulaDto>>("文件不能为空");
+                    return ValidationFail<FormulaImportResultDto>("文件不能为空");
                 }
 
                 // 验证文件扩展名
                 var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (extension != ".xlsx")
                 {
-                    return ValidationFail<ImportResultDto<FormulaDto>>("仅支持.xlsx格式的Excel文件");
+                    return ValidationFail<FormulaImportResultDto>("仅支持.xlsx格式的Excel文件");
                 }
 
                 // 验证文件大小（10MB）
                 if (file.Length > 10 * 1024 * 1024)
                 {
-                    return ValidationFail<ImportResultDto<FormulaDto>>("文件大小不能超过10MB");
+                    return ValidationFail<FormulaImportResultDto>("文件大小不能超过10MB");
                 }
 
                 // 导入数据
@@ -258,7 +258,7 @@ namespace LYBT.WebAPI.Controllers
 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<ImportResultDto<FormulaDto>>(
+                    return BusinessFail<FormulaImportResultDto>(
                         result.ErrorMessage ?? "导入失败",
                         ApiErrorCodes.DATASAVEFAILED);
                 }
@@ -272,7 +272,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<ImportResultDto<FormulaDto>>(ex, "批量导入验方", new { FileName = file?.FileName });
+                return HandleException<FormulaImportResultDto>(ex, "批量导入验方", new { FileName = file?.FileName });
             }
         }
 
@@ -349,17 +349,17 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _service.CloneFormulaAsync(id);
-                
+
                 if (!result.IsSuccess || result.Data == null)
                 {
                     return NotFound<FormulaDto>(
-                        result.ErrorMessage ?? "验方不存在", 
+                        result.ErrorMessage ?? "验方不存在",
                         ApiErrorCodes.FORMULANOTFOUND);
                 }
 
                 // 记录操作日志
-                LogOperation("克隆验方", 
-                    new { OriginalId = id, NewId = result.Data.Id }, 
+                LogOperation("克隆验方",
+                    new { OriginalId = id, NewId = result.Data.Id },
                     result.Data.Id);
 
                 return Success(result.Data, "验方克隆成功");
@@ -367,6 +367,88 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<FormulaDto>(ex, "克隆验方", id);
+            }
+        }
+
+        /// <summary>
+        /// 获取待校验的验方列表 (Issue #1349)
+        /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
+        /// </summary>
+        [HttpGet("pending-validation")]
+        [ResponseCache(Duration = 60)] // 缓存60秒
+        [ProducesResponseType(typeof(ApiResponse<List<FormulaDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetPendingValidation()
+        {
+            try
+            {
+                var result = await _service.GetPendingValidationFormulasAsync();
+
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<List<FormulaDto>>(
+                        result.ErrorMessage ?? "获取待校验验方列表失败",
+                        ApiErrorCodes.DATAQUERYFAILED);
+                }
+
+                return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<FormulaDto>>(ex, "获取待校验验方列表", null);
+            }
+        }
+
+        /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// </summary>
+        /// <param name="formulaId">验方ID</param>
+        /// <param name="herbItemId">待验证的药材项ID</param>
+        /// <param name="selectedHerbId">选中的系统药材ID</param>
+        [HttpPost("{formulaId}/herbs/{herbItemId}/validate")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> ValidateHerb(
+            Guid formulaId,
+            Guid herbItemId,
+            [FromBody] Guid selectedHerbId)
+        {
+            try
+            {
+                var formulaValidation = ValidateGuid(formulaId, "验方ID");
+                if (formulaValidation != null)
+                {
+                    return formulaValidation;
+                }
+
+                var herbItemValidation = ValidateGuid(herbItemId, "药材项ID");
+                if (herbItemValidation != null)
+                {
+                    return herbItemValidation;
+                }
+
+                var selectedHerbValidation = ValidateGuid(selectedHerbId, "系统药材ID");
+                if (selectedHerbValidation != null)
+                {
+                    return selectedHerbValidation;
+                }
+
+                var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+
+                if (!result.IsSuccess)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "验证药材失败", ApiErrorCodes.DATAUPDATEFAILED);
+                }
+
+                // 记录操作日志
+                LogOperation("验证验方药材",
+                    new { FormulaId = formulaId, HerbItemId = herbItemId, SelectedHerbId = selectedHerbId },
+                    formulaId);
+
+                return Success(result.Message ?? "药材验证成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "验证验方药材", new { formulaId, herbItemId, selectedHerbId });
             }
         }
     }

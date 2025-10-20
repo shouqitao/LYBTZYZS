@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Consultation.Interfaces
     public interface IConsultationRepository
     {
         Task<PagedResult<ConsultationDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<ConsultationDto> GetByIdAsync(Guid id);
+        Task<ConsultationDto?> GetByIdAsync(Guid id);
         Task<ConsultationDto> CreateAsync(ConsultationCreateDto dto);
         Task<ConsultationDto> UpdateAsync(ConsultationUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);

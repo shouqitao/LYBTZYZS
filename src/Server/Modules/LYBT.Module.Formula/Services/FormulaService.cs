@@ -219,19 +219,25 @@ namespace LYBT.Module.Formula.Services
                     return ServiceResult.Failure("药材项不存在");
                 }
 
-                // 3. 查询选定的药材
+                // 3. 验证是否已校验
+                if (herbItem.IsValidated)
+                {
+                    return ServiceResult.Failure("该药材已校验，无需重复操作");
+                }
+
+                // 4. 查询选定的药材
                 var selectedHerb = await _herbRepository.GetByIdAsync(selectedHerbId);
                 if (selectedHerb == null)
                 {
                     return ServiceResult.Failure("所选药材不存在");
                 }
 
-                // 4. 更新药材项的验证信息
+                // 5. 更新药材项的验证信息
                 herbItem.HerbId = selectedHerbId;
                 herbItem.HerbName = selectedHerb.Name;
                 herbItem.IsValidated = true;
 
-                // 5. 检查该验方的所有药材是否都已验证
+                // 6. 检查该验方的所有药材是否都已验证
                 bool allValidated = formula.Herbs.All(h => h.IsValidated);
                 if (allValidated)
                 {
@@ -240,11 +246,19 @@ namespace LYBT.Module.Formula.Services
                     _logger.LogInformation("验方 {FormulaId} 所有药材已验证，状态更新为Validated", formulaId);
                 }
 
-                // 6. 保存变更
+                // 7. 保存变更
                 await _repository.UpdateAsync(formula);
                 await _repository.SaveChangesAsync();
 
-                return ServiceResult.Success();
+                // 8. 返回详细映射结果
+                if (allValidated)
+                {
+                    return ServiceResult.Success($"药材\"{herbItem.OriginalHerbName}\"已映射为\"{selectedHerb.Name}\"，验方\"{formula.Name}\"所有药材已校验完成");
+                }
+                else
+                {
+                    return ServiceResult.Success($"药材\"{herbItem.OriginalHerbName}\"已映射为\"{selectedHerb.Name}\"");
+                }
             }
             catch (Exception ex)
             {
@@ -388,12 +402,13 @@ namespace LYBT.Module.Formula.Services
         /// 从Excel文件导入验方数据 (Issue #1347: 重写为主-从表格式，支持延迟绑定)
         /// 格式：Sheet1=验方信息，Sheet2=药材明细
         /// </summary>
-        public async Task<ServiceResult<ImportResultDto<FormulaDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        public async Task<ServiceResult<FormulaImportResultDto>> ImportFromExcelAsync(Stream stream, string? fileName = null)
         {
-            var result = new ImportResultDto<FormulaDto>
+            var result = new FormulaImportResultDto
             {
                 FileName = fileName,
-                ImportTime = DateTime.Now
+                ImportTime = DateTime.Now,
+                StartTime = DateTime.Now
             };
 
             try
@@ -408,7 +423,7 @@ namespace LYBT.Module.Formula.Services
                 {
                     result.IsSuccess = false;
                     result.Message = "未找到验方信息工作表";
-                    return ServiceResult<ImportResultDto<FormulaDto>>.Failure("Excel文件格式错误");
+                    return ServiceResult<FormulaImportResultDto>.Failure("Excel文件格式错误");
                 }
 
                 // 获取Sheet2：药材明细
@@ -417,7 +432,7 @@ namespace LYBT.Module.Formula.Services
                 {
                     result.IsSuccess = false;
                     result.Message = "未找到药材明细工作表";
-                    return ServiceResult<ImportResultDto<FormulaDto>>.Failure("Excel文件格式错误");
+                    return ServiceResult<FormulaImportResultDto>.Failure("Excel文件格式错误");
                 }
 
                 var formulaRowCount = formulaSheet.Dimension?.Rows ?? 0;
@@ -425,7 +440,7 @@ namespace LYBT.Module.Formula.Services
                 {
                     result.IsSuccess = false;
                     result.Message = "验方信息表中没有数据行";
-                    return ServiceResult<ImportResultDto<FormulaDto>>.Success(result);
+                    return ServiceResult<FormulaImportResultDto>.Success(result);
                 }
 
                 result.TotalCount = formulaRowCount - 1;
@@ -452,9 +467,10 @@ namespace LYBT.Module.Formula.Services
                         if (string.IsNullOrWhiteSpace(name))
                         {
                             result.FailureCount++;
-                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            result.FailedItems.Add(new FormulaImportErrorDto
                             {
-                                RecordIdentifier = $"验方表第{row}行",
+                                RowIndex = row,
+                                FormulaName = name ?? string.Empty,
                                 ErrorMessage = "验方名称不能为空"
                             });
                             continue;
@@ -516,7 +532,23 @@ namespace LYBT.Module.Formula.Services
                                     ProcessingMethod = herbItem.ProcessingMethod,
                                     Remark = herbItem.Remark
                                 });
+
+                                // 统计药材匹配情况
+                                if (matchedHerb != null)
+                                {
+                                    result.MatchedHerbsCount++;
+                                }
+                                else
+                                {
+                                    result.UnmatchedHerbsCount++;
+                                }
                             }
+                        }
+
+                        // 自动判断验证状态：如果所有药材都已验证，则标记为Validated
+                        if (formula.Herbs.Any() && formula.Herbs.All(h => h.IsValidated))
+                        {
+                            formula.ValidationStatus = FormulaValidationStatus.Validated;
                         }
 
                         var savedFormula = await _repository.AddAsync(formula);
@@ -524,31 +556,35 @@ namespace LYBT.Module.Formula.Services
 
                         result.SuccessCount++;
                         result.SuccessfulIds.Add(savedFormula.Id);
-                        result.ImportedData.Add(formulaDto);
+                        result.SuccessfulFormulas.Add(formulaDto);
                     }
                     catch (Exception ex)
                     {
                         result.FailureCount++;
-                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        result.FailedItems.Add(new FormulaImportErrorDto
                         {
-                            RecordIdentifier = $"验方表第{row}行",
-                            ErrorMessage = $"导入失败：{ex.Message}"
+                            RowIndex = row,
+                            FormulaName = string.Empty,
+                            ErrorMessage = $"导入失败：{ex.Message}",
+                            ErrorDetails = ex.StackTrace
                         });
                         _logger.LogError(ex, "导入第{Row}行时发生错误", row);
                     }
                 }
 
+                result.EndTime = DateTime.Now;
                 result.IsSuccess = true;
-                result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+                result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条，药材匹配 {result.MatchedHerbsCount} 个，未匹配 {result.UnmatchedHerbsCount} 个";
 
-                return ServiceResult<ImportResultDto<FormulaDto>>.Success(result);
+                return ServiceResult<FormulaImportResultDto>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入验方数据时发生错误");
+                result.EndTime = DateTime.Now;
                 result.IsSuccess = false;
                 result.Message = $"导入失败：{ex.Message}";
-                return ServiceResult<ImportResultDto<FormulaDto>>.Failure($"导入失败：{ex.Message}");
+                return ServiceResult<FormulaImportResultDto>.Failure($"导入失败：{ex.Message}");
             }
         }
 
@@ -605,17 +641,9 @@ namespace LYBT.Module.Formula.Services
 
             try
             {
-                // 1. 精确匹配名称
-                var herb = await _herbRepository.GetByNameAsync(herbName);
-                if (herb != null)
-                    return herb;
-
-                // 2. 模糊匹配拼音码（获取所有药材，内存过滤）
-                var allHerbs = await _herbRepository.GetAllAsync();
-                herb = allHerbs.FirstOrDefault(h =>
-                    !string.IsNullOrEmpty(h.PinYinCode) &&
-                    h.PinYinCode.Equals(herbName, StringComparison.OrdinalIgnoreCase));
-
+                // Issue #1469 (FORMULA-8): 使用智能药材匹配
+                // 优先精确匹配名称，其次模糊匹配拼音码
+                var herb = await _herbRepository.GetByNameOrPinyinAsync(herbName);
                 return herb;
             }
             catch (Exception ex)

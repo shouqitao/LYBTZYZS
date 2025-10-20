@@ -246,6 +246,162 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 
 ---
 
+## 1.6 需求讨论与文档化规范（v6.0新增）⭐强制要求
+
+### 核心原则：避免上下文丢失
+
+**问题背景**：
+- ❌ 传统对话模式：需求讨论在对话中，上下文压缩后关键信息丢失
+- ❌ 决策散落：问题和决策分散在多次对话中，难以追溯
+- ❌ 信息不同步：团队成员无法获取完整的需求讨论历史
+
+**解决方案**：**强制文档化所有需求讨论**
+
+### 📋 强制要求
+
+**所有需求探讨必须形成Markdown文档**：
+- ✅ **讨论前**：创建需求讨论文档（`docs/architecture/shared/` 或相关目录）
+- ✅ **讨论中**：每明确一个问题或设计，立即更新文档
+- ✅ **讨论后**：文档作为唯一事实来源（Single Source of Truth）
+- ❌ **禁止**：纯对话式探讨需求，不形成文档
+
+### 📝 文档化流程
+
+#### Step 1: 创建讨论基础文档
+```
+需求讨论开始前：
+├─ 创建文档：docs/architecture/shared/{feature-name}-discussion.md
+├─ 文档结构：
+│  ├─ 文档目的
+│  ├─ 当前状态描述（✅ 已确认）
+│  ├─ 当前问题清单（❌ 当前问题）
+│  ├─ 改进方向（🔄 改进方向）
+│  └─ 待讨论问题（❓ 待讨论）
+└─ 版本控制：v1.0, v1.1, ...
+```
+
+#### Step 2: 标记讨论状态
+```markdown
+使用统一标记：
+- ✅ [已确认] - 已与业务专家确认，可直接实施
+- ❌ [当前问题] - 当前代码存在的问题，需修复
+- 🔄 [改进方向] - 已提出改进方案，待实施
+- ❓ [待讨论] - 需要讨论确认的问题
+- 💡 [提议] - 初步想法，待评估
+```
+
+#### Step 3: 逐个问题讨论与更新
+```
+讨论流程：
+1. 提出问题 → 在文档中标记 ❓ [待讨论-Q1]
+2. 讨论分析 → 记录各选项的优缺点
+3. 达成共识 → 更新标记为 ✅ [已确认-Q1]
+4. 实施决策 → 创建GitHub Issue关联文档
+```
+
+**⚠️ 讨论原则：一问一答**
+
+**核心要求**：
+- ✅ **一次提出一个问题**：每次只向用户提出一个决策问题（Q1/Q2/Q3等）
+- ✅ **等待用户回答**：收到用户决策后，立即更新文档，然后再提出下一个问题
+- ✅ **避免批量提问**：禁止一次性提出多个问题（如同时问Q3/Q4/Q5）
+- ✅ **保持讨论聚焦**：每个问题讨论完成并文档化后，再进入下一个问题
+
+**示例流程**：
+```
+Claude: 提出Q1问题 + 分析选项
+用户: Q1决策
+Claude: 更新文档 → 提出Q2问题 + 分析选项
+用户: Q2决策
+Claude: 更新文档 → 提出Q3问题 + 分析选项
+...
+```
+
+**禁止模式**：
+```
+❌ Claude: 提出Q3、Q4、Q5三个问题（批量提问）
+❌ 用户: 被迫同时思考多个问题，决策质量下降
+```
+
+**收益**：
+- 📍 **聚焦讨论**：每次只关注一个决策点，思考更深入
+- 🎯 **决策质量**：避免多任务切换，决策更准确
+- 📝 **文档同步**：每个问题立即文档化，信息不丢失
+- 🔄 **灵活调整**：前一个问题的答案可能影响后续问题的提法
+
+---
+
+#### Step 4: 版本管理
+```markdown
+## 文档变更记录
+
+| 日期 | 版本 | 变更描述 | 修改人 |
+|------|------|---------|-------|
+| 2025-01-18 | v1.0 | 初始版本 | Claude |
+| 2025-01-18 | v1.1 | 明确Q1-Q3问题 | Claude + 用户 |
+| 2025-01-19 | v2.0 | 完成所有问题讨论 | Claude + 用户 |
+```
+
+### 📍 文档存放规范
+
+**根据讨论类型选择目录**：
+
+| 讨论类型 | 存放目录 | 文档命名 |
+|---------|---------|---------|
+| **架构设计讨论** | `docs/architecture/shared/` | `{feature-name}-architecture-discussion.md` |
+| **流程逻辑讨论** | `docs/architecture/shared/` | `{feature-name}-process-discussion.md` |
+| **UI/UX设计讨论** | `docs/architecture/client/` | `{feature-name}-ux-discussion.md` |
+| **API设计讨论** | `docs/architecture/server/` | `{feature-name}-api-discussion.md` |
+| **数据模型讨论** | `docs/architecture/shared/` | `{feature-name}-model-discussion.md` |
+
+**示例**：
+- 就诊流程讨论 → `docs/architecture/shared/clinical-workflow-current-process.md`
+- 处方录入UI讨论 → `docs/architecture/client/prescription-entry-ux-discussion.md`
+
+### 🎯 实战案例
+
+**案例：就诊流程逻辑讨论**
+```
+1. 创建文档：clinical-workflow-current-process.md
+2. 记录当前状态：
+   - ✅ 已确认的架构（DDD聚合根、1:1:1关系）
+   - ❌ 当前问题（4个架构问题、4个UX问题、4个功能问题）
+   - 🔄 改进方向（3个Phase方案）
+3. 列出待讨论问题（7个Q）：
+   - ❓ Q1: 医案创建失败的异常处理
+   - ❓ Q2: 未完成医案的处理逻辑
+   - ❓ Q3: 处方是否必须
+   - ...
+4. 逐个讨论并更新：
+   - Q1讨论 → 选择方案A → 更新为 ✅ [已确认-Q1]
+   - Q2讨论 → 选择方案B → 更新为 ✅ [已确认-Q2]
+   - ...
+5. 所有问题确认后 → 创建GitHub Issues → 开始实施
+```
+
+### ⚠️ 违规处理
+
+**禁止行为**：
+- ❌ 纯对话探讨复杂需求，不记录文档
+- ❌ 讨论后不更新文档状态
+- ❌ 决策散落在多个对话中，无法追溯
+
+**强制执行**：
+- 🚫 Claude Code遇到需求讨论时，先检查是否有基础文档
+- 🚫 如无文档，先创建文档再开始讨论
+- 🚫 讨论过程中，每明确一个问题必须更新文档
+
+### 📚 收益
+
+**文档化需求讨论的价值**：
+- ✅ **信息持久化**：不受上下文压缩影响
+- ✅ **决策可追溯**：清晰记录每个决策的来龙去脉
+- ✅ **团队协作**：所有成员都能看到完整讨论历史
+- ✅ **知识沉淀**：成为项目知识库的一部分
+- ✅ **减少重复**：避免相同问题反复讨论
+
+---
+
 ## 2. Issue 驱动工作流
 
 > **📖 完整工作流定义**：参见 `.claude/core/WORKFLOW.md`
@@ -282,17 +438,29 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 
 ### 2.1 任务启动前置检查
 
+#### 验证优先策略（v6.0新增）⭐⭐⭐
+0. **问题验证优先于修复实施** - 避免无效工作的核心原则：
+   - **原则**：对于报告中描述的"问题"，先验证问题是否真实存在，再决定是否修复
+   - **方法**：使用grep/Read/Bash等工具对比契约、配置、依赖关系，生成验证报告
+   - **决策**：
+     - ✅ 如验证确认问题存在 → 创建Issue，按Issue驱动流程修复
+     - ✅ 如验证证明问题不存在 → 标记为"已验证无需执行"，更新报告
+     - ⚠️ 如验证无法确定（编译通过但需运行时验证）→ 标记为"条件执行"
+   - **工具链**：sequential-thinking（深度分析） → grep/Read（对比验证） → 生成验证报告
+   - **实战案例**：参见 `docs/reports/contract-verification-report-2025-10-18.md`
+   - **核心价值**：保持0警告基线、避免过度工程、聚焦真实问题
+
 #### 质量检查（v6.0新增）⭐
-0. **Constitution合规性检查** - 新功能/重构前必须检查：
+1. **Constitution合规性检查** - 新功能/重构前必须检查：
    - 是否违反技术黑名单（Redis/CQRS/MediatR/Docker/GraphQL等）
    - 是否符合MVP优先原则（够用即好，避免过度设计）
    - 是否符合三层对齐架构规范
    - 参考：`.spec-workflow/steering/constitution.md`
 
 #### 环境检查
-1. `git pull` → 获取最新主分支
-2. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
-3. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
+2. `git pull` → 获取最新主分支
+3. `dotnet build LYBT.All.sln -c Release --no-restore` → 若失败，优先修复再继续任务
+4. `dotnet test LYBT.All.sln -c Release` → 记录基线失败项，评估是否影响任务
    - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
    - **注意**：统一编译和测试使用 LYBT.All.sln 方案
 
@@ -383,15 +551,19 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 
 > **📖 完整原则定义**：参见 `.claude/core/PRINCIPLES.md` 和 `.claude/core/FLAGS.md`
 
-### 核心原则（8条）
-1. **文档先行**：方案、审查、实现均以 `docs/` 现有规范为最高准则
-2. **最小充分交付**：遵循"完成导向、够用即好"，避免超前设计
-3. **增量优化**：禁止无指令的推倒重写；建议以 diff 形式描述
-4. **记录与可追溯**：任何决策、范围变化须回写至 Issue/文档
-5. **文档归位**：按 `documentation-guidelines.md` 与 `file-organization-guidelines.md` 存放
-6. **MVP 约束**：禁止私自扩展或新增功能；需先更新 MVP 文档/Issue
-7. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
-8. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
+### 核心原则（9条）
+1. **验证优先**：对于任何"问题报告"，先验证问题真实性再实施修复，避免无效工作（v6.0新增⭐⭐⭐）
+   - 使用 sequential-thinking 深度分析 → grep/Read 对比验证 → 生成验证报告
+   - 决策：问题存在→修复；问题不存在→标记"已验证无需执行"；不确定→标记"条件执行"
+   - 实战案例：`docs/reports/contract-verification-report-2025-10-18.md`
+2. **文档先行**：方案、审查、实现均以 `docs/` 现有规范为最高准则
+3. **最小充分交付**：遵循"完成导向、够用即好"，避免超前设计
+4. **增量优化**：禁止无指令的推倒重写；建议以 diff 形式描述
+5. **记录与可追溯**：任何决策、范围变化须回写至 Issue/文档
+6. **文档归位**：按 `documentation-guidelines.md` 与 `file-organization-guidelines.md` 存放，过时文档归档到 `docs/archive/`
+7. **MVP 约束**：禁止私自扩展或新增功能；需先更新 MVP 文档/Issue
+8. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
+9. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
 
 ### 文档架构原则（4条）⭐v5.0三层对齐
 9. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构（v5.0彻底重构）
@@ -410,8 +582,12 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 - ✅ **Level 2**：架构指南 `docs/architecture/server|client|shared/`（15%学习需求）
 - ✅ **Level 2**：开发指南 `docs/development/server|client|shared/`（15%学习需求）
 - ✅ **Level 3**：深度参考 `docs/deep/`、`docs/api/`、`docs/modules/`（5%深度需求）
+- ✅ **归档目录**：`docs/archive/`（过时文档/旧清单/历史报告）
+  - `docs/archive/tasks/` - 已完成或废弃的任务清单
+  - `docs/archive/reports/` - 历史验证报告（可选）
+  - `docs/archive/specs/` - 已实施完成的Spec文档（可选）
 - ✅ 脚本归档到 `scripts/` 对应功能目录
-- ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
+- ✅ 输出文件归档到 `docs/reports/`（当前报告） 或 `scripts/analysis/outputs/`（分析输出）
 - ✅ Pre-commit hook 会自动检查根目录文件规范
 
 ### 高效执行策略
@@ -427,7 +603,25 @@ Constitution检查（快速） → Issue创建 → 代码修复 → PR → 合�
 ## 4. 编码与交付要求
 
 - **Issue 驱动开发**：无 Issue 禁止改动
+- **编译质量标准**：所有代码提交前必须通过编译认证，要求 **0 errors, 0 warnings**
+  - 使用 `dotnet build LYBT.All.sln -c Release --no-restore` 验证
+  - 任何警告（CS8xxx、CS0xxx 等）必须在提交前修复
+  - 禁止提交包含编译警告的代码
+- **警告主动修复策略**（v6.0新增）：
+  - ✅ **少量警告直接修复**：如果编译警告≤20个，或警告类型相对较少（如仅1-2种类型），不管是否本次任务引入，都应尽可能在当前任务中直接修复
+  - ⚠️ **大量警告需Issue跟踪**：如果警告数量>20个，或警告类型复杂多样，必须创建单独的GitHub Issue进行跟踪处理，不应在当前任务中强行修复
+  - 🎯 **判断标准**：
+    - 警告数量：≤20个 → 直接修复；>20个 → 创建Issue
+    - 警告类型：1-2种类型 → 直接修复；≥3种复杂类型 → 创建Issue
+    - 修复复杂度：简单修改（如添加null检查）→ 直接修复；需要架构调整 → 创建Issue
+  - 📋 **Issue模板**（大量警告时）：标题格式 `[Tech Debt] 修复XX类型编译警告（N个）`，包含警告清单和影响范围
 - **语言统一**：代码注释、终端输出、提交信息均使用中文
+- **Emoji使用规范**（v6.0新增）：
+  - ❌ **代码中禁用Emoji**：C#代码（.cs文件）、配置文件（.json/.xml）、数据库字符串中不允许使用Emoji字符
+  - ✅ **文档中允许Emoji**：Markdown文档（.md文件）、CLAUDE.md、README、Issue/PR描述中可以使用Emoji增强可读性
+  - 🎯 **示例**：
+    - 代码注释：`// 验证失败`（正确） vs `// ❌ 验证失败`（错误）
+    - 文档标题：`## 验证优先策略（v6.0新增）⭐⭐⭐`（正确，文档允许）
 - **文件编码**：所有文本文件使用 `UTF-8 with BOM`
 - **命名规范**：
   - 类型与公开成员：`PascalCase`

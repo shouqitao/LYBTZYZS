@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
@@ -62,7 +62,7 @@ public class AuthServiceTests : IDisposable
     private static IConfiguration CreateMockConfiguration()
     {
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Business:SystemAdmin:Username"]).Returns("sysadmin");
+        config.Setup(c => c["Lybt:Business:SystemAdmin:UserName"]).Returns("sysadmin");
         config.Setup(c => c["Lybt:Business:SystemAdmin:Email"]).Returns("admin@lybt.com");
         config.Setup(c => c["Jwt:AccessTokenExpirationMinutes"]).Returns("30");
         config.Setup(c => c["Jwt:RefreshTokenExpirationDays"]).Returns("7");
@@ -85,11 +85,11 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Username = "testuser",
+            UserName = "testuser",
             Password = "Password123!"
         };
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
         // Act
@@ -106,11 +106,11 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var request = new LoginRequest
         {
-            Username = "nonexistent",
+            UserName = "nonexistent",
             Password = "Password123!"
         };
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync((User?)null);
 
         // Act
@@ -134,11 +134,11 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Username = "testuser",
+            UserName = "testuser",
             Password = "WrongPassword"
         };
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
         // Act
@@ -155,7 +155,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var request = new LoginRequest
         {
-            Username = "",
+            UserName = "",
             Password = "Password123!"
         };
 
@@ -173,7 +173,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var request = new LoginRequest
         {
-            Username = "testuser",
+            UserName = "testuser",
             Password = ""
         };
 
@@ -215,13 +215,13 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Username = "testuser",
+            UserName = "testuser",
             Password = "Password123!"
         };
 
         var expectedToken = "test.jwt.token";
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
         _mockMapper.Setup(x => x.Map<UserDto>(testUser))
@@ -249,11 +249,11 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var request = new LoginRequest
         {
-            Username = "wronguser",
+            UserName = "wronguser",
             Password = "WrongPassword"
         };
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync((User?)null);
 
         // Act
@@ -277,11 +277,11 @@ public class AuthServiceTests : IDisposable
 
         var request = new LoginRequest
         {
-            Username = "testuser",
+            UserName = "testuser",
             Password = "WrongPassword"
         };
 
-        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.Username))
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
             .ReturnsAsync(testUser);
 
         // Act

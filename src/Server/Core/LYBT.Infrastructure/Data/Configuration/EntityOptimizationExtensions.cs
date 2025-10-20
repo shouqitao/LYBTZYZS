@@ -161,7 +161,7 @@ namespace LYBT.Infrastructure.Data.Configuration
                 // 注释掉所有不存在的属性引用
                 // 唯一索引
                 // 注意：Username属性不存在，注释掉
-                // entity.HasIndex(u => u.Username)
+                // entity.HasIndex(u => u.UserName)
                 //     .IsUnique()
                 //     .HasDatabaseName("IX_User_Username");
 

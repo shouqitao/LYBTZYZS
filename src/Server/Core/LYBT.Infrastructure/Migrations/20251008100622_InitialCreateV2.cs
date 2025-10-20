@@ -382,7 +382,7 @@ namespace LYBT.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "Email", "FailedLoginCount", "IsDeleted", "LastLoginTime", "LockoutEnd", "PasswordHash", "PhoneNumber", "PinYinCode", "RealName", "Remark", "Role", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "Email", "FailedLoginCount", "IsDeleted", "LastLoginTime", "LockoutEnd", "PasswordHash", "PhoneNumber", "PinYinCode", "RealName", "Remark", "Role", "Status", "UpdatedAt", "UpdatedBy", "UserName" },
                 values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "admin@lybt.com", 0, false, null, null, "$2a$11$6vF3z.VwKQZLXxE9wE3D1eO5v6qU4xKQF9Qq9Ek3Z8Ky7Jq3Mq9oG", null, null, "系统管理员", null, 10, 1, null, null, "sysadmin" });
 
             migrationBuilder.CreateIndex(
@@ -584,7 +584,7 @@ namespace LYBT.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Username",
                 table: "Users",
-                column: "Username",
+                column: "UserName",
                 unique: true);
         }
 

@@ -2,7 +2,7 @@
 
 ## 概述
 
-凌隐宝堂中医诊所管理系统作为医疗行业应用，对软件质量和可靠性有着极高的要求。本测试策略指南基于实际项目架构和业务特点，提供全面的测试方法论，包括单元测试、集成测试、API测试、UI测试和性能测试，确保系统在患者数据管理、处方计算、药材库存等关键业务场景中的稳定性和准确性。
+凌隐宝堂中医诊所管理系统作为医疗行业应用，对软件质量和可靠性有着极高的要求。本测试策略指南基于实际项目架构和业务特点,提供全面的测试方法论，包括单元测试、集成测试、API测试、UI测试和性能测试，确保系统在患者数据管理、处方计算、药材管理等关键业务场景中的稳定性和准确性。
 
 ## 测试架构体系
 
@@ -361,164 +361,6 @@ public class PatientServiceTests
 }
 ```
 
-### 3. 中药材管理测试
-
-```csharp
-[TestFixture]
-public class HerbInventoryServiceTests
-{
-    private HerbInventoryService _service;
-    private Mock<LYBTClinicDbContext> _mockContext;
-    private Mock<DbSet<Herb>> _mockHerbs;
-    private Mock<DbSet<HerbInventory>> _mockInventory;
-
-    [SetUp]
-    public void Setup()
-    {
-        _mockContext = new Mock<LYBTClinicDbContext>();
-        _mockHerbs = CreateMockDbSet(GetTestHerbs());
-        _mockInventory = CreateMockDbSet(GetTestInventory());
-
-        _mockContext.Setup(x => x.Herbs).Returns(_mockHerbs.Object);
-        _mockContext.Setup(x => x.HerbInventory).Returns(_mockInventory.Object);
-        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-
-        _service = new HerbInventoryService(
-            _mockContext.Object,
-            Mock.Of<ILogger<HerbInventoryService>>(),
-            Mock.Of<IMapper>());
-    }
-
-    [Test]
-    public async Task UpdateInventoryAsync_ValidStockUpdate_ReturnsSuccess()
-    {
-        // Arrange
-        var updateRequest = new UpdateInventoryRequest
-        {
-            HerbId = 1,
-            QuantityChange = 100,
-            TransactionType = "Purchase",
-            UnitPrice = 5.50m,
-            Notes = "新采购一批人参"
-        };
-
-        var initialStock = GetTestInventory().First(i => i.HerbID == 1);
-
-        // Act
-        var result = await _service.UpdateInventoryAsync(updateRequest);
-
-        // Assert
-        Assert.That(result.Success, Is.True);
-
-        _mockInventory.Verify(x => x.Add(It.Is<HerbInventory>(i =>
-            i.HerbID == updateRequest.HerbId &&
-            i.QuantityChange == updateRequest.QuantityChange &&
-            i.TransactionType == updateRequest.TransactionType)), Times.Once);
-
-        // 验证库存更新逻辑
-        var updatedStock = initialStock.CurrentStock + updateRequest.QuantityChange;
-        Assert.That(result.NewStockLevel, Is.EqualTo(updatedStock));
-    }
-
-    [Test]
-    public async Task UpdateInventoryAsync_InsufficientStock_ReturnsError()
-    {
-        // Arrange
-        var updateRequest = new UpdateInventoryRequest
-        {
-            HerbId = 1,
-            QuantityChange = -1000, // 超出当前库存
-            TransactionType = "Sale",
-            Notes = "销售"
-        };
-
-        var currentStock = GetTestInventory().First(i => i.HerbID == 1).CurrentStock;
-
-        // Act
-        var result = await _service.UpdateInventoryAsync(updateRequest);
-
-        // Assert
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.ErrorMessage, Contains.Substring("库存不足"));
-
-        _mockInventory.Verify(x => x.Add(It.IsAny<HerbInventory>()), Times.Never);
-    }
-
-    [Test]
-    public async Task CheckLowStockAsync_BelowThreshold_ReturnsWarningItems()
-    {
-        // Arrange
-        var threshold = 50; // 库存阈值50g
-
-        // Act
-        var result = await _service.CheckLowStockAsync(threshold);
-
-        // Assert
-        Assert.That(result.LowStockItems.Count, Is.GreaterThan(0));
-        Assert.That(result.LowStockItems.All(item => item.CurrentStock <= threshold), Is.True);
-    }
-
-    private List<Herb> GetTestHerbs()
-    {
-        return new List<Herb>
-        {
-            new Herb
-            {
-                ID = 1,
-                Name = "人参",
-                HerbCode = "RS001",
-                Category = "补气药",
-                CurrentStock = 100,
-                MinStockLevel = 50,
-                UnitPrice = 8.50m,
-                Unit = "g",
-                IsActive = true
-            },
-            new Herb
-            {
-                ID = 2,
-                Name = "白术",
-                HerbCode = "BS001",
-                Category = "补气药",
-                CurrentStock = 30,
-                MinStockLevel = 50,
-                UnitPrice = 3.20m,
-                Unit = "g",
-                IsActive = true
-            }
-        };
-    }
-
-    private List<HerbInventory> GetTestInventory()
-    {
-        return new List<HerbInventory>
-        {
-            new HerbInventory
-            {
-                ID = 1,
-                HerbID = 1,
-                QuantityChange = 100,
-                TransactionType = "Purchase",
-                UnitPrice = 8.50m,
-                CurrentStock = 100,
-                TransactionDate = DateTime.Now
-            },
-            new HerbInventory
-            {
-                ID = 2,
-                HerbID = 2,
-                QuantityChange = 30,
-                TransactionType = "Purchase",
-                UnitPrice = 3.20m,
-                CurrentStock = 30,
-                TransactionDate = DateTime.Now
-            }
-        };
-    }
-}
-```
-
 ## 集成测试策略
 
 ### 1. API控制器集成测试
@@ -819,9 +661,9 @@ public class DatabaseIntegrationTests
 
         var herbs = new List<Herb>
         {
-            new() { Name = "麻黄", UnitPrice = 5.00m, CurrentStock = 1000, IsActive = true },
-            new() { Name = "桂枝", UnitPrice = 4.00m, CurrentStock = 1000, IsActive = true },
-            new() { Name = "杏仁", UnitPrice = 6.00m, CurrentStock = 1000, IsActive = true }
+            new() { Name = "麻黄", UnitPrice = 5.00m, IsActive = true },
+            new() { Name = "桂枝", UnitPrice = 4.00m, IsActive = true },
+            new() { Name = "杏仁", UnitPrice = 6.00m, IsActive = true }
         };
 
         _context.Patients.Add(patient);
@@ -1303,7 +1145,6 @@ public abstract class TestBase
         _context.PrescriptionItems.RemoveRange(_context.PrescriptionItems);
         _context.Prescriptions.RemoveRange(_context.Prescriptions);
         _context.MedicalCases.RemoveRange(_context.MedicalCases);
-        _context.HerbInventory.RemoveRange(_context.HerbInventory);
         _context.Herbs.RemoveRange(_context.Herbs);
         _context.Patients.RemoveRange(_context.Patients);
         _context.Doctors.RemoveRange(_context.Doctors);
@@ -1492,7 +1333,6 @@ jobs:
 - [ ] 处方价格计算算法准确性
 - [ ] 中药材配伍规则验证
 - [ ] 患者数据验证和业务规则
-- [ ] 库存管理和更新逻辑
 - [ ] 折扣计算规则
 - [ ] 身份验证和授权逻辑
 - [ ] 数据转换和映射逻辑

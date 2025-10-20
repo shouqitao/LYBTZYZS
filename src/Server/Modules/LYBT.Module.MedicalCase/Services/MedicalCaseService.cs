@@ -372,5 +372,71 @@ namespace LYBT.Module.MedicalCase.Services
                 return ServiceResult<MedicalCaseDetailDto>.Failure("获取医疗案例失败");
             }
         }
+
+        /// <summary>
+        /// 更新病案的诊断信息 (Issue #1477 架构纠正v2)
+        /// 通过MedicalCase聚合根更新Consultation子实体
+        /// </summary>
+        public async Task<ServiceResult<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto)
+        {
+            try
+            {
+                // 获取包含所有关联数据的MedicalCase聚合根
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase == null)
+                    return ServiceResult<ConsultationDto>.Failure("病案不存在");
+
+                if (medicalCase.Consultation == null)
+                    return ServiceResult<ConsultationDto>.Failure("病案的诊断信息不存在");
+
+                // 通过AutoMapper更新Consultation子实体
+                _mapper.Map(dto, medicalCase.Consultation);
+
+                // 通过聚合根保存（EF Core会跟踪子实体变更）
+                var result = await _repository.UpdateAsync(medicalCase);
+
+                // 返回更新后的Consultation DTO
+                var consultationDto = _mapper.Map<ConsultationDto>(result.Consultation);
+                return ServiceResult<ConsultationDto>.Success(consultationDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新病案诊断信息失败，病案ID: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<ConsultationDto>.Failure("更新诊断信息失败");
+            }
+        }
+
+        /// <summary>
+        /// 更新病案的处方信息 (Issue #1477 架构纠正v2)
+        /// 通过MedicalCase聚合根更新Prescription子实体
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+        {
+            try
+            {
+                // 获取包含所有关联数据的MedicalCase聚合根
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase == null)
+                    return ServiceResult<PrescriptionDto>.Failure("病案不存在");
+
+                if (medicalCase.Prescription == null)
+                    return ServiceResult<PrescriptionDto>.Failure("病案的处方信息不存在");
+
+                // 通过AutoMapper更新Prescription子实体
+                _mapper.Map(dto, medicalCase.Prescription);
+
+                // 通过聚合根保存（EF Core会跟踪子实体变更）
+                var result = await _repository.UpdateAsync(medicalCase);
+
+                // 返回更新后的Prescription DTO
+                var prescriptionDto = _mapper.Map<PrescriptionDto>(result.Prescription);
+                return ServiceResult<PrescriptionDto>.Success(prescriptionDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新病案处方信息失败，病案ID: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<PrescriptionDto>.Failure("更新处方信息失败");
+            }
+        }
     }
 }

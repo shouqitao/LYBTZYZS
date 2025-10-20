@@ -2,6 +2,9 @@
 using AutoMapper;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -20,17 +23,26 @@ namespace LYBT.Module.Prescriptions.Services
     {
         private readonly IPrescriptionRepository _repository;
         private readonly IFormulaRepository _formulaRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        private readonly IPatientRepository _patientRepository;
+        private readonly IConsultationRepository _consultationRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
             IFormulaRepository formulaRepository,
+            IMedicalCaseRepository medicalCaseRepository,
+            IPatientRepository patientRepository,
+            IConsultationRepository consultationRepository,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
             _repository = repository;
             _formulaRepository = formulaRepository;
+            _medicalCaseRepository = medicalCaseRepository;
+            _patientRepository = patientRepository;
+            _consultationRepository = consultationRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -102,11 +114,24 @@ namespace LYBT.Module.Prescriptions.Services
         /// <summary>
         /// 创建处方 - 仅在独立创建时使用
         /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
+        /// Issue #1423: RULE-2 - 一诊断一处方约束
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
             try
             {
+                // RULE-2: 检查该诊断是否已有处方（一诊断一处方约束）
+                // 注意：Consultation使用共享主键（ConsultationId == MedicalCaseId）
+                if (dto.ConsultationId.HasValue)
+                {
+                    var existingPrescriptions = await _repository.GetByMedicalCaseIdAsync(dto.ConsultationId.Value);
+                    if (existingPrescriptions.Any())
+                    {
+                        _logger.LogWarning("创建处方失败：诊断 {ConsultationId} 已有处方", dto.ConsultationId.Value);
+                        return ServiceResult<PrescriptionDto>.Failure("该诊断已有处方，不可重复创建");
+                    }
+                }
+
                 var entity = _mapper.Map<PrescriptionEntity>(dto);
 
                 // 注意：处方总价在DTO层计算，实体层不存储
@@ -122,6 +147,10 @@ namespace LYBT.Module.Prescriptions.Services
             }
         }
 
+        /// <summary>
+        /// 更新处方
+        /// Issue #1423: RULE-3 - 当天可改隔日锁定
+        /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto)
         {
             try
@@ -130,13 +159,11 @@ namespace LYBT.Module.Prescriptions.Services
                 if (entity == null)
                     return ServiceResult<PrescriptionDto>.Failure("处方不存在");
 
-                // RULE-3: 当天可改隔日锁定（Issue #1423）
+                // RULE-3: 当天可改隔日锁定 - 只能修改创建当天的记录
                 if (entity.CreatedAt.Date != DateTime.Today)
                 {
-                    _logger.LogWarning("尝试修改非当天创建的处方，处方ID：{PrescriptionId}，创建日期：{CreatedAt}",
-                        id, entity.CreatedAt.Date);
-                    return ServiceResult<PrescriptionDto>.Failure(
-                        $"该处方创建于 {entity.CreatedAt:yyyy-MM-dd}，已超过可修改期限（仅限创建当天可修改）");
+                    _logger.LogWarning("更新处方失败：记录 {PrescriptionId} 创建于 {CreatedDate}，已过可修改期限", id, entity.CreatedAt.Date);
+                    return ServiceResult<PrescriptionDto>.Failure("该处方已超过可修改期限（仅限创建当天可修改）");
                 }
 
                 _mapper.Map(dto, entity);
@@ -443,49 +470,65 @@ namespace LYBT.Module.Prescriptions.Services
 
 
         /// <summary>
-        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// 克隆处方 - 复制处方到指定诊疗记录 (Issue #1373 ENTRY-15)
+        /// 支持从历史处方复制到新的诊疗记录/病历
         /// </summary>
-        public async Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetConsultationId">目标诊疗记录ID（与MedicalCase共享主键）</param>
+        /// <returns>新创建的处方DTO</returns>
+        public async Task<ServiceResult<PrescriptionDto>> ClonePrescriptionAsync(
+            Guid sourcePrescriptionId,
+            Guid targetConsultationId)
         {
             try
             {
-                // 获取原始处方（包含药材项）
-                var originalPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
-                if (originalPrescription == null)
+                // 获取源处方（包含药材项）
+                var sourcePrescription = await _repository.GetByIdWithItemsAsync(sourcePrescriptionId);
+                if (sourcePrescription == null)
                 {
                     return ServiceResult<PrescriptionDto>.Failure("未找到要克隆的处方");
                 }
 
-                // 创建克隆处方
+                // 根据targetConsultationId找到目标MedicalCase（Consultation与MedicalCase共享主键）
+                var targetMedicalCase = await _medicalCaseRepository.GetByIdAsync(targetConsultationId);
+                if (targetMedicalCase == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure($"未找到目标诊疗记录对应的病历（ID: {targetConsultationId}）");
+                }
+
+                // 创建克隆处方，关联到目标病历
                 var clonedPrescription = new PrescriptionEntity
                 {
                     Id = Guid.NewGuid(),
-                    MedicalCaseId = originalPrescription.MedicalCaseId,
-                    PatientId = originalPrescription.PatientId,
-                    UserId = originalPrescription.UserId,
-                    Indication = originalPrescription.Indication,
-                    DosageCount = originalPrescription.DosageCount,
-                    Discount = originalPrescription.Discount,
-                    Advice = originalPrescription.Advice,
-                    FormulaSource = originalPrescription.FormulaSource,
+                    MedicalCaseId = targetMedicalCase.Id, // 关联到目标病历
+                    PatientId = targetMedicalCase.PatientId, // 使用目标病历的患者
+                    UserId = sourcePrescription.UserId, // 保留原开方医生
+                    Indication = sourcePrescription.Indication, // 保留适应症
+                    DosageCount = sourcePrescription.DosageCount,
+                    Discount = sourcePrescription.Discount,
+                    Advice = sourcePrescription.Advice,
+
+                    // TODO: ENTRY-7完成后，这里改为ReferencedFormulas字段
+                    FormulaSource = sourcePrescription.FormulaSource, // 保留验方来源
+
                     Status = PrescriptionStatus.Draft, // 克隆的处方默认为草稿状态
-                    Remark = originalPrescription.Remark,
+                    Remark = sourcePrescription.Remark,
                     PrintVersion = 1, // 重置打印版本
                     LastPrintedAt = null, // 清空打印时间
                     PrintCount = 0, // 重置打印次数
+                    IsPrinted = false, // 重置打印状态
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
-                    
-                    // 复制药材项（稍后设置PrescriptionId）
+
                     Items = new List<PrescriptionItemEntity>()
                 };
 
                 var savedPrescription = await _repository.AddAsync(clonedPrescription);
-                
-                // 复制药材项
-                if (originalPrescription.Items != null && originalPrescription.Items.Any())
+
+                // 克隆所有药材项
+                if (sourcePrescription.Items != null && sourcePrescription.Items.Any())
                 {
-                    foreach (var item in originalPrescription.Items)
+                    foreach (var item in sourcePrescription.Items)
                     {
                         savedPrescription.Items.Add(new PrescriptionItemEntity
                         {
@@ -501,11 +544,41 @@ namespace LYBT.Module.Prescriptions.Services
                         });
                     }
                 }
-                
+
                 await _repository.SaveChangesAsync();
+
+                _logger.LogInformation("处方克隆成功，源处方ID：{SourceId}，目标诊疗ID：{TargetConsultationId}，新处方ID：{NewId}，药材数量：{ItemCount}",
+                    sourcePrescriptionId, targetConsultationId, savedPrescription.Id, savedPrescription.Items.Count);
 
                 var prescriptionDto = _mapper.Map<PrescriptionDto>(savedPrescription);
                 return ServiceResult<PrescriptionDto>.Success(prescriptionDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "克隆处方时发生错误，源处方ID：{SourceId}，目标诊疗ID：{TargetConsultationId}",
+                    sourcePrescriptionId, targetConsultationId);
+                return ServiceResult<PrescriptionDto>.Failure($"克隆处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
+        /// 已弃用，请使用 ClonePrescriptionAsync
+        /// </summary>
+        [Obsolete("请使用 ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetConsultationId) 替代")]
+        public async Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId)
+        {
+            try
+            {
+                // 获取原始处方
+                var originalPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                if (originalPrescription == null)
+                {
+                    return ServiceResult<PrescriptionDto>.Failure("未找到要克隆的处方");
+                }
+
+                // 调用新版克隆方法，克隆到同一MedicalCase
+                return await ClonePrescriptionAsync(prescriptionId, originalPrescription.MedicalCaseId);
             }
             catch (Exception ex)
             {
@@ -515,9 +588,10 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
-        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350, Issue #1366 ENTRY-8)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
         /// </summary>
-        public async Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(
+        public async Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
             Guid prescriptionId,
             Guid formulaId)
         {
@@ -527,7 +601,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var formula = await _formulaRepository.GetByIdAsync(formulaId);
                 if (formula == null)
                 {
-                    return ServiceResult.Failure("验方不存在");
+                    return ServiceResult<PrescriptionDto>.Failure("验方不存在");
                 }
 
                 // 检查验方状态
@@ -538,7 +612,7 @@ namespace LYBT.Module.Prescriptions.Services
                         .Select(h => h.OriginalHerbName)
                         .ToList();
 
-                    return ServiceResult.Failure(
+                    return ServiceResult<PrescriptionDto>.Failure(
                         $"验方\"{formula.Name}\"包含未校验的药材，请先在验方管理中完成校验。未校验药材：{string.Join("、", unvalidatedHerbs)}");
                 }
 
@@ -546,7 +620,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var prescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
                 if (prescription == null)
                 {
-                    return ServiceResult.Failure("处方不存在");
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
                 }
 
                 // 导入药材到处方
@@ -557,7 +631,7 @@ namespace LYBT.Module.Prescriptions.Services
                         Id = Guid.NewGuid(),
                         PrescriptionId = prescriptionId,
                         HerbId = herbItem.HerbId!.Value,  // Validated状态下HerbId必有值
-                        HerbName = herbItem.OriginalHerbName,
+                        HerbName = herbItem.OriginalHerbName ?? string.Empty,  // Issue #1366: null安全
                         Quantity = herbItem.Quantity,
                         Unit = herbItem.Unit,
                         UnitPrice = 0,  // 价格需要单独查询herb表或后续设置
@@ -568,14 +642,234 @@ namespace LYBT.Module.Prescriptions.Services
                     prescription.Items.Add(prescriptionItem);
                 }
 
+                // 更新ReferencedFormulas字段（追加验方名称，逗号分隔）(Issue #1366 ENTRY-8)
+                if (string.IsNullOrWhiteSpace(prescription.ReferencedFormulas))
+                {
+                    prescription.ReferencedFormulas = formula.Name;
+                }
+                else if (!prescription.ReferencedFormulas.Split(',').Contains(formula.Name))
+                {
+                    // 避免重复添加相同验方名称
+                    prescription.ReferencedFormulas += $",{formula.Name}";
+                }
+
                 await _repository.UpdateAsync(prescription);
 
-                return ServiceResult.Success($"验方\"{formula.Name}\"已导入到处方，共{formula.Herbs.Count}味药材");
+                // 返回更新后的处方DTO (Issue #1366 ENTRY-8)
+                var updatedPrescription = await _repository.GetByIdWithItemsAsync(prescriptionId);
+                var prescriptionDto = _mapper.Map<PrescriptionDto>(updatedPrescription);
+
+                _logger.LogInformation("验方\"{FormulaName}\"已导入到处方，共{Count}味药材", formula.Name, formula.Herbs.Count);
+                return ServiceResult<PrescriptionDto>.Success(
+                    prescriptionDto,
+                    $"验方\"{formula.Name}\"已导入到处方，共{formula.Herbs.Count}味药材");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入验方到处方时发生错误，处方ID：{PrescriptionId}，验方ID：{FormulaId}", prescriptionId, formulaId);
-                return ServiceResult.Failure($"导入失败：{ex.Message}");
+                return ServiceResult<PrescriptionDto>.Failure($"导入失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
+        /// <returns>处方搜索结果列表</returns>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+            string? patientName = null,
+            string? symptomKeyword = null)
+        {
+            try
+            {
+                // 如果两个参数都为空，返回空列表
+                if (string.IsNullOrWhiteSpace(patientName) && string.IsNullOrWhiteSpace(symptomKeyword))
+                {
+                    return ServiceResult<List<PrescriptionSearchResultDto>>.Success(new List<PrescriptionSearchResultDto>());
+                }
+
+                // 获取所有处方
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // 获取所有病历（用于关联患者）
+                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
+                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+
+                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
+                var allConsultations = await _consultationRepository.GetAllAsync();
+                var consultationDict = allConsultations.ToDictionary(c => c.Id);
+
+                // 获取所有患者（用于关联 PatientName）
+                var allPatients = await _patientRepository.GetAllAsync();
+                var patientDict = allPatients.ToDictionary(p => p.Id);
+
+                // 内存过滤与关联
+                var searchResults = new List<PrescriptionSearchResultDto>();
+
+                foreach (var prescription in allPrescriptions)
+                {
+                    // 关联病历
+                    if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
+                    {
+                        continue; // 找不到关联病历，跳过
+                    }
+
+                    // 关联患者
+                    if (!patientDict.TryGetValue(medicalCase.PatientId, out var patient))
+                    {
+                        continue; // 找不到关联患者，跳过
+                    }
+
+                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
+                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
+
+                    // 按患者姓名筛选
+                    if (!string.IsNullOrWhiteSpace(patientName))
+                    {
+                        if (patient.Name == null || !patient.Name.Contains(patientName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // 患者姓名不匹配，跳过
+                        }
+                    }
+
+                    // 按症状/诊断关键字筛选
+                    if (!string.IsNullOrWhiteSpace(symptomKeyword))
+                    {
+                        var matchedInDiagnosis = consultation?.TCMDiagnosis != null &&
+                            consultation.TCMDiagnosis.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
+
+                        var matchedInIndication = prescription.Indication != null &&
+                            prescription.Indication.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
+
+                        if (!matchedInDiagnosis && !matchedInIndication)
+                        {
+                            continue; // 症状/诊断不匹配，跳过
+                        }
+                    }
+
+                    // 构建搜索结果
+                    searchResults.Add(new PrescriptionSearchResultDto
+                    {
+                        Id = prescription.Id,
+                        CreatedAt = prescription.CreatedAt,
+                        PatientId = patient.Id,
+                        PatientName = patient.Name ?? string.Empty,
+                        Indication = prescription.Indication,
+                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        DosageCount = prescription.DosageCount,
+                        Advice = prescription.Advice,
+                        FormulaSource = prescription.FormulaSource,
+                        Remark = prescription.Remark
+                    });
+                }
+
+                _logger.LogInformation("处方搜索完成，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}，结果数量：{Count}",
+                    patientName ?? "(空)", symptomKeyword ?? "(空)", searchResults.Count);
+
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(searchResults);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索处方时发生错误，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}",
+                    patientName ?? "(空)", symptomKeyword ?? "(空)");
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"搜索处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        /// <returns>患者最近处方列表（按日期倒序）</returns>
+        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            int count = 5)
+        {
+            try
+            {
+                // 获取所有处方
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // 获取所有病历（用于关联患者）
+                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
+                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+
+                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
+                var allConsultations = await _consultationRepository.GetAllAsync();
+                var consultationDict = allConsultations.ToDictionary(c => c.Id);
+
+                // 获取患者信息
+                var patient = await _patientRepository.GetByIdAsync(patientId);
+                if (patient == null)
+                {
+                    return ServiceResult<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
+                }
+
+                // 内存过滤：找到该患者的所有处方
+                var patientPrescriptions = new List<PrescriptionSearchResultDto>();
+
+                foreach (var prescription in allPrescriptions)
+                {
+                    // 关联病历
+                    if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
+                    {
+                        continue; // 找不到关联病历，跳过
+                    }
+
+                    // 筛选该患者的处方
+                    if (medicalCase.PatientId != patientId)
+                    {
+                        continue; // 不是该患者的处方，跳过
+                    }
+
+                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
+                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
+
+                    // 获取处方项以计算药材数量（Issue #1370 ENTRY-12 新增需求）
+                    var prescriptionWithItems = await _repository.GetByIdWithItemsAsync(prescription.Id);
+                    var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
+
+                    // 构建搜索结果
+                    var prescriptionDto = new PrescriptionSearchResultDto
+                    {
+                        Id = prescription.Id,
+                        CreatedAt = prescription.CreatedAt,
+                        PatientId = patient.Id,
+                        PatientName = patient.Name ?? string.Empty,
+                        Indication = prescription.Indication,
+                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        DosageCount = prescription.DosageCount,
+                        Advice = prescription.Advice,
+                        FormulaSource = prescription.FormulaSource,
+                        Remark = prescription.Remark,
+                        HerbCount = herbCount, // Issue #1370 新增
+                        Items = prescriptionWithItems?.Items != null
+                            ? _mapper.Map<List<PrescriptionItemDto>>(prescriptionWithItems.Items)
+                            : new List<PrescriptionItemDto>() // Issue #1370 新增
+                    };
+
+                    patientPrescriptions.Add(prescriptionDto);
+                }
+
+                // 按创建日期倒序排列，取前count条
+                var recentPrescriptions = patientPrescriptions
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(count)
+                    .ToList();
+
+                _logger.LogInformation("获取患者最近处方完成，患者ID：{PatientId}，患者姓名：{PatientName}，请求数量：{RequestCount}，实际返回：{ActualCount}",
+                    patientId, patient.Name ?? "(空)", count, recentPrescriptions.Count);
+
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(recentPrescriptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近处方时发生错误，患者ID：{PatientId}", patientId);
+                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"获取患者最近处方失败：{ex.Message}");
             }
         }
 

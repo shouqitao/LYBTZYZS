@@ -850,6 +850,54 @@ namespace LYBT.Module.Formula.Tests.Services
             result.ErrorMessage.Should().Contain("所选药材不存在");
         }
 
+        [Fact]
+        public async Task ValidateFormulaHerbAsync_WithAlreadyValidatedHerb_ShouldReturnFailure()
+        {
+            // Arrange
+            var formulaId = Guid.NewGuid();
+            var herbItemId = Guid.NewGuid();
+            var selectedHerbId = Guid.NewGuid();
+
+            var formula = new FormulaEntity
+            {
+                Id = formulaId,
+                Name = "测试验方",
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                {
+                    new()
+                    {
+                        Id = herbItemId,
+                        HerbId = Guid.NewGuid(),
+                        HerbName = "人参",
+                        IsValidated = true, // 已经验证过
+                        Quantity = 10
+                    }
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
+                .ReturnsAsync(formula);
+
+            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            var formulaService = new FormulaService(
+                _repositoryMock.Object,
+                herbRepositoryMock.Object,
+                Mapper,
+                _loggerMock.Object);
+
+            // Act
+            var result = await formulaService.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("该药材已校验，无需重复操作");
+
+            // 验证未调用更新操作（因为已校验，应该直接返回）
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
+            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+        }
+
         #endregion
 
         #region Excel导入验方测试
@@ -929,8 +977,10 @@ namespace LYBT.Module.Formula.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.SuccessCount.Should().Be(1);
             result.Data.FailureCount.Should().Be(0);
-            result.Data.ImportedData.Should().HaveCount(1);
-            result.Data.ImportedData[0].Name.Should().Be("测试验方");
+            result.Data.SuccessfulFormulas.Should().HaveCount(1);
+            result.Data.SuccessfulFormulas[0].Name.Should().Be("测试验方");
+            result.Data.MatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
+            result.Data.UnmatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
 
             _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
         }
@@ -1011,8 +1061,8 @@ namespace LYBT.Module.Formula.Tests.Services
             result.Data.Should().NotBeNull();
             result.Data.SuccessCount.Should().Be(0);
             result.Data.FailureCount.Should().Be(1);
-            result.Data.Errors.Should().HaveCount(1);
-            result.Data.Errors[0].ErrorMessage.Should().Contain("验方名称不能为空");
+            result.Data.FailedItems.Should().HaveCount(1);
+            result.Data.FailedItems[0].ErrorMessage.Should().Contain("验方名称不能为空");
         }
 
         #endregion

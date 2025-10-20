@@ -115,8 +115,8 @@ public class ServiceCollectionExtensionsTests
         // 验证订阅配置
         var options = provider.GetService<IOptions<EventBusSubscriptionOptions>>();
         options.Should().NotBeNull();
-        
-        var subscriptions = options.Value.Subscriptions;
+
+        var subscriptions = options!.Value.Subscriptions;
         subscriptions.Should().ContainSingle();
         subscriptions[0].EventType.Should().Be(typeof(TestEvent));
         subscriptions[0].HandlerType.Should().Be(typeof(TestEventHandler));
