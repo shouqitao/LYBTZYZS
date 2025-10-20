@@ -99,6 +99,10 @@ public partial class App : PrismApplication
         // ViewModelLocationProvider 只是映射关系，ViewModel 本身需要在容器中注册
         containerRegistry.Register<MainWindowViewModel>();  // Transient lifetime for ViewModels
         containerRegistry.Register<HomeViewModel>();
+
+        // Bug修复: HomeView必须注册为可导航视图（RegisterForNavigation）
+        // 否则MainWindowViewModel.LoadMainContent()导航到"HomeView"时会失败
+        containerRegistry.RegisterForNavigation<HomeView>();
     }
 
     /// <summary>
