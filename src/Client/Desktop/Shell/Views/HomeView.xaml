@@ -4,41 +4,7 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <UserControl.Resources>
-        <!-- 次要功能按钮样式 -->
-        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Margin" Value="5" />
-            <Setter Property="Padding" Value="15,10" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E0E0E0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                               BorderBrush="{TemplateBinding BorderBrush}"
-                               BorderThickness="{TemplateBinding BorderThickness}"
-                               CornerRadius="5"
-                               Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#E0E0E0" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
-
-    <Grid Background="#F9F9F9">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -59,112 +25,21 @@
                           HorizontalAlignment="Center"
                           Margin="0,0,0,40" />
 
-                <!-- 开始看诊按钮（核心功能） -->
+                <!-- 开始接诊按钮 (Issue #1486: 150x50px, PrimaryButton) -->
                 <Button Command="{Binding StartConsultationCommand}"
-                       Width="200"
-                       Height="80"
-                       Background="#4CAF50"
-                       BorderThickness="0"
-                       Foreground="White"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Cursor="Hand"
-                       Margin="0,0,0,30">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}"
-                                   CornerRadius="10"
-                                   Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#45A049" />
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#3D8B40" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <TextBlock Text="开始看诊" />
-                </Button>
+                       Style="{StaticResource PrimaryButton}"
+                       Content="开始接诊"
+                       Width="150"
+                       Height="50"
+                       FontSize="16"
+                       Margin="0,0,0,30" />
 
-                <!-- 快速搜索框 -->
+                <!-- 今日统计卡片 (Issue #1486: 可选统计信息) -->
                 <Border Background="White"
-                       BorderBrush="#E0E0E0"
+                       BorderBrush="{StaticResource BorderBrush}"
                        BorderThickness="1"
                        CornerRadius="5"
-                       Margin="0,0,0,30">
-                    <Grid Margin="15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox Grid.Column="0"
-                                Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
-                                FontSize="16"
-                                BorderThickness="0"
-                                VerticalAlignment="Center">
-                            <TextBox.Style>
-                                <Style TargetType="TextBox">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SearchKeyword}" Value="">
-                                            <Setter Property="Background">
-                                                <Setter.Value>
-                                                    <VisualBrush Stretch="None" AlignmentX="Left">
-                                                        <VisualBrush.Visual>
-                                                            <TextBlock Text="快速查找患者（姓名/拼音/手机号）"
-                                                                      Foreground="#999"
-                                                                      FontSize="16" />
-                                                        </VisualBrush.Visual>
-                                                    </VisualBrush>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBox.Style>
-                        </TextBox>
-
-                        <Button Grid.Column="1"
-                               Command="{Binding QuickSearchCommand}"
-                               Content="搜索"
-                               Background="#2E86AB"
-                               Foreground="White"
-                               BorderThickness="0"
-                               Padding="20,8"
-                               FontSize="14"
-                               Cursor="Hand"
-                               Margin="10,0,0,0">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                           CornerRadius="5"
-                                           Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#27749A" />
-                                        </Trigger>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Background" Value="#CCC" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- 今日统计卡片 -->
-                <Border Background="White"
-                       BorderBrush="#E0E0E0"
-                       BorderThickness="1"
-                       CornerRadius="5"
-                       Margin="0,0,0,30">
+                       Margin="0,0,0,20">
                     <Grid Margin="20">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -172,9 +47,8 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0"
+                                  Style="{StaticResource H2TextBlock}"
                                   Text="今日统计"
-                                  FontSize="18"
-                                  FontWeight="Bold"
                                   Margin="0,0,0,15" />
 
                         <Grid Grid.Row="1">
@@ -187,11 +61,10 @@
                                 <TextBlock Text="{Binding TodayConsultationCount}"
                                           FontSize="36"
                                           FontWeight="Bold"
-                                          Foreground="#4CAF50"
+                                          Foreground="{StaticResource SuccessBrush}"
                                           HorizontalAlignment="Center" />
                                 <TextBlock Text="今日接诊"
-                                          FontSize="14"
-                                          Foreground="#666"
+                                          Style="{StaticResource CaptionTextBlock}"
                                           HorizontalAlignment="Center"
                                           Margin="0,5,0,0" />
                             </StackPanel>
@@ -200,11 +73,10 @@
                                 <TextBlock Text="{Binding PendingCaseCount}"
                                           FontSize="36"
                                           FontWeight="Bold"
-                                          Foreground="#FF9800"
+                                          Foreground="{StaticResource WarningBrush}"
                                           HorizontalAlignment="Center" />
                                 <TextBlock Text="待完成医案"
-                                          FontSize="14"
-                                          Foreground="#666"
+                                          Style="{StaticResource CaptionTextBlock}"
                                           HorizontalAlignment="Center"
                                           Margin="0,5,0,0" />
                             </StackPanel>
@@ -212,53 +84,9 @@
                     </Grid>
                 </Border>
 
-                <!-- 其他功能折叠区域 -->
-                <Expander Header="其他功能" FontSize="16" FontWeight="Bold" Margin="0,0,0,20">
-                    <Border Background="White"
-                           BorderBrush="#E0E0E0"
-                           BorderThickness="1"
-                           CornerRadius="5"
-                           Margin="0,10,0,0">
-                        <UniformGrid Rows="2" Columns="2" Margin="15">
-                            <Button Command="{Binding NavigateToPatientManagementCommand}"
-                                   Style="{StaticResource SecondaryButtonStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="👥" FontSize="24" HorizontalAlignment="Center" />
-                                    <TextBlock Text="患者管理" HorizontalAlignment="Center" Margin="0,5,0,0" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button Command="{Binding NavigateToPrescriptionQueryCommand}"
-                                   Style="{StaticResource SecondaryButtonStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="💊" FontSize="24" HorizontalAlignment="Center" />
-                                    <TextBlock Text="处方查询" HorizontalAlignment="Center" Margin="0,5,0,0" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button Command="{Binding NavigateToHerbsCommand}"
-                                   Style="{StaticResource SecondaryButtonStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="🌿" FontSize="24" HorizontalAlignment="Center" />
-                                    <TextBlock Text="药材管理" HorizontalAlignment="Center" Margin="0,5,0,0" />
-                                </StackPanel>
-                            </Button>
-
-                            <Button Command="{Binding NavigateToSystemSettingsCommand}"
-                                   Style="{StaticResource SecondaryButtonStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="⚙️" FontSize="24" HorizontalAlignment="Center" />
-                                    <TextBlock Text="系统设置" HorizontalAlignment="Center" Margin="0,5,0,0" />
-                                </StackPanel>
-                            </Button>
-                        </UniformGrid>
-                    </Border>
-                </Expander>
-
                 <!-- 底部提示 -->
-                <TextBlock Text="提示：点击【开始看诊】进入4步流程（患者选择 → 诊断录入 → 处方开具 → 完成医案）"
-                          FontSize="12"
-                          Foreground="#999"
+                <TextBlock Text="提示：点击【开始接诊】选择患者后进入就诊流程"
+                          Style="{StaticResource CaptionTextBlock}"
                           HorizontalAlignment="Center"
                           TextWrapping="Wrap"
                           TextAlignment="Center"
