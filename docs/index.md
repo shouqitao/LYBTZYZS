@@ -35,6 +35,7 @@
 - **[架构总览](architecture/README.md)** - 对齐架构设计原理与导航 ⭐ 核心入口
 - **[Server端架构](architecture/server/README.md)** - 三层架构、8个模块、服务标准 ⭐
 - **[Client端架构](architecture/client/README.md)** - MVVM架构、5层设计、UI标准 ⭐
+  - **[Shell层架构设计](architecture/client/shell-layer-design.md)** - Shell层职责边界、组件结构、交互模式
 - **[共享架构](architecture/shared/README.md)** - 跨端组件、认证系统、技术决策 ⭐
 
 ### 业务架构文档
