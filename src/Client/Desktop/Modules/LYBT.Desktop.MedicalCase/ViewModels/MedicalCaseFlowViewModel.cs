@@ -1,10 +1,11 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
-using Microsoft.Extensions.DependencyInjection;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
-        private readonly IServiceProvider _serviceProvider; // Task #1500 - 用于动态解析Step ViewModel
+        private readonly IContainerProvider _containerProvider;
 
         #endregion
 
@@ -89,6 +90,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _medicalCaseId, value);
         }
 
+        private PatientDto? _currentPatient;
+        /// <summary>
+        /// 当前选择的患者信息（用于传递给子步骤ViewModel）
+        /// </summary>
+        public PatientDto? CurrentPatient
+        {
+            get => _currentPatient;
+            set => SetProperty(ref _currentPatient, value);
+        }
+
         /// <summary>
         /// 是否可以返回上一步
         /// </summary>
@@ -131,13 +142,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             IRegionManager regionManager,
-            IServiceProvider serviceProvider,
+            IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider)); // Task #1500
+            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -243,27 +254,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (CurrentStep == FlowStep.SelectPatient)
                 {
                     // Step 1 → Step 2: 自动创建MedicalCase
-                    Logger.LogInformation("Step 1完成，准备创建MedicalCase");
+                    Logger.LogInformation("Step 1完成，准备创建MedicalCase，患者：{PatientName}", CurrentPatient?.Name);
 
-                    // TODO: Task #1497实现PatientSelectionViewModel后，获取SelectedPatient
-                    // var patientVM = CurrentStepViewModel as PatientSelectionViewModel;
-                    // var selectedPatient = patientVM.SelectedPatient;
+                    if (CurrentPatient == null)
+                    {
+                        Logger.LogError("CurrentPatient为空，无法创建MedicalCase");
+                        await ShowErrorMessageAsync("患者信息丢失，请重新选择患者");
+                        return;
+                    }
 
                     // 创建MedicalCase
-                    var medicalCaseId = await CreateMedicalCaseAsync(Guid.Empty); // TODO: 传入真实PatientId
+                    var medicalCaseId = await CreateMedicalCaseAsync(CurrentPatient.Id);
                     if (medicalCaseId == Guid.Empty)
                     {
-                        Logger.LogError("创建MedicalCase失败");
+                        Logger.LogError("创建MedicalCase失败，PatientId: {PatientId}", CurrentPatient.Id);
                         await ShowErrorMessageAsync("创建医案失败，请重试");
                         return;
                     }
 
                     MedicalCaseId = medicalCaseId;
-                    Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", MedicalCaseId);
-
-                    // TODO: Task #1497实现后，更新患者信息条
-                    // SelectedPatientName = selectedPatient.Name;
-                    // SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+                    Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}, 患者: {PatientName}",
+                        MedicalCaseId, CurrentPatient.Name);
                 }
 
                 // 4. 跳转到下一步
@@ -378,27 +389,78 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 case FlowStep.SelectPatient:
                     Logger.LogInformation("导航到患者选择步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PatientSelectionView");
-                    CurrentStepViewModel = null; // 占位，待Task #1497实现
+                    // Task #1497: 创建PatientSelectionViewModel实例
+                    var patientSelectionViewModel = _containerProvider.Resolve<PatientSelectionViewModel>();
+
+                    // 监听患者选择事件
+                    patientSelectionViewModel.PatientSelected += async (sender, selectedPatient) =>
+                    {
+                        Logger.LogInformation("患者选择事件触发，患者：{PatientName}（ID: {PatientId}）",
+                            selectedPatient.Name, selectedPatient.Id);
+
+                        // 更新CurrentPatient
+                        CurrentPatient = selectedPatient;
+
+                        // 更新患者信息条
+                        SelectedPatientName = selectedPatient.Name;
+                        SelectedPatientInfo = $"{selectedPatient.Gender} | {selectedPatient.Age}岁 | {selectedPatient.PhoneNumber}";
+
+                        // 触发NextStep，自动创建MedicalCase并跳转到Step 2
+                        await ExecuteNextStepAsync();
+                    };
+
+                    CurrentStepViewModel = patientSelectionViewModel;
+                    Logger.LogInformation("PatientSelectionViewModel已创建");
                     break;
 
                 case FlowStep.FillConsultation:
                     Logger.LogInformation("导航到诊断录入步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "ConsultationFormView");
-                    CurrentStepViewModel = null; // 占位，待Task #1498实现
+                    // Task #1498: 创建ConsultationFormViewModel实例（来自LYBT.Desktop.Consultation模块）
+                    // 使用动态解析避免循环引用
+                    var consultationFormViewModelType = Type.GetType("LYBT.Desktop.Consultation.ViewModels.ConsultationFormViewModel, LYBT.Desktop.Consultation");
+                    if (consultationFormViewModelType != null)
+                    {
+                        var consultationFormViewModel = _containerProvider.Resolve(consultationFormViewModelType) as ViewModelBase;
+                        if (consultationFormViewModel != null)
+                        {
+                            // 使用反射设置属性
+                            var currentPatientProperty = consultationFormViewModelType.GetProperty("CurrentPatient");
+                            var medicalCaseIdProperty = consultationFormViewModelType.GetProperty("MedicalCaseId");
+
+                            currentPatientProperty?.SetValue(consultationFormViewModel, CurrentPatient);
+                            medicalCaseIdProperty?.SetValue(consultationFormViewModel, MedicalCaseId);
+
+                            CurrentStepViewModel = consultationFormViewModel;
+                            Logger.LogInformation("ConsultationFormViewModel已创建，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                        }
+                        else
+                        {
+                            Logger.LogError("无法将ConsultationFormViewModel转换为ViewModelBase");
+                            CurrentStepViewModel = null;
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogError("无法加载ConsultationFormViewModel类型");
+                        CurrentStepViewModel = null;
+                    }
                     break;
 
                 case FlowStep.FillPrescription:
                     Logger.LogInformation("导航到处方编辑步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "PrescriptionEditorView");
-                    CurrentStepViewModel = null; // 占位，待Task #1499实现
+                    // Task #1499: 创建PrescriptionEditorViewModel实例
+                    var prescriptionEditorViewModel = _containerProvider.Resolve<PrescriptionEditorViewModel>();
+                    prescriptionEditorViewModel.CurrentPatient = CurrentPatient;
+                    prescriptionEditorViewModel.MedicalCaseId = MedicalCaseId;
+                    CurrentStepViewModel = prescriptionEditorViewModel;
+                    Logger.LogInformation("PrescriptionEditorViewModel已创建，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                     break;
 
                 case FlowStep.CompleteMedicalCase:
                     Logger.LogInformation("导航到完成医案步骤");
 
                     // Task #1500 - 创建CompletionViewModel实例
-                    var completionVM = _serviceProvider.GetRequiredService<CompletionViewModel>();
+                    var completionVM = _containerProvider.Resolve<CompletionViewModel>();
 
                     // 初始化（异步调用，Fire-and-Forget模式）
                     // TODO: 改进为async/await模式以更好地处理异常
