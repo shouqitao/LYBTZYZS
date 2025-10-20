@@ -3,18 +3,21 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
+using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - Epic #1494 极简化版本
-    /// 突出【开始看诊】核心动作，折叠次要功能
+    /// 主页视图模型 - Issue #1486 Dashboard实现
+    /// 核心功能："开始接诊"按钮（打开PatientSelectionDialog）+ 今日统计
     /// </summary>
     public class HomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 
         private readonly IRegionManager _regionManager;
+        private readonly IDialogService _dialogService;
 
         #endregion 依赖服务
 
@@ -61,12 +64,14 @@ namespace LYBT.Desktop.Shell.ViewModels
         public HomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IDialogService dialogService)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
-            // 初始化核心命令
+            // Issue #1486: 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
             QuickSearchCommand = new DelegateCommand(ExecuteQuickSearch, CanExecuteQuickSearch)
                 .ObservesProperty(() => SearchKeyword);
@@ -86,16 +91,44 @@ namespace LYBT.Desktop.Shell.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 开始看诊 - 导航到医案流程视图（Task #1495核心功能）
+        /// 开始看诊 - Issue #1486核心功能
+        /// 打开PatientSelectionDialog，选择患者后导航到医案流程视图
         /// </summary>
         private void ExecuteStartConsultation()
         {
             try
             {
-                Logger.LogInformation("开始看诊，导航到医案流程");
-                // Epic #1494: 导航到MedicalCaseFlowView，从Step 1（患者选择）开始
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView",
-                    new NavigationParameters { { "StartStep", 1 } });
+                Logger.LogInformation("开始看诊，打开患者选择对话框");
+
+                // Issue #1486: 使用IDialogService打开PatientSelectionDialog
+                var parameters = new DialogParameters();
+                _dialogService.ShowDialog("PatientSelectionDialog", parameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        // 获取选中的患者
+                        var selectedPatient = result.Parameters.GetValue<PatientDto>("SelectedPatient");
+                        if (selectedPatient != null)
+                        {
+                            Logger.LogInformation("患者已选择：{PatientName}，导航到医案流程", selectedPatient.Name);
+
+                            // 导航到医案流程视图，传递患者信息
+                            var navParams = new NavigationParameters
+                            {
+                                { "Patient", selectedPatient }
+                            };
+                            _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navParams);
+                        }
+                        else
+                        {
+                            Logger.LogWarning("PatientSelectionDialog返回OK但未提供患者信息");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("患者选择已取消");
+                    }
+                });
             }
             catch (Exception ex)
             {
