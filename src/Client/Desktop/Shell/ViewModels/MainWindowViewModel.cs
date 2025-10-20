@@ -162,6 +162,24 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>重试 API 健康检查命令</summary>
     public DelegateCommand RetryHealthCheckCommand { get; set; } = null!;
 
+    /// <summary>导航到首页命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToHomeCommand { get; set; } = null!;
+
+    /// <summary>导航到就诊管理命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToConsultationCommand { get; set; } = null!;
+
+    /// <summary>导航到患者管理命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToPatientsCommand { get; set; } = null!;
+
+    /// <summary>导航到处方管理命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToPrescriptionsCommand { get; set; } = null!;
+
+    /// <summary>导航到药材管理命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToHerbsCommand { get; set; } = null!;
+
+    /// <summary>导航到验方管理命令 (Issue #1485)</summary>
+    public DelegateCommand NavigateToFormulaCommand { get; set; } = null!;
+
     #endregion 命令属性
 
     #region 全局命令属性(Phase 3: CompositeCommand)
@@ -219,6 +237,20 @@ public class MainWindowViewModel : UnifiedViewModelBase
             .ObservesProperty(() => IsLoggedIn);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
         RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
+
+        // Issue #1485: 初始化左侧菜单导航命令
+        NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome)
+            .ObservesProperty(() => IsLoggedIn);
+        NavigateToConsultationCommand = new DelegateCommand(ExecuteNavigateToConsultation)
+            .ObservesProperty(() => IsLoggedIn);
+        NavigateToPatientsCommand = new DelegateCommand(ExecuteNavigateToPatients)
+            .ObservesProperty(() => IsLoggedIn);
+        NavigateToPrescriptionsCommand = new DelegateCommand(ExecuteNavigateToPrescriptions)
+            .ObservesProperty(() => IsLoggedIn);
+        NavigateToHerbsCommand = new DelegateCommand(async () => await ExecuteNavigateToHerbsAsync().ConfigureAwait(false))
+            .ObservesProperty(() => IsLoggedIn);
+        NavigateToFormulaCommand = new DelegateCommand(async () => await ExecuteNavigateToFormulaAsync().ConfigureAwait(false))
+            .ObservesProperty(() => IsLoggedIn);
 
         // Phase 3: 初始化全局命令键盘绑定
         // 这些命令已在ApplicationCommands中初始化，这里只需要暴露给View使用
@@ -817,6 +849,114 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     #endregion UltraThink Phase H: 键盘快捷键功能实现
+
+    #region Issue #1485: 左侧菜单导航功能实现
+
+    /// <summary>
+    /// 导航到首页
+    /// </summary>
+    private void ExecuteNavigateToHome()
+    {
+        try
+        {
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "HomeView");
+            Logger.LogDebug("导航到首页");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到首页失败");
+            _ = ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 导航到就诊管理
+    /// </summary>
+    private void ExecuteNavigateToConsultation()
+    {
+        try
+        {
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseFlowView");
+            Logger.LogDebug("导航到就诊管理");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到就诊管理失败");
+            _ = ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 导航到患者管理
+    /// </summary>
+    private void ExecuteNavigateToPatients()
+    {
+        try
+        {
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView");
+            Logger.LogDebug("导航到患者管理");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到患者管理失败");
+            _ = ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 导航到处方管理
+    /// </summary>
+    private void ExecuteNavigateToPrescriptions()
+    {
+        try
+        {
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "PrescriptionManagementView");
+            Logger.LogDebug("导航到处方管理");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到处方管理失败");
+            _ = ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 导航到药材管理（按需加载模块）
+    /// </summary>
+    private async Task ExecuteNavigateToHerbsAsync()
+    {
+        try
+        {
+            await LoadHerbsManagementAsync();
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "HerbManagementView");
+            Logger.LogDebug("导航到药材管理");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到药材管理失败");
+            await ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 导航到验方管理（按需加载模块）
+    /// </summary>
+    private async Task ExecuteNavigateToFormulaAsync()
+    {
+        try
+        {
+            await LoadFormulaManagementAsync();
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "FormulaManagementView");
+            Logger.LogDebug("导航到验方管理");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "导航到验方管理失败");
+            await ShowErrorMessageAsync($"导航失败: {ex.Message}");
+        }
+    }
+
+    #endregion Issue #1485: 左侧菜单导航功能实现
 
     #region 私有转换方法
 

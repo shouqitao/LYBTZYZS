@@ -103,9 +103,77 @@
                 </Grid>
             </Border>
 
-            <!-- 主内容区域 -->
+            <!-- 主内容区域 - 2列布局：左侧菜单 + 内容区 (Issue #1485) -->
             <Grid Grid.Row="1" Background="{StaticResource SurfaceBrush}">
-                <Border Background="White" Margin="20" CornerRadius="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200" />  <!-- 左侧菜单 -->
+                    <ColumnDefinition Width="*" />    <!-- 内容区域 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧导航菜单 -->
+                <Border Grid.Column="0"
+                        Background="White"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,1,0">
+                    <StackPanel Margin="0,20,0,0">
+                        <!-- 首页 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="首页"
+                                Command="{Binding NavigateToHomeCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+
+                        <!-- 就诊管理 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="就诊管理"
+                                Command="{Binding NavigateToConsultationCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+
+                        <!-- 患者管理 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="患者管理"
+                                Command="{Binding NavigateToPatientsCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+
+                        <!-- 处方管理 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="处方管理"
+                                Command="{Binding NavigateToPrescriptionsCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+
+                        <!-- 药材管理 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="药材管理"
+                                Command="{Binding NavigateToHerbsCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+
+                        <!-- 验方管理 -->
+                        <Button Style="{StaticResource SecondaryButton}"
+                                Content="验方管理"
+                                Command="{Binding NavigateToFormulaCommand}"
+                                Margin="10,0,10,10"
+                                Height="40"
+                                HorizontalContentAlignment="Left"
+                                Padding="20,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 右侧内容区域 -->
+                <Border Grid.Column="1" Background="White" Margin="20" CornerRadius="8">
                     <Border.Effect>
                         <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.2" BlurRadius="5" />
                     </Border.Effect>
