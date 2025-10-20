@@ -81,4 +81,8 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Business Module Dependencies">
+    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
+  </ItemGroup>
+
 </Project>
