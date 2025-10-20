@@ -114,11 +114,24 @@ namespace LYBT.Module.Prescriptions.Services
         /// <summary>
         /// 创建处方 - 仅在独立创建时使用
         /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
+        /// Issue #1423: RULE-2 - 一诊断一处方约束
         /// </summary>
         public async Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto)
         {
             try
             {
+                // RULE-2: 检查该诊断是否已有处方（一诊断一处方约束）
+                // 注意：Consultation使用共享主键（ConsultationId == MedicalCaseId）
+                if (dto.ConsultationId.HasValue)
+                {
+                    var existingPrescriptions = await _repository.GetByMedicalCaseIdAsync(dto.ConsultationId.Value);
+                    if (existingPrescriptions.Any())
+                    {
+                        _logger.LogWarning("创建处方失败：诊断 {ConsultationId} 已有处方", dto.ConsultationId.Value);
+                        return ServiceResult<PrescriptionDto>.Failure("该诊断已有处方，不可重复创建");
+                    }
+                }
+
                 var entity = _mapper.Map<PrescriptionEntity>(dto);
 
                 // 注意：处方总价在DTO层计算，实体层不存储
