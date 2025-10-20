@@ -458,8 +458,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.CompleteMedicalCase:
                     Logger.LogInformation("导航到完成医案步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "CompletionView");
-                    CurrentStepViewModel = null; // 占位，待Task #1500实现
+
+                    // Task #1500 - 创建CompletionViewModel实例
+                    var completionVM = _containerProvider.Resolve<CompletionViewModel>();
+
+                    // 初始化（异步调用，Fire-and-Forget模式）
+                    // TODO: 改进为async/await模式以更好地处理异常
+                    _ = completionVM.InitializeAsync(MedicalCaseId);
+
+                    CurrentStepViewModel = completionVM;
                     break;
 
                 default:
