@@ -329,46 +329,20 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             try
             {
-                string targetView = role switch
-                {
-                    UserRole.Admin => "AdminWorkstationView",
-                    UserRole.Doctor => "ClinicalWorkstationView",
-                    _ => "ClinicalWorkstationView" // 默认导航到诊疗工作台
-                };
-
-                Logger.LogInformation($"根据角色 {role} 导航到 {targetView}");
-
-                // Issue #877 修复步骤2: 先发布登录成功事件，让 Shell 更新 UI 状态
-                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发 Shell UI 更新");
+                // Issue #1514 Phase 1: 架构重构 - LoginViewModel只负责认证，不负责导航
+                // 导航职责由MainWindowViewModel负责（订阅LoginSuccessEvent后处理）
+                
+                Logger.LogInformation($"用户 {user.UserName} 认证成功，角色：{role}");
+                
+                // 发布登录成功事件，让 MainWindowViewModel 处理后续的模块加载和导航
+                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发导航流程");
                 EventAggregator.GetEvent<LoginSuccessEvent>().Publish(user);
-
-                // Issue #877 修复步骤3: 延迟导航，等待 UI 绑定生效
-                // 延迟 100ms 确保 MainWindow.IsLoggedIn 更新后，ContentRegion 已变为可见
-                _ = Task.Delay(100).ContinueWith(_ =>
-                {
-                    Logger.LogInformation("⏰ 延迟完成，开始导航到 {TargetView}", targetView);
-
-                    // 在 UI 线程上执行导航
-                    System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        RegionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
-                        {
-                            if (navigationResult.Result != true)
-                            {
-                                Logger.LogError("❌ 导航失败: {Error}", navigationResult.Error?.Message);
-                                ErrorMessage = $"导航失败：{navigationResult.Error?.Message}";
-                            }
-                            else
-                            {
-                                Logger.LogInformation("✅ 导航成功到 {TargetView}", targetView);
-                            }
-                        });
-                    });
-                });
+                
+                Logger.LogInformation("✅ 登录流程完成，等待导航");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到工作台时发生错误");
+                Logger.LogError(ex, "发布登录成功事件时发生错误");
                 ErrorMessage = "导航失败：" + ex.Message;
             }
         }

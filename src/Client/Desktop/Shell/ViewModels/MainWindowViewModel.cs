@@ -562,8 +562,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
         else
         {
-            // 其他角色默认为医生工作台
-            workbenchView = "ClinicalWorkstationView";
+            // Issue #1514 Phase 1: 导航到MedicalCase模块的ClinicalHomeView（医生主页）
+            workbenchView = "ClinicalHomeView";
             roleDisplay = "医生";
         }
 
@@ -681,12 +681,21 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 加载诊疗工作台模块
+    /// Issue #1514 Phase 1: 医生主页已迁移到MedicalCaseModule，需要加载该模块
     /// </summary>
     private async Task LoadClinicalWorkstationAsync()
     {
-        // 加载诊疗工作台及其依赖
-        await _moduleLoadingService.LoadModuleAsync("ClinicalWorkstationModule");
-        Logger.LogDebug("诊疗工作台模块加载完成");
+        // Issue #1514 Phase 1: 加载MedicalCaseModule（包含ClinicalHomeView）
+        await _moduleLoadingService.LoadModulesAsync(new[]
+        {
+            "MedicalCaseModule",        // 医案管理模块（包含ClinicalHomeView医生主页）
+            "ConsultationModule",       // 诊断模块
+            "PrescriptionsModule",      // 处方模块
+            "HerbsModule",              // 药材模块
+            "FormulaModule",            // 方剂模块
+            "ClinicalWorkstationModule" // 诊疗工作台模块（保留以兼容旧架构）
+        });
+        Logger.LogDebug("诊疗工作台及相关模块加载完成");
     }
 
     /// <summary>

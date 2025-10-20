@@ -98,7 +98,9 @@ public partial class App : PrismApplication
         // Issue #1239 修复: 显式注册 ViewModels（Prism 8.x 要求）
         // ViewModelLocationProvider 只是映射关系，ViewModel 本身需要在容器中注册
         containerRegistry.Register<MainWindowViewModel>();  // Transient lifetime for ViewModels
-        containerRegistry.Register<HomeViewModel>();
+        
+        // Issue #1514 Phase 1: HomeView已迁移到MedicalCase模块，重命名为ClinicalHomeView
+        // HomeViewModel和HomeView的注册已移至MedicalCaseModule.cs
     }
 
     /// <summary>
@@ -113,7 +115,7 @@ public partial class App : PrismApplication
         // Prism 8.x最佳实践:使用类型映射避免Container.Resolve
         // 通过泛型重载让框架自动解析依赖,而不是手动调用容器
         ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
-        ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
+        // Issue #1514 Phase 1: HomeView已迁移到MedicalCase模块，ViewModel映射已移至该模块
 
         // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
     }

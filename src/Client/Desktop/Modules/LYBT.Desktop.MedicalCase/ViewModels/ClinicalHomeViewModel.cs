@@ -1,16 +1,17 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Shell.ViewModels
+namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - Epic #1494 极简化版本
+    /// 医生角色主页视图模型 - Epic #1494 极简化版本
     /// 突出【开始看诊】核心动作，折叠次要功能
+    /// Issue #1514 Phase 1: 从Shell/HomeViewModel迁移
     /// </summary>
-    public class HomeViewModel : UnifiedViewModelBase
+    public class ClinicalHomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 
@@ -58,7 +59,7 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region 构造函数
 
-        public HomeViewModel(
+        public ClinicalHomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)

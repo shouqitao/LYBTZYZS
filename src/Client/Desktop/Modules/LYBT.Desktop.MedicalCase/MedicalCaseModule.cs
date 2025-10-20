@@ -2,6 +2,7 @@
 using LYBT.Desktop.MedicalCase.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.MedicalCase
 {
@@ -15,7 +16,8 @@ namespace LYBT.Desktop.MedicalCase
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // 模块初始化
+            // Issue #1514 Phase 1: 配置ClinicalHomeView的ViewModel映射
+            ViewModelLocationProvider.Register<Views.ClinicalHomeView, ViewModels.ClinicalHomeViewModel>();
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
@@ -29,14 +31,21 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入
+            containerRegistry.Register<ViewModels.ClinicalHomeViewModel>();          // Issue #1514 Phase 1: 医生主页
+            containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();      // Issue #1463: 病案录入
+            containerRegistry.Register<ViewModels.PatientSelectionViewModel>();      // Task #1497: 患者选择
+            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();      // Task #1498: 诊断表单
+            containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();       // Task #1496: 医案流程
             // TODO: 修复编译错误后再启用
             // containerRegistry.Register<MedicalCaseManagementViewModel>();
             // containerRegistry.Register<MedicalCaseListViewModel>();
 
             // 注册视图用于导航 - 需要对应视图文件存在
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图
+            containerRegistry.RegisterForNavigation<Views.ClinicalHomeView>();       // Issue #1514 Phase 1: 医生主页视图
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();   // Issue #1463: 病案录入视图
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();    // Epic #1494 - Task #1496: 医案流程主视图
+            containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();   // Task #1497: 患者选择视图
+            containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();   // Task #1498: 诊断表单视图
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseListView>();
         }
