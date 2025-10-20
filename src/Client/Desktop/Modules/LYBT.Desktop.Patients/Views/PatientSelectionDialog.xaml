@@ -92,7 +92,7 @@
                           GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column"
                           Background="White"
-                          AlternatingRowBackground="{StaticResource AlternateSurfaceBrush}"
+                          AlternatingRowBackground="{StaticResource AlternateRowBrush}"
                           RowHeight="40"
                           FontSize="14"
                           VirtualizingPanel.IsVirtualizing="True"
