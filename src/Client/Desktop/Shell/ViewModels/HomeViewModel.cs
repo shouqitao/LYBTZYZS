@@ -3,21 +3,19 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs;
-using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
     /// 主页视图模型 - Issue #1486 Dashboard实现
-    /// 核心功能："开始接诊"按钮（打开PatientSelectionDialog）+ 今日统计
+    /// 核心功能："开始接诊"按钮（导航到MedicalCaseFlowView） + 今日统计
+    /// Epic #1494: 直接导航到医案流程视图，而非打开对话框
     /// </summary>
     public class HomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 
         private readonly IRegionManager _regionManager;
-        private readonly IDialogService _dialogService;
 
         #endregion 依赖服务
 
@@ -64,12 +62,10 @@ namespace LYBT.Desktop.Shell.ViewModels
         public HomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IDialogService dialogService)
+            ILoggerFactory loggerFactory)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // Issue #1486: 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
@@ -91,44 +87,18 @@ namespace LYBT.Desktop.Shell.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 开始看诊 - Issue #1486核心功能
-        /// 打开PatientSelectionDialog，选择患者后导航到医案流程视图
+        /// 开始看诊 - Epic #1494核心功能
+        /// 直接导航到医案流程视图（MedicalCaseFlowView），自动显示Step 1患者选择
         /// </summary>
         private void ExecuteStartConsultation()
         {
             try
             {
-                Logger.LogInformation("开始看诊，打开患者选择对话框");
+                Logger.LogInformation("开始看诊，导航到医案流程视图");
 
-                // Issue #1486: 使用IDialogService打开PatientSelectionDialog
-                var parameters = new DialogParameters();
-                _dialogService.ShowDialog("PatientSelectionDialog", parameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        // 获取选中的患者
-                        var selectedPatient = result.Parameters.GetValue<PatientDto>("SelectedPatient");
-                        if (selectedPatient != null)
-                        {
-                            Logger.LogInformation("患者已选择：{PatientName}，导航到医案流程", selectedPatient.Name);
-
-                            // 导航到医案流程视图，传递患者信息
-                            var navParams = new NavigationParameters
-                            {
-                                { "Patient", selectedPatient }
-                            };
-                            _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navParams);
-                        }
-                        else
-                        {
-                            Logger.LogWarning("PatientSelectionDialog返回OK但未提供患者信息");
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInformation("患者选择已取消");
-                    }
-                });
+                // Epic #1494: 直接导航到医案流程视图（包含Step 1-4完整流程）
+                // MedicalCaseFlowViewModel会自动显示Step 1（患者选择）
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView");
             }
             catch (Exception ex)
             {
