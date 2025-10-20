@@ -415,8 +415,35 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 case FlowStep.FillConsultation:
                     Logger.LogInformation("导航到诊断录入步骤");
-                    // _regionManager.RequestNavigate("MedicalCaseStepRegion", "ConsultationFormView");
-                    CurrentStepViewModel = null; // 占位，待Task #1498实现
+                    // Task #1498: 创建ConsultationFormViewModel实例（来自LYBT.Desktop.Consultation模块）
+                    // 使用动态解析避免循环引用
+                    var consultationFormViewModelType = Type.GetType("LYBT.Desktop.Consultation.ViewModels.ConsultationFormViewModel, LYBT.Desktop.Consultation");
+                    if (consultationFormViewModelType != null)
+                    {
+                        var consultationFormViewModel = _containerProvider.Resolve(consultationFormViewModelType) as ViewModelBase;
+                        if (consultationFormViewModel != null)
+                        {
+                            // 使用反射设置属性
+                            var currentPatientProperty = consultationFormViewModelType.GetProperty("CurrentPatient");
+                            var medicalCaseIdProperty = consultationFormViewModelType.GetProperty("MedicalCaseId");
+
+                            currentPatientProperty?.SetValue(consultationFormViewModel, CurrentPatient);
+                            medicalCaseIdProperty?.SetValue(consultationFormViewModel, MedicalCaseId);
+
+                            CurrentStepViewModel = consultationFormViewModel;
+                            Logger.LogInformation("ConsultationFormViewModel已创建，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                        }
+                        else
+                        {
+                            Logger.LogError("无法将ConsultationFormViewModel转换为ViewModelBase");
+                            CurrentStepViewModel = null;
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogError("无法加载ConsultationFormViewModel类型");
+                        CurrentStepViewModel = null;
+                    }
                     break;
 
                 case FlowStep.FillPrescription:
