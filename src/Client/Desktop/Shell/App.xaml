@@ -9,9 +9,14 @@
     mc:Ignorable="d">
     <Application.Resources>
         <ResourceDictionary>
-            <!--  合并统一设计系统资源  -->
+            <!--  合并全局样式系统资源 (Issue #1484)  -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/UnifiedDesignSystem.xaml" />
+                <!--  全局样式系统 (新)  -->
+                <ResourceDictionary Source="Styles/Colors.xaml" />
+                <ResourceDictionary Source="Styles/Typography.xaml" />
+                <ResourceDictionary Source="Styles/Controls.xaml" />
+
+                <!--  保留旧样式以兼容现有代码  -->
                 <ResourceDictionary Source="Styles/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
