@@ -54,11 +54,42 @@
 
         <!-- 标题栏 -->
         <Border Grid.Row="0" Background="#34495E" CornerRadius="5,5,0,0" Padding="15,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="处方开具" FontSize="20" FontWeight="Bold" Foreground="White" />
-                <TextBlock Text="{Binding PatientInfo}" FontSize="14" Foreground="#BDC3C7"
-                          Margin="20,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：标题和患者信息 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="处方开具" FontSize="20" FontWeight="Bold" Foreground="White" />
+                    <TextBlock Text="{Binding PatientInfo}" FontSize="14" Foreground="#BDC3C7"
+                              Margin="20,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 右侧：处方编号（Issue #1551） -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="处方编号：" FontSize="14" Foreground="#BDC3C7" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PrescriptionNumber}" FontSize="14" FontWeight="SemiBold" Foreground="#3498DB"
+                              VerticalAlignment="Center" Margin="5,0,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PrescriptionNumber}" Value="{x:Null}">
+                                        <Setter Property="Text" Value="（未保存）" />
+                                        <Setter Property="Foreground" Value="#95A5A6" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding PrescriptionNumber}" Value="">
+                                        <Setter Property="Text" Value="（未保存）" />
+                                        <Setter Property="Foreground" Value="#95A5A6" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- 基本信息区 -->

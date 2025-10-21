@@ -37,7 +37,12 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             var medicalCaseRepositoryMock = CreateMock<LYBT.Module.MedicalCase.Interfaces.IMedicalCaseRepository>();
             var patientRepositoryMock = CreateMock<LYBT.Module.Patients.Interfaces.IPatientRepository>();
             var consultationRepositoryMock = CreateMock<LYBT.Module.Consultation.Interfaces.IConsultationRepository>();
+            var numberServiceMock = CreateMock<IPrescriptionNumberService>();
             _loggerMock = CreateLoggerMock<PrescriptionService>();
+
+            // Issue #1551: Mock编号生成服务
+            numberServiceMock.Setup(x => x.GenerateNumberAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync((DateTime date) => $"RX-{date:yyyyMMdd}-0001");
 
             _prescriptionService = new PrescriptionService(
                 _repositoryMock.Object,
@@ -45,6 +50,7 @@ namespace LYBT.Module.Prescriptions.Tests.Services
                 medicalCaseRepositoryMock.Object,
                 patientRepositoryMock.Object,
                 consultationRepositoryMock.Object,
+                numberServiceMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }

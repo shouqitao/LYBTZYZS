@@ -59,7 +59,7 @@
 
 | 组件 | 职责 | 位置 |
 |-----|------|------|
-| `PrescriptionDataManager.cs` | 数据管理（Items、ItemRows转换） | ViewModels/Components/ |
+| `PrescriptionDataManager.cs` | 数据管理（Items、ItemRows转换、**PrescriptionNumber管理 - Issue #1551**） | ViewModels/Components/ |
 | `PrescriptionCalculator.cs` | 价格计算逻辑 | ViewModels/Components/ |
 | `PrescriptionValidator.cs` | 验证逻辑 | ViewModels/Components/ |
 | `PrescriptionCommandHandler.cs` | 命令处理（添加/删除药材） | ViewModels/Components/ |

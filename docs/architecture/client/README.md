@@ -297,7 +297,7 @@ Modules/Prescriptions/
 │   ├── PrescriptionsMainViewModel.cs
 │   └── FormulaTemplateSelectionDialogViewModel.cs
 └── Components/                         # 组件化设计（PrescriptionViewModel依赖）
-    ├── PrescriptionDataManager.cs      # 数据管理组件
+    ├── PrescriptionDataManager.cs      # 数据管理组件（Issue #1551: 添加PrescriptionNumber管理）
     ├── PrescriptionCommandHandler.cs   # 命令处理组件
     └── FormulaImportService.cs         # 验方导入服务
 ```

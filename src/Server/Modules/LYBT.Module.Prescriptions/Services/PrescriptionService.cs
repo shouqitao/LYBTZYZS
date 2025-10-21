@@ -26,6 +26,7 @@ namespace LYBT.Module.Prescriptions.Services
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IPatientRepository _patientRepository;
         private readonly IConsultationRepository _consultationRepository;
+        private readonly IPrescriptionNumberService _numberService;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
@@ -35,6 +36,7 @@ namespace LYBT.Module.Prescriptions.Services
             IMedicalCaseRepository medicalCaseRepository,
             IPatientRepository patientRepository,
             IConsultationRepository consultationRepository,
+            IPrescriptionNumberService numberService,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
@@ -43,6 +45,7 @@ namespace LYBT.Module.Prescriptions.Services
             _medicalCaseRepository = medicalCaseRepository;
             _patientRepository = patientRepository;
             _consultationRepository = consultationRepository;
+            _numberService = numberService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -133,6 +136,9 @@ namespace LYBT.Module.Prescriptions.Services
                 }
 
                 var entity = _mapper.Map<PrescriptionEntity>(dto);
+
+                // Issue #1551: 自动生成处方编号
+                entity.PrescriptionNumber = await _numberService.GenerateNumberAsync(DateTime.UtcNow);
 
                 // 注意：处方总价在DTO层计算，实体层不存储
 

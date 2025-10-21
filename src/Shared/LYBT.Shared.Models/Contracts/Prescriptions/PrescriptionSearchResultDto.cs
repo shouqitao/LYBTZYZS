@@ -21,6 +21,14 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
             set => Id = value;
         }
 
+        /// <summary>
+        /// 处方编号（服务端自动生成，格式：RX-YYYYMMDD-NNNN）
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        [DisplayName("处方编号")]
+        [StringLength(20)]
+        public string? PrescriptionNumber { get; set; }
+
         /// <summary>处方创建日期</summary>
         [DisplayName("创建日期")]
         public DateTime CreatedAt { get; set; }

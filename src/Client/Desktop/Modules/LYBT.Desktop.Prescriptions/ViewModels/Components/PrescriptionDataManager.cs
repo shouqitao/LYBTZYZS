@@ -50,6 +50,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public PrescriptionDto? CurrentPrescription { get; private set; }
         public bool IsNewPrescription { get; private set; } = true;
         public string PrescriptionNo { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 处方编号（服务端自动生成，格式：RX-YYYYMMDD-NNNN）
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        public string? PrescriptionNumber { get; private set; }
+
         public ObservableCollection<PrescriptionItemViewModel> PrescriptionItems { get; } = new();
         public PrescriptionItemViewModel? SelectedItem { get; set; }
         public int DosageCount { get; set; } = 7;
@@ -126,6 +133,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     MedicalAdvice = existingPrescription.Advice ?? string.Empty;
                     Remark = existingPrescription.Remark ?? string.Empty;
                     Discount = existingPrescription.Discount;
+
+                    // Issue #1551: 加载服务端生成的处方编号
+                    PrescriptionNumber = existingPrescription.PrescriptionNumber;
 
                     // 加载处方项
                     PrescriptionItems.Clear();
@@ -216,8 +226,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                 var result = await _prescriptionRepository.CreateAsync(prescriptionCreateDto);
                 if (result != null)
                 {
+                    // Issue #1551: 保存后更新服务端生成的处方编号
+                    PrescriptionNumber = result.PrescriptionNumber;
+                    PrescriptionId = result.Id;
+                    CurrentPrescription = result;
+                    IsNewPrescription = false;
+
                     HasChanges = false;
-                    _logger.LogInformation("处方数据保存成功");
+                    _logger.LogInformation("处方数据保存成功，处方编号: {PrescriptionNumber}", PrescriptionNumber);
                     return true;
                 }
 

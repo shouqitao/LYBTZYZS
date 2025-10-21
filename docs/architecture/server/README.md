@@ -163,11 +163,11 @@ src/Server/
 - **关键特性**：四诊合参、中医诊断、治法方案
 
 #### 6. 处方管理模块 (Prescriptions Module)
-**职责**：处方创建管理、药材配伍、价格计算
-- **服务层**：PrescriptionService、PrescriptionCalculationService、PrescriptionValidationService
+**职责**：处方创建管理、药材配伍、价格计算、处方编号生成
+- **服务层**：PrescriptionService、PrescriptionCalculationService、PrescriptionValidationService、**PrescriptionNumberService (Issue #1551)**
 - **数据层**：PrescriptionRepository、PrescriptionItemRepository
 - **核心实体**：Prescription、PrescriptionItem、PrescriptionStatus
-- **关键特性**：四种录入方式、配伍检查、自动计价
+- **关键特性**：四种录入方式、配伍检查、自动计价、**处方自动编号（RX-YYYYMMDD-NNNN）**
 
 #### 7. 药材管理模块 (Herbs Module)
 **职责**：药材信息管理、拼音检索、价格管理

@@ -80,7 +80,27 @@
                   AutoGenerateColumns="False" CanUserAddRows="False"
                   IsReadOnly="True" Margin="10">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="处方号" Binding="{Binding PrescriptionNo}" Width="150" />
+                <!-- Issue #1551: 处方自动编号功能 - 显示服务端生成的正式编号 -->
+                <DataGridTextColumn Header="处方编号" Binding="{Binding PrescriptionNumber}" Width="150">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="#2C3E50" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PrescriptionNumber}" Value="{x:Null}">
+                                    <Setter Property="Text" Value="（未保存）" />
+                                    <Setter Property="Foreground" Value="#95A5A6" />
+                                    <Setter Property="FontWeight" Value="Normal" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PrescriptionNumber}" Value="">
+                                    <Setter Property="Text" Value="（未保存）" />
+                                    <Setter Property="Foreground" Value="#95A5A6" />
+                                    <Setter Property="FontWeight" Value="Normal" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="患者姓名" Binding="{Binding PatientName}" Width="100" />
                 <DataGridTextColumn Header="处方日期" Binding="{Binding PrescriptionDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="100" />
                 <DataGridTextColumn Header="医生" Binding="{Binding DoctorName}" Width="100" />

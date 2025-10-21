@@ -23,6 +23,15 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
 
+        /// <summary>
+        /// 处方编号（格式：RX-YYYYMMDD-NNNN，例如：RX-20251021-0001）
+        /// 可为空以兼容旧数据，新建处方时自动生成
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        [StringLength(20)]
+        [DisplayName("处方编号")]
+        public string? PrescriptionNumber { get; set; }
+
         // PatientId和UserId通过MedicalCase获取，保留以保持兼容性
         /// <summary>患者ID（冗余，通过MedicalCase获取）</summary>
         [DisplayName("患者ID")]
