@@ -274,7 +274,8 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<ConsultationModule>(InitializationMode.OnDemand);
 
         // 处方管理 - 最复杂依赖
-        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);
+        // Issue #1564: 改为WhenAvailable，因为MedicalCaseModule（WhenAvailable）依赖此模块（医案流程Step 3需要）
+        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.WhenAvailable);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }
