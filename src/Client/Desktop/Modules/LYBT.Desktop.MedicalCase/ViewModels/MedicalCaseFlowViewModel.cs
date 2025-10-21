@@ -412,15 +412,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
 
                 // Phase 2: 验证SessionManager和CurrentUser
-                if (SessionManager?.CurrentUser == null)
+                if (SessionManager == null)
                 {
-                    Logger.LogError("SessionManager.CurrentUser为空，无法创建MedicalCase");
+                    Logger.LogError("❌ SessionManager为null，无法创建MedicalCase");
+                    if (UserNotificationService != null)
+                    {
+                        _ = UserNotificationService.ShowErrorAsync("会话管理器未初始化，无法创建医案");
+                    }
+                    return Guid.Empty;
+                }
+
+                if (SessionManager.CurrentUser == null)
+                {
+                    Logger.LogError("❌ SessionManager.CurrentUser为null，无法创建MedicalCase");
                     if (UserNotificationService != null)
                     {
                         _ = UserNotificationService.ShowErrorAsync("用户信息丢失，无法创建医案");
                     }
                     return Guid.Empty;
                 }
+
+                Logger.LogInformation("✅ SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
+                    SessionManager.CurrentUser.Username, SessionManager.CurrentUser.Id);
 
                 // Phase 2: 构建MedicalCaseCreateDto
                 var createDto = new MedicalCaseCreateDto
@@ -431,18 +444,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Remark = null // 初始创建无备注
                 };
 
+                Logger.LogInformation("📝 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
+                    createDto.PatientId, createDto.DoctorId, createDto.Status);
+
                 // Phase 2: 调用真实API创建MedicalCase
                 var createdDto = await _medicalCaseRepository.CreateAsync(createDto);
 
-                Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
+                Logger.LogInformation("✅ MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
                 return createdDto.Id;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "创建MedicalCase失败，PatientId: {PatientId}", patientId);
+                Logger.LogError(ex, "❌ 创建MedicalCase失败，PatientId: {PatientId}，异常类型: {ExceptionType}，消息: {Message}",
+                    patientId, ex.GetType().Name, ex.Message);
+
+                // 记录详细堆栈
+                Logger.LogError("堆栈跟踪：{StackTrace}", ex.StackTrace);
+
                 if (UserNotificationService != null)
                 {
-                    _ = UserNotificationService.ShowErrorAsync($"创建医案失败：{ex.Message}");
+                    var detailedMessage = $"创建医案失败：{ex.Message}\n\n异常类型：{ex.GetType().Name}";
+                    _ = UserNotificationService.ShowErrorAsync(detailedMessage);
                 }
                 return Guid.Empty;
             }
