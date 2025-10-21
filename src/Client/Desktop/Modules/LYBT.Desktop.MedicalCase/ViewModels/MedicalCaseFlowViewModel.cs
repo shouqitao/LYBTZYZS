@@ -533,6 +533,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("接收到StartStep参数：{StartStep}", startStep);
                 NavigateToStep((FlowStep)startStep);
             }
+            else
+            {
+                // 默认情况：导航到当前步骤（初始化时为 SelectPatient）
+                // 修复 Issue #1564 Bug：构造函数只设置 CurrentStep，但没有触发 Region 导航
+                Logger.LogInformation("执行默认导航到当前步骤：{CurrentStep}", CurrentStep);
+                NavigateToStep(CurrentStep);
+            }
 
             var searchKeyword = navigationContext.Parameters.GetValue<string>("SearchKeyword");
             if (!string.IsNullOrEmpty(searchKeyword))
