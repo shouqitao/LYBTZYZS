@@ -253,13 +253,14 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
                 // Issue #1454: 修正DiagnosisView → ConsultationManagementView
                 // Issue #1459: 更新"Diagnosis"导航到ConsultationEntryView (诊疗录入)
                 // Issue #1463: 激进重构 - 导航到MedicalCaseEntryView (病案录入)
+                // Issue #1549: 更新为MedicalCaseFlowView（4步流程）
                 string viewName = targetView switch
                 {
-                    "Diagnosis" => "MedicalCaseEntryView",  // ✅ Issue #1463: 病案录入视图 (以MedicalCase为中心)
+                    "Diagnosis" => "MedicalCaseFlowView",  // ✅ Issue #1549: 4步医案流程视图（Epic #1494）
                     "Prescription" => "PrescriptionView",
                     "PatientManagement" => "PatientManagementView",
                     "History" => "ConsultationManagementView",  // ✅ 历史记录移到History菜单
-                    _ => "MedicalCaseEntryView"  // ✅ 默认也改为病案录入
+                    _ => "MedicalCaseFlowView"  // ✅ 默认也改为4步流程
                 };
 
                 // Issue #1547: 患者传递逻辑已废弃（PatientSelectionDialog已删除）
