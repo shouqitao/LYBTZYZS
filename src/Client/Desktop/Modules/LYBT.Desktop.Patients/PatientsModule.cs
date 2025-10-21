@@ -32,8 +32,8 @@ namespace LYBT.Desktop.Patients
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
             containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
 
-            // 注册对话框 - Issue #1457: 患者选择对话框
-            containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
+            // Issue #1547: PatientSelectionDialog已删除（由MedicalCaseFlowView的Step 1替代）
+            // containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
 
             // Issue #1487: 快速创建患者对话框
             containerRegistry.RegisterDialog<Views.QuickCreatePatientDialog, ViewModels.QuickCreatePatientDialogViewModel>();
