@@ -99,5 +99,18 @@ namespace LYBT.Module.Prescriptions.Repositories
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// 根据前缀查询处方编号列表（用于编号生成）
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        public async Task<List<string>> GetPrescriptionNumbersByPrefixAsync(string prefix)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted && p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix))
+                .Select(p => p.PrescriptionNumber!)
+                .ToListAsync();
+        }
     }
 }

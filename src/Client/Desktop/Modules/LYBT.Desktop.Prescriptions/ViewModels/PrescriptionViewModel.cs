@@ -145,6 +145,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         }
 
         /// <summary>
+        /// 处方编号（服务端自动生成，只读）
+        /// Issue #1551: 处方自动编号功能
+        /// 格式：RX-YYYYMMDD-NNNN（例如：RX-20251021-0001）
+        /// </summary>
+        public string? PrescriptionNumber
+        {
+            get => _dataManager.PrescriptionNumber;
+        }
+
+        /// <summary>
         /// 剂数
         /// </summary>
         public int DosageCount
@@ -690,6 +700,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             // 处方保存成功后的操作
             Logger.LogInformation("处方保存成功");
+
+            // Issue #1551: 刷新处方编号绑定
+            RaisePropertyChanged(nameof(PrescriptionNumber));
         }
 
         private void OnPrescriptionCleared()

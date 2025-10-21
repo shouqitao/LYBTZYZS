@@ -28,6 +28,9 @@ namespace LYBT.Module.Prescriptions
             // 服务层 - UltraThink架构重构后的统一服务
             services.AddScoped<IPrescriptionService, PrescriptionService>();
 
+            // Issue #1551: 处方编号生成服务
+            services.AddScoped<IPrescriptionNumberService, PrescriptionNumberService>();
+
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<PrescriptionCreateDtoValidator>();
 

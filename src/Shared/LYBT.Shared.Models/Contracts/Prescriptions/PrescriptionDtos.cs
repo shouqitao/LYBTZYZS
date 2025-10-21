@@ -12,6 +12,12 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     /// </summary>
     public class PrescriptionDto : StatusDto, IRemarkable
     {
+        /// <summary>
+        /// 处方编号（格式：RX-YYYYMMDD-NNNN）
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        [DisplayName("处方编号")]
+        public string? PrescriptionNumber { get; set; }
 
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }

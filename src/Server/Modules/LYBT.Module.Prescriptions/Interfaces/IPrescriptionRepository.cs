@@ -28,5 +28,13 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// 根据病案ID获取处方
         /// </summary>
         Task<List<Prescription>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 根据前缀查询处方编号列表（用于编号生成）
+        /// Issue #1551: 处方自动编号功能
+        /// </summary>
+        /// <param name="prefix">编号前缀（例如：RX-20251021-）</param>
+        /// <returns>匹配的处方编号列表</returns>
+        Task<List<string>> GetPrescriptionNumbersByPrefixAsync(string prefix);
     }
 }

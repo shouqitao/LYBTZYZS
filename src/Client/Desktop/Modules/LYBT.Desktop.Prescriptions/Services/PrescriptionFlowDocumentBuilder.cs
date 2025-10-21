@@ -100,6 +100,16 @@ namespace LYBT.Desktop.Prescriptions.Services
                 Margin = new Thickness(0, 10, 0, 10)
             };
 
+            // Issue #1551: 第一行显示处方编号（如果有）
+            if (!string.IsNullOrEmpty(_prescription.PrescriptionNumber))
+            {
+                var prescriptionNumberParagraph = new Paragraph();
+                prescriptionNumberParagraph.Inlines.Add(new Run("处方编号：") { FontWeight = FontWeights.Bold });
+                prescriptionNumberParagraph.Inlines.Add(new Run(_prescription.PrescriptionNumber) { Foreground = Brushes.DarkBlue });
+                prescriptionNumberParagraph.Margin = new Thickness(0, 0, 0, 5);
+                section.Blocks.Add(prescriptionNumberParagraph);
+            }
+
             var paragraph = new Paragraph();
 
             // 姓名
