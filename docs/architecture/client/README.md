@@ -1041,16 +1041,71 @@ public class ConsultationEntryViewModel
 - ✅ **符合DDD**：聚合根统一管理子实体生命周期
 - ✅ **简化依赖**：ViewModel只需注入IMedicalCaseRepository
 
+#### ✅ 正确实现（Issue #1563 - 更新诊断信息）
+
+**场景**：MedicalCase已创建，后续填写或更新Consultation信息
+
+```csharp
+public class ConsultationFormViewModel
+{
+    // ✅ 只依赖聚合根Repository
+    private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+    // MedicalCaseId由上一步（患者选择）传递而来
+    public Guid MedicalCaseId { get; set; }
+
+    public async Task<bool> SaveAsync()
+    {
+        if (!Validate()) return false;
+
+        // 构造ConsultationUpdateDto（不需要PatientId/UserId等关联字段）
+        var updateDto = new ConsultationUpdateDto
+        {
+            Id = MedicalCaseId, // Consultation使用与MedicalCase相同的ID（共享主键）
+            ChiefComplaint = ChiefComplaint.Trim(),
+            PresentIllness = PresentIllness?.Trim(),
+            Inspection = Inspection?.Trim(),
+            AuscultationOlfaction = AuscultationOlfaction?.Trim(),
+            Inquiry = Inquiry?.Trim(),
+            Palpation = Palpation?.Trim(),
+            TCMDiagnosis = TCMDiagnosis.Trim(),
+            TreatmentPrinciple = TreatmentPrinciple?.Trim(),
+            Remark = Remark?.Trim()
+        };
+
+        // ✅ 使用聚合根方法更新Consultation
+        await _medicalCaseRepository.UpdateConsultationAsync(MedicalCaseId, updateDto);
+
+        Logger.LogInformation("诊断信息保存成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+        return true;
+    }
+}
+```
+
+**关键点**：
+- ✅ **聚合根方法**：使用`UpdateConsultationAsync`而非直接调用IConsultationRepository
+- ✅ **共享主键**：ConsultationUpdateDto.Id = MedicalCaseId（一对一关系）
+- ✅ **字段简化**：UpdateDto不需要PatientId/UserId（Server端从MedicalCase获取）
+- ✅ **依赖单一**：ViewModel只注入IMedicalCaseRepository
+
+**实际应用**：
+- `LYBT.Desktop.Consultation.ViewModels.ConsultationFormViewModel`（Issue #1563修复后）
+
 #### 架构规范
 1. **聚合识别**：MedicalCase = Consultation + Prescription（一对一关系，共享主键）
 2. **创建规则**：必须通过`IMedicalCaseRepository.CreateWithDetailsAsync()`创建
-3. **禁止模式**：禁止ViewModel直接调用`IConsultationRepository.CreateAsync()`
-4. **模块依赖**：ConsultationModule保留`[ModuleDependency("MedicalCaseModule")]`确保初始化顺序
+3. **更新规则**：必须通过`IMedicalCaseRepository.UpdateConsultationAsync()`或`UpdatePrescriptionAsync()`更新子实体
+4. **禁止模式**：禁止ViewModel直接调用`IConsultationRepository`的Create/Update方法
+5. **模块依赖**：ConsultationModule保留`[ModuleDependency("MedicalCaseModule")]`确保初始化顺序
 
 **参考**：
-- Server端实现：`LYBT.Module.MedicalCase.Services.MedicalCaseService:CreateWithDetailsAsync()`
-- Desktop端实现：`LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository:CreateWithDetailsAsync()`
-- 修复Issue：#1463
+- Server端实现：
+  - `LYBT.Module.MedicalCase.Services.MedicalCaseService:CreateWithDetailsAsync()`
+  - `LYBT.Module.MedicalCase.Services.MedicalCaseService:UpdateConsultationAsync()` (Issue #1563)
+- Desktop端实现：
+  - `LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository:CreateWithDetailsAsync()`
+  - `LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository:UpdateConsultationAsync()` (Issue #1563)
+- 修复Issue：#1463, #1563
 
 ## 🔗 相关文档
 

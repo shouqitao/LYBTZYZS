@@ -166,6 +166,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>());
+
+            // Issue #1564: 业务模块 Services Logger（处方编辑器服务）
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>());
         }
 
         /// <summary>

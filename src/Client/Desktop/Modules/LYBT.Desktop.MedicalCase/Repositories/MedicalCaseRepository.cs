@@ -89,6 +89,29 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        /// <summary>
+        /// 更新医案的诊断信息（聚合根方法）
+        /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
+        /// </summary>
+        public async Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            try
+            {
+                var response = await _api.UpdateConsultationAsync(medicalCaseId, dto);
+                return response.Data ?? throw new InvalidOperationException("更新诊断信息失败，服务器未返回数据");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医案诊断信息失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)

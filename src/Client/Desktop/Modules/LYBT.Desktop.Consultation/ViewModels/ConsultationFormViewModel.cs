@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
     {
         #region 服务依赖
 
-        private readonly IConsultationRepository _consultationRepository;
+        // Issue #1563: 删除IConsultationRepository依赖，使用聚合根Repository
         private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
@@ -263,13 +263,12 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     return false;
                 }
 
-                // 构建ConsultationCreateDto
-                var createDto = new ConsultationCreateDto
+                // Issue #1563: 构建ConsultationUpdateDto（使用聚合根方法）
+                // ConsultationUpdateDto只包含诊断信息字段，不需要PatientId/UserId等关联字段
+                // 这些信息已经在MedicalCase聚合根中，Server端通过MedicalCaseId获取
+                var updateDto = new ConsultationUpdateDto
                 {
-                    MedicalCaseId = MedicalCaseId,
-                    PatientId = CurrentPatient.Id,
-                    UserId = SessionManager.CurrentUser.Id,
-                    // Issue #1562 Phase 2: StartTime已删除，Entity使用CreatedAt
+                    Id = MedicalCaseId, // Consultation使用与MedicalCase相同的ID（共享主键）
                     ChiefComplaint = ChiefComplaint.Trim(),
                     PresentIllness = string.IsNullOrWhiteSpace(PresentIllness) ? null : PresentIllness.Trim(),
                     Inspection = string.IsNullOrWhiteSpace(Inspection) ? null : Inspection.Trim(),
@@ -278,15 +277,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Palpation = string.IsNullOrWhiteSpace(Palpation) ? null : Palpation.Trim(),
                     TCMDiagnosis = TCMDiagnosis.Trim(),
                     TreatmentPrinciple = string.IsNullOrWhiteSpace(TreatmentPrinciple) ? null : TreatmentPrinciple.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
-                    PatientName = CurrentPatient.Name,
-                    DoctorName = SessionManager.CurrentUser.UserName
+                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
                 };
 
-                // 调用Repository创建Consultation
-                var createdDto = await _consultationRepository.CreateAsync(createDto);
+                // Issue #1563: 使用聚合根Repository方法更新Consultation
+                var updatedDto = await _medicalCaseRepository.UpdateConsultationAsync(MedicalCaseId, updateDto);
 
-                Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", createdDto.Id);
+                Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", updatedDto.Id);
 
                 // Issue #1562 Phase 1: 已删除工作流事件发布调用
 
@@ -313,7 +310,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationFormViewModel(
-            IConsultationRepository consultationRepository,
             IMedicalCaseRepository medicalCaseRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -322,7 +318,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
+            // Issue #1563: 只注入聚合根Repository
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
             // 初始化命令

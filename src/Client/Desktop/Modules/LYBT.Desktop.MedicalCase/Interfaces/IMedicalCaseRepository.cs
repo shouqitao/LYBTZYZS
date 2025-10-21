@@ -21,5 +21,14 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             ConsultationCreateDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null);
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
+
+        /// <summary>
+        /// 更新医案的诊断信息（聚合根方法）
+        /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="dto">诊断更新信息</param>
+        /// <returns>更新后的诊断信息</returns>
+        Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto);
     }
 }

@@ -92,6 +92,14 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiCreateAsync(dto);
+
+                // Issue #1563 Bug 6修复：检查业务逻辑是否成功
+                if (!response.Success)
+                {
+                    throw new InvalidOperationException($"创建失败：{response.Message ?? "未知错误"}");
+                }
+
+                // 检查数据是否为null
                 return response.Data ?? throw new InvalidOperationException("创建失败：服务器未返回数据");
             }
             catch (Exception ex)
@@ -121,6 +129,14 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiUpdateAsync(id.Value, dto);
+
+                // Issue #1563 Bug 6修复：检查业务逻辑是否成功
+                if (!response.Success)
+                {
+                    throw new InvalidOperationException($"更新失败：{response.Message ?? "未知错误"}");
+                }
+
+                // 检查数据是否为null
                 return response.Data ?? throw new InvalidOperationException($"更新失败：ID {id.Value} 的实体不存在");
             }
             catch (Exception ex)
