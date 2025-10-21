@@ -209,25 +209,43 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 新建患者
+        /// Issue #1543: 集成QuickCreatePatientDialog
         /// </summary>
         private void ExecuteNewPatient()
         {
             try
             {
-                Logger.LogInformation("打开新建患者对话框");
+                Logger.LogInformation("打开快速新建患者对话框");
 
-                // TODO: Task #1497 - 实现快速新建患者对话框
-                // _dialogService.ShowDialog("CreatePatientDialog", new DialogParameters(), result =>
-                // {
-                //     if (result.Result == ButtonResult.OK)
-                //     {
-                //         var newPatient = result.Parameters.GetValue<PatientDto>("Patient");
-                //         Patients.Insert(0, newPatient);
-                //         SelectedPatient = newPatient;
-                //     }
-                // });
+                _dialogService.ShowDialog("QuickCreatePatientDialog", new DialogParameters(), result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        var newPatient = result.Parameters.GetValue<PatientDto>("NewPatient");
+                        if (newPatient != null)
+                        {
+                            Logger.LogInformation("新建患者成功：{PatientName}（ID: {PatientId}）",
+                                newPatient.Name, newPatient.Id);
 
-                Logger.LogWarning("新建患者对话框尚未实现（待Task完成）");
+                            // 1. 将新患者添加到列表顶部
+                            Patients.Insert(0, newPatient);
+
+                            // 2. 自动选中新患者
+                            SelectedPatient = newPatient;
+
+                            // 3. 触发患者选择事件（自动进入下一步）
+                            PatientSelected?.Invoke(this, newPatient);
+                        }
+                        else
+                        {
+                            Logger.LogWarning("对话框返回的患者数据为空");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("用户取消了快速新建患者");
+                    }
+                });
             }
             catch (Exception ex)
             {
