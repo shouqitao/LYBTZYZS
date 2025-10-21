@@ -57,11 +57,7 @@ namespace LYBT.Module.Consultation.Validators
                 .WithMessage($"中医诊断长度不能超过{ValidationConstants.DiagnosisMaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.TCMDiagnosis));
 
-            // 诊断结果长度限制（可选）
-            RuleFor(x => x.Diagnosis)
-                .MaximumLength(ValidationConstants.DiagnosisMaxLength)
-                .WithMessage($"诊断结果长度不能超过{ValidationConstants.DiagnosisMaxLength}个字符")
-                .When(x => !string.IsNullOrEmpty(x.Diagnosis));
+            // Issue #1562 Phase 2: 已删除Diagnosis字段验证（Entity中不存在此字段）
 
             // 治疗原则长度限制（可选）
             RuleFor(x => x.TreatmentPrinciple)

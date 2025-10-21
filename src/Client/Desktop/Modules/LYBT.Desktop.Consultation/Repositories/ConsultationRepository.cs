@@ -50,22 +50,7 @@ namespace LYBT.Desktop.Consultation.Repositories
             }
         }
 
-        /// <summary>
-        /// 启动诊疗（创建新诊疗记录并关联患者）
-        /// </summary>
-        public async Task<ConsultationDto> StartAsync(Guid patientId)
-        {
-            try
-            {
-                var response = await _api.StartConsultationAsync(new { PatientId = patientId });
-                return response.Data ?? throw new InvalidOperationException("启动诊疗失败，服务器未返回数据");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "启动诊疗失败，PatientId: {PatientId}", patientId);
-                throw;
-            }
-        }
+        // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
 
         #region RepositoryBase抽象方法实现
 

@@ -46,11 +46,5 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Get("/api/v1/consultations/medicalcase/{medicalCaseId}")]
         Task<ApiResponse<List<ConsultationDto>>> GetConsultationsByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
-        /// 启动诊疗（创建新诊疗记录并关联患者）
-        /// </summary>
-        [Refit.Post("/api/v1/consultations/start")]
-        Task<ApiResponse<ConsultationDto>> StartConsultationAsync([Refit.Body] object request);
     }
 }

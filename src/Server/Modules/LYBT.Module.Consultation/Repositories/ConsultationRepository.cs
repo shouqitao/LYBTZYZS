@@ -91,12 +91,18 @@ namespace LYBT.Module.Consultation.Repositories
         /// <summary>
         /// 根据病案ID获取诊疗记录
         /// </summary>
+        /// <remarks>
+        /// ⚠️ 设计说明：由于Consultation采用共享主键设计（Consultation.Id == MedicalCase.Id），
+        /// 此方法与GetByIdAsync(medicalCaseId)在功能上等价，查询条件为c.Id == medicalCaseId。
+        /// 保留此方法是为了语义清晰，明确表达"通过病案ID查询诊疗记录"的业务意图。
+        /// 参见：ConsultationConfiguration.cs的Fluent API配置
+        /// </remarks>
         public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return (await _dbSet
             .AsNoTracking()
             .Include(c => c.MedicalCase)
-                .Where(c => c.Id == medicalCaseId && !c.IsDeleted)
+                .Where(c => c.Id == medicalCaseId && !c.IsDeleted)  // c.Id == MedicalCase.Id（共享主键）
                 .FirstOrDefaultAsync())!;
         }
     }

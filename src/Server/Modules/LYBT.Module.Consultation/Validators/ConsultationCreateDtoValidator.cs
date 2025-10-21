@@ -22,9 +22,7 @@ namespace LYBT.Module.Consultation.Validators
                 .MaximumLength(500).WithMessage("主诉长度不能超过500个字符")
                 .When(x => !string.IsNullOrEmpty(x.ChiefComplaint));
 
-            RuleFor(x => x.Diagnosis)
-                .MaximumLength(1000).WithMessage("诊断长度不能超过1000个字符")
-                .When(x => !string.IsNullOrEmpty(x.Diagnosis));
+            // Issue #1562 Phase 2: 已删除Diagnosis字段验证（Entity中不存在此字段）
         }
     }
 }

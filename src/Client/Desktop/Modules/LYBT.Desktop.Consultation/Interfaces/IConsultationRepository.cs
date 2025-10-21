@@ -16,6 +16,6 @@ namespace LYBT.Desktop.Consultation.Interfaces
         Task<bool> DeleteAsync(Guid id);
         Task<List<ConsultationDto>> SearchAsync(string keyword);
         Task<List<ConsultationDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-        Task<ConsultationDto> StartAsync(Guid patientId);
+        // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
     }
 }
