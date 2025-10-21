@@ -1,4 +1,5 @@
 using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -268,6 +269,37 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
+        /// <summary>
+        /// 发布诊断完成事件
+        /// Issue #1557 Phase 3: 通知MedicalCaseFlowViewModel跳转到Step 3
+        /// </summary>
+        /// <param name="consultationId">诊断ID</param>
+        /// <param name="isDraft">是否保存为草稿</param>
+        private void PublishConsultationCompletedEvent(Guid consultationId, bool isDraft)
+        {
+            try
+            {
+                var payload = new ConsultationCompletedPayload
+                {
+                    ConsultationId = consultationId,
+                    MedicalCaseFlowId = MedicalCaseId,
+                    ChiefComplaint = ChiefComplaint,
+                    Diagnosis = TCMDiagnosis,
+                    IsDraft = isDraft,
+                    Timestamp = DateTime.Now
+                };
+
+                EventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(payload);
+
+                Logger.LogInformation("已发布ConsultationCompletedEvent，ConsultationId: {ConsultationId}, MedicalCaseFlowId: {MedicalCaseFlowId}",
+                    consultationId, MedicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "发布ConsultationCompletedEvent失败");
+            }
+        }
+
         #endregion
 
         #region ISaveable实现
@@ -329,6 +361,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // Issue #1544: 更新MedicalCase.ConsultationId
                 await UpdateMedicalCaseConsultationIdAsync(createdDto.Id);
+
+                // Issue #1557 Phase 3: 发布ConsultationCompletedEvent
+                PublishConsultationCompletedEvent(createdDto.Id, isDraft: false);
 
                 return true;
             }
@@ -419,6 +454,42 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "清空表单失败");
+            }
+        }
+
+        #endregion
+
+        #region INavigationAware
+
+        /// <summary>
+        /// 导航到当前视图时调用
+        /// Issue #1557 Phase 3: 接收MedicalCaseFlowViewModel传来的MedicalCaseId和CurrentPatient
+        /// </summary>
+        public override void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            base.OnNavigatedTo(navigationContext);
+
+            try
+            {
+                // 接收MedicalCaseId参数
+                var medicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
+                if (medicalCaseId != Guid.Empty)
+                {
+                    Logger.LogInformation("接收到MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    MedicalCaseId = medicalCaseId;
+                }
+
+                // 接收CurrentPatient参数
+                var currentPatient = navigationContext.Parameters.GetValue<PatientDto>("CurrentPatient");
+                if (currentPatient != null)
+                {
+                    Logger.LogInformation("接收到CurrentPatient: {PatientName}", currentPatient.Name);
+                    CurrentPatient = currentPatient;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到ConsultationFormView时发生异常");
             }
         }
 

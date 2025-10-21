@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -359,6 +360,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 await ShowSuccessMessageAsync($"处方已保存（{draft.Items.Count}味药材，总价{totalAmount:F2}元）");
+
+                // Issue #1557 Phase 4: 发布PrescriptionCompletedEvent
+                PublishPrescriptionCompletedEvent(savedPrescription.Id, draft.Items.Count, totalAmount, isDraft: false);
+
                 return true;
             }
             catch (Exception ex)
@@ -469,6 +474,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogError(ex, "更新MedicalCase.PrescriptionId失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                 // 不抛出异常，允许Prescription保存成功（后续可通过数据修复）
+            }
+        }
+
+        /// <summary>
+        /// 发布处方完成事件
+        /// Issue #1557 Phase 4: 通知MedicalCaseFlowViewModel跳转到Step 4
+        /// </summary>
+        /// <param name="prescriptionId">处方ID</param>
+        /// <param name="totalItems">药材总数</param>
+        /// <param name="totalAmount">总金额</param>
+        /// <param name="isDraft">是否保存为草稿</param>
+        private void PublishPrescriptionCompletedEvent(Guid prescriptionId, int totalItems, decimal totalAmount, bool isDraft)
+        {
+            try
+            {
+                var payload = new PrescriptionCompletedPayload
+                {
+                    PrescriptionId = prescriptionId,
+                    MedicalCaseFlowId = MedicalCaseId,
+                    TotalItems = totalItems,
+                    TotalAmount = totalAmount,
+                    IsDraft = isDraft,
+                    Timestamp = DateTime.Now
+                };
+
+                EventAggregator.GetEvent<PrescriptionCompletedEvent>().Publish(payload);
+
+                Logger.LogInformation("已发布PrescriptionCompletedEvent，PrescriptionId: {PrescriptionId}, MedicalCaseFlowId: {MedicalCaseFlowId}",
+                    prescriptionId, MedicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "发布PrescriptionCompletedEvent失败");
             }
         }
 

@@ -25,10 +25,12 @@ namespace LYBT.Desktop.Consultation
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
+            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1557: 看诊流程Step 2
             // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
+            containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // Issue #1557: 看诊流程Step 2（Region导航）
             // ✅ Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }
