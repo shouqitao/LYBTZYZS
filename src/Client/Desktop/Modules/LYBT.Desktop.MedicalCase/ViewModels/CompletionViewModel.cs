@@ -20,7 +20,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IRegionManager _regionManager;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
-        private readonly ICommonDialogService _dialogService;
+        private readonly ICommonDialogService? _dialogService; // Issue #1564: MVP阶段可为null
 
         #endregion
 
@@ -62,14 +62,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public CompletionViewModel(
             IMedicalCaseRepository medicalCaseRepository,
             IRegionManager regionManager,
-            ICommonDialogService dialogService,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            ICommonDialogService? dialogService = null) // Issue #1564: 改为可选参数，MVP阶段暂不实现
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _dialogService = dialogService; // Issue #1564: 可为null，使用时需判断
 
             // 初始化命令
             ContinueConsultationCommand = new DelegateCommand(ExecuteContinueConsultation);
@@ -129,7 +129,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("打印处方，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                 
                 // TODO: Task #1502+ - 实现处方打印功能
-                await _dialogService.ShowInfoAsync("处方打印功能开发中...", "打印功能");
+                // Issue #1564: MVP阶段暂不显示提示（dialogService可为null）
+                if (_dialogService != null)
+                {
+                    await _dialogService.ShowInfoAsync("处方打印功能开发中...", "打印功能");
+                }
+                Logger.LogInformation("处方打印功能开发中（占位）");
             }
             catch (Exception ex)
             {
@@ -148,7 +153,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("查看病案详情，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                 
                 // TODO: Task #1502+ - 实现病案详情对话框
-                await _dialogService.ShowInfoAsync("病案详情功能开发中...", "病案详情");
+                // Issue #1564: MVP阶段暂不显示提示（dialogService可为null）
+                if (_dialogService != null)
+                {
+                    await _dialogService.ShowInfoAsync("病案详情功能开发中...", "病案详情");
+                }
+                Logger.LogInformation("病案详情功能开发中（占位）");
             }
             catch (Exception ex)
             {
