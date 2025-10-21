@@ -212,6 +212,13 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// </summary>
     public class MedicalCaseUpdateDto : MedicalCaseEditDto
     {
+        /// <summary>诊断ID - Issue #1544: 支持更新ConsultationId</summary>
+        [DisplayName("诊断ID")]
+        public Guid? ConsultationId { get; set; }
+
+        /// <summary>处方ID - Issue #1545: 支持更新PrescriptionId</summary>
+        [DisplayName("处方ID")]
+        public Guid? PrescriptionId { get; set; }
 
         [StringLength(1000, ErrorMessage = "体格检查长度不能超过1000个字符")]
         [DisplayName("体格检查")]

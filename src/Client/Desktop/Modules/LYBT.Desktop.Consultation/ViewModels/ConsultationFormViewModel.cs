@@ -26,6 +26,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 服务依赖
 
         private readonly IConsultationRepository _consultationRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -224,6 +225,51 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #endregion
 
+        #region 辅助方法
+
+        /// <summary>
+        /// 更新MedicalCase的ConsultationId
+        /// Issue #1544: 将保存成功的ConsultationId关联到MedicalCase
+        /// </summary>
+        private async Task UpdateMedicalCaseConsultationIdAsync(Guid consultationId)
+        {
+            try
+            {
+                Logger.LogInformation("开始更新MedicalCase.ConsultationId，MedicalCaseId: {MedicalCaseId}, ConsultationId: {ConsultationId}",
+                    MedicalCaseId, consultationId);
+
+                // 获取当前医案
+                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
+                if (medicalCase == null)
+                {
+                    Logger.LogWarning("未找到医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    return;
+                }
+
+                // 构建更新DTO
+                var updateDto = new LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseUpdateDto
+                {
+                    Id = medicalCase.Id,
+                    PatientId = medicalCase.PatientId,
+                    DoctorId = medicalCase.DoctorId,
+                    ConsultationId = consultationId,
+                    Remark = medicalCase.Remark
+                };
+
+                // 调用更新方法
+                await _medicalCaseRepository.UpdateAsync(updateDto);
+
+                Logger.LogInformation("已更新MedicalCase.ConsultationId: {ConsultationId}", consultationId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "更新MedicalCase.ConsultationId失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                // 不抛出异常，允许Consultation保存成功（后续可通过数据修复）
+            }
+        }
+
+        #endregion
+
         #region ISaveable实现
 
         /// <summary>
@@ -281,8 +327,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", createdDto.Id);
 
-                // TODO: 更新MedicalCase.ConsultationId（可能需要IMedicalCaseRepository）
-                // 暂时不实现，等Task #1497完成后集成
+                // Issue #1544: 更新MedicalCase.ConsultationId
+                await UpdateMedicalCaseConsultationIdAsync(createdDto.Id);
 
                 return true;
             }
@@ -307,6 +353,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public ConsultationFormViewModel(
             IConsultationRepository consultationRepository,
+            IMedicalCaseRepository medicalCaseRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -315,6 +362,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
             // 初始化命令
             ImportFromHistoryCommand = new DelegateCommand(ExecuteImportFromHistory);
