@@ -16,8 +16,6 @@ namespace LYBT.Desktop.Shell.Views
         }
     }
 
-    // HomeView 已在 HomeView.xaml.cs 中定义
-
     /// <summary>
     /// 患者列表视图
     /// </summary>

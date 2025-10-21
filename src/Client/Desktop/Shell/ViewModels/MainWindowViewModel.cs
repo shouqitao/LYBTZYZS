@@ -30,6 +30,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private readonly IApplicationCommands _applicationCommands;
     private readonly IModuleLoadingService _moduleLoadingService;
     private readonly IApiHealthCheckService _apiHealthCheckService;
+    private readonly IRoleNavigationService _roleNavigationService; // Issue #1553: 角色导航服务
 
     /// <summary>
     /// 构造函数 - 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
@@ -47,13 +48,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
         LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
         IApplicationCommands applicationCommands,
         IModuleLoadingService moduleLoadingService,
-        IApiHealthCheckService apiHealthCheckService) : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
+        IApiHealthCheckService apiHealthCheckService,
+        IRoleNavigationService roleNavigationService) // Issue #1553: 注入角色导航服务
+        : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
         _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
+        _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
 
         // 按照Prism 8.x最佳实践，在构造函数中完成初始化
         InitializeViewModel();
@@ -538,7 +542,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
-    /// 加载主界面内容 - UltraThink Phase 9 性能优化版
+    /// 加载主界面内容 - Issue #1553 角色模块化重构
+    /// 使用 RoleNavigationService 根据用户角色导航到对应的主页
     /// </summary>
     private void LoadMainContent()
     {
@@ -547,11 +552,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
             throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
         }
 
-        // Bug #1512修复：Epic #1494设计要求登录后始终显示HomeView
-        // HomeView是统一的医生主页，用户点击"开始看诊"按钮进入医案流程
-        string workbenchView = "HomeView";
+        // Issue #1553: 根据用户角色确定导航目标
+        // Doctor → ClinicalHomeView, Admin → AdminHomeView
+        string roleName = CurrentUser.Role.ToString(); // Doctor, Admin, Receptionist, Pharmacist
 
-        // 角色判断仅用于标题显示
+        // 角色判断用于标题显示
         bool isAdmin = CurrentUser.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
                        CurrentUser.Role == UserRole.Admin;
         string roleDisplay = isAdmin ? "管理员" : "医生";
@@ -566,43 +571,40 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
         }
 
-        // UltraThink修复 Issue #858: 使用 Dispatcher.InvokeAsync 确保 UI 绑定更新后再导航
-        // 原因：IsLoggedIn 属性变化后，UI 绑定不会立即生效，ContentRegion 可能仍处于 Collapsed 状态
-        // 解决：延迟导航到下一个 UI 帧，确保 ContentRegion 已经可见
-        System.Diagnostics.Debug.WriteLine($" 准备导航到 {workbenchView}（延迟到下一帧）");
+        // Issue #1553: 使用 RoleNavigationService 进行角色导航
+        // 延迟导航确保 ContentRegion 已可见
+        System.Diagnostics.Debug.WriteLine($" 准备根据角色 {roleName} 导航（延迟到下一帧）");
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            System.Diagnostics.Debug.WriteLine($" UI更新完成，开始导航到 {workbenchView}");
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, workbenchView, navigationResult =>
+            try
             {
-                if (navigationResult.Result != true)
+                System.Diagnostics.Debug.WriteLine($" UI更新完成，开始角色导航：{roleName}");
+                _roleNavigationService.NavigateToRoleHome(roleName);
+            }
+            catch (Exception ex)
+            {
+                // 导航失败时显示错误信息
+                var errorMessage = ex.Message ?? "未知导航错误";
+                System.Diagnostics.Debug.WriteLine($" 角色导航失败：{errorMessage}");
+                Logger.LogError(ex, "角色导航失败");
+
+                // 导航失败时，清除登录状态并回退到登录界面
+                IsLoggedIn = false;
+                CurrentUser = null;
+                Title = "凌隐宝堂中医诊所诊疗系统";
+
+                // 异步显示错误对话框
+                _ = Task.Run(async () =>
                 {
-                    // 导航失败时显示错误信息
-                    var errorMessage = navigationResult.Error?.Message ?? "未知导航错误";
-                    System.Diagnostics.Debug.WriteLine($" 工作台导航失败 {errorMessage}");
-
-                    // UltraThink修复：导航失败时，清除登录状态并回退到登录界面
-                    IsLoggedIn = false;
-                    CurrentUser = null;
-                    Title = "凌隐宝堂中医诊所诊疗系统 - 系统超级管理员 (管理员)";
-
-                    // 异步显示错误对话框
-                    _ = Task.Run(async () =>
+                    await ShowErrorMessageAsync($"无法加载工作台：{errorMessage}");
+                    // 错误对话框关闭后，显示登录界面
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        await ShowErrorMessageAsync($"无法加载工作台 {errorMessage}");
-                        // 错误对话框关闭后，显示登录界面
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            ShowLoginDialog();
-                        });
+                        ShowLoginDialog();
                     });
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($" 成功导航到 {workbenchView}");
-                }
-            });
-        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle); // UltraThink修复 Issue #856: 使用 ApplicationIdle 确保所有初始化完成
+                });
+            }
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle); // Issue #856: 使用 ApplicationIdle 确保所有初始化完成
     }
 
     /// <summary>
@@ -627,11 +629,12 @@ public class MainWindowViewModel : UnifiedViewModelBase
             }
             else if (user.Role == UserRole.Doctor)
             {
-                Logger.LogInformation("医生登录，加载诊疗工作台模块");
-                await LoadClinicalWorkstationAsync();
+                Logger.LogInformation("医生登录，加载诊疗模块");
+                // 医生角色模块已在启动时加载（ClinicalModule），此处可按需加载业务模块
+                await LoadBasicModulesAsync();
             }
 
-            Logger.LogInformation("工作台模块加载完成");
+            Logger.LogInformation("角色模块加载完成");
         }
         catch (Exception ex)
         {
@@ -658,7 +661,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         // 管理员需要所有模块
         await _moduleLoadingService.LoadModulesAsync(new[]
         {
-            "AdminWorkstationModule",  // UltraThink修复 Issue #856: 工作台模块必须加载才能注册视图
             "UsersModule",             // 管理员需要用户管理功能
             "HerbsModule",
             "FormulaModule",
@@ -666,16 +668,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
             "MedicalCaseModule",
             "PrescriptionsModule"
         });
-    }
-
-    /// <summary>
-    /// 加载诊疗工作台模块
-    /// </summary>
-    private async Task LoadClinicalWorkstationAsync()
-    {
-        // 加载诊疗工作台及其依赖
-        await _moduleLoadingService.LoadModuleAsync("ClinicalWorkstationModule");
-        Logger.LogDebug("诊疗工作台模块加载完成");
     }
 
     /// <summary>
@@ -751,15 +743,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 快速开始诊疗(Ctrl+Shift+C)
+    /// Issue #1553: 更新为直接导航到医案流程视图
     /// </summary>
     private async Task ExecuteQuickStartConsultationAsync()
     {
         try
         {
-            // 导航到诊疗工作台
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ClinicalWorkstationView");
+            // 直接导航到医案流程视图（与ClinicalHomeView的"开始接诊"按钮一致）
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseFlowView");
 
-            await ShowSuccessMessageAsync("已切换到诊疗工作台，准备开始诊疗");
+            await ShowSuccessMessageAsync("已开始诊疗流程，请选择患者");
         }
         catch (Exception ex)
         {

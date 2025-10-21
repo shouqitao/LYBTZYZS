@@ -97,9 +97,10 @@
     <ProjectReference Include="..\Modules\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Workstation Modules">
-    <ProjectReference Include="..\Workstations\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj" />
-    <ProjectReference Include="..\Workstations\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj" />
+  <!-- Issue #1553: 角色主页模块 -->
+  <ItemGroup Label="Role Home Modules">
+    <ProjectReference Include="..\Roles\LYBT.Desktop.Clinical\LYBT.Desktop.Clinical.csproj" />
+    <ProjectReference Include="..\Roles\LYBT.Desktop.Admin\LYBT.Desktop.Admin.csproj" />
   </ItemGroup>
 
   <!-- Configuration Files -->
@@ -130,6 +131,9 @@
       <Link>Themes\Controls\%(Filename)%(Extension)</Link>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="LYBT.Desktop.Shell.xml" />
   </ItemGroup>
 
   <!-- Documentation -->

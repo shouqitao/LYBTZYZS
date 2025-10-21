@@ -18,6 +18,8 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
+using LYBT.Desktop.Clinical; // Issue #1553: 医生角色模块
+using LYBT.Desktop.Admin;    // Issue #1553: 管理员角色模块
 
 namespace LYBT.Desktop.Shell;
 
@@ -98,11 +100,6 @@ public partial class App : PrismApplication
         // Issue #1239 修复: 显式注册 ViewModels（Prism 8.x 要求）
         // ViewModelLocationProvider 只是映射关系，ViewModel 本身需要在容器中注册
         containerRegistry.Register<MainWindowViewModel>();  // Transient lifetime for ViewModels
-        containerRegistry.Register<HomeViewModel>();
-
-        // Bug修复: HomeView必须注册为可导航视图（RegisterForNavigation）
-        // 否则MainWindowViewModel.LoadMainContent()导航到"HomeView"时会失败
-        containerRegistry.RegisterForNavigation<HomeView>();
     }
 
     /// <summary>
@@ -117,7 +114,6 @@ public partial class App : PrismApplication
         // Prism 8.x最佳实践:使用类型映射避免Container.Resolve
         // 通过泛型重载让框架自动解析依赖,而不是手动调用容器
         ViewModelLocationProvider.Register<MainWindow, MainWindowViewModel>();
-        ViewModelLocationProvider.Register<HomeView, HomeViewModel>();
 
         // Note: 其他View-ViewModel映射通过Prism自动发现机制处理
     }
@@ -256,6 +252,10 @@ public partial class App : PrismApplication
         // 用户模块 - 基础权限管理
         moduleCatalog.AddModule<UsersModule>(InitializationMode.WhenAvailable);
 
+        // Issue #1553: 角色主页模块 - 登录后立即需要
+        moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
+        moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
+
         // ========== 基础业务模块 - 登录后加载 ==========
         // 患者管理 - 多数业务的基础
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
@@ -275,14 +275,6 @@ public partial class App : PrismApplication
 
         // 处方管理 - 最复杂依赖
         moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);
-
-        // ========== 工作台模块 - 用户触发加载 ==========
-
-        // 管理工作台 - 管理员角色使用
-        moduleCatalog.AddModule<AdminWorkstation.AdminWorkstationModule>(InitializationMode.OnDemand);
-
-        // 诊疗工作台 - 医生角色使用
-        moduleCatalog.AddModule<ClinicalWorkstation.ClinicalWorkstationModule>(InitializationMode.OnDemand);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }
