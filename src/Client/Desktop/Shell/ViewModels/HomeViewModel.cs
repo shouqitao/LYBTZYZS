@@ -98,7 +98,21 @@ namespace LYBT.Desktop.Shell.ViewModels
 
                 // Epic #1494: 直接导航到医案流程视图（包含Step 1-4完整流程）
                 // MedicalCaseFlowViewModel会自动显示Step 1（患者选择）
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView");
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navigationResult =>
+                {
+                    if (navigationResult.Result == true)
+                    {
+                        Logger.LogInformation("导航成功：MedicalCaseFlowView");
+                    }
+                    else
+                    {
+                        Logger.LogError("导航失败：MedicalCaseFlowView，错误：{Error}", navigationResult.Error?.Message ?? "未知错误");
+                        if (navigationResult.Error != null)
+                        {
+                            Logger.LogError(navigationResult.Error, "导航异常详情");
+                        }
+                    }
+                });
             }
             catch (Exception ex)
             {
