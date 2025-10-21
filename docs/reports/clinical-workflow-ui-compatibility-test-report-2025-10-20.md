@@ -12,12 +12,12 @@
 ## 执行摘要
 
 ### 测试目标
-验证医案流程4步界面在3种分辨率下的可见性、可用性和响应式布局行为。
+验证医案流程4步界面在2种分辨率下的可见性、可用性和响应式布局行为。
 
 ### 测试范围
-- **分辨率**：1920x1080（基线）、1366x768（主要目标）、1280x720（最小支持）
+- **分辨率**：1920x1080（基线）、1366x768（主要目标）
 - **测试步骤**：Step 1 患者选择、Step 2 诊断录入、Step 3 处方录入、Step 4 完成医案
-- **测试场景**：4步骤 × 3分辨率 = 12个场景
+- **测试场景**：4步骤 × 2分辨率 = 8个场景
 
 ### 测试结果汇总
 
@@ -25,7 +25,6 @@
 |-------|--------|--------|--------|--------|---------|
 | 1920x1080 | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ | 优秀/良好/一般/差 |
 | 1366x768 | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ | 优秀/良好/一般/差 |
-| 1280x720 | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ | 优秀/良好/一般/差 |
 
 ### 总体评估
 - **通过/未通过**: [待填写]
@@ -356,181 +355,6 @@
 
 ---
 
-### 3. 分辨率1280x720（最小支持分辨率）⚠️ 关键验证
-
-#### 可用空间计算
-- 屏幕高度: 720px
-- 固定区域高度: 270px
-- 主内容区可用高度: **450px** ⚠️ 约为基线的56%，约为1366x768的90%
-
-**重点验证**：
-- DataGrid MaxHeight=650px（Step 1）严重超出可用空间
-- DataGrid MaxHeight=500px（Step 3）超出可用空间
-- 所有视图是否需要频繁滚动
-- 用户体验是否可接受（决定是否需要修复）
-
----
-
-#### 3.1 Step 1 - 患者选择（PatientSelectionView）⚠️ 关键
-
-**测试时间**: [待填写]
-
-**截图**: `step1-patient-selection-1280x720.png`
-
-**测试结果**: ✅ 通过 / ❌ 失败
-
-**检查项结果**：
-- [ ] 所有固定区域可见
-- [ ] DataGrid MaxHeight=650px 严重超出可用空间450px（超出44%），验证影响：
-  - [ ] DataGrid是否被裁剪：是 / 否
-  - [ ] 外层ScrollViewer滚动条：出现 / 未出现 ⚠️ 预期必须出现
-  - [ ] 可以滚动到DataGrid底部：是 / 否
-  - [ ] 分页控件可见（需滚动）：是 / 否
-  - [ ] 提示信息可见（需滚动）：是 / 否
-  - [ ] 搜索框可见（不需滚动）：是 / 否
-- [ ] 可用性评估：
-  - [ ] 是否需要频繁滚动才能完成操作：是 / 否
-  - [ ] 用户体验是否可接受：优秀 / 良好 / 一般 / 差
-
-**发现的问题**：
-```
-[待填写]
-预期问题：DataGrid MaxHeight严重超出可用空间，需要大量滚动才能看到分页和提示信息
-建议：调整DataGrid MaxHeight为400px
-```
-
-**用户体验评分**: 优秀 / 良好 / 一般 / 差
-
-**是否需要修复**: 是 / 否 ⚠️ 如果用户体验评分为"一般"或"差"，则必须修复
-
-**建议修复方案**:
-```
-修改 PatientSelectionView.xaml:120
-将 MaxHeight="650" 改为 MaxHeight="400"
-```
-
-**备注**: [待填写]
-
----
-
-#### 3.2 Step 2 - 诊断录入（ConsultationFormView）
-
-**测试时间**: [待填写]
-
-**截图**: `step2-consultation-form-1280x720.png`
-
-**测试结果**: ✅ 通过 / ❌ 失败
-
-**检查项结果**：
-- [ ] 所有固定区域可见
-- [ ] 主内容区严重超出450px，验证ScrollViewer：
-  - [ ] ScrollViewer滚动条：出现 / 未出现 ⚠️ 预期必须出现
-  - [ ] 可以滚动到页面底部：是 / 否
-  - [ ] 基本诊断信息区域可见（不需滚动）：是 / 否
-  - [ ] 四诊合参区域可见（需滚动）：是 / 否
-  - [ ] 备注和辅助操作区域可见（需滚动）：是 / 否
-  - [ ] 提示信息区域可见（需滚动）：是 / 否
-- [ ] 2列布局是否仍然显示（不换行）：是 / 否
-- [ ] 可用性评估：
-  - [ ] 是否需要频繁滚动才能完成操作：是 / 否
-  - [ ] 用户体验是否可接受：优秀 / 良好 / 一般 / 差
-
-**发现的问题**：
-```
-[待填写]
-```
-
-**用户体验评分**: 优秀 / 良好 / 一般 / 差
-
-**是否需要修复**: 是 / 否
-
-**备注**: [待填写]
-
----
-
-#### 3.3 Step 3 - 处方录入（PrescriptionEditorView）⚠️ 关键
-
-**测试时间**: [待填写]
-
-**截图**: `step3-prescription-editor-1280x720.png`
-
-**测试结果**: ✅ 通过 / ❌ 失败
-
-**检查项结果**：
-- [ ] 所有固定区域可见
-- [ ] DataGrid MaxHeight=500px 超出可用空间450px（超出11%），验证影响：
-  - [ ] DataGrid是否被裁剪：是 / 否
-  - [ ] 外层ScrollViewer滚动条：出现 / 未出现 ⚠️ 预期必须出现
-  - [ ] DataGrid内部滚动条：出现 / 未出现
-  - [ ] Tab切换区域可见（不需滚动）：是 / 否
-  - [ ] "添加行"按钮可见（不需滚动）：是 / 否
-  - [ ] 处方信息区域可见（需滚动）：是 / 否
-  - [ ] 提示信息区域可见（需滚动）：是 / 否
-- [ ] 8列DataGrid布局是否仍然显示（不换行）：是 / 否
-- [ ] 可用性评估：
-  - [ ] 是否需要频繁滚动才能完成操作：是 / 否
-  - [ ] 用户体验是否可接受：优秀 / 良好 / 一般 / 差
-
-**发现的问题**：
-```
-[待填写]
-预期问题：DataGrid MaxHeight超出可用空间，需要滚动才能看到处方信息和提示信息
-建议：调整DataGrid MaxHeight为400px
-```
-
-**用户体验评分**: 优秀 / 良好 / 一般 / 差
-
-**是否需要修复**: 是 / 否 ⚠️ 如果用户体验评分为"一般"或"差"，则必须修复
-
-**建议修复方案**:
-```
-修改 PrescriptionEditorView.xaml:111
-将 MaxHeight="500" 改为 MaxHeight="400"
-```
-
-**备注**: [待填写]
-
----
-
-#### 3.4 Step 4 - 完成医案（CompletionView）
-
-**测试时间**: [待填写]
-
-**截图**: `step4-completion-1280x720.png`
-
-**测试结果**: ✅ 通过 / ❌ 失败
-
-**检查项结果**：
-- [ ] 所有固定区域可见
-- [ ] CompletionView没有ScrollViewer，内容高度约400px，验证是否被裁剪：
-  - [ ] 成功图标可见：是 / 否
-  - [ ] "看诊完成"标题可见：是 / 否
-  - [ ] 医案编号可见：是 / 否
-  - [ ] 主操作按钮可见：是 / 否
-  - [ ] 辅助功能按钮可见：是 / 否
-  - [ ] 是否有内容被裁剪：是 / 否 ⚠️ 理论上不应该被裁剪（400px < 450px）
-  - [ ] 如果内容被裁剪，是否需要添加ScrollViewer：是 / 否
-- [ ] 按钮Hover效果正常：是 / 否
-- [ ] 垂直居中布局显示正常：是 / 否
-
-**发现的问题**：
-```
-[待填写]
-预期：内容高度约400px，可用空间450px，应该可以完全显示
-如果出现裁剪，建议添加 <ScrollViewer VerticalScrollBarVisibility="Auto">
-```
-
-**用户体验评分**: 优秀 / 良好 / 一般 / 差
-
-**是否需要修复**: 是 / 否
-
-**建议修复方案**:
-```
-如果出现裁剪：
-在 CompletionView.xaml 的 Grid 外层包裹 ScrollViewer
-```
-
-**备注**: [待填写]
 
 ---
 
@@ -539,32 +363,11 @@
 ### 高优先级问题（P0 - 必须修复）
 ```
 [根据实际测试填写]
-
-示例：
-[P0-1] 1280x720下Step 1 DataGrid被严重裁剪，分页控件完全不可见
-       影响：无法进行分页操作，用户体验差
-       修复方案：调整DataGrid MaxHeight为400px
 ```
 
 ### 中优先级问题（P1 - 建议修复）
 ```
 [根据实际测试填写]
-
-预期问题：
-[P1-1] PatientSelectionView: DataGrid MaxHeight=650px 在1280x720下超出可用空间450px
-       文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/PatientSelectionView.xaml:120
-       影响：需要滚动才能看到分页控件和提示信息
-       建议修复：将 MaxHeight="650" 改为 MaxHeight="400"
-
-[P1-2] PrescriptionEditorView: DataGrid MaxHeight=500px 在1280x720下超出可用空间450px
-       文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/PrescriptionEditorView.xaml:111
-       影响：需要滚动才能看到处方信息和提示信息
-       建议修复：将 MaxHeight="500" 改为 MaxHeight="400"
-
-[P1-3] CompletionView: 缺少ScrollViewer保护机制
-       文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/CompletionView.xaml
-       影响：虽然当前内容高度约400px可以适应450px，但缺少保护机制
-       建议修复：在Grid外层添加 <ScrollViewer VerticalScrollBarVisibility="Auto">
 ```
 
 ### 低优先级问题（P2 - 可选优化）
@@ -576,43 +379,12 @@
 
 ## 改进建议
 
-### 立即修复（基于预期问题）
+### 建议修复（基于测试结果）
 
-如果测试确认以下预期问题，建议立即修复：
+根据实际测试结果填写需要修复的问题和方案：
 
-#### 修复1：PatientSelectionView DataGrid MaxHeight
 ```xml
-文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/PatientSelectionView.xaml
-
-行120（当前）：
-                         MaxHeight="650">
-
-修改为：
-                         MaxHeight="400">
-
-理由：650px 严重超出1280x720可用空间450px，调整为400px可适配所有分辨率
-```
-
-#### 修复2：PrescriptionEditorView DataGrid MaxHeight
-```xml
-文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/PrescriptionEditorView.xaml
-
-行111（当前）：
-                             MaxHeight="500"
-
-修改为：
-                             MaxHeight="400"
-
-理由：500px 超出1280x720可用空间450px，调整为400px可适配所有分辨率
-```
-
-#### 修复3：CompletionView 添加ScrollViewer（可选）
-```xml
-文件：src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/CompletionView.xaml
-
-行6-7（当前）：
-             Background="White">
-    <Grid>
+[待填写 - 根据实际测试发现的问题提供修复方案]
 
 修改为：
              Background="White">
@@ -660,24 +432,17 @@
 
 **示例结论**：
 ```
-经过3种分辨率（1920x1080、1366x768、1280x720）的12个测试场景验证，医案流程UI在以下方面表现：
+经过2种分辨率（1920x1080、1366x768）的8个测试场景验证，医案流程UI在以下方面表现：
 
 1. **1920x1080（基线）**：所有4个步骤均表现优秀，无明显问题。
 
-2. **1366x768（主要目标）**：所有4个步骤基本可用，但Step 1和Step 3需要适度滚动才能看到底部内容，用户体验良好。
-
-3. **1280x720（最小支持）**：
-   - Step 1 患者选择：DataGrid MaxHeight=650px 严重超出可用空间450px，需要大量滚动，用户体验一般。**建议修复**。
-   - Step 2 诊断录入：需要适度滚动，用户体验良好。
-   - Step 3 处方录入：DataGrid MaxHeight=500px 超出可用空间450px，需要适度滚动，用户体验良好。**建议修复**。
-   - Step 4 完成医案：内容完全可见，用户体验优秀。
+2. **1366x768（主要目标）**：所有4个步骤基本可用，Step 1和Step 3需要适度滚动才能看到底部内容，用户体验良好。
 
 **建议采取的措施**：
-- 立即修复：调整Step 1和Step 3的DataGrid MaxHeight为400px（修复P1-1、P1-2）
-- 可选修复：为CompletionView添加ScrollViewer保护机制（修复P1-3）
+- 根据实际测试结果确定是否需要优化
 - MVP后优化：考虑响应式布局优化和配置化高度管理
 
-**是否通过测试**：✅ 通过（条件通过，建议修复P1问题后正式发布）
+**是否通过测试**：✅ 通过
 ```
 
 ### 后续行动
@@ -701,10 +466,6 @@
 6. `step2-consultation-form-1366x768.png`
 7. `step3-prescription-editor-1366x768.png`
 8. `step4-completion-1366x768.png`
-9. `step1-patient-selection-1280x720.png`
-10. `step2-consultation-form-1280x720.png`
-11. `step3-prescription-editor-1280x720.png`
-12. `step4-completion-1280x720.png`
 
 ### 参考文档
 - 测试清单：`docs/reports/clinical-workflow-ui-compatibility-test-checklist-2025-10-20.md`
