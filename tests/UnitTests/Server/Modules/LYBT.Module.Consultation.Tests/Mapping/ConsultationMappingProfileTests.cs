@@ -38,62 +38,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
             config.AssertConfigurationIsValid();
         }
 
-        [Fact]
-        public void Map_ConsultationDetailDto_To_Consultation_Should_Success()
-        {
-            // Arrange
-            var detailDto = new ConsultationDetailDto
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                MedicalCaseId = Guid.NewGuid(),
-                ChiefComplaint = "头痛",
-                PresentIllness = "头痛3天，伴有恶心",
-                Inspection = "面色红润",
-                AuscultationOlfaction = "无异味",
-                Inquiry = "饮食正常",
-                Palpation = "脉滑数",
-                TCMDiagnosis = "肝阳上亢",
-                // Diagnosis属性仅在基类ConsultationInputBaseDto中
-                TreatmentPrinciple = "平肝潜阳",
-                MedicalAdvice = "患者精神状态良好",
-                // 显示字段，应该被忽略
-                PatientName = "张三",
-                DoctorName = "李医生",
-                StartTime = DateTime.Now,
-                EndTime = DateTime.Now.AddHours(1),
-                ConsultationStatus = ConsultationStatus.InProgress
-            };
-
-            // Act
-            var consultation = _mapper.Map<LYBT.Entities.Consultation.Consultation>(detailDto);
-
-            // Assert
-            consultation.Should().NotBeNull();
-            // PatientId、UserId、MedicalCaseId已移至MedicalCase聚合根
-            // consultation.PatientId.Should().Be(detailDto.PatientId);
-            // consultation.UserId.Should().Be(detailDto.UserId);
-            // consultation.MedicalCaseId.Should().Be(detailDto.MedicalCaseId);
-            consultation.ChiefComplaint.Should().Be(detailDto.ChiefComplaint);
-            consultation.PresentIllness.Should().Be(detailDto.PresentIllness);
-            consultation.Inspection.Should().Be(detailDto.Inspection);
-            consultation.AuscultationOlfaction.Should().Be(detailDto.AuscultationOlfaction);
-            consultation.Inquiry.Should().Be(detailDto.Inquiry);
-            consultation.Palpation.Should().Be(detailDto.Palpation);
-            consultation.TCMDiagnosis.Should().Be(detailDto.TCMDiagnosis);
-            // TCMDiagnosis and TreatmentPrinciple should map from Diagnosis and TreatmentPrinciple DTOs
-            // Note: Entity doesn't have Diagnosis field, only TCMDiagnosis
-            consultation.TreatmentPrinciple.Should().Be(detailDto.TreatmentPrinciple);
-            consultation.MedicalAdvice.Should().Be(detailDto.MedicalAdvice);
-
-            // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
-            consultation.Id.Should().NotBe(Guid.Empty);
-            // Patient、User已移至MedicalCase聚合根
-            // consultation.Patient.Should().BeNull();
-            // consultation.User.Should().BeNull();
-            consultation.MedicalCase.Should().BeNull();
-        }
+        // Issue #1562 Phase 5: 已删除测试 - ConsultationDetailDto类型已删除
 
         /* // 暂时注释掉，等待Consultation聚合根重构完成
         [Fact]
@@ -232,45 +177,7 @@ namespace LYBT.Module.Consultation.Tests.Mapping
         }
         */
 
-        [Fact]
-        public void Map_ConsultationDetailDto_With_NullFields_Should_Success()
-        {
-            // Arrange
-            var detailDto = new ConsultationDetailDto
-            {
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                ChiefComplaint = "主诉",
-                PresentIllness = null,
-                Inspection = null,
-                AuscultationOlfaction = null,
-                Inquiry = null,
-                Palpation = null,
-                TCMDiagnosis = null,
-                // Diagnosis属性仅在基类ConsultationInputBaseDto中
-                TreatmentPrinciple = null,
-                MedicalAdvice = null
-            };
-
-            // Act
-            var consultation = _mapper.Map<LYBT.Entities.Consultation.Consultation>(detailDto);
-
-            // Assert
-            consultation.Should().NotBeNull();
-            // PatientId、UserId已移至MedicalCase聚合根
-            // consultation.PatientId.Should().Be(detailDto.PatientId);
-            // consultation.UserId.Should().Be(detailDto.UserId);
-            consultation.ChiefComplaint.Should().Be(detailDto.ChiefComplaint);
-            consultation.PresentIllness.Should().BeNull();
-            consultation.Inspection.Should().BeNull();
-            consultation.AuscultationOlfaction.Should().BeNull();
-            consultation.Inquiry.Should().BeNull();
-            consultation.Palpation.Should().BeNull();
-            consultation.TCMDiagnosis.Should().BeNull();
-            consultation.TCMDiagnosis.Should().BeNull();
-            consultation.TreatmentPrinciple.Should().BeNull();
-            consultation.MedicalAdvice.Should().BeNull();
-        }
+        // Issue #1562 Phase 5: 已删除测试 - ConsultationDetailDto类型已删除
 
         /* // 暂时注释掉，等待Consultation聚合根重构完成
         [Fact]

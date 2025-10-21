@@ -27,8 +27,8 @@ public class ConsultationCreateDtoValidatorTests
             MedicalCaseId = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
             UserId = Guid.NewGuid(),
-            ChiefComplaint = "头痛",
-            StartTime = DateTime.Now.AddDays(-1)
+            ChiefComplaint = "头痛"
+            // Issue #1562 Phase 5: 已删除StartTime字段
         };
 
         // Act

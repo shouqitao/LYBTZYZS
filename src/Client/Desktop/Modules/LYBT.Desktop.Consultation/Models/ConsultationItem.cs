@@ -225,9 +225,10 @@ public class ConsultationItem : BindableBase
             TcmDiagnosis = dto.TCMDiagnosis, // ConsultationDto中是TCMDiagnosis
             Syndrome = null, // ConsultationDto中没有此属性
             TreatmentPrinciple = dto.TreatmentPrinciple,
-            Status = dto.ConsultationStatus, // 使用ConsultationStatus而不是Status
+            // Issue #1562 Phase 2: ConsultationDto已删除Status/EndTime字段
+            Status = dto.Status == CommonStatus.Enabled ? ConsultationStatus.Completed : ConsultationStatus.Pending,
             CreatedAt = dto.CreatedAt, // ConsultationDto继承的属性
-            CompletedAt = dto.EndTime, // 使用EndTime
+            CompletedAt = null, // EndTime已删除
             PrescriptionId = null // ConsultationDto中没有此属性
         };
     }
@@ -253,9 +254,7 @@ public class ConsultationItem : BindableBase
             Palpation = Palpation,
             TCMDiagnosis = TcmDiagnosis, // ConsultationDto中是TCMDiagnosis
             TreatmentPrinciple = TreatmentPrinciple,
-            ConsultationStatus = Status,
-            StartTime = CreatedAt,
-            EndTime = CompletedAt,
+            // Issue #1562 Phase 2: ConsultationDto已删除ConsultationStatus/StartTime/EndTime字段
             Remark = null, // ConsultationItem中没有Note属性
             Status = Status == ConsultationStatus.Completed ? CommonStatus.Enabled : CommonStatus.Disabled,
             CreatedAt = CreatedAt,

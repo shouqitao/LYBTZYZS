@@ -70,17 +70,26 @@
 - ✅ 一次就诊 = 一个处方（不支持同一就诊开多个处方）
 - ✅ 一次挂号 = 一次就诊（一号一诊）
 
-**现有代码中的关系字段验证**：
+**实际实现方式**（v2.0更新）：
 ```csharp
-// MedicalCaseDto
-public Guid? ConsultationId { get; set; }  // ✅ 1:1关联
-public Guid? PrescriptionId { get; set; }  // ✅ 1:1关联
+// Issue #1562 后的简化设计：
+// - MedicalCase与Consultation使用共享主键（Consultation.Id == MedicalCase.Id）
+// - MedicalCase与Prescription也使用共享主键（Prescription.Id == MedicalCase.Id）
+// - 通过EF Core导航属性关联，而非显式外键字段
 
-// ConsultationDto
-public Guid MedicalCaseId { get; set; }    // ✅ 属于医案
+// Entity层实际字段：
+public class MedicalCase
+{
+    public Guid Id { get; set; }
+    public Consultation? Consultation { get; set; }  // 导航属性，1:1
+    public Prescription? Prescription { get; set; }  // 导航属性，1:1
+}
 
-// PrescriptionDto
-public Guid MedicalCaseId { get; set; }    // ✅ 属于医案
+public class Consultation
+{
+    public Guid Id { get; set; }  // 与MedicalCase.Id相同（共享主键）
+    public MedicalCase MedicalCase { get; set; }  // 导航属性
+}
 ```
 
 ---
@@ -89,19 +98,24 @@ public Guid MedicalCaseId { get; set; }    // ✅ 属于医案
 
 **答案**：**医案作为容器先于内容创建**（采用流程A）
 
-**完整流程**：
+**完整流程**（v2.0更新 - Issue #1562）：
 ```
 1. 患者选择 → 立即创建MedicalCase（患者ID、医生ID、就诊日期）
-             ↓ Status = Active, ConsultationId = null, PrescriptionId = null
+             ↓ Status = Active
 
-2. 填写诊断表单 → 创建Consultation（关联MedicalCaseId）
-             ↓ 更新 MedicalCase.ConsultationId = newConsultationId
+2. 填写诊断表单 → 创建Consultation（使用共享主键：Consultation.Id = MedicalCase.Id）
+             ↓ 通过导航属性关联：MedicalCase.Consultation = newConsultation
 
-3. 开处方（可选）→ 创建Prescription（关联MedicalCaseId）
-             ↓ 更新 MedicalCase.PrescriptionId = newPrescriptionId
+3. 开处方（可选）→ 创建Prescription（使用共享主键：Prescription.Id = MedicalCase.Id）
+             ↓ 通过导航属性关联：MedicalCase.Prescription = newPrescription
 
-4. 完成就诊 → 更新MedicalCase（Status = Closed, EndTime = DateTime.Now）
+4. 完成就诊 → 更新MedicalCase（Status = Closed）
 ```
+
+**关键变更说明**（v2.0 - Issue #1562肃清计划）：
+- ✅ 删除外键字段（ConsultationId/PrescriptionId），改用共享主键
+- ✅ 简化时间跟踪（仅使用CreatedAt/UpdatedAt，删除StartTime/EndTime）
+- ✅ 简化状态管理（统一使用CommonStatus，删除ConsultationStatus）
 
 **关键理解**：
 - ✅ 医案 = 容器（Container），先于内容存在
@@ -231,22 +245,26 @@ public Guid? MedicalCaseId { get; set; }  // 就诊后填充
 - `Active`（活跃状态，可以添加诊断、处方）
 - `Closed`（已关闭，已完成/已归档）
 
-**关键字段**：
+**关键字段**（v2.0更新 - Issue #1562）：
 ```csharp
 public Guid Id { get; set; }
 public Guid PatientId { get; set; }
 public Guid DoctorId { get; set; }
 public DateTime ConsultationDate { get; set; }
 
-// 1:1关联
-public Guid? ConsultationId { get; set; }
-public Guid? PrescriptionId { get; set; }
+// ❌ 已删除外键字段（v1.0）：
+// public Guid? ConsultationId { get; set; }
+// public Guid? PrescriptionId { get; set; }
+
+// ✅ v2.0使用导航属性（共享主键关联）：
+public Consultation? Consultation { get; set; }  // 1:1，共享主键
+public Prescription? Prescription { get; set; }  // 1:1，共享主键
 
 // 未来扩展：关联挂号（可选）
 public Guid? RegistrationId { get; set; }
 
-// 状态管理
-public MedicalCaseStatus CaseStatus { get; set; }
+// 状态管理（使用CommonStatus）
+public CommonStatus Status { get; set; }
 ```
 
 ---
@@ -255,19 +273,27 @@ public MedicalCaseStatus CaseStatus { get; set; }
 
 **本质**：诊疗活动的详细记录，中医的"辩证"环节。
 
-**职责**：
+**职责**（v2.0回归核心）：
 - 记录四诊（望、闻、问、切）
 - 记录主诉、现病史
 - 记录中医诊断结果、治疗原则
+- ❌ 不负责时间跟踪（使用Entity基类的CreatedAt/UpdatedAt）
+- ❌ 不负责工作流状态（使用CommonStatus统一管理）
 
-**关键字段**：
+**关键字段**（v2.0更新 - Issue #1562）：
 ```csharp
-public Guid Id { get; set; }
-public Guid MedicalCaseId { get; set; }  // 属于医案
-public Guid PatientId { get; set; }
-public Guid UserId { get; set; }  // 医生ID
+public Guid Id { get; set; }  // 与MedicalCase.Id相同（共享主键）
 
-// 诊断内容
+// ❌ 已删除字段（v1.0过度设计）：
+// public Guid MedicalCaseId { get; set; }  // 共享主键后不需要
+// public Guid PatientId { get; set; }      // 通过MedicalCase获取
+// public Guid UserId { get; set; }         // 通过MedicalCase获取
+// public DateTime StartTime { get; set; }  // 删除，使用CreatedAt
+// public DateTime? EndTime { get; set; }   // 删除，使用UpdatedAt
+// public ConsultationStatus ConsultationStatus { get; set; }  // 删除，使用CommonStatus
+
+// ✅ v2.0保留的核心字段：
+// 诊断内容（四诊）
 public string? ChiefComplaint { get; set; }        // 主诉
 public string? PresentIllness { get; set; }        // 现病史
 public string? Inspection { get; set; }            // 望诊
@@ -276,13 +302,13 @@ public string? Inquiry { get; set; }               // 问诊
 public string? Palpation { get; set; }             // 切诊
 public string? TCMDiagnosis { get; set; }          // 中医诊断
 public string? TreatmentPrinciple { get; set; }    // 治疗原则
+public string? MedicalAdvice { get; set; }         // 医嘱（v2.0新增）
 
-// 时间管理
-public DateTime StartTime { get; set; }
-public DateTime? EndTime { get; set; }
+// 导航属性
+public MedicalCase MedicalCase { get; set; }  // 所属医案
 
-// 状态管理
-public ConsultationStatus ConsultationStatus { get; set; }
+// 状态管理（统一使用CommonStatus）
+public CommonStatus Status { get; set; }
 ```
 
 ---
@@ -380,143 +406,167 @@ public decimal TotalWeight { get; }      // 总重量
 
 ### 5.1 MedicalCase（医案）表结构
 
+**设计说明**：
+- ✅ Consultation和Prescription通过**共享主键**关联（`Consultation.Id == MedicalCase.Id`）
+- ✅ 使用EF Core导航属性（`virtual Consultation? Consultation`），无需外键字段
+- ✅ 1:1关系通过Fluent API配置（参见`ConsultationConfiguration.cs`）
+
 ```sql
 CREATE TABLE MedicalCases (
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    CaseNumber NVARCHAR(50),                    -- 案例编号
 
     -- 关联患者和医生
     PatientId UNIQUEIDENTIFIER NOT NULL,
     PatientName NVARCHAR(100) NOT NULL,
-    PatientGender NVARCHAR(10),
-    PatientAge INT,
     DoctorId UNIQUEIDENTIFIER NOT NULL,
     DoctorName NVARCHAR(100) NOT NULL,
 
     -- 时间管理
     ConsultationDate DATETIME2 NOT NULL DEFAULT GETDATE(),
 
-    -- 1:1关联（双向关联，用于快速查询）
-    ConsultationId UNIQUEIDENTIFIER NULL,       -- 关联诊断
-    PrescriptionId UNIQUEIDENTIFIER NULL,       -- 关联处方
-    RegistrationId UNIQUEIDENTIFIER NULL,       -- 关联挂号（未来功能）
-
     -- 状态管理
-    CaseStatus INT NOT NULL DEFAULT 10,         -- 10=Active, 20=Closed
+    Status INT NOT NULL DEFAULT 10,             -- 10=Active, 20=Closed (MedicalCaseStatus枚举)
 
     -- 其他字段
-    ChiefComplaint NVARCHAR(500),               -- 主诉（冗余，方便查询）
     Remark NVARCHAR(500),
 
-    -- 审计字段（继承自StatusDto）
-    Status INT NOT NULL DEFAULT 1,              -- 1=Active
+    -- 审计字段（继承自BaseEntity）
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CreatedBy UNIQUEIDENTIFIER,
     UpdatedBy UNIQUEIDENTIFIER,
+    IsDeleted BIT NOT NULL DEFAULT 0,
+    RowVersion ROWVERSION,
 
     -- 外键约束
     CONSTRAINT FK_MedicalCase_Patient FOREIGN KEY (PatientId) REFERENCES Patients(Id),
-    CONSTRAINT FK_MedicalCase_Doctor FOREIGN KEY (DoctorId) REFERENCES Users(Id),
-    CONSTRAINT FK_MedicalCase_Consultation FOREIGN KEY (ConsultationId) REFERENCES Consultations(Id),
-    CONSTRAINT FK_MedicalCase_Prescription FOREIGN KEY (PrescriptionId) REFERENCES Prescriptions(Id),
-    CONSTRAINT FK_MedicalCase_Registration FOREIGN KEY (RegistrationId) REFERENCES Registrations(Id)
+    CONSTRAINT FK_MedicalCase_Doctor FOREIGN KEY (DoctorId) REFERENCES Users(Id)
 );
 
 -- 索引
 CREATE INDEX IX_MedicalCase_PatientId ON MedicalCases(PatientId);
 CREATE INDEX IX_MedicalCase_DoctorId ON MedicalCases(DoctorId);
 CREATE INDEX IX_MedicalCase_ConsultationDate ON MedicalCases(ConsultationDate);
-CREATE INDEX IX_MedicalCase_CaseStatus ON MedicalCases(CaseStatus);
+CREATE INDEX IX_MedicalCase_Status ON MedicalCases(Status);
+```
+
+**导航属性** (代码层)：
+```csharp
+public class MedicalCase : BaseEntity
+{
+    // ✅ 1:1关系，通过共享主键关联
+    public virtual Consultation? Consultation { get; set; }
+    public virtual Prescription? Prescription { get; set; }
+    // 未来功能
+    public virtual Registration? Registration { get; set; }
+}
 ```
 
 ### 5.2 Consultation（诊断）表结构
 
+**设计说明**：
+- ✅ **共享主键**：`Consultation.Id == MedicalCase.Id`（通过EF Core Fluent API配置）
+- ✅ **无冗余字段**：PatientId/UserId通过`MedicalCase`导航属性获取
+- ✅ **1:1关系**：一个医案对应唯一一个诊断
+
 ```sql
 CREATE TABLE Consultations (
-    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    -- ✅ 共享主键：Id必须等于关联的MedicalCase.Id
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
 
-    -- 关联医案
-    MedicalCaseId UNIQUEIDENTIFIER NOT NULL,
-    PatientId UNIQUEIDENTIFIER NOT NULL,
-    UserId UNIQUEIDENTIFIER NOT NULL,           -- 医生ID
+    -- 诊断内容（四诊合参）
+    ChiefComplaint NVARCHAR(500),               -- 主诉
+    PresentIllness NVARCHAR(1000),              -- 现病史
+    Inspection NVARCHAR(500),                   -- 望诊
+    AuscultationOlfaction NVARCHAR(500),        -- 闻诊
+    Inquiry NVARCHAR(500),                      -- 问诊
+    Palpation NVARCHAR(500),                    -- 切诊
 
-    -- 诊断内容
-    ChiefComplaint NVARCHAR(MAX),               -- 主诉
-    PresentIllness NVARCHAR(MAX),               -- 现病史
-    Inspection NVARCHAR(MAX),                   -- 望诊
-    AuscultationOlfaction NVARCHAR(MAX),        -- 闻诊
-    Inquiry NVARCHAR(MAX),                      -- 问诊
-    Palpation NVARCHAR(MAX),                    -- 切诊
-    TCMDiagnosis NVARCHAR(MAX),                 -- 中医诊断
-    TreatmentPrinciple NVARCHAR(MAX),           -- 治疗原则
+    -- 中医诊断结果
+    TCMDiagnosis NVARCHAR(500),                 -- 中医辨证
+    TreatmentPrinciple NVARCHAR(500),           -- 治疗原则
+    MedicalAdvice NVARCHAR(1000),               -- 医嘱
 
-    -- 时间管理
-    StartTime DATETIME2 NOT NULL DEFAULT GETDATE(),
-    EndTime DATETIME2 NULL,
-
-    -- 状态管理
-    ConsultationStatus INT NOT NULL DEFAULT 1,  -- 1=InProgress, 2=Completed
+    -- 状态
+    Status INT NOT NULL DEFAULT 1,              -- 1=Enabled (CommonStatus枚举)
 
     -- 其他字段
     Remark NVARCHAR(500),
 
-    -- 审计字段
-    Status INT NOT NULL DEFAULT 1,
+    -- 审计字段（继承自BaseEntity）
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CreatedBy UNIQUEIDENTIFIER,
     UpdatedBy UNIQUEIDENTIFIER,
+    IsDeleted BIT NOT NULL DEFAULT 0,
+    RowVersion ROWVERSION,
 
-    -- 外键约束
-    CONSTRAINT FK_Consultation_MedicalCase FOREIGN KEY (MedicalCaseId) REFERENCES MedicalCases(Id),
-    CONSTRAINT FK_Consultation_Patient FOREIGN KEY (PatientId) REFERENCES Patients(Id),
-    CONSTRAINT FK_Consultation_Doctor FOREIGN KEY (UserId) REFERENCES Users(Id)
+    -- 共享主键约束（EF Core配置）
+    CONSTRAINT FK_Consultation_MedicalCase FOREIGN KEY (Id) REFERENCES MedicalCases(Id) ON DELETE CASCADE
 );
+```
 
--- 索引
-CREATE INDEX IX_Consultation_MedicalCaseId ON Consultations(MedicalCaseId);
-CREATE INDEX IX_Consultation_PatientId ON Consultations(PatientId);
+**EF Core配置** (ConsultationConfiguration.cs):
+```csharp
+entity.HasOne(c => c.MedicalCase)
+      .WithOne(m => m.Consultation)
+      .HasForeignKey<Consultation>(c => c.Id)  // 共享主键
+      .IsRequired()
+      .OnDelete(DeleteBehavior.Cascade);
 ```
 
 ### 5.3 Prescription（处方）表结构
 
+**设计说明**：
+- ✅ Prescription使用**传统FK模式**（MedicalCaseId字段），与Consultation的共享主键设计不同
+- ⚠️ PatientId和UserId为**冗余字段**（可空），实际应通过MedicalCase导航属性获取（Phase 2待简化）
+- ✅ 1:1关系通过唯一索引约束（UX_Prescriptions_MedicalCaseId）
+- ✅ Fluent API配置参见PrescriptionConfiguration.cs
+
 ```sql
 CREATE TABLE Prescriptions (
+    -- ✅ 独立主键（非共享主键）
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
 
-    -- 关联医案
+    -- ✅ 关联医案（必需，有FK约束和唯一索引）
     MedicalCaseId UNIQUEIDENTIFIER NOT NULL,
-    PatientId UNIQUEIDENTIFIER NOT NULL,
-    UserId UNIQUEIDENTIFIER NOT NULL,           -- 医生ID
+
+    -- ⚠️ 冗余字段（可空，Phase 2待删除，应通过MedicalCase.PatientId/UserId获取）
+    PatientId UNIQUEIDENTIFIER NULL,            -- 冗余字段，通过MedicalCase获取
+    UserId UNIQUEIDENTIFIER NULL,               -- 冗余字段，通过MedicalCase获取
 
     -- 处方内容
-    Indication NVARCHAR(500),                   -- 主治
+    PrescriptionNumber NVARCHAR(20) NULL,       -- 处方编号（格式：RX-YYYYMMDD-NNNN，Issue #1551）
+    Indication NVARCHAR(500),                   -- 主治（适应症）
     DosageCount INT NOT NULL DEFAULT 7,         -- 剂数
-    Usage NVARCHAR(500),                        -- 用法
-    Discount DECIMAL(18, 2) NOT NULL DEFAULT 1.0, -- 折扣
+    Discount DECIMAL(3, 2) NOT NULL DEFAULT 1.0, -- 折扣（0-1之间，0.80表示8折）
     Advice NVARCHAR(500),                       -- 医嘱
-    ReferencedFormulas NVARCHAR(500),           -- 引用验方名称
+    FormulaSource NVARCHAR(200),                -- 验方来源（自动填写）
+    ReferencedFormulas NVARCHAR(500),           -- 引用验方名称列表（逗号分隔）
+
+    -- 打印管理字段
+    PrintVersion INT NOT NULL DEFAULT 1,        -- 当前打印版本号
+    LastPrintedAt DATETIME2 NULL,               -- 最后打印时间
+    PrintCount INT NOT NULL DEFAULT 0,          -- 打印次数
+    IsPrinted BIT NOT NULL DEFAULT 0,           -- 是否已打印
 
     -- 其他字段
     Remark NVARCHAR(500),
 
     -- 审计字段
-    Status INT NOT NULL DEFAULT 1,
+    Status INT NOT NULL DEFAULT 1,              -- 处方状态（PrescriptionStatus枚举）
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     UpdatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    CreatedBy UNIQUEIDENTIFIER,
+    CreatedBy UNIQUEIDENTIFIER NOT NULL,        -- 必需（医生用户ID）
     UpdatedBy UNIQUEIDENTIFIER,
+    RowVersion ROWVERSION,                      -- 并发控制
 
-    -- 外键约束
-    CONSTRAINT FK_Prescription_MedicalCase FOREIGN KEY (MedicalCaseId) REFERENCES MedicalCases(Id),
-    CONSTRAINT FK_Prescription_Patient FOREIGN KEY (PatientId) REFERENCES Patients(Id),
-    CONSTRAINT FK_Prescription_Doctor FOREIGN KEY (UserId) REFERENCES Users(Id)
+    -- 外键约束（仅关联MedicalCase，无PatientId/UserId的FK）
+    CONSTRAINT FK_Prescription_MedicalCase FOREIGN KEY (MedicalCaseId) REFERENCES MedicalCases(Id) ON DELETE CASCADE
 );
 
--- 索引
-CREATE INDEX IX_Prescription_MedicalCaseId ON Prescriptions(MedicalCaseId);
-CREATE INDEX IX_Prescription_PatientId ON Prescriptions(PatientId);
+-- 唯一索引（保证一病案至多一处方）
+CREATE UNIQUE INDEX UX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 ```
 
 ### 5.4 Registration（挂号）表结构（未来功能）

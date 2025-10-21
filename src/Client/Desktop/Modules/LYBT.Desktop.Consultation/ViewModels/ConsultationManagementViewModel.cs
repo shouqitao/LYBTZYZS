@@ -83,14 +83,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ICommand RefreshCommand { get; }
         public DelegateCommand<ConsultationDto> ViewDetailsCommand { get; }
 
-        public DelegateCommand<ConsultationDto> ViewPrescriptionCommand { get; }
-        public DelegateCommand<ConsultationDto> PrintCommand { get; }
-        public DelegateCommand<ConsultationDto> CopyRecordCommand { get; }
-        public ICommand StatisticsCommand { get; }
-        public ICommand FirstPageCommand { get; }
-        public ICommand LastPageCommand { get; }
-        public ICommand PreviousPageCommand { get; }
-        public ICommand NextPageCommand { get; }
+        // Issue #1562 Phase 1: 已删除扩展功能命令（ViewPrescription/Print/Copy/Pagination）
 
         #endregion ����
 
@@ -114,15 +107,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             ViewDetailsCommand = new DelegateCommand<ConsultationDto>(ViewDetails, item => item != null && CanViewDetail);
 
-            ViewPrescriptionCommand = new DelegateCommand<ConsultationDto>(ViewPrescription, item => item != null);
-            PrintCommand = new DelegateCommand<ConsultationDto>(Print, item => item != null);
-            CopyRecordCommand = new DelegateCommand<ConsultationDto>(CopyRecord, item => item != null);
-            StatisticsCommand = new DelegateCommand(ShowStatistics);
-
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage);
-            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
-            NextPageCommand = new DelegateCommand(ExecuteNextPage);
+            // Issue #1562 Phase 1: 已删除扩展功能命令初始化
         }
 
         #endregion 构造函数
@@ -204,56 +189,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ShowInfoMessage("查看详情功能开发中");
         }
 
-
-        private void ViewPrescription(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-
-            Logger.LogInformation("查看处方: {ConsultationId}", consultation.Id);
-            ShowInfoMessage("查看处方功能开发中");
-        }
-
-        private void Print(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-
-            Logger.LogInformation("打印诊疗记录: {ConsultationId}", consultation.Id);
-            ShowInfoMessage("打印功能开发中");
-        }
-
-        private void CopyRecord(ConsultationDto consultation)
-        {
-            if (consultation == null) return;
-
-            Logger.LogInformation("复制诊疗记录: {ConsultationId}", consultation.Id);
-            ShowInfoMessage("复制记录功能开发中");
-        }
-
-        private void ShowStatistics()
-        {
-            Logger.LogInformation("统计功能开发中");
-            ShowInfoMessage("统计功能开发中");
-        }
-
-        private void ExecuteFirstPage()
-        {
-            Logger.LogDebug("首页命令 - 功能开发中");
-        }
-
-        private void ExecuteLastPage()
-        {
-            Logger.LogDebug("末页命令 - 功能开发中");
-        }
-
-        private void ExecutePreviousPage()
-        {
-            Logger.LogDebug("上一页命令 - 功能开发中");
-        }
-
-        private void ExecuteNextPage()
-        {
-            Logger.LogDebug("下一页命令 - 功能开发中");
-        }
+        // Issue #1562 Phase 1: 已删除扩展功能实现（ViewPrescription/Print/CopyRecord/Pagination）
 
         #endregion ���ݲ���
     }

@@ -43,18 +43,7 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
-        /// <summary>
-        /// 开始新的诊疗会话
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <returns>新创建的诊疗记录</returns>
-        Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId);
-
-        /// <summary>
-        /// 获取诊疗统计数据 (Issue #1168)
-        /// </summary>
-        /// <param name="startDate">开始日期（可选）</param>
-        /// <param name="endDate">结束日期（可选）</param>
-        Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null);
+        // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
+        // Issue #1562 Phase 1: 已删除 GetStatisticsAsync（统计功能属于过度设计）
     }
 }

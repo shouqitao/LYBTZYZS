@@ -33,9 +33,8 @@ namespace LYBT.Shared.Models.Extensions
                 Palpation = dto.Palpation,
                 TCMDiagnosis = dto.TCMDiagnosis,
                 TreatmentPrinciple = dto.TreatmentPrinciple,
-                StartTime = dto.StartTime,
-                EndTime = null,
-                ConsultationStatus = ConsultationStatus.InProgress,
+                MedicalAdvice = dto.MedicalAdvice,
+                // Issue #1562 Phase 2: 移除StartTime/EndTime/ConsultationStatus
                 Remark = dto.Remark,
                 Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
@@ -62,6 +61,7 @@ namespace LYBT.Shared.Models.Extensions
             existing.Palpation = dto.Palpation;
             existing.TCMDiagnosis = dto.TCMDiagnosis;
             existing.TreatmentPrinciple = dto.TreatmentPrinciple;
+            existing.MedicalAdvice = dto.MedicalAdvice; // Issue #1562 Phase 2
             existing.Remark = dto.Remark;
             existing.UpdatedAt = DateTime.UtcNow;
         }

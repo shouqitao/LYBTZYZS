@@ -165,9 +165,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             EventAggregator.GetEvent<PatientSelectedEvent>()
                 .Subscribe(OnPatientSelected, ThreadOption.UIThread);
 
-            // Issue #1557 Phase 3: 订阅诊断完成事件
-            EventAggregator.GetEvent<ConsultationCompletedEvent>()
-                .Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
+            // Issue #1562 Phase 1: 已删除ConsultationCompletedEvent订阅（工作流机制）
 
             // Issue #1557 Phase 4: 订阅处方完成事件
             EventAggregator.GetEvent<PrescriptionCompletedEvent>()
@@ -590,29 +588,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 诊断完成事件处理方法
-        /// Issue #1557 Phase 3 - 订阅ConsultationCompletedEvent，接收ConsultationFormViewModel发布的事件
-        /// </summary>
-        /// <param name="payload">诊断完成事件载荷</param>
-        private async void OnConsultationCompleted(ConsultationCompletedPayload payload)
-        {
-            try
-            {
-                Logger.LogInformation("接收到ConsultationCompletedEvent，ConsultationId: {ConsultationId}, 主诉: {ChiefComplaint}",
-                    payload.ConsultationId, payload.ChiefComplaint);
-
-                // 自动触发下一步：跳转到Step 3（处方编辑）
-                await ExecuteNextStepAsync();
-
-                Logger.LogInformation("诊断完成事件处理完成，准备跳转到Step 3");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "处理ConsultationCompletedEvent失败");
-                await ShowErrorMessageAsync($"处理诊断完成失败：{ex.Message}");
-            }
-        }
+        // Issue #1562 Phase 1: 已删除 OnConsultationCompleted（工作流事件处理）
 
         /// <summary>
         /// 处方完成事件处理方法

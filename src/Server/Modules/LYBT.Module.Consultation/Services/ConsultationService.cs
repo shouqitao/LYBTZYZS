@@ -89,7 +89,7 @@ namespace LYBT.Module.Consultation.Services
         }
 
         /// <summary>
-        /// 创建诊疗记录 - 仅在独立创建时使用
+        /// 创建诊疗记录 - 简化版（Issue #1562 Phase 3）
         /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
         /// </summary>
         public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
@@ -104,19 +104,13 @@ namespace LYBT.Module.Consultation.Services
                     return ServiceResult<ConsultationDto>.Failure("医疗案例不存在，无法创建诊疗记录");
                 }
 
-                // 一对一约束校验：验证是否已有 Consultation
-                var existingConsultation = await _repository.GetByIdAsync(dto.MedicalCaseId);
-                if (existingConsultation != null)
-                {
-                    _logger.LogWarning("创建诊疗记录失败：医疗案例 {MedicalCaseId} 已有诊疗记录", dto.MedicalCaseId);
-                    return ServiceResult<ConsultationDto>.Failure("该医疗案例已有诊疗记录，不可重复创建");
-                }
+                // Issue #1562: 移除一对一约束检查 - 由数据库唯一约束处理
 
                 var entity = _mapper.Map<ConsultationEntity>(dto);
-                
+
                 // 共享主键：Consultation.Id 必须等于 MedicalCase.Id
                 entity.Id = dto.MedicalCaseId;
-                
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<ConsultationDto>(result);
                 return ServiceResult<ConsultationDto>.Success(resultDto);
@@ -130,7 +124,7 @@ namespace LYBT.Module.Consultation.Services
 
         /// <summary>
         /// 更新诊疗记录
-        /// Issue #1423: RULE-3 - 当天可改隔日锁定
+        /// Issue #1562 Phase 3: 移除"当天可改"规则（该规则属于MedicalCase聚合根）
         /// </summary>
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
         {
@@ -140,12 +134,7 @@ namespace LYBT.Module.Consultation.Services
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
 
-                // RULE-3: 当天可改隔日锁定 - 只能修改创建当天的记录
-                if (entity.CreatedAt.Date != DateTime.Today)
-                {
-                    _logger.LogWarning("更新诊疗记录失败：记录 {ConsultationId} 创建于 {CreatedDate}，已过可修改期限", id, entity.CreatedAt.Date);
-                    return ServiceResult<ConsultationDto>.Failure("该诊疗记录已超过可修改期限（仅限创建当天可修改）");
-                }
+                // Issue #1562: 移除日期检查规则 - 编辑权限应由MedicalCase聚合根控制
 
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);
@@ -198,33 +187,6 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
-        /// <summary>
-        /// 开始新的诊疗会话 - 创建基础诊疗记录
-        /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
-        /// </summary>
-        public async Task<ServiceResult<ConsultationDto>> StartAsync(Guid patientId)
-        {
-            try
-            {
-                // 创建基础诊疗记录（使用指定ID，通常应与MedicalCase共享主键）
-                var consultation = new ConsultationEntity
-                {
-                    Id = Guid.NewGuid(),
-                    // 注意：PatientId通过MedicalCase关联获取，不在Consultation实体中存储
-                    // 其他字段在后续更新中完善
-                };
-
-                var result = await _repository.AddAsync(consultation);
-                var resultDto = _mapper.Map<ConsultationDto>(result);
-                return ServiceResult<ConsultationDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "开始诊疗会话失败");
-                return ServiceResult<ConsultationDto>.Failure("开始诊疗会话失败");
-            }
-        }
-
         public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
         {
             try
@@ -244,63 +206,5 @@ namespace LYBT.Module.Consultation.Services
         }
 
 
-        /// <summary>
-        /// 获取诊疗统计数据 (Issue #1168)
-        /// </summary>
-        public async Task<ServiceResult<ConsultationStatisticsDto>> GetStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
-        {
-            try
-            {
-                // 获取所有诊疗记录
-                var allConsultations = (await _repository.GetAllAsync()).ToList();
-                
-                // 日期范围筛选
-                var filteredConsultations = allConsultations.AsQueryable();
-                if (startDate.HasValue)
-                {
-                    filteredConsultations = filteredConsultations.Where(c => c.CreatedAt >= startDate.Value);
-                }
-                if (endDate.HasValue)
-                {
-                    var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
-                    filteredConsultations = filteredConsultations.Where(c => c.CreatedAt <= endOfDay);
-                }
-
-                var consultations = filteredConsultations.ToList();
-                var today = DateTime.Today;
-
-                // 统计今日诊疗数
-                var todayConsultations = consultations.Where(c => c.CreatedAt.Date == today).ToList();
-
-                // 按状态统计
-                var byStatus = consultations
-                    .GroupBy(c => c.Status.ToString())
-                    .ToDictionary(g => g.Key, g => g.Count());
-
-                // 按医生统计
-                var byDoctor = consultations
-                    .Where(c => c.MedicalCase != null)
-                    .GroupBy(c => c.MedicalCase!.DoctorName)
-                    .ToDictionary(g => g.Key, g => g.Count());
-
-                // 注意：Consultation 实体中没有 StartTime/EndTime 字段
-                // 平均诊疗时长暂时设为 0，未来需要在实体中添加这些字段
-                var statistics = new ConsultationStatisticsDto
-                {
-                    TotalCount = consultations.Count,
-                    TodayCount = todayConsultations.Count,
-                    AvgDuration = 0, // 实体中暂无时间字段
-                    ByStatus = byStatus,
-                    ByDoctor = byDoctor
-                };
-
-                return ServiceResult<ConsultationStatisticsDto>.Success(statistics);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取诊疗统计失败");
-                return ServiceResult<ConsultationStatisticsDto>.Failure("获取诊疗统计失败");
-            }
-        }
     }
 }

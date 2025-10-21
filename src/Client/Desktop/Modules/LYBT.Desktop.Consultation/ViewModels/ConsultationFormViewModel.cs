@@ -1,5 +1,4 @@
 using LYBT.Desktop.Consultation.Interfaces;
-using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -228,77 +227,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 辅助方法
 
-        /// <summary>
-        /// 更新MedicalCase的ConsultationId
-        /// Issue #1544: 将保存成功的ConsultationId关联到MedicalCase
-        /// </summary>
-        private async Task UpdateMedicalCaseConsultationIdAsync(Guid consultationId)
-        {
-            try
-            {
-                Logger.LogInformation("开始更新MedicalCase.ConsultationId，MedicalCaseId: {MedicalCaseId}, ConsultationId: {ConsultationId}",
-                    MedicalCaseId, consultationId);
-
-                // 获取当前医案
-                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
-                if (medicalCase == null)
-                {
-                    Logger.LogWarning("未找到医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-                    return;
-                }
-
-                // 构建更新DTO
-                var updateDto = new LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseUpdateDto
-                {
-                    Id = medicalCase.Id,
-                    PatientId = medicalCase.PatientId,
-                    DoctorId = medicalCase.DoctorId,
-                    ConsultationId = consultationId,
-                    Remark = medicalCase.Remark
-                };
-
-                // 调用更新方法
-                await _medicalCaseRepository.UpdateAsync(updateDto);
-
-                Logger.LogInformation("已更新MedicalCase.ConsultationId: {ConsultationId}", consultationId);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "更新MedicalCase.ConsultationId失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-                // 不抛出异常，允许Consultation保存成功（后续可通过数据修复）
-            }
-        }
-
-        /// <summary>
-        /// 发布诊断完成事件
-        /// Issue #1557 Phase 3: 通知MedicalCaseFlowViewModel跳转到Step 3
-        /// </summary>
-        /// <param name="consultationId">诊断ID</param>
-        /// <param name="isDraft">是否保存为草稿</param>
-        private void PublishConsultationCompletedEvent(Guid consultationId, bool isDraft)
-        {
-            try
-            {
-                var payload = new ConsultationCompletedPayload
-                {
-                    ConsultationId = consultationId,
-                    MedicalCaseFlowId = MedicalCaseId,
-                    ChiefComplaint = ChiefComplaint,
-                    Diagnosis = TCMDiagnosis,
-                    IsDraft = isDraft,
-                    Timestamp = DateTime.Now
-                };
-
-                EventAggregator.GetEvent<ConsultationCompletedEvent>().Publish(payload);
-
-                Logger.LogInformation("已发布ConsultationCompletedEvent，ConsultationId: {ConsultationId}, MedicalCaseFlowId: {MedicalCaseFlowId}",
-                    consultationId, MedicalCaseId);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "发布ConsultationCompletedEvent失败");
-            }
-        }
+        // Issue #1562 Phase 1: 已删除工作流事件发布逻辑（PublishConsultationCompletedEvent）
 
         #endregion
 
@@ -340,7 +269,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     MedicalCaseId = MedicalCaseId,
                     PatientId = CurrentPatient.Id,
                     UserId = SessionManager.CurrentUser.Id,
-                    StartTime = DateTime.Now,
+                    // Issue #1562 Phase 2: StartTime已删除，Entity使用CreatedAt
                     ChiefComplaint = ChiefComplaint.Trim(),
                     PresentIllness = string.IsNullOrWhiteSpace(PresentIllness) ? null : PresentIllness.Trim(),
                     Inspection = string.IsNullOrWhiteSpace(Inspection) ? null : Inspection.Trim(),
@@ -359,11 +288,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", createdDto.Id);
 
-                // Issue #1544: 更新MedicalCase.ConsultationId
-                await UpdateMedicalCaseConsultationIdAsync(createdDto.Id);
-
-                // Issue #1557 Phase 3: 发布ConsultationCompletedEvent
-                PublishConsultationCompletedEvent(createdDto.Id, isDraft: false);
+                // Issue #1562 Phase 1: 已删除工作流事件发布调用
 
                 return true;
             }
@@ -379,8 +304,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 命令
 
-        public DelegateCommand ImportFromHistoryCommand { get; }
         public DelegateCommand ClearFormCommand { get; }
+
+        // Issue #1562 Phase 1: 已删除ImportFromHistoryCommand（未实现的扩展功能）
 
         #endregion
 
@@ -400,7 +326,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
             // 初始化命令
-            ImportFromHistoryCommand = new DelegateCommand(ExecuteImportFromHistory);
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
 
             Logger.LogInformation("ConsultationFormViewModel已初始化");
@@ -410,22 +335,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 命令实现
 
-        /// <summary>
-        /// 从历史导入（预留功能，后续实现）
-        /// </summary>
-        private void ExecuteImportFromHistory()
-        {
-            try
-            {
-                Logger.LogInformation("执行从历史导入（未实现）");
-                // TODO: Task #1502 - 打开历史诊断选择对话框
-                Logger.LogWarning("从历史导入功能未实现");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "从历史导入失败");
-            }
-        }
+        // Issue #1562 Phase 1: 已删除ExecuteImportFromHistory（未实现的扩展功能）
 
         /// <summary>
         /// 清空表单
