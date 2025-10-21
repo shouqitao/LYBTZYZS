@@ -253,7 +253,8 @@
         <!-- Row 3: 主内容区（ContentControl动态绑定） -->
         <Border Grid.Row="3" Background="White" Margin="0">
             <Grid>
-                <ContentControl Content="{Binding CurrentStepViewModel}" />
+                <!-- Issue #1557: 使用Prism Region替代直接绑定ViewModel，支持模块化导航 -->
+                <ContentControl prism:RegionManager.RegionName="WorkflowContentRegion" />
 
                 <!-- 占位文本（各Step View未实现时显示） -->
                 <TextBlock Text="{Binding CurrentStep}"
