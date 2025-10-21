@@ -26,8 +26,9 @@ namespace LYBT.Desktop.MedicalCase
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
 
-            // Phase 3.4: 启用 Prism Dialog 注册
-            containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
+            // Issue #1548: CreateMedicalCaseDialog已删除（由MedicalCaseFlowView的4步流程替代）
+            // Phase 3.4: 启用 Prism Dialog 注册（已废弃）
+            // containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入
