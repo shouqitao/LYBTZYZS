@@ -204,31 +204,81 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 验证处方数据（阶段1：暂时跳过所有药材验证，让流程走通）
-        /// Issue #1538: 处方界面后续整体实现时再加完整验证（包括药材库关联）
+        /// 验证处方数据
+        /// Issue #1546: 增强药材库关联验证
         /// </summary>
         public bool Validate()
         {
-            // 阶段1：仅验证基本信息，跳过药材验证
+            var errors = new List<string>();
+
+            // 1. 验证基本信息
             if (CurrentPatient == null)
             {
-                ValidationMessage = "请先选择患者";
-                return false;
+                errors.Add("请先选择患者");
             }
 
             if (MedicalCaseId == Guid.Empty)
             {
-                ValidationMessage = "MedicalCaseId不能为空";
+                errors.Add("MedicalCaseId不能为空");
+            }
+
+            // 2. Issue #1546: 药材库关联验证
+            var allItems = GetAllItems();
+
+            if (allItems.Count == 0)
+            {
+                errors.Add("请至少添加一味药材");
+            }
+            else
+            {
+                // 验证每个药材项
+                foreach (var item in allItems)
+                {
+                    if (string.IsNullOrWhiteSpace(item.HerbName))
+                    {
+                        continue; // 跳过空药材名称（已在GetAllItems中过滤）
+                    }
+
+                    // 在药材库中查找匹配的药材
+                    var matchedHerb = _allHerbs.FirstOrDefault(h =>
+                        h.Name.Equals(item.HerbName, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchedHerb == null)
+                    {
+                        errors.Add($"药材 '{item.HerbName}' 在药材库中不存在，请检查名称或添加新药材");
+                    }
+                    else if (!matchedHerb.IsEnabled)
+                    {
+                        errors.Add($"药材 '{item.HerbName}' 已停用，请选择其他药材");
+                    }
+                    else
+                    {
+                        // 自动设置/修正HerbId（如果未设置或不匹配）
+                        if (item.HerbId == Guid.Empty || item.HerbId != matchedHerb.Id)
+                        {
+                            item.HerbId = matchedHerb.Id;
+                            Logger.LogInformation("自动设置药材ID：{HerbName} → {HerbId}", item.HerbName, matchedHerb.Id);
+                        }
+
+                        // 验证用量
+                        if (item.Dosage <= 0)
+                        {
+                            errors.Add($"药材 '{item.HerbName}' 的用量必须大于0");
+                        }
+                    }
+                }
+            }
+
+            // 3. 汇总错误信息
+            if (errors.Any())
+            {
+                ValidationMessage = string.Join("；", errors);
+                Logger.LogWarning("处方验证失败：{ValidationMessage}", ValidationMessage);
                 return false;
             }
 
-            // 阶段1：暂时跳过药材验证，让流程可以走到Step 4
-            // TODO: 阶段2实施时，添加完整的药材验证逻辑
-            // - 验证至少1个药材
-            // - 验证HerbId有效（关联到Herbs表）
-            // - 验证用量有效
-
             ValidationMessage = string.Empty;
+            Logger.LogInformation("处方验证通过，共{ItemCount}味药材", allItems.Count);
             return true;
         }
 
