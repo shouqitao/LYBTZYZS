@@ -1,4 +1,5 @@
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Desktop.Contracts.Api
@@ -52,6 +53,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<MedicalCaseDto>> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseUpdateDto request);
+
+        /// <summary>
+        /// 更新医案的诊断信息（聚合根方法）
+        /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/consultation")]
+        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationUpdateDto request);
 
         /// <summary>
         /// 删除医疗案例

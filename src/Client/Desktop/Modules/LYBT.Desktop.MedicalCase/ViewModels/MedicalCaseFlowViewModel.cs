@@ -1,7 +1,9 @@
 using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -22,6 +24,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IRegionManager _regionManager;
         private readonly IContainerProvider _containerProvider;
+        private readonly IMedicalCaseRepository _medicalCaseRepository; // Phase 2: 用于创建MedicalCase
 
         #endregion
 
@@ -143,12 +146,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseFlowViewModel(
+            IMedicalCaseRepository medicalCaseRepository,
             IRegionManager regionManager,
             IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory)
-            : base(eventAggregator, loggerFactory, regionManager)
+            ILoggerFactory loggerFactory,
+            ISessionManager? sessionManager = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
@@ -395,6 +401,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 创建MedicalCase（Task #1501 - Step 1 → Step 2 自动创建）
+        /// Phase 2: 实现真实API调用
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <returns>创建成功返回MedicalCaseId，失败返回Guid.Empty</returns>
@@ -404,25 +411,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
 
-                // TODO: Task #1497实现后，调用真实API创建MedicalCase
-                // var request = new CreateMedicalCaseRequest
-                // {
-                //     PatientId = patientId,
-                //     DoctorId = _sessionManager.CurrentUser.Id,
-                //     VisitDate = DateTime.Now
-                // };
-                // var response = await _medicalCaseRepository.CreateAsync(request);
-                // return response.Id;
+                // Phase 2: 验证SessionManager和CurrentUser
+                if (SessionManager?.CurrentUser == null)
+                {
+                    Logger.LogError("SessionManager.CurrentUser为空，无法创建MedicalCase");
+                    if (UserNotificationService != null)
+                    {
+                        _ = UserNotificationService.ShowErrorAsync("用户信息丢失，无法创建医案");
+                    }
+                    return Guid.Empty;
+                }
 
-                // 临时模拟：返回新GUID
-                await Task.Delay(500); // 模拟网络延迟
-                var medicalCaseId = Guid.NewGuid();
-                Logger.LogInformation("MedicalCase创建成功（模拟），ID: {MedicalCaseId}", medicalCaseId);
-                return medicalCaseId;
+                // Phase 2: 构建MedicalCaseCreateDto
+                var createDto = new MedicalCaseCreateDto
+                {
+                    PatientId = patientId,
+                    DoctorId = SessionManager.CurrentUser.Id,
+                    Status = MedicalCaseStatus.Active,
+                    Remark = null // 初始创建无备注
+                };
+
+                // Phase 2: 调用真实API创建MedicalCase
+                var createdDto = await _medicalCaseRepository.CreateAsync(createDto);
+
+                Logger.LogInformation("MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
+                return createdDto.Id;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "创建MedicalCase失败，PatientId: {PatientId}", patientId);
+                if (UserNotificationService != null)
+                {
+                    _ = UserNotificationService.ShowErrorAsync($"创建医案失败：{ex.Message}");
+                }
                 return Guid.Empty;
             }
         }
@@ -434,8 +455,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             CurrentStep = step;
 
-            // TODO: Task #1497-#1500 - 创建各个Step的View后，实现真实导航
-            // 当前使用占位ViewModel
             switch (step)
             {
                 case FlowStep.SelectPatient:
@@ -480,16 +499,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     break;
 
                 case FlowStep.CompleteMedicalCase:
-                    Logger.LogInformation("导航到完成医案步骤");
+                    Logger.LogInformation("导航到完成医案步骤（Phase 3: 使用Region导航）");
 
-                    // Task #1500 - 创建CompletionViewModel实例
-                    var completionVM = _containerProvider.Resolve<CompletionViewModel>();
+                    // Phase 3: 使用Prism Region导航替代Container.Resolve
+                    // CompletionViewModel已实现INavigationAware，可通过NavigationContext接收参数
+                    var completionParameters = new NavigationParameters
+                    {
+                        { "MedicalCaseId", MedicalCaseId }
+                    };
 
-                    // 初始化（异步调用，Fire-and-Forget模式）
-                    // TODO: 改进为async/await模式以更好地处理异常
-                    _ = completionVM.InitializeAsync(MedicalCaseId);
-
-                    CurrentStepViewModel = completionVM;
+                    _regionManager.RequestNavigate("WorkflowContentRegion", "CompletionView", completionParameters);
+                    Logger.LogInformation("Region导航到CompletionView，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                     break;
 
                 default:
