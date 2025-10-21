@@ -26,8 +26,14 @@
 - 📝 `.claude/modes/documentation.md` - 文档同步模式（变更检测、索引更新、链接验证）
 - 🧠 `.claude/modes/research.md` - 深度研究模式（WebSearch + Context7 + Serena + Sequential-thinking）
 
+### 项目专属Skills（Project-Specific Skills）
+- 🔴 `.claude/skills/lybtzyzs-mvp-compliance/` - MVP合规检查（技术黑名单、过度设计检测）
+- 🏗️ `.claude/skills/lybtzyzs-arch-compliance/` - 架构合规检查（三层架构、DDD边界验证）
+- 📝 `.claude/skills/lybtzyzs-doc-sync/` - 文档同步检查（API变更检测、文档更新清单）
+
 > **📚 使用说明**：
-> - Claude Code 会自动加载所有核心规则与模式定义
+> - Claude Code 会自动加载所有核心规则、模式定义和项目Skills
+> - Skills通过符号链接同步到全局目录（首次需运行`scripts/setup-skills.ps1`）
 > - 如需查看详细内容，请直接查阅 `.claude/` 目录中的对应文件
 > - 所有模式定义基于 SuperClaude Framework 和 CCPM 最佳实践
 
@@ -740,6 +746,290 @@ serena（开发） → git（提交） → github（PR） → filesystem（文�
 - 自动识别：Claude 根据用户请求自动选择模式
 - 强制指定：使用 slash 命令（如 `/refactor-plan`）
 - 模式组合：复杂任务可串联多个模式（Performance → Issue → Refactoring → PR）
+
+---
+
+## 8. Claude Skills 使用指南
+
+> **📖 完整设计文档**：
+> - `docs/architecture/shared/claude-skills-feasibility-discussion.md` - Skills可行性分析与决策（v2.0）
+> - `.claude/skills/` - Skills存放目录（3个核心Skills）
+> - `scripts/setup-skills.ps1` - 符号链接同步脚本
+
+### 8.1 Skills 概述
+
+**什么是Skills**：
+- **本质**：模块化的AI能力扩展包，包含专业领域知识和工作流定义
+- **结构**：每个Skill是一个文件夹，包含SKILL.md文件（YAML frontmatter + Markdown指令）
+- **触发**：Claude根据Skill的description字段自动判断何时调用
+- **协同**：Skills调用MCP工具（serena、grep、git、sequential-thinking等）完成具体操作
+
+**核心特点**：
+- ✅ **版本控制**：Skills随项目Git仓库版本控制
+- ✅ **自动加载**：通过符号链接同步到全局目录，Claude自动加载
+- ✅ **半自动化**：明确规则自动检查，复杂判断建议确认
+- ✅ **工具协同**：Skills定义工作流（What），MCP工具执行操作（How）
+
+---
+
+### 8.2 当前可用的Skills（3个核心）
+
+#### 🔴 MVP合规检查 (lybtzyzs-mvp-compliance)
+
+**功能**：检测代码是否符合MVP原则和Constitution约束
+
+**自动检测**（直接报告违规）：
+- 技术黑名单：Redis、CQRS、MediatR、Docker、GraphQL、消息队列等
+- 依赖注入违规：ServiceLocator、Container.Resolve、属性注入
+- 明显过度设计：Event Sourcing用于简单CRUD
+
+**建议确认**（提供分析，等待决策）：
+- 复杂度判断：抽象层是否必要
+- 架构选择：设计是否过度复杂
+
+**触发时机**：
+- 用户提到"MVP原则"、"技术黑名单"、"Constitution检查"
+- 开始新功能开发前
+- Code Review时
+
+**使用示例**：
+```
+用户："检查这段代码是否符合MVP原则"
+Claude：自动调用 lybtzyzs-mvp-compliance Skill
+       → 使用grep扫描技术黑名单
+       → 使用serena分析代码复杂度
+       → 使用sequential-thinking评估设计
+       → 生成合规报告（违规项 + 建议项）
+```
+
+---
+
+#### 🏗️ 架构合规检查 (lybtzyzs-arch-compliance)
+
+**功能**：验证代码是否遵循三层对齐架构规范
+
+**自动检测**（直接报告违规）：
+- 依赖方向错误：Application引用Presentation、Domain引用Infrastructure
+- Repository包含业务逻辑：Calculate/Validate方法
+- 跨层直接调用：ViewModel直接调用HttpClient
+
+**建议确认**（提供分析，等待决策）：
+- 聚合根边界：是否直接修改聚合内部集合
+- Repository粒度：是否存在细粒度Repository（PrescriptionItemRepository）
+
+**触发时机**：
+- 用户提到"架构"、"依赖方向"、"DDD边界"
+- 添加新模块或Service时
+- 架构调整后验证
+
+**使用示例**：
+```
+用户："验证这个项目引用是否符合架构规范"
+Claude：自动调用 lybtzyzs-arch-compliance Skill
+       → 使用serena分析项目依赖关系
+       → 使用grep检查聚合根边界
+       → 生成架构合规报告（违规项 + 建议项）
+```
+
+---
+
+#### 📝 文档同步检查 (lybtzyzs-doc-sync)
+
+**功能**：检测代码变更并生成文档更新清单
+
+**自动检测**（生成清单）：
+- API端点变更：新增/修改/删除Controller方法
+- 架构调整：新增模块、Service、Repository
+- 数据模型变更：实体、DTO、Enum修改
+- 配置文件变更：appsettings.json、launchSettings.json
+- 文档链接失效：检查Markdown内部链接有效性
+
+**建议确认**（评估影响范围）：
+- 新增模块：是否需要创建完整模块文档
+- Service变更：是否需要更新示例代码
+- 架构调整：是否需要更新架构图
+
+**触发时机**：
+- 用户提到"文档同步"、"API变更"、"生成清单"
+- 完成代码变更后
+- PR提交前检查文档
+
+**使用示例**：
+```
+用户："检查文档是否需要更新"
+Claude：自动调用 lybtzyzs-doc-sync Skill
+       → 使用git diff检测文件变更
+       → 使用serena分析API/Service变更
+       → 使用grep检查数据模型
+       → 生成文档更新清单（必须更新 + 建议更新）
+```
+
+---
+
+### 8.3 Skills存放位置与同步机制
+
+**存放位置**：
+```
+项目仓库：
+.claude/skills/
+  ├── lybtzyzs-mvp-compliance/
+  │   └── SKILL.md
+  ├── lybtzyzs-arch-compliance/
+  │   └── SKILL.md
+  └── lybtzyzs-doc-sync/
+      └── SKILL.md
+
+全局目录（符号链接）：
+~/.claude/skills/
+  ├── lybtzyzs-mvp-compliance → [符号链接到项目目录]
+  ├── lybtzyzs-arch-compliance → [符号链接到项目目录]
+  └── lybtzyzs-doc-sync → [符号链接到项目目录]
+```
+
+**同步机制**：
+1. **项目开发**：在`.claude/skills/`目录编辑SKILL.md
+2. **符号链接**：运行`scripts/setup-skills.ps1`创建符号链接
+3. **自动加载**：Claude从全局目录自动加载Skills
+4. **版本控制**：Skills随项目Git仓库版本控制
+
+**首次设置**（需管理员权限）：
+```powershell
+# 以管理员身份运行PowerShell
+cd D:\source\repos\LYBTZYZS
+.\scripts\setup-skills.ps1
+```
+
+---
+
+### 8.4 Skills使用方式
+
+#### 自动触发（推荐）
+
+Claude根据用户问题的关键词自动判断调用哪个Skill：
+
+| 关键词 | 触发的Skill |
+|-------|------------|
+| MVP原则、技术黑名单、Constitution | lybtzyzs-mvp-compliance |
+| 架构、依赖方向、DDD边界 | lybtzyzs-arch-compliance |
+| 文档同步、API变更、更新清单 | lybtzyzs-doc-sync |
+
+**示例**：
+```
+用户："检查代码是否符合MVP原则"
+→ Claude自动调用 lybtzyzs-mvp-compliance Skill
+```
+
+#### 手动触发
+
+明确指定要使用的Skill：
+
+```
+用户："使用MVP合规Skill检查这段代码"
+→ Claude使用指定的Skill
+```
+
+---
+
+### 8.5 Skills维护与更新
+
+**维护策略**：实用主义 + 简单版本号
+
+**触发时机**：
+- 发现Skill建议不当时（使用中发现问题）
+- Constitution或架构规范变更时
+- 无需定期审查（零额外成本）
+
+**更新流程**：
+1. 编辑`.claude/skills/{skill-name}/SKILL.md`
+2. 更新版本号（v1.0 → v1.1）
+3. 在"变更记录"中添加变更说明
+4. Git提交：`git commit -m "feat(skills): 更新XXX Skill v1.1 - 变更描述"`
+5. 符号链接自动同步（无需手动操作）
+
+**SKILL.md版本模板**：
+```yaml
+---
+name: lybtzyzs-mvp-compliance
+description: 检查代码是否符合MVP原则和Constitution约束
+version: v1.1
+last_updated: 2025-10-21
+---
+
+## 变更记录
+- v1.1 (2025-10-21): 新增GraphQL黑名单检测
+- v1.0 (2025-10-21): 初始版本
+```
+
+---
+
+### 8.6 Skills与MCP工具/工作模式的关系
+
+#### Skills vs MCP工具
+
+| 维度 | Skills | MCP工具 |
+|-----|-------|---------|
+| **定位** | 工作流层（What to do） | 执行层（How to do） |
+| **内容** | 领域规则、检查流程、报告模板 | 代码分析、文件操作、数据查询 |
+| **示例** | MVP合规检查Skill定义检查流程 | grep工具执行关键字扫描 |
+| **关系** | Skills调用MCP工具 | MCP工具被Skills调用 |
+
+**协同模式**：
+```
+Skills（工作流定义）
+  ├─ 定义"做什么"（检查MVP、验证架构、生成清单）
+  ├─ 编排多步骤流程
+  └─ 提供领域知识
+
+MCP工具（具体执行）
+  ├─ 定义"怎么做"（grep扫描、serena分析、git diff）
+  ├─ 执行具体操作
+  └─ 提供底层能力
+```
+
+#### Skills vs 工作模式（Modes）
+
+| 维度 | Skills | Modes |
+|-----|-------|-------|
+| **触发方式** | 自动（根据关键词） | 手动（slash命令） |
+| **使用场景** | 项目特定规则检查 | 通用开发流程 |
+| **定制性** | 项目定制 | 通用模板 |
+| **示例** | lybtzyzs-mvp-compliance | `/code-review` |
+
+**互补关系**：
+- **Modes**：通用开发流程（Code Review、Refactoring、Testing）
+- **Skills**：项目特定规则（LYBTZYZS的MVP原则、三层架构）
+
+---
+
+### 8.7 性能与Token消耗
+
+**当前状态**：
+- 3个核心Skills
+- 预估Token消耗：3000-4500 tokens（占200K预算的<3%）
+- 每个Skill目标：1000-1500 tokens
+
+**性能策略**：
+- ✅ 遵循YAGNI原则（避免过早优化）
+- ✅ 保持简洁（引用Constitution而非复制）
+- ✅ 如单个Skill超过2000 tokens → 考虑拆分
+- ✅ 如总Token消耗超过10K → 考虑按需加载
+
+---
+
+### 8.8 相关资源
+
+**文档**：
+- 可行性讨论：`docs/architecture/shared/claude-skills-feasibility-discussion.md`
+- Constitution：`.spec-workflow/steering/constitution.md`
+- 架构文档：`docs/architecture/server|client|shared/README.md`
+
+**脚本**：
+- 符号链接同步：`scripts/setup-skills.ps1`
+
+**Skills目录**：
+- MVP合规检查：`.claude/skills/lybtzyzs-mvp-compliance/SKILL.md`
+- 架构合规检查：`.claude/skills/lybtzyzs-arch-compliance/SKILL.md`
+- 文档同步检查：`.claude/skills/lybtzyzs-doc-sync/SKILL.md`
 
 ---
 
