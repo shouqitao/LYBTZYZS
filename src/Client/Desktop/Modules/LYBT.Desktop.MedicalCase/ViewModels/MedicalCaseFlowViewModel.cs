@@ -153,7 +153,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
             PreviousStepCommand = new DelegateCommand(ExecutePreviousStep, CanExecutePreviousStep);
-            NextStepCommand = new DelegateCommand(async () => await ExecuteNextStepAsync(), CanExecuteNextStep);
+            NextStepCommand = new DelegateCommand(async () => await ExecuteNextStepAsync(), CanExecuteNextStep)
+                .ObservesProperty(() => CurrentPatient)  // 监听CurrentPatient变化
+                .ObservesProperty(() => IsBusy);         // 监听IsBusy变化
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
             CancelCommand = new DelegateCommand(ExecuteCancel);
 
@@ -295,11 +297,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private bool CanExecuteNextStep()
         {
-            // TODO: 添加每个Step的验证逻辑
-            // Step 1: 必须选择患者
-            // Step 2: Consultation必填字段验证
-            // Step 3: Prescription至少1味药材
-            return true; // 暂时允许所有步骤前进
+            // 如果正在处理中，禁用下一步按钮
+            if (IsBusy)
+            {
+                return false;
+            }
+
+            // 根据当前步骤验证是否可以前进
+            return CurrentStep switch
+            {
+                FlowStep.SelectPatient => CurrentPatient != null, // Step 1: 必须选择患者
+                FlowStep.FillConsultation => true, // Step 2: 诊断信息（可选，允许前进）
+                FlowStep.FillPrescription => true, // Step 3: 处方信息（可选，允许前进）
+                FlowStep.CompleteMedicalCase => true, // Step 4: 完成确认
+                _ => false
+            };
         }
 
         /// <summary>
@@ -400,6 +412,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                         // 更新CurrentPatient
                         CurrentPatient = selectedPatient;
+                        
+                        // 触发NextStepCommand状态刷新（兜底保障）
+                        NextStepCommand.RaiseCanExecuteChanged();
 
                         // 更新患者信息条
                         SelectedPatientName = selectedPatient.Name;
