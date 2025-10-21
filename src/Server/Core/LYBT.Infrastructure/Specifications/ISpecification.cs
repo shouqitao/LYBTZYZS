@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Specifications
         /// <summary>
         /// 获取查询表达式
         /// </summary>
-        Expression<Func<T, bool>> Criteria { get; }
+        Expression<Func<T, bool>>? Criteria { get; }
 
         /// <summary>
         /// 获取Include表达式列表
@@ -92,7 +92,7 @@ namespace LYBT.Infrastructure.Specifications
             // 应用排序
             if (specification.OrderByClauses.Any())
             {
-                IOrderedQueryable<T> orderedQuery = null;
+                IOrderedQueryable<T>? orderedQuery = null;
 
                 foreach (var (keySelector, ascending) in specification.OrderByClauses)
                 {

@@ -7,7 +7,9 @@ using Prism.Regions;
 namespace LYBT.Desktop.Shell.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - Phase 2 功能扩充版本
+    /// 主页视图模型 - Issue #1486 Dashboard实现
+    /// 核心功能："开始接诊"按钮（导航到MedicalCaseFlowView） + 今日统计
+    /// Epic #1494: 直接导航到医案流程视图，而非打开对话框
     /// </summary>
     public class HomeViewModel : UnifiedViewModelBase
     {
@@ -19,43 +21,39 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region 属性
 
-        private string _welcomeMessage = "欢迎使用凌隐宝堂中医诊所管理系统";
-
-        public string WelcomeMessage
+        private string _searchKeyword = string.Empty;
+        public string SearchKeyword
         {
-            get => _welcomeMessage;
-            set => SetProperty(ref _welcomeMessage, value);
+            get => _searchKeyword;
+            set => SetProperty(ref _searchKeyword, value);
+        }
+
+        private int _todayConsultationCount = 0;
+        public int TodayConsultationCount
+        {
+            get => _todayConsultationCount;
+            set => SetProperty(ref _todayConsultationCount, value);
+        }
+
+        private int _pendingCaseCount = 0;
+        public int PendingCaseCount
+        {
+            get => _pendingCaseCount;
+            set => SetProperty(ref _pendingCaseCount, value);
         }
 
         #endregion 属性
 
         #region 命令
 
-        // 原有导航命令
-        public DelegateCommand NavigateToPatientManagementCommand { get; }
-        public DelegateCommand NavigateToConsultationCommand { get; }
-
-        // Phase 2 新增命令
-        public DelegateCommand LogoutCommand { get; }
         public DelegateCommand StartConsultationCommand { get; }
-        public DelegateCommand RefreshTodayPatientsCommand { get; }
+        public DelegateCommand QuickSearchCommand { get; }
 
-        // DataGrid 行命令（今日患者列表）
-        public DelegateCommand<object> StartConsultationForPatientCommand { get; }
-        public DelegateCommand<object> ViewPatientDetailsCommand { get; }
-
-        // 导航命令组
-        public DelegateCommand NavigateToPatientReceptionCommand { get; }
-        public DelegateCommand NavigateToMedicalCaseCommand { get; }
+        // 折叠区域的次要功能命令
+        public DelegateCommand NavigateToPatientManagementCommand { get; }
         public DelegateCommand NavigateToPrescriptionQueryCommand { get; }
         public DelegateCommand NavigateToHerbsCommand { get; }
-        public DelegateCommand NavigateToFormulasCommand { get; }
-        public DelegateCommand EnterSystemManagementCommand { get; }
-        public DelegateCommand NavigateToUserManagementCommand { get; }
-        public DelegateCommand NavigateToHerbManagementCommand { get; }
-        public DelegateCommand NavigateToFormulaManagementCommand { get; }
         public DelegateCommand NavigateToSystemSettingsCommand { get; }
-        public DelegateCommand NavigateToDataBackupCommand { get; }
 
         #endregion 命令
 
@@ -69,31 +67,19 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
-            // 初始化原有命令
-            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
-            NavigateToConsultationCommand = new DelegateCommand(() => NavigateTo("ConsultationView"));
-
-            // 初始化 Phase 2 新增命令
-            LogoutCommand = new DelegateCommand(ExecuteLogout);
+            // Issue #1486: 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
-            RefreshTodayPatientsCommand = new DelegateCommand(ExecuteRefreshTodayPatients);
+            QuickSearchCommand = new DelegateCommand(ExecuteQuickSearch, CanExecuteQuickSearch)
+                .ObservesProperty(() => SearchKeyword);
 
-            // DataGrid 行命令
-            StartConsultationForPatientCommand = new DelegateCommand<object>(ExecuteStartConsultationForPatient);
-            ViewPatientDetailsCommand = new DelegateCommand<object>(ExecuteViewPatientDetails);
-
-            // 导航命令组
-            NavigateToPatientReceptionCommand = new DelegateCommand(() => NavigateTo("PatientReceptionView"));
-            NavigateToMedicalCaseCommand = new DelegateCommand(() => NavigateTo("MedicalCaseManagementView"));
+            // 初始化次要功能命令
+            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
             NavigateToPrescriptionQueryCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
             NavigateToHerbsCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
-            NavigateToFormulasCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
-            EnterSystemManagementCommand = new DelegateCommand(() => NavigateTo("AdminWorkstationView"));
-            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
-            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
-            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
-            NavigateToDataBackupCommand = new DelegateCommand(ExecuteNavigateToDataBackup);
+
+            // 加载今日统计数据
+            LoadTodayStatistics();
         }
 
         #endregion 构造函数
@@ -101,90 +87,68 @@ namespace LYBT.Desktop.Shell.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 退出登录
-        /// </summary>
-        private void ExecuteLogout()
-        {
-            try
-            {
-                Logger.LogInformation("用户退出登录");
-                // TODO: 清理会话状态
-                NavigateTo("LoginView");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "退出登录时发生异常");
-            }
-        }
-
-        /// <summary>
-        /// 开始诊疗
+        /// 开始看诊 - Epic #1494核心功能
+        /// 直接导航到医案流程视图（MedicalCaseFlowView），自动显示Step 1患者选择
         /// </summary>
         private void ExecuteStartConsultation()
         {
             try
             {
-                Logger.LogInformation("开始诊疗");
-                NavigateTo("ClinicalWorkstationView");
+                Logger.LogInformation("开始看诊，导航到医案流程视图");
+
+                // Epic #1494: 直接导航到医案流程视图（包含Step 1-4完整流程）
+                // MedicalCaseFlowViewModel会自动显示Step 1（患者选择）
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navigationResult =>
+                {
+                    if (navigationResult.Result == true)
+                    {
+                        Logger.LogInformation("导航成功：MedicalCaseFlowView");
+                    }
+                    else
+                    {
+                        Logger.LogError("导航失败：MedicalCaseFlowView，错误：{Error}", navigationResult.Error?.Message ?? "未知错误");
+                        if (navigationResult.Error != null)
+                        {
+                            Logger.LogError(navigationResult.Error, "导航异常详情");
+                        }
+                    }
+                });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "开始诊疗时发生异常");
+                Logger.LogError(ex, "开始看诊时发生异常");
             }
         }
 
         /// <summary>
-        /// 刷新今日患者列表
+        /// 快速搜索患者 - 支持姓名/拼音码/手机号搜索
         /// </summary>
-        private void ExecuteRefreshTodayPatients()
+        private void ExecuteQuickSearch()
         {
             try
             {
-                Logger.LogInformation("刷新今日患者列表");
-                // TODO: 实现刷新今日患者列表逻辑
+                Logger.LogInformation("快速搜索患者: {SearchKeyword}", SearchKeyword);
+                // TODO: 实现搜索患者逻辑
+                // 找到患者后，携带患者信息导航到医案流程
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView",
+                    new NavigationParameters
+                    {
+                        { "StartStep", 1 },
+                        { "SearchKeyword", SearchKeyword }
+                    });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "刷新今日患者列表时发生异常");
+                Logger.LogError(ex, "快速搜索时发生异常");
             }
         }
 
         /// <summary>
-        /// 为指定患者开始诊疗
+        /// 验证快速搜索命令是否可执行
         /// </summary>
-        private void ExecuteStartConsultationForPatient(object patient)
+        private bool CanExecuteQuickSearch()
         {
-            if (patient == null) return;
-
-            try
-            {
-                Logger.LogInformation("为患者开始诊疗");
-                // TODO: 带患者信息导航到诊疗工作台
-                NavigateTo("ClinicalWorkstationView");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "为患者开始诊疗时发生异常");
-            }
-        }
-
-        /// <summary>
-        /// 查看患者详情
-        /// </summary>
-        private void ExecuteViewPatientDetails(object patient)
-        {
-            if (patient == null) return;
-
-            try
-            {
-                Logger.LogInformation("查看患者详情");
-                // TODO: 带患者 ID 导航到患者详情页
-                NavigateTo("PatientDetailView");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "查看患者详情时发生异常");
-            }
+            return !string.IsNullOrWhiteSpace(SearchKeyword);
         }
 
         /// <summary>
@@ -195,7 +159,6 @@ namespace LYBT.Desktop.Shell.ViewModels
             try
             {
                 Logger.LogInformation("导航到系统设置");
-                // TODO: 实现系统设置功能
                 Logger.LogWarning("系统设置功能开发中");
             }
             catch (Exception ex)
@@ -204,26 +167,27 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
+        #endregion 命令实现
+
+        #region 辅助方法
+
         /// <summary>
-        /// 导航到数据备份
+        /// 加载今日统计数据
         /// </summary>
-        private void ExecuteNavigateToDataBackup()
+        private void LoadTodayStatistics()
         {
             try
             {
-                Logger.LogInformation("导航到数据备份");
-                // TODO: 实现数据备份功能
-                Logger.LogWarning("数据备份功能开发中");
+                // TODO: 从服务获取今日统计数据
+                // 临时使用模拟数据
+                TodayConsultationCount = 0;
+                PendingCaseCount = 0;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到数据备份时发生异常");
+                Logger.LogError(ex, "加载今日统计数据时发生异常");
             }
         }
-
-        #endregion 命令实现
-
-        #region 导航方法
 
         private void NavigateTo(string viewName)
         {
@@ -237,13 +201,14 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        #endregion 导航方法
+        #endregion 辅助方法
 
         #region INavigationAware
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            // 简化实现 - 仅设置基本状态
+            // 每次导航到主页时刷新统计数据
+            LoadTodayStatistics();
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)

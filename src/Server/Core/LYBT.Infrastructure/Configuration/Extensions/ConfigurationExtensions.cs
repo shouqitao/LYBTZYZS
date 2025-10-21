@@ -202,7 +202,7 @@ public static class ConfigurationExtensions
 
         // 系统管理员必填项验证
         if (string.IsNullOrEmpty(options.Business.SystemAdmin.Username))
-            validationResults.Add("SystemAdmin Username is required");
+            validationResults.Add("SystemAdmin UserName is required");
 
         if (string.IsNullOrEmpty(options.Business.SystemAdmin.Email))
             validationResults.Add("SystemAdmin Email is required");

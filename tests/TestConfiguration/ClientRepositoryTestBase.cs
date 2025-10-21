@@ -70,7 +70,7 @@ namespace LYBT.Tests.Configuration
         /// <summary>
         /// 验证HTTP异常处理
         /// </summary>
-        protected void AssertHttpRequestException(Exception exception, string expectedMessage = null)
+        protected void AssertHttpRequestException(Exception exception, string? expectedMessage = null)
         {
             exception.Should().NotBeNull();
             exception.Should().BeOfType<HttpRequestException>();

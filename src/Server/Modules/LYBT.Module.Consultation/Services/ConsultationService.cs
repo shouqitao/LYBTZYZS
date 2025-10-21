@@ -128,6 +128,10 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
+        /// <summary>
+        /// 更新诊疗记录
+        /// Issue #1423: RULE-3 - 当天可改隔日锁定
+        /// </summary>
         public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
         {
             try
@@ -135,6 +139,13 @@ namespace LYBT.Module.Consultation.Services
                 var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
+
+                // RULE-3: 当天可改隔日锁定 - 只能修改创建当天的记录
+                if (entity.CreatedAt.Date != DateTime.Today)
+                {
+                    _logger.LogWarning("更新诊疗记录失败：记录 {ConsultationId} 创建于 {CreatedDate}，已过可修改期限", id, entity.CreatedAt.Date);
+                    return ServiceResult<ConsultationDto>.Failure("该诊疗记录已超过可修改期限（仅限创建当天可修改）");
+                }
 
                 _mapper.Map(dto, entity);
                 var result = await _repository.UpdateAsync(entity);

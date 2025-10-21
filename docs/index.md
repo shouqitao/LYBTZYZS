@@ -35,7 +35,11 @@
 - **[架构总览](architecture/README.md)** - 对齐架构设计原理与导航 ⭐ 核心入口
 - **[Server端架构](architecture/server/README.md)** - 三层架构、8个模块、服务标准 ⭐
 - **[Client端架构](architecture/client/README.md)** - MVVM架构、5层设计、UI标准 ⭐
+  - **[Shell层架构设计](architecture/client/shell-layer-design.md)** - Shell层职责边界、组件结构、交互模式
 - **[共享架构](architecture/shared/README.md)** - 跨端组件、认证系统、技术决策 ⭐
+
+### 业务架构文档
+- **[看诊流程实体关系](architecture/shared/clinical-workflow-entity-relationships.md)** - 挂号/医案/诊断/处方实体关系与状态机设计 ⭐⭐⭐ **权威文档**
 
 ### 开发指南文档
 - **[开发指南总览](development/README.md)** - 开发规范和流程指导
@@ -66,7 +70,7 @@
 - **[医案模块](modules/medical-case/)** - 医案状态管理、业务流程
 - **[诊疗模块](modules/consultation/)** - 四诊合参、辨证论治、诊断记录
 - **[处方模块](modules/prescriptions/)** - 四种录入方式、药材配伍、价格计算
-- **[药材模块](modules/herbs/)** - 药材字典、拼音码检索、库存管理
+- **[药材模块](modules/herbs/)** - 药材字典、拼音码检索、价格管理
 - **[验方模块](modules/formula/)** - 验方模板、智能推荐、统计分析
 - **[用户模块](modules/users/)** - 用户管理、角色权限、密码安全
 

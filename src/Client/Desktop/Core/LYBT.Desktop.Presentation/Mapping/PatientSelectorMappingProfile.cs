@@ -5,6 +5,9 @@ namespace LYBT.Desktop.Presentation.Mapping
 {
     /// <summary>
     /// PatientSelector组件映射配置
+    /// 注意：由于架构原因,Presentation层不能引用Modules层
+    /// PatientSelector组件使用反射进行手动映射,不需要AutoMapper配置
+    /// 详见: PatientSelectorViewModel.CreatePatientSelectedPayload()
     /// </summary>
     public class PatientSelectorMappingProfile : Profile
     {
@@ -13,14 +16,8 @@ namespace LYBT.Desktop.Presentation.Mapping
         /// </summary>
         public PatientSelectorMappingProfile()
         {
-            // 可以在这里添加患者选择器相关的映射配置
-            // 例如：从患者实体到PatientSelectedPayload的映射
-            
-            // 示例映射（如果有患者实体的话）：
-            // CreateMap<PatientEntity, PatientSelectedPayload>()
-            //     .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Id))
-            //     .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Name))
-            //     .ForMember(dest => dest.SelectedAt, opt => opt.MapFrom(_ => DateTime.Now));
+            // 暂无映射配置
+            // PatientSelector组件使用反射进行手动映射
         }
     }
 }

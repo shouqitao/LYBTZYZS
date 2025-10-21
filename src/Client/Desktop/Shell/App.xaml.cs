@@ -99,6 +99,10 @@ public partial class App : PrismApplication
         // ViewModelLocationProvider 只是映射关系，ViewModel 本身需要在容器中注册
         containerRegistry.Register<MainWindowViewModel>();  // Transient lifetime for ViewModels
         containerRegistry.Register<HomeViewModel>();
+
+        // Bug修复: HomeView必须注册为可导航视图（RegisterForNavigation）
+        // 否则MainWindowViewModel.LoadMainContent()导航到"HomeView"时会失败
+        containerRegistry.RegisterForNavigation<HomeView>();
     }
 
     /// <summary>
@@ -263,11 +267,11 @@ public partial class App : PrismApplication
         // 方剂管理 - 依赖药材
         moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
 
+        // 病历管理 - 核心医疗流程（Epic #1494），启动时加载以支持"开始接诊"功能
+        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
+
         // 诊疗管理 - 依赖患者
         moduleCatalog.AddModule<ConsultationModule>(InitializationMode.OnDemand);
-
-        // 病历管理 - 复杂依赖
-        moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.OnDemand);
 
         // 处方管理 - 最复杂依赖
         moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.OnDemand);

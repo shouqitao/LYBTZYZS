@@ -104,7 +104,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                             Password = credentials.Value.Password;
                             RememberMe = true; // 记住密码时必然记住用户名
                             RememberPassword = isRememberPasswordEnabled;
-                            Logger.LogInformation("已自动填充用户名和密码（DPAPI解密）: {Username}", credentials.Value.Username);
+                            Logger.LogInformation("已自动填充用户名和密码（DPAPI解密）: {UserName}", credentials.Value.Username);
                         });
                         return; // 成功加载密码后直接返回
                     }
@@ -122,7 +122,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                         {
                             Username = savedUsername;
                             RememberMe = isRememberMeEnabled;
-                            Logger.LogInformation("已自动填充用户名: {Username}", savedUsername);
+                            Logger.LogInformation("已自动填充用户名: {UserName}", savedUsername);
                         });
                     }
                 }
@@ -267,7 +267,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 // 构造登录请求
                 var loginRequest = new LoginRequest
                 {
-                    Username = Username,
+                    UserName = Username,
                     Password = Password,
                     RememberMe = RememberMe
                 };
@@ -329,47 +329,29 @@ namespace LYBT.Desktop.Auth.ViewModels
         {
             try
             {
-                string targetView = role switch
-                {
-                    UserRole.Admin => "AdminWorkstationView",
-                    UserRole.Doctor => "ClinicalWorkstationView",
-                    _ => "ClinicalWorkstationView" // 默认导航到诊疗工作台
-                };
+                // Bug #1524修复：移除LoginViewModel中的导航逻辑
+                // 原因：与MainWindowViewModel.LoadMainContent()导航冲突
+                // - LoginViewModel在100ms后导航到ClinicalWorkstationView（旧界面）
+                // - MainWindowViewModel在LoginSuccessEvent触发时导航到HomeView（新界面）
+                // - 导致最终显示旧界面（ClinicalWorkstationView覆盖HomeView）
+                //
+                // 解决方案：登录后的导航完全交给MainWindowViewModel.LoadMainContent()处理
+                // - Epic #1494设计要求：登录后始终显示HomeView（统一医生主页）
+                // - MainWindowViewModel会根据角色加载对应模块（ClinicalWorkstationModule等）
+                // - 用户点击"开始看诊"按钮进入医案流程
 
-                Logger.LogInformation($"根据角色 {role} 导航到 {targetView}");
+                Logger.LogInformation($"用户 {user.UserName}（角色: {role}）登录成功");
 
-                // Issue #877 修复步骤2: 先发布登录成功事件，让 Shell 更新 UI 状态
-                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发 Shell UI 更新");
+                // Issue #877: 发布登录成功事件，触发 Shell UI 更新和导航
+                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发 MainWindowViewModel 处理后续导航");
                 EventAggregator.GetEvent<LoginSuccessEvent>().Publish(user);
 
-                // Issue #877 修复步骤3: 延迟导航，等待 UI 绑定生效
-                // 延迟 100ms 确保 MainWindow.IsLoggedIn 更新后，ContentRegion 已变为可见
-                _ = Task.Delay(100).ContinueWith(_ =>
-                {
-                    Logger.LogInformation("⏰ 延迟完成，开始导航到 {TargetView}", targetView);
-
-                    // 在 UI 线程上执行导航
-                    System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        RegionManager.RequestNavigate("ContentRegion", targetView, navigationResult =>
-                        {
-                            if (navigationResult.Result != true)
-                            {
-                                Logger.LogError("❌ 导航失败: {Error}", navigationResult.Error?.Message);
-                                ErrorMessage = $"导航失败：{navigationResult.Error?.Message}";
-                            }
-                            else
-                            {
-                                Logger.LogInformation("✅ 导航成功到 {TargetView}", targetView);
-                            }
-                        });
-                    });
-                });
+                // 导航逻辑由 MainWindowViewModel.OnLoginSuccess() 和 LoadMainContent() 处理
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到工作台时发生错误");
-                ErrorMessage = "导航失败：" + ex.Message;
+                Logger.LogError(ex, "发布登录成功事件时发生错误");
+                ErrorMessage = "登录后处理失败：" + ex.Message;
             }
         }
 

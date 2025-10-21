@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Modules.Prescriptions.ViewModels;
+﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Prescriptions.Repositories;
 using LYBT.Desktop.Prescriptions.Services;
@@ -32,13 +33,19 @@ namespace LYBT.Desktop.Prescriptions
             // 注册打印服务（Issue #1381: PRINT-4）
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
 
+            // Epic #1540: 注册处方编辑器服务（方案B - 包装模式）
+            // 实现依赖倒置：MedicalCase模块依赖IPrescriptionEditorService接口
+            containerRegistry.RegisterSingleton<IPrescriptionEditorService, PrescriptionEditorService>();
+
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<PrescriptionManagementViewModel>();
             containerRegistry.Register<PrescriptionsMainViewModel>();
+            containerRegistry.Register<PrescriptionViewModel>(); // Issue #1461
 
             // Phase 2: 启用 Region Navigation 注册
             containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
             containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
+            containerRegistry.RegisterForNavigation<Views.PrescriptionView>(); // Issue #1461
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();

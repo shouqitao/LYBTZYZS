@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Formula.Repositories
             try
             {
                 var response = await _api.CloneFormulaAsync(formulaId);
-                return response.Content ?? throw new InvalidOperationException($"克隆验方失败，ID: {formulaId}");
+                return response.Data ?? throw new InvalidOperationException($"克隆验方失败，ID: {formulaId}");
             }
             catch (Exception ex)
             {
@@ -37,29 +37,64 @@ namespace LYBT.Desktop.Formula.Repositories
             }
         }
 
+        /// <summary>
+        /// 获取待校验的验方列表 (Issue #1349)
+        /// </summary>
+        public async Task<List<FormulaDto>> GetPendingValidationFormulasAsync()
+        {
+            try
+            {
+                var response = await _api.GetPendingValidationFormulasAsync();
+                return response.Data ?? new List<FormulaDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取待校验验方列表失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
+        /// </summary>
+        public async Task<bool> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId)
+        {
+            try
+            {
+                var response = await _api.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+                return response.Success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "验证验方药材失败，验方ID: {FormulaId}, 药材项ID: {HerbItemId}, 系统药材ID: {SelectedHerbId}",
+                    formulaId, herbItemId, selectedHerbId);
+                throw;
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<FormulaDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetFormulaByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<FormulaDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<FormulaDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetFormulasAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaCreateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaCreateDto dto)
         {
             return _api.CreateFormulaAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaUpdateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaUpdateDto dto)
         {
             return _api.UpdateFormulaAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteFormulaAsync(id);
         }

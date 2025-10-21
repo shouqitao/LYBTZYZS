@@ -424,6 +424,11 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 StatusMessage = "正在加载药材信息...";
 
                 var herb = await _herbRepository.GetByIdAsync(herbId);
+                if (herb == null)
+                {
+                    StatusMessage = "未找到药材信息";
+                    return;
+                }
                 Herb = herb;
                 LoadFromDto(herb);
             }

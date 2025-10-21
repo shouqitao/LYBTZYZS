@@ -14,7 +14,7 @@ namespace LYBT.Shared.Models.Contracts.Auth
         [Required(ErrorMessage = "用户名不能为空")]
         [StringLength(32, ErrorMessage = "用户名长度不能超过32个字符")]
         [DisplayName("用户名")]
-        public string Username { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>密码</summary>
         [Required(ErrorMessage = "密码不能为空")]

@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 服务依赖
 
         private readonly IFormulaRepository _formulaRepository;
+        private readonly IPrescriptionRepository _prescriptionRepository;
 
         #endregion
 
@@ -82,6 +84,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             "化痰止咳方", "理气方", "活血化瘀方", "温里方", "其他"
         };
 
+        /// <summary>
+        /// 处方ID - 用于导入验方功能 (Issue #1367 ENTRY-9)
+        /// </summary>
+        public Guid PrescriptionId { get; private set; }
+
         #endregion
 
         #region 对话框属性
@@ -135,6 +142,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand ViewDetailsCommand { get; }
 
+        /// <summary>
+        /// 导入验方命令 (Issue #1367 ENTRY-9)
+        /// </summary>
+        public DelegateCommand ImportCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -144,11 +156,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             IFormulaRepository formulaService,
+            IPrescriptionRepository prescriptionRepository,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -156,6 +170,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             CancelCommand = new DelegateCommand(Cancel);
             PreviewCommand = new DelegateCommand(Preview, CanPreview);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
+            ImportCommand = new DelegateCommand(async () => await ImportFormulaAsync(), CanImport);
 
             // Phase 4B 别名命令
             SelectCommand = ConfirmCommand;
@@ -195,6 +210,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 if (parameters.ContainsKey("Category"))
                 {
                     CategoryFilter = parameters.GetValue<string>("Category");
+                }
+
+                // Issue #1367 ENTRY-9: 获取处方ID用于导入功能
+                if (parameters.ContainsKey("PrescriptionId"))
+                {
+                    PrescriptionId = parameters.GetValue<Guid>("PrescriptionId");
                 }
 
                 // 加载数据
@@ -340,17 +361,58 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             }
         }
 
+        /// <summary>
+        /// 导入验方到处方 (Issue #1367 ENTRY-9)
+        /// </summary>
+        private async Task ImportFormulaAsync()
+        {
+            if (SelectedFormula == null || PrescriptionId == Guid.Empty)
+            {
+                return;
+            }
+
+            try
+            {
+                SetIsBusy(true, $"正在导入验方\"{SelectedFormula.Name}\"...");
+
+                await _prescriptionRepository.ImportFormulaIntoPrescriptionAsync(PrescriptionId, SelectedFormula.Id);
+
+                Logger.LogInformation("验方\"{FormulaName}\"导入成功", SelectedFormula.Name);
+                await ShowSuccessMessageAsync($"验方\"{SelectedFormula.Name}\"已成功导入到处方");
+
+                // 关闭对话框并通知刷新
+                var parameters = new DialogParameters
+                {
+                    { "Imported", true },
+                    { "FormulaName", SelectedFormula.Name }
+                };
+
+                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导入验方时发生异常: {FormulaName}", SelectedFormula?.Name);
+                await ShowErrorMessageAsync($"导入验方失败: {ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
         #endregion
 
         #region 命令状态检查
 
         private bool CanConfirm() => SelectedFormula != null && !IsBusy;
         private bool CanPreview() => SelectedFormula != null;
+        private bool CanImport() => SelectedFormula != null && PrescriptionId != Guid.Empty && !IsBusy;
 
         private void UpdateCommandStates()
         {
             ConfirmCommand.RaiseCanExecuteChanged();
             PreviewCommand.RaiseCanExecuteChanged();
+            ImportCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

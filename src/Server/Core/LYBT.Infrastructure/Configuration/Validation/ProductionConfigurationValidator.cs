@@ -50,7 +50,7 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Business:SystemAdmin:Username",
+            Key = "Lybt:Business:SystemAdmin:UserName",
             EnvVarName = "Lybt__Business__SystemAdmin__Username",
             Severity = Severity.Important,
             Description = "系统管理员用户名",

@@ -10,6 +10,7 @@ using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,11 +34,17 @@ namespace LYBT.Module.Prescriptions.Tests.Services
         {
             _repositoryMock = CreateMock<IPrescriptionRepository>();
             _formulaRepositoryMock = CreateMock<IFormulaRepository>();
+            var medicalCaseRepositoryMock = CreateMock<LYBT.Module.MedicalCase.Interfaces.IMedicalCaseRepository>();
+            var patientRepositoryMock = CreateMock<LYBT.Module.Patients.Interfaces.IPatientRepository>();
+            var consultationRepositoryMock = CreateMock<LYBT.Module.Consultation.Interfaces.IConsultationRepository>();
             _loggerMock = CreateLoggerMock<PrescriptionService>();
 
             _prescriptionService = new PrescriptionService(
                 _repositoryMock.Object,
                 _formulaRepositoryMock.Object,
+                medicalCaseRepositoryMock.Object,
+                patientRepositoryMock.Object,
+                consultationRepositoryMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }
@@ -579,6 +586,386 @@ namespace LYBT.Module.Prescriptions.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().Contain("折扣");
             result.Data.Should().Contain("85%");
+        }
+
+        #endregion
+
+        #region SearchPrescriptionsAsync Tests
+
+        [Fact]
+        public async Task SearchPrescriptionsAsync_WithNoParameters_ShouldReturnEmptyList()
+        {
+            // Arrange - 无需参数
+
+            // Act
+            var result = await _prescriptionService.SearchPrescriptionsAsync(null, null);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task SearchPrescriptionsAsync_WithEmptyStrings_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var emptyPatientName = "   ";
+            var emptySymptomKeyword = "";
+
+            // Act
+            var result = await _prescriptionService.SearchPrescriptionsAsync(emptyPatientName, emptySymptomKeyword);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Should().BeEmpty();
+        }
+
+        // Note: 完整的集成测试将在IntegrationTests项目中进行
+        // 这里的单元测试仅验证基本逻辑和边界条件
+
+        #endregion
+
+        #region ImportFormulaIntoPrescriptionAsync Tests (Issue #1472 FORMULA-7)
+
+        [Fact]
+        public async Task ImportFormulaIntoPrescriptionAsync_WithNonExistentFormula_ShouldReturnFailure()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var nonExistentFormulaId = Guid.NewGuid();
+
+            _formulaRepositoryMock.Setup(x => x.GetByIdAsync(nonExistentFormulaId))
+                .ReturnsAsync((LYBT.Entities.Formula.Formula?)null);
+
+            // Act
+            var result = await _prescriptionService.ImportFormulaIntoPrescriptionAsync(prescriptionId, nonExistentFormulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("验方不存在");
+
+            // 验证未调用处方查询（验方检查在前）
+            _repositoryMock.Verify(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ImportFormulaIntoPrescriptionAsync_WithDraftFormula_ShouldReturnFailure()
+        {
+            // Arrange - Issue #1472 (FORMULA-7): 验证Draft状态验方不能导入
+            var prescriptionId = Guid.NewGuid();
+            var formulaId = Guid.NewGuid();
+
+            var draftFormula = new LYBT.Entities.Formula.Formula
+            {
+                Id = formulaId,
+                Name = "未校验验方",
+                ValidationStatus = FormulaValidationStatus.Draft, // ⭐ 核心测试点
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                {
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = null, // 未验证，HerbId为null
+                        OriginalHerbName = "未知药材A",
+                        IsValidated = false, // ⭐ 未验证
+                        Quantity = 10
+                    },
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = null,
+                        OriginalHerbName = "未知药材B",
+                        IsValidated = false, // ⭐ 未验证
+                        Quantity = 15
+                    }
+                }
+            };
+
+            _formulaRepositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(draftFormula);
+
+            // Act
+            var result = await _prescriptionService.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("包含未校验的药材");
+            result.ErrorMessage.Should().Contain("未知药材A");
+            result.ErrorMessage.Should().Contain("未知药材B");
+
+            // 验证未调用处方查询和更新（验方状态检查失败）
+            _repositoryMock.Verify(x => x.GetByIdWithItemsAsync(It.IsAny<Guid>()), Times.Never);
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ImportFormulaIntoPrescriptionAsync_WithNonExistentPrescription_ShouldReturnFailure()
+        {
+            // Arrange
+            var nonExistentPrescriptionId = Guid.NewGuid();
+            var formulaId = Guid.NewGuid();
+
+            var validatedFormula = new LYBT.Entities.Formula.Formula
+            {
+                Id = formulaId,
+                Name = "六味地黄丸",
+                ValidationStatus = FormulaValidationStatus.Validated, // 已验证
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>()
+            };
+
+            _formulaRepositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(validatedFormula);
+
+            _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(nonExistentPrescriptionId))
+                .ReturnsAsync((Prescription?)null);
+
+            // Act
+            var result = await _prescriptionService.ImportFormulaIntoPrescriptionAsync(nonExistentPrescriptionId, formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorMessage.Should().Contain("处方不存在");
+
+            // 验证未调用更新
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ImportFormulaIntoPrescriptionAsync_WithValidatedFormula_ShouldImportSuccessfully()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var formulaId = Guid.NewGuid();
+            var herbId1 = Guid.NewGuid();
+            var herbId2 = Guid.NewGuid();
+
+            var validatedFormula = new LYBT.Entities.Formula.Formula
+            {
+                Id = formulaId,
+                Name = "六味地黄丸",
+                ValidationStatus = FormulaValidationStatus.Validated, // ⭐ 已验证
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                {
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = herbId1,
+                        OriginalHerbName = "熟地黄",
+                        IsValidated = true, // ⭐ 已验证
+                        Quantity = 24,
+                        Unit = "g",
+                        Usage = "煎服"
+                    },
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = herbId2,
+                        OriginalHerbName = "山药",
+                        IsValidated = true, // ⭐ 已验证
+                        Quantity = 12,
+                        Unit = "g",
+                        Usage = "煎服"
+                    }
+                }
+            };
+
+            var prescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                ReferencedFormulas = string.Empty, // 初始为空
+                Items = new List<PrescriptionItem>()
+            };
+
+            _formulaRepositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(validatedFormula);
+
+            _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(prescriptionId))
+                .ReturnsAsync(prescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Prescription>()))
+                .ReturnsAsync((Prescription p) => p);
+
+            // Act
+            var result = await _prescriptionService.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Message.Should().Contain("六味地黄丸");
+            result.Message.Should().Contain("2味药材");
+
+            // 验证处方项被添加
+            prescription.Items.Should().HaveCount(2);
+            prescription.Items.Should().Contain(item => item.HerbId == herbId1 && item.HerbName == "熟地黄" && item.Quantity == 24);
+            prescription.Items.Should().Contain(item => item.HerbId == herbId2 && item.HerbName == "山药" && item.Quantity == 12);
+
+            // 验证ReferencedFormulas字段更新
+            prescription.ReferencedFormulas.Should().Be("六味地黄丸");
+
+            // 验证调用了更新
+            _repositoryMock.Verify(x => x.UpdateAsync(It.Is<Prescription>(p => p.Id == prescriptionId)), Times.Once);
+        }
+
+        [Fact]
+        public async Task ImportFormulaIntoPrescriptionAsync_WithDuplicateFormula_ShouldNotDuplicateReference()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var formulaId = Guid.NewGuid();
+
+            var validatedFormula = new LYBT.Entities.Formula.Formula
+            {
+                Id = formulaId,
+                Name = "逍遥散",
+                ValidationStatus = FormulaValidationStatus.Validated,
+                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                {
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        HerbId = Guid.NewGuid(),
+                        OriginalHerbName = "柴胡",
+                        IsValidated = true,
+                        Quantity = 10,
+                        Unit = "g"
+                    }
+                }
+            };
+
+            var prescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                ReferencedFormulas = "逍遥散,归脾汤", // 已包含"逍遥散"
+                Items = new List<PrescriptionItem>()
+            };
+
+            _formulaRepositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+                .ReturnsAsync(validatedFormula);
+
+            _repositoryMock.Setup(x => x.GetByIdWithItemsAsync(prescriptionId))
+                .ReturnsAsync(prescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Prescription>()))
+                .ReturnsAsync((Prescription p) => p);
+
+            // Act
+            var result = await _prescriptionService.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            // 验证ReferencedFormulas字段未重复添加
+            prescription.ReferencedFormulas.Should().Be("逍遥散,归脾汤"); // 未追加
+            prescription.ReferencedFormulas.Split(',').Should().HaveCount(2); // 仍然是2个验方
+        }
+
+        #endregion
+
+        #region Business Rules Tests (Issue #1423 - RULE-3)
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 创建当天可以修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedToday_ShouldReturnSuccess()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var existingPrescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                Advice = "原始医嘱",
+                CreatedAt = DateTime.Today.AddHours(10) // 今天创建
+            };
+
+            var updateDto = new PrescriptionUpdateDto
+            {
+                Advice = "更新后的医嘱",
+                Discount = 0.9m,
+                Remark = "更新备注",
+                DosageCount = 10
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(prescriptionId))
+                .ReturnsAsync(existingPrescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Prescription>()))
+                .ReturnsAsync(existingPrescription);
+
+            // Act
+            var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Once);
+        }
+
+        /// <summary>
+        /// RULE-3: 当天可改隔日锁定 - 隔日后不可修改
+        /// </summary>
+        [Fact]
+        public async Task UpdateAsync_WhenCreatedYesterday_ShouldReturnFailure()
+        {
+            // Arrange
+            var prescriptionId = Guid.NewGuid();
+            var existingPrescription = new Prescription
+            {
+                Id = prescriptionId,
+                MedicalCaseId = Guid.NewGuid(),
+                PatientId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                DosageCount = 7,
+                Discount = 1.0m,
+                Advice = "原始医嘱",
+                CreatedAt = DateTime.Today.AddDays(-1).AddHours(10) // 昨天创建
+            };
+
+            var updateDto = new PrescriptionUpdateDto
+            {
+                Advice = "尝试更新的医嘱",
+                Discount = 0.9m
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(prescriptionId))
+                .ReturnsAsync(existingPrescription);
+
+            // Act
+            var result = await _prescriptionService.UpdateAsync(prescriptionId, updateDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.Message.Should().Contain("已超过可修改期限");
+            result.Message.Should().Contain("仅限创建当天可修改");
+
+            // 验证UpdateAsync不应被调用
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Prescription>()), Times.Never);
         }
 
         #endregion

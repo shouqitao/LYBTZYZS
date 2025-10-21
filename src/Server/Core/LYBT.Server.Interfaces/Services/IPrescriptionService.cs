@@ -55,9 +55,22 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<string>> GeneratePrescriptionNoAsync();
 
         /// <summary>
-        /// 克隆处方 - 复制处方并创建新实例 (Issue #1167)
+        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
+        /// 已弃用，请使用 ClonePrescriptionAsync
         /// </summary>
+        [Obsolete("请使用 ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetConsultationId) 替代")]
         Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId);
+
+        /// <summary>
+        /// 克隆处方 - 复制处方到指定诊疗记录 (Issue #1373 ENTRY-15)
+        /// 支持从历史处方复制到新的诊疗记录/病历
+        /// </summary>
+        /// <param name="sourcePrescriptionId">源处方ID</param>
+        /// <param name="targetConsultationId">目标诊疗记录ID（与MedicalCase共享主键）</param>
+        /// <returns>新创建的处方DTO</returns>
+        Task<ServiceResult<PrescriptionDto>> ClonePrescriptionAsync(
+            Guid sourcePrescriptionId,
+            Guid targetConsultationId);
 
         /// <summary>
         /// 获取处方统计数据 (Issue #1163)
@@ -74,10 +87,33 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate);
 
         /// <summary>
-        /// 导入验方到处方 - 校验验方状态 (Issue #1350)
+        /// 导入验方到处方 - 校验验方状态 (Issue #1350, Issue #1366 ENTRY-8)
+        /// 从已验证的验方批量导入药材，并记录引用的验方名称
         /// </summary>
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="formulaId">验方ID</param>
-        Task<ServiceResult> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+        /// <returns>更新后的处方DTO</returns>
+        Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+
+        /// <summary>
+        /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（可空）</param>
+        /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
+        /// <returns>处方搜索结果列表</returns>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+            string? patientName = null,
+            string? symptomKeyword = null);
+
+        /// <summary>
+        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// 按日期倒序排列，包含诊断信息
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="count">返回数量（默认5条）</param>
+        /// <returns>患者最近处方列表</returns>
+        Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+            Guid patientId,
+            int count = 5);
     }
 }

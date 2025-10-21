@@ -764,6 +764,10 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<int>("PrintVersion")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReferencedFormulas")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Remark")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");

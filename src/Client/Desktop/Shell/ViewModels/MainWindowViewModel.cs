@@ -547,25 +547,14 @@ public class MainWindowViewModel : UnifiedViewModelBase
             throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
         }
 
-        // 简化角色判断逻辑：只区分管理员和医生
-        string workbenchView;
-        string roleDisplay;
+        // Bug #1512修复：Epic #1494设计要求登录后始终显示HomeView
+        // HomeView是统一的医生主页，用户点击"开始看诊"按钮进入医案流程
+        string workbenchView = "HomeView";
 
-        // 管理员判断（包括sysadmin用户名和Admin角色）
+        // 角色判断仅用于标题显示
         bool isAdmin = CurrentUser.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-        CurrentUser.Role == UserRole.Admin;
-
-        if (isAdmin)
-        {
-            workbenchView = "AdminWorkstationView";
-            roleDisplay = "管理员";
-        }
-        else
-        {
-            // 其他角色默认为医生工作台
-            workbenchView = "ClinicalWorkstationView";
-            roleDisplay = "医生";
-        }
+                       CurrentUser.Role == UserRole.Admin;
+        string roleDisplay = isAdmin ? "管理员" : "医生";
 
         // 更新标题和清理登录区域
         var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName;

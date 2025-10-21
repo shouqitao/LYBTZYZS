@@ -3,11 +3,13 @@ using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 {
@@ -17,9 +19,12 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
     public class ClinicalWorkstationViewModel : UnifiedViewModelBase
     {
         private readonly IRegionManager _regionManager;
+        private readonly IDialogService _dialogService;
 
         private string _currentUserName = string.Empty;
         private string _currentPatientName = "未选择";
+        // Issue #1547: _currentPatient已废弃（PatientSelectionDialog已删除）
+        // private PatientDto? _currentPatient;
         private bool _isInitialized = false;
 
         // 菜单选中状态
@@ -43,12 +48,14 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
 
         public ClinicalWorkstationViewModel(
             IRegionManager regionManager,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
         {
             _regionManager = regionManager;
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化导航服务
             NavigationService = new Navigation.ClinicalNavigator(regionManager);
@@ -243,16 +250,27 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
                 UpdateSelectionState(targetView);
 
                 // 根据参数映射视图
+                // Issue #1454: 修正DiagnosisView → ConsultationManagementView
+                // Issue #1459: 更新"Diagnosis"导航到ConsultationEntryView (诊疗录入)
+                // Issue #1463: 激进重构 - 导航到MedicalCaseEntryView (病案录入)
+                // Issue #1549: 更新为MedicalCaseFlowView（4步流程）
                 string viewName = targetView switch
                 {
-                    "Diagnosis" => "DiagnosisView",
+                    "Diagnosis" => "MedicalCaseFlowView",  // ✅ Issue #1549: 4步医案流程视图（Epic #1494）
                     "Prescription" => "PrescriptionView",
                     "PatientManagement" => "PatientManagementView",
-                    "History" => "HistoryView",
-                    _ => "DiagnosisView"
+                    "History" => "ConsultationManagementView",  // ✅ 历史记录移到History菜单
+                    _ => "MedicalCaseFlowView"  // ✅ 默认也改为4步流程
                 };
 
-                _regionManager.RequestNavigate("ClinicalContentRegion", viewName);
+                // Issue #1547: 患者传递逻辑已废弃（PatientSelectionDialog已删除）
+                NavigationParameters parameters = new();
+                // if (_currentPatient != null && viewName == "MedicalCaseEntryView")
+                // {
+                //     parameters.Add("Patient", _currentPatient);
+                // }
+
+                _regionManager.RequestNavigate("ClinicalContentRegion", viewName, parameters);
             }
             catch (Exception ex)
             {
@@ -291,9 +309,25 @@ namespace LYBT.Desktop.ClinicalWorkstation.ViewModels
         {
             try
             {
-                Logger.LogInformation("Select patient");
-                // TODO: 打开患者选择对话框
-                CurrentPatientName = "张三（测试）";
+                Logger.LogInformation("打开患者选择对话框（已废弃）");
+
+                // Issue #1547: PatientSelectionDialog已删除
+                // 原因：ClinicalWorkstation模块已被ClinicalHomeView替代（Issue #1517）
+                // 待Phase 3（Epic #1513）移除整个ClinicalWorkstation模块时一并清理
+
+                // 旧代码（已注释）：
+                // _dialogService.ShowDialog("PatientSelectionDialog", result =>
+                // {
+                //     if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("SelectedPatient"))
+                //     {
+                //         _currentPatient = result.Parameters.GetValue<PatientDto>("SelectedPatient");
+                //         CurrentPatientName = _currentPatient.Name;
+                //         Logger.LogInformation("患者已选择: {PatientName} (ID: {PatientId})",
+                //             _currentPatient.Name, _currentPatient.Id);
+                //     }
+                // });
+
+                Logger.LogWarning("PatientSelectionDialog已废弃，请使用MedicalCaseFlowView进行患者选择");
             }
             catch (Exception ex)
             {

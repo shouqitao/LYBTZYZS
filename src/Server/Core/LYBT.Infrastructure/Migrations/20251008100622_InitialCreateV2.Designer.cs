@@ -952,7 +952,7 @@ namespace LYBT.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Username");
+                        .HasColumnName("UserName");
 
                     b.HasKey("Id");
 

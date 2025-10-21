@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Consultation.Repositories
             try
             {
                 var response = await _api.GetConsultationsByMedicalCaseIdAsync(medicalCaseId);
-                return response.Content ?? new List<ConsultationDto>();
+                return response.Data ?? new List<ConsultationDto>();
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace LYBT.Desktop.Consultation.Repositories
             try
             {
                 var response = await _api.StartConsultationAsync(new { PatientId = patientId });
-                return response.Content ?? throw new InvalidOperationException("启动诊疗失败，服务器未返回数据");
+                return response.Data ?? throw new InvalidOperationException("启动诊疗失败，服务器未返回数据");
             }
             catch (Exception ex)
             {
@@ -69,27 +69,27 @@ namespace LYBT.Desktop.Consultation.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<ConsultationDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<ConsultationDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetConsultationByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<ConsultationDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<ConsultationDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetConsultationsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<ConsultationDto>> CallApiCreateAsync(ConsultationCreateDto dto)
+        protected override Task<ApiResponse<ConsultationDto>> CallApiCreateAsync(ConsultationCreateDto dto)
         {
             return _api.CreateConsultationAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<ConsultationDto>> CallApiUpdateAsync(Guid id, ConsultationUpdateDto dto)
+        protected override Task<ApiResponse<ConsultationDto>> CallApiUpdateAsync(Guid id, ConsultationUpdateDto dto)
         {
             return _api.UpdateConsultationAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteConsultationAsync(id);
         }

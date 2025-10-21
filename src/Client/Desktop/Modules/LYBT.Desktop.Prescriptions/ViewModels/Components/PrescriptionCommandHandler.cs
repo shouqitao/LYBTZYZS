@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 {
@@ -18,6 +19,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         private readonly IPrescriptionRepository _prescriptionRepository;
         private readonly IPrescriptionPrintService _printService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
+        private readonly IDialogService _dialogService;
 
         #region 事件定义
 
@@ -35,6 +37,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// 处方清空事件
         /// </summary>
         public event Action? OnPrescriptionCleared;
+
+        /// <summary>
+        /// 验方导入成功事件 (Issue #1368 ENTRY-10)
+        /// </summary>
+        public event Action? OnFormulaImported;
         #endregion
 
         #region 命令定义
@@ -99,12 +106,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             IPrescriptionRepository prescriptionService,
             IPrescriptionPrintService printService,
             ILogger<PrescriptionCommandHandler> logger,
-            ISessionManager sessionManager)
+            ISessionManager sessionManager,
+            IDialogService dialogService)
         {
             _prescriptionRepository = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化命令
             RecalculateCommand = new DelegateCommand(ExecuteRecalculate);
@@ -316,11 +325,32 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
-        /// 执行导入验方
+        /// 执行导入验方 (Issue #1368 ENTRY-10)
         /// </summary>
         private void ExecuteImportFormula()
         {
-            _logger.LogInformation("执行导入验方");
+            if (_dataManager?.PrescriptionId == null || _dataManager.PrescriptionId == Guid.Empty)
+            {
+                _logger.LogWarning("无法导入验方：处方ID无效");
+                return;
+            }
+
+            _logger.LogInformation("打开验方模板对话框，处方ID: {PrescriptionId}", _dataManager.PrescriptionId);
+
+            var parameters = new DialogParameters
+            {
+                { "PrescriptionId", _dataManager.PrescriptionId }
+            };
+
+            _dialogService.ShowDialog("FormulaTemplateDialog", parameters, result =>
+            {
+                if (result.Result == ButtonResult.OK && result.Parameters.ContainsKey("Imported"))
+                {
+                    var formulaName = result.Parameters.GetValue<string>("FormulaName");
+                    _logger.LogInformation("验方 \"{FormulaName}\" 导入成功", formulaName);
+                    OnFormulaImported?.Invoke();
+                }
+            });
         }
 
         /// <summary>

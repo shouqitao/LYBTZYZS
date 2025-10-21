@@ -58,5 +58,21 @@ namespace LYBT.Server.Interfaces.Services
         /// 根据ID获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         Task<ServiceResult<MedicalCaseDetailDto>> GetByIdWithDetailsAsync(Guid id);
+
+        /// <summary>
+        /// 更新病案的诊断信息 (Issue #1477 架构纠正v2)
+        /// </summary>
+        /// <param name="medicalCaseId">病案ID</param>
+        /// <param name="dto">诊断更新信息</param>
+        /// <returns>更新后的诊断信息</returns>
+        Task<ServiceResult<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto);
+
+        /// <summary>
+        /// 更新病案的处方信息 (Issue #1477 架构纠正v2)
+        /// </summary>
+        /// <param name="medicalCaseId">病案ID</param>
+        /// <param name="dto">处方更新信息</param>
+        /// <returns>更新后的处方信息</returns>
+        Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
     }
 }

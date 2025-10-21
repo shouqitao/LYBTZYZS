@@ -4,11 +4,13 @@ using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -22,6 +24,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         private readonly IFormulaRepository _formulaRepository;
         private readonly IHerbRepository _herbRepository;
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -115,6 +118,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public FormulaValidationViewModel(
             IFormulaRepository formulaRepository,
             IHerbRepository herbRepository,
+            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -124,6 +128,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "验方校验管理";
 
@@ -176,27 +181,18 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载待校验验方...");
 
-                // TODO: 等待 API 端点实现（Issue #1349 GetPendingValidationFormulasAsync）
-                // 暂时使用 GetPagedAsync 获取所有验方，然后筛选 Draft 状态
-                var pagedResult = await _formulaRepository.GetPagedAsync(1, 100);
+                var draftFormulas = await _formulaRepository.GetPendingValidationFormulasAsync();
 
                 PendingFormulas.Clear();
 
-                if (pagedResult?.Items != null && pagedResult.Items.Any())
+                if (draftFormulas != null && draftFormulas.Any())
                 {
-                    // 筛选 Draft 状态的验方（临时方案）
-                    var draftFormulas = pagedResult.Items
-                        .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
-                        .ToList();
-
                     foreach (var formula in draftFormulas)
                     {
                         PendingFormulas.Add(formula);
                     }
 
                     PendingFormulaCount = draftFormulas.Count;
-                    // TODO: 等待 FormulaDto 添加 UnvalidatedHerbsCount 属性（Issue #1344）
-                    // 暂时计算未校验药材数量
                     TotalUnvalidatedHerbsCount = draftFormulas.Sum(f =>
                         f.Herbs?.Count(h => !h.IsValidated) ?? 0);
 
@@ -277,23 +273,54 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
 
-                // TODO: 打开药材选择对话框（Issue #1353）
-                // TODO: 调用 API 端点验证药材（Issue #1348 ValidateFormulaHerbAsync）
-                // TODO: 使用 GetByNameOrPinyinAsync 查找药材（Issue #1351）
+                // 打开药材选择对话框 (Issue #1353 - FORMULA-13)
+                var parameters = new DialogParameters
+                {
+                    { "AllowMultipleSelection", false },  // 单选模式
+                    { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+                };
 
-                // 暂时显示功能开发中的提示
-                await ShowWarningMessageAsync(
-                    $"药材校验功能开发中\n" +
-                    $"原始名称：{herbItem.OriginalHerbName ?? herbItem.HerbName}\n" +
-                    $"待实现功能：\n" +
-                    $"1. 打开药材选择对话框\n" +
-                    $"2. 调用API验证药材映射\n" +
-                    $"3. 更新验方状态");
+                _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+                        if (selectedHerbs != null && selectedHerbs.Any())
+                        {
+                            var selectedHerbId = selectedHerbs.First().Id;
 
-                Logger.LogInformation(
-                    "药材校验功能尚未实现 - 验方ID: {FormulaId}, 药材: {HerbName}",
-                    SelectedFormula.Id,
-                    herbItem.HerbName);
+                            Logger.LogInformation(
+                                "用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}",
+                                SelectedFormula.Name,
+                                herbItem.OriginalHerbName ?? herbItem.HerbName,
+                                selectedHerbId);
+
+                            // 调用验证API (FORMULA-10)
+                            bool success = await _formulaRepository.ValidateFormulaHerbAsync(
+                                SelectedFormula.Id,
+                                herbItem.Id,
+                                selectedHerbId);
+
+                            if (success)
+                            {
+                                await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
+
+                                // 刷新待校验列表
+                                await LoadPendingFormulasAsync();
+                            }
+                            else
+                            {
+                                await ShowErrorMessageAsync("药材映射失败，请重试");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation("用户取消了药材选择");
+                    }
+
+                    SetIsBusy(false);
+                });
             }
             catch (Exception ex)
             {
