@@ -256,26 +256,31 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<ClinicalModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<AdminModule>(InitializationMode.WhenAvailable);
 
-        // ========== 基础业务模块 - 登录后加载 ==========
-        // 患者管理 - 多数业务的基础
-        moduleCatalog.AddModule<PatientsModule>(InitializationMode.OnDemand);
+        // ========== 基础业务模块 - 医案流程依赖链（Issue #1564）==========
+        // 患者管理 - 医案流程Step 1依赖
+        // Issue #1564: 改为WhenAvailable，因为MedicalCaseModule依赖此模块（Step 1患者选择）
+        moduleCatalog.AddModule<PatientsModule>(InitializationMode.WhenAvailable);
 
-        // ========== 功能模块 - 按需加载 ==========
-        // 药材管理 - 独立功能,可延迟加载
-        moduleCatalog.AddModule<HerbsModule>(InitializationMode.OnDemand);
+        // ========== 功能模块 - 医案流程依赖链（Issue #1564）==========
+        // 药材管理 - 处方模块依赖
+        // Issue #1564: 改为WhenAvailable，因为PrescriptionsModule依赖此模块
+        moduleCatalog.AddModule<HerbsModule>(InitializationMode.WhenAvailable);
 
-        // 方剂管理 - 依赖药材
-        moduleCatalog.AddModule<FormulaModule>(InitializationMode.OnDemand);
+        // 方剂管理 - 依赖药材，处方模块依赖
+        // Issue #1564: 改为WhenAvailable，因为PrescriptionsModule依赖此模块
+        moduleCatalog.AddModule<FormulaModule>(InitializationMode.WhenAvailable);
+
+        // 诊疗管理 - 依赖患者，处方模块依赖
+        // Issue #1564: 改为WhenAvailable，因为PrescriptionsModule依赖此模块
+        moduleCatalog.AddModule<ConsultationModule>(InitializationMode.WhenAvailable);
+
+        // 处方管理 - 医案流程Step 3依赖
+        // Issue #1564: 改为WhenAvailable，因为MedicalCaseModule（WhenAvailable）依赖此模块
+        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.WhenAvailable);
 
         // 病历管理 - 核心医疗流程（Epic #1494），启动时加载以支持"开始接诊"功能
+        // Issue #1564: 依赖Prescriptions/Consultation/Herbs/Formula模块，确保依赖链完整
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
-
-        // 诊疗管理 - 依赖患者
-        moduleCatalog.AddModule<ConsultationModule>(InitializationMode.OnDemand);
-
-        // 处方管理 - 最复杂依赖
-        // Issue #1564: 改为WhenAvailable，因为MedicalCaseModule（WhenAvailable）依赖此模块（医案流程Step 3需要）
-        moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.WhenAvailable);
 
         base.ConfigureModuleCatalog(moduleCatalog);
     }
