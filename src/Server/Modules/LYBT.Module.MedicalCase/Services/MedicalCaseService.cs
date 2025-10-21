@@ -84,16 +84,24 @@ namespace LYBT.Module.MedicalCase.Services
         {
             try
             {
+                _logger.LogInformation("📝 开始创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
+                    dto.PatientId, dto.DoctorId, dto.Status);
+
                 // 使用业务规则类验证
                 var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
+                _logger.LogInformation("✅ 业务规则验证通过，现有病案数：{Count}", existingCases.Count());
+
                 var validation = MedicalCaseRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
 
                 if (!validation.IsValid)
                 {
+                    _logger.LogWarning("❌ 业务规则验证失败：{ErrorMessage}", validation.ErrorMessage);
                     return ServiceResult<MedicalCaseDto>.Failure(validation.ErrorMessage);
                 }
 
                 var entity = _mapper.Map<MedicalCaseEntity>(dto);
+                _logger.LogInformation("✅ Entity映射成功，MedicalCaseId: {Id}", entity.Id);
+
                 entity.ConsultationDate = DateTime.Now;
 
                 // 聚合根模式：创建 MedicalCase 时自动创建关联的 Consultation（共享主键）
@@ -111,16 +119,38 @@ namespace LYBT.Module.MedicalCase.Services
                 };
 
                 entity.Consultation = consultationEntity;
+                _logger.LogInformation("✅ Consultation关联创建成功，ConsultationId: {Id}", consultationEntity.Id);
 
                 // EF Core 会级联保存 Consultation
                 var result = await _repository.AddAsync(entity);
+                _logger.LogInformation("✅ Repository.AddAsync完成，返回Entity是否为null: {IsNull}", result == null);
+
+                if (result != null)
+                {
+                    _logger.LogInformation("📊 返回的Entity详情 - Id: {Id}, PatientId: {PatientId}, DoctorId: {DoctorId}",
+                        result.Id, result.PatientId, result.DoctorId);
+                }
+
                 var resultDto = _mapper.Map<MedicalCaseDto>(result);
+                _logger.LogInformation("✅ Dto映射完成，返回Dto是否为null: {IsNull}", resultDto == null);
+
+                if (resultDto != null)
+                {
+                    _logger.LogInformation("📊 返回的Dto详情 - Id: {Id}, CaseNumber: {CaseNumber}",
+                        resultDto.Id, resultDto.CaseNumber);
+                }
+                else
+                {
+                    _logger.LogError("❌ Mapper.Map返回null！Entity为null: {EntityNull}, Mapper为null: {MapperNull}",
+                        result == null, _mapper == null);
+                }
 
                 return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建医疗案例失败");
+                _logger.LogError(ex, "❌ 创建医疗案例失败，异常类型: {ExceptionType}，消息: {Message}",
+                    ex.GetType().Name, ex.Message);
                 return ServiceResult<MedicalCaseDto>.Failure("创建医疗案例失败");
             }
         }

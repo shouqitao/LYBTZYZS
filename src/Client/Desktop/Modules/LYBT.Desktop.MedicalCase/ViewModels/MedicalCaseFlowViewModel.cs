@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Events;
+﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
@@ -433,7 +433,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 Logger.LogInformation("✅ SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
-                    SessionManager.CurrentUser.Username, SessionManager.CurrentUser.Id);
+                    SessionManager.CurrentUser.UserName, SessionManager.CurrentUser.Id);
 
                 // Phase 2: 构建MedicalCaseCreateDto
                 var createDto = new MedicalCaseCreateDto
