@@ -36,7 +36,7 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             try
             {
                 var response = await _api.UpdatePrescriptionAsync(id, dto);
-                return response.Content ?? throw new InvalidOperationException($"更新处方失败，ID: {id}");
+                return response.Data ?? throw new InvalidOperationException($"更新处方失败，ID: {id}");
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             try
             {
                 var response = await _api.GetPrescriptionsByMedicalCaseIdAsync(medicalCaseId);
-                return response.Content ?? new List<PrescriptionDto>();
+                return response.Data ?? new List<PrescriptionDto>();
             }
             catch (Exception ex)
             {
@@ -70,7 +70,7 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             try
             {
                 var response = await _api.GetPatientRecentPrescriptionsAsync(patientId, count);
-                return response.Content ?? new List<PrescriptionSearchResultDto>();
+                return response.Data ?? new List<PrescriptionSearchResultDto>();
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Prescriptions.Repositories
             try
             {
                 var response = await _api.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
-                return response.Content ?? throw new InvalidOperationException($"导入验方失败，处方ID: {prescriptionId}, 验方ID: {formulaId}");
+                return response.Data ?? throw new InvalidOperationException($"导入验方失败，处方ID: {prescriptionId}, 验方ID: {formulaId}");
             }
             catch (Exception ex)
             {
@@ -110,27 +110,27 @@ namespace LYBT.Desktop.Prescriptions.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<PrescriptionDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetPrescriptionByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<PrescriptionDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<PrescriptionDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetPrescriptionsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiCreateAsync(PrescriptionCreateDto dto)
+        protected override Task<ApiResponse<PrescriptionDto>> CallApiCreateAsync(PrescriptionCreateDto dto)
         {
             return _api.CreatePrescriptionAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<PrescriptionDto>> CallApiUpdateAsync(Guid id, PrescriptionUpdateDto dto)
+        protected override Task<ApiResponse<PrescriptionDto>> CallApiUpdateAsync(Guid id, PrescriptionUpdateDto dto)
         {
             return _api.UpdatePrescriptionAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeletePrescriptionAsync(id);
         }

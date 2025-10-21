@@ -40,27 +40,27 @@ namespace LYBT.Desktop.Herbs.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<HerbDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<HerbDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetHerbByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<HerbDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<HerbDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetHerbsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<HerbDto>> CallApiCreateAsync(HerbCreateDto dto)
+        protected override Task<ApiResponse<HerbDto>> CallApiCreateAsync(HerbCreateDto dto)
         {
             return _api.CreateHerbAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<HerbDto>> CallApiUpdateAsync(Guid id, HerbUpdateDto dto)
+        protected override Task<ApiResponse<HerbDto>> CallApiUpdateAsync(Guid id, HerbUpdateDto dto)
         {
             return _api.UpdateHerbAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteHerbAsync(id);
         }

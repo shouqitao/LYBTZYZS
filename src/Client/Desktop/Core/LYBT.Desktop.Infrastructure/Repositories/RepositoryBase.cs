@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Refit;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Infrastructure.Repositories
@@ -43,7 +42,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiGetByIdAsync(id);
-                return response.Content ?? throw new InvalidOperationException($"获取失败：ID {id} 的实体不存在");
+                return response.Data ?? throw new InvalidOperationException($"获取失败：ID {id} 的实体不存在");
             }
             catch (Exception ex)
             {
@@ -64,7 +63,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiGetPagedAsync(page, pageSize, keyword);
-                return response.Content ?? new PagedResult<TDto>
+                return response.Data ?? new PagedResult<TDto>
                 {
                     Items = new List<TDto>(),
                     TotalCount = 0,
@@ -74,7 +73,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "分页查询失败，Page: {Page}, PageSize: {PageSize}, Keyword: {Keyword}, 类型: {EntityType}", 
+                _logger.LogError(ex, "分页查询失败，Page: {Page}, PageSize: {PageSize}, Keyword: {Keyword}, 类型: {EntityType}",
                     page, pageSize, keyword, typeof(TDto).Name);
                 throw;
             }
@@ -93,7 +92,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiCreateAsync(dto);
-                return response.Content ?? throw new InvalidOperationException("创建失败：服务器未返回数据");
+                return response.Data ?? throw new InvalidOperationException("创建失败：服务器未返回数据");
             }
             catch (Exception ex)
             {
@@ -122,7 +121,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiUpdateAsync(id.Value, dto);
-                return response.Content ?? throw new InvalidOperationException($"更新失败：ID {id.Value} 的实体不存在");
+                return response.Data ?? throw new InvalidOperationException($"更新失败：ID {id.Value} 的实体不存在");
             }
             catch (Exception ex)
             {
@@ -141,7 +140,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiDeleteAsync(id);
-                return response.IsSuccessStatusCode;
+                return response.Success;
             }
             catch (Exception ex)
             {
@@ -160,7 +159,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
             try
             {
                 var response = await CallApiGetPagedAsync(1, 1000, keyword);
-                return response.Content?.Items ?? new List<TDto>();
+                return response.Data?.Items ?? new List<TDto>();
             }
             catch (Exception ex)
             {
@@ -178,7 +177,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// </summary>
         /// <param name="id">实体ID</param>
         /// <returns>API响应</returns>
-        protected abstract Task<Refit.ApiResponse<TDto>> CallApiGetByIdAsync(Guid id);
+        protected abstract Task<ApiResponse<TDto>> CallApiGetByIdAsync(Guid id);
 
         /// <summary>
         /// 调用API分页查询实体
@@ -187,14 +186,14 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// <param name="pageSize">每页大小</param>
         /// <param name="keyword">搜索关键词</param>
         /// <returns>API响应</returns>
-        protected abstract Task<Refit.ApiResponse<PagedResult<TDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword);
+        protected abstract Task<ApiResponse<PagedResult<TDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword);
 
         /// <summary>
         /// 调用API创建实体
         /// </summary>
         /// <param name="dto">创建DTO</param>
         /// <returns>API响应</returns>
-        protected abstract Task<Refit.ApiResponse<TDto>> CallApiCreateAsync(TCreateDto dto);
+        protected abstract Task<ApiResponse<TDto>> CallApiCreateAsync(TCreateDto dto);
 
         /// <summary>
         /// 调用API更新实体
@@ -202,14 +201,14 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// <param name="id">实体ID</param>
         /// <param name="dto">更新DTO</param>
         /// <returns>API响应</returns>
-        protected abstract Task<Refit.ApiResponse<TDto>> CallApiUpdateAsync(Guid id, TUpdateDto dto);
+        protected abstract Task<ApiResponse<TDto>> CallApiUpdateAsync(Guid id, TUpdateDto dto);
 
         /// <summary>
         /// 调用API删除实体
         /// </summary>
         /// <param name="id">实体ID</param>
         /// <returns>API响应</returns>
-        protected abstract Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id);
+        protected abstract Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id);
 
         /// <summary>
         /// 从更新DTO中提取ID

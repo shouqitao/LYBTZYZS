@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Formula.Repositories
             try
             {
                 var response = await _api.CloneFormulaAsync(formulaId);
-                return response.Content ?? throw new InvalidOperationException($"克隆验方失败，ID: {formulaId}");
+                return response.Data ?? throw new InvalidOperationException($"克隆验方失败，ID: {formulaId}");
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Formula.Repositories
             try
             {
                 var response = await _api.GetPendingValidationFormulasAsync();
-                return response.Content ?? new List<FormulaDto>();
+                return response.Data ?? new List<FormulaDto>();
             }
             catch (Exception ex)
             {
@@ -62,7 +62,7 @@ namespace LYBT.Desktop.Formula.Repositories
             try
             {
                 var response = await _api.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
-                return response.IsSuccessStatusCode;
+                return response.Success;
             }
             catch (Exception ex)
             {
@@ -74,27 +74,27 @@ namespace LYBT.Desktop.Formula.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<FormulaDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetFormulaByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<FormulaDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<FormulaDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetFormulasAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaCreateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaCreateDto dto)
         {
             return _api.CreateFormulaAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaUpdateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaUpdateDto dto)
         {
             return _api.UpdateFormulaAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteFormulaAsync(id);
         }

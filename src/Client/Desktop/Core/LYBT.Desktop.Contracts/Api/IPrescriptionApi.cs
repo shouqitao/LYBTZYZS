@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取处方列表（支持分页和查询）
         /// </summary>
         [Refit.Get("/api/v1/prescriptions")]
-        Task<Refit.ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
+        Task<ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
@@ -21,37 +21,37 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取处方详情
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid id);
+        Task<ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid id);
 
         /// <summary>
         /// 创建处方
         /// </summary>
         [Refit.Post("/api/v1/prescriptions")]
-        Task<Refit.ApiResponse<PrescriptionDto>> CreatePrescriptionAsync([Refit.Body] PrescriptionCreateDto request);
+        Task<ApiResponse<PrescriptionDto>> CreatePrescriptionAsync([Refit.Body] PrescriptionCreateDto request);
 
         /// <summary>
         /// 更新处方
         /// </summary>
         [Refit.Put("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionUpdateDto request);
+        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionUpdateDto request);
 
         /// <summary>
         /// 删除处方
         /// </summary>
         [Refit.Delete("/api/v1/prescriptions/{id}")]
-        Task<Refit.ApiResponse<ApiResponse>> DeletePrescriptionAsync(Guid id);
+        Task<ApiResponse<ApiResponse>> DeletePrescriptionAsync(Guid id);
 
         /// <summary>
         /// 根据医案ID获取处方列表
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
-        Task<Refit.ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<ApiResponse<List<PrescriptionDto>>> GetPrescriptionsByMedicalCaseIdAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/patient/{patientId}/recent")]
-        Task<Refit.ApiResponse<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+        Task<ApiResponse<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
             Guid patientId,
             [Refit.Query] int count = 5);
 
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// 从已验证的验方批量导入药材，并记录引用的验方名称
         /// </summary>
         [Refit.Post("/api/v1/prescriptions/{prescriptionId}/import-formula/{formulaId}")]
-        Task<Refit.ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+        Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
             Guid prescriptionId,
             Guid formulaId);
     }

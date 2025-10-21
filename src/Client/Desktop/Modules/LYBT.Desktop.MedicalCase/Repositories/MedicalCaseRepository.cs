@@ -30,7 +30,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             try
             {
                 var response = await _api.GetMedicalCaseByIdWithDetailsAsync(id);
-                return response.Content ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
+                return response.Data ?? throw new InvalidOperationException($"医疗案例 {id} 不存在");
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             try
             {
                 var response = await _api.GetMedicalCasesByPatientIdAsync(patientId);
-                return response.Content ?? new List<MedicalCaseDto>();
+                return response.Data ?? new List<MedicalCaseDto>();
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                 };
 
                 var response = await _api.CreateMedicalCaseWithDetailsAsync(request);
-                return response.Content ?? throw new InvalidOperationException("创建完整医疗案例失败，服务器未返回数据");
+                return response.Data ?? throw new InvalidOperationException("创建完整医疗案例失败，服务器未返回数据");
             }
             catch (Exception ex)
             {
@@ -91,27 +91,27 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<MedicalCaseDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<MedicalCaseDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseCreateDto dto)
+        protected override Task<ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseCreateDto dto)
         {
             return _api.CreateMedicalCaseAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseUpdateDto dto)
+        protected override Task<ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseUpdateDto dto)
         {
             return _api.UpdateMedicalCaseAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteMedicalCaseAsync(id);
         }

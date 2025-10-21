@@ -93,27 +93,27 @@ namespace LYBT.Desktop.Users.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<UserDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<UserDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetUserByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<UserDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<UserDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetUsersAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<UserDto>> CallApiCreateAsync(UserCreateDto dto)
+        protected override Task<ApiResponse<UserDto>> CallApiCreateAsync(UserCreateDto dto)
         {
             return _api.CreateUserAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserUpdateDto dto)
+        protected override Task<ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserUpdateDto dto)
         {
             return _api.UpdateUserAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeleteUserAsync(id);
         }

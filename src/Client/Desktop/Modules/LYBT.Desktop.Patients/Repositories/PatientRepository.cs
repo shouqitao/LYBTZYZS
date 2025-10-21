@@ -39,27 +39,27 @@ namespace LYBT.Desktop.Patients.Repositories
 
         #region RepositoryBase抽象方法实现
 
-        protected override Task<Refit.ApiResponse<PatientDto>> CallApiGetByIdAsync(Guid id)
+        protected override Task<ApiResponse<PatientDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetPatientByIdAsync(id);
         }
 
-        protected override Task<Refit.ApiResponse<PagedResult<PatientDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
+        protected override Task<ApiResponse<PagedResult<PatientDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetPatientsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<Refit.ApiResponse<PatientDto>> CallApiCreateAsync(PatientCreateDto dto)
+        protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientCreateDto dto)
         {
             return _api.CreatePatientAsync(dto);
         }
 
-        protected override Task<Refit.ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientUpdateDto dto)
+        protected override Task<ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientUpdateDto dto)
         {
             return _api.UpdatePatientAsync(id, dto);
         }
 
-        protected override Task<Refit.ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
             return _api.DeletePatientAsync(id);
         }
