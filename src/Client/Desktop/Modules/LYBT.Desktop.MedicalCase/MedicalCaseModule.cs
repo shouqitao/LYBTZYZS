@@ -31,6 +31,7 @@ namespace LYBT.Desktop.MedicalCase
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入
+            containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();   // Epic #1494 - Task #1496: 医案流程主视图模型
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Task #1497: 患者选择
             containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
             containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
