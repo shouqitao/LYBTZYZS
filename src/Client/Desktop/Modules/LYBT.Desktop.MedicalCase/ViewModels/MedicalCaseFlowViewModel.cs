@@ -44,11 +44,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     RaisePropertyChanged(nameof(CanGoBack));
                     RaisePropertyChanged(nameof(CanGoNext));
                     RaisePropertyChanged(nameof(PatientInfoBarVisible));
-                    RaisePropertyChanged(nameof(IsStep1));
-                    RaisePropertyChanged(nameof(IsStep2));
-                    RaisePropertyChanged(nameof(IsStep3));
-                    RaisePropertyChanged(nameof(IsStep4));
                     RaisePropertyChanged(nameof(NextButtonText));
+
+                    // 更新步骤名称文本
+                    UpdateCurrentStepText();
+
                     PreviousStepCommand.RaiseCanExecuteChanged();
                     NextStepCommand.RaiseCanExecuteChanged();
                 }
@@ -125,15 +125,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public string NextButtonText => CurrentStep == FlowStep.CompleteMedicalCase ? "完成看诊" : "下一步";
 
-        // 进度条高亮标记
-        public bool IsStep1 => CurrentStep == FlowStep.SelectPatient;
-        public bool IsStep2 => CurrentStep == FlowStep.FillConsultation;
-        public bool IsStep3 => CurrentStep == FlowStep.FillPrescription;
-        public bool IsStep4 => CurrentStep == FlowStep.CompleteMedicalCase;
+
+        /// <summary>
+        /// 当前步骤名称文本
+        /// </summary>
+        private string _currentStepText = "患者选择";
+        public string CurrentStepText
+        {
+            get => _currentStepText;
+            set => SetProperty(ref _currentStepText, value);
+        }
 
         #endregion
 
         #region 命令
+
+        #region 私有方法
+
+        /// <summary>
+        /// 更新当前步骤名称文本
+        /// </summary>
+        private void UpdateCurrentStepText()
+        {
+            CurrentStepText = CurrentStep switch
+            {
+                FlowStep.SelectPatient => "患者选择",
+                FlowStep.FillConsultation => "填写诊断",
+                FlowStep.FillPrescription => "填写处方",
+                FlowStep.CompleteMedicalCase => "完成医案",
+                _ => string.Empty
+            };
+        }
+
+        #endregion
 
         public DelegateCommand BackToHomeCommand { get; }
         public DelegateCommand PreviousStepCommand { get; }
@@ -178,6 +202,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 .Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
 
             Logger.LogInformation("MedicalCaseFlowViewModel已初始化，当前步骤：{CurrentStep}", CurrentStep);
+
+            // 初始化步骤名称文本
+            UpdateCurrentStepText();
         }
 
         #endregion
