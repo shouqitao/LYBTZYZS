@@ -1,17 +1,17 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Shell.ViewModels
+namespace LYBT.Desktop.Clinical.ViewModels
 {
     /// <summary>
-    /// 主页视图模型 - Issue #1486 Dashboard实现
+    /// 医生工作台主页视图模型
     /// 核心功能："开始接诊"按钮（导航到MedicalCaseFlowView） + 今日统计
-    /// Epic #1494: 直接导航到医案流程视图，而非打开对话框
+    /// Issue #1553: 角色模块化重构 - Clinical模块
     /// </summary>
-    public class HomeViewModel : UnifiedViewModelBase
+    public class ClinicalHomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 
@@ -21,14 +21,10 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region 属性
 
-        private string _searchKeyword = string.Empty;
-        public string SearchKeyword
-        {
-            get => _searchKeyword;
-            set => SetProperty(ref _searchKeyword, value);
-        }
-
         private int _todayConsultationCount = 0;
+        /// <summary>
+        /// 今日接诊数量
+        /// </summary>
         public int TodayConsultationCount
         {
             get => _todayConsultationCount;
@@ -36,6 +32,9 @@ namespace LYBT.Desktop.Shell.ViewModels
         }
 
         private int _pendingCaseCount = 0;
+        /// <summary>
+        /// 待完成医案数量
+        /// </summary>
         public int PendingCaseCount
         {
             get => _pendingCaseCount;
@@ -46,20 +45,16 @@ namespace LYBT.Desktop.Shell.ViewModels
 
         #region 命令
 
+        /// <summary>
+        /// 开始看诊命令
+        /// </summary>
         public DelegateCommand StartConsultationCommand { get; }
-        public DelegateCommand QuickSearchCommand { get; }
-
-        // 折叠区域的次要功能命令
-        public DelegateCommand NavigateToPatientManagementCommand { get; }
-        public DelegateCommand NavigateToPrescriptionQueryCommand { get; }
-        public DelegateCommand NavigateToHerbsCommand { get; }
-        public DelegateCommand NavigateToSystemSettingsCommand { get; }
 
         #endregion 命令
 
         #region 构造函数
 
-        public HomeViewModel(
+        public ClinicalHomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory)
@@ -67,16 +62,8 @@ namespace LYBT.Desktop.Shell.ViewModels
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
-            // Issue #1486: 初始化核心命令
+            // 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
-            QuickSearchCommand = new DelegateCommand(ExecuteQuickSearch, CanExecuteQuickSearch)
-                .ObservesProperty(() => SearchKeyword);
-
-            // 初始化次要功能命令
-            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
-            NavigateToPrescriptionQueryCommand = new DelegateCommand(() => NavigateTo("PrescriptionManagementView"));
-            NavigateToHerbsCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
-            NavigateToSystemSettingsCommand = new DelegateCommand(ExecuteNavigateToSystemSettings);
 
             // 加载今日统计数据
             LoadTodayStatistics();
@@ -87,7 +74,7 @@ namespace LYBT.Desktop.Shell.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 开始看诊 - Epic #1494核心功能
+        /// 开始看诊
         /// 直接导航到医案流程视图（MedicalCaseFlowView），自动显示Step 1患者选择
         /// </summary>
         private void ExecuteStartConsultation()
@@ -96,7 +83,7 @@ namespace LYBT.Desktop.Shell.ViewModels
             {
                 Logger.LogInformation("开始看诊，导航到医案流程视图");
 
-                // Epic #1494: 直接导航到医案流程视图（包含Step 1-4完整流程）
+                // 直接导航到医案流程视图（包含Step 1-4完整流程）
                 // MedicalCaseFlowViewModel会自动显示Step 1（患者选择）
                 _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navigationResult =>
                 {
@@ -120,53 +107,6 @@ namespace LYBT.Desktop.Shell.ViewModels
             }
         }
 
-        /// <summary>
-        /// 快速搜索患者 - 支持姓名/拼音码/手机号搜索
-        /// </summary>
-        private void ExecuteQuickSearch()
-        {
-            try
-            {
-                Logger.LogInformation("快速搜索患者: {SearchKeyword}", SearchKeyword);
-                // TODO: 实现搜索患者逻辑
-                // 找到患者后，携带患者信息导航到医案流程
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView",
-                    new NavigationParameters
-                    {
-                        { "StartStep", 1 },
-                        { "SearchKeyword", SearchKeyword }
-                    });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "快速搜索时发生异常");
-            }
-        }
-
-        /// <summary>
-        /// 验证快速搜索命令是否可执行
-        /// </summary>
-        private bool CanExecuteQuickSearch()
-        {
-            return !string.IsNullOrWhiteSpace(SearchKeyword);
-        }
-
-        /// <summary>
-        /// 导航到系统设置
-        /// </summary>
-        private void ExecuteNavigateToSystemSettings()
-        {
-            try
-            {
-                Logger.LogInformation("导航到系统设置");
-                Logger.LogWarning("系统设置功能开发中");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到系统设置时发生异常");
-            }
-        }
-
         #endregion 命令实现
 
         #region 辅助方法
@@ -186,18 +126,6 @@ namespace LYBT.Desktop.Shell.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载今日统计数据时发生异常");
-            }
-        }
-
-        private void NavigateTo(string viewName)
-        {
-            try
-            {
-                _regionManager.RequestNavigate("ContentRegion", viewName);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到 {ViewName} 失败", viewName);
             }
         }
 

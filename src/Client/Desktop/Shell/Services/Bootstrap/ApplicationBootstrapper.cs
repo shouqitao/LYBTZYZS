@@ -204,8 +204,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "FormulaModule",
                     "MedicalCaseModule",
                     "ConsultationModule",
-                    "PrescriptionsModule",
-                    "ClinicalWorkstationModule"
+                    "PrescriptionsModule"
                 },
                 UserRole.Doctor => new[]
                 {
@@ -214,8 +213,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "FormulaModule",
                     "MedicalCaseModule",
                     "ConsultationModule",
-                    "PrescriptionsModule",
-                    "ClinicalWorkstationModule"
+                    "PrescriptionsModule"
                 },
                 // UserRole.Pharmacist 已统一到 Doctor 角色
                 _ => Array.Empty<string>()

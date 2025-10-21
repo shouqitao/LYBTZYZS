@@ -141,11 +141,15 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.FormulaModule>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.FormulaModule>());
 
-            // 工作台模块 (2个)
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.AdminWorkstation.AdminWorkstationModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.AdminWorkstation.AdminWorkstationModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.ClinicalWorkstation.ClinicalWorkstationModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.ClinicalWorkstation.ClinicalWorkstationModule>());
+            // Issue #1553: 角色主页模块 (2个)
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Clinical.ClinicalModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Clinical.ClinicalModule>());
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Admin.AdminModule>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Admin.AdminModule>());
+
+            // Issue #1553: 角色导航服务Logger
+            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>());
 
             // Issue #1239 修复: 业务模块 Repositories (7个)
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Users.Repositories.UserRepository>>(
@@ -325,6 +329,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 功能开关服务 (Issue #1477 #1479 架构纠正v2)
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IFeatureToggleService,
                 LYBT.Desktop.Infrastructure.Services.FeatureToggleService>();
+
+            // Issue #1553: 角色导航服务 - 根据用户角色导航到对应的主页
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IRoleNavigationService,
+                LYBT.Desktop.Infrastructure.Services.RoleNavigationService>();
 
             // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
             // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
