@@ -146,7 +146,7 @@
                     <ProgressBar Width="20" Height="20"
                                 IsIndeterminate="True"
                                 Margin="0,0,10,0" />
-                    <TextBlock Text="{Binding BusyMessage}"
+                    <TextBlock Text="{Binding StatusMessage}"
                               VerticalAlignment="Center"
                               Foreground="#333" />
                 </StackPanel>
