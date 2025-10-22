@@ -6,16 +6,24 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../../../Resources/ManagementModuleStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
             <!-- 本地样式定义 -->
             <Style x:Key="ActionButtonStyle" TargetType="Button">
                 <Setter Property="Padding" Value="20,10" />
                 <Setter Property="FontSize" Value="14" />
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="Margin" Value="5,0" />
+            </Style>
+
+            <!-- DataGrid样式 -->
+            <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#F8F9FA" />
+                <Setter Property="Foreground" Value="#495057" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="Padding" Value="12,8" />
+                <Setter Property="BorderBrush" Value="#DEE2E6" />
+                <Setter Property="BorderThickness" Value="0,0,1,1" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
             </Style>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
