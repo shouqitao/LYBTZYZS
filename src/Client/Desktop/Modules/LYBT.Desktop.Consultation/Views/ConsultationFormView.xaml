@@ -229,10 +229,7 @@
 
             <!-- Row 4: 辅助操作 -->
             <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,20">
-                <Button Content="从历史导入"
-                       Command="{Binding ImportFromHistoryCommand}"
-                       Style="{StaticResource ActionButtonStyle}"
-                       Background="#2196F3" />
+                <!-- Issue #1562: ImportFromHistoryCommand已删除（未实现的扩展功能）-->
                 <Button Content="清空表单"
                        Command="{Binding ClearFormCommand}"
                        Style="{StaticResource ActionButtonStyle}"
