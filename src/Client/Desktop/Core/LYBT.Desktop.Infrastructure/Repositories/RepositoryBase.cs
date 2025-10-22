@@ -174,7 +174,8 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         {
             try
             {
-                var response = await CallApiGetPagedAsync(1, 1000, keyword);
+                // Issue #1567 - 修复pageSize超过API限制（max 100）导致的400错误
+                var response = await CallApiGetPagedAsync(1, 100, keyword);
                 return response.Data?.Items ?? new List<TDto>();
             }
             catch (Exception ex)

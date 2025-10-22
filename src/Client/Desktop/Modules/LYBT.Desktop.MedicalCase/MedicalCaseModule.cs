@@ -33,8 +33,8 @@ namespace LYBT.Desktop.MedicalCase
             // 注册视图模型 - MVP核心功能
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
             // containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入（已废弃）
+            containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1567: 患者选择独立化
             containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();   // Epic #1494 - Task #1496: 医案流程主视图模型
-            // Issue #1557 Phase 6: PatientSelectionViewModel已迁移到Patients模块，此处不再注册
             containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
             containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
             // TODO: 修复编译错误后再启用
@@ -44,8 +44,8 @@ namespace LYBT.Desktop.MedicalCase
             // 注册视图用于导航 - 需要对应视图文件存在
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图（已废弃）
+            containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1567: 患者选择独立化
             containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图
-            // Issue #1557 Phase 6: PatientSelectionView已迁移到Patients模块，此处不再注册
             containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();  // Task #1499: 处方编辑器视图
             containerRegistry.RegisterForNavigation<Views.CompletionView>();        // Epic #1494 - Task #1500: Step 4 完成医案视图
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
