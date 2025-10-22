@@ -232,7 +232,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("加载患者列表，搜索关键字：{SearchText}", SearchText);
 
                 // 调用API获取患者列表（带搜索）
-                var patients = await _patientRepository.SearchAsync(SearchText);
+                // Issue #1567 - 修复空字符串导致的400错误：空字符串转为null
+                var keyword = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText;
+                var patients = await _patientRepository.SearchAsync(keyword!);
 
                 Patients = new ObservableCollection<PatientDto>(patients);
 
