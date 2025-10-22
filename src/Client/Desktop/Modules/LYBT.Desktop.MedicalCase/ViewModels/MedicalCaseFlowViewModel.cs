@@ -45,6 +45,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     RaisePropertyChanged(nameof(CanGoNext));
                     RaisePropertyChanged(nameof(PatientInfoBarVisible));
                     RaisePropertyChanged(nameof(NextButtonText));
+                    RaisePropertyChanged(nameof(PreviousButtonBackground));
+                    RaisePropertyChanged(nameof(PreviousButtonForeground));
 
                     // 更新步骤名称文本
                     UpdateCurrentStepText();
@@ -124,6 +126,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// 下一步按钮文字（Step 4显示"完成看诊"）
         /// </summary>
         public string NextButtonText => CurrentStep == FlowStep.CompleteMedicalCase ? "完成看诊" : "下一步";
+
+        /// <summary>
+        /// 上一步按钮背景色（Step 2-3为绿色，Step 1为灰色）
+        /// </summary>
+        public string PreviousButtonBackground => CurrentStep >= FlowStep.FillConsultation && CurrentStep < FlowStep.CompleteMedicalCase 
+            ? "#4CAF50"  // Step 2-3: 绿色
+            : "#E0E0E0"; // Step 1: 灰色
+
+        /// <summary>
+        /// 上一步按钮前景色（Step 2-3为白色，Step 1为深灰）
+        /// </summary>
+        public string PreviousButtonForeground => CurrentStep >= FlowStep.FillConsultation && CurrentStep < FlowStep.CompleteMedicalCase
+            ? "White"    // Step 2-3: 白色
+            : "#333";    // Step 1: 深灰
 
 
         /// <summary>
