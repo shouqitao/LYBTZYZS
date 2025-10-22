@@ -111,11 +111,11 @@
                                 <Setter Property="Foreground" Value="#333" />
                                 <Setter Property="BorderThickness" Value="0" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding CanGoBack}" Value="False">
-                                        <Setter Property="IsEnabled" Value="False" />
+                                    <!-- 使用Trigger而不是DataTrigger，基于IsEnabled属性 -->
+                                    <Trigger Property="IsEnabled" Value="False">
                                         <Setter Property="Background" Value="#BDBDBD" />
                                         <Setter Property="Foreground" Value="#9E9E9E" />
-                                    </DataTrigger>
+                                    </Trigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
