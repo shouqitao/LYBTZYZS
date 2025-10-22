@@ -240,8 +240,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
-                Logger.LogInformation("返回主页");
-                _regionManager.RequestNavigate("ContentRegion", "HomeView");
+                // 根据当前用户角色导航到对应的主页
+                var homeViewName = SessionManager?.CurrentUser?.Role switch
+                {
+                    LYBT.Shared.Models.Enums.UserRole.Admin => "AdminHomeView",
+                    LYBT.Shared.Models.Enums.UserRole.Doctor => "ClinicalHomeView",
+                    _ => "ClinicalHomeView" // 默认返回临床医生主页
+                };
+
+                Logger.LogInformation("返回主页，导航到：{HomeView}", homeViewName);
+                _regionManager.RequestNavigate("ContentRegion", homeViewName);
             }
             catch (Exception ex)
             {
