@@ -29,6 +29,7 @@
         <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Issue #1567: 修改为"返回患者选择"（Phase 2实现真正的导航逻辑） -->
                     <Button Command="{Binding BackToHomeCommand}"
                            Background="Transparent"
                            BorderThickness="0"
@@ -36,16 +37,19 @@
                            Padding="10,5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="← " FontSize="18" Foreground="#2E86AB" VerticalAlignment="Center" />
-                            <TextBlock Text="返回主页" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
+                            <TextBlock Text="返回患者选择" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
-                <TextBlock Text="医案流程"
-                          FontSize="18"
+                <!-- Issue #1567: 显示当前步骤 -->
+                <TextBlock FontSize="18"
                           FontWeight="Bold"
                           HorizontalAlignment="Center"
-                          VerticalAlignment="Center" />
+                          VerticalAlignment="Center">
+                    <Run Text="看病中 - " />
+                    <Run Text="{Binding CurrentStepText}" Foreground="#2E86AB" />
+                </TextBlock>
 
                 <!-- 右侧：取消诊疗按钮 -->
                 <StackPanel Orientation="Horizontal"
@@ -62,15 +66,14 @@
             </Grid>
         </Border>
 
-        <!-- Row 1: 患者信息条（Step 2-4可见） -->
+        <!-- Row 1: 患者信息条（Issue #1567: 始终可见） -->
         <Border Grid.Row="1"
                Background="#E3F2FD"
                BorderBrush="#90CAF9"
-               BorderThickness="0,0,0,1"
-               Visibility="{Binding PatientInfoBarVisible, Converter={StaticResource BoolToVisibility}}">
+               BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
+                    <TextBlock Text="看病中 | 患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
                     <TextBlock Text="{Binding SelectedPatientName}" FontSize="14" Foreground="#2E86AB" FontWeight="Bold" Margin="5,0" />
                     <TextBlock Text="{Binding SelectedPatientInfo}" FontSize="13" Foreground="#666" Margin="20,0,0,0" />
                 </StackPanel>
@@ -102,24 +105,13 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center">
 
-                    <!-- 上一步按钮 -->
+                    <!-- 上一步按钮 Issue #1567: 统一样式（绿色） -->
                     <Button Content="{Binding PreviousButtonText}"
                            Command="{Binding PreviousStepCommand}"
-                           Background="{Binding PreviousButtonBackground}"
-                           Foreground="{Binding PreviousButtonForeground}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Style.Triggers>
-                                    <!-- 禁用状态：覆盖绑定的颜色 -->
-                                    <Trigger Property="IsEnabled" Value="False">
-                                        <Setter Property="Background" Value="#BDBDBD" />
-                                        <Setter Property="Foreground" Value="#9E9E9E" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                           Style="{StaticResource ActionButtonStyle}"
+                           Background="#4CAF50"
+                           Foreground="White"
+                           BorderThickness="0" />
 
                     <!-- 当前步骤名称 -->
                     <TextBlock Text="{Binding CurrentStepText}"
