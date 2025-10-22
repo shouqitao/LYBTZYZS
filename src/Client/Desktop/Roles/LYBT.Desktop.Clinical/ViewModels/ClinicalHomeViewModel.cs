@@ -8,8 +8,9 @@ namespace LYBT.Desktop.Clinical.ViewModels
 {
     /// <summary>
     /// 医生工作台主页视图模型
-    /// 核心功能："开始接诊"按钮（导航到MedicalCaseFlowView） + 今日统计
+    /// 核心功能："开始接诊"按钮（导航到PatientSelectionView） + 今日统计
     /// Issue #1553: 角色模块化重构 - Clinical模块
+    /// Issue #1567: 导航到患者选择视图（新流程：主页 → 患者选择 → 3步看病流程）
     /// </summary>
     public class ClinicalHomeViewModel : UnifiedViewModelBase
     {
@@ -75,25 +76,26 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 开始看诊
-        /// 直接导航到医案流程视图（MedicalCaseFlowView），自动显示Step 1患者选择
+        /// Issue #1567 - 导航到患者选择视图（PatientSelectionView）
+        /// 新流程：主页 → 患者选择 → 3步看病流程
         /// </summary>
         private void ExecuteStartConsultation()
         {
             try
             {
-                Logger.LogInformation("开始看诊，导航到医案流程视图");
+                Logger.LogInformation("开始看诊，导航到患者选择视图");
 
-                // 直接导航到医案流程视图（包含Step 1-4完整流程）
-                // MedicalCaseFlowViewModel会自动显示Step 1（患者选择）
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", navigationResult =>
+                // Issue #1567 - 导航到患者选择视图（独立化）
+                // 流程：主页 → PatientSelectionView → MedicalCaseFlowView（3步）
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView", navigationResult =>
                 {
                     if (navigationResult.Result == true)
                     {
-                        Logger.LogInformation("导航成功：MedicalCaseFlowView");
+                        Logger.LogInformation("导航成功：PatientSelectionView");
                     }
                     else
                     {
-                        Logger.LogError("导航失败：MedicalCaseFlowView，错误：{Error}", navigationResult.Error?.Message ?? "未知错误");
+                        Logger.LogError("导航失败：PatientSelectionView，错误：{Error}", navigationResult.Error?.Message ?? "未知错误");
                         if (navigationResult.Error != null)
                         {
                             Logger.LogError(navigationResult.Error, "导航异常详情");
