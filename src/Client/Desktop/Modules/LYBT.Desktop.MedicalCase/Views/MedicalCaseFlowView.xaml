@@ -5,24 +5,6 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
-        <!-- 进度条Step样式 -->
-        <Style x:Key="StepStyle" TargetType="Border">
-            <Setter Property="Width" Value="150" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Background" Value="#E0E0E0" />
-            <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Margin" Value="5" />
-        </Style>
-
-        <!-- 高亮Step样式 -->
-        <Style x:Key="ActiveStepStyle" TargetType="Border">
-            <Setter Property="Width" Value="150" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Background" Value="#4CAF50" />
-            <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Margin" Value="5" />
-        </Style>
-
         <!-- 操作按钮样式 -->
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Padding" Value="20,10" />
@@ -37,17 +19,17 @@
 
     <Grid Background="#F9F9F9">
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>  <!-- 顶部导航栏 -->
-            <RowDefinition Height="80"/>  <!-- 流程进度条 -->
-            <RowDefinition Height="50"/>  <!-- 患者信息条 -->
-            <RowDefinition Height="*"/>   <!-- 主内容区 -->
-            <RowDefinition Height="80"/>  <!-- 底部操作栏 -->
+            <RowDefinition Height="60"/>  <!-- Row 0: 顶部导航栏 -->
+            <RowDefinition Height="50"/>  <!-- Row 1: 患者信息条 -->
+            <RowDefinition Height="*"/>   <!-- Row 2: 主内容区 -->
+            <RowDefinition Height="80"/>  <!-- Row 3: 底部操作栏 -->
         </Grid.RowDefinitions>
 
         <!-- Row 0: 顶部导航栏 -->
         <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Issue #1567: 修改为"返回患者选择"（Phase 2实现真正的导航逻辑） -->
                     <Button Command="{Binding BackToHomeCommand}"
                            Background="Transparent"
                            BorderThickness="0"
@@ -55,203 +37,51 @@
                            Padding="10,5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="← " FontSize="18" Foreground="#2E86AB" VerticalAlignment="Center" />
-                            <TextBlock Text="返回主页" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
+                            <TextBlock Text="返回患者选择" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
-                <TextBlock Text="医案流程"
-                          FontSize="18"
+                <!-- Issue #1567: 显示当前步骤 -->
+                <TextBlock FontSize="18"
                           FontWeight="Bold"
                           HorizontalAlignment="Center"
-                          VerticalAlignment="Center" />
+                          VerticalAlignment="Center">
+                    <Run Text="看病中 - " />
+                    <Run Text="{Binding CurrentStepText}" Foreground="#2E86AB" />
+                </TextBlock>
+
+                <!-- 右侧：取消诊疗按钮 -->
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center">
+                    <Button Content="取消诊疗"
+                           Command="{Binding CancelCommand}"
+                           Style="{StaticResource ActionButtonStyle}"
+                           Background="#F44336"
+                           Foreground="White"
+                           BorderThickness="0"
+                           Padding="20,10" />
+                </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Row 1: 流程进度条 -->
-        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!-- Step 1: 患者选择 -->
-                <Border>
-                    <Border.Style>
-                        <Style TargetType="Border" BasedOn="{StaticResource StepStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsStep1}" Value="True">
-                                    <Setter Property="Background" Value="#4CAF50" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Step 1" FontSize="12" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#666" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep1}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="患者选择" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#333" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep1}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-
-                <TextBlock Text="→" FontSize="24" Foreground="#999" VerticalAlignment="Center" Margin="5,0" />
-
-                <!-- Step 2: 填写诊断 -->
-                <Border>
-                    <Border.Style>
-                        <Style TargetType="Border" BasedOn="{StaticResource StepStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsStep2}" Value="True">
-                                    <Setter Property="Background" Value="#4CAF50" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Step 2" FontSize="12" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#666" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep2}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="填写诊断" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#333" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep2}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-
-                <TextBlock Text="→" FontSize="24" Foreground="#999" VerticalAlignment="Center" Margin="5,0" />
-
-                <!-- Step 3: 填写处方 -->
-                <Border>
-                    <Border.Style>
-                        <Style TargetType="Border" BasedOn="{StaticResource StepStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsStep3}" Value="True">
-                                    <Setter Property="Background" Value="#4CAF50" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Step 3" FontSize="12" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#666" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep3}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="填写处方" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#333" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep3}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-
-                <TextBlock Text="→" FontSize="24" Foreground="#999" VerticalAlignment="Center" Margin="5,0" />
-
-                <!-- Step 4: 完成医案 -->
-                <Border>
-                    <Border.Style>
-                        <Style TargetType="Border" BasedOn="{StaticResource StepStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsStep4}" Value="True">
-                                    <Setter Property="Background" Value="#4CAF50" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Step 4" FontSize="12" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#666" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep4}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="完成医案" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#333" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStep4}" Value="True">
-                                            <Setter Property="Foreground" Value="White" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </Border>
-
-        <!-- Row 2: 患者信息条（Step 2-4可见） -->
-        <Border Grid.Row="2"
+        <!-- Row 1: 患者信息条（Issue #1567: 始终可见） -->
+        <Border Grid.Row="1"
                Background="#E3F2FD"
                BorderBrush="#90CAF9"
-               BorderThickness="0,0,0,1"
-               Visibility="{Binding PatientInfoBarVisible, Converter={StaticResource BoolToVisibility}}">
+               BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
+                    <TextBlock Text="看病中 | 患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
                     <TextBlock Text="{Binding SelectedPatientName}" FontSize="14" Foreground="#2E86AB" FontWeight="Bold" Margin="5,0" />
                     <TextBlock Text="{Binding SelectedPatientInfo}" FontSize="13" Foreground="#666" Margin="20,0,0,0" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Row 3: 主内容区（ContentControl动态绑定） -->
-        <Border Grid.Row="3" Background="White" Margin="0">
+        <!-- Row 2: 主内容区（ContentControl动态绑定） -->
+        <Border Grid.Row="2" Background="White" Margin="0">
             <Grid>
                 <!-- Issue #1557: 使用Prism Region替代直接绑定ViewModel，支持模块化导航 -->
                 <ContentControl prism:RegionManager.RegionName="WorkflowContentRegion" />
@@ -266,53 +96,53 @@
             </Grid>
         </Border>
 
-        <!-- Row 4: 底部操作栏 -->
-        <Border Grid.Row="4" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+        <!-- Row 3: 底部操作栏 -->
+        <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
             <Grid Margin="20,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Button Content="取消"
-                           Command="{Binding CancelCommand}"
+
+                <!-- 中间居中：上一步 + 步骤名称 + 下一步 -->
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
+
+                    <!-- 上一步按钮 Issue #1567: 统一样式（绿色） -->
+                    <Button Content="{Binding PreviousButtonText}"
+                           Command="{Binding PreviousStepCommand}"
                            Style="{StaticResource ActionButtonStyle}"
-                           Background="#F44336"
+                           Background="#4CAF50"
                            Foreground="White"
                            BorderThickness="0" />
 
-                    <Button Content="保存草稿"
-                           Command="{Binding SaveDraftCommand}"
-                           Style="{StaticResource ActionButtonStyle}"
-                           Background="#FF9800"
-                           Foreground="White"
-                           BorderThickness="0"
-                           Margin="10,0,0,0" />
-                </StackPanel>
+                    <!-- 当前步骤名称 -->
+                    <TextBlock Text="{Binding CurrentStepText}"
+                              FontSize="16"
+                              FontWeight="Bold"
+                              Foreground="#333"
+                              VerticalAlignment="Center"
+                              Margin="20,0" />
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Content="上一步"
-                           Command="{Binding PreviousStepCommand}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-                                <Setter Property="Background" Value="#E0E0E0" />
-                                <Setter Property="Foreground" Value="#333" />
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding CanGoBack}" Value="False">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                        <Setter Property="Background" Value="#BDBDBD" />
-                                        <Setter Property="Foreground" Value="#9E9E9E" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
+                    <!-- 下一步/完成按钮 -->
                     <Button Content="{Binding NextButtonText}"
                            Command="{Binding NextStepCommand}"
                            Style="{StaticResource ActionButtonStyle}"
                            Background="#4CAF50"
                            Foreground="White"
-                           BorderThickness="0"
-                           Margin="10,0,0,0" />
+                           BorderThickness="0" />
                 </StackPanel>
+
+                <!-- 右侧：暂停诊疗按钮 -->
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center">
+
+                    <Button Content="暂停诊疗"
+                           Command="{Binding SaveDraftCommand}"
+                           Style="{StaticResource ActionButtonStyle}"
+                           Background="#FF9800"
+                           Foreground="White"
+                           BorderThickness="0" />
+                </StackPanel>
+
             </Grid>
         </Border>
     </Grid>

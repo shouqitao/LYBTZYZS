@@ -151,12 +151,12 @@
                         <!-- 最近就诊 -->
                         <DataGridTextColumn Header="最近就诊" Width="140">
                             <DataGridTextColumn.Binding>
-                                <Binding Path="LastVisitDate" StringFormat="{}{0:yyyy-MM-dd}"/>
+                                <Binding Path="LastVisitTime" StringFormat="{}{0:yyyy-MM-dd}"/>
                             </DataGridTextColumn.Binding>
                         </DataGridTextColumn>
 
                         <!-- 拼音码 -->
-                        <DataGridTextColumn Header="拼音码" Binding="{Binding PinyinCode}" Width="100"/>
+                        <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100"/>
 
                         <!-- 操作按钮 -->
                         <DataGridTemplateColumn Header="操作" Width="100">
