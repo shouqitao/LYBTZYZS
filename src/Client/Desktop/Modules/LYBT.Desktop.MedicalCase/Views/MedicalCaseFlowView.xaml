@@ -103,7 +103,7 @@
                            VerticalAlignment="Center">
 
                     <!-- 上一步按钮 -->
-                    <Button Content="上一步"
+                    <Button Content="{Binding PreviousButtonText}"
                            Command="{Binding PreviousStepCommand}"
                            Background="{Binding PreviousButtonBackground}"
                            Foreground="{Binding PreviousButtonForeground}">
