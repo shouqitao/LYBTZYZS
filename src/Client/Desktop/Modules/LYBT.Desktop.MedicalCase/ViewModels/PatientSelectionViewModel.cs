@@ -128,8 +128,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 开始诊断（核心逻辑）
+        /// 开始诊断（支持暂存恢复）
         /// Issue #1567 - 在这里创建MedicalCase，而不是在FlowViewModel中
+        /// Issue #1567 Phase 3 - Task 3.4: 支持暂存恢复
         /// </summary>
         private async Task ExecuteStartConsultationAsync()
         {
@@ -141,7 +142,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                SetIsBusy(true, "正在创建医案...");
+                SetIsBusy(true, "正在检查...");
 
                 Logger.LogInformation("开始诊断，患者：{PatientName}（ID: {PatientId}）",
                     SelectedPatient.Name, SelectedPatient.Id);
@@ -150,12 +151,35 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var unfinishedCase = await CheckUnfinishedMedicalCaseAsync(SelectedPatient.Id);
                 if (unfinishedCase != null)
                 {
-                    // TODO Phase 3: 显示确认对话框"该患者有未完成的医案，是否继续？"
-                    Logger.LogInformation("检测到未完成的医案，ID: {MedicalCaseId}", unfinishedCase.Id);
-                    // 暂时跳过，继续创建新医案
+                    // 显示确认对话框
+                    var resume = await ShowConfirmationAsync(
+                        $"该患者有未完成的医案（创建于 {unfinishedCase.CreatedAt:yyyy-MM-dd HH:mm}），是否继续看诊？\n\n点击【是】继续看诊，点击【否】新建医案。",
+                        "未完成的医案");
+
+                    if (resume)
+                    {
+                        // 继续看诊：使用现有MedicalCaseId
+                        Logger.LogInformation("继续看诊，MedicalCaseId: {MedicalCaseId}", unfinishedCase.Id);
+
+                        var resumeParameters = new NavigationParameters
+                        {
+                            { "MedicalCaseId", unfinishedCase.Id },
+                            { "CurrentPatient", SelectedPatient }
+                        };
+
+                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", resumeParameters);
+                        return;
+                    }
+                    else
+                    {
+                        // 新建医案：继续下面的创建逻辑
+                        Logger.LogInformation("用户选择新建医案");
+                    }
                 }
 
-                // 2. 创建MedicalCase
+                // 2. 创建新医案
+                SetIsBusy(true, "正在创建医案...");
+
                 var medicalCaseId = await CreateMedicalCaseAsync(SelectedPatient.Id);
                 if (medicalCaseId == Guid.Empty)
                 {
@@ -166,13 +190,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("医案创建成功，ID: {MedicalCaseId}", medicalCaseId);
 
                 // 3. 导航到看病流程（MedicalCaseFlowView）
-                var parameters = new NavigationParameters
+                var createParameters = new NavigationParameters
                 {
                     { "MedicalCaseId", medicalCaseId },
                     { "CurrentPatient", SelectedPatient }
                 };
 
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", createParameters);
 
                 Logger.LogInformation("已导航到看病流程，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
             }
@@ -227,15 +251,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 检查患者是否有未完成的医案
+        /// Issue #1567 Phase 3 - Task 3.4
         /// </summary>
         private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
         {
             try
             {
-                // TODO Phase 3: 实现检查逻辑
-                // 查询该患者的所有医案，Status=InProgress的即为未完成
-                await Task.CompletedTask;
-                return null;
+                Logger.LogInformation("检查患者未完成医案，PatientId: {PatientId}", patientId);
+
+                // 查询该患者的所有医案，Status=Active的即为未完成
+                var cases = await _medicalCaseRepository.GetByPatientIdAsync(patientId);
+                var unfinishedCase = cases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
+
+                if (unfinishedCase != null)
+                {
+                    Logger.LogInformation("检测到未完成医案，ID: {MedicalCaseId}", unfinishedCase.Id);
+                }
+
+                return unfinishedCase;
             }
             catch (Exception ex)
             {

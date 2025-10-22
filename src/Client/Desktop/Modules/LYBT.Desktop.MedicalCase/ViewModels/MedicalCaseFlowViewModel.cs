@@ -310,8 +310,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         }
                     }
 
-                    // 2. TODO Phase 3: 更新MedicalCase状态为Completed
-                    // await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Completed);
+                    // 2. 更新MedicalCase状态为Closed
+                    // Issue #1567 Phase 3 - Task 3.3
+                    await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Closed);
 
                     Logger.LogInformation("病案已完成");
                     await ShowSuccessMessageAsync("病案已完成");
@@ -396,65 +397,82 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 保存草稿
+        /// 暂存医案（保存数据 + 更新状态 + 返回患者选择）
+        /// Issue #1567 Phase 3 - Task 3.1
         /// </summary>
         private async void ExecuteSaveDraft()
         {
             try
             {
-                Logger.LogInformation("保存草稿，当前步骤：{CurrentStep}, MedicalCaseId: {MedicalCaseId}", CurrentStep, MedicalCaseId);
+                Logger.LogInformation("暂存医案，当前步骤：{CurrentStep}, MedicalCaseId: {MedicalCaseId}", CurrentStep, MedicalCaseId);
 
-                // Issue #1557 Phase 5: 调用当前Step的ISaveable接口保存草稿
+                SetIsBusy(true, "正在保存...");
+
+                // 1. 调用当前Step的ISaveable接口保存数据
                 if (CurrentStepViewModel is ISaveable saveable)
                 {
-                    SetIsBusy(true, "正在保存草稿...");
-
                     var success = await saveable.SaveAsync();
-                    if (success)
+                    if (!success)
                     {
-                        Logger.LogInformation("草稿保存成功，步骤：{CurrentStep}", CurrentStep);
-                        await ShowSuccessMessageAsync("草稿已保存");
+                        Logger.LogWarning("当前步骤数据保存失败");
+                        await ShowErrorMessageAsync("保存失败，请检查数据");
+                        return;
                     }
-                    else
-                    {
-                        Logger.LogWarning("草稿保存失败，步骤：{CurrentStep}", CurrentStep);
-                        await ShowErrorMessageAsync("草稿保存失败，请检查数据");
-                    }
+                }
 
-                    SetIsBusy(false);
-                }
-                else
-                {
-                    // 当前步骤不支持保存草稿（Step 1: PatientSelectionView 不需要保存）
-                    Logger.LogInformation("当前步骤不支持保存草稿，步骤：{CurrentStep}", CurrentStep);
-                }
+                // 2. 更新MedicalCase状态为Active
+                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Active);
+
+                Logger.LogInformation("医案暂存成功");
+                await ShowSuccessMessageAsync("医案已暂存");
+
+                // 3. 返回患者选择界面
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "保存草稿时发生异常");
-                await ShowErrorMessageAsync($"保存草稿失败：{ex.Message}");
+                Logger.LogError(ex, "暂存医案失败");
+                await ShowErrorMessageAsync($"暂存失败：{ex.Message}");
+            }
+            finally
+            {
                 SetIsBusy(false);
             }
         }
 
         /// <summary>
-        /// 取消流程
+        /// 取消医案（确认对话框 + 更新状态 + 返回患者选择）
+        /// Issue #1567 Phase 3 - Task 3.2
         /// </summary>
-        private void ExecuteCancel()
+        private async void ExecuteCancel()
         {
             try
             {
-                Logger.LogInformation("取消医案流程，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                Logger.LogInformation("取消医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                // Issue #1557 Phase 5: MVP版本 - 直接返回首页（后续可添加确认对话框）
-                // TODO Phase 6+: 添加确认对话框（"是否放弃当前编辑？"）
-                ExecuteBackToHome();
+                // 1. 显示确认对话框
+                var confirmed = await ShowConfirmationAsync(
+                    "确定要取消本次医案吗？未保存的数据将丢失！",
+                    "取消医案");
 
-                Logger.LogInformation("已取消医案流程并返回首页");
+                if (!confirmed)
+                {
+                    Logger.LogInformation("用户取消了取消操作");
+                    return;
+                }
+
+                // 2. 更新MedicalCase状态为Closed
+                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Closed);
+
+                Logger.LogInformation("医案已取消");
+
+                // 3. 返回患者选择界面
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "取消流程时发生异常");
+                Logger.LogError(ex, "取消医案失败");
+                await ShowErrorMessageAsync($"取消失败：{ex.Message}");
             }
         }
 
@@ -587,6 +605,37 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 default:
                     Logger.LogWarning("未知步骤：{Step}", step);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 更新MedicalCase状态
+        /// Issue #1567 Phase 3 - 支持暂存/取消/完成状态更新
+        /// </summary>
+        private async Task UpdateMedicalCaseStatusAsync(MedicalCaseStatus newStatus)
+        {
+            try
+            {
+                Logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
+                    MedicalCaseId, newStatus);
+
+                // 构建更新DTO
+                var updateDto = new MedicalCaseUpdateDto
+                {
+                    Id = MedicalCaseId,
+                    Status = newStatus.ToString()
+                };
+
+                // 调用API更新状态
+                await _medicalCaseRepository.UpdateAsync(updateDto);
+
+                Logger.LogInformation("MedicalCase状态更新成功，新状态: {NewStatus}", newStatus);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "更新MedicalCase状态失败，MedicalCaseId: {MedicalCaseId}, 目标状态: {NewStatus}",
+                    MedicalCaseId, newStatus);
+                throw; // 重新抛出异常，让调用方处理
             }
         }
 
