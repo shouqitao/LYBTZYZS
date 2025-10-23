@@ -102,6 +102,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
     /// <summary>
     /// 医疗案例详情DTO - 继承基础DTO，添加详细信息
+    /// Epic #1583 Phase 3: 添加Consultation和Prescription关联数据
     /// </summary>
     public class MedicalCaseDetailDto : MedicalCaseDto
     {
@@ -117,6 +118,18 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         [DisplayName("治疗方案")]
         public string? TreatmentPlan { get; set; }
+
+        /// <summary>
+        /// 诊疗记录（Epic #1583 Phase 3: 继续看诊时加载）
+        /// </summary>
+        [DisplayName("诊疗记录")]
+        public ConsultationDto? Consultation { get; set; }
+
+        /// <summary>
+        /// 处方信息（Epic #1583 Phase 3: 继续看诊时加载）
+        /// </summary>
+        [DisplayName("处方信息")]
+        public PrescriptionDto? Prescription { get; set; }
     }
 
     /// <summary>
