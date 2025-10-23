@@ -153,6 +153,35 @@ namespace LYBT.Desktop.Prescriptions.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<PrescriptionDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogInformation("根据医案ID获取处方数据，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                // 调用Repository获取该医案关联的处方列表（1:1关系，返回列表但最多1条）
+                var prescriptions = await _prescriptionRepository.GetByMedicalCaseIdAsync(medicalCaseId);
+
+                if (prescriptions == null || !prescriptions.Any())
+                {
+                    _logger.LogInformation("该医案尚未创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return null;
+                }
+
+                var prescription = prescriptions.First();
+                _logger.LogInformation("成功加载处方数据，PrescriptionId: {PrescriptionId}，包含{ItemCount}个处方项",
+                    prescription.Id, prescription.Items?.Count ?? 0);
+
+                return prescription;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据医案ID获取处方数据时发生异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return null;
+            }
+        }
+
         #endregion
 
         #region 3. 验方导入

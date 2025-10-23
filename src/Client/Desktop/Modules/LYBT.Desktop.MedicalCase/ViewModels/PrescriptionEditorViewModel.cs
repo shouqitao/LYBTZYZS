@@ -565,6 +565,111 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <summary>
+        /// 加载已有处方数据（Issue #1570c - 继续看诊时加载旧处方）
+        /// </summary>
+        /// <returns>是否成功加载到处方数据</returns>
+        private async Task<bool> LoadExistingPrescriptionAsync()
+        {
+            try
+            {
+                // 检查MedicalCaseId是否有效
+                if (MedicalCaseId == Guid.Empty)
+                {
+                    Logger.LogDebug("MedicalCaseId为空，跳过处方加载");
+                    return false;
+                }
+
+                SetIsBusy(true, "正在加载处方数据...");
+
+                Logger.LogInformation("尝试加载已有处方数据，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+                // 通过IPrescriptionEditorService获取处方数据
+                var prescription = await _prescriptionEditorService.GetByMedicalCaseIdAsync(MedicalCaseId);
+
+                if (prescription == null)
+                {
+                    Logger.LogInformation("该医案尚未创建处方，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    return false;
+                }
+
+                Logger.LogInformation("成功加载处方数据，PrescriptionId: {PrescriptionId}，包含{ItemCount}个处方项",
+                    prescription.Id, prescription.Items?.Count ?? 0);
+
+                // 填充基本字段
+                DosageCount = prescription.DosageCount;
+                Usage = prescription.Usage ?? "水煎服，日一剂，早晚分服";
+                MedicalAdvice = prescription.Advice ?? string.Empty;
+                Remark = prescription.Remark ?? string.Empty;
+
+                // 映射处方项到ItemRows（每行4个药材）
+                if (prescription.Items != null && prescription.Items.Count > 0)
+                {
+                    ItemRows.Clear();
+
+                    var items = prescription.Items.ToList();
+                    var totalRows = (int)Math.Ceiling(items.Count / 4.0); // 每行4个药材
+
+                    for (int i = 0; i < totalRows; i++)
+                    {
+                        var row = new SimpleItemRow
+                        {
+                            Item1 = GetItemOrEmpty(items, i * 4),
+                            Item2 = GetItemOrEmpty(items, i * 4 + 1),
+                            Item3 = GetItemOrEmpty(items, i * 4 + 2),
+                            Item4 = GetItemOrEmpty(items, i * 4 + 3)
+                        };
+
+                        ItemRows.Add(row);
+                    }
+
+                    // 额外添加2行空白行（方便用户补充药材）
+                    for (int i = 0; i < 2; i++)
+                    {
+                        ExecuteAddRow();
+                    }
+
+                    Logger.LogInformation("已加载{ItemCount}味药材到编辑器（共{RowCount}行）", items.Count, ItemRows.Count);
+                }
+
+                // 触发价格重新计算
+                RaisePropertyChanged(nameof(ItemCount));
+                RaisePropertyChanged(nameof(SingleDosagePrice));
+                RaisePropertyChanged(nameof(TotalPrice));
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载已有处方数据时发生异常，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                return false;
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 从处方项列表中获取指定索引的项，如果不存在则返回空项
+        /// </summary>
+        private PrescriptionItemDto GetItemOrEmpty(List<PrescriptionItemDto> items, int index)
+        {
+            if (index < items.Count)
+            {
+                return items[index];
+            }
+
+            // 返回空项
+            return new PrescriptionItemDto
+            {
+                HerbId = Guid.Empty,
+                HerbName = string.Empty,
+                Dosage = 0,
+                Unit = "g"
+            };
+        }
+
         #endregion
 
         #region 命令实现
@@ -660,9 +765,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // Epic #1540: 加载药材数据（通过IPrescriptionEditorService）
                 await LoadHerbsAsync();
 
-                // 添加初始行（5行 = 20个药材空位）
-                if (ItemRows.Count == 0)
+                // Issue #1570c: 尝试加载已有处方数据（继续看诊场景）
+                var prescriptionLoaded = await LoadExistingPrescriptionAsync();
+
+                // 如果没有加载到已有处方，添加初始空行（5行 = 20个药材空位）
+                if (!prescriptionLoaded && ItemRows.Count == 0)
                 {
+                    Logger.LogInformation("未加载到已有处方，添加初始空行");
                     for (int i = 0; i < 5; i++)
                     {
                         ExecuteAddRow();

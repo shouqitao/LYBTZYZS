@@ -57,6 +57,14 @@ namespace LYBT.Desktop.Contracts.Services
         /// <returns>处方搜索结果列表</returns>
         Task<IEnumerable<PrescriptionSearchResultDto>> LoadRecentPrescriptionsAsync(Guid patientId, int limit = 10);
 
+        /// <summary>
+        /// 根据医案ID获取处方数据
+        /// 用途：继续看诊时加载旧处方数据到编辑器（Issue #1570c）
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>处方DTO，如果不存在则返回null</returns>
+        Task<PrescriptionDto?> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+
         #endregion
 
         #region 3. 验方导入
