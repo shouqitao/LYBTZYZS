@@ -235,11 +235,10 @@
                     <Grid Grid.Row="1" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>    <!-- 搜索框 -->
-                            <ColumnDefinition Width="Auto"/> <!-- 🔍搜索按钮 -->
                             <ColumnDefinition Width="Auto"/> <!-- 新建患者按钮 -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- 搜索框 -->
+                        <!-- 搜索框（实时搜索，300ms防抖） -->
                         <TextBox Grid.Column="0"
                                 Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                 Height="35"
@@ -247,20 +246,31 @@
                                 VerticalContentAlignment="Center"
                                 BorderBrush="#BDC3C7"
                                 BorderThickness="1">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
-                            </TextBox.InputBindings>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <VisualBrush Stretch="None" AlignmentX="Left">
+                                                        <VisualBrush.Visual>
+                                                            <TextBlock Text="🔍 输入姓名/手机号/拼音码搜索（实时）" 
+                                                                      Foreground="#BDC3C7" 
+                                                                      FontSize="12"
+                                                                      Margin="10,0,0,0"/>
+                                                        </VisualBrush.Visual>
+                                                    </VisualBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
                         </TextBox>
 
-                        <!-- 🔍搜索按钮 -->
-                        <Button Grid.Column="1"
-                               Content="🔍 搜索"
-                               Command="{Binding SearchCommand}"
-                               Width="90" Height="35" Margin="10,0,0,0"
-                               Style="{StaticResource PrimaryButtonStyle}"/>
-
                         <!-- 新建患者按钮 -->
-                        <Button Grid.Column="2"
+                        <Button Grid.Column="1"
                                Content="+ 新建患者"
                                Command="{Binding NewPatientCommand}"
                                Width="100" Height="35" Margin="10,0,0,0"

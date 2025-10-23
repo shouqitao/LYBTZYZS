@@ -35,6 +35,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IMedicalCaseQueryService _medicalCaseQueryService;
         private readonly IMedicalCaseApi _medicalCaseApi;
+        private System.Threading.Timer? _searchDebounceTimer;
 
         #endregion
 
@@ -85,6 +86,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private string _searchKeyword = string.Empty;
         /// <summary>
         /// 搜索关键字（支持姓名/拼音码/手机号）
+        /// UX优化：实时搜索，300ms防抖
         /// </summary>
         public string SearchKeyword
         {
@@ -94,6 +96,15 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (SetProperty(ref _searchKeyword, value))
                 {
                     SearchCommand.RaiseCanExecuteChanged();
+                    
+                    // 实时搜索：300ms防抖
+                    _searchDebounceTimer?.Dispose();
+                    _searchDebounceTimer = new System.Threading.Timer(
+                        _ => System.Windows.Application.Current.Dispatcher.Invoke(async () => await ExecuteSearchAsync()),
+                        null,
+                        300,
+                        System.Threading.Timeout.Infinite
+                    );
                 }
             }
         }
@@ -294,7 +305,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private bool CanExecuteSearch()
         {
-            return !string.IsNullOrWhiteSpace(SearchKeyword);
+            // UX优化：实时搜索，包括空关键字（显示所有患者）
+            return true;
         }
 
         /// <summary>
