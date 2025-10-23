@@ -223,26 +223,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 返回主页
+        /// 返回患者选择界面
+        /// Issue #1573: 修复导航目标（从主页改为患者选择）
         /// </summary>
         private void ExecuteBackToHome()
         {
             try
             {
-                // 根据当前用户角色导航到对应的主页
-                var homeViewName = SessionManager?.CurrentUser?.Role switch
-                {
-                    LYBT.Shared.Models.Enums.UserRole.Admin => "AdminHomeView",
-                    LYBT.Shared.Models.Enums.UserRole.Doctor => "ClinicalHomeView",
-                    _ => "ClinicalHomeView" // 默认返回临床医生主页
-                };
-
-                Logger.LogInformation("返回主页，导航到：{HomeView}", homeViewName);
-                _regionManager.RequestNavigate("ContentRegion", homeViewName);
+                // Issue #1573: 返回患者选择界面，而不是主页
+                Logger.LogInformation("返回患者选择界面");
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "返回主页时发生异常");
+                Logger.LogError(ex, "返回患者选择界面时发生异常");
             }
         }
 
@@ -611,6 +605,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 更新MedicalCase状态
         /// Issue #1567 Phase 3 - 支持暂存/取消/完成状态更新
+        /// Issue #1568 修复 - 添加必填字段 PatientId 和 DoctorId
         /// </summary>
         private async Task UpdateMedicalCaseStatusAsync(MedicalCaseStatus newStatus)
         {
@@ -619,12 +614,30 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
                     MedicalCaseId, newStatus);
 
-                // 构建更新DTO
+                // Issue #1568 修复：验证必要的数据
+                if (CurrentPatient == null)
+                {
+                    Logger.LogError("CurrentPatient为null，无法更新医案状态");
+                    throw new InvalidOperationException("患者信息缺失，无法更新医案状态");
+                }
+
+                if (SessionManager?.CurrentUser == null)
+                {
+                    Logger.LogError("SessionManager或CurrentUser为null，无法更新医案状态");
+                    throw new InvalidOperationException("用户信息缺失，无法更新医案状态");
+                }
+
+                // 构建更新DTO - Issue #1568 修复：添加必填字段 PatientId 和 DoctorId
                 var updateDto = new MedicalCaseUpdateDto
                 {
                     Id = MedicalCaseId,
+                    PatientId = CurrentPatient.Id,
+                    DoctorId = SessionManager.CurrentUser.Id,
                     Status = newStatus.ToString()
                 };
+
+                Logger.LogInformation("调用API更新状态，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
+                    updateDto.PatientId, updateDto.DoctorId, updateDto.Status);
 
                 // 调用API更新状态
                 await _medicalCaseRepository.UpdateAsync(updateDto);
