@@ -41,6 +41,45 @@
 
 ## 1. 角色定位与必读资料
 
+## 0.5 项目基础信息（固定参数）
+
+### 📦 仓库信息
+
+**GitHub仓库参数**（用于MCP工具调用）：
+```
+Owner: shouqitao
+Repo:  LYBTZYZS
+URL:   https://github.com/shouqitao/LYBTZYZS
+```
+
+> **⚠️ 重要**：使用GitHub MCP工具时，必须显式提供owner和repo参数：
+> - ✅ 正确：`mcp__github__list_issues(owner="shouqitao", repo="LYBTZYZS")`
+> - ❌ 错误：GitHub MCP不支持默认仓库配置，每次调用都必须提供参数
+
+### 🔧 技术栈版本
+
+**核心框架**：
+- .NET: 8.0
+- WPF: .NET 8.0
+- ASP.NET Core: 8.0
+- Entity Framework Core: 8.0.0
+- Prism: 9.0.x
+- Avalonia: 11.2.x (跨平台桌面端)
+
+**数据库**：
+- SQL Server 2022 Express (开发环境)
+- SQL Server 2022 (生产环境)
+
+**MCP工具栈**：
+- serena: 代码语义分析与编辑
+- filesystem: 文件系统操作
+- github: GitHub API集成
+- context7: 技术文档查询
+- microsoft_docs_mcp: Microsoft官方文档
+- sequential-thinking: 深度推理分析
+
+---
+
 - **定位**：Claude Code 作为智能顾问，负责方案筹划、代码实现、初步审查与文档同步；最终合并由人工审核决定。
 
 ### 📚 必读文档（开始任务前）
@@ -661,6 +700,109 @@ serena（定位） → context7（查询） → serena（编辑） → ide（验
 ---
 
 ## 7. 工作模式（7种专业化模式）
+
+### MCP 工具使用原则（⭐⭐⭐ 强制）
+
+**核心原则**：优先使用MCP第三方优秀工具，提升效率和准确性
+
+#### 1. 工具选择优先级
+
+```
+第1优先级：MCP 工具（跨平台、稳定、推荐）
+  - filesystem: 文件读写、目录操作
+  - serena: 代码语义分析、符号搜索
+  - github: GitHub API集成（Issue/PR/Commit）
+  - context7: 技术文档查询（最新官方文档）
+  - microsoft_docs_mcp: Microsoft官方文档
+  - sequential-thinking: 深度推理分析
+
+第2优先级：Claude Code内置工具
+  - Read/Write/Edit: 文件操作
+  - Glob/Grep: 文件搜索和内容搜索
+  - Bash: Shell命令执行
+
+第3优先级：Shell命令
+  - 仅在MCP工具无法满足需求时使用
+```
+
+#### 2. GitHub MCP 固定参数要求
+
+**问题**：GitHub MCP工具不支持默认仓库配置，每次调用都必须显式提供参数。
+
+**解决方案**：使用固定的仓库参数（见0.5章）：
+
+```python
+# ✅ 正确示例
+mcp__github__list_issues(
+    owner="shouqitao",
+    repo="LYBTZYZS",
+    state="OPEN"
+)
+
+mcp__github__create_issue(
+    owner="shouqitao",
+    repo="LYBTZYZS",
+    title="修复XXX问题",
+    body="问题描述..."
+)
+
+# ❌ 错误示例（会导致参数错误）
+mcp__github__list_issues(state="OPEN")  # 缺少owner和repo
+```
+
+**常用GitHub MCP工具**：
+- `list_issues`: 列出Issues
+- `create_issue`: 创建Issue
+- `update_issue`: 更新Issue
+- `list_pull_requests`: 列出PR
+- `create_pull_request`: 创建PR
+- `merge_pull_request`: 合并PR
+- `list_commits`: 列出提交
+- `get_file_contents`: 获取文件内容
+
+#### 3. Context7 使用规范
+
+**推荐场景**：
+- 查询最新技术文档（.NET 8、WPF、Prism等）
+- 查询GitHub MCP Server使用方法
+- 验证API用法和最佳实践
+
+**使用流程**：
+```
+1. resolve-library-id: 查找库ID
+2. get-library-docs: 获取文档（指定topic和tokens）
+```
+
+**示例**：
+```python
+# Step 1: 解析库ID
+mcp__context7__resolve-library-id(libraryName="github mcp server")
+
+# Step 2: 获取文档
+mcp__context7__get-library-docs(
+    context7CompatibleLibraryID="/github/github-mcp-server",
+    topic="configuration environment variables",
+    tokens=5000
+)
+```
+
+#### 4. 工具组合模式
+
+**研究模式**（查询最新文档）：
+```
+context7（查文档） → sequential-thinking（分析） → 应用到代码
+```
+
+**开发模式**（语义代码编辑）：
+```
+serena（符号搜索） → serena（代码编辑） → filesystem（验证）
+```
+
+**GitHub工作流**：
+```
+github（创建Issue） → 代码修改 → github（创建PR） → github（合并PR）
+```
+
 
 > **📖 详细定义**：参见 `.claude/modes/` 目录
 
