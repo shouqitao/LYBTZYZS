@@ -426,8 +426,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("医案暂存成功");
                 await ShowSuccessMessageAsync("医案已暂存");
 
-                // 3. 返回患者选择界面
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                // Issue #1569: 暂存后停留在当前界面，不返回患者选择
             }
             catch (Exception ex)
             {
