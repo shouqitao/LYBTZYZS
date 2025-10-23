@@ -550,7 +550,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                             await CreateNewCaseAfterClosingOldAsync(CurrentPatient, unfinishedCase.Id);
                             break;
 
-                        case 0: // 取消
+                        case 3: // 仅关闭旧医案（不创建新医案）
+                            SetIsBusy(true, "正在关闭医案...");
+                            await CloseOldCaseOnlyAsync(CurrentPatient, unfinishedCase.Id);
+                            break;
+
+                        case 0: // 取消/关闭窗口
                         default:
                             Logger.LogInformation("用户取消操作");
                             break;
@@ -646,7 +651,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // Phase 2临时方案：使用System.Windows.MessageBox
                 // Phase 5：替换为自定义对话框
                 var result = System.Windows.MessageBox.Show(
-                    $"{message}\n\n1. 继续看诊（恢复之前的医案）\n2. 新建医案（关闭旧医案）\n3. 关闭旧医案（不创建新医案）\n\n点击「是」继续看诊，点击「否」新建医案",
+                    $"{message}\n\n" +
+                    $"1. 继续看诊（恢复之前的医案）\n" +
+                    $"2. 新建医案（关闭旧医案后创建新的）\n" +
+                    $"3. 仅关闭旧医案（不创建新医案）\n\n" +
+                    $"请点击对应按钮：\n" +
+                    $"【是】= 继续看诊\n" +
+                    $"【否】= 新建医案\n" +
+                    $"【取消】= 仅关闭旧医案",
                     title,
                     System.Windows.MessageBoxButton.YesNoCancel,
                     System.Windows.MessageBoxImage.Question);
@@ -656,11 +668,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     System.Windows.MessageBoxResult.Yes => 1,      // 继续看诊
                     System.Windows.MessageBoxResult.No => 2,       // 新建医案
-                    System.Windows.MessageBoxResult.Cancel => 0,   // 取消
-                    _ => 0
+                    System.Windows.MessageBoxResult.Cancel => 3,   // 仅关闭旧医案
+                    _ => 0  // 其他情况（关闭窗口）视为取消
                 };
 
-                Logger.LogInformation("用户选择：{Choice} (1=继续, 2=新建, 0=取消)", choice);
+                Logger.LogInformation("用户选择：{Choice} (1=继续, 2=新建, 3=仅关闭)", choice);
                 tcs.SetResult(choice);
             }
             catch (Exception ex)
@@ -724,6 +736,48 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 Logger.LogError(ex, "新建医案失败");
                 await ShowErrorMessageAsync($"新建医案失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 2: 仅关闭旧医案（不创建新医案）
+        /// 修复：添加"仅关闭"选项支持
+        /// </summary>
+        private async Task CloseOldCaseOnlyAsync(PatientDto patient, Guid oldMedicalCaseId)
+        {
+            try
+            {
+                Logger.LogInformation("用户选择仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}",
+                    oldMedicalCaseId);
+
+                // 1. 关闭旧医案
+                var closed = await _medicalCaseQueryService.CloseAsync(oldMedicalCaseId);
+
+                if (closed)
+                {
+                    // 2. 从缓存中移除
+                    _pendingCaseCache.Remove(patient.Id);
+                    Logger.LogInformation("旧医案已关闭，缓存已清理");
+
+                    // 3. 刷新待看诊列表（移除已关闭的医案）
+                    await LoadPendingCasesAsync();
+                    
+                    Logger.LogInformation("待看诊列表已刷新");
+                }
+                else
+                {
+                    Logger.LogWarning("关闭医案失败");
+                    await ShowErrorMessageAsync("关闭医案失败，请稍后重试");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "关闭医案失败");
+                await ShowErrorMessageAsync($"关闭医案失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 

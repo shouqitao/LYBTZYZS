@@ -122,7 +122,7 @@
                                 <!-- 过敏史 -->
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="过　敏　史：" Width="80" Foreground="#7F8C8D" FontSize="12" VerticalAlignment="Top"/>
-                                    <TextBlock Text="{Binding CurrentPatient.Allergies, TargetNullValue='无'}"
+                                    <TextBlock Text="{Binding CurrentPatient.AllergyHistory, TargetNullValue='无'}"
                                               FontSize="12" TextWrapping="Wrap" MaxWidth="180" Foreground="#E74C3C"/>
                                 </StackPanel>
                             </StackPanel>
