@@ -2,12 +2,14 @@
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using PatientEntity = LYBT.Entities.Patients.Patient;
 
 namespace LYBT.Module.MedicalCase.Repositories
 {
@@ -153,6 +155,47 @@ namespace LYBT.Module.MedicalCase.Repositories
 
             // 调用基类UpdateAsync完成更新
             return await base.UpdateAsync(entity);
+        }
+
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync()
+        {
+            var result = await _dbSet
+                .Where(m => !m.IsDeleted && m.Status == MedicalCaseStatus.Active)
+                .Join(
+                    _context.Set<PatientEntity>(),
+                    m => m.PatientId,
+                    p => p.Id,
+                    (m, p) => new { MedicalCase = m, Patient = p })
+                .OrderBy(r => r.MedicalCase.CreatedAt) // 按创建时间升序
+                .Select(r => new PendingMedicalCaseDto
+                {
+                    PatientId = r.Patient.Id,
+                    PatientName = r.Patient.Name,
+                    PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
+                    PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
+                    Type = "暂存", // 当前只支持未完成医案
+                    MedicalCaseId = r.MedicalCase.Id
+                })
+                .ToListAsync();
+
+            _logger?.LogInformation("获取待看诊列表，共 {Count} 条记录", result?.Count ?? 0);
+            return result;
+        }
+
+        /// <summary>
+        /// 手机号脱敏处理（138****1234格式）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        private static string MaskPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length != 11)
+                return phoneNumber;
+
+            return $"{phoneNumber.Substring(0, 3)}****{phoneNumber.Substring(7)}";
         }
     }
 }

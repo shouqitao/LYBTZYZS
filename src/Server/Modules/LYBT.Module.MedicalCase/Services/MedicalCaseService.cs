@@ -468,5 +468,25 @@ namespace LYBT.Module.MedicalCase.Services
                 return ServiceResult<PrescriptionDto>.Failure("更新处方信息失败");
             }
         }
+
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        public async Task<ServiceResult<List<PendingMedicalCaseDto>>> GetPendingCasesAsync()
+        {
+            try
+            {
+                _logger.LogInformation("开始获取待看诊列表");
+                var result = await _repository.GetPendingCasesAsync();
+                _logger.LogInformation("待看诊列表获取成功，共 {Count} 条记录", result.Count);
+                return ServiceResult<List<PendingMedicalCaseDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取待看诊列表失败");
+                return ServiceResult<List<PendingMedicalCaseDto>>.Failure("获取待看诊列表失败");
+            }
+        }
     }
 }
