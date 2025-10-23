@@ -619,10 +619,26 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
                     MedicalCaseId, newStatus);
 
-                // 构建更新DTO
+                // Issue #1569: 修复MedicalCaseUpdateDto缺少必填字段导致更新失败
+                // MedicalCaseUpdateDto继承自MedicalCaseInputBaseDto，需要PatientId和DoctorId
+                if (CurrentPatient == null)
+                {
+                    Logger.LogError("CurrentPatient为空，无法更新MedicalCase状态");
+                    throw new InvalidOperationException("患者信息丢失，无法更新医案状态");
+                }
+
+                if (SessionManager?.CurrentUser == null)
+                {
+                    Logger.LogError("SessionManager.CurrentUser为空，无法更新MedicalCase状态");
+                    throw new InvalidOperationException("用户信息丢失，无法更新医案状态");
+                }
+
+                // 构建更新DTO（包含所有必填字段）
                 var updateDto = new MedicalCaseUpdateDto
                 {
                     Id = MedicalCaseId,
+                    PatientId = CurrentPatient.Id,        // 必填字段
+                    DoctorId = SessionManager.CurrentUser.Id,  // 必填字段
                     Status = newStatus.ToString()
                 };
 
