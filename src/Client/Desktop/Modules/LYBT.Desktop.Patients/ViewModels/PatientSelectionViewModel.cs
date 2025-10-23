@@ -260,6 +260,10 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 调用分页API（传入搜索关键字）
                 var result = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchKeyword);
 
+                // 清空选中状态（Bug修复：搜索后应重置选中项）
+                SelectedPatient = null;
+                CurrentPatient = null;
+
                 // 更新患者列表
                 Patients.Clear();
                 foreach (var patient in result.Items)
@@ -271,7 +275,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 TotalPages = result.TotalPages;
                 TotalCount = result.TotalCount;
 
-                Logger.LogInformation("搜索成功，找到{TotalCount}条记录，当前显示第{CurrentPage}页", TotalCount, CurrentPage);
+                Logger.LogInformation("搜索成功，找到{TotalCount}条记录，实际加载{ItemCount}条，当前显示第{CurrentPage}页", TotalCount, result.Items.Count, CurrentPage);
 
                 // 触发分页命令更新
                 PreviousPageCommand.RaiseCanExecuteChanged();
