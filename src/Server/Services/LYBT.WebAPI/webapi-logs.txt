@@ -1,0 +1,142 @@
+姝ｅ湪鐢熸垚...
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\Services\MedicalCaseService.cs(148,62): warning CS8604: 鈥淪erviceResult<MedicalCaseDto> ServiceResult<MedicalCaseDto>.Success(MedicalCaseDto data)鈥濅腑鐨勫舰鍙傗€渄ata鈥濆彲鑳戒紶鍏?null 寮曠敤瀹炲弬銆?[D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj]
+D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\Services\MedicalCaseService.cs(92,68): warning CA1829: 璇蜂娇鐢?"Count" 灞炴€ц€屼笉鏄?Enumerable.Count() (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1829) [D:\source\repos\LYBTZYZS\src\Server\Modules\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj]
+Security Warning: The negotiated TLS 1.0 is an insecure protocol and is supported for backward compatibility only. The recommended protocol version is TLS 1.2 and later.
+Security Warning: The negotiated TLS 1.0 is an insecure protocol and is supported for backward compatibility only. The recommended protocol version is TLS 1.2 and later.
+[09:24:54 INF] LYBT.Infrastructure.Data.DatabaseInitializationService: 寮€濮嬪垵濮嬪寲鏁版嵁搴撳苟搴旂敤杩佺Щ
+[09:24:55 WRN] Microsoft.EntityFrameworkCore.Model.Validation: Entity 'Formula' has a global query filter defined and is the required end of a relationship with the entity 'FormulaHerbItem'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+Security Warning: The negotiated TLS 1.0 is an insecure protocol and is supported for backward compatibility only. The recommended protocol version is TLS 1.2 and later.
+Security Warning: The negotiated TLS 1.0 is an insecure protocol and is supported for backward compatibility only. The recommended protocol version is TLS 1.2 and later.
+[09:24:55 INF] Microsoft.EntityFrameworkCore.Database.Command: Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[09:24:55 INF] Microsoft.EntityFrameworkCore.Database.Command: Executed DbCommand (17ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+[09:24:55 INF] Microsoft.EntityFrameworkCore.Database.Command: Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+[09:24:55 INF] LYBT.Infrastructure.Data.DatabaseInitializationService: 鏃犲緟搴旂敤鐨勮縼绉伙紝鏁版嵁搴撳凡鏄渶鏂扮姸鎬?
+[09:24:55 INF] LYBT.Infrastructure.Data.DatabaseInitializationService: 鏁版嵁搴撳垵濮嬪寲瀹屾垚
+[09:24:55 INF] Microsoft.EntityFrameworkCore.Database.Command: Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[09:24:55 INF] Program:  鏁版嵁搴撳垵濮嬪寲鎴愬姛
+[09:24:55 INF] Program:  閰嶇疆鏈嶅姟鍒濆鍖栧畬鎴?
+[09:24:55 INF] Program:  杩愯鐜: Development, 鏈哄櫒: MYHOUSE
+[09:24:55 INF] Program:  鏁版嵁搴撹繛鎺ラ厤缃獙璇侀€氳繃
+[09:24:55 INF] Program:  JWT閰嶇疆楠岃瘉閫氳繃
+[09:24:55 INF] Program:  搴旂敤绋嬪簭鍚姩鎴愬姛 - WebAPI-Startup
+[09:24:55 INF] Program:  鏃ュ織绯荤粺鍒濆鍖栨垚鍔?
+[09:24:55 INF] Microsoft.EntityFrameworkCore.Database.Command: Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT 1
+[09:24:55 INF] Program:  鏁版嵁搴撶姸鎬佷俊鎭凡鑾峰彇
+鈺斺晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晽
+鈺?               LYBT WebAPI 寮€鍙戞ā寮?                     鈺?
+鈺?           鍑岄殣瀹濆爞涓尰璇婃墍璇婄枟绯荤粺 WebAPI                鈺?
+鈺氣晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨暆
+
+[鍚姩] 鉁?鐜: Development
+[鍚姩] 鉁?鏈嶅姟鍦板潃: https://localhost:5001
+[鍚姩] 鉁?Swagger鏂囨。: https://localhost:5001/swagger
+[鍚姩] 鉁?鍚姩鏃堕棿: 2025-10-23 09:24:55
+[鍚姩] 鉁?鏁版嵁搴撹繛鎺ユ甯?
+
+馃殌 鏈嶅姟鍚姩瀹屾垚锛佹寜 Ctrl+C 鍋滄鏈嶅姟
+
+=== 瀹炴椂鏃ュ織 ===
+[09:24:55 INF] : 搴旂敤閰嶇疆瀹屾垚锛屽惎鍔ㄤ腑...
+[09:24:55 DBG] Microsoft.Extensions.Hosting.Internal.Host: Hosting starting
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyRotationBackgroundService: 瀵嗛挜鏃嬭浆鍚庡彴鏈嶅姟宸插惎鍔?
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyManagementService: 棣栨妫€鏌ュ瘑閽ヨ疆鎹紝闇€瑕佹墽琛岃疆鎹?
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyRotationBackgroundService: 寮€濮婮WT瀵嗛挜杞崲
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyManagementService: 寮€濮婮WT瀵嗛挜杞崲...
+[09:24:55 DBG] LYBT.Infrastructure.Security.KeyManagementService: 瀵嗛挜寮哄害楠岃瘉閫氳繃锛岄暱搴? 32 瀛楄妭锛屽敮涓€瀛楄妭鏁? 30
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyManagementService: 璁板綍瀵嗛挜杞崲瀹屾垚锛岃疆鎹㈡椂闂? 2025-10-23 01:24:55 UTC锛屾柊瀵嗛挜鍓?浣? H/eW6H7g...
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyManagementService: JWT瀵嗛挜杞崲鎴愬姛锛屽瘑閽ュ己搴? 256 浣嶏紝Base64闀垮害: 44 瀛楃
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyRotationBackgroundService: JWT瀵嗛挜杞崲鎴愬姛瀹屾垚
+[09:24:55 ERR] Microsoft.Extensions.Hosting.Internal.Host: Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5000: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+ ---> System.Net.Sockets.SocketException (10048): 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.EndpointsStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+[09:24:55 INF] LYBT.Infrastructure.Security.KeyRotationBackgroundService: 瀵嗛挜鏃嬭浆鍚庡彴鏈嶅姟宸插仠姝?
+[09:24:55 FTL] : 搴旂敤绋嬪簭鍚姩澶辫触
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5000: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+ ---> System.Net.Sockets.SocketException (10048): 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.EndpointsStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Program.Main(String[] args) in D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\Program.cs:line 85
+Unhandled exception. System.IO.IOException: Failed to bind to address http://127.0.0.1:5000: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+ ---> System.Net.Sockets.SocketException (10048): 閫氬父姣忎釜濂楁帴瀛楀湴鍧€(鍗忚/缃戠粶鍦板潃/绔彛)鍙厑璁镐娇鐢ㄤ竴娆°€?
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.EndpointsStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Program.Main(String[] args) in D:\source\repos\LYBTZYZS\src\Server\Services\LYBT.WebAPI\Program.cs:line 85
+   at Program.<Main>(String[] args)
