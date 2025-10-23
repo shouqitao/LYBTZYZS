@@ -426,8 +426,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("医案暂存成功");
                 await ShowSuccessMessageAsync("医案已暂存");
 
-                // 3. 返回患者选择界面
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                // Epic #1583 Phase 4: 移除自动导航，暂存后停留在当前界面（修复Issue #1569）
+                // 用户可以通过"返回主页"按钮手动返回
             }
             catch (Exception ex)
             {
