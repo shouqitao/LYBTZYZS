@@ -1,8 +1,8 @@
 # 凌隐宝堂中医诊所文档中心
 
-**文档版本**：v5.0 彻底重构版
+**文档版本**：v5.1 文档同步更新版
 **创建时间**：2025-10-15
-**最后更新**：2025-10-15
+**最后更新**：2025-10-22
 **维护负责**：项目团队
 
 ## 🎯 文档体系架构
@@ -41,11 +41,31 @@
 ### 业务架构文档
 - **[看诊流程实体关系](architecture/shared/clinical-workflow-entity-relationships.md)** - 挂号/医案/诊断/处方实体关系与状态机设计 ⭐⭐⭐ **权威文档**
 
+### 架构讨论文档（v5.1新增）⭐
+**Client端架构讨论**：
+- **[医案流程UI架构](architecture/client/medicalcase-flow-ui-architecture.md)** - 医案流程界面架构设计
+- **[患者信息条架构](architecture/client/patient-info-bar-architecture.md)** - 患者信息条组件架构
+- **[医案导航事件总线](architecture/client/medicalcase-navigation-event-bus.md)** - 医案导航事件驱动设计
+- **[Prism Region导航指南](architecture/client/prism-region-navigation-guide.md)** - Prism区域导航实践
+- **[抽屉菜单集成方案](architecture/client/drawer-menu-integration-options.md)** - 抽屉菜单集成选项
+
+**Shared层架构讨论**：
+- **[医案业务流程](architecture/shared/medical-case-business-flow.md)** - 医案业务流程设计
+- **[医案状态管理](architecture/shared/medical-case-state-management.md)** - 医案状态机设计
+- **[医案诊疗集成](architecture/shared/medicalcase-consultation-integration.md)** - 医案与诊疗集成方案
+- **[诊疗实体设计讨论](architecture/shared/consultation-entity-design-discussion.md)** - 诊疗实体结构设计
+- **[诊疗服务编排](architecture/shared/consultation-service-orchestration.md)** - 诊疗服务协同设计
+- **[处方设计讨论](architecture/shared/prescription-design-discussion.md)** - 处方功能设计讨论
+
 ### 开发指南文档
 - **[开发指南总览](development/README.md)** - 开发规范和流程指导
 - **[Server端开发](development/server/README.md)** - Server开发规范和实践
 - **[Client端开发](development/client/README.md)** - WPF客户端开发指南
+  - **[MVVM实施指南](development/client/mvvm-implementation-guide.md)** - MVVM模式完整实施指南（v5.1新增）
+  - **[Prism模块指南](development/client/prism-module-guide.md)** - Prism模块开发实践（v5.1新增）
 - **[共享开发](development/shared/README.md)** - 跨端组件开发指南
+  - **[任务工作流清单](development/shared/task-workflow-checklist.md)** - Issue驱动开发流程清单（v5.1新增）
+  - **[API契约演进指南](development/shared/api-contract-evolution-guide.md)** - API接口演进最佳实践（v5.1新增）
 
 ## 📚 深度参考 (Level 3)
 
@@ -157,6 +177,21 @@
 - **团队协作机制** - 责任分工、审核流程、应急响应
 - **持续改进计划** - 季度规划、质量目标、资源分配
 
+### 📈 分析报告（v5.1新增）
+**架构分析报告**：
+- **[架构审查报告 (2025-10-22)](reports/architecture-review-report-20251022-070733.md)** - 三层对齐架构合规性审查
+- **[Client架构分析 (2025-10-22)](reports/client-architecture-analysis-20251022-071345.md)** - Client端架构深度分析
+- **[Server架构分析 (2025-10-22)](reports/server-architecture-analysis-20251022-071345.md)** - Server端架构深度分析
+- **[Client模块分析 (2025-10-22)](reports/client-module-analysis-20251022-063724.md)** - Client端模块结构分析
+- **[医案模块分析 (2025-10-22)](reports/medicalcase-module-analysis-20251022-053644.md)** - 医案模块详细分析
+
+**API接口分析报告**：
+- **[医案API分析 (2025-10-22)](reports/api-analysis-MedicalCaseApi-20251022-072715.md)** - MedicalCaseApi接口分析
+- **[诊疗API分析 (2025-10-22 v1)](reports/api-analysis-ConsultationApi-20251022-073556.md)** - ConsultationApi接口分析v1
+- **[诊疗API分析 (2025-10-22 v2)](reports/api-analysis-ConsultationApi-20251022-074114.md)** - ConsultationApi接口分析v2
+- **[药材API分析 (2025-10-22)](reports/api-analysis-HerbsApi-20251022-075157.md)** - HerbsApi接口分析
+- **[患者API分析 (2025-10-22)](reports/api-analysis-PatientsApi-20251022-075734.md)** - PatientsApi接口分析
+
 ## 🔗 相关资源
 
 - [项目Git仓库](https://github.com/shouqitao/凌隐宝堂中医诊所) - 代码和文档版本管理
@@ -167,10 +202,15 @@
 
 ### 🎯 完成度统计
 - ✅ **Level 1** (快速参考): 5个文档 - 100%完成
-- ✅ **Level 2** (架构指南): 5个文档 - 100%完成
+- ✅ **Level 2** (架构指南): 20个文档 - 100%完成
+  - 核心架构文档: 5个
+  - 架构讨论文档: 11个（v5.1新增）
+  - 开发指南文档: 4个（v5.1新增）
 - ✅ **Level 3** (深度参考): 5个文档 - 100%完成
-- ✅ **Level 4** (支撑体系): 2个文档 - 100%完成
-- 📊 **总文档数量**: 17个核心文档
+- ✅ **Level 4** (支撑体系): 12个文档 - 100%完成
+  - 质量监控: 2个
+  - 分析报告: 10个（v5.1新增）
+- 📊 **总文档数量**: 42个核心文档（v5.0: 17个 → v5.1: 42个，+25个文档）
 
 ### 🏗️ 架构特色
 - ✅ **三层对齐**: Server/Client/Shared架构完全对应
@@ -188,5 +228,5 @@
 
 *本文档中心基于实际代码完全重构，提供准确、同步、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-10-15 - v5.0彻底重构版** 🎉
-**总文档数：17个，完成度：100%** ✨
+**最后更新：2025-10-22 - v5.1文档同步更新版** 🎉
+**总文档数：42个（新增25个），完成度：100%** ✨

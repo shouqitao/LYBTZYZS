@@ -1,7 +1,7 @@
 # Client端架构指南
 
-**版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
+**版本**：v5.1 文档同步更新版
+**更新时间**：2025-10-22
 **对应代码层**：LYBT.Desktop  
 
 ## 🏗️ Client端WPF架构设计
@@ -1107,6 +1107,19 @@ public class ConsultationFormViewModel
   - `LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository:UpdateConsultationAsync()` (Issue #1563)
 - 修复Issue：#1463, #1563
 
+## 📖 架构讨论文档（v5.1新增）
+
+**医案流程架构**：
+- **[医案流程UI架构](medicalcase-flow-ui-architecture.md)** - 医案流程界面架构设计、步骤导航、患者信息条集成
+- **[患者信息条架构](patient-info-bar-architecture.md)** - 患者信息条组件设计、数据绑定、状态管理
+- **[医案导航事件总线](medicalcase-navigation-event-bus.md)** - 医案流程事件驱动架构、EventAggregator使用模式
+
+**Prism框架实践**：
+- **[Prism Region导航指南](prism-region-navigation-guide.md)** - Prism区域导航完整实践、参数传递、生命周期管理
+- **[抽屉菜单集成方案](drawer-menu-integration-options.md)** - 抽屉菜单与Prism模块系统集成方案对比
+
+> 这些文档是Issue #1567（医案流程UI重构）的架构设计记录，提供了医案模块Client端架构的详细实现指南。
+
 ## 🔗 相关文档
 
 - **[Shell层架构设计](shell-layer-design.md)** - Shell层职责边界、组件结构、交互模式详解
@@ -1119,5 +1132,5 @@ public class ConsultationFormViewModel
 
 ---
 
-**文档维护**：架构组 | **最后更新**：2025-10-20
-**适用版本**：v5.0 对齐架构版 | **审核状态**：已审核
+**文档维护**：架构组 | **最后更新**：2025-10-22
+**适用版本**：v5.1 文档同步更新版 | **审核状态**：已审核

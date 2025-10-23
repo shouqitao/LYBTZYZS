@@ -107,5 +107,19 @@ namespace LYBT.Module.MedicalCase.Repositories
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案列表（按创建时间降序）</returns>
+        public async Task<List<MedicalCaseEntity>> GetIncompleteCasesByPatientIdAsync(Guid patientId)
+        {
+            return await GetBaseQuery()
+                .Where(m => m.PatientId == patientId && m.Status != Shared.Models.Enums.MedicalCaseStatus.Closed)
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

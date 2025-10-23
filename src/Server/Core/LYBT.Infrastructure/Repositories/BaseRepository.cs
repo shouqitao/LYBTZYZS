@@ -479,8 +479,22 @@ namespace LYBT.Infrastructure.Repositories
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            // 📝 诊断日志 - Issue #1570b: 追踪EF Core状态变化
+            var entityStateBefore = _context.Entry(entity).State;
+            _logger?.LogDebug("📝 [EF Core] Update()调用前 - Entity状态: {State}, 类型: {EntityType}, ID: {Id}",
+                entityStateBefore, typeof(TEntity).Name, entity.Id);
+
             _dbSet.Update(entity);
+
+            var entityStateAfter = _context.Entry(entity).State;
+            _logger?.LogDebug("📝 [EF Core] Update()调用后 - Entity状态: {State}, 类型: {EntityType}, ID: {Id}",
+                entityStateAfter, typeof(TEntity).Name, entity.Id);
+
             await SaveChangesAsync();
+
+            var entityStateSaved = _context.Entry(entity).State;
+            _logger?.LogDebug("📝 [EF Core] SaveChanges()后 - Entity状态: {State}, 类型: {EntityType}, ID: {Id}",
+                entityStateSaved, typeof(TEntity).Name, entity.Id);
 
             _logger?.LogDebug("实体已更新 - 类型: {EntityType}, ID: {Id}", typeof(TEntity).Name, entity.Id);
 

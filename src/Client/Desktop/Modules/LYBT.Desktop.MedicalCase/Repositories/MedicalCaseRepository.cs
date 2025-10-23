@@ -57,6 +57,24 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         }
 
         /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        public async Task<List<MedicalCaseDto>> GetIncompleteCasesByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                var response = await _api.GetIncompleteCasesByPatientIdAsync(patientId);
+                return response.Data ?? new List<MedicalCaseDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据患者ID获取未完成医案列表失败，PatientId: {PatientId}", patientId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 创建完整的医疗案例（包含诊疗和可选处方）
         /// </summary>
         public async Task<MedicalCaseDto> CreateWithDetailsAsync(

@@ -17,6 +17,13 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<MedicalCaseDto> UpdateAsync(MedicalCaseUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        Task<List<MedicalCaseDto>> GetIncompleteCasesByPatientIdAsync(Guid patientId);
+
         Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto,
             ConsultationCreateDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null);

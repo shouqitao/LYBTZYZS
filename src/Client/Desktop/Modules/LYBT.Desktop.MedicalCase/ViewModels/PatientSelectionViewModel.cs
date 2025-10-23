@@ -172,8 +172,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     }
                     else
                     {
-                        // 新建医案：继续下面的创建逻辑
-                        Logger.LogInformation("用户选择新建医案");
+                        // 新建医案：先关闭旧的未完成医案
+                        Logger.LogInformation("用户选择新建医案，开始关闭旧医案，ID: {OldCaseId}", unfinishedCase.Id);
+
+                        SetIsBusy(true, "正在关闭旧医案...");
+
+                        // 关闭旧医案（状态更新为Closed）
+                        var closeSuccess = await CloseOldMedicalCaseAsync(unfinishedCase);
+                        if (!closeSuccess)
+                        {
+                            Logger.LogWarning("关闭旧医案失败，但继续创建新医案");
+                            // 即使关闭失败，也继续创建新医案（避免阻塞流程）
+                        }
+                        else
+                        {
+                            Logger.LogInformation("旧医案已关闭，ID: {OldCaseId}", unfinishedCase.Id);
+                        }
                     }
                 }
 
@@ -254,6 +268,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 检查患者是否有未完成的医案
         /// Issue #1567 Phase 3 - Task 3.4
+        /// Issue #1568: 使用专用API端点查询未完成医案
         /// </summary>
         private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
         {
@@ -261,21 +276,65 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogInformation("检查患者未完成医案，PatientId: {PatientId}", patientId);
 
-                // 查询该患者的所有医案，Status=Active的即为未完成
-                var cases = await _medicalCaseRepository.GetByPatientIdAsync(patientId);
-                var unfinishedCase = cases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
+                // Issue #1568: 调用专用API端点查询未完成医案（服务器端过滤，性能更优）
+                var incompleteCases = await _medicalCaseRepository.GetIncompleteCasesByPatientIdAsync(patientId);
+                var latestCase = incompleteCases.FirstOrDefault();
 
-                if (unfinishedCase != null)
+                if (latestCase != null)
                 {
-                    Logger.LogInformation("检测到未完成医案，ID: {MedicalCaseId}", unfinishedCase.Id);
+                    Logger.LogInformation("检测到未完成医案，ID: {MedicalCaseId}，创建时间: {CreatedAt}",
+                        latestCase.Id, latestCase.CreatedAt);
+                }
+                else
+                {
+                    Logger.LogInformation("该患者无未完成医案");
                 }
 
-                return unfinishedCase;
+                return latestCase;
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "检查未完成医案失败，PatientId: {PatientId}", patientId);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 关闭旧的未完成医案
+        /// Issue #1568: 用户选择新建医案时，先关闭旧医案
+        /// </summary>
+        private async Task<bool> CloseOldMedicalCaseAsync(MedicalCaseDto oldCase)
+        {
+            try
+            {
+                Logger.LogInformation("开始关闭旧医案，ID: {OldCaseId}", oldCase.Id);
+
+                if (SessionManager == null || SessionManager.CurrentUser == null)
+                {
+                    Logger.LogError("SessionManager或CurrentUser为null，无法关闭医案");
+                    return false;
+                }
+
+                // 构造更新DTO，包含必填字段
+                var updateDto = new MedicalCaseUpdateDto
+                {
+                    Id = oldCase.Id,
+                    PatientId = oldCase.PatientId,
+                    DoctorId = SessionManager.CurrentUser.Id,
+                    Status = MedicalCaseStatus.Closed.ToString()
+                };
+
+                Logger.LogInformation("调用API关闭医案，ID: {OldCaseId}", oldCase.Id);
+
+                await _medicalCaseRepository.UpdateAsync(updateDto);
+
+                Logger.LogInformation("旧医案关闭成功，ID: {OldCaseId}", oldCase.Id);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "关闭旧医案失败，ID: {OldCaseId}", oldCase.Id);
+                return false;
             }
         }
 

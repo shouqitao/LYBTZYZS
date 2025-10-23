@@ -31,6 +31,13 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<List<MedicalCaseDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
 
         /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/incomplete/patient/{patientId}")]
+        Task<ApiResponse<List<MedicalCaseDto>>> GetIncompleteCasesByPatientIdAsync(Guid patientId);
+
+        /// <summary>
         /// 获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}/with-details")]

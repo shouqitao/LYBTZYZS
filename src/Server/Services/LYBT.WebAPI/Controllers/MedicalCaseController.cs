@@ -330,6 +330,35 @@ namespace LYBT.WebAPI.Controllers
         #endregion
 
         /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案列表</returns>
+        [HttpGet("incomplete/patient/{patientId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDto>>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetIncompleteCasesByPatientId(Guid patientId)
+        {
+            try
+            {
+                var result = await _medicalCaseService.GetIncompleteCasesByPatientIdAsync(patientId);
+
+                if (result.IsSuccess)
+                {
+                    LogOperation("查询患者未完成医案", new { PatientId = patientId, Count = result.Data?.Count ?? 0 }, null);
+                }
+
+                return HandleServiceResult(result, $"查询成功，找到{result.Data?.Count ?? 0}个未完成医案");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<MedicalCaseDto>>(ex, "查询患者未完成医案", new { PatientId = patientId });
+            }
+        }
+
+        /// <summary>
         /// 批量删除医疗案例（软删除）(Issue #1169)
         /// </summary>
         /// <param name="request">批量删除请求</param>

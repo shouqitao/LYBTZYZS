@@ -419,14 +419,35 @@ namespace LYBT.Module.MedicalCase.Services
                 if (medicalCase.Consultation == null)
                     return ServiceResult<ConsultationDto>.Failure("病案的诊断信息不存在");
 
+                // 📝 诊断日志 - Issue #1570b: 追踪Consultation保存流程
+                _logger.LogInformation("📝 [诊断] 映射前 - DTO字段: 主诉={ChiefComplaint}, 现病史={PresentIllness}, 中医诊断={TCMDiagnosis}, 治疗原则={TreatmentPrinciple}",
+                    dto.ChiefComplaint, dto.PresentIllness, dto.TCMDiagnosis, dto.TreatmentPrinciple);
+                _logger.LogInformation("📝 [诊断] 映射前 - Entity原始字段: 主诉={ChiefComplaint}, 现病史={PresentIllness}, 中医诊断={TCMDiagnosis}, 治疗原则={TreatmentPrinciple}",
+                    medicalCase.Consultation.ChiefComplaint, medicalCase.Consultation.PresentIllness, medicalCase.Consultation.TCMDiagnosis, medicalCase.Consultation.TreatmentPrinciple);
+
                 // 通过AutoMapper更新Consultation子实体
                 _mapper.Map(dto, medicalCase.Consultation);
+
+                // 📝 诊断日志 - AutoMapper映射后的Entity字段
+                _logger.LogInformation("📝 [诊断] 映射后 - Entity字段: 主诉={ChiefComplaint}, 现病史={PresentIllness}, 中医诊断={TCMDiagnosis}, 治疗原则={TreatmentPrinciple}",
+                    medicalCase.Consultation.ChiefComplaint, medicalCase.Consultation.PresentIllness, medicalCase.Consultation.TCMDiagnosis, medicalCase.Consultation.TreatmentPrinciple);
 
                 // 通过聚合根保存（EF Core会跟踪子实体变更）
                 var result = await _repository.UpdateAsync(medicalCase);
 
+                // 📝 诊断日志 - 保存后的Entity字段
+                if (result.Consultation != null)
+                {
+                    _logger.LogInformation("📝 [诊断] 保存后 - Entity字段: 主诉={ChiefComplaint}, 现病史={PresentIllness}, 中医诊断={TCMDiagnosis}, 治疗原则={TreatmentPrinciple}",
+                        result.Consultation.ChiefComplaint, result.Consultation.PresentIllness, result.Consultation.TCMDiagnosis, result.Consultation.TreatmentPrinciple);
+                }
+                else
+                {
+                    _logger.LogError("📝 [诊断] 保存后 - Consultation为null！这不应该发生");
+                }
+
                 // 返回更新后的Consultation DTO
-                var consultationDto = _mapper.Map<ConsultationDto>(result.Consultation);
+                var consultationDto = _mapper.Map<ConsultationDto>(result.Consultation!);
                 return ServiceResult<ConsultationDto>.Success(consultationDto);
             }
             catch (Exception ex)
@@ -466,6 +487,31 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "更新病案处方信息失败，病案ID: {MedicalCaseId}", medicalCaseId);
                 return ServiceResult<PrescriptionDto>.Failure("更新处方信息失败");
+            }
+        }
+
+        /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案列表（按创建时间降序）</returns>
+        public async Task<ServiceResult<List<MedicalCaseDto>>> GetIncompleteCasesByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+
+                var entities = await _repository.GetIncompleteCasesByPatientIdAsync(patientId);
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(entities);
+
+                _logger.LogInformation("查询完成，找到{Count}个未完成医案", dtos.Count);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询患者未完成医案失败，PatientId: {PatientId}", patientId);
+                return ServiceResult<List<MedicalCaseDto>>.Failure("查询未完成医案失败");
             }
         }
     }

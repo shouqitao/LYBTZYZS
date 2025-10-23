@@ -74,5 +74,13 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="dto">处方更新信息</param>
         /// <returns>更新后的处方信息</returns>
         Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
+
+        /// <summary>
+        /// 根据患者ID获取未完成的医案列表
+        /// Issue #1568: 支持患者选择时自动检测并恢复未完成医案
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案列表（按创建时间降序）</returns>
+        Task<ServiceResult<List<MedicalCaseDto>>> GetIncompleteCasesByPatientIdAsync(Guid patientId);
     }
 }

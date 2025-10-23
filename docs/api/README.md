@@ -1,7 +1,7 @@
 # API总览文档
 
-**版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
+**版本**：v5.2 Issue #1568版
+**更新时间**：2025-10-23
 **维护团队**：API开发组  
 
 ## 🎯 API体系导航
@@ -15,7 +15,7 @@
 | **认证模块** | AuthController | 6个 | 登录、注册、令牌管理 | 公开 |
 | **用户模块** | UsersController | 8个 | 用户管理、角色权限 | 需认证 |
 | **患者模块** | PatientsController | 10个 | 患者信息管理 | 需认证 |
-| **医案模块** | MedicalCasesController | 12个 | 医案流程管理 | 需认证 |
+| **医案模块** | MedicalCasesController | 13个 | 医案流程管理 | 需认证 |
 | **诊疗模块** | ConsultationsController | 11个 | 诊疗记录管理 | 需认证 |
 | **处方模块** | PrescriptionsController | 14个 | 处方管理计算 | 需认证 |
 | **药材模块** | HerbsController | 9个 | 药材字典管理 | 需认证 |
@@ -334,7 +334,48 @@ Content-Type: application/json
 }
 ```
 
-### 4. 诊疗管理API (/api/consultations)
+#### 获取患者未完成医案 ⭐ (新增 v5.2 - Issue #1568)
+```http
+GET /api/v1/medicalcases/incomplete/patient/{patientId}
+Authorization: Bearer {access-token}
+```
+**路径参数**:
+- `patientId` (Guid): 患者ID
+
+**响应示例**:
+```json
+{
+  "success": true,
+  "message": "查询成功，找到2个未完成医案",
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "patientId": "660e8400-e29b-41d4-a716-446655440000",
+      "doctorId": "770e8400-e29b-41d4-a716-446655440000",
+      "caseStatus": "Active",
+      "createdAt": "2025-10-23T10:30:00Z",
+      "remark": null
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "patientId": "660e8400-e29b-41d4-a716-446655440000",
+      "doctorId": "770e8400-e29b-41d4-a716-446655440000",
+      "caseStatus": "Active",
+      "createdAt": "2025-10-22T14:20:00Z",
+      "remark": "复诊"
+    }
+  ],
+  "code": 200,
+  "timestamp": "2025-10-23T11:00:00Z"
+}
+```
+**说明**：
+- 此端点用于患者选择时自动检测并恢复未完成医案
+- 返回该患者所有状态为 `Active`（未关闭）的医案
+- 结果按创建时间降序排列（最新的在前）
+- 支持医案暂存恢复功能（Issue #1567 + #1568）
+
+### 4. 诊疗管理API (/api/consultations & /api/medicalcases)
 
 #### 获取诊疗记录
 ```http
@@ -365,6 +406,29 @@ Content-Type: application/json
   "advice": "清淡饮食，规律作息"
 }
 ```
+
+#### 更新医案的诊疗信息 ⭐ (新增 v5.1)
+```http
+PUT /api/v1/medicalcases/{medicalCaseId}/consultation
+Authorization: Bearer {access-token}
+Content-Type: application/json
+```
+**请求体**:
+```json
+{
+  "consultationType": "FollowUp",
+  "fourExaminations": {
+    "inspection": "面色红润，舌质红，苔薄黄",
+    "auscultation": "语音清晰，呼吸平稳",
+    "inquiry": "头痛、失眠、口苦",
+    "palpation": "脉弦数"
+  },
+  "diagnosis": "肝阳上亢",
+  "prescription": "天麻钩藤饮加减",
+  "advice": "清淡饮食，规律作息"
+}
+```
+**说明**：此端点用于在医案流程中更新诊疗信息，与医案ID关联。
 
 ### 5. 处方管理API (/api/prescriptions)
 
