@@ -19,7 +19,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         public string PatientName
         {
             get => _patientName;
-            set => SetProperty(ref _patientName, value);
+            set
+            {
+                if (SetProperty(ref _patientName, value))
+                {
+                    // 触发 Message 属性的通知
+                    RaisePropertyChanged(nameof(Message));
+                }
+            }
         }
 
         /// <summary>
