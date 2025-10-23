@@ -3,7 +3,9 @@ using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -55,7 +57,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private PatientDto? _selectedPatient;
         /// <summary>
-        /// 当前选中的患者
+        /// 全部患者列表中选中的患者
+        /// Epic #1583: 选中后自动更新CurrentPatient
         /// </summary>
         public PatientDto? SelectedPatient
         {
@@ -65,6 +68,12 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (SetProperty(ref _selectedPatient, value))
                 {
                     SelectPatientCommand.RaiseCanExecuteChanged();
+
+                    // Epic #1583: 全部患者列表选中 → 更新CurrentPatient
+                    if (value != null)
+                    {
+                        CurrentPatient = value;
+                    }
                 }
             }
         }
@@ -119,7 +128,55 @@ namespace LYBT.Desktop.Patients.ViewModels
             set => SetProperty(ref _totalCount, value);
         }
 
-        private const int PageSize = 50; // 每页50条记录
+        private const int PageSize = 20; // 每页20条记录（Epic #1583）
+
+        #endregion
+
+        #region Epic #1583: 待看诊队列属性
+
+        /// <summary>
+        /// 待看诊队列（未完成医案的患者列表）
+        /// </summary>
+        public ObservableCollection<PendingMedicalCaseDto> PendingQueue { get; } = new();
+
+        private PendingMedicalCaseDto? _selectedPendingPatient;
+        /// <summary>
+        /// 待看诊队列中选中的患者
+        /// </summary>
+        public PendingMedicalCaseDto? SelectedPendingPatient
+        {
+            get => _selectedPendingPatient;
+            set
+            {
+                if (SetProperty(ref _selectedPendingPatient, value))
+                {
+                    // 待看诊队列选中患者 → 更新CurrentPatient
+                    if (value != null)
+                    {
+                        // TODO: 从PendingMedicalCaseDto转换为PatientDto，或者从Patients列表中查找
+                        // 暂时先记录日志
+                        Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
+                    }
+                }
+            }
+        }
+
+        private PatientDto? _currentPatient;
+        /// <summary>
+        /// 当前选中的患者（核心概念 - 显示在患者信息详情区）
+        /// Epic #1583: "当前选中患者"概念，统一来自两个列表的选择
+        /// </summary>
+        public PatientDto? CurrentPatient
+        {
+            get => _currentPatient;
+            set
+            {
+                if (SetProperty(ref _currentPatient, value))
+                {
+                    StartConsultationCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
 
         #endregion
 
@@ -131,6 +188,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> DoubleClickPatientCommand { get; }
         public DelegateCommand PreviousPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
+
+        // Epic #1583: 新增命令
+        public DelegateCommand BackToHomeCommand { get; }
+        public DelegateCommand StartConsultationCommand { get; }
 
         #endregion
 
@@ -156,6 +217,10 @@ namespace LYBT.Desktop.Patients.ViewModels
             DoubleClickPatientCommand = new DelegateCommand<PatientDto>(ExecuteDoubleClickPatient);
             PreviousPageCommand = new DelegateCommand(async () => await ExecutePreviousPageAsync(), CanExecutePreviousPage);
             NextPageCommand = new DelegateCommand(async () => await ExecuteNextPageAsync(), CanExecuteNextPage);
+
+            // Epic #1583: 初始化新命令
+            BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
+            StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation, CanExecuteStartConsultation);
 
             Logger.LogInformation("PatientSelectionViewModel已初始化");
         }
@@ -381,6 +446,68 @@ namespace LYBT.Desktop.Patients.ViewModels
         private bool CanExecuteNextPage()
         {
             return CurrentPage < TotalPages;
+        }
+
+        /// <summary>
+        /// 返回主页
+        /// Epic #1583
+        /// </summary>
+        private void ExecuteBackToHome()
+        {
+            try
+            {
+                Logger.LogInformation("返回主页");
+
+                // 根据用户角色导航到对应的主页
+                if (SessionManager?.CurrentUser?.Role == UserRole.Admin)
+                {
+                    RegionManager.RequestNavigate("ContentRegion", "AdminHomeView");
+                }
+                else
+                {
+                    RegionManager.RequestNavigate("ContentRegion", "HomeView");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "返回主页失败");
+            }
+        }
+
+        /// <summary>
+        /// 开始诊断（替代原有的SelectPatientCommand）
+        /// Epic #1583: 统一的开始诊断入口，基于CurrentPatient
+        /// </summary>
+        private void ExecuteStartConsultation()
+        {
+            if (CurrentPatient == null)
+            {
+                Logger.LogWarning("当前未选择患者");
+                return;
+            }
+
+            try
+            {
+                Logger.LogInformation("开始诊断，患者：{PatientName}（ID: {PatientId}）",
+                    CurrentPatient.Name, CurrentPatient.Id);
+
+                // TODO Phase 2: 这里需要添加智能路由逻辑
+                // 1. 检查是否有未完成医案
+                // 2. 如果有，弹窗三选一（继续看诊/新建医案/关闭医案）
+                // 3. 如果无，直接发布患者选择事件
+
+                // Phase 1暂时保留原有逻辑：直接发布事件
+                PublishPatientSelectedEvent(CurrentPatient);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "开始诊断失败");
+            }
+        }
+
+        private bool CanExecuteStartConsultation()
+        {
+            return CurrentPatient != null && !IsBusy;
         }
 
         #endregion

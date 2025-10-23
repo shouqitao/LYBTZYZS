@@ -6,246 +6,432 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
-        <!-- 标签样式 -->
-        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#333"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,5,10,5"/>
-        </Style>
+        <!-- Converter：Null判断转Visibility -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
 
         <!-- 按钮样式 -->
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="FontSize" Value="14"/>
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2E86AB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="15,8"/>
         </Style>
 
-        <!-- 分页按钮样式 -->
-        <Style x:Key="PageButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="FontSize" Value="13"/>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#95A5A6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="3,0"/>
-            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="15,8"/>
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- 标题 -->
-                <RowDefinition Height="Auto"/> <!-- 搜索区 -->
-                <RowDefinition Height="*"/>    <!-- DataGrid -->
-                <RowDefinition Height="Auto"/> <!-- 分页 -->
-                <RowDefinition Height="Auto"/> <!-- 提示信息 -->
-            </Grid.RowDefinitions>
+    <Grid Background="#F9F9F9">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>   <!-- 顶部导航栏 -->
+            <RowDefinition Height="*"/>    <!-- 主内容区（三区域布局） -->
+            <RowDefinition Height="80"/>   <!-- 底部操作栏 -->
+        </Grid.RowDefinitions>
 
-            <!-- Row 0: 标题 -->
-            <TextBlock Grid.Row="0"
-                      Text="患者选择（Patient Selection）"
-                      FontSize="18"
-                      FontWeight="Bold"
-                      Foreground="#2E86AB"
-                      Margin="0,0,0,20"/>
+        <!-- 顶部导航栏 -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <TextBlock Text="患者选择" FontSize="20" FontWeight="Bold"
+                          VerticalAlignment="Center" Foreground="#2C3E50"/>
+                <Button Content="返回主页"
+                       Command="{Binding BackToHomeCommand}"
+                       HorizontalAlignment="Right"
+                       Style="{StaticResource SecondaryButtonStyle}"/>
+            </Grid>
+        </Border>
 
-            <!-- Row 1: 搜索区 -->
-            <Border Grid.Row="1"
-                   BorderBrush="#E0E0E0"
-                   BorderThickness="1"
-                   CornerRadius="5"
-                   Background="White"
-                   Padding="15"
-                   Margin="0,0,0,15">
-                <StackPanel>
-                    <TextBlock Text="搜索患者（支持姓名/拼音码/手机号）"
-                              Style="{StaticResource FieldLabelStyle}"
-                              Margin="0,0,0,10"/>
+        <!-- 主内容区：三区域布局（左300px双行 + 右自适应） -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>  <!-- 左侧：患者信息 + 待看诊队列 -->
+                <ColumnDefinition Width="10"/>   <!-- 分隔 -->
+                <ColumnDefinition Width="*"/>    <!-- 右侧：全部患者列表 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：患者信息详情 + 待看诊队列 -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="180"/>  <!-- 患者信息详情 -->
+                    <RowDefinition Height="10"/>   <!-- 分隔 -->
+                    <RowDefinition Height="*"/>    <!-- 待看诊队列（自适应） -->
+                </Grid.RowDefinitions>
+
+                <!-- 患者信息详情模块 -->
+                <Border Grid.Row="0" Background="White" Padding="15" CornerRadius="5"
+                       BorderBrush="#E0E0E0" BorderThickness="1">
                     <Grid>
+                        <!-- 有患者时显示患者信息 -->
+                        <Grid>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentPatient}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 标题 -->
+                            <TextBlock Grid.Row="0" Text="患者信息" FontWeight="Bold" FontSize="14"
+                                      Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+                            <!-- 患者详细信息 -->
+                            <StackPanel Grid.Row="1">
+                                <!-- 姓名 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="姓　　名：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock Text="{Binding CurrentPatient.Name}" FontWeight="Bold" FontSize="12"/>
+                                </StackPanel>
+
+                                <!-- 手机号（脱敏） -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="手　机　号：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock Text="{Binding CurrentPatient.PhoneNumber}" FontSize="12"/>
+                                </StackPanel>
+
+                                <!-- 年龄 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="年　　龄：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock FontSize="12">
+                                        <Run Text="{Binding CurrentPatient.Age, Mode=OneWay}"/>
+                                        <Run Text="岁"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <!-- 地址 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="地　　址：" Width="80" Foreground="#7F8C8D" FontSize="12" VerticalAlignment="Top"/>
+                                    <TextBlock Text="{Binding CurrentPatient.Address}" FontSize="12" TextWrapping="Wrap" MaxWidth="180"/>
+                                </StackPanel>
+
+                                <!-- 过敏史 -->
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="过　敏　史：" Width="80" Foreground="#7F8C8D" FontSize="12" VerticalAlignment="Top"/>
+                                    <TextBlock Text="{Binding CurrentPatient.Allergies, TargetNullValue='无'}"
+                                              FontSize="12" TextWrapping="Wrap" MaxWidth="180" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 未选择患者时的提示 -->
+                        <TextBlock Text="请从列表中选择患者" FontSize="13" Foreground="#95A5A6"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentPatient}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+
+                <!-- 待看诊队列 -->
+                <Border Grid.Row="2" Background="White" Padding="15" CornerRadius="5"
+                       BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 标题 -->
+                        <TextBlock Grid.Row="0" Text="待看诊队列" FontWeight="Bold" FontSize="14"
+                                  Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+                        <!-- 待看诊列表 -->
+                        <DataGrid Grid.Row="1"
+                                 ItemsSource="{Binding PendingQueue}"
+                                 SelectedItem="{Binding SelectedPendingPatient}"
+                                 AutoGenerateColumns="False"
+                                 IsReadOnly="True"
+                                 SelectionMode="Single"
+                                 CanUserAddRows="False"
+                                 CanUserDeleteRows="False"
+                                 CanUserResizeRows="False"
+                                 HeadersVisibility="Column"
+                                 GridLinesVisibility="None"
+                                 BorderThickness="0"
+                                 Background="Transparent">
+
+                            <!-- 双击事件：进入看诊 -->
+                            <DataGrid.InputBindings>
+                                <MouseBinding Gesture="LeftDoubleClick"
+                                            Command="{Binding StartConsultationCommand}"/>
+                            </DataGrid.InputBindings>
+
+                            <DataGrid.Columns>
+                                <!-- 患者姓名 -->
+                                <DataGridTextColumn Header="姓名"
+                                                  Binding="{Binding PatientName}"
+                                                  Width="80"/>
+
+                                <!-- 手机号（脱敏） -->
+                                <DataGridTextColumn Header="电话"
+                                                  Binding="{Binding PhoneMasked}"
+                                                  Width="100"/>
+
+                                <!-- 状态 -->
+                                <DataGridTextColumn Header="状态"
+                                                  Binding="{Binding Type}"
+                                                  Width="*"/>
+                            </DataGrid.Columns>
+
+                            <!-- 行样式：选中高亮 -->
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 右侧：全部患者列表 -->
+            <Border Grid.Column="2" Background="White" Padding="15" CornerRadius="5"
+                   BorderBrush="#E0E0E0" BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- 标题 -->
+                        <RowDefinition Height="Auto"/>  <!-- 搜索框和按钮区 -->
+                        <RowDefinition Height="*"/>     <!-- 患者列表 -->
+                        <RowDefinition Height="Auto"/>  <!-- 分页控件 -->
+                    </Grid.RowDefinitions>
+
+                    <!-- 标题 -->
+                    <TextBlock Grid.Row="0" Text="全部患者" FontWeight="Bold" FontSize="16"
+                              Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <!-- 搜索框和按钮区 -->
+                    <Grid Grid.Row="1" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>    <!-- 搜索框 -->
+                            <ColumnDefinition Width="Auto"/> <!-- 🔍搜索按钮 -->
+                            <ColumnDefinition Width="Auto"/> <!-- 新建患者按钮 -->
+                            <ColumnDefinition Width="Auto"/> <!-- 开始诊断按钮 -->
                         </Grid.ColumnDefinitions>
 
+                        <!-- 搜索框 -->
                         <TextBox Grid.Column="0"
                                 Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
-                                FontSize="14"
-                                Padding="10,8"
-                                VerticalContentAlignment="Center">
+                                Height="35"
+                                Padding="10,0"
+                                VerticalContentAlignment="Center"
+                                BorderBrush="#BDC3C7"
+                                BorderThickness="1">
                             <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                                <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
                             </TextBox.InputBindings>
                         </TextBox>
 
+                        <!-- 🔍搜索按钮 -->
                         <Button Grid.Column="1"
                                Content="🔍 搜索"
                                Command="{Binding SearchCommand}"
-                               Style="{StaticResource ActionButtonStyle}"
-                               Background="#2E86AB"
-                               Foreground="White"
-                               BorderThickness="0"/>
+                               Width="90" Height="35" Margin="10,0,0,0"
+                               Style="{StaticResource PrimaryButtonStyle}"/>
 
+                        <!-- 新建患者按钮 -->
                         <Button Grid.Column="2"
                                Content="+ 新建患者"
                                Command="{Binding NewPatientCommand}"
-                               Style="{StaticResource ActionButtonStyle}"
-                               Background="#4CAF50"
-                               Foreground="White"
-                               BorderThickness="0"/>
+                               Width="100" Height="35" Margin="10,0,0,0"
+                               Style="{StaticResource SecondaryButtonStyle}"/>
+
+                        <!-- 开始诊断按钮 -->
+                        <Button Grid.Column="3"
+                               Content="开始诊断"
+                               Command="{Binding StartConsultationCommand}"
+                               Width="100" Height="35" Margin="10,0,0,0"
+                               Style="{StaticResource PrimaryButtonStyle}">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                                    <Binding Path="CurrentPatient" Converter="{StaticResource NullToBooleanConverter}"/>
+                                    <Binding Path="IsBusy" Converter="{StaticResource InverseBooleanConverter}"/>
+                                </MultiBinding>
+                            </Button.IsEnabled>
+                        </Button>
                     </Grid>
-                </StackPanel>
-            </Border>
 
-            <!-- Row 2: 患者列表DataGrid -->
-            <Border Grid.Row="2"
-                   BorderBrush="#E0E0E0"
-                   BorderThickness="1"
-                   CornerRadius="5"
-                   Background="White"
-                   Margin="0,0,0,15">
-                <DataGrid ItemsSource="{Binding Patients}"
-                         SelectedItem="{Binding SelectedPatient}"
-                         AutoGenerateColumns="False"
-                         CanUserAddRows="False"
-                         CanUserDeleteRows="False"
-                         IsReadOnly="True"
-                         VirtualizingPanel.IsVirtualizing="True"
-                         VirtualizingPanel.VirtualizationMode="Recycling"
-                         SelectionMode="Single"
-                         GridLinesVisibility="Horizontal"
-                         HeadersVisibility="Column"
-                         MinHeight="300"
-                         MaxHeight="650">
-                    <DataGrid.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick"
-                                     Command="{Binding DoubleClickPatientCommand}"
-                                     CommandParameter="{Binding SelectedPatient}"/>
-                    </DataGrid.InputBindings>
+                    <!-- 患者列表 -->
+                    <DataGrid Grid.Row="2"
+                             ItemsSource="{Binding Patients}"
+                             SelectedItem="{Binding SelectedPatient}"
+                             AutoGenerateColumns="False"
+                             IsReadOnly="True"
+                             SelectionMode="Single"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             CanUserResizeRows="False"
+                             HeadersVisibility="Column"
+                             GridLinesVisibility="Horizontal"
+                             BorderBrush="#E0E0E0"
+                             BorderThickness="1">
 
-                    <DataGrid.Columns>
-                        <!-- 姓名 -->
-                        <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="120">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="Foreground" Value="#2E86AB"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <!-- 双击事件：进入看诊 -->
+                        <DataGrid.InputBindings>
+                            <MouseBinding Gesture="LeftDoubleClick"
+                                        Command="{Binding StartConsultationCommand}"/>
+                        </DataGrid.InputBindings>
 
-                        <!-- 性别 -->
-                        <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="60"/>
+                        <DataGrid.Columns>
+                            <!-- 姓名 -->
+                            <DataGridTextColumn Header="姓名"
+                                              Binding="{Binding Name}"
+                                              Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Foreground" Value="#2E86AB"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
-                        <!-- 年龄 -->
-                        <DataGridTextColumn Header="年龄" Width="60">
-                            <DataGridTextColumn.Binding>
-                                <Binding Path="Age" StringFormat="{}{0}岁"/>
-                            </DataGridTextColumn.Binding>
-                        </DataGridTextColumn>
+                            <!-- 性别 -->
+                            <DataGridTextColumn Header="性别"
+                                              Binding="{Binding Gender}"
+                                              Width="60"/>
 
-                        <!-- 手机号 -->
-                        <DataGridTextColumn Header="手机号" Binding="{Binding PhoneNumber}" Width="140"/>
+                            <!-- 年龄 -->
+                            <DataGridTextColumn Header="年龄"
+                                              Width="60">
+                                <DataGridTextColumn.Binding>
+                                    <Binding Path="Age" StringFormat="{}{0}岁"/>
+                                </DataGridTextColumn.Binding>
+                            </DataGridTextColumn>
 
-                        <!-- 最近就诊 -->
-                        <DataGridTextColumn Header="最近就诊" Width="140">
-                            <DataGridTextColumn.Binding>
-                                <Binding Path="LastVisitTime" StringFormat="{}{0:yyyy-MM-dd}"/>
-                            </DataGridTextColumn.Binding>
-                        </DataGridTextColumn>
+                            <!-- 电话 -->
+                            <DataGridTextColumn Header="电话"
+                                              Binding="{Binding PhoneNumber}"
+                                              Width="120"/>
 
-                        <!-- 拼音码 -->
-                        <DataGridTextColumn Header="拼音码" Binding="{Binding PinYinCode}" Width="100"/>
+                            <!-- 拼音码 -->
+                            <DataGridTextColumn Header="拼音码"
+                                              Binding="{Binding PinYinCode}"
+                                              Width="100"/>
 
-                        <!-- 操作按钮 -->
-                        <DataGridTemplateColumn Header="操作" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="选择"
-                                           Command="{Binding DataContext.SelectPatientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                           Padding="10,5"
-                                           FontSize="13"
-                                           Background="#2E86AB"
-                                           Foreground="White"
-                                           BorderThickness="0"
-                                           Cursor="Hand"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Border>
+                            <!-- 创建时间 -->
+                            <DataGridTextColumn Header="创建时间"
+                                              Binding="{Binding CreatedAt, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                              Width="*"/>
+                        </DataGrid.Columns>
 
-            <!-- Row 3: 分页控件 -->
-            <Border Grid.Row="3"
-                   BorderBrush="#E0E0E0"
-                   BorderThickness="1"
-                   CornerRadius="5"
-                   Background="#F5F5F5"
-                   Padding="15,10"
-                   Margin="0,0,0,15">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                        <!-- 行样式 -->
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Height" Value="40"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                    </DataGrid>
 
-                    <!-- 左侧：统计信息 -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <TextBlock Text="共" Foreground="#666" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding TotalCount}" FontWeight="Bold" Foreground="#2E86AB" Margin="5,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="条记录" Foreground="#666" VerticalAlignment="Center"/>
-                        <TextBlock Text="，每页" Foreground="#666" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="50" FontWeight="Bold" Foreground="#2E86AB" Margin="5,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="条" Foreground="#666" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <!-- 分页控件 -->
+                    <Grid Grid.Row="3" Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <!-- 右侧：分页按钮 -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button Content="◀ 上一页"
-                               Command="{Binding PreviousPageCommand}"
-                               Style="{StaticResource PageButtonStyle}"/>
+                        <!-- 分页信息 -->
+                        <TextBlock Grid.Column="0"
+                                  VerticalAlignment="Center"
+                                  Foreground="#7F8C8D" FontSize="12">
+                            <Run Text="共 "/>
+                            <Run Text="{Binding TotalCount}" FontWeight="Bold"/>
+                            <Run Text=" 条记录，每页 "/>
+                            <Run Text="20" FontWeight="Bold"/>
+                            <Run Text=" 条"/>
+                        </TextBlock>
 
-                        <StackPanel Orientation="Horizontal" Margin="10,0">
-                            <TextBlock Text="第" Foreground="#666" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding CurrentPage}" FontWeight="Bold" Foreground="#2E86AB" Margin="5,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="/" Foreground="#666" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TotalPages}" FontWeight="Bold" Foreground="#2E86AB" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="页" Foreground="#666" VerticalAlignment="Center"/>
+                        <!-- 分页按钮 -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="上一页"
+                                   Command="{Binding PreviousPageCommand}"
+                                   Width="80" Height="30" Margin="0,0,10,0"
+                                   Style="{StaticResource SecondaryButtonStyle}"/>
+
+                            <TextBlock Text="{Binding CurrentPage}"
+                                      VerticalAlignment="Center"
+                                      FontWeight="Bold" FontSize="14"
+                                      Margin="10,0"/>
+
+                            <TextBlock Text="/"
+                                      VerticalAlignment="Center"
+                                      Foreground="#BDC3C7"
+                                      Margin="5,0"/>
+
+                            <TextBlock Text="{Binding TotalPages}"
+                                      VerticalAlignment="Center"
+                                      Foreground="#7F8C8D"
+                                      Margin="5,0,10,0"/>
+
+                            <Button Content="下一页"
+                                   Command="{Binding NextPageCommand}"
+                                   Width="80" Height="30"
+                                   Style="{StaticResource SecondaryButtonStyle}"/>
                         </StackPanel>
-
-                        <Button Content="下一页 ▶"
-                               Command="{Binding NextPageCommand}"
-                               Style="{StaticResource PageButtonStyle}"/>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
-
-            <!-- Row 4: 提示信息 -->
-            <Border Grid.Row="4"
-                   Background="#E3F2FD"
-                   BorderBrush="#2196F3"
-                   BorderThickness="1"
-                   CornerRadius="3"
-                   Padding="15">
-                <StackPanel>
-                    <TextBlock Text="💡 提示：" FontWeight="Bold" FontSize="13" Foreground="#1976D2"/>
-                    <TextBlock Text="• 双击患者行或点击【选择】按钮进入看诊流程"
-                              FontSize="12"
-                              Foreground="#666"
-                              Margin="0,5,0,0"/>
-                    <TextBlock Text="• 选择后将自动创建医案（MedicalCase），进入诊断录入（Step 2）"
-                              FontSize="12"
-                              Foreground="#666"
-                              Margin="0,3,0,0"/>
-                    <TextBlock Text="• 支持按拼音码搜索（例如输入'LS'查找'李四'）"
-                              FontSize="12"
-                              Foreground="#666"
-                              Margin="0,3,0,0"/>
-                </StackPanel>
-            </Border>
         </Grid>
-    </ScrollViewer>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="2" Background="White" Padding="20"
+               BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="返回主页"
+                       Command="{Binding BackToHomeCommand}"
+                       Width="120" Height="40" Margin="0,0,15,0"
+                       Style="{StaticResource SecondaryButtonStyle}"/>
+
+                <Button Content="开始诊断"
+                       Command="{Binding StartConsultationCommand}"
+                       Width="120" Height="40"
+                       Style="{StaticResource PrimaryButtonStyle}">
+                    <Button.IsEnabled>
+                        <MultiBinding Converter="{StaticResource AllTrueConverter}">
+                            <Binding Path="CurrentPatient" Converter="{StaticResource NullToBooleanConverter}"/>
+                            <Binding Path="IsBusy" Converter="{StaticResource InverseBooleanConverter}"/>
+                        </MultiBinding>
+                    </Button.IsEnabled>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>
