@@ -237,7 +237,6 @@
                             <ColumnDefinition Width="*"/>    <!-- 搜索框 -->
                             <ColumnDefinition Width="Auto"/> <!-- 🔍搜索按钮 -->
                             <ColumnDefinition Width="Auto"/> <!-- 新建患者按钮 -->
-                            <ColumnDefinition Width="Auto"/> <!-- 开始诊断按钮 -->
                         </Grid.ColumnDefinitions>
 
                         <!-- 搜索框 -->
@@ -266,13 +265,6 @@
                                Command="{Binding NewPatientCommand}"
                                Width="100" Height="35" Margin="10,0,0,0"
                                Style="{StaticResource SecondaryButtonStyle}"/>
-
-                        <!-- 开始诊断按钮 - Epic #1583: IsEnabled由ViewModel的CanExecuteStartConsultation自动管理 -->
-                        <Button Grid.Column="3"
-                               Content="开始诊断"
-                               Command="{Binding StartConsultationCommand}"
-                               Width="100" Height="35" Margin="10,0,0,0"
-                               Style="{StaticResource PrimaryButtonStyle}"/>
                     </Grid>
 
                     <!-- 患者列表 -->
@@ -408,11 +400,6 @@
         <Border Grid.Row="2" Background="White" Padding="20"
                BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="返回主页"
-                       Command="{Binding BackToHomeCommand}"
-                       Width="120" Height="40" Margin="0,0,15,0"
-                       Style="{StaticResource SecondaryButtonStyle}"/>
-
                 <!-- Epic #1583: IsEnabled由ViewModel的CanExecuteStartConsultation自动管理 -->
                 <Button Content="开始诊断"
                        Command="{Binding StartConsultationCommand}"
