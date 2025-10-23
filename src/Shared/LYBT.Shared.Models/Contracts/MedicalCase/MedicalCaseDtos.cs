@@ -102,6 +102,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
     /// <summary>
     /// 医疗案例详情DTO - 继承基础DTO，添加详细信息
+    /// Epic #1583 Phase 3: 添加Consultation和Prescription关联数据
     /// </summary>
     public class MedicalCaseDetailDto : MedicalCaseDto
     {
@@ -117,6 +118,18 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         [DisplayName("治疗方案")]
         public string? TreatmentPlan { get; set; }
+
+        /// <summary>
+        /// 诊疗记录（Epic #1583 Phase 3: 继续看诊时加载）
+        /// </summary>
+        [DisplayName("诊疗记录")]
+        public ConsultationDto? Consultation { get; set; }
+
+        /// <summary>
+        /// 处方信息（Epic #1583 Phase 3: 继续看诊时加载）
+        /// </summary>
+        [DisplayName("处方信息")]
+        public PrescriptionDto? Prescription { get; set; }
     }
 
     /// <summary>
@@ -770,5 +783,39 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(500, ErrorMessage = "归档原因长度不能超过500个字符")]
         [DisplayName("归档原因")]
         public string? ArchiveReason { get; set; }
+    }
+
+    // ========== Epic #1583: 待看诊队列DTO ==========
+
+    /// <summary>
+    /// 待看诊队列项DTO
+    /// Epic #1583 - Phase 5: Server端API
+    /// 用于患者选择界面的待看诊队列显示
+    /// </summary>
+    public class PendingMedicalCaseDto
+    {
+        /// <summary>患者ID</summary>
+        [DisplayName("患者ID")]
+        public Guid PatientId { get; set; }
+
+        /// <summary>患者姓名</summary>
+        [DisplayName("患者姓名")]
+        public string PatientName { get; set; } = string.Empty;
+
+        /// <summary>手机号（原始）</summary>
+        [DisplayName("手机号")]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        /// <summary>手机号（脱敏）</summary>
+        [DisplayName("手机号脱敏")]
+        public string PhoneMasked { get; set; } = string.Empty;
+
+        /// <summary>类型（"暂存" 或 "已挂号"）</summary>
+        [DisplayName("类型")]
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>医案ID（如果有未完成医案，则有值；挂号患者为null）</summary>
+        [DisplayName("医案ID")]
+        public Guid? MedicalCaseId { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Interfaces
@@ -28,5 +29,11 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// 根据医生ID获取病案列表
         /// </summary>
         Task<List<MedicalCaseEntity>> GetByDoctorIdAsync(Guid doctorId);
+
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync();
     }
 }

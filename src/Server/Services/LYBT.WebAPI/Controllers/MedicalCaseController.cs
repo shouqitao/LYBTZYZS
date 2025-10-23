@@ -59,6 +59,25 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        [HttpGet("pending")]
+        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases()
+        {
+            try
+            {
+                var result = await _medicalCaseService.GetPendingCasesAsync();
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待看诊列表", null);
+            }
+        }
+
+        /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>
         [HttpGet("{id}")]
@@ -79,6 +98,31 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<MedicalCaseDto>(ex, "获取医疗案例详情", id);
+            }
+        }
+
+        /// <summary>
+        /// 根据患者ID获取医疗案例列表
+        /// Issue #1584 - Bug修复
+        /// </summary>
+        [HttpGet("by-patient/{patientId}")]
+        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "patientId" })]
+        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetByPatientId(Guid patientId)
+        {
+            try
+            {
+                var validation = ValidateGuid<List<MedicalCaseDto>>(patientId, "患者ID");
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                var result = await _medicalCaseService.GetByPatientIdAsync(patientId);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<MedicalCaseDto>>(ex, "根据患者ID获取医疗案例列表", patientId);
             }
         }
 

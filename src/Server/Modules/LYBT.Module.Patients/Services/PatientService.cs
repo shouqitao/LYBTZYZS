@@ -34,7 +34,18 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
+                var pagedResult = await _repository.GetPagedAsync(
+                    string.IsNullOrWhiteSpace(keyword) ? null : 
+                        p => p.Name.Contains(keyword) || 
+                             (p.PinYinCode != null && p.PinYinCode.Contains(keyword)) || 
+                             (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)),
+                    page,
+                    pageSize,
+                    p => p.CreatedAt,
+                    ascending: false
+                );
+
                 var dto = new PagedResult<PatientDto>
                 {
                     Items = _mapper.Map<List<PatientDto>>(pagedResult.Items),
@@ -46,7 +57,7 @@ namespace LYBT.Module.Patients.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者列表失败");
+                _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
                 return ServiceResult<PagedResult<PatientDto>>.Failure("获取患者列表失败");
             }
         }

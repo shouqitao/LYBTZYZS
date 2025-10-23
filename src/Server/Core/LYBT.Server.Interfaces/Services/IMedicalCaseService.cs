@@ -47,6 +47,12 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<List<MedicalCaseDto>>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        Task<ServiceResult<List<PendingMedicalCaseDto>>> GetPendingCasesAsync();
+
+        /// <summary>
         /// 创建完整的医疗案例（包含诊疗记录和可选的处方）
         /// 作为聚合根统一管理整个诊疗流程
         /// </summary>

@@ -426,8 +426,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("医案暂存成功");
                 await ShowSuccessMessageAsync("医案已暂存");
 
-                // 3. 返回患者选择界面
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                // Epic #1583 Phase 4: 移除自动导航，暂存后停留在当前界面（修复Issue #1569）
+                // 用户可以通过"返回主页"按钮手动返回
             }
             catch (Exception ex)
             {
@@ -643,7 +643,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region INavigationAware
 
-        public override void OnNavigatedTo(NavigationContext navigationContext)
+        public override async void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
 
@@ -666,6 +666,53 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // 修复 Issue #1564 Bug：构造函数只设置 CurrentStep，但没有触发 Region 导航
                 Logger.LogInformation("执行默认导航到当前步骤：{CurrentStep}", CurrentStep);
                 NavigateToStep(CurrentStep);
+            }
+
+            // Epic #1583 Phase 3: 继续看诊时加载Consultation和Prescription数据
+            if (MedicalCaseId != Guid.Empty)
+            {
+                try
+                {
+                    SetIsBusy(true, "正在加载医案数据...");
+
+                    Logger.LogInformation("检测到继续看诊场景，加载医案详情：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+
+                    // 调用GetByIdWithDetailsAsync加载完整医案数据
+                    var medicalCaseDetail = await _medicalCaseRepository.GetByIdWithDetailsAsync(MedicalCaseId);
+
+                    if (medicalCaseDetail.Consultation != null)
+                    {
+                        Logger.LogInformation("加载到诊疗记录，ConsultationId={ConsultationId}", medicalCaseDetail.Consultation.Id);
+                    }
+                    else
+                    {
+                        Logger.LogInformation("无诊疗记录数据");
+                    }
+
+                    if (medicalCaseDetail.Prescription != null)
+                    {
+                        Logger.LogInformation("加载到处方信息，PrescriptionId={PrescriptionId}", medicalCaseDetail.Prescription.Id);
+                    }
+                    else
+                    {
+                        Logger.LogInformation("无处方数据");
+                    }
+
+                    // 将加载的数据保存到导航参数，供子步骤ViewModel使用
+                    navigationContext.Parameters.Add("LoadedConsultation", medicalCaseDetail.Consultation);
+                    navigationContext.Parameters.Add("LoadedPrescription", medicalCaseDetail.Prescription);
+
+                    Logger.LogInformation("医案数据加载完成");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "加载医案数据失败：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                    await ShowErrorMessageAsync($"加载医案数据失败：{ex.Message}");
+                }
+                finally
+                {
+                    SetIsBusy(false);
+                }
             }
 
             // 默认导航到Step 1（辨证）

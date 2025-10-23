@@ -51,4 +51,24 @@ namespace LYBT.Shared.Models.Enums
         [Obsolete("Use Closed instead. Archived status merged into Closed in Record-Only mode.", false)]
         Archived = 5
     }
+
+    /// <summary>
+    /// 待看诊类型（预留，用于未来挂号集成）
+    /// Epic #1583 - Phase 5
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum PendingType
+    {
+        /// <summary>
+        /// 未完成医案
+        /// </summary>
+        [Description("未完成医案")]
+        Incomplete = 1,
+
+        /// <summary>
+        /// 已挂号（预留）
+        /// </summary>
+        [Description("已挂号")]
+        Appointment = 2
+    }
 }

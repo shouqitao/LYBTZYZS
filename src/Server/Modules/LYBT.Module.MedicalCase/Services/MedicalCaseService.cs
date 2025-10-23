@@ -89,7 +89,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                 // 使用业务规则类验证
                 var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
-                _logger.LogInformation("✅ 业务规则验证通过，现有病案数：{Count}", existingCases.Count());
+                _logger.LogInformation("✅ 业务规则验证通过，现有病案数：{Count}", existingCases.Count);
 
                 var validation = MedicalCaseRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
 
@@ -138,14 +138,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogInformation("📊 返回的Dto详情 - Id: {Id}, CaseNumber: {CaseNumber}",
                         resultDto.Id, resultDto.CaseNumber);
+                    return ServiceResult<MedicalCaseDto>.Success(resultDto);
                 }
                 else
                 {
                     _logger.LogError("❌ Mapper.Map返回null！Entity为null: {EntityNull}, Mapper为null: {MapperNull}",
                         result == null, _mapper == null);
+                    return ServiceResult<MedicalCaseDto>.Failure("创建医疗案例失败：数据映射错误");
                 }
-
-                return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
@@ -466,6 +466,26 @@ namespace LYBT.Module.MedicalCase.Services
             {
                 _logger.LogError(ex, "更新病案处方信息失败，病案ID: {MedicalCaseId}", medicalCaseId);
                 return ServiceResult<PrescriptionDto>.Failure("更新处方信息失败");
+            }
+        }
+
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        public async Task<ServiceResult<List<PendingMedicalCaseDto>>> GetPendingCasesAsync()
+        {
+            try
+            {
+                _logger.LogInformation("开始获取待看诊列表");
+                var result = await _repository.GetPendingCasesAsync();
+                _logger.LogInformation("待看诊列表获取成功，共 {Count} 条记录", result.Count);
+                return ServiceResult<List<PendingMedicalCaseDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取待看诊列表失败");
+                return ServiceResult<List<PendingMedicalCaseDto>>.Failure("获取待看诊列表失败");
             }
         }
     }

@@ -86,29 +86,85 @@
 
 ---
 
-## 1.6 需求讨论与文档化规范
+## 1.6 需求讨论与文档化规范（三阶段流程）
 
-**核心原则**：所有需求讨论必须形成Markdown文档（避免上下文丢失）
+**核心原则**：需求讨论 → 需求文档 → 设计文档 → Issue → 实施
+
+### 阶段1：需求讨论（Discussion）
+
+**目标**：理解业务需求和痛点，确定核心目标
 
 **流程**：
-1. **讨论前**：创建文档 `docs/architecture/shared/{feature-name}-discussion.md`
-2. **讨论中**：逐个问题标记（✅已确认/❌问题/🔄改进/❓待讨论）
-3. **讨论后**：文档作为唯一事实来源（Single Source of Truth）
+1. **创建讨论文档**：`docs/architecture/{client|server|shared}/{feature-name}-discussion.md`
+2. **讨论内容**：
+   - ❓ 问题（Q1, Q2, Q3...）：逐个提问，一问一答
+   - ✅ 答案：用户回答后标记确认
+   - 💡 简要说明：核心思路、方案对比、关键决策点
+3. **讨论原则**（快速交流）：
+   - ✅ 每次只提一个问题，等待用户回答
+   - ✅ 用方案对比表、简洁图示快速呈现选项
+   - ✅ 只讨论"做什么"和"为什么"，不讨论"怎么实现"
+   - ❌ 禁止批量提问
+   - ❌ **严禁编写代码**：不要写任何代码示例、XAML、C#、SQL等
+   - ❌ **严禁详细技术说明**：不要写具体的类名、方法签名、参数列表
+   - ❌ **严禁冗长分析**：避免长篇大论，保持讨论高效
 
-**讨论原则**（一问一答）：
-- ✅ 每次只提一个问题（Q1/Q2/Q3），等待用户回答后更新文档
-- ❌ 禁止批量提问（同时问Q3/Q4/Q5）
+**输出**：确认的业务需求和关键决策点
+
+### 阶段2：需求文档（Requirements）
+
+**目标**：形成正式的功能需求规格说明
+
+**流程**：
+1. **创建需求文档**：`docs/requirements/{feature-name}-requirements.md`
+2. **文档内容**：
+   - 📋 功能概述（业务价值、用户故事）
+   - 🎯 业务目标（解决什么问题）
+   - ✅ 验收标准（功能完成的判定条件）
+   - 🔗 关联Issues（整合的现有Issues）
+   - 📊 优先级和时间估算
+3. **避免内容**：技术实现、代码细节、具体API设计
+
+**输出**：需求文档作为唯一事实来源（Single Source of Truth）
+
+### 阶段3：设计文档（Design）
+
+**目标**：提供完整的技术设计和实施指导
+
+**流程**：
+1. **创建设计文档**：`docs/design/{feature-name}-design.md`
+2. **文档内容**：
+   - 🏗️ 架构设计（组件关系、数据流）
+   - 🔧 技术方案（API端点、DTO设计、数据库Schema）
+   - 📝 代码示例（关键逻辑的伪代码或真实代码）
+   - 📊 Phase拆分（实施步骤和时间估算）
+   - ✅ 质量标准（编译、测试、性能要求）
+3. **设计深度**：
+   - ✅ 具体到可以直接指导编码
+   - ✅ 包含XAML布局、ViewModel属性、API接口等细节
+   - ✅ 明确所有技术决策和约束
+
+**输出**：设计文档作为编码的蓝图
+
+### 阶段4：Issue创建与实施
+
+**流程**：
+1. **用户审查设计文档**：确认技术方案可行
+2. **通过后创建Epic Issue**：引用设计文档
+3. **按设计文档实施**：严格遵循设计，避免临时改动
+4. **验证通过后合并**：运行时验证 + 编译通过
 
 **文档存放**：
-- 架构设计 → `docs/architecture/shared/`
-- UI/UX设计 → `docs/architecture/client/`
-- API设计 → `docs/architecture/server/`
+- 讨论文档 → `docs/architecture/{client|server|shared}/`
+- 需求文档 → `docs/requirements/`
+- 设计文档 → `docs/design/`
 
 ---
 
-## 2. Issue 驱动工作流
+## 2. Issue 驱动工作流（单人开发优化版）
 
-> **📖 完整工作流定义**：参见 `.claude/core/WORKFLOW.md`
+> **📖 简化工作流**：参见 `.claude/core/WORKFLOW-SIMPLIFIED.md`
+> **📖 传统工作流**：参见 `.claude/core/WORKFLOW.md`（团队协作场景）
 
 ### ⚠️ 强制性要求：所有任务必须GitHub Issue跟踪
 
@@ -128,17 +184,234 @@
 [要达成什么目标]
 
 ## ✅ 验收标准
-- [ ] 标准1
-- [ ] 标准2
+- [ ] 编译通过（0 errors, 0 warnings）
+- [ ] 运行时验证通过
+- [ ] 功能完整可用（从用户视角）
 
 ## 📚 参考资料
 [相关文档、验证报告、代码位置]
 ```
 
-**工作流程**：
-1. **创建Issue** → 2. **创建分支** → 3. **实现变更** → 4. **创建PR** → 5. **审查合并** → 6. **关闭Issue**
+### 🔄 单人开发简化工作流
 
-### 2.1 任务启动前置检查
+> **核心思想**：小Issue直接Master，Epic创建PR并及时合并
+
+#### 🟢 小Issue → 直接提交Master（90%场景）
+
+**判断标准**：
+- ✅ 单一Bug修复（<5个文件）
+- ✅ 代码量 <200行
+- ✅ 单模块改动
+- ✅ 开发时间 <2小时
+- ✅ 不需要架构调整
+
+**工作流程**：
+```bash
+# 1. 创建Issue
+gh issue create --title "修复XXX问题" --body "..."
+
+# 2. 在master上修改代码
+git checkout master
+git pull origin master
+
+# 3. 编译 + 运行时验证（⚠️ 必须）
+dotnet build LYBT.All.sln -c Release --no-restore
+# 启动应用，测试修复功能，确认问题真正解决
+
+# 4. 提交并关联Issue（自动关闭）
+git add .
+git commit -m "fix(module): 修复XXX问题
+
+Fixes #1234
+
+- 具体改动1
+- 具体改动2
+- 验证：功能已正常工作
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 5. 推送到master（Issue自动关闭）
+git push origin master
+```
+
+**关键点**：
+- ✅ `Fixes #1234` 会自动关闭Issue
+- ✅ 必须运行时验证，不能只编译通过
+- ✅ 无需创建分支和PR
+
+#### 🔴 Epic → 创建PR并及时合并（10%场景）
+
+**判断标准**：
+- ✅ 跨模块重构（Client+Server）
+- ✅ 架构调整（循环依赖、三层对齐）
+- ✅ 代码量 >200行
+- ✅ 开发时间 >2小时
+- ✅ 需要详细记录变更历史
+
+**工作流程**：
+```bash
+# 1. 创建Epic分支
+git checkout -b epic/issue-1234-description
+
+# 2. 多次提交（每个子任务一次）
+git commit -m "feat: 完成子功能A"
+git commit -m "feat: 完成子功能B"
+
+# 3. 运行时验证（⚠️ 必须）
+dotnet build LYBT.All.sln -c Release --no-restore
+# 启动应用，完整测试Epic功能
+
+# 4. 创建PR
+gh pr create --title "Epic #1234: XXX功能实现" --body "..."
+
+# 5. ⚠️ 关键：1-3天内必须合并
+gh pr merge --squash --delete-branch
+
+# 6. 关闭Issue
+gh issue close 1234
+```
+
+**关键约束**：
+- ⚠️ PR必须在**1-3天内合并或关闭**，避免积压
+- ⚠️ 创建PR前必须完成运行时验证
+- ⚠️ 不允许PR长期挂起
+
+### 2.3 渐进式Bug修复策略（避免反复开发）
+
+> **问题场景**：修复"暂存病案"功能，发现病案可以暂存，但诊断记录未保存
+
+#### 📋 推荐方案：扩展原Issue + 分阶段commit
+
+**Step 1: 发现深层问题 → 更新Issue**
+```markdown
+## Issue #1234：暂存病案功能修复（扩展）
+
+### 问题描述（更新）
+~~暂存病案无法实现~~ → 已部分修复
+新发现：病案可以暂存，但关联数据缺失
+
+### 修复范围（扩展）
+- [x] Phase 1: 病案状态暂存
+- [ ] Phase 2: 诊断记录同步保存
+- [ ] Phase 3: 处方数据同步保存
+
+### 验收标准（从用户视角）
+- [ ] 病案状态正确保存
+- [ ] 诊断记录完整保存
+- [ ] 处方数据完整保存
+- [ ] 继续看诊时数据正确加载
+```
+
+**Step 2: 在master上分阶段commit**
+```bash
+# Phase 1修复
+git commit -m "fix(medicalcase): 暂存病案 - Phase 1: 病案状态保存
+
+Issue #1234 (Part 1/3)
+- 验证：病案可以暂存"
+git push origin master
+
+# Phase 2修复
+git commit -m "fix(medicalcase): 暂存病案 - Phase 2: 诊断记录保存
+
+Issue #1234 (Part 2/3)
+- 验证：诊断记录正确保存"
+git push origin master
+
+# Phase 3修复（关闭Issue）
+git commit -m "fix(medicalcase): 暂存病案 - Phase 3: 处方数据保存
+
+Issue #1234 (Part 3/3)
+Fixes #1234
+- 验证：完整功能可用"
+git push origin master
+```
+
+**✅ 优势**：
+1. 避免分支divergence（所有修复顺序进行）
+2. Issue完整性（一个功能Bug对应一个Issue）
+3. 渐进式验证（每个Phase独立commit）
+4. 清晰的修复演进过程
+
+**❌ 不推荐**：拆分成多个Issue（会导致PR积压和覆盖问题）
+
+---
+
+### 2.4 架构问题升级策略
+
+> **判断标准**：发现小问题演变成架构问题时的处理流程
+
+#### 场景A：仍是小修复（继续在原Issue）
+```
+发现：诊断记录字段映射缺失
+影响：1个文件，AutoMapper配置
+方案：补充字段映射
+```
+→ ✅ **继续在原Issue的下一个Phase修复**
+
+#### 场景B：发现架构问题（升级为Epic）
+```
+发现：Consultation/Prescription生命周期管理混乱
+影响：需要重构聚合根边界
+方案：重构MedicalCase聚合根
+```
+→ ⚠️ **升级处理流程**：
+
+**Step 1: 在原Issue中标记**
+```markdown
+## Issue #1234：暂存病案功能修复
+
+### 架构问题发现
+Phase 3发现聚合根边界混乱，需要重构。
+已创建Epic #1240处理。
+
+**临时方案**：Workaround保证功能可用
+**长期方案**：等待Epic #1240重构完成
+
+### 验收标准（调整）
+- [x] 处方数据保存（临时方案）← 标记为临时
+```
+
+**Step 2: 创建Epic Issue**
+```markdown
+## Epic #1240：重构MedicalCase聚合根边界
+
+### 问题来源
+从Issue #1234发现的架构问题
+
+### 实施计划
+- [ ] 设计聚合根边界方案
+- [ ] 更新Repository实现
+- [ ] 移除Issue #1234的Workaround
+
+### 影响范围
+估计工作量：3-5天
+```
+
+**Step 3: 完成原Issue（用临时方案）**
+```bash
+git commit -m "fix(medicalcase): 暂存功能 - Phase 3临时方案
+
+Fixes #1234
+Related to Epic #1240
+
+⚠️ 技术债：需要重构聚合根（Epic #1240）"
+```
+
+**Step 4: Epic分支处理重构**
+```bash
+git checkout -b epic/issue-1240-aggregate-refactor
+# 多次commit完成重构
+gh pr create --title "Epic #1240: 重构聚合根"
+# ⚠️ 1-3天内必须合并
+gh pr merge --squash --delete-branch
+```
+
+---
+
+### 2.5 任务启动前置检查
 
 #### 验证优先策略（v6.0新增）⭐⭐⭐
 0. **问题验证优先于修复实施** - 避免无效工作的核心原则：
@@ -165,12 +438,43 @@
    - **推荐配置**：使用 `--settings tests/.runsettings` 启用VS2022兼容配置
    - **注意**：统一编译和测试使用 LYBT.All.sln 方案
 
-### 2.2 完成后的文档系统更新
+### 2.6 完成标准与文档更新
 
-**🔄 代码与文档并行开发要求**：
-- **强制性同步**：代码变更后必须立即更新相关文档，不允许延迟
-- **影响评估**：实施前评估文档影响范围，列出需要更新的文档清单
-- **及时更新**：开发过程中文档同步进行，不积压到项目结束
+#### ✅ 任务完成的三层验证标准
+
+**Level 1 - 编译验证（必需）**：
+- ✅ 0 errors, 0 warnings
+- ✅ 所有引用正确
+- ✅ 类型检查通过
+
+**Level 2 - 静态分析（推荐）**：
+- ✅ 代码逻辑正确
+- ✅ 符合架构规范
+- ✅ 没有明显Bug
+
+**Level 3 - 运行时验证（⚠️ 强制）**：
+- ✅ 启动应用（Client + Server）
+- ✅ 执行具体操作场景
+- ✅ 验证数据库状态
+- ✅ 确认问题真正解决
+- ✅ **从用户视角验证功能完整可用**
+
+**❌ 禁止行为**：
+- ❌ 只编译通过就认为完成
+- ❌ 只写代码不测试运行
+- ❌ 部分功能可用就关闭Issue
+
+**✅ 正确的完成标准**：
+```
+验证通过 + push到master + Issue自动关闭 = 任务完成
+```
+
+#### 🔄 代码与文档并行开发要求
+
+**强制性同步**：
+- **实施前评估**：列出需要更新的文档清单
+- **开发中同步**：代码变更后立即更新文档，不允许延迟
+- **完成前检查**：确认所有相关文档已更新
 
 **📋 具体更新要求**：
 - **架构文档**：更新 `docs/architecture/server/` 或 `docs/architecture/client/` 对应模块文档
@@ -226,9 +530,20 @@
 
 ## 4. 编码与交付要求
 
+### 4.1 核心质量标准
+
 - **Issue 驱动开发**：无 Issue 禁止改动
 - **编译质量标准**：所有代码提交前必须通过编译认证，要求 **0 errors, 0 warnings**
+- **运行时验证标准**（⭐⭐⭐ 强制）：
+  - ✅ 启动应用，执行真实操作场景
+  - ✅ 验证数据库状态（必要时检查数据）
+  - ✅ 从用户视角确认功能完整可用
+  - ❌ 禁止只编译通过就提交
+  - ❌ 禁止"看起来没问题"就关闭Issue
 - **警告主动修复策略**：≤20个直接修复；>20个创建Issue跟踪
+
+### 4.2 代码规范
+
 - **语言统一**：代码注释、终端输出、提交信息均使用中文
 - **Emoji使用规范**：
   - ❌ 代码中禁用Emoji（.cs/.json/.xml文件）
@@ -242,9 +557,38 @@
 - **依赖注入**：仅用构造函数注入；禁止 `Container.Resolve`、`ServiceLocator`
 - **异步约定**：涉及 I/O 必须 async/await，避免阻塞
 - **文件体量**：单文件建议 ≤500 行，复杂逻辑拆分模块
+
+### 4.3 测试与文档
+
 - **测试**：新增/修改核心逻辑需补充单元或集成测试
 - **文档同步**：改动涉及架构/接口/流程时更新对应 README/索引
 - **脚本归档**：新增或调整自动化脚本时，必须放置在 `scripts/` 目录
+
+### 4.4 提交规范
+
+**Commit Message 格式**：
+```bash
+<type>(<scope>): <subject>
+
+Fixes #1234  # 自动关闭Issue（小Issue）
+Related to Epic #1234  # 关联Epic但不关闭
+
+- 具体改动1
+- 具体改动2
+- 验证：功能已正常工作  # ⚠️ 必须包含验证说明
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+**Type 类型**：
+- `feat`: 新功能
+- `fix`: Bug修复
+- `refactor`: 重构（不改变功能）
+- `docs`: 文档更新
+- `test`: 测试相关
+- `chore`: 构建/工具配置
 
 ---
 

@@ -31,6 +31,13 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<List<MedicalCaseDto>>> GetMedicalCasesByPatientIdAsync(Guid patientId);
 
         /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/pending")]
+        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync();
+
+        /// <summary>
         /// 获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}/with-details")]
