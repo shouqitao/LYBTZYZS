@@ -645,35 +645,27 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             try
             {
-                var message = $"患者【{patientName}】有未完成的医案，请选择操作：";
-                var title = "检测到未完成医案";
-
-                // Phase 2临时方案：使用System.Windows.MessageBox
-                // Phase 5：替换为自定义对话框
-                var result = System.Windows.MessageBox.Show(
-                    $"{message}\n\n" +
-                    $"1. 继续看诊（恢复之前的医案）\n" +
-                    $"2. 新建医案（关闭旧医案后创建新的）\n" +
-                    $"3. 仅关闭旧医案（不创建新医案）\n\n" +
-                    $"请点击对应按钮：\n" +
-                    $"【是】= 继续看诊\n" +
-                    $"【否】= 新建医案\n" +
-                    $"【取消】= 仅关闭旧医案",
-                    title,
-                    System.Windows.MessageBoxButton.YesNoCancel,
-                    System.Windows.MessageBoxImage.Question);
-
-                // 映射MessageBox结果到我们的选项
-                int choice = result switch
+                // 使用自定义对话框（支持4个选项）
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    System.Windows.MessageBoxResult.Yes => 1,      // 继续看诊
-                    System.Windows.MessageBoxResult.No => 2,       // 新建医案
-                    System.Windows.MessageBoxResult.Cancel => 3,   // 仅关闭旧医案
-                    _ => 0  // 其他情况（关闭窗口）视为取消
-                };
+                    var dialog = new Views.UnfinishedCaseDialog();
+                    dialog.SetPatientName(patientName);
 
-                Logger.LogInformation("用户选择：{Choice} (1=继续, 2=新建, 3=仅关闭)", choice);
-                tcs.SetResult(choice);
+                    // 设置Owner为主窗口（如果能找到）
+                    var mainWindow = System.Windows.Application.Current.MainWindow;
+                    if (mainWindow != null && mainWindow != dialog)
+                    {
+                        dialog.Owner = mainWindow;
+                    }
+
+                    dialog.ShowDialog();
+
+                    // 获取用户选择结果
+                    int choice = dialog.Result;
+                    Logger.LogInformation("用户选择：{Choice} (1=继续, 2=新建, 3=仅关闭, 0=取消)", choice);
+
+                    tcs.SetResult(choice);
+                });
             }
             catch (Exception ex)
             {
