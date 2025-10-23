@@ -267,19 +267,12 @@
                                Width="100" Height="35" Margin="10,0,0,0"
                                Style="{StaticResource SecondaryButtonStyle}"/>
 
-                        <!-- 开始诊断按钮 -->
+                        <!-- 开始诊断按钮 - Epic #1583: IsEnabled由ViewModel的CanExecuteStartConsultation自动管理 -->
                         <Button Grid.Column="3"
                                Content="开始诊断"
                                Command="{Binding StartConsultationCommand}"
                                Width="100" Height="35" Margin="10,0,0,0"
-                               Style="{StaticResource PrimaryButtonStyle}">
-                            <Button.IsEnabled>
-                                <MultiBinding Converter="{StaticResource AllTrueConverter}">
-                                    <Binding Path="CurrentPatient" Converter="{StaticResource NullToBooleanConverter}"/>
-                                    <Binding Path="IsBusy" Converter="{StaticResource InverseBooleanConverter}"/>
-                                </MultiBinding>
-                            </Button.IsEnabled>
-                        </Button>
+                               Style="{StaticResource PrimaryButtonStyle}"/>
                     </Grid>
 
                     <!-- 患者列表 -->
