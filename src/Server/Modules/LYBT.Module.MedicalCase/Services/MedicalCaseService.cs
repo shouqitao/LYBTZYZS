@@ -89,7 +89,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                 // 使用业务规则类验证
                 var existingCases = await _repository.GetByPatientIdAsync(dto.PatientId);
-                _logger.LogInformation("✅ 业务规则验证通过，现有病案数：{Count}", existingCases.Count());
+                _logger.LogInformation("✅ 业务规则验证通过，现有病案数：{Count}", existingCases.Count);
 
                 var validation = MedicalCaseRules.ValidateNewCaseCreation(dto.PatientId, existingCases);
 
@@ -138,14 +138,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogInformation("📊 返回的Dto详情 - Id: {Id}, CaseNumber: {CaseNumber}",
                         resultDto.Id, resultDto.CaseNumber);
+                    return ServiceResult<MedicalCaseDto>.Success(resultDto);
                 }
                 else
                 {
                     _logger.LogError("❌ Mapper.Map返回null！Entity为null: {EntityNull}, Mapper为null: {MapperNull}",
                         result == null, _mapper == null);
+                    return ServiceResult<MedicalCaseDto>.Failure("创建医疗案例失败：数据映射错误");
                 }
-
-                return ServiceResult<MedicalCaseDto>.Success(resultDto);
             }
             catch (Exception ex)
             {

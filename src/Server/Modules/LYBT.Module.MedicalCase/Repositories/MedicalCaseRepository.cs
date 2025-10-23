@@ -182,8 +182,8 @@ namespace LYBT.Module.MedicalCase.Repositories
                 })
                 .ToListAsync();
 
-            _logger?.LogInformation("获取待看诊列表，共 {Count} 条记录", result?.Count ?? 0);
-            return result;
+            _logger?.LogInformation("获取待看诊列表，共 {Count} 条记录", result.Count);
+            return result ?? new List<PendingMedicalCaseDto>();
         }
 
         /// <summary>
