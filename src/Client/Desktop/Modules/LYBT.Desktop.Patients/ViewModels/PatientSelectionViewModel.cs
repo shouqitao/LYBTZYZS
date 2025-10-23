@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -33,6 +34,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _dialogService;
         private readonly IMedicalCaseQueryService _medicalCaseQueryService;
+        private readonly IMedicalCaseApi _medicalCaseApi;
 
         #endregion
 
@@ -209,6 +211,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             IPatientRepository patientRepository,
             IDialogService dialogService,
             IMedicalCaseQueryService medicalCaseQueryService,
+            IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -219,6 +222,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _medicalCaseQueryService = medicalCaseQueryService ?? throw new ArgumentNullException(nameof(medicalCaseQueryService));
+            _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync(), CanExecuteSearch);
@@ -843,6 +847,44 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+        /// <summary>
+        /// 加载待看诊队列（Epic #1583 - Phase 5）
+        /// </summary>
+        private async Task LoadPendingCasesAsync()
+        {
+            try
+            {
+                Logger.LogInformation("开始加载待看诊队列");
+                
+                var response = await _medicalCaseApi.GetPendingCasesAsync();
+                
+                if (response.Success && response.Data != null)
+                {
+                    PendingQueue.Clear();
+                    foreach (var item in response.Data)
+                    {
+                        PendingQueue.Add(item);
+                        
+                        // MedicalCaseId可能为null，只有有值时才加入缓存
+                        if (item.MedicalCaseId.HasValue)
+                        {
+                            _pendingCaseCache[item.PatientId] = item.MedicalCaseId.Value;
+                        }
+                    }
+                    
+                    Logger.LogInformation("待看诊队列加载完成，共{Count}条记录", PendingQueue.Count);
+                }
+                else
+                {
+                    Logger.LogWarning("加载待看诊队列失败：{Message}", response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载待看诊队列异常");
+            }
+        }
+
         #endregion
 
         #region INavigationAware
@@ -880,6 +922,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     // 无搜索关键字，加载第1页数据
                     _ = LoadInitialPatientsAsync();
                 }
+                
+                // Epic #1583 - Phase 5: 加载待看诊队列
+                _ = LoadPendingCasesAsync();
             }
             catch (Exception ex)
             {
