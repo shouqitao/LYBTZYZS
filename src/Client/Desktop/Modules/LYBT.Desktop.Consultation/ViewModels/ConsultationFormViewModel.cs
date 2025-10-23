@@ -25,8 +25,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
     {
         #region 服务依赖
 
-        // Issue #1563: 删除IConsultationRepository依赖，使用聚合根Repository
+        // Issue #1563: 保存时使用聚合根Repository
         private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+        // Issue #1570: 加载时使用ConsultationRepository
+        private readonly IConsultationRepository _consultationRepository;
 
         #endregion
 
@@ -311,6 +314,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public ConsultationFormViewModel(
             IMedicalCaseRepository medicalCaseRepository,
+            IConsultationRepository consultationRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -320,6 +324,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             // Issue #1563: 只注入聚合根Repository
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
 
             // 初始化命令
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
@@ -370,6 +375,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 导航到当前视图时调用
         /// Issue #1557 Phase 3: 接收MedicalCaseFlowViewModel传来的MedicalCaseId和CurrentPatient
+        /// Issue #1570: 继续看诊时加载现有Consultation数据
         /// </summary>
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
@@ -392,10 +398,64 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Logger.LogInformation("接收到CurrentPatient: {PatientName}", currentPatient.Name);
                     CurrentPatient = currentPatient;
                 }
+
+                // Issue #1570: 加载现有Consultation数据（如果存在）
+                if (medicalCaseId != Guid.Empty)
+                {
+                    _ = LoadExistingConsultationAsync(medicalCaseId);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导航到ConsultationFormView时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 加载现有Consultation数据
+        /// Issue #1570: 继续看诊时从后端加载旧数据
+        /// </summary>
+        private async Task LoadExistingConsultationAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                Logger.LogInformation("尝试加载现有Consultation，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                SetIsBusy(true, "正在加载诊断数据...");
+
+                // Issue #1570: 使用ConsultationRepository.GetByMedicalCaseIdAsync获取Consultation
+                // Consultation与MedicalCase共享主键，所以可以通过MedicalCaseId查询
+                var consultations = await _consultationRepository.GetByMedicalCaseIdAsync(medicalCaseId);
+                var consultation = consultations.FirstOrDefault();
+
+                if (consultation != null)
+                {
+                    // 填充表单数据
+                    ChiefComplaint = consultation.ChiefComplaint ?? string.Empty;
+                    PresentIllness = consultation.PresentIllness ?? string.Empty;
+                    Inspection = consultation.Inspection ?? string.Empty;
+                    AuscultationOlfaction = consultation.AuscultationOlfaction ?? string.Empty;
+                    Inquiry = consultation.Inquiry ?? string.Empty;
+                    Palpation = consultation.Palpation ?? string.Empty;
+                    TCMDiagnosis = consultation.TCMDiagnosis ?? string.Empty;
+                    TreatmentPrinciple = consultation.TreatmentPrinciple ?? string.Empty;
+                    Remark = consultation.Remark ?? string.Empty;
+
+                    Logger.LogInformation("Consultation数据加载成功，主诉: {ChiefComplaint}", ChiefComplaint);
+                }
+                else
+                {
+                    Logger.LogInformation("MedicalCase无关联Consultation，保持表单空白");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载Consultation数据失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                // 不显示错误提示，允许用户继续填写新数据
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
