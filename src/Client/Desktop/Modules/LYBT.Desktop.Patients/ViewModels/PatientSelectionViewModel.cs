@@ -475,7 +475,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
                 else
                 {
-                    RegionManager.RequestNavigate("ContentRegion", "HomeView");
+                    // Issue #1584 - 修复导航错误：HomeView不存在，应为ClinicalHomeView
+                    RegionManager.RequestNavigate("ContentRegion", "ClinicalHomeView");
                 }
             }
             catch (Exception ex)

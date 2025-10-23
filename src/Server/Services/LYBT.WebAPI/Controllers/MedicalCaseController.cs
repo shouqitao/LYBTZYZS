@@ -102,6 +102,31 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 根据患者ID获取医疗案例列表
+        /// Issue #1584 - Bug修复
+        /// </summary>
+        [HttpGet("by-patient/{patientId}")]
+        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "patientId" })]
+        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetByPatientId(Guid patientId)
+        {
+            try
+            {
+                var validation = ValidateGuid<List<MedicalCaseDto>>(patientId, "患者ID");
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                var result = await _medicalCaseService.GetByPatientIdAsync(patientId);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<MedicalCaseDto>>(ex, "根据患者ID获取医疗案例列表", patientId);
+            }
+        }
+
+        /// <summary>
         /// 根据ID获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         [HttpGet("{id}/with-details")]
