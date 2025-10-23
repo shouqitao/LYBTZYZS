@@ -172,8 +172,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     }
                     else
                     {
-                        // 新建医案：继续下面的创建逻辑
-                        Logger.LogInformation("用户选择新建医案");
+                        // 新建医案：先关闭旧医案并删除关联数据
+                        Logger.LogInformation("用户选择新建医案，准备关闭旧医案并删除关联数据");
+                        await CloseOldMedicalCaseAsync(unfinishedCase);
                     }
                 }
 
@@ -314,6 +315,44 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogError(ex, "创建MedicalCase失败，PatientId: {PatientId}", patientId);
                 return Guid.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 关闭旧医案并删除关联数据
+        /// Issue #1571 - 新建医案时删除旧医案的Consultation和Prescription
+        /// Server端会自动级联删除关联的Consultation和Prescription
+        /// </summary>
+        private async Task CloseOldMedicalCaseAsync(MedicalCaseDto oldCase)
+        {
+            try
+            {
+                Logger.LogInformation("开始关闭旧医案，MedicalCaseId: {MedicalCaseId}", oldCase.Id);
+
+                if (SessionManager == null || SessionManager.CurrentUser == null)
+                {
+                    Logger.LogError("SessionManager或CurrentUser为null，无法更新MedicalCase状态");
+                    throw new InvalidOperationException("用户信息丢失，无法关闭医案");
+                }
+
+                // 更新医案状态为Closed（Server端会自动级联删除关联的Consultation和Prescription）
+                var updateDto = new MedicalCaseUpdateDto
+                {
+                    Id = oldCase.Id,
+                    PatientId = oldCase.PatientId,
+                    DoctorId = oldCase.DoctorId,
+                    Status = MedicalCaseStatus.Closed.ToString()
+                };
+
+                Logger.LogInformation("更新MedicalCase状态为Closed（Server端将级联删除关联数据）");
+                await _medicalCaseRepository.UpdateAsync(updateDto);
+
+                Logger.LogInformation("旧医案关闭成功，MedicalCaseId: {MedicalCaseId}", oldCase.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "关闭旧医案失败，MedicalCaseId: {MedicalCaseId}", oldCase.Id);
+                throw;
             }
         }
 

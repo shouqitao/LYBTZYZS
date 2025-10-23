@@ -2,9 +2,12 @@
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Repositories
 {
@@ -106,6 +109,50 @@ namespace LYBT.Module.MedicalCase.Repositories
                 .Where(m => m.DoctorId == doctorId)
                 .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// 更新医案（Issue #1571 - 级联删除关联数据）
+        /// 当医案状态变更为Closed时，自动删除关联的Consultation和Prescription
+        /// </summary>
+        public override async Task<MedicalCaseEntity> UpdateAsync(MedicalCaseEntity entity)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            // 获取数据库中的原实体以检测状态变更
+            var existingEntity = await _dbSet
+                .Include(m => m.Consultation)
+                .Include(m => m.Prescription)
+                .FirstOrDefaultAsync(m => m.Id == entity.Id);
+
+            if (existingEntity == null)
+                throw new InvalidOperationException($"医案 {entity.Id} 不存在");
+
+            // 检测状态变更：从Active变为Closed
+            if (existingEntity.Status != MedicalCaseStatus.Closed && entity.Status == MedicalCaseStatus.Closed)
+            {
+                _logger?.LogInformation("检测到医案状态变更为Closed，准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
+
+                // 删除关联的Consultation（如果存在）
+                if (existingEntity.Consultation != null)
+                {
+                    _logger?.LogInformation("删除关联的Consultation，ConsultationId: {ConsultationId}", existingEntity.Consultation.Id);
+                    _context.Set<ConsultationEntity>().Remove(existingEntity.Consultation);
+                }
+
+                // 删除关联的Prescription（如果存在）
+                if (existingEntity.Prescription != null)
+                {
+                    _logger?.LogInformation("删除关联的Prescription，PrescriptionId: {PrescriptionId}", existingEntity.Prescription.Id);
+                    _context.Set<PrescriptionEntity>().Remove(existingEntity.Prescription);
+                }
+
+                _logger?.LogInformation("级联删除完成，即将更新医案状态");
+            }
+
+            // 调用基类UpdateAsync完成更新
+            return await base.UpdateAsync(entity);
         }
     }
 }
