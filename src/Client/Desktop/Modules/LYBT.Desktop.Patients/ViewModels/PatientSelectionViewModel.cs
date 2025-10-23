@@ -174,9 +174,10 @@ namespace LYBT.Desktop.Patients.ViewModels
                     // 待看诊队列选中患者 → 更新CurrentPatient
                     if (value != null)
                     {
-                        // TODO: 从PendingMedicalCaseDto转换为PatientDto，或者从Patients列表中查找
-                        // 暂时先记录日志
                         Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
+                        
+                        // 异步加载患者详悠信息并设置CurrentPatient
+                        _ = LoadPatientForPendingCaseAsync(value.PatientId);
                     }
                 }
             }
@@ -898,6 +899,43 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载待看诊队列异常");
+            }
+        }
+
+        /// <summary>
+        /// 为待看诊队列选中的患者加载完整信息
+        /// 修复双击功能：确保CurrentPatient被正确设置
+        /// </summary>
+        private async Task LoadPatientForPendingCaseAsync(Guid patientId)
+        {
+            try
+            {
+                Logger.LogInformation("加载患者详情：PatientId={PatientId}", patientId);
+
+                // 先从Patients列表中查找
+                var patientInList = Patients.FirstOrDefault(p => p.Id == patientId);
+                if (patientInList != null)
+                {
+                    Logger.LogInformation("从当前列表中找到患者，直接设置CurrentPatient");
+                    CurrentPatient = patientInList;
+                    return;
+                }
+
+                // 列表中没有，通过Repository加载
+                var patient = await _patientRepository.GetByIdAsync(patientId);
+                if (patient != null)
+                {
+                    Logger.LogInformation("从API加载患者成功：{PatientName}", patient.Name);
+                    CurrentPatient = patient;
+                }
+                else
+                {
+                    Logger.LogWarning("加载患者失败：患者不存在，PatientId={PatientId}", patientId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载患者详情失败：PatientId={PatientId}", patientId);
             }
         }
 
