@@ -772,10 +772,21 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 Logger.LogInformation("已发布PatientSelectedEvent，患者：{PatientName}，流程ID：{FlowId}",
                     patient.Name, MedicalCaseFlowId);
+
+                // Issue #1585 - 修复导航断裂：添加导航到MedicalCaseFlowView的逻辑
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseFlowId", MedicalCaseFlowId },
+                    { "PatientId", patient.Id }
+                };
+
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+                Logger.LogInformation("导航到医案录入界面：PatientId={PatientId}, FlowId={FlowId}",
+                    patient.Id, MedicalCaseFlowId);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "发布PatientSelectedEvent失败");
+                Logger.LogError(ex, "发布PatientSelectedEvent或导航失败");
             }
         }
 
