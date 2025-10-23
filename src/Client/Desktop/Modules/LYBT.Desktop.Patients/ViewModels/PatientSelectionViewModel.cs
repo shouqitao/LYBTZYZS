@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private readonly IPatientRepository _patientRepository;
         private readonly IDialogService _dialogService;
+        private readonly IMedicalCaseQueryService _medicalCaseQueryService;
 
         #endregion
 
@@ -139,6 +141,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         public ObservableCollection<PendingMedicalCaseDto> PendingQueue { get; } = new();
 
+        /// <summary>
+        /// Phase 2: 本地缓存（PatientId -> MedicalCaseId）
+        /// 用于快速查询患者是否有未完成医案
+        /// </summary>
+        private readonly Dictionary<Guid, Guid> _pendingCaseCache = new();
+
         private PendingMedicalCaseDto? _selectedPendingPatient;
         /// <summary>
         /// 待看诊队列中选中的患者
@@ -200,6 +208,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientSelectionViewModel(
             IPatientRepository patientRepository,
             IDialogService dialogService,
+            IMedicalCaseQueryService medicalCaseQueryService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -209,6 +218,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _medicalCaseQueryService = medicalCaseQueryService ?? throw new ArgumentNullException(nameof(medicalCaseQueryService));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync(), CanExecuteSearch);
@@ -478,7 +488,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 开始诊断（替代原有的SelectPatientCommand）
         /// Epic #1583: 统一的开始诊断入口，基于CurrentPatient
         /// </summary>
-        private void ExecuteStartConsultation()
+        /// <summary>
+        /// Phase 2: 智能路由（检查未完成医案 + 三选一对话框）
+        /// </summary>
+        private async void ExecuteStartConsultation()
         {
             if (CurrentPatient == null)
             {
@@ -488,26 +501,242 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             try
             {
+                SetIsBusy(true, "正在检查患者医案...");
+
                 Logger.LogInformation("开始诊断，患者：{PatientName}（ID: {PatientId}）",
                     CurrentPatient.Name, CurrentPatient.Id);
 
-                // TODO Phase 2: 这里需要添加智能路由逻辑
+                // Phase 2: 智能路由逻辑
                 // 1. 检查是否有未完成医案
-                // 2. 如果有，弹窗三选一（继续看诊/新建医案/关闭医案）
-                // 3. 如果无，直接发布患者选择事件
+                var unfinishedCase = await CheckUnfinishedMedicalCaseAsync(CurrentPatient.Id);
 
-                // Phase 1暂时保留原有逻辑：直接发布事件
-                PublishPatientSelectedEvent(CurrentPatient);
+                if (unfinishedCase != null)
+                {
+                    // 2. 有未完成医案，弹出三选一对话框
+                    SetIsBusy(false); // 对话框前关闭繁忙状态
+
+                    var choice = await ShowUnfinishedCaseDialogAsync(CurrentPatient.Name, unfinishedCase.Id);
+
+                    switch (choice)
+                    {
+                        case 1: // 继续看诊
+                            await ContinueConsultationAsync(CurrentPatient);
+                            break;
+
+                        case 2: // 新建医案（先关闭旧的）
+                            SetIsBusy(true, "正在关闭旧医案...");
+                            await CreateNewCaseAfterClosingOldAsync(CurrentPatient, unfinishedCase.Id);
+                            break;
+
+                        case 0: // 取消
+                        default:
+                            Logger.LogInformation("用户取消操作");
+                            break;
+                    }
+                }
+                else
+                {
+                    // 3. 无未完成医案，直接发布患者选择事件
+                    Logger.LogInformation("患者无未完成医案，直接开始诊断");
+                    PublishPatientSelectedEvent(CurrentPatient);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "开始诊断失败");
+                await ShowErrorMessageAsync($"开始诊断失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
         private bool CanExecuteStartConsultation()
         {
             return CurrentPatient != null && !IsBusy;
+        }
+
+        #endregion
+
+        #region Phase 2: 智能路由方法
+
+        /// <summary>
+        /// Phase 2: 检查患者是否有未完成医案（缓存优先策略）
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案，如果没有则返回null</returns>
+        private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
+        {
+            try
+            {
+                // 1. 先查本地缓存
+                if (_pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
+                {
+                    Logger.LogInformation("缓存命中：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                        patientId, cachedMedicalCaseId);
+
+                    // 缓存命中，返回一个包含ID的MedicalCaseDto
+                    return new MedicalCaseDto { Id = cachedMedicalCaseId };
+                }
+
+                // 2. 缓存未命中，调用API查询
+                Logger.LogInformation("缓存未命中，调用API查询：PatientId={PatientId}", patientId);
+
+                var unfinishedCase = await _medicalCaseQueryService.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+                if (unfinishedCase != null)
+                {
+                    // 3. 找到未完成医案，更新缓存
+                    _pendingCaseCache[patientId] = unfinishedCase.Id;
+                    Logger.LogInformation("找到未完成医案，已更新缓存：MedicalCaseId={MedicalCaseId}",
+                        unfinishedCase.Id);
+                }
+                else
+                {
+                    Logger.LogInformation("患者无未完成医案");
+                }
+
+                return unfinishedCase;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "检查未完成医案失败：PatientId={PatientId}", patientId);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Phase 2: 显示未完成医案对话框（三选一）
+        /// </summary>
+        /// <param name="patientName">患者姓名</param>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>用户选择：1=继续看诊, 2=新建医案, 3=关闭医案, 0=取消</returns>
+        private Task<int> ShowUnfinishedCaseDialogAsync(string patientName, Guid medicalCaseId)
+        {
+            var tcs = new TaskCompletionSource<int>();
+
+            try
+            {
+                var message = $"患者【{patientName}】有未完成的医案，请选择操作：";
+                var title = "检测到未完成医案";
+
+                // Phase 2临时方案：使用System.Windows.MessageBox
+                // Phase 5：替换为自定义对话框
+                var result = System.Windows.MessageBox.Show(
+                    $"{message}\n\n1. 继续看诊（恢复之前的医案）\n2. 新建医案（关闭旧医案）\n3. 关闭旧医案（不创建新医案）\n\n点击「是」继续看诊，点击「否」新建医案",
+                    title,
+                    System.Windows.MessageBoxButton.YesNoCancel,
+                    System.Windows.MessageBoxImage.Question);
+
+                // 映射MessageBox结果到我们的选项
+                int choice = result switch
+                {
+                    System.Windows.MessageBoxResult.Yes => 1,      // 继续看诊
+                    System.Windows.MessageBoxResult.No => 2,       // 新建医案
+                    System.Windows.MessageBoxResult.Cancel => 0,   // 取消
+                    _ => 0
+                };
+
+                Logger.LogInformation("用户选择：{Choice} (1=继续, 2=新建, 0=取消)", choice);
+                tcs.SetResult(choice);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "显示对话框失败");
+                tcs.SetResult(0); // 异常时返回取消
+            }
+
+            return tcs.Task;
+        }
+
+        /// <summary>
+        /// Phase 2: 继续看诊（直接发布患者选择事件）
+        /// </summary>
+        private async Task ContinueConsultationAsync(PatientDto patient)
+        {
+            try
+            {
+                Logger.LogInformation("用户选择继续看诊，患者：{PatientName}", patient.Name);
+
+                // 直接发布患者选择事件
+                PublishPatientSelectedEvent(patient);
+
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "继续看诊失败");
+            }
+        }
+
+        /// <summary>
+        /// Phase 2: 新建医案（关闭旧医案后发布事件）
+        /// </summary>
+        private async Task CreateNewCaseAfterClosingOldAsync(PatientDto patient, Guid oldMedicalCaseId)
+        {
+            try
+            {
+                Logger.LogInformation("用户选择新建医案，先关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}",
+                    oldMedicalCaseId);
+
+                // 1. 关闭旧医案
+                var closed = await _medicalCaseQueryService.CloseAsync(oldMedicalCaseId);
+
+                if (closed)
+                {
+                    // 2. 从缓存中移除
+                    _pendingCaseCache.Remove(patient.Id);
+                    Logger.LogInformation("旧医案已关闭，缓存已清理");
+
+                    // 3. 发布患者选择事件（MedicalCaseFlowViewModel将创建新医案）
+                    PublishPatientSelectedEvent(patient);
+                }
+                else
+                {
+                    Logger.LogWarning("关闭旧医案失败，取消操作");
+                    await ShowErrorMessageAsync("关闭旧医案失败，请稍后重试");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "新建医案失败");
+                await ShowErrorMessageAsync($"新建医案失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Phase 2: 关闭旧医案（不创建新医案）
+        /// </summary>
+        private async Task CloseOldMedicalCaseAsync(Guid patientId, Guid medicalCaseId)
+        {
+            try
+            {
+                Logger.LogInformation("用户选择关闭旧医案：MedicalCaseId={MedicalCaseId}", medicalCaseId);
+
+                // 1. 调用API关闭医案
+                var closed = await _medicalCaseQueryService.CloseAsync(medicalCaseId);
+
+                if (closed)
+                {
+                    // 2. 从缓存中移除
+                    _pendingCaseCache.Remove(patientId);
+                    Logger.LogInformation("医案已关闭，缓存已清理");
+
+                    // Phase 2临时方案：仅记录日志，Phase 5添加提示消息
+                    Logger.LogInformation("医案已成功关闭");
+                }
+                else
+                {
+                    Logger.LogWarning("关闭医案失败");
+                    await ShowErrorMessageAsync("关闭医案失败，请稍后重试");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "关闭医案失败");
+                await ShowErrorMessageAsync($"关闭医案失败：{ex.Message}");
+            }
         }
 
         #endregion
