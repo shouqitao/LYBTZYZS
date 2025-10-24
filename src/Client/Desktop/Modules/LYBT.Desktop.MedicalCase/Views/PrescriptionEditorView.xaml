@@ -139,7 +139,7 @@
                         <RowDefinition Height="Auto"/> <!-- 统计信息 -->
                     </Grid.RowDefinitions>
 
-                    <!-- 操作按钮区（Issue #1594：新增保存草稿按钮） -->
+                    <!-- 操作按钮区（Issue #1594：新增保存草稿按钮 + Issue #1593：新增删除处方按钮） -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
                         <Button Content="添加行"
                                Command="{Binding AddRowCommand}"
@@ -153,6 +153,14 @@
                                Command="{Binding SaveDraftCommand}"
                                Style="{StaticResource ActionButtonStyle}"
                                Background="#2196F3"
+                               Foreground="White"
+                               BorderThickness="0"
+                               Margin="0,0,10,0"/>
+                        <!-- Issue #1593 - Phase 4: 新增删除处方按钮 -->
+                        <Button Content="删除处方"
+                               Command="{Binding DeletePrescriptionCommand}"
+                               Style="{StaticResource ActionButtonStyle}"
+                               Background="#D32F2F"
                                Foreground="White"
                                BorderThickness="0"/>
                         <TextBlock Text="提示：双击药材列可选择，Tab键切换到用量列"

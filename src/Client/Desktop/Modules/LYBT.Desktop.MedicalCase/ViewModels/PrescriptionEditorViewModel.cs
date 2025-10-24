@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -12,6 +13,7 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -67,6 +69,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IPrescriptionEditorService _prescriptionEditorService;
+        private readonly IDialogService _dialogService;
+        private readonly IPrescriptionApi _prescriptionApi;
 
         #endregion
 
@@ -284,6 +288,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// 保存草稿命令（Issue #1594新增）
         /// </summary>
         public DelegateCommand SaveDraftCommand { get; }
+
+        /// <summary>
+        /// 删除处方命令（Issue #1593 - Phase 4新增）
+        /// </summary>
+        public DelegateCommand DeletePrescriptionCommand { get; }
 
         #endregion
 
@@ -810,6 +819,94 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
+        /// 删除处方
+        /// Issue #1593 - Phase 4: 删除确认对话框
+        /// </summary>
+        private async Task ExecuteDeletePrescription()
+        {
+            try
+            {
+                Logger.LogInformation("显示删除确认对话框，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+                // 显示删除确认对话框
+                _dialogService.ShowDialog(
+                    "PrescriptionDeleteConfirmDialog",
+                    new DialogParameters(),
+                    async result =>
+                    {
+                        if (result.Result == ButtonResult.OK)
+                        {
+                            var isSoftDelete = result.Parameters.GetValue<bool>("IsSoftDelete");
+                            await PerformDeleteAsync(isSoftDelete);
+                        }
+                        else
+                        {
+                            Logger.LogInformation("用户取消删除操作");
+                        }
+                    });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "显示删除对话框失败");
+                await ShowErrorMessageAsync($"显示删除对话框失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 执行删除处方操作
+        /// </summary>
+        private async Task PerformDeleteAsync(bool isSoftDelete)
+        {
+            try
+            {
+                SetIsBusy(true, isSoftDelete ? "正在软删除处方..." : "正在永久删除处方...");
+                Logger.LogInformation("开始删除处方，MedicalCaseId: {MedicalCaseId}, 删除方式: {DeleteType}",
+                    MedicalCaseId, isSoftDelete ? "软删除" : "物理删除");
+
+                // 调用相应的API
+                if (isSoftDelete)
+                {
+                    await _prescriptionApi.SoftDeletePrescriptionAsync(MedicalCaseId);
+                }
+                else
+                {
+                    await _prescriptionApi.DeletePrescriptionAsync(MedicalCaseId);
+                }
+
+                // 清空表单数据
+                ItemRows.Clear();
+                DosageCount = 7;
+                Usage = "水煎服，日一剂，早晚分服";
+                MedicalAdvice = string.Empty;
+                Remark = string.Empty;
+                TreatmentMethod = string.Empty;
+                TreatmentPrinciple = string.Empty;
+                Step2CompletedAt = null;
+                DuplicateHerbsWarningText = string.Empty;
+
+                // 重新添加初始行
+                for (int i = 0; i < 5; i++)
+                {
+                    ExecuteAddRow();
+                }
+
+                await ShowSuccessMessageAsync(
+                    isSoftDelete ? "处方已标记为删除！" : "处方已永久删除！\n注意：此操作不可恢复。");
+
+                Logger.LogInformation("删除处方成功，删除方式: {DeleteType}", isSoftDelete ? "软删除" : "物理删除");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除处方失败");
+                await ShowErrorMessageAsync($"删除处方失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
         /// 检测重复药材
         /// Issue #1591: REQ-002 - 重复药材检测逻辑
         /// </summary>
@@ -864,6 +961,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public PrescriptionEditorViewModel(
             IMedicalCaseRepository medicalCaseRepository,
             IPrescriptionEditorService prescriptionEditorService,
+            IDialogService dialogService,
+            IPrescriptionApi prescriptionApi,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -873,14 +972,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _prescriptionEditorService = prescriptionEditorService ?? throw new ArgumentNullException(nameof(prescriptionEditorService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
             CompleteStep2Command = new DelegateCommand(async () => await ExecuteCompleteStep2()); // Issue #1591
             ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery); // Issue #1591
             SaveDraftCommand = new DelegateCommand(async () => await ExecuteSaveDraft()); // Issue #1594
+            DeletePrescriptionCommand = new DelegateCommand(async () => await ExecuteDeletePrescription()); // Issue #1593 - Phase 4
 
-            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强 + Issue #1594暂存功能）");
+            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强 + Issue #1594暂存功能 + Issue #1593删除功能）");
         }
 
         #endregion
