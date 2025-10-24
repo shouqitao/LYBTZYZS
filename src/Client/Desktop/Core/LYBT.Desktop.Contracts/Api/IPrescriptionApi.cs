@@ -36,10 +36,18 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionUpdateDto request);
 
         /// <summary>
-        /// 删除处方
+        /// 物理删除处方（永久删除，不可恢复）
+        /// Issue #1593 - Phase 4
         /// </summary>
         [Refit.Delete("/api/v1/prescriptions/{id}")]
         Task<ApiResponse<ApiResponse>> DeletePrescriptionAsync(Guid id);
+
+        /// <summary>
+        /// 软删除处方（标记为已删除，保留数据）
+        /// Issue #1593 - Phase 4
+        /// </summary>
+        [Refit.Delete("/api/v1/prescriptions/{id}/soft")]
+        Task<ApiResponse<ApiResponse>> SoftDeletePrescriptionAsync(Guid id);
 
         /// <summary>
         /// 根据医案ID获取处方列表

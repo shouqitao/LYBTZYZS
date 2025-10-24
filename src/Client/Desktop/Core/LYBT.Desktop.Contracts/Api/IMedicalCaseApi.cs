@@ -38,6 +38,17 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync();
 
         /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/query")]
+        Task<ApiResponse<List<MedicalCaseDto>>> QueryMedicalCasesAsync(
+            [Refit.Query] string? patientName = null,
+            [Refit.Query] DateTime? startDate = null,
+            [Refit.Query] DateTime? endDate = null,
+            [Refit.Query] string? diagnosisKeyword = null);
+
+        /// <summary>
         /// 获取完整的医疗案例（包含所有关联数据）
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}/with-details")]

@@ -30,5 +30,15 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="dto">诊断更新信息</param>
         /// <returns>更新后的诊断信息</returns>
         Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto);
+
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        Task<List<MedicalCaseDto>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null);
     }
 }

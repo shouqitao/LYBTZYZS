@@ -112,6 +112,31 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        public async Task<List<MedicalCaseDto>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null)
+        {
+            try
+            {
+                _logger.LogInformation("查询病案，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
+                    patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
+
+                var response = await _api.QueryMedicalCasesAsync(patientName, startDate, endDate, diagnosisKeyword);
+                return response.Data ?? new List<MedicalCaseDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询病案列表失败");
+                throw;
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
