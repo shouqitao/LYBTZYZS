@@ -29,7 +29,10 @@
 ### 项目专属Skills（Project-Specific Skills）
 - 🔴 `.claude/skills/lybtzyzs-mvp-compliance/` - MVP合规检查（技术黑名单、过度设计检测）
 - 🏗️ `.claude/skills/lybtzyzs-arch-compliance/` - 架构合规检查（三层架构、DDD边界验证）
-- 📝 `.claude/skills/lybtzyzs-doc-sync/` - 文档同步检查（API变更检测、文档更新清单）
+- 📝 `.claude/skills/lybtzyzs-doc-sync/` - 文档同步检查（⭐⭐⭐ 强化版）
+  - **新增能力**：需求分析/设计文档前置检查、架构调整文档同步强制验证
+  - **覆盖范围**：所有重要文档体系（Level 0-3、业务规则、技术决策）
+  - **强制规则**：拒绝未读文档的需求分析、拒绝未同步文档的架构调整
 
 > **📚 使用说明**：
 > - Claude Code 会自动加载所有核心规则、模式定义和项目Skills
@@ -128,6 +131,99 @@ URL:   https://github.com/shouqitao/LYBTZYZS
 ## 1.6 需求讨论与文档化规范（三阶段流程）
 
 **核心原则**：需求讨论 → 需求文档 → 设计文档 → Issue → 实施
+
+### ⚠️ 强制性文档读取规则（⭐⭐⭐ 必须遵守）
+
+**适用场景**：所有需求分析、设计文档生成、架构调整任务
+
+#### 规则1：需求分析前必须先阅读文档体系
+
+**执行流程**：
+1. **拒绝未读文档的请求**：
+   - 用户要求"生成需求文档"或"写需求分析"时，必须先拒绝
+   - 提示："⚠️ 需求分析前必须先阅读文档体系，请确认是否已阅读相关文档？"
+
+2. **强制文档阅读清单**：
+   ```markdown
+   📚 需求分析前必读文档：
+
+   核心必读（100%必须）：
+   - docs/index.md - 文档导航中心
+   - docs/business-rules.md - 14条核心业务规则
+   - docs/architecture/{server|client|shared}/README.md - 对应层架构指南
+
+   模块相关（根据需求选择）：
+   - docs/modules/{module-name}/README.md - 相关模块文档
+   - docs/api/{module-name}-api.md - 相关API文档
+   - docs/quick-reference/code-patterns.md - 代码模式参考
+   ```
+
+3. **验证文档阅读**：
+   - 使用Read工具读取核心文档
+   - 生成文档要点摘要，证明已理解
+   - 用户确认后才继续需求分析
+
+#### 规则2：设计文档前必须先阅读架构指南
+
+**执行流程**：
+1. **拒绝未读架构文档的设计请求**：
+   - 用户要求"写设计文档"时，必须先确认已阅读对应架构指南
+   - 提示："⚠️ 设计文档前必须先阅读架构指南，请确认是否已理解架构约束？"
+
+2. **强制架构文档阅读**：
+   - Server端设计 → 必读 `docs/architecture/server/README.md`
+   - Client端设计 → 必读 `docs/architecture/client/README.md`
+   - 跨端设计 → 必读 `docs/architecture/shared/README.md`
+   - 深度设计 → 选读 `docs/deep/advanced-patterns.md`
+
+#### 规则3：架构调整前必须先更新文档
+
+**执行流程**：
+1. **拒绝未同步文档的架构变更**：
+   - 用户要求"重构XXX"或"新增YYY模块"时，必须先拒绝
+   - 提示："⚠️ 架构调整前必须先更新文档，请确认是否已更新ADR和架构文档？"
+
+2. **强制文档更新流程**：
+   ```markdown
+   🏗️ 架构调整文档同步流程：
+
+   Step 1: 创建ADR（Architecture Decision Record）
+   - 在 docs/architecture/decisions/ 创建 ADR-XXX.md
+   - 记录架构决策背景、方案对比、后果分析
+   - 状态标记：Proposed → Accepted → Implemented
+
+   Step 2: 更新架构文档
+   - 更新 docs/architecture/{server|client|shared}/README.md
+   - 如新增模块，创建 docs/modules/{module-name}/README.md
+   - 更新 docs/index.md 导航链接
+
+   Step 3: 更新架构例外清单（如有违反）
+   - 在 docs/architecture/exceptions.md 记录例外
+   - 说明批准理由和补救措施
+
+   Step 4: 确认后开始代码变更
+   - 用户审查ADR和文档更新
+   - 批准后创建Issue并开始实施
+   ```
+
+#### 违反处理：强制终止任务
+
+**如果检测到以下违反行为，必须立即终止任务**：
+- ❌ 未读取文档体系就生成需求文档
+- ❌ 未读取架构指南就生成设计文档
+- ❌ 未更新ADR和架构文档就进行架构调整
+- ❌ 生成的需求/设计文档未引用相关架构文档和业务规则
+
+**终止提示**：
+```
+⚠️ 任务终止：违反文档读取强制规则
+
+原因：[具体违反行为]
+要求：必须先完成文档阅读/更新流程
+参考：CLAUDE.md 第1.6节 - 强制性文档读取规则
+```
+
+---
 
 ### 阶段1：需求讨论（Discussion）
 

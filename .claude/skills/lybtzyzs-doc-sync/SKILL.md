@@ -22,16 +22,156 @@ last_updated: 2025-10-21
 - 数据模型变更（实体/DTO修改）
 - 配置文件变更
 - 文档链接有效性
+- **需求分析和设计文档前置检查**（⭐ 新增）
+- **架构调整文档同步强制验证**（⭐ 新增）
 
-**参考文档**：
-- 文档导航：`docs/index.md`
-- 架构文档：`docs/architecture/`
-- API文档：`docs/api/`
-- 快速参考：`docs/quick-reference/`
+**核心文档体系**（必须覆盖）：
+- **Level 0 - 导航中心**：`docs/index.md` - 文档体系总入口 ⭐⭐⭐
+- **Level 1 - 快速参考**：`docs/quick-reference/` - API参考、配置模板、代码模式、问题解决、开发清单
+- **Level 2 - 架构指南**：`docs/architecture/{server|client|shared}/` - 三层对齐架构文档
+  - `docs/architecture/server/README.md` - Server端三层架构
+  - `docs/architecture/client/README.md` - Client端MVVM架构
+  - `docs/architecture/shared/README.md` - 共享架构
+- **Level 3 - 深度参考**：`docs/deep/`, `docs/api/`, `docs/modules/` - 完整技术文档
+- **业务规则**：`docs/business-rules.md` - 14条核心业务规则 ⭐⭐⭐
+- **技术决策**：`docs/architecture/decisions/` - ADR架构决策记录（计划中）
 
 ---
 
 ## 检查流程
+
+### 🚨 前置检查（强制优先级）
+
+#### 检查0：需求分析和设计文档前置验证
+
+**触发时机**：用户要求生成需求文档或设计文档时
+
+**强制流程**：
+1. **拒绝未读文档的请求**：
+   - 如用户直接要求"生成需求文档"或"写设计文档"，必须先拒绝
+   - 提示："⚠️ 需求分析前必须先阅读文档体系，请确认是否已阅读相关文档？"
+
+2. **强制文档阅读清单**：
+   ```markdown
+   ## 📚 需求分析前必读文档
+
+   ### 核心必读（100%必须）
+   - [ ] `docs/index.md` - 文档导航中心，了解文档体系结构
+   - [ ] `docs/business-rules.md` - 14条核心业务规则
+   - [ ] `docs/architecture/{server|client|shared}/README.md` - 对应层的架构指南
+
+   ### 模块相关（根据需求选择）
+   - [ ] `docs/modules/{module-name}/README.md` - 相关模块文档
+   - [ ] `docs/api/{module-name}-api.md` - 相关API文档
+   - [ ] `docs/quick-reference/code-patterns.md` - 代码模式参考
+
+   ### 设计参考（可选）
+   - [ ] `docs/deep/advanced-patterns.md` - 高级设计模式
+   - [ ] `docs/deep/api-design-best-practices.md` - API设计最佳实践
+   ```
+
+3. **验证文档阅读**：
+   - 使用 `Read` 工具读取核心文档（docs/index.md、business-rules.md、对应架构文档）
+   - 生成文档要点摘要，证明已理解
+   - 用户确认后才继续需求分析
+
+4. **生成需求文档**：
+   - 基于阅读的文档体系，生成符合架构标准的需求文档
+   - 需求文档必须引用相关架构文档和业务规则
+
+**示例对话**：
+```
+用户："帮我生成处方管理功能的需求文档"
+
+Skill自动触发：
+⚠️ 需求分析前必须先阅读文档体系！
+
+📚 即将阅读以下核心文档：
+1. docs/index.md - 文档导航
+2. docs/business-rules.md - 业务规则
+3. docs/architecture/client/README.md - Client架构
+4. docs/modules/prescriptions/README.md - 处方模块
+
+正在阅读文档...
+
+✅ 文档阅读完成，关键要点：
+- 处方必须通过MedicalCase聚合根操作（业务规则#3）
+- Desktop采用MVVM架构，View→ViewModel→Repository→ApiClient（架构规范）
+- 处方支持四种录入方式：手工/模板/历史/验方（模块文档）
+
+请确认是否开始需求分析？
+```
+
+---
+
+#### 检查0.5：架构调整文档同步强制验证
+
+**触发时机**：用户要求进行架构调整时（新增模块、修改架构、重构）
+
+**强制流程**：
+1. **拒绝未同步文档的架构变更**：
+   - 如用户直接要求"重构XXX"或"新增YYY模块"，必须先拒绝
+   - 提示："⚠️ 架构调整前必须先更新文档，请确认是否已更新ADR和架构文档？"
+
+2. **强制文档更新流程**：
+   ```markdown
+   ## 🏗️ 架构调整文档同步流程
+
+   ### Step 1: 创建ADR（Architecture Decision Record）
+   - [ ] 在 `docs/architecture/decisions/` 创建 ADR-XXX.md
+   - [ ] 记录架构决策背景、方案对比、后果分析
+   - [ ] 状态标记：Proposed → Accepted → Implemented
+
+   ### Step 2: 更新架构文档
+   - [ ] 更新 `docs/architecture/{server|client|shared}/README.md`
+   - [ ] 如新增模块，创建 `docs/modules/{module-name}/README.md`
+   - [ ] 更新 `docs/index.md` 导航链接
+
+   ### Step 3: 更新架构例外清单（如有违反）
+   - [ ] 在 `docs/architecture/exceptions.md` 记录例外
+   - [ ] 说明批准理由和补救措施
+
+   ### Step 4: 确认后开始代码变更
+   - [ ] 用户审查ADR和文档更新
+   - [ ] 批准后创建Issue并开始实施
+   ```
+
+3. **验证文档更新**：
+   - 检查是否已创建ADR文档
+   - 检查相关架构文档是否已更新
+   - 生成文档更新清单，等待用户确认
+
+4. **开始代码变更**：
+   - 确认文档更新后，才允许开始代码修改
+   - 代码变更必须引用对应的ADR编号
+
+**示例对话**：
+```
+用户："重构Prescriptions模块，删除IPrescriptionRepository"
+
+Skill自动触发：
+⚠️ 架构调整前必须先更新文档！
+
+🏗️ 检测到架构调整：删除IPrescriptionRepository
+
+📝 必须先完成以下文档：
+1. 创建 ADR-003-repository-simplification.md
+   - 记录删除Repository的决策背景
+   - 分析Read/Write分离方案
+   - 记录架构例外（Desktop三层架构违反）
+
+2. 更新 docs/architecture/client/README.md
+   - 补充Repository层简化说明
+   - 更新依赖关系图
+
+3. 更新 docs/architecture/exceptions.md
+   - 记录Desktop三层架构违反
+   - 批准理由：DDD聚合根优先
+
+是否现在创建这些文档？
+```
+
+---
 
 ### 第一步：检测API端点变更
 
