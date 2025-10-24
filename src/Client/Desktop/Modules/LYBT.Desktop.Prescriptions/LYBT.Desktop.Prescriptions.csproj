@@ -55,15 +55,16 @@
     <Compile Remove="ViewModels\Components\PrescriptionDataManager.cs" />
     <Compile Remove="ViewModels\PrescriptionEditorDialogViewModel.cs" />
     <Compile Remove="ViewModels\PrescriptionManagementViewModel.cs" />
-    <Compile Remove="ViewModels\PrescriptionsMainViewModel.cs" />
+    <!-- PrescriptionsMainViewModel已重构 (Issue #1608 Phase 3.1) -->
     <Compile Remove="ViewModels\PrescriptionViewModel.cs" />
+    <!-- PrescriptionViewModel依赖未重构Component,延后处理 (Issue #1608 Phase 3.2) -->
     <Compile Remove="Views\PrescriptionView.xaml.cs" />
     <Compile Remove="Views\PrescriptionManagementView.xaml.cs" />
-    <Compile Remove="Views\PrescriptionsMainView.xaml.cs" />
+    <!-- PrescriptionsMainView已重构 (Issue #1608 Phase 3.1) -->
     <Compile Remove="Repositories\**" />
     <Page Remove="Views\PrescriptionView.xaml" />
     <Page Remove="Views\PrescriptionManagementView.xaml" />
-    <Page Remove="Views\PrescriptionsMainView.xaml" />
+    <!-- PrescriptionsMainView.xaml已重构 (Issue #1608 Phase 3.1) -->
   </ItemGroup>
 
   <ItemGroup>
