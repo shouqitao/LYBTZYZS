@@ -51,7 +51,7 @@
 
   <!-- Issue #1606 Phase 3: 临时排除待重构的ViewModel和View（Issue #1608） -->
   <ItemGroup>
-    <Compile Remove="ViewModels\Components\PrescriptionCommandHandler.cs" />
+    <!-- PrescriptionCommandHandler已重构 (Issue #1608 Phase 3.4) -->
     <!-- PrescriptionDataManager已重构 (Issue #1608 Phase 3.3) -->
     <Compile Remove="ViewModels\PrescriptionEditorDialogViewModel.cs" />
     <Compile Remove="ViewModels\PrescriptionManagementViewModel.cs" />

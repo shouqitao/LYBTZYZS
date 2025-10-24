@@ -136,6 +136,14 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Body] PrescriptionCreateDto request);
 
         /// <summary>
+        /// 更新医案的处方（Issue #1608补充）
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription")]
+        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(
+            Guid medicalCaseId,
+            [Refit.Body] PrescriptionUpdateDto request);
+
+        /// <summary>
         /// 删除医案的处方（Issue #1608补充）
         /// </summary>
         [Refit.Delete("/api/v1/medicalcases/{medicalCaseId}/prescription")]

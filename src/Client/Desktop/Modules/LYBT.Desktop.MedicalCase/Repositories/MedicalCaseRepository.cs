@@ -250,6 +250,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+    public async Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+    {
+        var response = await _api.UpdatePrescriptionAsync(medicalCaseId, dto);
+        return response.Data ?? throw new InvalidOperationException("更新处方失败,服务器未返回数据");
+    }
+
         /// <summary>
         /// 删除医案的处方(Issue #1608补充)
         /// </summary>

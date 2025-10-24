@@ -73,6 +73,11 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto);
 
         /// <summary>
+        /// 更新医案的处方（Issue #1608补充）
+        /// </summary>
+        Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
+
+        /// <summary>
         /// 删除医案的处方（Issue #1608补充）
         /// </summary>
         Task DeletePrescriptionAsync(Guid medicalCaseId);
