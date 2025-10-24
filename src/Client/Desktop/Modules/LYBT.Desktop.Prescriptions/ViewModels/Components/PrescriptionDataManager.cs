@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -17,7 +18,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     /// </summary>
     public class PrescriptionDataManager
     {
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly ILogger<PrescriptionDataManager> _logger;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILoggerFactory _loggerFactory;
@@ -26,7 +28,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         private readonly IUserNotificationService? _userNotificationService;
 
         public PrescriptionDataManager(
-            IPrescriptionRepository prescriptionService,
+            IPrescriptionApi prescriptionApi,
+            IMedicalCaseRepository medicalCaseRepository,
             ILogger<PrescriptionDataManager> logger,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -34,7 +37,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
         {
-            _prescriptionRepository = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -110,10 +114,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                // UltraThink架构修复：使用正确的GetByMedicalCaseIdAsync方法
+                // Issue #1608: 使用IPrescriptionApi替代IPrescriptionRepository
                 _logger.LogInformation("开始加载处方数据，医疗案例ID: {MedicalCaseId}", MedicalCaseId);
 
-                var prescriptions = await _prescriptionRepository.GetByMedicalCaseIdAsync(MedicalCaseId);
+                var response = await _prescriptionApi.GetPrescriptionsByMedicalCaseIdAsync(MedicalCaseId);
+                var prescriptions = response.Data ?? new List<PrescriptionDto>();
 
                 if (prescriptions != null && prescriptions.Any())
                 {
@@ -223,7 +228,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     }).ToList()
                 };
 
-                var result = await _prescriptionRepository.CreateAsync(prescriptionCreateDto);
+                // Issue #1608: 使用IMedicalCaseRepository.CreatePrescriptionAsync替代IPrescriptionRepository.CreateAsync
+                var result = await _medicalCaseRepository.CreatePrescriptionAsync(MedicalCaseId, prescriptionCreateDto);
                 if (result != null)
                 {
                     // Issue #1551: 保存后更新服务端生成的处方编号

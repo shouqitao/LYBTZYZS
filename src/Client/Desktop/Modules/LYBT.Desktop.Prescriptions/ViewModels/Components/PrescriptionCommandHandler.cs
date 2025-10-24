@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -16,7 +17,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     /// </summary>
     public class PrescriptionCommandHandler
     {
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IPrescriptionPrintService _printService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
         private readonly IDialogService _dialogService;
