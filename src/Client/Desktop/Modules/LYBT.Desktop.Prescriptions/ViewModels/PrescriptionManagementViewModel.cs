@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -19,7 +21,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IFeatureToggleService _featureToggleService;
 
         #endregion
@@ -247,7 +250,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionManagementViewModel(
-            IPrescriptionRepository prescriptionRepository,
+            IPrescriptionApi prescriptionApi,
+            IMedicalCaseRepository medicalCaseRepository,
             IFeatureToggleService featureToggleService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -256,7 +260,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _featureToggleService = featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
 
             // 初始化命令（基于功能开关）
@@ -313,7 +318,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方列表...");
 
-                var pagedData = await _prescriptionRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                var response = await _prescriptionApi.GetPrescriptionsAsync(CurrentPage, PageSize, SearchText);
+                var pagedData = response.Data ?? new PagedResult<PrescriptionDto> { Items = new List<PrescriptionDto>(), TotalCount = 0 };
                 Prescriptions.Clear();
                 foreach (var item in pagedData.Items)
                 {
@@ -378,7 +384,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在删除处方...");
 
-                var success = await _prescriptionRepository.DeleteAsync(SelectedPrescription.Id);
+                await _medicalCaseRepository.DeletePrescriptionAsync(SelectedPrescription.Id);
+                var success = true;
                 if (success)
                 {
                     await ShowSuccessMessageAsync("处方删除成功");
