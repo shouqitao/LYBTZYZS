@@ -83,6 +83,23 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
 
         /// <summary>
+        /// 为已存在的医案创建处方（Issue #1608补充）
+        /// 前置条件：MedicalCase和Consultation已存在
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="dto">处方创建信息</param>
+        /// <returns>创建的处方信息</returns>
+        Task<ServiceResult<PrescriptionDto>> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto);
+
+        /// <summary>
+        /// 删除医案的处方（Issue #1608补充）
+        /// 根据A2决策：支持单独删除Prescription，保留MedicalCase和Consultation
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>删除结果</returns>
+        Task<ServiceResult> DeletePrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
         /// 查询病案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>

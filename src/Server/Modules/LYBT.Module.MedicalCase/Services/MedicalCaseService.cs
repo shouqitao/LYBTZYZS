@@ -469,6 +469,90 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 为已存在的医案创建处方（Issue #1608补充）
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDto>> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto)
+        {
+            try
+            {
+                // 1. 获取聚合根（包含Consultation）
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase == null)
+                    return ServiceResult<PrescriptionDto>.Failure("病案不存在");
+
+                // 2. 验证Consultation存在（前置条件）
+                if (medicalCase.Consultation == null)
+                    return ServiceResult<PrescriptionDto>.Failure("病案的诊断信息不存在，请先完成诊断");
+
+                // 3. 检查Prescription是否已存在（避免重复）
+                if (medicalCase.Prescription != null)
+                    return ServiceResult<PrescriptionDto>.Failure("病案已存在处方，请使用更新接口");
+
+                // 4. 创建Prescription实体（映射DTO → Entity）
+                var prescription = _mapper.Map<PrescriptionEntity>(dto);
+                prescription.Id = medicalCaseId; // 共享主键（与MedicalCase相同ID）
+                prescription.MedicalCaseId = medicalCaseId;
+                prescription.CreatedAt = DateTime.Now;
+                prescription.UpdatedAt = DateTime.Now;
+
+                // 5. 将Prescription关联到聚合根（通过导航属性）
+                medicalCase.Prescription = prescription;
+
+                // 6. 通过聚合根保存（EF Core会级联创建Prescription）
+                var result = await _repository.UpdateAsync(medicalCase);
+
+                // 7. 返回创建的Prescription DTO
+                var prescriptionDto = _mapper.Map<PrescriptionDto>(result.Prescription);
+                _logger.LogInformation("处方创建成功，病案ID: {MedicalCaseId}, 处方ID: {PrescriptionId}",
+                    medicalCaseId, prescriptionDto.Id);
+
+                return ServiceResult<PrescriptionDto>.Success(prescriptionDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建病案处方失败，病案ID: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<PrescriptionDto>.Failure("创建处方失败");
+            }
+        }
+
+        /// <summary>
+        /// 删除医案的处方（Issue #1608补充）
+        /// 根据A2决策：单独删除Prescription，保留MedicalCase和Consultation
+        /// </summary>
+        public async Task<ServiceResult> DeletePrescriptionAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                // 1. 获取聚合根（包含Prescription）
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase == null)
+                    return ServiceResult.Failure("病案不存在");
+
+                // 2. 检查Prescription是否存在
+                if (medicalCase.Prescription == null)
+                    return ServiceResult.Failure("病案的处方信息不存在");
+
+                // 3. 软删除Prescription（设置IsDeleted标志）
+                medicalCase.Prescription.IsDeleted = true;
+                medicalCase.Prescription.UpdatedAt = DateTime.Now;
+
+                // 4. 清空MedicalCase的Prescription导航属性（保持聚合根一致性）
+                medicalCase.Prescription = null;
+
+                // 5. 通过聚合根保存（EF Core会级联更新Prescription）
+                await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("处方删除成功，病案ID: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除病案处方失败，病案ID: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Failure("删除处方失败");
+            }
+        }
+
         // ========== Epic #1589 功能实现（Issue #1600 Phase 3）==========
 
         /// <summary>
