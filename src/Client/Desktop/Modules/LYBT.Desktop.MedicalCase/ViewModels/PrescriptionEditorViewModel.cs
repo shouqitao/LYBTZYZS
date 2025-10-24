@@ -187,11 +187,98 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public ObservableCollection<HerbDto> FilteredHerbs { get; } = new();
 
+        private string _treatmentMethod = string.Empty;
+        /// <summary>
+        /// 治法方案（Issue #1591新增）
+        /// </summary>
+        public string TreatmentMethod
+        {
+            get => _treatmentMethod;
+            set => SetProperty(ref _treatmentMethod, value);
+        }
+
+        private string _treatmentPrinciple = string.Empty;
+        /// <summary>
+        /// 治疗原则（Issue #1591新增）
+        /// </summary>
+        public string TreatmentPrinciple
+        {
+            get => _treatmentPrinciple;
+            set => SetProperty(ref _treatmentPrinciple, value);
+        }
+
+        private DateTime? _step2CompletedAt;
+        /// <summary>
+        /// Step2完成时间（Issue #1591新增）
+        /// </summary>
+        public DateTime? Step2CompletedAt
+        {
+            get => _step2CompletedAt;
+            set
+            {
+                if (SetProperty(ref _step2CompletedAt, value))
+                {
+                    RaisePropertyChanged(nameof(Step2CompletedAtText));
+                    RaisePropertyChanged(nameof(Step2CompletedAtVisibility));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Step2完成时间文本（Issue #1591新增）
+        /// </summary>
+        public string Step2CompletedAtText =>
+            Step2CompletedAt.HasValue
+                ? $"✅ Step 2已完成 ({Step2CompletedAt.Value:yyyy-MM-dd HH:mm:ss})"
+                : string.Empty;
+
+        /// <summary>
+        /// Step2完成时间可见性（Issue #1591新增）
+        /// </summary>
+        public System.Windows.Visibility Step2CompletedAtVisibility =>
+            Step2CompletedAt.HasValue
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
+        private string _duplicateHerbsWarningText = string.Empty;
+        /// <summary>
+        /// 重复药材警告文本（Issue #1591新增）
+        /// </summary>
+        public string DuplicateHerbsWarningText
+        {
+            get => _duplicateHerbsWarningText;
+            set
+            {
+                if (SetProperty(ref _duplicateHerbsWarningText, value))
+                {
+                    RaisePropertyChanged(nameof(DuplicateHerbsWarningVisibility));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 重复药材警告可见性（Issue #1591新增）
+        /// </summary>
+        public System.Windows.Visibility DuplicateHerbsWarningVisibility =>
+            !string.IsNullOrWhiteSpace(DuplicateHerbsWarningText)
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+
         #endregion
 
         #region 命令
 
         public DelegateCommand AddRowCommand { get; }
+
+        /// <summary>
+        /// 完成Step2命令（Issue #1591新增）
+        /// </summary>
+        public DelegateCommand CompleteStep2Command { get; }
+
+        /// <summary>
+        /// 显示其他病案查询命令（Issue #1591新增）
+        /// </summary>
+        public DelegateCommand ShowOtherCasesQueryCommand { get; }
 
         #endregion
 
@@ -611,6 +698,123 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             return result;
         }
 
+        /// <summary>
+        /// 完成Step2（处方录入）
+        /// Issue #1591: REQ-002 - 三步工作流优化-Step2
+        /// </summary>
+        private async Task ExecuteCompleteStep2()
+        {
+            try
+            {
+                SetIsBusy(true, "正在完成Step2...");
+
+                // 1. 执行重复药材检测
+                CheckDuplicateHerbs();
+
+                // 2. 如果有重复药材警告，提示用户确认
+                if (!string.IsNullOrWhiteSpace(DuplicateHerbsWarningText))
+                {
+                    var confirmed = await ShowConfirmMessageAsync(
+                        $"检测到重复药材：\n{DuplicateHerbsWarningText}\n\n是否继续保存？");
+                    if (!confirmed)
+                    {
+                        Logger.LogInformation("用户取消Step2保存（重复药材警告）");
+                        return;
+                    }
+                }
+
+                // 3. 调用SaveAsync保存处方
+                var saved = await SaveAsync();
+                if (!saved)
+                {
+                    Logger.LogWarning("Step2保存失败");
+                    return;
+                }
+
+                // 4. 标记Step2完成时间
+                Step2CompletedAt = DateTime.Now;
+
+                // 5. 导航到Step3（汇总页）- 暂未实现，显示成功消息
+                await ShowSuccessMessageAsync("Step2已完成！\n处方已保存，后续将进入汇总页（暂未实现）。");
+
+                Logger.LogInformation("Step2完成成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "完成Step2失败");
+                await ShowErrorMessageAsync($"完成Step2失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 显示其他病案查询浮动菜单
+        /// Issue #1591: REQ-002 - 辅助功能
+        /// </summary>
+        private async void ExecuteShowOtherCasesQuery()
+        {
+            try
+            {
+                Logger.LogInformation("显示其他病案查询菜单（功能暂未实现）");
+                await ShowWarningMessageAsync("其他病案查询功能即将推出，敬请期待！");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "显示其他病案查询菜单失败");
+            }
+        }
+
+        /// <summary>
+        /// 检测重复药材
+        /// Issue #1591: REQ-002 - 重复药材检测逻辑
+        /// </summary>
+        private void CheckDuplicateHerbs()
+        {
+            try
+            {
+                var allItems = GetAllItems();
+                if (allItems.Count == 0)
+                {
+                    DuplicateHerbsWarningText = string.Empty;
+                    return;
+                }
+
+                // 按 HerbId 分组，找出重复的药材
+                var duplicates = allItems
+                    .Where(item => item.HerbId != Guid.Empty) // 只检查已关联药材库的药材
+                    .GroupBy(item => item.HerbId)
+                    .Where(group => group.Count() > 1)
+                    .Select(group => new
+                    {
+                        HerbName = group.First().HerbName,
+                        Count = group.Count(),
+                        TotalDosage = group.Sum(item => item.Dosage)
+                    })
+                    .ToList();
+
+                if (duplicates.Any())
+                {
+                    var warningLines = duplicates.Select(d =>
+                        $"• {d.HerbName}：重复{d.Count}次，累计用量{d.TotalDosage}g");
+                    DuplicateHerbsWarningText = string.Join("\n", warningLines);
+
+                    Logger.LogWarning("检测到{Count}种重复药材", duplicates.Count);
+                }
+                else
+                {
+                    DuplicateHerbsWarningText = string.Empty;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "检测重复药材失败");
+                DuplicateHerbsWarningText = string.Empty;
+            }
+        }
+
         #endregion
 
         #region 构造函数
@@ -630,8 +834,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
+            CompleteStep2Command = new DelegateCommand(async () => await ExecuteCompleteStep2()); // Issue #1591
+            ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery); // Issue #1591
 
-            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B）");
+            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强）");
         }
 
         #endregion
