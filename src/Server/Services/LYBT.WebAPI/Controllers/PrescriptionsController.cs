@@ -164,14 +164,58 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 删除处方（已废弃）
+        /// 物理删除处方（永久删除，不可恢复）
+        /// Issue #1593 - Phase 4
         /// </summary>
+        /// <param name="id">处方ID（与MedicalCaseId共享主键，1:1:1关系）</param>
         /// <remarks>
-        /// ⚠️ 已废弃：请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除处方）。Prescription模块仅提供查询和辅助功能。
+        /// 注意：此操作不可恢复，请谨慎使用。
+        /// 建议：优先使用软删除（DELETE /api/prescriptions/{id}/soft）。
+        /// 架构说明：虽然参数名为id，但由于1:1:1关系，MedicalCase.Id == Consultation.Id == Prescription.Id。
         /// </remarks>
         [HttpDelete("{id}")]
-        [Obsolete("请通过 DELETE /api/medicalcases/{id} 删除病案（级联删除处方）。Prescription模块仅提供查询和辅助功能。", true)]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> PhysicalDelete(Guid id)
+        {
+            try
+            {
+                var validationResult = ValidateGuid(id, "处方ID");
+                if (validationResult != null)
+                {
+                    return validationResult;
+                }
+
+                var result = await _service.PhysicalDeleteAsync(id);
+                if (!result.IsSuccess)
+                {
+                    return NotFound("处方不存在", ApiErrorCodes.PRESCRIPTIONNOTFOUND);
+                }
+
+                LogOperation("物理删除处方成功", null, id);
+                return Success("处方已永久删除");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "物理删除处方", id);
+            }
+        }
+
+        /// <summary>
+        /// 软删除处方（标记为已删除，保留数据）
+        /// Issue #1593 - Phase 4
+        /// </summary>
+        /// <param name="id">处方ID（与MedicalCaseId共享主键，1:1:1关系）</param>
+        /// <remarks>
+        /// 软删除将IsDeleted字段设置为true，数据仍保留在数据库中，可用于追溯和恢复。
+        /// 架构说明：虽然参数名为id，但由于1:1:1关系，MedicalCase.Id == Consultation.Id == Prescription.Id。
+        /// </remarks>
+        [HttpDelete("{id}/soft")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> SoftDelete(Guid id)
         {
             try
             {
@@ -187,12 +231,12 @@ namespace LYBT.WebAPI.Controllers
                     return NotFound("处方不存在", ApiErrorCodes.PRESCRIPTIONNOTFOUND);
                 }
 
-                LogOperation("删除处方成功", null, id);
-                return Success("删除成功");
+                LogOperation("软删除处方成功", null, id);
+                return Success("处方已标记为删除");
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "删除处方", id);
+                return HandleException(ex, "软删除处方", id);
             }
         }
 

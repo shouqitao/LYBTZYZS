@@ -80,5 +80,19 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="dto">处方更新信息</param>
         /// <returns>更新后的处方信息</returns>
         Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto);
+
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
+        /// <param name="startDate">开始日期（过滤CreatedAt）</param>
+        /// <param name="endDate">结束日期（过滤CreatedAt）</param>
+        /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
+        Task<ServiceResult<List<MedicalCaseDto>>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null);
     }
 }

@@ -218,6 +218,33 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
+        /// 物理删除处方（永久删除，不可恢复）
+        /// Issue #1593 - Phase 4
+        /// </summary>
+        public async Task<ServiceResult> PhysicalDeleteAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                {
+                    _logger.LogWarning("物理删除处方失败：处方不存在，ID: {Id}", id);
+                    return ServiceResult.Failure("处方不存在");
+                }
+
+                // 物理删除（直接DeleteAsync，不设置IsDeleted）
+                await _repository.DeleteAsync(entity);
+                _logger.LogInformation("物理删除处方成功，ID: {Id}", id);
+                return ServiceResult.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "物理删除处方失败，ID: {Id}", id);
+                return ServiceResult.Failure("物理删除处方失败");
+            }
+        }
+
+        /// <summary>
         /// 计算处方总价 - 简化的价格计算逻辑
         /// </summary>
         /// <param name="items">处方项列表</param>

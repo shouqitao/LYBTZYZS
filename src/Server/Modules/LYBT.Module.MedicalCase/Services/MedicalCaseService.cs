@@ -488,5 +488,33 @@ namespace LYBT.Module.MedicalCase.Services
                 return ServiceResult<List<PendingMedicalCaseDto>>.Failure("获取待看诊列表失败");
             }
         }
+
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        public async Task<ServiceResult<List<MedicalCaseDto>>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null)
+        {
+            try
+            {
+                _logger.LogInformation("开始查询病案，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
+                    patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
+
+                var entities = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
+                var dtos = _mapper.Map<List<MedicalCaseDto>>(entities);
+
+                _logger.LogInformation("病案查询成功，共 {Count} 条记录", dtos.Count);
+                return ServiceResult<List<MedicalCaseDto>>.Success(dtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询病案列表失败");
+                return ServiceResult<List<MedicalCaseDto>>.Failure("查询病案列表失败");
+            }
+        }
     }
 }

@@ -78,6 +78,44 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        [HttpGet("query")]
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
+        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> Query(
+            [FromQuery] string? patientName = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? diagnosisKeyword = null)
+        {
+            try
+            {
+                // 至少需要一个查询条件
+                if (string.IsNullOrWhiteSpace(patientName) &&
+                    !startDate.HasValue &&
+                    !endDate.HasValue &&
+                    string.IsNullOrWhiteSpace(diagnosisKeyword))
+                {
+                    return ValidationFail<List<MedicalCaseDto>>("请至少提供一个查询条件");
+                }
+
+                // 日期范围验证
+                if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+                {
+                    return ValidationFail<List<MedicalCaseDto>>("开始日期不能晚于结束日期");
+                }
+
+                var result = await _medicalCaseService.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
+                return HandleServiceResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<MedicalCaseDto>>(ex, "查询病案列表", new { patientName, startDate, endDate, diagnosisKeyword });
+            }
+        }
+
+        /// <summary>
         /// 根据ID获取医疗案例详情
         /// </summary>
         [HttpGet("{id}")]

@@ -197,5 +197,56 @@ namespace LYBT.Module.MedicalCase.Repositories
 
             return $"{phoneNumber.Substring(0, 3)}****{phoneNumber.Substring(7)}";
         }
+
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        public async Task<List<MedicalCaseEntity>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null)
+        {
+            // 使用GetDetailQuery()以包含Consultation数据（用于诊断关键字搜索）
+            var query = GetDetailQuery();
+
+            // 患者姓名模糊匹配
+            if (!string.IsNullOrWhiteSpace(patientName))
+            {
+                query = query.Where(m => m.PatientName.Contains(patientName));
+            }
+
+            // 日期范围过滤
+            if (startDate.HasValue)
+            {
+                query = query.Where(m => m.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                // 结束日期包含当天全天（到23:59:59）
+                var endOfDay = endDate.Value.Date.AddDays(1).AddSeconds(-1);
+                query = query.Where(m => m.CreatedAt <= endOfDay);
+            }
+
+            // 诊断关键字搜索（搜索Consultation.TCMDiagnosis字段）
+            if (!string.IsNullOrWhiteSpace(diagnosisKeyword))
+            {
+                query = query.Where(m =>
+                    m.Consultation != null &&
+                    m.Consultation.TCMDiagnosis != null &&
+                    m.Consultation.TCMDiagnosis.Contains(diagnosisKeyword));
+            }
+
+            // 按创建时间倒序排列
+            var result = await query
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+
+            _logger?.LogInformation("查询病案列表，共 {Count} 条记录，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
+                result.Count, patientName ?? "无", startDate, endDate, diagnosisKeyword ?? "无");
+
+            return result;
+        }
     }
 }

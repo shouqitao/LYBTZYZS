@@ -35,5 +35,19 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// Epic #1583 - Phase 5
         /// </summary>
         Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync();
+
+        /// <summary>
+        /// 查询病案列表（支持多条件组合查询）
+        /// Issue #1592 - Phase 3
+        /// </summary>
+        /// <param name="patientName">患者姓名关键字（模糊匹配）</param>
+        /// <param name="startDate">开始日期（过滤CreatedAt）</param>
+        /// <param name="endDate">结束日期（过滤CreatedAt）</param>
+        /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
+        Task<List<MedicalCaseEntity>> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null);
     }
 }

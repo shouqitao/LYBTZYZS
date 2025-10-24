@@ -44,6 +44,13 @@ namespace LYBT.Server.Interfaces.Services
         Task<ServiceResult> DeleteAsync(Guid id);
 
         /// <summary>
+        /// 物理删除处方（永久删除，不可恢复）
+        /// Issue #1593 - Phase 4
+        /// </summary>
+        /// <param name="id">处方ID（与MedicalCaseId共享主键）</param>
+        Task<ServiceResult> PhysicalDeleteAsync(Guid id);
+
+        /// <summary>
         /// 根据病例ID获取处方列表
         /// </summary>
         Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
