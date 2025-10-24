@@ -542,7 +542,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     switch (choice)
                     {
                         case 1: // 继续看诊
-                            await ContinueConsultationAsync(CurrentPatient);
+                            await ContinueConsultationAsync(CurrentPatient, unfinishedCase.Id);
                             break;
 
                         case 2: // 新建医案（先关闭旧的）
@@ -678,15 +678,17 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// Phase 2: 继续看诊（直接发布患者选择事件）
+        /// Issue #1597: 传递现有MedicalCaseId
         /// </summary>
-        private async Task ContinueConsultationAsync(PatientDto patient)
+        private async Task ContinueConsultationAsync(PatientDto patient, Guid medicalCaseId)
         {
             try
             {
-                Logger.LogInformation("用户选择继续看诊，患者：{PatientName}", patient.Name);
+                Logger.LogInformation("用户选择继续看诊，患者：{PatientName}，MedicalCaseId: {MedicalCaseId}",
+                    patient.Name, medicalCaseId);
 
-                // 直接发布患者选择事件
-                PublishPatientSelectedEvent(patient);
+                // 直接发布患者选择事件，传递现有MedicalCaseId
+                PublishPatientSelectedEvent(patient, medicalCaseId);
 
                 await Task.CompletedTask;
             }
@@ -814,9 +816,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 发布患者选择事件
         /// Issue #1557 - 使用EventAggregator替代.NET Event，实现模块间解耦
+        /// Issue #1597 - 支持可选的MedicalCaseId（继续看诊场景）
         /// </summary>
         /// <param name="patient">选中的患者</param>
-        private void PublishPatientSelectedEvent(PatientDto patient)
+        /// <param name="medicalCaseId">可选的医案ID（继续看诊时传递现有ID，新建时为null）</param>
+        private void PublishPatientSelectedEvent(PatientDto patient, Guid? medicalCaseId = null)
         {
             try
             {
@@ -842,14 +846,26 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 // Issue #1585 - 修复导航断裂：添加导航到MedicalCaseFlowView的逻辑
                 // Issue #1596 - 传递完整PatientDto对象，确保MedicalCaseFlowViewModel可以创建医案
+                // Issue #1597 - 继续看诊场景下传递现有MedicalCaseId
                 var parameters = new NavigationParameters
                 {
                     { "CurrentPatient", patient }  // 传递完整PatientDto对象
                 };
 
+                // 继续看诊场景：传递现有MedicalCaseId
+                if (medicalCaseId.HasValue && medicalCaseId.Value != Guid.Empty)
+                {
+                    parameters.Add("MedicalCaseId", medicalCaseId.Value);
+                    Logger.LogInformation("导航到医案录入界面（继续看诊）：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                        patient.Id, medicalCaseId.Value);
+                }
+                else
+                {
+                    Logger.LogInformation("导航到医案录入界面（新建医案）：PatientId={PatientId}, PatientName={PatientName}",
+                        patient.Id, patient.Name);
+                }
+
                 RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
-                Logger.LogInformation("导航到医案录入界面：PatientId={PatientId}, PatientName={PatientName}",
-                    patient.Id, patient.Name);
             }
             catch (Exception ex)
             {
