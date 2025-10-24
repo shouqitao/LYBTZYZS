@@ -82,6 +82,24 @@ namespace LYBT.Entities.Consultation
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
+        // Issue #1598: REQ-001 - 三步工作流优化状态字段
+
+        /// <summary>Step1完成时间（辩证）</summary>
+        [DisplayName("Step1完成时间")]
+        public DateTime? Step1CompletedAt { get; set; }
+
+        /// <summary>Step2完成时间（施治）</summary>
+        [DisplayName("Step2完成时间")]
+        public DateTime? Step2CompletedAt { get; set; }
+
+        /// <summary>Step3完成时间（总结）</summary>
+        [DisplayName("Step3完成时间")]
+        public DateTime? Step3CompletedAt { get; set; }
+
+        /// <summary>处方开关（true=开处方，false=不开处方）</summary>
+        [DisplayName("处方开关")]
+        public bool PrescriptionEnabled { get; set; } = true;
+
         // RowVersion、IsDeleted等字段继承自BaseEntity
 
         // 导航属性

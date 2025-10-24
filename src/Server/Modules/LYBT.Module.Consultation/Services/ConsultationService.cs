@@ -205,6 +205,61 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Issue #1598: REQ-001 - 三步工作流优化-Step1 (Server端API实现)
+        /// </summary>
+        public async Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request)
+        {
+            try
+            {
+                // 1. 验证参数
+                if (medicalCaseId == Guid.Empty)
+                {
+                    _logger.LogWarning("CompleteStep1失败：医案ID为空");
+                    return ServiceResult<ConsultationStepDto>.Failure("医案ID不能为空");
+                }
+
+                if (request == null)
+                {
+                    _logger.LogWarning("CompleteStep1失败：请求参数为空");
+                    return ServiceResult<ConsultationStepDto>.Failure("请求参数不能为空");
+                }
+
+                _logger.LogInformation("开始完成Step1，MedicalCaseId: {MedicalCaseId}, PrescriptionEnabled: {PrescriptionEnabled}",
+                    medicalCaseId, request.PrescriptionEnabled);
+
+                // 2. 获取Consultation（使用medicalCaseId，因为共享主键）
+                var consultation = await _repository.GetByIdAsync(medicalCaseId);
+                if (consultation == null)
+                {
+                    _logger.LogWarning("CompleteStep1失败：诊疗记录不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return ServiceResult<ConsultationStepDto>.Failure("诊疗记录不存在");
+                }
+
+                // 3. 更新Step1完成状态
+                consultation.Step1CompletedAt = DateTime.UtcNow;
+                await _repository.UpdateAsync(consultation);
+
+                _logger.LogInformation("✅ Step1完成成功，MedicalCaseId: {MedicalCaseId}, Step1CompletedAt: {Step1CompletedAt}",
+                    medicalCaseId, consultation.Step1CompletedAt);
+
+                // 4. 返回Step1状态DTO
+                var stepDto = new ConsultationStepDto
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = consultation.Step1CompletedAt,
+                    PrescriptionEnabled = request.PrescriptionEnabled
+                };
+
+                return ServiceResult<ConsultationStepDto>.Success(stepDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成Step1异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<ConsultationStepDto>.Failure($"完成Step1失败：{ex.Message}");
+            }
+        }
 
     }
 }

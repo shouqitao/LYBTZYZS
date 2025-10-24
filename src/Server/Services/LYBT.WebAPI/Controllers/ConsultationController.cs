@@ -103,6 +103,35 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Issue #1598: REQ-001 - 三步工作流优化-Step1
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="request">Step1请求参数</param>
+        /// <returns>Step1完成状态</returns>
+        [HttpPost("{medicalCaseId}/complete-step1")]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationStepDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<ConsultationStepDto>>> CompleteStep1(
+            Guid medicalCaseId,
+            [FromBody] CompleteStep1Request request)
+        {
+            try
+            {
+                var validationResult = ValidateGuid<ConsultationStepDto>(medicalCaseId, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _consultationService.CompleteStep1Async(medicalCaseId, request);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ConsultationStepDto>(ex, "完成Step1", new { MedicalCaseId = medicalCaseId });
+            }
+        }
+
+        /// <summary>
         /// 搜索诊疗记录
         /// </summary>
         /// <param name="keyword">搜索关键词</param>

@@ -43,6 +43,15 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Issue #1598: REQ-001 - 三步工作流优化-Step1 (Server端API实现)
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="request">Step1请求参数</param>
+        /// <returns>Step1完成状态</returns>
+        Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
+
         // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
         // Issue #1562 Phase 1: 已删除 GetStatisticsAsync（统计功能属于过度设计）
     }
