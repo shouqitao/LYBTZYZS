@@ -40,6 +40,9 @@
 
 ### 业务架构文档
 - **[看诊流程实体关系](architecture/shared/clinical-workflow-entity-relationships.md)** - 挂号/医案/诊断/处方实体关系与状态机设计 ⭐⭐⭐ **权威文档**
+- **[业务规则文档](business-rules.md)** - 14条核心业务规则（数据约束/业务流程/聚合根/计算规则/访问控制）⭐⭐⭐
+- **[医案/诊断/处方增强设计](design/medicalcase-consultation-prescription-enhancement-design.md)** - 三步工作流优化、处方管理增强、其他病案查询功能详细设计 ⭐
+- **[医案/诊断/处方差距分析](design/medicalcase-consultation-prescription-gap-analysis.md)** - 现有代码与设计的差距、修改计划、工作量估算 ⭐⭐
 
 ### 开发指南文档
 - **[开发指南总览](development/README.md)** - 开发规范和流程指导
@@ -73,6 +76,12 @@
 - **[药材模块](modules/herbs/)** - 药材字典、拼音码检索、价格管理
 - **[验方模块](modules/formula/)** - 验方模板、智能推荐、统计分析
 - **[用户模块](modules/users/)** - 用户管理、角色权限、密码安全
+
+## 📊 项目分析报告
+
+**代码现状与架构演进** - 关键模块深度分析
+
+- **[医案/诊断/处方三模块现状分析 (2025-10-24)](reports/medicalcase-consultation-prescription-current-status-analysis-2025-10-24.md)** - Server端3199行、Desktop端17231行、文档20078行完整统计分析，包含架构演进、代码复杂度、测试覆盖率、优化建议 ⭐⭐⭐
 
 ## 👥 角色导航
 
@@ -162,6 +171,7 @@
 - [项目Git仓库](https://github.com/shouqitao/凌隐宝堂中医诊所) - 代码和文档版本管理
 - [Steering Documents](../.spec-workflow/steering/) - 产品愿景、技术决策、项目结构
 - [在线API文档](http://localhost:5001/swagger) - 开发环境API交互界面
+- **[归档文档目录](archive/README.md)** - 已完成实施的需求文档、已废弃的讨论文档归档策略与历史记录
 
 ## 📈 项目成果
 
@@ -188,5 +198,5 @@
 
 *本文档中心基于实际代码完全重构，提供准确、同步、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-10-15 - v5.0彻底重构版** 🎉
-**总文档数：17个，完成度：100%** ✨
+**最后更新：2025-01-24 - v5.1文档规整版** 🎉
+**总文档数：19个（新增业务规则文档、三模块现状分析报告），完成度：100%** ✨

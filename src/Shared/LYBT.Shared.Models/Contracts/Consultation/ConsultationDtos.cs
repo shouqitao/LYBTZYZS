@@ -187,4 +187,46 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>错误消息</summary>
         public List<string> ErrorMessages { get; set; } = new();
     }
+
+    // Issue #1590: REQ-001 - 三步工作流优化-Step1
+
+    /// <summary>
+    /// 完成Step1请求DTO
+    /// </summary>
+    public class CompleteStep1Request
+    {
+        /// <summary>是否开处方</summary>
+        [DisplayName("是否开处方")]
+        public bool PrescriptionEnabled { get; set; } = true;
+    }
+
+    /// <summary>
+    /// 诊疗步骤状态DTO（用于三步工作流）
+    /// </summary>
+    public class ConsultationStepDto
+    {
+        /// <summary>诊疗ID（共享主键，等于MedicalCaseId）</summary>
+        [DisplayName("诊疗ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>Step1完成时间（辩证）</summary>
+        [DisplayName("Step1完成时间")]
+        public DateTime? Step1CompletedAt { get; set; }
+
+        /// <summary>Step2完成时间（施治）</summary>
+        [DisplayName("Step2完成时间")]
+        public DateTime? Step2CompletedAt { get; set; }
+
+        /// <summary>Step3完成时间（汇总）</summary>
+        [DisplayName("Step3完成时间")]
+        public DateTime? Step3CompletedAt { get; set; }
+
+        /// <summary>是否开处方</summary>
+        [DisplayName("是否开处方")]
+        public bool PrescriptionEnabled { get; set; }
+
+        /// <summary>当前步骤（Step1/Step2/Step3/Completed）</summary>
+        [DisplayName("当前步骤")]
+        public string CurrentStep { get; set; } = "Step1";
+    }
 }

@@ -55,12 +55,14 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="20">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 标题 -->
-                <RowDefinition Height="Auto"/>  <!-- 基本诊断信息 -->
-                <RowDefinition Height="Auto"/>  <!-- 四诊合参 -->
-                <RowDefinition Height="Auto"/>  <!-- 备注 -->
-                <RowDefinition Height="Auto"/>  <!-- 辅助操作 -->
-                <RowDefinition Height="Auto"/>  <!-- 提示信息 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 0: 标题 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 1: 步骤完成时间提示（新增） -->
+                <RowDefinition Height="Auto"/>  <!-- Row 2: 基本诊断信息 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 3: 处方单选框（新增） -->
+                <RowDefinition Height="Auto"/>  <!-- Row 4: 四诊合参 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 5: 备注 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 6: 辅助操作 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 7: 提示信息 -->
             </Grid.RowDefinitions>
 
             <!-- Row 0: 标题 -->
@@ -69,10 +71,19 @@
                       FontSize="20"
                       FontWeight="Bold"
                       Foreground="#2E86AB"
-                      Margin="0,0,0,20" />
+                      Margin="0,0,0,10" />
 
-            <!-- Row 1: 基本诊断信息（2列布局） -->
-            <Border Grid.Row="1"
+            <!-- Row 1: 步骤完成时间提示（新增，Issue #1590）-->
+            <TextBlock Grid.Row="1"
+                      Text="{Binding Step1CompletedAtText}"
+                      Visibility="{Binding Step1CompletedAtVisibility}"
+                      Foreground="Green"
+                      FontSize="14"
+                      FontWeight="SemiBold"
+                      Margin="0,0,0,10" />
+
+            <!-- Row 2: 基本诊断信息（2列布局） -->
+            <Border Grid.Row="2"
                    BorderBrush="#E0E0E0"
                    BorderThickness="1"
                    CornerRadius="5"
@@ -148,8 +159,33 @@
                 </Grid>
             </Border>
 
-            <!-- Row 2: 四诊合参（2列布局） -->
-            <Border Grid.Row="2"
+            <!-- Row 3: 处方单选框（新增，Issue #1590）-->
+            <Border Grid.Row="3"
+                   BorderBrush="#E3F2FD"
+                   BorderThickness="1"
+                   CornerRadius="5"
+                   Padding="15"
+                   Margin="0,0,0,20">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="是否开处方："
+                              VerticalAlignment="Center"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Margin="0,0,15,0"/>
+                    <RadioButton Content="开处方"
+                                IsChecked="{Binding PrescriptionEnabled}"
+                                GroupName="PrescriptionGroup"
+                                FontSize="14"
+                                Margin="0,0,30,0"/>
+                    <RadioButton Content="不开处方"
+                                IsChecked="{Binding PrescriptionDisabled}"
+                                GroupName="PrescriptionGroup"
+                                FontSize="14"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Row 4: 四诊合参（2列布局） -->
+            <Border Grid.Row="4"
                    BorderBrush="#E0E0E0"
                    BorderThickness="1"
                    CornerRadius="5"
@@ -219,25 +255,30 @@
                 </Grid>
             </Border>
 
-            <!-- Row 3: 备注 -->
-            <StackPanel Grid.Row="3" Margin="0,0,0,20">
+            <!-- Row 5: 备注 -->
+            <StackPanel Grid.Row="5" Margin="0,0,0,20">
                 <TextBlock Text="备注" Style="{StaticResource FieldLabelStyle}" />
                 <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
                         Style="{StaticResource MultiLineTextBoxStyle}"
                         Height="60" />
             </StackPanel>
 
-            <!-- Row 4: 辅助操作 -->
-            <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,20">
+            <!-- Row 6: 辅助操作（新增完成Step1按钮，Issue #1590）-->
+            <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,20">
                 <!-- Issue #1562: ImportFromHistoryCommand已删除（未实现的扩展功能）-->
+                <Button Content="完成Step1"
+                       Command="{Binding CompleteStep1Command}"
+                       Style="{StaticResource ActionButtonStyle}"
+                       Background="#4CAF50"
+                       Margin="0,0,10,0"/>
                 <Button Content="清空表单"
                        Command="{Binding ClearFormCommand}"
                        Style="{StaticResource ActionButtonStyle}"
                        Background="#FF9800" />
             </StackPanel>
 
-            <!-- Row 5: 提示信息 -->
-            <Border Grid.Row="5"
+            <!-- Row 7: 提示信息 -->
+            <Border Grid.Row="7"
                    Background="#E3F2FD"
                    BorderBrush="#90CAF9"
                    BorderThickness="1"
@@ -247,9 +288,33 @@
                           Foreground="#1976D2"
                           FontSize="12">
                     <Run Text="提示：" FontWeight="Bold" />
-                    <Run Text="填写完成后点击【下一步】进入处方录入。保存时将创建Consultation实体并关联到MedicalCase.ConsultationId。" />
+                    <Run Text="填写完成后点击【完成Step1】按钮，根据处方选择跳转到处方录入或汇总页。" />
                 </TextBlock>
             </Border>
+
+            <!-- 浮动查询菜单按钮（右下角，Issue #1590）-->
+            <Button Grid.Row="0"
+                   Grid.RowSpan="8"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Bottom"
+                   Width="56"
+                   Height="56"
+                   Margin="0,0,20,20"
+                   Command="{Binding ShowOtherCasesQueryCommand}"
+                   ToolTip="查询其他病案"
+                   Background="#2196F3"
+                   Foreground="White"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Content="?"
+                   BorderThickness="0"
+                   Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="28"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
         </Grid>
     </ScrollViewer>
 </UserControl>

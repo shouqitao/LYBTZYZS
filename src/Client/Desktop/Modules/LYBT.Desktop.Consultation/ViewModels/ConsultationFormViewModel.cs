@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using System.Windows; // Issue #1590: 用于Visibility枚举
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
@@ -27,6 +28,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         // Issue #1563: 删除IConsultationRepository依赖，使用聚合根Repository
         private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+        // Issue #1590: REQ-001 - 三步工作流优化-Step1
+        private readonly IConsultationApiClient _consultationApiClient;
 
         #endregion
 
@@ -168,6 +172,72 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #endregion
 
+        #region REQ-001: 三步工作流优化-Step1属性
+
+        private bool _prescriptionEnabled = true; // 默认开处方
+        /// <summary>
+        /// 是否开处方（RadioButton选中状态）
+        /// </summary>
+        public bool PrescriptionEnabled
+        {
+            get => _prescriptionEnabled;
+            set
+            {
+                if (SetProperty(ref _prescriptionEnabled, value))
+                {
+                    RaisePropertyChanged(nameof(PrescriptionDisabled));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 不开处方（反向绑定）
+        /// </summary>
+        public bool PrescriptionDisabled
+        {
+            get => !_prescriptionEnabled;
+            set
+            {
+                if (value)
+                {
+                    PrescriptionEnabled = false;
+                }
+            }
+        }
+
+        private DateTime? _step1CompletedAt;
+        /// <summary>
+        /// Step1完成时间（服务端返回）
+        /// </summary>
+        public DateTime? Step1CompletedAt
+        {
+            get => _step1CompletedAt;
+            set
+            {
+                if (SetProperty(ref _step1CompletedAt, value))
+                {
+                    RaisePropertyChanged(nameof(Step1CompletedAtText));
+                    RaisePropertyChanged(nameof(Step1CompletedAtVisibility));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Step1完成时间文本（格式化显示）
+        /// </summary>
+        public string Step1CompletedAtText =>
+            Step1CompletedAt.HasValue
+                ? $"✅ Step1已完成（{Step1CompletedAt.Value:yyyy-MM-dd HH:mm}）"
+                : string.Empty;
+
+        /// <summary>
+        /// Step1完成时间可见性
+        /// </summary>
+        public System.Windows.Visibility Step1CompletedAtVisibility =>
+            Step1CompletedAt.HasValue ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+
+        #endregion
+
         #region 计算属性
 
         /// <summary>
@@ -305,12 +375,17 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         // Issue #1562 Phase 1: 已删除ImportFromHistoryCommand（未实现的扩展功能）
 
+        // Issue #1590: REQ-001 - 三步工作流优化-Step1命令
+        public DelegateCommand CompleteStep1Command { get; }
+        public DelegateCommand ShowOtherCasesQueryCommand { get; }
+
         #endregion
 
         #region 构造函数
 
         public ConsultationFormViewModel(
             IMedicalCaseRepository medicalCaseRepository,
+            IConsultationApiClient consultationApiClient, // Issue #1590: REQ-001
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -321,8 +396,15 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // Issue #1563: 只注入聚合根Repository
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
+            // Issue #1590: REQ-001 - 注入ConsultationApiClient
+            _consultationApiClient = consultationApiClient ?? throw new ArgumentNullException(nameof(consultationApiClient));
+
             // 初始化命令
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
+
+            // Issue #1590: REQ-001 - 初始化新命令
+            CompleteStep1Command = new DelegateCommand(async () => await ExecuteCompleteStep1());
+            ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery);
 
             Logger.LogInformation("ConsultationFormViewModel已初始化");
         }
@@ -360,6 +442,93 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "清空表单失败");
+            }
+        }
+
+        #endregion
+
+        #region REQ-001: 命令实现
+
+        /// <summary>
+        /// 完成Step1（辩证）
+        /// </summary>
+        private async Task ExecuteCompleteStep1()
+        {
+            try
+            {
+                SetIsBusy(true, "正在完成Step1...");
+
+                // 1. 验证表单
+                if (!Validate())
+                {
+                    await ShowErrorMessageAsync(ValidationMessage);
+                    return;
+                }
+
+                // 2. 调用API完成Step1
+                var request = new CompleteStep1Request
+                {
+                    PrescriptionEnabled = PrescriptionEnabled
+                };
+
+                var stepDto = await _consultationApiClient.CompleteStep1Async(MedicalCaseId, request);
+
+                // 3. 更新本地状态
+                Step1CompletedAt = stepDto.Step1CompletedAt;
+
+                // 4. 导航到下一步（Step2或Step3）
+                if (PrescriptionEnabled)
+                {
+                    // 跳转到Step2（处方录入）- PrescriptionEditorView
+                    var parameters = new NavigationParameters
+                    {
+                        { "MedicalCaseId", MedicalCaseId },
+                        { "CurrentPatient", CurrentPatient }
+                    };
+                    RegionManager?.RequestNavigate("ContentRegion", "PrescriptionEditorView", parameters);
+                }
+                else
+                {
+                    // 跳转到Step3（汇总页）- 暂未实现，显示提示信息
+                    await ShowSuccessMessageAsync("Step1已完成！\n您选择了不开处方，后续将直接进入汇总页（暂未实现）。");
+                }
+
+                Logger.LogInformation("Step1完成成功，导航到下一步");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "完成Step1失败");
+                await ShowErrorMessageAsync($"完成Step1失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 显示其他病案查询浮动菜单
+        /// </summary>
+        private void ExecuteShowOtherCasesQuery()
+        {
+            try
+            {
+                Logger.LogInformation("打开其他病案查询浮动菜单");
+
+                // REQ-003: 导航到其他病案查询页（Phase 3实现）
+                // 暂时显示提示信息
+                ShowInfoMessage("其他病案查询功能将在Phase 3实现");
+
+                // 未来实现代码：
+                // var parameters = new NavigationParameters
+                // {
+                //     { "PatientId", CurrentPatient?.Id }
+                // };
+                // RegionManager?.RequestNavigate("ContentRegion", "OtherCasesQueryView", parameters);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开其他病案查询失败");
             }
         }
 

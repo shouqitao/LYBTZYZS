@@ -23,6 +23,9 @@ namespace LYBT.Desktop.Consultation
             // Phase 3: 注册 Repository（模块级数据访问）
             containerRegistry.RegisterSingleton<IConsultationRepository, ConsultationRepository>();
 
+            // Issue #1590: REQ-001 - 注册 API Client（三步工作流优化）
+            containerRegistry.RegisterSingleton<IConsultationApiClient, ConsultationApiClient>();
+
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
             containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1557: 看诊流程Step 2
