@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -16,7 +17,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     /// </summary>
     public class PrescriptionCommandHandler
     {
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IPrescriptionPrintService _printService;
         private readonly ILogger<PrescriptionCommandHandler> _logger;
         private readonly IDialogService _dialogService;
@@ -103,13 +105,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         #endregion
 
         public PrescriptionCommandHandler(
-            IPrescriptionRepository prescriptionService,
+            IPrescriptionApi prescriptionApi,
+            IMedicalCaseRepository medicalCaseRepository,
             IPrescriptionPrintService printService,
             ILogger<PrescriptionCommandHandler> logger,
             ISessionManager sessionManager,
             IDialogService dialogService)
         {
-            _prescriptionRepository = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
@@ -146,6 +150,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// 创建处方
         /// </summary>
         public async Task<CommandResult<PrescriptionDto>> CreatePrescriptionAsync(
+            Guid medicalCaseId,
             string prescriptionNumber,
             Guid patientId,
             string patientName,
@@ -155,7 +160,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始创建处方：{PrescriptionNumber}", prescriptionNumber);
+                _logger.LogInformation("开始创建处方:{PrescriptionNumber}", prescriptionNumber);
 
                 // 创建处方DTO
                 var createDto = new PrescriptionCreateDto
@@ -168,13 +173,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     Items = ConvertToCreateItems(items)
                 };
 
-                var prescription = await _prescriptionRepository.CreateAsync(createDto);
-                _logger.LogInformation("处方创建成功：{PrescriptionId}", prescription.Id);
+                var prescription = await _medicalCaseRepository.CreatePrescriptionAsync(medicalCaseId, createDto);
+                _logger.LogInformation("处方创建成功:{PrescriptionId}", prescription.Id);
                 return CommandResult<PrescriptionDto>.Success(prescription);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建处方时发生异常：{PrescriptionNumber}", prescriptionNumber);
+                _logger.LogError(ex, "创建处方时发生异常:{PrescriptionNumber}", prescriptionNumber);
                 return CommandResult<PrescriptionDto>.Failure("创建处方时发生系统错误");
             }
         }
@@ -190,7 +195,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始更新处方：{PrescriptionId}", prescriptionId);
+                _logger.LogInformation("开始更新处方:{PrescriptionId}", prescriptionId);
 
                 var updateDto = new PrescriptionUpdateDto
                 {
@@ -199,13 +204,13 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     Items = ConvertToUpdateItems(items)
                 };
 
-                var prescription = await _prescriptionRepository.UpdateAsync(prescriptionId, updateDto);
-                _logger.LogInformation("处方更新成功：{PrescriptionId}", prescriptionId);
+                var prescription = await _medicalCaseRepository.UpdatePrescriptionAsync(prescriptionId, updateDto);
+                _logger.LogInformation("处方更新成功:{PrescriptionId}", prescriptionId);
                 return CommandResult<PrescriptionDto>.Success(prescription);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新处方时发生异常：{PrescriptionId}", prescriptionId);
+                _logger.LogError(ex, "更新处方时发生异常:{PrescriptionId}", prescriptionId);
                 return CommandResult<PrescriptionDto>.Failure("更新处方时发生系统错误");
             }
         }
@@ -217,23 +222,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始删除处方：{PrescriptionId}", prescriptionId);
+                _logger.LogInformation("开始删除处方:{PrescriptionId}", prescriptionId);
 
-                var success = await _prescriptionRepository.DeleteAsync(prescriptionId);
-                if (success)
-                {
-                    _logger.LogInformation("处方删除成功：{PrescriptionId}", prescriptionId);
-                    return CommandResult<bool>.Success(true);
-                }
-                else
-                {
-                    _logger.LogWarning("处方删除失败：{PrescriptionId}", prescriptionId);
-                    return CommandResult<bool>.Failure("删除处方失败");
-                }
+                await _medicalCaseRepository.DeletePrescriptionAsync(prescriptionId);
+                _logger.LogInformation("处方删除成功:{PrescriptionId}", prescriptionId);
+                return CommandResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除处方时发生异常：{PrescriptionId}", prescriptionId);
+                _logger.LogError(ex, "删除处方时发生异常:{PrescriptionId}", prescriptionId);
                 return CommandResult<bool>.Failure("删除处方时发生系统错误");
             }
         }
@@ -261,20 +258,21 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
             try
             {
-                // MVP阶段：需要先保存处方才能打印
+                // MVP阶段:需要先保存处方才能打印
                 // TODO: PRINT-5优化 - 支持未保存处方的打印预览
                 if (_dataManager == null || _dataManager.PrescriptionId == Guid.Empty)
                 {
-                    _logger.LogWarning("无法打印预览：处方未保存");
+                    _logger.LogWarning("无法打印预览:处方未保存");
                     // TODO: 使用通知服务提示用户
                     return;
                 }
 
-                // 获取完整的处方数据
-                var prescription = await _prescriptionRepository.GetByIdAsync(_dataManager.PrescriptionId);
+                // 获取完整的处方数据 (Issue #1608: 使用IPrescriptionApi)
+                var response = await _prescriptionApi.GetPrescriptionByIdAsync(_dataManager.PrescriptionId);
+                var prescription = response.Data;
                 if (prescription == null)
                 {
-                    _logger.LogWarning("无法打印预览：未找到处方 ID={PrescriptionId}", _dataManager.PrescriptionId);
+                    _logger.LogWarning("无法打印预览:未找到处方 ID={PrescriptionId}", _dataManager.PrescriptionId);
                     return;
                 }
 
@@ -425,34 +423,38 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             try
             {
                 var ids = prescriptionIds?.ToList() ?? new List<Guid>();
-                _logger.LogInformation("开始批量删除处方，数量：{Count}", ids.Count);
+                _logger.LogInformation("开始批量删除处方,数量:{Count}", ids.Count);
 
                 if (!ids.Any())
                 {
                     return CommandResult<bool>.Failure("没有选择要删除的处方");
                 }
 
-                // 循环调用DeleteAsync（Shared.Interfaces暂无BatchDeleteAsync）
+                // 循环调用DeleteAsync（IMedicalCaseRepository使用prescriptionId作为medicalCaseId）
                 int successCount = 0;
                 int failureCount = 0;
                 foreach (var id in ids)
                 {
-                    var success = await _prescriptionRepository.DeleteAsync(id);
-                    if (success)
+                    try
+                    {
+                        await _medicalCaseRepository.DeletePrescriptionAsync(id);
                         successCount++;
-                    else
+                    }
+                    catch
+                    {
                         failureCount++;
+                    }
                 }
 
                 if (failureCount == 0)
                 {
-                    _logger.LogInformation("批量删除处方成功，数量：{Count}", ids.Count);
+                    _logger.LogInformation("批量删除处方成功,数量:{Count}", ids.Count);
                     return CommandResult<bool>.Success(true);
                 }
                 else
                 {
-                    _logger.LogWarning("批量删除处方部分失败：成功 {SuccessCount} 个，失败 {FailureCount} 个", successCount, failureCount);
-                    return CommandResult<bool>.Failure($"批量删除完成：成功 {successCount} 个，失败 {failureCount} 个");
+                    _logger.LogWarning("批量删除处方部分失败:成功 {SuccessCount} 个,失败 {FailureCount} 个", successCount, failureCount);
+                    return CommandResult<bool>.Failure($"批量删除完成:成功 {successCount} 个,失败 {failureCount} 个");
                 }
             }
             catch (Exception ex)
@@ -473,18 +475,18 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("开始获取患者处方列表：{PatientId}", patientId);
+                _logger.LogInformation("开始获取患者处方列表:{PatientId}", patientId);
 
-                var pagedData = await _prescriptionRepository.GetPagedAsync(1, int.MaxValue, null);
-                var prescriptions = pagedData.Items
+                var response = await _prescriptionApi.GetPrescriptionsAsync(1, int.MaxValue, null);
+                var prescriptions = response.Data?.Items
                     .Where(p => p.PatientId == patientId)
-                    .ToList();
-                _logger.LogInformation("获取患者处方列表成功，数量：{Count}", prescriptions.Count);
+                    .ToList() ?? new List<PrescriptionDto>();
+                _logger.LogInformation("获取患者处方列表成功,数量:{Count}", prescriptions.Count);
                 return CommandResult<IEnumerable<PrescriptionDto>>.Success(prescriptions);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者处方列表时发生异常：{PatientId}", patientId);
+                _logger.LogError(ex, "获取患者处方列表时发生异常:{PatientId}", patientId);
                 return CommandResult<IEnumerable<PrescriptionDto>>.Failure("获取处方列表时发生系统错误");
             }
         }

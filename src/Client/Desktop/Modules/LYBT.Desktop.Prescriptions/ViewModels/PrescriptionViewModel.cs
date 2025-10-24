@@ -1,12 +1,12 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
-using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -24,7 +24,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IHerbRepository _herbRepository;
 
@@ -436,7 +436,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionViewModel(
-            IPrescriptionRepository prescriptionRepository,
+            IPrescriptionApi prescriptionApi,
             IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,
             IEventAggregator eventAggregator,
@@ -451,7 +451,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
@@ -647,9 +647,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     return;
                 }
 
-                var recentPrescriptions = await _prescriptionRepository.GetPatientRecentPrescriptionsAsync(
-                    CurrentMedicalCase.PatientId, 
+                // Issue #1608: 使用IPrescriptionApi替代IPrescriptionRepository
+                var response = await _prescriptionApi.GetPatientRecentPrescriptionsAsync(
+                    CurrentMedicalCase.PatientId,
                     count: 5);
+                var recentPrescriptions = response.Data ?? new List<PrescriptionSearchResultDto>();
 
                 RecentPrescriptions.Clear();
                 foreach (var prescription in recentPrescriptions)

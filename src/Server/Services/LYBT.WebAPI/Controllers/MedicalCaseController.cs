@@ -409,6 +409,78 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 创建病案处方（Issue #1608补充）
+        /// </summary>
+        [HttpPost("{id}/prescription")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> CreatePrescription(
+            Guid id,
+            [FromBody] PrescriptionCreateDto dto)
+        {
+            try
+            {
+                var idValidation = ValidateGuid<PrescriptionDto>(id, "病案ID");
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
+
+                var modelValidation = ValidateModel<PrescriptionDto>();
+                if (modelValidation != null)
+                {
+                    return modelValidation;
+                }
+
+                var result = await _medicalCaseService.CreatePrescriptionAsync(id, dto);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("创建病案处方", result.Data, id);
+                }
+
+                return HandleServiceResult(result, "处方创建成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "创建病案处方", new { id, dto });
+            }
+        }
+
+        /// <summary>
+        /// 删除病案处方（Issue #1608补充）
+        /// </summary>
+        [HttpDelete("{id}/prescription")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> DeletePrescription(Guid id)
+        {
+            try
+            {
+                var idValidation = ValidateGuid(id, "病案ID");
+                if (idValidation != null)
+                {
+                    return idValidation;
+                }
+
+                var result = await _medicalCaseService.DeletePrescriptionAsync(id);
+
+                if (result.IsSuccess)
+                {
+                    LogOperation("删除病案处方", null, id);
+                }
+
+                return HandleServiceResult(result, "处方删除成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "删除病案处方", new { id });
+            }
+        }
+
 
         // ========== Epic #1589 - 三步工作流辅助端点（Issue #1600 Phase 4）==========
 

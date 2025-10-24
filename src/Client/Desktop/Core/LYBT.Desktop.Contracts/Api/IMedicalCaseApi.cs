@@ -128,6 +128,28 @@ namespace LYBT.Desktop.Contracts.Api
             Guid formulaId);
 
         /// <summary>
+        /// 为已存在的医案创建处方（Issue #1608补充）
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription")]
+        Task<ApiResponse<PrescriptionDto>> CreatePrescriptionAsync(
+            Guid medicalCaseId,
+            [Refit.Body] PrescriptionCreateDto request);
+
+        /// <summary>
+        /// 更新医案的处方（Issue #1608补充）
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription")]
+        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(
+            Guid medicalCaseId,
+            [Refit.Body] PrescriptionUpdateDto request);
+
+        /// <summary>
+        /// 删除医案的处方（Issue #1608补充）
+        /// </summary>
+        [Refit.Delete("/api/v1/medicalcases/{medicalCaseId}/prescription")]
+        Task<ApiResponse> DeletePrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
         /// </summary>

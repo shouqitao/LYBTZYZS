@@ -1,7 +1,8 @@
-﻿using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Prescriptions.Interfaces;
+﻿using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -18,7 +19,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
 
         #endregion
 
@@ -119,7 +120,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionsMainViewModel(
-            IPrescriptionRepository prescriptionRepository,
+            IPrescriptionApi prescriptionApi,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -127,7 +128,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
 
             // 初始化命令
             ShowManagementCommand = new DelegateCommand(ShowManagement);
@@ -272,16 +273,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 Logger.LogInformation("开始加载处方统计数据");
 
-                // 加载总处方数
-                var totalResult = await _prescriptionRepository.GetPagedAsync(1, 1, null);
-                TotalPrescriptionsCount = totalResult.TotalCount;
+                // 加载总处方数 (Issue #1608: 使用IPrescriptionApi替代IPrescriptionRepository)
+                var totalResponse = await _prescriptionApi.GetPrescriptionsAsync(1, 1, null);
+                TotalPrescriptionsCount = totalResponse.Data?.TotalCount ?? 0;
 
                 // 加载今日处方数据
                 var today = DateTime.Today;
-                var todayResult = await _prescriptionRepository.GetPagedAsync(1, int.MaxValue, null);
-                var todayPrescriptions = todayResult.Items
+                var todayResponse = await _prescriptionApi.GetPrescriptionsAsync(1, int.MaxValue, null);
+                var todayPrescriptions = todayResponse.Data?.Items
                     .Where(p => p.CreatedAt.Date == today)
-                    .ToList();
+                    .ToList() ?? new List<PrescriptionDto>();
                 TodayPrescriptionsCount = todayPrescriptions.Count;
                 TodayTotalAmount = todayPrescriptions.Sum(p => p.TotalAmount);
 

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
 
         #endregion
 
@@ -298,7 +300,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionEditorDialogViewModel(
-            IPrescriptionRepository prescriptionRepository,
+            IPrescriptionApi prescriptionApi,
+            IMedicalCaseRepository medicalCaseRepository,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -306,7 +309,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -406,7 +410,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方信息...");
 
-                var prescription = await _prescriptionRepository.GetByIdAsync(PrescriptionId);
+                var response = await _prescriptionApi.GetPrescriptionByIdAsync(PrescriptionId);
+                var prescription = response.Data;
                 if (prescription == null)
                 {
                     await ShowErrorMessageAsync("处方不存在");
@@ -509,7 +514,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     Discount = Discount
                 };
 
-                var updatedPrescription = await _prescriptionRepository.UpdateAsync(PrescriptionId, updateDto);
+                var updatedPrescription = await _medicalCaseRepository.UpdatePrescriptionAsync(PrescriptionId, updateDto);
                 await ShowSuccessMessageAsync("处方信息保存成功");
 
                 var parameters = new DialogParameters
