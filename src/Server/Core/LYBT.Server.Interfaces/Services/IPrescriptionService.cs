@@ -28,27 +28,9 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id);
 
-        /// <summary>
-        /// 创建新处方
-        /// </summary>
-        Task<ServiceResult<PrescriptionDto>> CreateAsync(PrescriptionCreateDto dto);
-
-        /// <summary>
-        /// 更新处方信息
-        /// </summary>
-        Task<ServiceResult<PrescriptionDto>> UpdateAsync(Guid id, PrescriptionUpdateDto dto);
-
-        /// <summary>
-        /// 删除处方（软删除）
-        /// </summary>
-        Task<ServiceResult> DeleteAsync(Guid id);
-
-        /// <summary>
-        /// 物理删除处方（永久删除，不可恢复）
-        /// Issue #1593 - Phase 4
-        /// </summary>
-        /// <param name="id">处方ID（与MedicalCaseId共享主键）</param>
-        Task<ServiceResult> PhysicalDeleteAsync(Guid id);
+        // ========== Write方法已移除（Issue #1601 Phase 1）==========
+        // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync 已移除
+        // 所有写操作必须通过MedicalCase聚合根进行
 
         /// <summary>
         /// 根据病例ID获取处方列表
@@ -61,23 +43,9 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<string>> GeneratePrescriptionNoAsync();
 
-        /// <summary>
-        /// 克隆处方（旧版） - 复制处方到同一病历 (Issue #1167)
-        /// 已弃用，请使用 ClonePrescriptionAsync
-        /// </summary>
-        [Obsolete("请使用 ClonePrescriptionAsync(Guid sourcePrescriptionId, Guid targetConsultationId) 替代")]
-        Task<ServiceResult<PrescriptionDto>> CloneAsync(Guid prescriptionId);
-
-        /// <summary>
-        /// 克隆处方 - 复制处方到指定诊疗记录 (Issue #1373 ENTRY-15)
-        /// 支持从历史处方复制到新的诊疗记录/病历
-        /// </summary>
-        /// <param name="sourcePrescriptionId">源处方ID</param>
-        /// <param name="targetConsultationId">目标诊疗记录ID（与MedicalCase共享主键）</param>
-        /// <returns>新创建的处方DTO</returns>
-        Task<ServiceResult<PrescriptionDto>> ClonePrescriptionAsync(
-            Guid sourcePrescriptionId,
-            Guid targetConsultationId);
+        // ========== Clone/Import方法已移除（Issue #1601 Phase 1）==========
+        // CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
+        // 所有写操作必须通过MedicalCase聚合根进行
 
         /// <summary>
         /// 获取处方统计数据 (Issue #1163)
@@ -92,15 +60,6 @@ namespace LYBT.Server.Interfaces.Services
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
         Task<ServiceResult<PrescriptionRangeStatisticsDto>> GetRangeStatisticsAsync(DateTime startDate, DateTime endDate);
-
-        /// <summary>
-        /// 导入验方到处方 - 校验验方状态 (Issue #1350, Issue #1366 ENTRY-8)
-        /// 从已验证的验方批量导入药材，并记录引用的验方名称
-        /// </summary>
-        /// <param name="prescriptionId">处方ID</param>
-        /// <param name="formulaId">验方ID</param>
-        /// <returns>更新后的处方DTO</returns>
-        Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
 
         /// <summary>
         /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)

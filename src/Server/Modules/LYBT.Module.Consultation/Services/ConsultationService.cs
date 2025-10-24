@@ -88,79 +88,9 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
-        /// <summary>
-        /// 创建诊疗记录 - 简化版（Issue #1562 Phase 3）
-        /// 注意：推荐通过MedicalCase聚合根创建完整的诊疗流程
-        /// </summary>
-        public async Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto)
-        {
-            try
-            {
-                // 聚合根模式校验：验证 MedicalCase 是否存在
-                var medicalCase = await _medicalCaseRepository.GetByIdAsync(dto.MedicalCaseId);
-                if (medicalCase == null)
-                {
-                    _logger.LogWarning("创建诊疗记录失败：医疗案例 {MedicalCaseId} 不存在", dto.MedicalCaseId);
-                    return ServiceResult<ConsultationDto>.Failure("医疗案例不存在，无法创建诊疗记录");
-                }
-
-                // Issue #1562: 移除一对一约束检查 - 由数据库唯一约束处理
-
-                var entity = _mapper.Map<ConsultationEntity>(dto);
-
-                // 共享主键：Consultation.Id 必须等于 MedicalCase.Id
-                entity.Id = dto.MedicalCaseId;
-
-                var result = await _repository.AddAsync(entity);
-                var resultDto = _mapper.Map<ConsultationDto>(result);
-                return ServiceResult<ConsultationDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建诊疗记录失败");
-                return ServiceResult<ConsultationDto>.Failure("创建诊疗记录失败");
-            }
-        }
-
-        /// <summary>
-        /// 更新诊疗记录
-        /// Issue #1562 Phase 3: 移除"当天可改"规则（该规则属于MedicalCase聚合根）
-        /// </summary>
-        public async Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto)
-        {
-            try
-            {
-                var entity = await _repository.GetByIdWithDetailsAsync(id);
-                if (entity == null)
-                    return ServiceResult<ConsultationDto>.Failure("诊疗记录不存在");
-
-                // Issue #1562: 移除日期检查规则 - 编辑权限应由MedicalCase聚合根控制
-
-                _mapper.Map(dto, entity);
-                var result = await _repository.UpdateAsync(entity);
-                var resultDto = _mapper.Map<ConsultationDto>(result);
-                return ServiceResult<ConsultationDto>.Success(resultDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "更新诊疗记录失败");
-                return ServiceResult<ConsultationDto>.Failure("更新诊疗记录失败");
-            }
-        }
-
-        public async Task<ServiceResult> DeleteAsync(Guid id)
-        {
-            try
-            {
-                var result = await _repository.DeleteAsync(id);
-                return result ? ServiceResult.Success("删除成功") : ServiceResult.Failure("删除失败");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "删除诊疗记录失败");
-                return ServiceResult.Failure("删除诊疗记录失败");
-            }
-        }
+        // ========== Write方法已移除（Issue #1600 Phase 1）==========
+        // CreateAsync, UpdateAsync, DeleteAsync 已移除
+        // 所有写操作必须通过MedicalCase聚合根进行
 
         public async Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
@@ -238,8 +168,18 @@ namespace LYBT.Module.Consultation.Services
                 }
 
                 // 3. 更新Step1完成状态
+                // ⚠️ 临时方案：直接使用Repository实现类的UpdateAsync
+                // TODO Issue #1600 Phase 2: 重构为通过MedicalCase聚合根更新
                 consultation.Step1CompletedAt = DateTime.UtcNow;
-                await _repository.UpdateAsync(consultation);
+                var repository = _repository as LYBT.Infrastructure.Repositories.BaseRepository<ConsultationEntity>;
+                if (repository != null)
+                {
+                    await repository.UpdateAsync(consultation);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Repository类型不匹配");
+                }
 
                 _logger.LogInformation("✅ Step1完成成功，MedicalCaseId: {MedicalCaseId}, Step1CompletedAt: {Step1CompletedAt}",
                     medicalCaseId, consultation.Step1CompletedAt);

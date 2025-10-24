@@ -102,20 +102,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateModel<PrescriptionDto>();
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                var result = await _service.CreateAsync(dto);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<PrescriptionDto>(result.ErrorMessage ?? "新增处方失败", ApiErrorCodes.DATASAVEFAILED);
-                }
-
-                LogOperation("新增处方成功", result.Data, result.Data.Id);
-                return Success(result.Data, "处方创建成功");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根创建处方
+                throw new NotImplementedException("CreateAsync已移除，请使用 POST /api/medicalcases/with-details");
             }
             catch (Exception ex)
             {
@@ -141,21 +129,8 @@ namespace LYBT.WebAPI.Controllers
                     return idValidation;
                 }
 
-                var modelValidation = ValidateModel<PrescriptionDto>();
-                if (modelValidation != null)
-                {
-                    return modelValidation;
-                }
-
-                // 使用路由参数中的ID
-                var result = await _service.UpdateAsync(id, dto);
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<PrescriptionDto>(result.ErrorMessage ?? "编辑处方失败", ApiErrorCodes.DATAUPDATEFAILED);
-                }
-
-                LogOperation("编辑处方成功", result.Data, id);
-                return Success(result.Data, "处方更新成功");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根更新处方
+                throw new NotImplementedException("UpdateAsync已移除，请使用 PUT /api/medicalcases/{id}");
             }
             catch (Exception ex)
             {
@@ -181,20 +156,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid(id, "处方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                var result = await _service.PhysicalDeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return NotFound("处方不存在", ApiErrorCodes.PRESCRIPTIONNOTFOUND);
-                }
-
-                LogOperation("物理删除处方成功", null, id);
-                return Success("处方已永久删除");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根删除处方
+                throw new NotImplementedException("PhysicalDeleteAsync已移除，请使用 DELETE /api/medicalcases/{id}");
             }
             catch (Exception ex)
             {
@@ -219,20 +182,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid(id, "处方ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
-
-                var result = await _service.DeleteAsync(id);
-                if (!result.IsSuccess)
-                {
-                    return NotFound("处方不存在", ApiErrorCodes.PRESCRIPTIONNOTFOUND);
-                }
-
-                LogOperation("软删除处方成功", null, id);
-                return Success("处方已标记为删除");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根删除处方
+                throw new NotImplementedException("DeleteAsync已移除，请使用 DELETE /api/medicalcases/{id}/soft");
             }
             catch (Exception ex)
             {
@@ -331,29 +282,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validation = ValidateGuid<PrescriptionDto>(id, "处方ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                #pragma warning disable CS0618 // 类型或成员已过时
-                var result = await _service.CloneAsync(id);
-                #pragma warning restore CS0618
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return NotFound<PrescriptionDto>(
-                        result.ErrorMessage ?? "处方不存在",
-                        ApiErrorCodes.PRESCRIPTIONNOTFOUND);
-                }
-
-                // 记录操作日志
-                LogOperation("克隆处方（同一病历）",
-                    new { OriginalId = id, NewId = result.Data.Id },
-                    result.Data.Id);
-
-                return Success(result.Data, "处方克隆成功");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根克隆处方
+                throw new NotImplementedException("CloneAsync已移除，请使用 POST /api/medicalcases/{id}/clone");
             }
             catch (Exception ex)
             {
@@ -383,36 +313,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var sourceValidation = ValidateGuid<PrescriptionDto>(sourcePrescriptionId, "源处方ID");
-                if (sourceValidation != null)
-                {
-                    return sourceValidation;
-                }
-
-                var targetValidation = ValidateGuid<PrescriptionDto>(targetMedicalCaseId, "目标病案ID");
-                if (targetValidation != null)
-                {
-                    return targetValidation;
-                }
-
-                // TODO (#1477 Phase 1): 当前仍使用旧Service方法（参数为ConsultationId）
-                // 因为1:1:1关系，MedicalCaseId == ConsultationId，暂时兼容
-                // Phase 2需要调整Service层，通过MedicalCaseService更新处方
-                var result = await _service.ClonePrescriptionAsync(sourcePrescriptionId, targetMedicalCaseId);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return NotFound<PrescriptionDto>(
-                        result.ErrorMessage ?? "克隆处方失败",
-                        ApiErrorCodes.PRESCRIPTIONNOTFOUND);
-                }
-
-                // 记录操作日志
-                LogOperation("克隆处方到病案",
-                    new { SourcePrescriptionId = sourcePrescriptionId, TargetMedicalCaseId = targetMedicalCaseId, NewPrescriptionId = result.Data.Id },
-                    result.Data.Id);
-
-                return Success(result.Data, "处方克隆成功");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根克隆处方
+                throw new NotImplementedException("ClonePrescriptionAsync已移除，请使用 POST /api/medicalcases/{id}/clone");
             }
             catch (Exception ex)
             {
@@ -505,33 +407,8 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var prescriptionValidation = ValidateGuid<PrescriptionDto>(prescriptionId, "处方ID");
-                if (prescriptionValidation != null)
-                {
-                    return prescriptionValidation;
-                }
-
-                var formulaValidation = ValidateGuid<PrescriptionDto>(formulaId, "验方ID");
-                if (formulaValidation != null)
-                {
-                    return formulaValidation;
-                }
-
-                var result = await _service.ImportFormulaIntoPrescriptionAsync(prescriptionId, formulaId);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return BusinessFail<PrescriptionDto>(
-                        result.ErrorMessage ?? "导入验方失败",
-                        ApiErrorCodes.DATASAVEFAILED);
-                }
-
-                // 记录操作日志
-                LogOperation("导入验方到处方",
-                    new { PrescriptionId = prescriptionId, FormulaId = formulaId },
-                    prescriptionId);
-
-                return Success(result.Data, result.Message ?? "验方导入成功");
+                // Issue #1601: Write方法已移除，请通过MedicalCase聚合根导入验方
+                throw new NotImplementedException("ImportFormulaIntoPrescriptionAsync已移除，请使用 POST /api/medicalcases/{id}/import-formula");
             }
             catch (Exception ex)
             {

@@ -18,20 +18,9 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id);
 
-        /// <summary>
-        /// 创建新诊疗记录
-        /// </summary>
-        Task<ServiceResult<ConsultationDto>> CreateAsync(ConsultationCreateDto dto);
-
-        /// <summary>
-        /// 更新诊疗记录
-        /// </summary>
-        Task<ServiceResult<ConsultationDto>> UpdateAsync(Guid id, ConsultationUpdateDto dto);
-
-        /// <summary>
-        /// 删除诊疗记录（软删除）
-        /// </summary>
-        Task<ServiceResult> DeleteAsync(Guid id);
+        // ========== Write方法已移除（Issue #1600 Phase 1）==========
+        // CreateAsync, UpdateAsync, DeleteAsync 已移除
+        // 所有写操作必须通过MedicalCase聚合根进行
 
         /// <summary>
         /// 搜索诊疗记录 - 支持多条件搜索

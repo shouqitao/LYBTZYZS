@@ -1,4 +1,5 @@
-﻿using LYBT.Infrastructure.Data;
+﻿using System.Linq.Expressions;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -111,6 +112,25 @@ namespace LYBT.Module.Prescriptions.Repositories
                 .Where(p => !p.IsDeleted && p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix))
                 .Select(p => p.PrescriptionNumber!)
                 .ToListAsync();
+        }
+
+        // ========== 显式接口实现（Issue #1600 Phase 1）==========
+        // 由于BaseRepository返回List<T>,而IPrescriptionRepository定义返回IEnumerable<T>
+
+        /// <summary>
+        /// 获取所有实体（显式实现）
+        /// </summary>
+        async Task<IEnumerable<PrescriptionEntity>> IPrescriptionRepository.GetAllAsync()
+        {
+            return await GetAllAsync();
+        }
+
+        /// <summary>
+        /// 根据条件查找（显式实现）
+        /// </summary>
+        async Task<IEnumerable<PrescriptionEntity>> IPrescriptionRepository.FindAsync(Expression<Func<PrescriptionEntity, bool>> predicate)
+        {
+            return await FindAsync(predicate);
         }
     }
 }
