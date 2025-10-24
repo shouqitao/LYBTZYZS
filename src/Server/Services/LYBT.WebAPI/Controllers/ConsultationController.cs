@@ -10,7 +10,9 @@ using Microsoft.Extensions.Caching.Memory;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 诊疗管理控制器 - 简化版（仅CRUD）
+    /// 诊疗管理控制器 - Read Layer（Issue #1600 Phase 4）
+    /// 职责：提供诊疗记录的只读查询功能
+    /// 所有Write操作请使用MedicalCaseController
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]
@@ -19,17 +21,14 @@ namespace LYBT.WebAPI.Controllers
     public class ConsultationController : BaseApiController
     {
         private readonly IConsultationService _consultationService;
-        private readonly IMedicalCaseService _medicalCaseService;
 
         public ConsultationController(
             IConsultationService consultationService,
-            IMedicalCaseService medicalCaseService,
             ILogger<ConsultationController> logger,
             IMemoryCache? cache = null)
             : base(logger, cache)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
-            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         }
 
         /// <summary>
@@ -108,35 +107,8 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Issue #1598: REQ-001 - 三步工作流优化-Step1
-        /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <param name="request">Step1请求参数</param>
-        /// <returns>Step1完成状态</returns>
-        [HttpPost("{medicalCaseId}/complete-step1")]
-        [ProducesResponseType(typeof(ApiResponse<ConsultationStepDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<ConsultationStepDto>>> CompleteStep1(
-            Guid medicalCaseId,
-            [FromBody] CompleteStep1Request request)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<ConsultationStepDto>(medicalCaseId, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                // Issue #1600 Phase 3: 调用MedicalCaseService聚合根方法
-                var result = await _medicalCaseService.CompleteStep1Async(medicalCaseId, request);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<ConsultationStepDto>(ex, "完成Step1", new { MedicalCaseId = medicalCaseId });
-            }
-        }
+        // ========== Write方法已移除（Issue #1600 Phase 4）==========
+        // CompleteStep1 已删除，请使用 POST /api/v1/medicalcases/{id}/complete-step1
 
         /// <summary>
         /// 搜索诊疗记录

@@ -409,6 +409,144 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+
+        // ========== Epic #1589 - 三步工作流辅助端点（Issue #1600 Phase 4）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="request">Step1请求参数</param>
+        /// <returns>Step1完成状态</returns>
+        [HttpPost("{id}/complete-step1")]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationStepDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<ConsultationStepDto>>> CompleteStep1(
+            Guid id,
+            [FromBody] CompleteStep1Request request)
+        {
+            try
+            {
+                var validationResult = ValidateGuid<ConsultationStepDto>(id, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _medicalCaseService.CompleteStep1Async(id, request);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ConsultationStepDto>(ex, "完成Step1", new { MedicalCaseId = id });
+            }
+        }
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Epic #1589 Phase 2 - 架构合规版本
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        [HttpPut("{id}/reset-consultation-steps")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> ResetConsultationSteps(Guid id)
+        {
+            try
+            {
+                var validationResult = ValidateGuid(id, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _medicalCaseService.ResetConsultationStepsAsync(id);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "重置诊疗步骤", new { MedicalCaseId = id });
+            }
+        }
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        [HttpDelete("{id}/prescription/clear")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> ClearPrescription(Guid id)
+        {
+            try
+            {
+                var validationResult = ValidateGuid(id, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var result = await _medicalCaseService.ClearPrescriptionAsync(id);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "清空处方内容", new { MedicalCaseId = id });
+            }
+        }
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="formulaId">配方ID</param>
+        [HttpPost("{id}/prescription/import-formula/{formulaId}")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ImportFormulaIntoPrescription(
+            Guid id,
+            Guid formulaId)
+        {
+            try
+            {
+                var validationResult = ValidateGuid<PrescriptionDto>(id, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                var formulaValidation = ValidateGuid<PrescriptionDto>(formulaId, "配方ID");
+                if (formulaValidation != null) return formulaValidation;
+
+                var result = await _medicalCaseService.ImportFormulaIntoPrescriptionAsync(id, formulaId);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionDto>(ex, "从配方导入处方", new { MedicalCaseId = id, FormulaId = formulaId });
+            }
+        }
+
+        /// <summary>
+        /// 暂存病案（保存当前状态，不完成整个流程）
+        /// Epic #1589 Phase 5 - 架构合规版本
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="dto">病案更新信息</param>
+        [HttpPut("{id}/save-as-draft")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> SaveAsDraft(
+            Guid id,
+            [FromBody] MedicalCaseUpdateDto dto)
+        {
+            try
+            {
+                var validationResult = ValidateGuid<MedicalCaseDto>(id, "医案ID");
+                if (validationResult != null) return validationResult;
+
+                // 调用现有的UpdateAsync方法（已符合架构）
+                var result = await _medicalCaseService.UpdateAsync(id, dto);
+                return HandleServiceResult(result, "病案已暂存");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseDto>(ex, "暂存病案", new { MedicalCaseId = id, dto });
+            }
+        }
+
         #endregion
 
         /// <summary>
