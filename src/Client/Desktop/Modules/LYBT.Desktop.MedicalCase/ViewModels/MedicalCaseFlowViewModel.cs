@@ -652,6 +652,38 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SelectedPatientName = CurrentPatient.Name;
                 SelectedPatientInfo = $"{CurrentPatient.Gender} | {CurrentPatient.Age}岁 | {CurrentPatient.PhoneNumber}";
+
+                // Issue #1596 - 新建医案场景：有患者但无MedicalCaseId
+                if (MedicalCaseId == Guid.Empty)
+                {
+                    try
+                    {
+                        SetIsBusy(true, "正在创建医案...");
+                        Logger.LogInformation("新建医案场景，开始创建MedicalCase，PatientId: {PatientId}", CurrentPatient.Id);
+
+                        // 调用CreateMedicalCaseAsync创建医案
+                        MedicalCaseId = await CreateMedicalCaseAsync(CurrentPatient.Id);
+
+                        if (MedicalCaseId == Guid.Empty)
+                        {
+                            Logger.LogError("创建MedicalCase失败，无法继续");
+                            await ShowErrorMessageAsync("创建医案失败，请重试");
+                            return;
+                        }
+
+                        Logger.LogInformation("✅ MedicalCase创建成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "创建MedicalCase异常");
+                        await ShowErrorMessageAsync($"创建医案失败：{ex.Message}");
+                        return;
+                    }
+                    finally
+                    {
+                        SetIsBusy(false);
+                    }
+                }
             }
             else
             {

@@ -841,15 +841,15 @@ namespace LYBT.Desktop.Patients.ViewModels
                     patient.Name, MedicalCaseFlowId);
 
                 // Issue #1585 - 修复导航断裂：添加导航到MedicalCaseFlowView的逻辑
+                // Issue #1596 - 传递完整PatientDto对象，确保MedicalCaseFlowViewModel可以创建医案
                 var parameters = new NavigationParameters
                 {
-                    { "MedicalCaseFlowId", MedicalCaseFlowId },
-                    { "PatientId", patient.Id }
+                    { "CurrentPatient", patient }  // 传递完整PatientDto对象
                 };
 
                 RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
-                Logger.LogInformation("导航到医案录入界面：PatientId={PatientId}, FlowId={FlowId}",
-                    patient.Id, MedicalCaseFlowId);
+                Logger.LogInformation("导航到医案录入界面：PatientId={PatientId}, PatientName={PatientName}",
+                    patient.Id, patient.Name);
             }
             catch (Exception ex)
             {
