@@ -1,10 +1,12 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
 namespace LYBT.Server.Interfaces.Services
 {
     /// <summary>
-    /// 诊疗服务接口 - 简化版，只包含基础CRUD
+    /// 诊疗服务接口 - Read Layer（Issue #1600 Phase 3）
+    /// 职责：提供诊疗记录的只读查询功能
+    /// 所有Write操作必须通过IMedicalCaseService聚合根进行
     /// </summary>
     public interface IConsultationService
     {
@@ -32,14 +34,9 @@ namespace LYBT.Server.Interfaces.Services
         /// </summary>
         Task<ServiceResult<List<ConsultationDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Issue #1598: REQ-001 - 三步工作流优化-Step1 (Server端API实现)
-        /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <param name="request">Step1请求参数</param>
-        /// <returns>Step1完成状态</returns>
-        Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
+        // ========== Write方法已移除（Issue #1600 Phase 3）==========
+        // CompleteStep1Async 已移除，迁移至IMedicalCaseService
+        // 所有写操作必须通过MedicalCase聚合根进行
 
         // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
         // Issue #1562 Phase 1: 已删除 GetStatisticsAsync（统计功能属于过度设计）

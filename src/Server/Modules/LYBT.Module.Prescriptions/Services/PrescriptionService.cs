@@ -16,8 +16,10 @@ using PrescriptionItemEntity = LYBT.Entities.Prescriptions.PrescriptionItem;
 namespace LYBT.Module.Prescriptions.Services
 {
     /// <summary>
-    /// 处方服务 - 简化版，包含基础CRUD、价格计算和打印格式生成
-    /// 支持四种开方方式的核心功能，保持价格计算准确性
+    /// 处方服务 - Read Layer（Issue #1600 Phase 3）
+    /// 职责：提供处方记录的只读查询功能、价格计算和打印格式生成
+    /// 所有Write操作必须通过MedicalCaseService聚合根进行
+    /// IMedicalCaseRepository用于Read关联患者信息（合法用途）
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {

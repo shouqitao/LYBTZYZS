@@ -469,6 +469,179 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        // ========== Epic #1589 功能实现（Issue #1600 Phase 3）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// 通过MedicalCase聚合根更新Consultation.Step1CompletedAt
+        /// </summary>
+        public async Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(
+            Guid medicalCaseId,
+            CompleteStep1Request request)
+        {
+            try
+            {
+                // 验证参数
+                if (medicalCaseId == Guid.Empty)
+                {
+                    _logger.LogWarning("CompleteStep1失败：医案ID为空");
+                    return ServiceResult<ConsultationStepDto>.Failure("医案ID不能为空");
+                }
+
+                if (request == null)
+                {
+                    _logger.LogWarning("CompleteStep1失败：请求参数为空");
+                    return ServiceResult<ConsultationStepDto>.Failure("请求参数不能为空");
+                }
+
+                _logger.LogInformation("开始完成Step1，MedicalCaseId: {MedicalCaseId}, PrescriptionEnabled: {PrescriptionEnabled}",
+                    medicalCaseId, request.PrescriptionEnabled);
+
+                // 获取MedicalCase聚合根（包含Consultation子实体）
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase?.Consultation == null)
+                {
+                    _logger.LogWarning("CompleteStep1失败：诊疗记录不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return ServiceResult<ConsultationStepDto>.Failure("诊疗记录不存在");
+                }
+
+                // 通过聚合根更新Step1完成状态
+                medicalCase.Consultation.Step1CompletedAt = DateTime.UtcNow;
+                medicalCase.Consultation.PrescriptionEnabled = request.PrescriptionEnabled;
+
+                await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("✅ Step1完成成功，MedicalCaseId: {MedicalCaseId}, Step1CompletedAt: {Step1CompletedAt}",
+                    medicalCaseId, medicalCase.Consultation.Step1CompletedAt);
+
+                // 返回Step1状态DTO
+                var stepDto = new ConsultationStepDto
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = medicalCase.Consultation.Step1CompletedAt,
+                    PrescriptionEnabled = medicalCase.Consultation.PrescriptionEnabled
+                };
+
+                return ServiceResult<ConsultationStepDto>.Success(stepDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成Step1异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult<ConsultationStepDto>.Failure($"完成Step1失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Epic #1589 Phase 2 - 架构合规版本
+        /// 通过MedicalCase聚合根重置所有步骤完成时间
+        /// </summary>
+        public async Task<ServiceResult> ResetConsultationStepsAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogInformation("开始重置诊疗步骤，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase?.Consultation == null)
+                {
+                    _logger.LogWarning("重置步骤失败：诊疗记录不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return ServiceResult.Failure("诊疗记录不存在");
+                }
+
+                // 重置所有步骤完成时间
+                medicalCase.Consultation.Step1CompletedAt = null;
+                medicalCase.Consultation.Step2CompletedAt = null;
+                medicalCase.Consultation.Step3CompletedAt = null;
+
+                await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("✅ 诊疗步骤已重置，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Success("诊疗步骤已重置");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "重置诊疗步骤异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Failure($"重置诊疗步骤失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// 通过MedicalCase聚合根清空Prescription.HerbItems
+        /// </summary>
+        public async Task<ServiceResult> ClearPrescriptionAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogInformation("开始清空处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase?.Prescription == null)
+                {
+                    _logger.LogWarning("清空处方失败：处方不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return ServiceResult.Failure("处方不存在");
+                }
+
+                // 清空处方内容（保留Prescription实体框架）
+                medicalCase.Prescription.Items?.Clear();
+                medicalCase.Prescription.Indication = null;
+                medicalCase.Prescription.Advice = null;
+                medicalCase.Prescription.Remark = null;
+                medicalCase.Prescription.FormulaSource = null;
+
+                await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("✅ 处方已清空，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Success("处方已清空");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清空处方异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                return ServiceResult.Failure($"清空处方失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// 通过MedicalCase聚合根从Formula导入HerbItems到Prescription
+        /// </summary>
+        public async Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+            Guid medicalCaseId,
+            Guid formulaId)
+        {
+            try
+            {
+                _logger.LogInformation("开始导入配方，MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}",
+                    medicalCaseId, formulaId);
+
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase?.Prescription == null)
+                {
+                    _logger.LogWarning("导入配方失败：处方不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+                }
+
+                // TODO Issue #1603: 实现配方导入逻辑
+                // 需要注入IFormulaRepository依赖，获取Formula实体
+                // 将Formula.Items映射到Prescription.Items
+                // 参考原PrescriptionService.ImportFormulaIntoPrescriptionAsync实现
+                _logger.LogWarning("导入配方功能待实现，MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}",
+                    medicalCaseId, formulaId);
+
+                return ServiceResult<PrescriptionDto>.Failure("导入配方功能待实现（TODO Issue #1603）");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入配方异常，MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}",
+                    medicalCaseId, formulaId);
+                return ServiceResult<PrescriptionDto>.Failure($"导入配方失败：{ex.Message}");
+            }
+        }
+
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5

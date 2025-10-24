@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -6,7 +6,8 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Server.Interfaces.Services
 {
     /// <summary>
-    /// 医疗案例服务接口 - 简化版，只包含基础CRUD
+    /// 医疗案例服务接口 - 聚合根Service（Issue #1600 v2.0架构）
+    /// 职责：医疗案例及其关联实体（Consultation/Prescription）的所有Write操作
     /// </summary>
     public interface IMedicalCaseService
     {
@@ -94,5 +95,39 @@ namespace LYBT.Server.Interfaces.Services
             DateTime? startDate = null,
             DateTime? endDate = null,
             string? diagnosisKeyword = null);
+
+        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1600 Phase 3）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// 通过MedicalCase聚合根更新Consultation.Step1CompletedAt
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="request">Step1请求参数（是否开处方）</param>
+        /// <returns>Step1完成状态</returns>
+        Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
+
+        /// <summary>
+        /// 重置诊疗步骤（清除所有Step完成时间）
+        /// Epic #1589 - 辅助功能
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        Task<ServiceResult> ResetConsultationStepsAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 清空处方内容（保留处方实体框架）
+        /// Epic #1589 - 辅助功能
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        Task<ServiceResult> ClearPrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 从验方导入到处方（将Formula内容复制到Prescription）
+        /// Epic #1589 - 辅助功能（TODO: 待实现）
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="formulaId">验方ID</param>
+        Task<ServiceResult<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
     }
 }

@@ -19,11 +19,17 @@ namespace LYBT.WebAPI.Controllers
     public class ConsultationController : BaseApiController
     {
         private readonly IConsultationService _consultationService;
+        private readonly IMedicalCaseService _medicalCaseService;
 
-        public ConsultationController(IConsultationService consultationService, ILogger<ConsultationController> logger, IMemoryCache? cache = null)
+        public ConsultationController(
+            IConsultationService consultationService,
+            IMedicalCaseService medicalCaseService,
+            ILogger<ConsultationController> logger,
+            IMemoryCache? cache = null)
             : base(logger, cache)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
+            _medicalCaseService = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
         }
 
         /// <summary>
@@ -122,7 +128,8 @@ namespace LYBT.WebAPI.Controllers
                 var validationResult = ValidateGuid<ConsultationStepDto>(medicalCaseId, "医案ID");
                 if (validationResult != null) return validationResult;
 
-                var result = await _consultationService.CompleteStep1Async(medicalCaseId, request);
+                // Issue #1600 Phase 3: 调用MedicalCaseService聚合根方法
+                var result = await _medicalCaseService.CompleteStep1Async(medicalCaseId, request);
                 return HandleServiceResult(result);
             }
             catch (Exception ex)

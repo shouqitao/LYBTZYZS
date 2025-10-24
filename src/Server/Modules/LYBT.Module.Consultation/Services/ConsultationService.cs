@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -10,25 +9,22 @@ using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 namespace LYBT.Module.Consultation.Services
 {
     /// <summary>
-    /// 诊疗服务 - 简化版，专注四诊信息的基础录入和管理
-    /// 支持独立创建和通过医案聚合根创建两种方式
-    /// 同时实现 Module 内部接口和 Shared 跨平台接口
+    /// 诊疗服务 - Read Layer（Issue #1600 Phase 3）
+    /// 职责：提供诊疗记录的只读查询功能
+    /// 所有Write操作必须通过MedicalCaseService聚合根进行
     /// </summary>
     public class ConsultationService : IConsultationService
     {
         private readonly IConsultationRepository _repository;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<ConsultationService> _logger;
 
         public ConsultationService(
             IConsultationRepository repository,
-            IMedicalCaseRepository medicalCaseRepository,
             IMapper mapper,
             ILogger<ConsultationService> logger)
         {
             _repository = repository;
-            _medicalCaseRepository = medicalCaseRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -135,71 +131,9 @@ namespace LYBT.Module.Consultation.Services
             }
         }
 
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Issue #1598: REQ-001 - 三步工作流优化-Step1 (Server端API实现)
-        /// </summary>
-        public async Task<ServiceResult<ConsultationStepDto>> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request)
-        {
-            try
-            {
-                // 1. 验证参数
-                if (medicalCaseId == Guid.Empty)
-                {
-                    _logger.LogWarning("CompleteStep1失败：医案ID为空");
-                    return ServiceResult<ConsultationStepDto>.Failure("医案ID不能为空");
-                }
-
-                if (request == null)
-                {
-                    _logger.LogWarning("CompleteStep1失败：请求参数为空");
-                    return ServiceResult<ConsultationStepDto>.Failure("请求参数不能为空");
-                }
-
-                _logger.LogInformation("开始完成Step1，MedicalCaseId: {MedicalCaseId}, PrescriptionEnabled: {PrescriptionEnabled}",
-                    medicalCaseId, request.PrescriptionEnabled);
-
-                // 2. 获取Consultation（使用medicalCaseId，因为共享主键）
-                var consultation = await _repository.GetByIdAsync(medicalCaseId);
-                if (consultation == null)
-                {
-                    _logger.LogWarning("CompleteStep1失败：诊疗记录不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    return ServiceResult<ConsultationStepDto>.Failure("诊疗记录不存在");
-                }
-
-                // 3. 更新Step1完成状态
-                // ⚠️ 临时方案：直接使用Repository实现类的UpdateAsync
-                // TODO Issue #1600 Phase 2: 重构为通过MedicalCase聚合根更新
-                consultation.Step1CompletedAt = DateTime.UtcNow;
-                var repository = _repository as LYBT.Infrastructure.Repositories.BaseRepository<ConsultationEntity>;
-                if (repository != null)
-                {
-                    await repository.UpdateAsync(consultation);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Repository类型不匹配");
-                }
-
-                _logger.LogInformation("✅ Step1完成成功，MedicalCaseId: {MedicalCaseId}, Step1CompletedAt: {Step1CompletedAt}",
-                    medicalCaseId, consultation.Step1CompletedAt);
-
-                // 4. 返回Step1状态DTO
-                var stepDto = new ConsultationStepDto
-                {
-                    Id = medicalCaseId,
-                    Step1CompletedAt = consultation.Step1CompletedAt,
-                    PrescriptionEnabled = request.PrescriptionEnabled
-                };
-
-                return ServiceResult<ConsultationStepDto>.Success(stepDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成Step1异常，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                return ServiceResult<ConsultationStepDto>.Failure($"完成Step1失败：{ex.Message}");
-            }
-        }
+        // ========== Write方法已全部移除（Issue #1600 Phase 3）==========
+        // CompleteStep1Async 已移除，迁移至MedicalCaseService
+        // 所有写操作必须通过MedicalCase聚合根进行
 
     }
 }
