@@ -1,12 +1,11 @@
-﻿using LYBT.Desktop.Consultation.Interfaces;
-using LYBT.Desktop.Consultation.Repositories;
-using Prism.Ioc;
+﻿using Prism.Ioc;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Consultation
 {
     /// <summary>
     /// 诊疗管理模块 - 简化版
+    /// Issue #1606 Phase 3: 移除ConsultationRepository/ApiClient（已迁移至MedicalCaseRepository聚合根）
     /// </summary>
     [Module(ModuleName = nameof(ConsultationModule))]
     [ModuleDependency("PatientsModule")] // 诊疗依赖患者
@@ -20,20 +19,21 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Phase 3: 注册 Repository（模块级数据访问）
-            containerRegistry.RegisterSingleton<IConsultationRepository, ConsultationRepository>();
+            // Issue #1606 Phase 3: Repository已删除，所有Write操作通过MedicalCaseRepository聚合根
+            // 原：IConsultationRepository → 已删除
+            // 原：IConsultationApiClient → 已删除
 
-            // Issue #1590: REQ-001 - 注册 API Client（三步工作流优化）
-            containerRegistry.RegisterSingleton<IConsultationApiClient, ConsultationApiClient>();
-
+            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1607重构这两个ViewModel
+            // 原因：依赖已删除的IConsultationRepository/IConsultationApiClient
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();
-            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1557: 看诊流程Step 2
+            // containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();  // 待重构 Issue #1607
+            // containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // 待重构 Issue #1607 (Issue #1557: 看诊流程Step 2)
             // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();
-            containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // Issue #1557: 看诊流程Step 2（Region导航）
+            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1607重构这两个ViewModel
+            // containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();  // 待重构 Issue #1607
+            // containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // 待重构 Issue #1607 (Issue #1557: 看诊流程Step 2)
             // ✅ Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }

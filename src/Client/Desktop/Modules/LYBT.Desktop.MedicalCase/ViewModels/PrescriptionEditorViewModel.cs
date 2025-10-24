@@ -70,7 +70,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IPrescriptionEditorService _prescriptionEditorService;
         private readonly IDialogService _dialogService;
-        private readonly IPrescriptionApi _prescriptionApi;
+        private readonly IMedicalCaseApi _medicalCaseApi; // Issue #1606 Phase 3: 改为MedicalCaseApi调用聚合根方法
 
         #endregion
 
@@ -854,23 +854,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 执行删除处方操作
+        /// Issue #1606 Phase 3: 通过MedicalCase聚合根删除（删除整个医案，包括处方）
         /// </summary>
         private async Task PerformDeleteAsync(bool isSoftDelete)
         {
             try
             {
-                SetIsBusy(true, isSoftDelete ? "正在软删除处方..." : "正在永久删除处方...");
-                Logger.LogInformation("开始删除处方，MedicalCaseId: {MedicalCaseId}, 删除方式: {DeleteType}",
+                SetIsBusy(true, isSoftDelete ? "正在软删除医案..." : "正在永久删除医案...");
+                Logger.LogInformation("开始删除医案（包括处方），MedicalCaseId: {MedicalCaseId}, 删除方式: {DeleteType}",
                     MedicalCaseId, isSoftDelete ? "软删除" : "物理删除");
 
-                // 调用相应的API
+                // Issue #1606 Phase 3: 调用MedicalCase聚合根的删除方法
                 if (isSoftDelete)
                 {
-                    await _prescriptionApi.SoftDeletePrescriptionAsync(MedicalCaseId);
+                    await _medicalCaseApi.SoftDeleteMedicalCaseAsync(MedicalCaseId);
                 }
                 else
                 {
-                    await _prescriptionApi.DeletePrescriptionAsync(MedicalCaseId);
+                    await _medicalCaseApi.DeleteMedicalCaseAsync(MedicalCaseId);
                 }
 
                 // 清空表单数据
@@ -891,7 +892,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 await ShowSuccessMessageAsync(
-                    isSoftDelete ? "处方已标记为删除！" : "处方已永久删除！\n注意：此操作不可恢复。");
+                    isSoftDelete ? "医案（包括处方）已标记为删除！" : "医案（包括处方）已永久删除！\n注意：此操作不可恢复。");
 
                 Logger.LogInformation("删除处方成功，删除方式: {DeleteType}", isSoftDelete ? "软删除" : "物理删除");
             }
@@ -962,7 +963,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IMedicalCaseRepository medicalCaseRepository,
             IPrescriptionEditorService prescriptionEditorService,
             IDialogService dialogService,
-            IPrescriptionApi prescriptionApi,
+            IMedicalCaseApi medicalCaseApi, // Issue #1606 Phase 3: 改为MedicalCaseApi
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -973,7 +974,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _prescriptionEditorService = prescriptionEditorService ?? throw new ArgumentNullException(nameof(prescriptionEditorService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi)); // Issue #1606 Phase 3
 
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);

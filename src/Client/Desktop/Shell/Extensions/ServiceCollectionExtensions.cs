@@ -156,19 +156,21 @@ namespace LYBT.Desktop.Shell.Extensions
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Users.Repositories.UserRepository>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Patients.Repositories.PatientRepository>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Patients.Repositories.PatientRepository>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>());
-            // Issue #1590: REQ-001 - 注册 ConsultationApiClient Logger
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>());
+            // Issue #1606 Phase 3: ConsultationRepository已删除
+            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>>(
+            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>());
+            // Issue #1590: REQ-001 - ConsultationApiClient已删除（Issue #1606）
+            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>>(
+            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>());
+            // Issue #1606 Phase 3: PrescriptionRepository已删除
+            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>>(
+            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>());
 
             // Issue #1564: 业务模块 Services Logger（处方编辑器服务）
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>>(

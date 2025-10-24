@@ -81,8 +81,18 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationUpdateDto request);
 
         /// <summary>
-        /// 删除医疗案例
+        /// 删除医疗案例（物理删除）
         /// </summary>
+        [Refit.Delete("/api/v1/medicalcases/{id}")]
+        Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid id);
+
+        /// <summary>
+        /// 软删除医疗案例（标记为删除）
+        /// Issue #1606 Phase 3 - 修复PrescriptionEditorViewModel软删除调用
+        /// </summary>
+        [Refit.Delete("/api/v1/medicalcases/{id}/soft")]
+        Task<ApiResponse<ApiResponse>> SoftDeleteMedicalCaseAsync(Guid id);
+
         // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
 
         /// <summary>
@@ -123,10 +133,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/save-as-draft")]
         Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
-            Guid medicalCaseId, 
+            Guid medicalCaseId,
             [Refit.Body] MedicalCaseUpdateDto request);
-
-        [Refit.Delete("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid id);
     }
 }

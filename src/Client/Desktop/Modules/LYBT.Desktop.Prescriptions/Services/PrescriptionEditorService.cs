@@ -1,7 +1,7 @@
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Contracts.Api; // Issue #1606 Phase 3: 改用IPrescriptionApi
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Prescriptions.Services
     {
         #region 依赖注入
 
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IPrescriptionApi _prescriptionApi; // Issue #1606 Phase 3: 改用IPrescriptionApi（只读）
         private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IHerbRepository _herbRepository;
         private readonly ILogger<PrescriptionEditorService> _logger;
@@ -43,12 +43,12 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 构造函数
 
         public PrescriptionEditorService(
-            IPrescriptionRepository prescriptionRepository,
+            IPrescriptionApi prescriptionApi, // Issue #1606 Phase 3: 改用IPrescriptionApi
             IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,
             ILogger<PrescriptionEditorService> logger)
         {
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi)); // Issue #1606 Phase 3
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -136,7 +136,9 @@ namespace LYBT.Desktop.Prescriptions.Services
             {
                 _logger.LogInformation("加载患者{PatientId}的最近{Limit}条处方记录", patientId, limit);
 
-                var prescriptions = await _prescriptionRepository.GetPatientRecentPrescriptionsAsync(patientId, limit);
+                // Issue #1606 Phase 3: 改用IPrescriptionApi（只读）
+                var response = await _prescriptionApi.GetPatientRecentPrescriptionsAsync(patientId, limit);
+                var prescriptions = response?.Data;
                 if (prescriptions != null && prescriptions.Any())
                 {
                     _logger.LogInformation("成功加载{Count}条历史处方", prescriptions.Count);

@@ -49,6 +49,17 @@
     <Page Remove="bin\**" />
   </ItemGroup>
 
+  <!-- Issue #1606 Phase 3: 临时排除待重构的ViewModel和View（Issue #1607） -->
+  <ItemGroup>
+    <Compile Remove="ViewModels\ConsultationFormViewModel.cs" />
+    <Compile Remove="ViewModels\ConsultationManagementViewModel.cs" />
+    <Compile Remove="Views\ConsultationFormView.xaml.cs" />
+    <Compile Remove="Views\ConsultationManagementView.xaml.cs" />
+    <Compile Remove="Repositories\**" />
+    <Page Remove="Views\ConsultationFormView.xaml" />
+    <Page Remove="Views\ConsultationManagementView.xaml" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Remove="LYBT.Desktop.Consultation.xml" />
   </ItemGroup>

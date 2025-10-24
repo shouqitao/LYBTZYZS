@@ -3,7 +3,6 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces; // Epic #1600 Phase 5
-using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -23,7 +22,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 服务依赖
 
         private readonly IFormulaRepository _formulaRepository;
-        private readonly IPrescriptionRepository _prescriptionRepository;
+        // Issue #1606 Phase 3: _prescriptionRepository已删除（未实际使用）
         private readonly IMedicalCaseRepository _medicalCaseRepository; // Epic #1600 Phase 5
 
         #endregion
@@ -163,14 +162,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             IFormulaRepository formulaService,
-            IPrescriptionRepository prescriptionRepository,
+            // Issue #1606 Phase 3: prescriptionRepository已删除（未实际使用）
             IMedicalCaseRepository medicalCaseRepository, // Epic #1600 Phase 5
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            // Issue #1606 Phase 3: _prescriptionRepository已删除
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository)); // Epic #1600 Phase 5
 
             // 初始化命令

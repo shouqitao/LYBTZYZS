@@ -4,27 +4,20 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Desktop.Prescriptions.Interfaces
 {
     /// <summary>
-    /// 处方数据仓储接口 - Phase 2模块化架构
-    /// Issue #1114 - Repository下沉到模块
+    /// ⚠️ 临时接口桩 - Issue #1606 Phase 3
+    /// 此接口已被删除，仅作为编译过渡使用
+    /// 请勿使用此接口，所有Write操作应通过IMedicalCaseRepository聚合根
+    /// 待Issue #1608重构以下ViewModel后删除：
+    /// - PrescriptionCommandHandler
+    /// - PrescriptionDataManager
+    /// - PrescriptionEditorDialogViewModel
+    /// - PrescriptionManagementViewModel
+    /// - PrescriptionsMainViewModel
+    /// - PrescriptionViewModel
     /// </summary>
+    [Obsolete("此接口已被删除，请使用IMedicalCaseRepository聚合根 (Issue #1606)")]
     public interface IPrescriptionRepository
     {
-        Task<PagedResult<PrescriptionDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<PrescriptionDto?> GetByIdAsync(Guid id);
-        Task<PrescriptionDto> CreateAsync(PrescriptionCreateDto dto);
-        Task<PrescriptionDto> UpdateAsync(Guid id, PrescriptionUpdateDto dto);
-        Task<bool> DeleteAsync(Guid id);
-        Task<List<PrescriptionDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-
-        /// <summary>
-        /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
-        /// </summary>
-        Task<List<PrescriptionSearchResultDto>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count = 5);
-
-        /// <summary>
-        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
-        /// 从已验证的验方批量导入药材，并记录引用的验方名称
-        /// </summary>
-        Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid prescriptionId, Guid formulaId);
+        // 空接口桩
     }
 }

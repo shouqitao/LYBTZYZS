@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;

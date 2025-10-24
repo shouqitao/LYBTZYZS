@@ -49,6 +49,23 @@
     <Page Remove="bin\**" />
   </ItemGroup>
 
+  <!-- Issue #1606 Phase 3: 临时排除待重构的ViewModel和View（Issue #1608） -->
+  <ItemGroup>
+    <Compile Remove="ViewModels\Components\PrescriptionCommandHandler.cs" />
+    <Compile Remove="ViewModels\Components\PrescriptionDataManager.cs" />
+    <Compile Remove="ViewModels\PrescriptionEditorDialogViewModel.cs" />
+    <Compile Remove="ViewModels\PrescriptionManagementViewModel.cs" />
+    <Compile Remove="ViewModels\PrescriptionsMainViewModel.cs" />
+    <Compile Remove="ViewModels\PrescriptionViewModel.cs" />
+    <Compile Remove="Views\PrescriptionView.xaml.cs" />
+    <Compile Remove="Views\PrescriptionManagementView.xaml.cs" />
+    <Compile Remove="Views\PrescriptionsMainView.xaml.cs" />
+    <Compile Remove="Repositories\**" />
+    <Page Remove="Views\PrescriptionView.xaml" />
+    <Page Remove="Views\PrescriptionManagementView.xaml" />
+    <Page Remove="Views\PrescriptionsMainView.xaml" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Remove="LYBT.Desktop.Prescriptions.csproj.Backup.tmp" />
     <None Remove="LYBT.Desktop.Prescriptions.xml" />

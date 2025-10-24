@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

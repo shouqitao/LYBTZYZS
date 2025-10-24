@@ -4,8 +4,8 @@ using LYBT.Shared.Models.Contracts.Consultation;
 namespace LYBT.Desktop.Contracts.Api
 {
     /// <summary>
-    /// Consultation API客户端接口（Refit定义）
-    /// 包含CRUD操作和工作流方法
+    /// Consultation API客户端接口（Refit定义）- Read-Only（Issue #1606）
+    /// 所有Write操作已迁移至MedicalCaseController聚合根
     /// </summary>
     public interface IConsultationApi
     {
@@ -30,31 +30,10 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Get("/api/v1/consultations/{id}")]
         Task<ApiResponse<ConsultationDto>> GetConsultationByIdAsync(Guid id);
 
-        /// <summary>
-        /// 创建诊疗记录
-        /// </summary>
-        [Refit.Post("/api/v1/consultations")]
-        Task<ApiResponse<ConsultationDto>> CreateConsultationAsync([Refit.Body] ConsultationCreateDto request);
-
-        /// <summary>
-        /// 更新诊疗记录
-        /// </summary>
-        [Refit.Put("/api/v1/consultations/{id}")]
-        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid id, [Refit.Body] ConsultationUpdateDto request);
-
-        /// <summary>
-        /// 删除诊疗记录（软删除）
-        /// </summary>
-        [Refit.Delete("/api/v1/consultations/{id}")]
-        Task<ApiResponse<ApiResponse>> DeleteConsultationAsync(Guid id);
-
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Issue #1590: REQ-001 - 三步工作流优化-Step1
-        /// </summary>
-        [Refit.Post("/api/v1/consultations/{medicalCaseId}/complete-step1")]
-        Task<ApiResponse<ConsultationStepDto>> CompleteStep1Async(
-            Guid medicalCaseId,
-            [Refit.Body] CompleteStep1Request request);
+        // ========== Write方法已删除（Issue #1606 Phase 1）==========
+        // CreateConsultationAsync 已删除，请使用 POST /api/v1/medicalcases/with-details
+        // UpdateConsultationAsync 已删除，请使用 PUT /api/v1/medicalcases/{id}/consultation
+        // DeleteConsultationAsync 已删除，请使用 DELETE /api/v1/medicalcases/{id}（级联删除）
+        // CompleteStep1Async 已删除，请使用 POST /api/v1/medicalcases/{id}/complete-step1
     }
 }

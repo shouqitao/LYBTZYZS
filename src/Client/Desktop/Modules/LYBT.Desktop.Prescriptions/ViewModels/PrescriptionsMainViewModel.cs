@@ -1,7 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Prescriptions.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;

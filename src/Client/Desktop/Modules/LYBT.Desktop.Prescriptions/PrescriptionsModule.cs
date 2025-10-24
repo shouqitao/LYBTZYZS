@@ -1,7 +1,5 @@
 ﻿using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels;
-using LYBT.Desktop.Prescriptions.Interfaces;
-using LYBT.Desktop.Prescriptions.Repositories;
 using LYBT.Desktop.Prescriptions.Services;
 using LYBT.Desktop.Services.Print;
 using Prism.Ioc;
@@ -11,6 +9,7 @@ namespace LYBT.Desktop.Prescriptions
 {
     /// <summary>
     /// 处方管理模块 - 简化版
+    /// Issue #1606 Phase 3: 移除IPrescriptionRepository（已迁移至MedicalCaseRepository聚合根）
     /// </summary>
     [Module(ModuleName = nameof(PrescriptionsModule))]
     [ModuleDependency("ConsultationModule")] // 处方依赖诊疗
@@ -25,10 +24,8 @@ namespace LYBT.Desktop.Prescriptions
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // ADR-002 架构标准：
-            // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
-            // - Repository (数据访问层) 由各业务模块自行注册
-            containerRegistry.RegisterSingleton<IPrescriptionRepository, PrescriptionRepository>();
+            // Issue #1606 Phase 3: IPrescriptionRepository已删除，所有Write操作通过MedicalCaseRepository聚合根
+            // 原：containerRegistry.RegisterSingleton<IPrescriptionRepository, PrescriptionRepository>(); // 已删除
 
             // 注册打印服务（Issue #1381: PRINT-4）
             containerRegistry.RegisterSingleton<IPrescriptionPrintService, PrescriptionPrintService>();
@@ -37,20 +34,24 @@ namespace LYBT.Desktop.Prescriptions
             // 实现依赖倒置：MedicalCase模块依赖IPrescriptionEditorService接口
             containerRegistry.RegisterSingleton<IPrescriptionEditorService, PrescriptionEditorService>();
 
+            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构这些ViewModel
+            // 原因：依赖已删除的IPrescriptionRepository
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<PrescriptionManagementViewModel>();
-            containerRegistry.Register<PrescriptionsMainViewModel>();
-            containerRegistry.Register<PrescriptionViewModel>(); // Issue #1461
+            // containerRegistry.Register<PrescriptionManagementViewModel>();  // 待重构 Issue #1608
+            // containerRegistry.Register<PrescriptionsMainViewModel>();  // 待重构 Issue #1608
+            // containerRegistry.Register<PrescriptionViewModel>();  // 待重构 Issue #1608 (Issue #1461)
 
             // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();
-            containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();
-            containerRegistry.RegisterForNavigation<Views.PrescriptionView>(); // Issue #1461
+            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
+            // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();  // 待重构 Issue #1608
+            // containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();  // 待重构 Issue #1608
+            // containerRegistry.RegisterForNavigation<Views.PrescriptionView>();  // 待重构 Issue #1608 (Issue #1461)
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
             containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();
+            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
+            // containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();  // 待重构 Issue #1608
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
             containerRegistry.RegisterDialog<Views.PrescriptionDeleteConfirmDialog, ViewModels.PrescriptionDeleteConfirmDialogViewModel>(); // Issue #1593 - Phase 4
         }

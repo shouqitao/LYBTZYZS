@@ -4,7 +4,8 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 namespace LYBT.Desktop.Contracts.Api
 {
     /// <summary>
-    /// 处方API客户端接口 - 简化版，只包含基础CRUD
+    /// 处方API客户端接口 - Read-Only（Issue #1606）
+    /// 所有Write操作已迁移至MedicalCaseController聚合根
     /// </summary>
     public interface IPrescriptionApi
     {
@@ -24,32 +25,6 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid id);
 
         /// <summary>
-        /// 创建处方
-        /// </summary>
-        [Refit.Post("/api/v1/prescriptions")]
-        Task<ApiResponse<PrescriptionDto>> CreatePrescriptionAsync([Refit.Body] PrescriptionCreateDto request);
-
-        /// <summary>
-        /// 更新处方
-        /// </summary>
-        [Refit.Put("/api/v1/prescriptions/{id}")]
-        Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionAsync(Guid id, [Refit.Body] PrescriptionUpdateDto request);
-
-        /// <summary>
-        /// 物理删除处方（永久删除，不可恢复）
-        /// Issue #1593 - Phase 4
-        /// </summary>
-        [Refit.Delete("/api/v1/prescriptions/{id}")]
-        Task<ApiResponse<ApiResponse>> DeletePrescriptionAsync(Guid id);
-
-        /// <summary>
-        /// 软删除处方（标记为已删除，保留数据）
-        /// Issue #1593 - Phase 4
-        /// </summary>
-        [Refit.Delete("/api/v1/prescriptions/{id}/soft")]
-        Task<ApiResponse<ApiResponse>> SoftDeletePrescriptionAsync(Guid id);
-
-        /// <summary>
         /// 根据医案ID获取处方列表
         /// </summary>
         [Refit.Get("/api/v1/prescriptions/medicalcase/{medicalCaseId}")]
@@ -63,13 +38,11 @@ namespace LYBT.Desktop.Contracts.Api
             Guid patientId,
             [Refit.Query] int count = 5);
 
-        /// <summary>
-        /// 导入验方到处方 (Issue #1366 ENTRY-8, Issue #1367 ENTRY-9)
-        /// 从已验证的验方批量导入药材，并记录引用的验方名称
-        /// </summary>
-        [Refit.Post("/api/v1/prescriptions/{prescriptionId}/import-formula/{formulaId}")]
-        Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
-            Guid prescriptionId,
-            Guid formulaId);
+        // ========== Write方法已删除（Issue #1606 Phase 1）==========
+        // CreatePrescriptionAsync 已删除，请使用 POST /api/v1/medicalcases/with-details
+        // UpdatePrescriptionAsync 已删除，请使用 PUT /api/v1/medicalcases/{id}/prescription
+        // DeletePrescriptionAsync 已删除，请使用 DELETE /api/v1/medicalcases/{id}（级联删除）
+        // SoftDeletePrescriptionAsync 已删除，请使用 DELETE /api/v1/medicalcases/{id}/soft
+        // ImportFormulaIntoPrescriptionAsync 已删除，请使用 POST /api/v1/medicalcases/{id}/prescription/import-formula/{formulaId}
     }
 }

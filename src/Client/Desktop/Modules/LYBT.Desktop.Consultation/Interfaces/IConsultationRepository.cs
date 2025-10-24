@@ -4,18 +4,26 @@ using LYBT.Shared.Models.Contracts.Consultation;
 namespace LYBT.Desktop.Consultation.Interfaces
 {
     /// <summary>
-    /// 诊疗数据仓储接口 - Phase 2模块化架构
-    /// Issue #1114 - Repository下沉到模块
+    /// ⚠️ 临时接口桩 - Issue #1606 Phase 3
+    /// 此接口已被删除，仅作为编译过渡使用
+    /// 请勿使用此接口，所有Write操作应通过IMedicalCaseRepository聚合根
+    /// 待Issue #1607重构ConsultationFormViewModel和ConsultationManagementViewModel后删除
     /// </summary>
+    [Obsolete("此接口已被删除，请使用IMedicalCaseRepository聚合根 (Issue #1606)")]
     public interface IConsultationRepository
     {
-        Task<PagedResult<ConsultationDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-        Task<ConsultationDto?> GetByIdAsync(Guid id);
-        Task<ConsultationDto> CreateAsync(ConsultationCreateDto dto);
-        Task<ConsultationDto> UpdateAsync(ConsultationUpdateDto dto);
-        Task<bool> DeleteAsync(Guid id);
-        Task<List<ConsultationDto>> SearchAsync(string keyword);
-        Task<List<ConsultationDto>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-        // Issue #1562 Phase 1: 已删除 StartAsync（工作流启动方法）
+        // 空接口桩
+    }
+
+    /// <summary>
+    /// ⚠️ 临时接口桩 - Issue #1606 Phase 3
+    /// 此接口已被删除，仅作为编译过渡使用
+    /// 请勿使用此接口，所有Write操作应通过IMedicalCaseRepository聚合根
+    /// 待Issue #1607重构ConsultationFormViewModel后删除
+    /// </summary>
+    [Obsolete("此接口已被删除，请使用IMedicalCaseRepository聚合根 (Issue #1606)")]
+    public interface IConsultationApiClient
+    {
+        // 空接口桩
     }
 }

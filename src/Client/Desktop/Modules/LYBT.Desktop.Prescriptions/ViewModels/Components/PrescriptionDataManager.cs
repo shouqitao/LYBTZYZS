@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Prescriptions.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
