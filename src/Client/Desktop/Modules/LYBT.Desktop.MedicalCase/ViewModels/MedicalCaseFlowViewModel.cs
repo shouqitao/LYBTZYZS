@@ -223,26 +223,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 返回主页
+        /// 返回患者选择页面
+        /// Issue #1595: 修复导航错误（之前导航到主页，现在正确导航到患者列表）
         /// </summary>
         private void ExecuteBackToHome()
         {
             try
             {
-                // 根据当前用户角色导航到对应的主页
-                var homeViewName = SessionManager?.CurrentUser?.Role switch
-                {
-                    LYBT.Shared.Models.Enums.UserRole.Admin => "AdminHomeView",
-                    LYBT.Shared.Models.Enums.UserRole.Doctor => "ClinicalHomeView",
-                    _ => "ClinicalHomeView" // 默认返回临床医生主页
-                };
-
-                Logger.LogInformation("返回主页，导航到：{HomeView}", homeViewName);
-                _regionManager.RequestNavigate("ContentRegion", homeViewName);
+                Logger.LogInformation("返回患者选择页面");
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "返回主页时发生异常");
+                Logger.LogError(ex, "返回患者选择时发生异常");
             }
         }
 
