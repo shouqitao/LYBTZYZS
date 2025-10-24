@@ -19,21 +19,18 @@ namespace LYBT.Desktop.Consultation
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Issue #1606 Phase 3: Repository已删除，所有Write操作通过MedicalCaseRepository聚合根
-            // 原：IConsultationRepository → 已删除
-            // 原：IConsultationApiClient → 已删除
+            // Issue #1607: ViewModel重构完成，恢复注册
+            // 所有Write操作通过MedicalCaseRepository聚合根
+            // Read操作使用IConsultationApi
 
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1607重构这两个ViewModel
-            // 原因：依赖已删除的IConsultationRepository/IConsultationApiClient
             // 注册视图模型 - MVP核心功能
-            // containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();  // 待重构 Issue #1607
-            // containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // 待重构 Issue #1607 (Issue #1557: 看诊流程Step 2)
+            containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();  // Issue #1607: 已重构
+            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607: 已重构 (Issue #1557: 看诊流程Step 2)
             // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1607重构这两个ViewModel
-            // containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();  // 待重构 Issue #1607
-            // containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // 待重构 Issue #1607 (Issue #1557: 看诊流程Step 2)
+            containerRegistry.RegisterForNavigation<Views.ConsultationManagementView>();  // Issue #1607: 已重构
+            containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // Issue #1607: 已重构 (Issue #1557: 看诊流程Step 2)
             // ✅ Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }

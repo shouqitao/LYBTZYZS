@@ -1,4 +1,4 @@
-using LYBT.Desktop.Consultation.Interfaces;
+
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -28,9 +28,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         // Issue #1563: 删除IConsultationRepository依赖，使用聚合根Repository
         private readonly IMedicalCaseRepository _medicalCaseRepository;
-
-        // Issue #1590: REQ-001 - 三步工作流优化-Step1
-        private readonly IConsultationApiClient _consultationApiClient;
 
         #endregion
 
@@ -388,7 +385,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         public ConsultationFormViewModel(
             IMedicalCaseRepository medicalCaseRepository,
-            IConsultationApiClient consultationApiClient, // Issue #1590: REQ-001
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -396,11 +392,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1563: 只注入聚合根Repository
+            // Issue #1563 + Issue #1607: 只注入聚合根Repository
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
-
-            // Issue #1590: REQ-001 - 注入ConsultationApiClient
-            _consultationApiClient = consultationApiClient ?? throw new ArgumentNullException(nameof(consultationApiClient));
 
             // 初始化命令
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);

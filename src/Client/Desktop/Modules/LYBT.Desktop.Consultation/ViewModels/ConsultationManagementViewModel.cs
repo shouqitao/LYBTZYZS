@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Consultation.Interfaces;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -21,7 +21,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region 私有字段
 
-        private readonly IConsultationRepository _consultationRepository;
+        // Issue #1607: 替换为API接口（Read操作）
+        private readonly IConsultationApi _consultationApi;
         private readonly IFeatureToggleService _featureToggleService;
 
         #endregion 私有字段
@@ -90,7 +91,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationManagementViewModel(
-        IConsultationRepository consultationRepository,
+        IConsultationApi consultationApi, // Issue #1607: 使用API接口
         IFeatureToggleService featureToggleService,
         IEventAggregator eventAggregator,
         ILoggerFactory loggerFactory,
@@ -99,7 +100,8 @@ namespace LYBT.Desktop.Consultation.ViewModels
         IUserNotificationService? userNotificationService = null)
         : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _consultationRepository = consultationRepository ?? throw new ArgumentNullException(nameof(consultationRepository));
+            // Issue #1607: 注入API接口
+            _consultationApi = consultationApi ?? throw new ArgumentNullException(nameof(consultationApi));
             _featureToggleService = featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -149,7 +151,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     Keyword = SearchKeyword
                 };
 
-                var result = await _consultationRepository.GetPagedAsync(query.PageIndex, query.PageSize, query.Keyword);
+                // Issue #1607: 使用API接口调用
+                var apiResponse = await _consultationApi.GetConsultationsAsync(query.PageIndex, query.PageSize, query.Keyword);
+                var result = apiResponse.Data; // 提取PagedResult<ConsultationDto>
                 if (result != null && result.Items != null)
                 {
                     Consultations.Clear();
