@@ -280,6 +280,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand ShowOtherCasesQueryCommand { get; }
 
+        /// <summary>
+        /// 保存草稿命令（Issue #1594新增）
+        /// </summary>
+        public DelegateCommand SaveDraftCommand { get; }
+
         #endregion
 
         #region IValidatable实现
@@ -768,6 +773,43 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
+        /// 保存草稿（Issue #1594）
+        /// 功能：调用SaveAsync()保存处方数据，但不完成Step2
+        /// </summary>
+        private async Task ExecuteSaveDraft()
+        {
+            try
+            {
+                SetIsBusy(true, "正在保存草稿...");
+                Logger.LogInformation("开始保存处方草稿，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+                // 调用现有的SaveAsync()方法保存数据
+                // 注意：不调用CompleteStep2API，不更新Step2CompletedAt
+                var saved = await SaveAsync();
+
+                if (saved)
+                {
+                    await ShowSuccessMessageAsync("处方草稿已保存！\n提示：请在填写完成后点击【完成Step2】按钮（如需）。");
+                    Logger.LogInformation("处方草稿保存成功");
+                }
+                else
+                {
+                    Logger.LogWarning("处方草稿保存失败：{ValidationMessage}", ValidationMessage);
+                    await ShowErrorMessageAsync($"保存草稿失败：{ValidationMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存处方草稿异常");
+                await ShowErrorMessageAsync($"保存草稿失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
         /// 检测重复药材
         /// Issue #1591: REQ-002 - 重复药材检测逻辑
         /// </summary>
@@ -836,8 +878,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
             CompleteStep2Command = new DelegateCommand(async () => await ExecuteCompleteStep2()); // Issue #1591
             ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery); // Issue #1591
+            SaveDraftCommand = new DelegateCommand(async () => await ExecuteSaveDraft()); // Issue #1594
 
-            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强）");
+            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强 + Issue #1594暂存功能）");
         }
 
         #endregion

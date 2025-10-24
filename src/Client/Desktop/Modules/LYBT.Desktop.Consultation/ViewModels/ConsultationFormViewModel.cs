@@ -379,6 +379,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public DelegateCommand CompleteStep1Command { get; }
         public DelegateCommand ShowOtherCasesQueryCommand { get; }
 
+        // Issue #1594: 暂存功能完善
+        public DelegateCommand SaveDraftCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -405,6 +408,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // Issue #1590: REQ-001 - 初始化新命令
             CompleteStep1Command = new DelegateCommand(async () => await ExecuteCompleteStep1());
             ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery);
+
+            // Issue #1594: 暂存功能完善
+            SaveDraftCommand = new DelegateCommand(async () => await ExecuteSaveDraft());
 
             Logger.LogInformation("ConsultationFormViewModel已初始化");
         }
@@ -529,6 +535,43 @@ namespace LYBT.Desktop.Consultation.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开其他病案查询失败");
+            }
+        }
+
+        /// <summary>
+        /// 保存草稿（Issue #1594）
+        /// 功能：调用SaveAsync()保存数据，但不完成Step1
+        /// </summary>
+        private async Task ExecuteSaveDraft()
+        {
+            try
+            {
+                SetIsBusy(true, "正在保存草稿...");
+                Logger.LogInformation("开始保存诊断草稿，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+                // 调用现有的SaveAsync()方法保存数据
+                // 注意：不调用CompleteStep1API，不更新Step1CompletedAt
+                var saved = await SaveAsync();
+
+                if (saved)
+                {
+                    await ShowSuccessMessageAsync("诊断草稿已保存！\n提示：请在填写完成后点击【完成Step1】按钮。");
+                    Logger.LogInformation("诊断草稿保存成功");
+                }
+                else
+                {
+                    Logger.LogWarning("诊断草稿保存失败：{ValidationMessage}", ValidationMessage);
+                    await ShowErrorMessageAsync($"保存草稿失败：{ValidationMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存诊断草稿异常");
+                await ShowErrorMessageAsync($"保存草稿失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 

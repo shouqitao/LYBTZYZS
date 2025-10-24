@@ -263,13 +263,19 @@
                         Height="60" />
             </StackPanel>
 
-            <!-- Row 6: 辅助操作（新增完成Step1按钮，Issue #1590）-->
+            <!-- Row 6: 辅助操作（新增完成Step1按钮，Issue #1590；新增保存草稿按钮，Issue #1594）-->
             <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,20">
                 <!-- Issue #1562: ImportFromHistoryCommand已删除（未实现的扩展功能）-->
                 <Button Content="完成Step1"
                        Command="{Binding CompleteStep1Command}"
                        Style="{StaticResource ActionButtonStyle}"
                        Background="#4CAF50"
+                       Margin="0,0,10,0"/>
+                <!-- Issue #1594: 新增保存草稿按钮 -->
+                <Button Content="保存草稿"
+                       Command="{Binding SaveDraftCommand}"
+                       Style="{StaticResource ActionButtonStyle}"
+                       Background="#2196F3"
                        Margin="0,0,10,0"/>
                 <Button Content="清空表单"
                        Command="{Binding ClearFormCommand}"
