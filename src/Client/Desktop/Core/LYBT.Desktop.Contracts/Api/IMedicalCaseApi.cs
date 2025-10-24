@@ -1,6 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Contracts.Api
 {
@@ -82,6 +83,49 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 删除医疗案例
         /// </summary>
+        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/complete-step1")]
+        Task<ApiResponse<ConsultationStepDto>> CompleteStep1Async(
+            Guid medicalCaseId, 
+            [Refit.Body] CompleteStep1Request request);
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Epic #1589 Phase 2 - 架构合规版本
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/reset-consultation-steps")]
+        Task<ApiResponse> ResetConsultationStepsAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        [Refit.Delete("/api/v1/medicalcases/{medicalCaseId}/prescription/clear")]
+        Task<ApiResponse> ClearPrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription/import-formula/{formulaId}")]
+        Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+            Guid medicalCaseId, 
+            Guid formulaId);
+
+        /// <summary>
+        /// 暂存病案（保存当前状态）
+        /// Epic #1589 Phase 5 - 架构合规版本
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/save-as-draft")]
+        Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
+            Guid medicalCaseId, 
+            [Refit.Body] MedicalCaseUpdateDto request);
+
         [Refit.Delete("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid id);
     }

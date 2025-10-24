@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces; // Epic #1600 Phase 5
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -23,6 +24,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         private readonly IFormulaRepository _formulaRepository;
         private readonly IPrescriptionRepository _prescriptionRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository; // Epic #1600 Phase 5
 
         #endregion
 
@@ -88,6 +90,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// 处方ID - 用于导入验方功能 (Issue #1367 ENTRY-9)
         /// </summary>
         public Guid PrescriptionId { get; private set; }
+
+        /// <summary>
+        /// 医案ID（Epic #1600 Phase 5）
+        /// </summary>
+        public Guid MedicalCaseId { get; private set; }
 
         #endregion
 
@@ -157,12 +164,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IRegionManager regionManager,
             IFormulaRepository formulaService,
             IPrescriptionRepository prescriptionRepository,
+            IMedicalCaseRepository medicalCaseRepository, // Epic #1600 Phase 5
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
             _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository)); // Epic #1600 Phase 5
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -216,6 +225,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 if (parameters.ContainsKey("PrescriptionId"))
                 {
                     PrescriptionId = parameters.GetValue<Guid>("PrescriptionId");
+                }
+
+                // Epic #1600 Phase 5: 获取医案ID用于聚合根方法
+                if (parameters.ContainsKey("MedicalCaseId"))
+                {
+                    MedicalCaseId = parameters.GetValue<Guid>("MedicalCaseId");
                 }
 
                 // 加载数据
@@ -366,7 +381,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         private async Task ImportFormulaAsync()
         {
-            if (SelectedFormula == null || PrescriptionId == Guid.Empty)
+            if (SelectedFormula == null || PrescriptionId == Guid.Empty || MedicalCaseId == Guid.Empty)
             {
                 return;
             }
@@ -375,7 +390,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, $"正在导入验方\"{SelectedFormula.Name}\"...");
 
-                await _prescriptionRepository.ImportFormulaIntoPrescriptionAsync(PrescriptionId, SelectedFormula.Id);
+                // Epic #1600 Phase 5: 通过MedicalCase聚合根调用
+                await _medicalCaseRepository.ImportFormulaIntoPrescriptionAsync(MedicalCaseId, SelectedFormula.Id);
 
                 Logger.LogInformation("验方\"{FormulaName}\"导入成功", SelectedFormula.Name);
                 await ShowSuccessMessageAsync($"验方\"{SelectedFormula.Name}\"已成功导入到处方");

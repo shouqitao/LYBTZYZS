@@ -339,7 +339,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
             var parameters = new DialogParameters
             {
-                { "PrescriptionId", _dataManager.PrescriptionId }
+                { "PrescriptionId", _dataManager.PrescriptionId },
+                { "MedicalCaseId", _dataManager.MedicalCaseId } // Epic #1600 Phase 5
             };
 
             _dialogService.ShowDialog("FormulaTemplateDialog", parameters, result =>

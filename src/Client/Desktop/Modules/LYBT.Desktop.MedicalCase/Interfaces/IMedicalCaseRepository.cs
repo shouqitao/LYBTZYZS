@@ -40,5 +40,37 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
             DateTime? startDate = null,
             DateTime? endDate = null,
             string? diagnosisKeyword = null);
+
+        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// </summary>
+        Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Epic #1589 Phase 2 - 架构合规版本
+        /// </summary>
+        Task ResetConsultationStepsAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        Task ClearPrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
+
+        /// <summary>
+        /// 暂存病案（保存当前状态）
+        /// Epic #1589 Phase 5 - 架构合规版本
+        /// </summary>
+        Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseUpdateDto dto);
     }
 }

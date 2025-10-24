@@ -471,13 +471,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     return;
                 }
 
-                // 2. 调用API完成Step1
+                // 2. 调用API完成Step1（通过MedicalCase聚合根）
                 var request = new CompleteStep1Request
                 {
                     PrescriptionEnabled = PrescriptionEnabled
                 };
 
-                var stepDto = await _consultationApiClient.CompleteStep1Async(MedicalCaseId, request);
+                var stepDto = await _medicalCaseRepository.CompleteStep1Async(MedicalCaseId, request);
 
                 // 3. 更新本地状态
                 Step1CompletedAt = stepDto.Step1CompletedAt;

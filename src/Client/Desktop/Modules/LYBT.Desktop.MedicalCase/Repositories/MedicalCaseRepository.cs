@@ -139,6 +139,118 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         #region RepositoryBase抽象方法实现
 
+        // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
+
+        /// <summary>
+        /// 完成辩证步骤（Step 1）
+        /// Epic #1589 Phase 1 - 架构合规版本
+        /// </summary>
+        public async Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            try
+            {
+                var response = await _api.CompleteStep1Async(medicalCaseId, request);
+                return response.Data ?? throw new InvalidOperationException("完成辩证失败，服务器未返回数据");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成辩证步骤失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Epic #1589 Phase 2 - 架构合规版本
+        /// </summary>
+        public async Task ResetConsultationStepsAsync(Guid medicalCaseId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            try
+            {
+                await _api.ResetConsultationStepsAsync(medicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "重置诊疗步骤失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        public async Task ClearPrescriptionAsync(Guid medicalCaseId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            try
+            {
+                await _api.ClearPrescriptionAsync(medicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清空处方内容失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Epic #1589 Phase 4 - 架构合规版本
+        /// </summary>
+        public async Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (formulaId == Guid.Empty)
+                throw new ArgumentException("配方ID不能为空", nameof(formulaId));
+
+            try
+            {
+                var response = await _api.ImportFormulaIntoPrescriptionAsync(medicalCaseId, formulaId);
+                return response.Data ?? throw new InvalidOperationException("导入配方失败，服务器未返回数据");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入配方失败，MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}", 
+                    medicalCaseId, formulaId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 暂存病案（保存当前状态）
+        /// Epic #1589 Phase 5 - 架构合规版本
+        /// </summary>
+        public async Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseUpdateDto dto)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            try
+            {
+                var response = await _api.SaveAsDraftAsync(medicalCaseId, dto);
+                return response.Data ?? throw new InvalidOperationException("暂存病案失败，服务器未返回数据");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "暂存病案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);
