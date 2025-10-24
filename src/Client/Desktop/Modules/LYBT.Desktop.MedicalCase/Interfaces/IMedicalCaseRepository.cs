@@ -68,6 +68,16 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<PrescriptionDto> ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId);
 
         /// <summary>
+        /// 为已存在的医案创建处方（Issue #1608补充）
+        /// </summary>
+        Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto);
+
+        /// <summary>
+        /// 删除医案的处方（Issue #1608补充）
+        /// </summary>
+        Task DeletePrescriptionAsync(Guid medicalCaseId);
+
+        /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
         /// </summary>

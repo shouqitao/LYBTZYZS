@@ -222,8 +222,49 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入配方失败，MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}", 
+                _logger.LogError(ex, "导入配方失败,MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}", 
                     medicalCaseId, formulaId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 为已存在的医案创建处方(Issue #1608补充)
+        /// </summary>
+        public async Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto dto)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            try
+            {
+                var response = await _api.CreatePrescriptionAsync(medicalCaseId, dto);
+                return response.Data ?? throw new InvalidOperationException("创建处方失败,服务器未返回数据");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建处方失败,MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 删除医案的处方(Issue #1608补充)
+        /// </summary>
+        public async Task DeletePrescriptionAsync(Guid medicalCaseId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            try
+            {
+                await _api.DeletePrescriptionAsync(medicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除处方失败,MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 throw;
             }
         }
