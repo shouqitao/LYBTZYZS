@@ -128,7 +128,7 @@ cp docs/architecture/decisions/template.md docs/architecture/decisions/ADR-XXX-s
 
 - **ADR工具和最佳实践**: https://adr.github.io/
 - **架构文档提案**: `../shared/architecture-documentation-system-proposal.md`
-- **架构例外清单**: `../exceptions.md`（计划中）
+- **架构例外清单**: [../exceptions.md](../exceptions.md)
 - **架构原则文档**: `../principles.md`（计划中）
 
 ---
