@@ -8,9 +8,12 @@
 
 ```
 docs/archive/
-├── requirements-completed-2025/    # 已完成实施的需求文档
-├── discussions-deprecated-2025/    # 已废弃的讨论文档
-└── tasks/                         # 旧版任务管理文件
+├── requirements-completed-2025/       # 已完成实施的需求文档
+├── discussions-deprecated-2025/       # 已废弃的讨论文档
+├── discussions-client-2025-10/        # 2025-10月归档的Client讨论文档（18个）
+├── discussions-shared-2025-10/        # 2025-10月归档的Shared讨论文档（9个）
+├── reports-2025-10/                   # 2025-10月归档的旧报告（待执行）
+└── tasks/                             # 旧版任务管理文件
 ```
 
 ## 🗂️ 归档策略
@@ -52,6 +55,8 @@ docs/archive/
 | 日期 | 归档文档 | 原位置 | 归档原因 | 关联Issue |
 |-----|---------|--------|---------|----------|
 | 2025-01-24 | workstation-refactoring-requirements.md | docs/requirements/ | 已完成实施 | #1513 (closed) |
+| 2025-10-26 | 18个Client讨论文档 | docs/architecture/client/ | 讨论已完成，正式文档已生成 | Issue #1611 Phase 1 |
+| 2025-10-26 | 9个Shared讨论文档 | docs/architecture/shared/ | 讨论已完成，正式文档已生成 | Issue #1611 Phase 1 |
 
 ## 🔍 查询归档文档
 

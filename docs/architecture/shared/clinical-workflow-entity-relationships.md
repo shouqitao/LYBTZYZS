@@ -1,9 +1,23 @@
 # 看诊流程核心实体关系架构文档
 
-> **文档版本**: v1.0
+> **文档版本**: v1.1
 > **创建日期**: 2025-10-18
-> **最后更新**: 2025-10-18
-> **状态**: ✅ 已确认（基于用户深度澄清）
+> **最后更新**: 2025-10-26
+> **状态**: ⭐⭐⭐ **权威文档** ✅ 已确认（基于用户深度澄清）
+
+## 📌 权威文档声明
+
+**本文档是MedicalCase/Consultation/Prescription实体关系的唯一权威定义**。
+
+**其他文档引用规则**：
+- **Client架构文档**（`docs/architecture/client/README.md`）：从MVVM聚合根模式视角引用本文档
+- **Server架构文档**（`docs/architecture/server/README.md`）：从Repository/Service视角引用本文档
+- **禁止重复**：其他文档应通过链接引用本文档，避免重复描述实体关系
+
+**文档分工**：
+- **本文档**：业务流程视角的实体关系（What & Why）
+- **Client README**：MVVM实现视角（How in Desktop）
+- **Server README**：API实现视角（How in WebAPI）
 
 ---
 

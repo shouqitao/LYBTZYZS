@@ -8,6 +8,8 @@ namespace LYBT.ArchTests;
 /// Server端专用架构约束测试
 /// 确保Server层分层纯净，依赖方向正确，禁用特定框架
 /// </summary>
+// AR-001和AR-003架构测试将添加到文件末尾（在最后一个方法之后）
+
 public class ServerArchTests
 {
     private static readonly Assembly[] ServerAssemblies =

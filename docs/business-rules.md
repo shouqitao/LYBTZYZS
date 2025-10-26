@@ -367,27 +367,38 @@ decimal CalculateTotalAmount(IEnumerable<PrescriptionItem> items, int dosageCoun
 
 ## 🔍 八、规则验证矩阵
 
-| 规则编号 | Server端验证 | Desktop端验证 | Database约束 | 单元测试 | 集成测试 |
-|---------|------------|-------------|------------|---------|---------|
-| DC-001 | ✅ Validator | ✅ ViewModel | ✅ UNIQUE | ❌ | ❌ |
-| DC-002 | ✅ Service | ✅ ReadOnly | ❌ | ❌ | ❌ |
-| DC-003 | ✅ Validator | ✅ ViewModel | ❌ | ❌ | ❌ |
-| BF-001 | ✅ Service | ✅ ViewModel | ❌ | ❌ | ❌ |
-| BF-002 | ⚠️ Partial | ✅ ViewModel | ❌ | ❌ | ❌ |
-| BF-003 | ✅ Repository | ✅ ViewModel | ❌ | ❌ | ❌ |
-| BF-004 | ✅ Service | ⚠️ 缺失 | ❌ | ❌ | ❌ |
-| AR-001 | ✅ Service | ✅ Repository | ✅ FK | ❌ | ❌ |
-| AR-002 | ✅ Rules | ❌ | ❌ | ❌ | ❌ |
-| AR-003 | ⚠️ Incomplete | ❌ | ❌ | ❌ | ❌ |
-| CR-001 | ✅ Service | ✅ Calculator | ❌ | ❌ | ❌ |
-| CR-002 | ✅ Service | ✅ ViewModel | ❌ | ❌ | ❌ |
-| AC-001 | ✅ Service | ✅ SessionMgr | ❌ | ❌ | ❌ |
-| AC-002 | ❌ | ✅ Navigation | ❌ | ❌ | ❌ |
+| 规则编号 | Server端验证 | Desktop端验证 | Database约束 | 单元测试 | 集成测试 | 测试覆盖率 | 风险等级 |
+|---------|------------|-------------|------------|---------|---------|-----------|---------|
+| DC-001 | ✅ Validator | ✅ ViewModel | ✅ UNIQUE | ❌ | ❌ | 0% | 🟡 中风险 |
+| DC-002 | ✅ Service | ✅ ReadOnly | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
+| DC-003 | ✅ Validator | ✅ ViewModel | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
+| BF-001 | ✅ Service | ✅ ViewModel | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| BF-002 | ⚠️ Partial | ✅ ViewModel | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| BF-003 | ✅ Repository | ✅ ViewModel | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| BF-004 | ✅ Service | ⚠️ 缺失 | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| AR-001 | ✅ Service | ✅ Repository | ✅ FK | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| AR-002 | ✅ Rules | ❌ | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| AR-003 | ⚠️ Incomplete | ❌ | ❌ | ❌ | ❌ | **0%** | 🔴 **高风险** |
+| CR-001 | ✅ Service | ✅ Calculator | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
+| CR-002 | ✅ Service | ✅ ViewModel | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
+| AC-001 | ✅ Service | ✅ SessionMgr | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
+| AC-002 | ❌ | ✅ Navigation | ❌ | ❌ | ❌ | 0% | 🟡 中风险 |
 
 **说明**：
 - ✅ 已实现
 - ⚠️ 部分实现或存在问题
 - ❌ 未实现
+
+**测试覆盖率与风险等级**：
+- **0%覆盖率 + 业务流程规则（BF-XXX）** = 🔴 高风险（状态机逻辑复杂，重构时容易破坏）
+- **0%覆盖率 + 聚合根规则（AR-XXX）** = 🔴 高风险（架构约束，缺少自动化验证）
+- **0%覆盖率 + 数据约束规则（DC-XXX）** = 🟡 中风险（有数据库约束或Validator保护）
+- **0%覆盖率 + 计算规则（CR-XXX）** = 🟡 中风险（业务逻辑相对独立，影响范围可控）
+- **0%覆盖率 + 访问控制规则（AC-XXX）** = 🟡 中风险（运行时验证，影响安全性）
+
+**高风险规则补充测试计划**（Phase 4执行）：
+- **BF-001/002/003/004**：编写集成测试覆盖状态机转换（目标覆盖率：60%+）
+- **AR-001/002/003**：使用NetArchTest.Rules进行架构测试（目标：100%验证）
 
 ---
 

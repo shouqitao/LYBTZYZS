@@ -950,7 +950,11 @@ public class PatientManagementViewModelTests
 
 ### 4. 聚合根设计模式（Issue #1463）
 
+> **📚 权威参考**：详细实体关系定义参见 [clinical-workflow-entity-relationships.md](../shared/clinical-workflow-entity-relationships.md)（⭐⭐⭐权威文档）
+
 **核心原则**：MedicalCase是聚合根，统一管理Consultation和Prescription的生命周期。
+
+**本节重点**：从MVVM视角说明如何在Desktop端实现聚合根模式，避免ViewModel直接操作Consultation/Prescription Repository。
 
 #### ❌ 错误实现
 ```csharp

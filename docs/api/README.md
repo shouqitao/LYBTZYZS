@@ -1,12 +1,21 @@
 # API总览文档
 
-**版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
-**维护团队**：API开发组  
+**版本**：v5.1 对齐架构版
+**更新时间**：2025-10-26
+**维护团队**：API开发组
 
 ## 🎯 API体系导航
 
 凌隐宝堂中医诊所管理系统提供完整的RESTful API，支持8个核心业务模块，采用双轨认证机制，确保系统安全性和可靠性。
+
+### 📋 API文档使用说明
+
+**推荐使用Swagger UI进行API交互和测试**：
+- **开发环境Swagger UI**: [http://localhost:5001/swagger](http://localhost:5001/swagger)
+- **优势**: 实时同步最新API定义、支持在线测试、自动生成请求示例
+- **本文档作用**: 提供API架构概览、认证机制说明、响应格式规范、错误处理指南
+
+> ⚠️ **注意**: 本文档提供API概览和核心示例。完整的API端点列表、请求/响应Schema、参数说明请访问Swagger UI。
 
 ### 📋 API架构概览
 
@@ -598,8 +607,7 @@ Content-Type: application/json
 - **Python SDK**: lybt-api-py
 
 ### 2. 开发工具
-- **Swagger UI**: `/swagger`
-- **API文档**: `/docs`
+- **Swagger UI**: `/swagger` ⭐ **推荐使用**
 - **健康检查**: `/health`
 - **系统信息**: `/info`
 
@@ -617,5 +625,15 @@ Content-Type: application/json
 
 ---
 
-**文档维护**：API开发组 | **最后更新**：2025-10-15  
-**适用版本**：v5.0 对齐架构版 | **审核状态**：已审核
+**文档维护**：API开发组 | **最后更新**：2025-10-26
+**适用版本**：v5.1 对齐架构版 | **审核状态**：已审核
+
+## 📌 重要提醒
+
+本文档提供API架构概览和核心使用指南。**完整的API定义请访问Swagger UI**：
+- 开发环境：[http://localhost:5001/swagger](http://localhost:5001/swagger)
+- Swagger提供：实时API定义、在线测试、自动生成请求示例、完整Schema说明
+
+**文档分工**：
+- **本文档（docs/api/README.md）**：架构概览、认证机制、响应格式、错误处理、使用指南
+- **Swagger UI**：完整API端点列表、请求/响应Schema、参数说明、在线测试

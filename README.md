@@ -277,10 +277,12 @@ dotnet format LYBT.All.sln
 - 响应时间：<200ms（缓存命中）
 - 数据规模：<10万条记录
 
-## 📚 文档资源 ⭐v4.0对齐架构
+## 📚 文档资源 ⭐v5.1三层对齐架构
+
+**最后更新**：2025-10-26 - 同步v5.1文档体系
 
 ### 📋 文档导航
-- **[文档中心](docs/index.md)** - 统一文档导航入口 ⭐
+- **[文档中心](docs/index.md)** - 统一文档导航入口（v5.1彻底重构版）⭐
 - **[架构设计](docs/architecture/README.md)** - Server/Client/Shared三层架构
 - **[开发指南](docs/development/README.md)** - 开发规范与最佳实践
 - **[API文档](docs/api/)** - RESTful接口文档

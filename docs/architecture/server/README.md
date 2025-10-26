@@ -149,11 +149,16 @@ src/Server/
 - **关键特性**：批量导入、重复检查、数据统计
 
 #### 4. 医案管理模块 (MedicalCase Module)
-**职责**：医案记录管理、状态流转、业务流程
+
+> **📚 权威参考**：详细实体关系定义参见 [clinical-workflow-entity-relationships.md](../shared/clinical-workflow-entity-relationships.md)（⭐⭐⭐权威文档）
+
+**职责**：医案记录管理、状态流转、业务流程（**聚合根模式**：MedicalCase统一管理Consultation和Prescription生命周期）
 - **服务层**：MedicalCaseService、CaseWorkflowService、CaseStatusService
 - **数据层**：MedicalCaseRepository、MedicalCaseHistoryRepository
-- **核心实体**：MedicalCase、MedicalCaseHistory、CaseStatus
-- **关键特性**：状态机、工作流、审计跟踪
+- **核心实体**：MedicalCase（聚合根）、Consultation、Prescription、MedicalCaseHistory、CaseStatus
+- **关键特性**：状态机、工作流、审计跟踪、聚合根边界强制
+
+**本模块重点**：从WebAPI和Service层视角实现聚合根模式，确保Consultation/Prescription只能通过MedicalCase进行创建/更新/删除操作。
 
 #### 5. 诊疗记录模块 (Consultation Module)
 **职责**：四诊信息记录、辨证论治、诊断结果

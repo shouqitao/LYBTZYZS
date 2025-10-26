@@ -262,7 +262,15 @@ URL:   https://github.com/shouqitao/LYBTZYZS
 
 **输出**：需求文档作为唯一事实来源（Single Source of Truth）
 
+**⚠️ 强制性规则**：
+- ✅ **生成需求文档后,必须等待用户确认**,不得自动进入设计阶段
+- ✅ **用户可能指出需求理解错误**,必须根据反馈修正需求文档
+- ✅ **只有在用户明确确认需求文档后**,才能进入阶段3生成设计文档
+- ❌ **禁止跳过确认环节**,避免基于错误需求生成错误设计
+
 ### 阶段3：设计文档（Design）
+
+**前置条件**：⚠️ **用户已确认阶段2的需求文档无误**
 
 **目标**：提供完整的技术设计和实施指导
 
@@ -625,7 +633,7 @@ gh pr merge --squash --delete-branch
 
 > **📖 完整原则定义**：参见 `.claude/core/PRINCIPLES.md` 和 `.claude/core/FLAGS.md`
 
-### 核心原则（9条）
+### 核心原则（10条）
 1. **验证优先**：对于任何"问题报告"，先验证问题真实性再实施修复，避免无效工作
 2. **文档先行**：方案、审查、实现均以 `docs/` 现有规范为最高准则
 3. **最小充分交付**：遵循"完成导向、够用即好"，避免超前设计
@@ -635,6 +643,27 @@ gh pr merge --squash --delete-branch
 7. **MVP 约束**：禁止私自扩展或新增功能；需先更新 MVP 文档/Issue
 8. **输出归档**：报告/CSV/日志写入指定目录（`docs/reports/`、`scripts/analysis/outputs/`）
 9. **安全与合规**：严格遵守技术黑名单（禁止 Redis、CQRS、Docker、GraphQL 等）
+10. **⭐立足长期目标**：所有架构调整必须立足于未来3-5年演进目标，遵循**渐进式演进原则**（参见ADR-005）
+
+### 长期目标原则（ADR-005）⭐v6.0新增
+
+> **📖 完整定义**：参见 `docs/architecture/decisions/ADR-005-aggregate-root-long-term-architecture.md`
+
+**核心要求**：
+- ✅ **立足未来3-5年**：架构设计必须考虑业务增长（10倍数据量、5倍团队规模）
+- ✅ **渐进式演进**：避免推倒重来，每次演进成本5-15天（可控）
+- ✅ **明确触发条件**：6个量化指标（业务规则数、Service方法长度、聚合根关系、状态机复杂度、团队规模、数据量）
+- ✅ **Constitution可调整**：允许基于充分证据调整技术约束（需创建ADR + 更新例外清单）
+- ❌ **禁止过早优化**：未达到触发条件前，保持简化实现
+
+**7条长期架构原则**（ADR-005）：
+1. **渐进式演进而非推倒重来**：Service层协调 → 富领域模型 → 领域事件（按需演进）
+2. **架构边界清晰而非过度抽象**：Controller/Service/Repository职责严格分离
+3. **业务规则集中管理**：所有业务规则在Service层验证，必须文档化
+4. **聚合根边界稳定**：MedicalCase聚合根边界不随意调整
+5. **技术选型符合Constitution**：当前禁止Redis/CQRS/MediatR，未来可基于证据调整
+6. **演进触发条件明确**：6个量化指标 + 阈值（如业务规则 >20条触发演进）
+7. **Constitution约束可调整**：允许基于充分证据（业务需求 + MVP替代方案评估 + ROI >2倍）调整
 
 ### 文档架构原则（4条）⭐v5.0三层对齐
 10. **Server/Client对齐**：文档架构必须保持server/client/shared三层对齐结构
@@ -920,7 +949,7 @@ github（创建Issue） → 代码修改 → github（创建PR） → github（�
 
 > **📖 详细说明**：参见 `.claude/skills/` 目录下各Skill的SKILL.md文件
 
-### 8.1 当前可用的Skills（3个核心）
+### 8.1 当前可用的Skills（5个核心）
 
 #### 🔴 MVP合规检查 (lybtzyzs-mvp-compliance)
 - **自动检测**：技术黑名单（Redis/CQRS/MediatR/Docker/GraphQL）、依赖注入违规
@@ -933,6 +962,20 @@ github（创建Issue） → 代码修改 → github（创建PR） → github（�
 #### 📝 文档同步检查 (lybtzyzs-doc-sync)
 - **自动检测**：API端点变更、架构调整、数据模型变更
 - **建议确认**：影响范围评估、文档更新清单
+
+#### 📋 任务分解生成 (lybtzyzs-task-breakdown) ⭐ v1.0新增
+- **核心能力**：从设计文档自动生成结构化任务分解清单
+- **输入**：设计文档（docs/design/*.md）
+- **输出**：标准化task文档（docs/tasks/*.md）
+- **功能**：智能任务拆分、依赖关系分析、工作量估算、Phase划分
+- **触发关键词**：任务分解、生成任务清单、task breakdown
+
+#### 📝 Issue模板生成（批量模式）(lybtzyzs-issue-template) ⭐ v1.2增强
+- **核心能力**：从task文档批量生成GitHub Issues
+- **输入**：Task文档（docs/tasks/*.md）
+- **输出**：批量GitHub Issues（自动关联Epic、标注依赖）
+- **功能**：批量创建、依赖关系标注、Epic自动关联
+- **触发关键词**：批量创建Issues、根据task文档生成Issues
 
 ### 8.2 Skills 触发方式
 
@@ -953,12 +996,25 @@ github（创建Issue） → 代码修改 → github（创建PR） → github（�
 | **触发方式** | 自动+手动 | 工具调用 | slash命令 |
 | **协同关系** | Skills调用MCP工具 | 被Skills/Modes调用 | Modes调用MCP工具 |
 
-**协同示例**：
+**协同示例1：合规性检查**：
 ```
 用户："检查MVP合规性"
   → Skills: lybtzyzs-mvp-compliance（自动触发）
     → 调用MCP工具: grep（扫描黑名单） + serena（代码分析） + sequential-thinking（设计评估）
     → 生成报告：违规项（自动） + 建议项（等待确认）
+```
+
+**协同示例2：任务分解与Issue创建**（v1.0新增工作流）：
+```
+设计文档 → lybtzyzs-task-breakdown → Task文档 → lybtzyzs-issue-template（批量） → GitHub Issues
+
+具体流程：
+1. 设计文档完成（docs/design/xxx-design.md）
+2. task-breakdown生成任务清单（8个任务，18-24小时）
+3. issue-template批量创建Issues（自动关联Epic #1494）
+4. GitHub追踪Epic进度（8/8 Issues）
+
+参考：.claude/skills/README.md
 ```
 
 ---
