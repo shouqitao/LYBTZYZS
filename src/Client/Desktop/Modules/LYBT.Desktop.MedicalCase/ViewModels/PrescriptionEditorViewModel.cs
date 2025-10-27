@@ -828,10 +828,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogInformation("显示删除确认对话框，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                // 显示删除确认对话框
+                // Epic #1676 Phase 2: 使用全局ConfirmationDialog替代专用对话框
                 _dialogService.ShowDialog(
-                    "PrescriptionDeleteConfirmDialog",
-                    new DialogParameters(),
+                    "ConfirmationDialog",
+                    new DialogParameters
+                    {
+                        { "Title", "确认删除处方" },
+                        { "Message", "您确定要删除此处方吗？\n\n注意：物理删除后将无法恢复。" },
+                        { "ShowDeleteOptions", true },
+                        { "ConfirmButtonText", "确认删除" },
+                        { "CancelButtonText", "取消" }
+                    },
                     async result =>
                     {
                         if (result.Result == ButtonResult.OK)

@@ -100,6 +100,10 @@ public partial class App : PrismApplication
         // Issue #1239 修复: 显式注册 ViewModels（Prism 8.x 要求）
         // ViewModelLocationProvider 只是映射关系，ViewModel 本身需要在容器中注册
         containerRegistry.Register<MainWindowViewModel>();  // Transient lifetime for ViewModels
+
+        // Epic #1676 Phase 2: 注册全局对话框
+        containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog,
+            Dialogs.ViewModels.ConfirmationDialogViewModel>();
     }
 
     /// <summary>

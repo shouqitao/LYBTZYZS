@@ -53,7 +53,8 @@ namespace LYBT.Desktop.Prescriptions
             // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
             // containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();  // 待重构 Issue #1608
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.PrescriptionDeleteConfirmDialog, ViewModels.PrescriptionDeleteConfirmDialogViewModel>(); // Issue #1593 - Phase 4
+            // Epic #1676 Phase 2: PrescriptionDeleteConfirmDialog已替换为全局ConfirmationDialog（Shell）
+            // containerRegistry.RegisterDialog<Views.PrescriptionDeleteConfirmDialog, ViewModels.PrescriptionDeleteConfirmDialogViewModel>();
         }
     }
 }
