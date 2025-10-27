@@ -15,6 +15,12 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.HasKey(m => m.Id);
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
+
+            // Epic #1612: NeedsPrescription字段配置(支持动态流程控制)
+            entity.Property(m => m.NeedsPrescription)
+                  .IsRequired()
+                  .HasDefaultValue(false);
+
             entity.HasIndex(m => m.PatientId);
             entity.HasIndex(m => m.DoctorId);
             entity.HasIndex(m => m.Status);
