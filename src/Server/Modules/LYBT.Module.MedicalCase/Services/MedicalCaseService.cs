@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Server.Interfaces.Services;
+// Epic #1612 Task 2.1: 临时禁用旧接口（Phase 2将实现新接口）
+// using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -15,8 +16,9 @@ namespace LYBT.Module.MedicalCase.Services
     /// <summary>
     /// 医疗案例服务 - 简化版，专注核心业务功能
     /// 移除过度复杂的聚合根逻辑，保持诊疗工作流连贯性
+    /// Epic #1612 Task 2.1: 临时禁用旧接口，Task 2.2-2.4将实现新接口
     /// </summary>
-    public class MedicalCaseService : IMedicalCaseService
+    public class MedicalCaseService // : IMedicalCaseService（旧接口，已禁用）
     {
         private readonly IMedicalCaseRepository _repository;
         private readonly IMapper _mapper;
