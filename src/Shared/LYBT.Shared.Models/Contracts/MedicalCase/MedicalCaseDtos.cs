@@ -79,7 +79,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public bool IsUrgent() => GetPriority() >= 3;
 
         /// <summary>是否需要医生注意 - 基于诊疗时间</summary>
-        public bool NeedsDoctorAttention() => CaseStatus != MedicalCaseStatus.Closed && (DateTime.Now - ConsultationDate).TotalHours > 24;
+        public bool NeedsDoctorAttention() =>
+            (CaseStatus == MedicalCaseStatus.Active || CaseStatus == MedicalCaseStatus.Draft) &&
+            (DateTime.Now - ConsultationDate).TotalHours > 24;
 
         /// <summary>是否可以开始诊疗</summary>
         public bool CanStartConsultation() => CaseStatus == MedicalCaseStatus.Active;
@@ -90,14 +92,14 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>是否可以取消</summary>
         public bool CanCancel() => CaseStatus == MedicalCaseStatus.Active;
 
-        /// <summary>是否可以删除</summary>
-        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Closed;
+        /// <summary>是否可以删除 - Epic #1612修正版</summary>
+        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Completed || CaseStatus == MedicalCaseStatus.Cancelled;
 
-        /// <summary>是否可以编辑</summary>
-        public bool CanEdit() => CaseStatus != MedicalCaseStatus.Closed;
+        /// <summary>是否可以编辑 - Epic #1612修正版</summary>
+        public bool CanEdit() => CaseStatus == MedicalCaseStatus.Active || CaseStatus == MedicalCaseStatus.Draft;
 
-        /// <summary>是否已完成</summary>
-        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Closed;
+        /// <summary>是否已完成 - Epic #1612修正版</summary>
+        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
     }
 
     /// <summary>

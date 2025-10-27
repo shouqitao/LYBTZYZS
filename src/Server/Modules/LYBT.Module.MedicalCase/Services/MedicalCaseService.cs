@@ -472,8 +472,8 @@ namespace LYBT.Module.MedicalCase.Services
                     }
                 }
 
-                // 更新状态为Closed（原Completed状态已合并到Closed）
-                medicalCase.Status = MedicalCaseStatus.Closed;
+                // 更新状态为Completed（三步流程全部完成）
+                medicalCase.Status = MedicalCaseStatus.Completed;
                 medicalCase.UpdatedAt = DateTime.Now;
 
                 // 标记Consultation.Step3完成（兼容旧逻辑）
@@ -700,14 +700,24 @@ namespace LYBT.Module.MedicalCase.Services
 
         /// <summary>
         /// 验证病案状态流转合法性
+        /// Epic #1612修正版：支持Draft/Active/Completed/Cancelled四状态流转
         /// </summary>
         private bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         {
-            // 状态机规则（Epic #1612）
+            // 状态机规则（Epic #1612修正版）
             return (from, to) switch
             {
-                (MedicalCaseStatus.Active, MedicalCaseStatus.Closed) => true, // 完成或取消都转到Closed
-                (MedicalCaseStatus.Closed, MedicalCaseStatus.Active) => true, // 允许重新激活
+                // Draft <-> Active
+                (MedicalCaseStatus.Draft, MedicalCaseStatus.Active) => true,   // 继续看诊
+                (MedicalCaseStatus.Active, MedicalCaseStatus.Draft) => true,   // 暂存 (Issue #1647)
+
+                // Active -> 终态
+                (MedicalCaseStatus.Active, MedicalCaseStatus.Completed) => true,  // 完成三步流程
+                (MedicalCaseStatus.Active, MedicalCaseStatus.Cancelled) => true,  // 取消
+
+                // Cancelled -> Active (允许重新激活)
+                (MedicalCaseStatus.Cancelled, MedicalCaseStatus.Active) => true,
+
                 _ => false // 其他流转禁止
             };
         }

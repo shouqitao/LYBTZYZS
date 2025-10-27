@@ -303,9 +303,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         }
                     }
 
-                    // 2. 更新MedicalCase状态为Closed
+                    // 2. 更新MedicalCase状态为Completed - Epic #1612修正版
                     // Issue #1567 Phase 3 - Task 3.3
-                    await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Closed);
+                    await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Completed);
 
                     Logger.LogInformation("病案已完成");
                     await ShowSuccessMessageAsync("病案已完成");
@@ -454,8 +454,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 2. 更新MedicalCase状态为Closed
-                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Closed);
+                // 2. 更新MedicalCase状态为Cancelled - Epic #1612修正版
+                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Cancelled);
 
                 Logger.LogInformation("医案已取消");
 

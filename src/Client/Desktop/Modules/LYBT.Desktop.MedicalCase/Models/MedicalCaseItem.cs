@@ -165,8 +165,8 @@ public class MedicalCaseItem : BindableBase
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
             CreatedAt = dto.CreatedAt,
-            CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdatedAt : null,
-            CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null
+            CompletedAt = dto.CaseStatus == MedicalCaseStatus.Completed ? dto.UpdatedAt : null,
+            CompletionReason = dto.CaseStatus == MedicalCaseStatus.Completed ? "已完成" : null
         };
     }
 
@@ -216,33 +216,31 @@ public class MedicalCaseItem : BindableBase
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;
         CreatedAt = dto.CreatedAt;
-        CompletedAt = dto.CaseStatus == MedicalCaseStatus.Closed ? dto.UpdatedAt : null;
-        CompletionReason = dto.CaseStatus == MedicalCaseStatus.Closed ? "已完成" : null;
+        CompletedAt = dto.CaseStatus == MedicalCaseStatus.Completed ? dto.UpdatedAt : null;
+        CompletionReason = dto.CaseStatus == MedicalCaseStatus.Completed ? "已完成" : null;
     }
 
     /// <summary>
-    /// 状态显示文本
+    /// 状态显示文本 - Epic #1612修正版
     /// </summary>
     public string StatusText => Status switch
     {
+        MedicalCaseStatus.Draft => "暂存",
         MedicalCaseStatus.Active => "进行中",
-        MedicalCaseStatus.Closed => "已完成",
-#pragma warning disable CS0618 // Type or member is obsolete
+        MedicalCaseStatus.Completed => "已完成",
         MedicalCaseStatus.Cancelled => "已取消",
-#pragma warning restore CS0618
         _ => "未知"
     };
 
     /// <summary>
-    /// 状态颜色（用于UI绑定）
+    /// 状态颜色（用于UI绑定）- Epic #1612修正版
     /// </summary>
     public string StatusColor => Status switch
     {
-        MedicalCaseStatus.Active => "#4CAF50",
-        MedicalCaseStatus.Closed => "#9E9E9E",
-#pragma warning disable CS0618 // Type or member is obsolete
-        MedicalCaseStatus.Cancelled => "#F44336",
-#pragma warning restore CS0618
+        MedicalCaseStatus.Draft => "#FFC107",      // 暂存：橙色
+        MedicalCaseStatus.Active => "#4CAF50",     // 进行中：绿色
+        MedicalCaseStatus.Completed => "#9E9E9E",  // 已完成：灰色
+        MedicalCaseStatus.Cancelled => "#F44336",  // 已取消：红色
         _ => "#757575"
     };
 
@@ -252,9 +250,9 @@ public class MedicalCaseItem : BindableBase
     public bool IsActive => Status == MedicalCaseStatus.Active;
 
     /// <summary>
-    /// 是否已完成
+    /// 是否已完成 - Epic #1612修正版
     /// </summary>
-    public bool IsCompleted => Status == MedicalCaseStatus.Closed;
+    public bool IsCompleted => Status == MedicalCaseStatus.Completed;
 
     /// <summary>
     /// 是否可编辑

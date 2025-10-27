@@ -34,9 +34,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
 
-        // 简化的状态检查方法 - 只保留核心的
-        public bool CanEdit() => CaseStatus != MedicalCaseStatus.Closed;
-        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Closed;
+        // 简化的状态检查方法 - Epic #1612修正版
+        public bool CanEdit() => CaseStatus == MedicalCaseStatus.Active || CaseStatus == MedicalCaseStatus.Draft;
+        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
     }
 
     /// <summary>

@@ -203,7 +203,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var updateDto = new MedicalCaseUpdateDto
                 {
                     Id = MedicalCaseId,
-                    Status = MedicalCaseStatus.Closed.ToString()  // 设置状态为Closed
+                    Status = MedicalCaseStatus.Completed.ToString()  // 设置状态为Completed - Epic #1612修正版
                 };
 
                 var updatedMedicalCase = await _medicalCaseRepository.UpdateAsync(updateDto);

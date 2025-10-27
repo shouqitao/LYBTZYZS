@@ -133,10 +133,14 @@ namespace LYBT.Module.MedicalCase.Repositories
             if (existingEntity == null)
                 throw new InvalidOperationException($"医案 {entity.Id} 不存在");
 
-            // 检测状态变更：从Active变为Closed
-            if (existingEntity.Status != MedicalCaseStatus.Closed && entity.Status == MedicalCaseStatus.Closed)
+            // 检测状态变更：从Active变为Completed或Cancelled - Epic #1612修正版
+            bool isMovingToTerminalState =
+                (existingEntity.Status == MedicalCaseStatus.Active || existingEntity.Status == MedicalCaseStatus.Draft) &&
+                (entity.Status == MedicalCaseStatus.Completed || entity.Status == MedicalCaseStatus.Cancelled);
+
+            if (isMovingToTerminalState)
             {
-                _logger?.LogInformation("检测到医案状态变更为Closed，准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
+                _logger?.LogInformation("检测到医案状态变更为终态（Completed/Cancelled），准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
 
                 // 删除关联的Consultation（如果存在）
                 if (existingEntity.Consultation != null)
