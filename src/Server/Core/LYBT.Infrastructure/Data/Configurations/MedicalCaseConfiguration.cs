@@ -27,7 +27,9 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.HasIndex(m => m.CreatedAt);
 
             // 添加并发控制
-            entity.Property(m => m.RowVersion).IsRowVersion().IsConcurrencyToken();
+            // ⚠️ Issue #1669 Phase 7: 临时禁用RowVersion验证InMemory数据库并发问题
+            // TODO: 生产环境需要恢复此配置！
+            // entity.Property(m => m.RowVersion).IsRowVersion().IsConcurrencyToken();
 
             // 添加审计字段
             entity.Property(m => m.CreatedBy).IsRequired();

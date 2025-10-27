@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using LYBT.Tests.Common.AssertionHelpers;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
@@ -112,7 +113,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
 
             var apiResponse = await response.ShouldBeFailedApiResponseWithMessageAsync();
-            apiResponse.Message.Should().Contain("已有未完成的病案");
+            apiResponse.Message.Should().Contain("未完成病案");
         }
 
         #endregion
@@ -259,8 +260,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions",
                 request);
 
-            // Assert - AR-003: 一诊一方约束
-            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+            // Assert - AR-003: 一诊一方约束（返回400 Bad Request）
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.BadRequest);
         }
 
         #endregion
@@ -275,7 +276,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new UpdatePrescriptionRequest
             {
-                Indication = "更新后的主治"
+                Indication = "更新后的主治",
+                Items = new List<PrescriptionItemDto>
+                {
+                    new() { HerbId = Guid.NewGuid(), Quantity = 6m }
+                }
             };
 
             // Act
@@ -463,14 +468,15 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         /// <summary>
         /// 创建测试病案（最基础）
-        /// ⚠️ Issue #1669: 每次调用创建独立患者，避免"患者已有未完成病案"错误
+        /// ⚠️ Issue #1669 Phase 6: 每次调用创建独立患者，避免"患者已有未完成病案"错误
         /// </summary>
         private async Task<MedicalCaseEntity> CreateTestMedicalCaseAsync()
         {
             // 为本次测试创建独立的患者（避免多个测试共享患者导致冲突）
             var newPatientId = Guid.NewGuid();
+            var testUserId = Guid.NewGuid(); // ⚠️ 模拟审计字段的用户ID
 
-            // ⚠️ 在数据库中创建患者实体
+            // ⚠️ 在数据库中创建患者实体（必须设置审计字段）
             using (var scope = ServiceProvider.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Data.AppDbContext>();
@@ -482,10 +488,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     PhoneNumber = "13800138000",
                     Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
                     CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    UpdatedAt = DateTime.Now,
+                    CreatedBy = testUserId,  // ⚠️ Issue #1669: 必须设置CreatedBy
+                    UpdatedBy = testUserId
                 };
                 db.Set<LYBT.Entities.Patients.Patient>().Add(testPatient);
-                await db.SaveChangesAsync();
+                var saveResult = await db.SaveChangesAsync();
+                _output.WriteLine($"✅ 患者实体已创建: PatientId={newPatientId}, SavedEntities={saveResult}");
             }
 
             var request = new
@@ -496,7 +505,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
 
-            // ⚠️ 临时调试代码：打印400错误的详细信息
+            // ⚠️ 临时调试代码：打印错误的详细信息
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();

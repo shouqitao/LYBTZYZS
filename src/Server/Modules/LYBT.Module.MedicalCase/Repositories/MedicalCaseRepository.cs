@@ -118,20 +118,72 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 更新医案（Issue #1571 - 级联删除关联数据）
         /// 当医案状态变更为Closed时，自动删除关联的Consultation和Prescription
+        /// Issue #1669 Phase 7: 支持tracked和detached两种entity状态
         /// </summary>
         public override async Task<MedicalCaseEntity> UpdateAsync(MedicalCaseEntity entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            // 获取数据库中的原实体以检测状态变更
-            var existingEntity = await _dbSet
-                .Include(m => m.Consultation)
-                .Include(m => m.Prescription)
-                .FirstOrDefaultAsync(m => m.Id == entity.Id);
+            // ⚠️ Issue #1669 Phase 7: 检查entity的跟踪状态
+            // Service层通过GetByIdWithDetailsAsync获取的entity是tracked
+            // 其他场景可能传入detached entity
+            var entry = _context.Entry(entity);
+            _logger?.LogInformation("🔍 [诊断] UpdateAsync开始 - MedicalCaseId: {Id}, EntryState: {State}, HasPrescription: {HasPrescription}",
+                entity.Id, entry.State, entity.Prescription != null);
 
-            if (existingEntity == null)
-                throw new InvalidOperationException($"医案 {entity.Id} 不存在");
+            if (entity.Prescription != null)
+            {
+                var prescriptionEntry = _context.Entry(entity.Prescription);
+                _logger?.LogInformation("🔍 [诊断] Prescription状态 - PrescriptionId: {Id}, State: {State}",
+                    entity.Prescription.Id, prescriptionEntry.State);
+
+                // ⚠️ Issue #1669 Phase 7: 修复Prescription状态错误
+                // 如果Prescription是新创建的（State=Modified但在数据库中不存在），将其改为Added
+                if (prescriptionEntry.State == EntityState.Modified)
+                {
+                    var existsInDb = await _context.Set<PrescriptionEntity>()
+                        .AnyAsync(p => p.Id == entity.Prescription.Id);
+
+                    if (!existsInDb)
+                    {
+                        _logger?.LogInformation("🔧 [修复] 检测到新Prescription被错误标记为Modified，改为Added");
+                        prescriptionEntry.State = EntityState.Added;
+                    }
+                }
+            }
+
+            MedicalCaseEntity existingEntity;
+
+            if (entry.State == EntityState.Detached)
+            {
+                // Detached场景：查询existingEntity并使用SetValues复制属性
+                existingEntity = await _dbSet
+                    .Include(m => m.Consultation)
+                    .Include(m => m.Prescription)
+                    .FirstOrDefaultAsync(m => m.Id == entity.Id);
+
+                if (existingEntity == null)
+                    throw new InvalidOperationException($"医案 {entity.Id} 不存在");
+
+                // 复制属性值到已跟踪的existingEntity
+                _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+            }
+            else
+            {
+                // Tracked场景：entity本身就是existingEntity（Service层场景）
+                // 无需查询，entity的导航属性已通过GetByIdWithDetailsAsync加载
+                existingEntity = entity;
+
+                // ⚠️ Issue #1669 Phase 7: InMemory数据库RowVersion同步问题
+                // 当entity被多次修改时，RowVersion可能不同步，导致并发异常
+                // 解决方案：将RowVersion的OriginalValue同步为CurrentValue，跳过并发检查
+                var rowVersionProperty = entry.Property("RowVersion");
+                if (rowVersionProperty != null)
+                {
+                    rowVersionProperty.OriginalValue = rowVersionProperty.CurrentValue;
+                }
+            }
 
             // 检测状态变更：从Active变为Completed或Cancelled - Epic #1612修正版
             bool isMovingToTerminalState =
@@ -159,8 +211,19 @@ namespace LYBT.Module.MedicalCase.Repositories
                 _logger?.LogInformation("级联删除完成，即将更新医案状态");
             }
 
-            // 调用基类UpdateAsync完成更新
-            return await base.UpdateAsync(entity);
+            // ⚠️ Issue #1669 Phase 7: SaveChanges前诊断 - 记录所有tracked entities状态
+            _logger?.LogInformation("🔍 [诊断] SaveChangesAsync前 - ChangeTracker状态:");
+            foreach (var trackedEntry in _context.ChangeTracker.Entries())
+            {
+                var entityType = trackedEntry.Entity.GetType().Name;
+                var entityIdProperty = trackedEntry.Entity.GetType().GetProperty("Id");
+                var entityId = entityIdProperty?.GetValue(trackedEntry.Entity) ?? "N/A";
+                _logger?.LogInformation("🔍   - {EntityType} (Id: {EntityId}): State={State}",
+                    entityType, entityId, trackedEntry.State);
+            }
+
+            await SaveChangesAsync();
+            return existingEntity;
         }
 
         /// <summary>

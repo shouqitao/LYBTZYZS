@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,10 @@ namespace LYBT.Tests.Common
 
         // ⚠️ Issue #1669: 固定数据库名，确保同一测试实例的所有HTTP请求使用同一内存数据库
         protected readonly string TestDatabaseName;
+
+        // ⚠️ Issue #1669 Phase 6: 共享InMemoryDatabaseRoot，确保所有DbContext实例共享同一数据库
+        // 静态字段在整个测试运行期间保持不变，所有测试实例共享
+        private static readonly InMemoryDatabaseRoot _sharedDatabaseRoot = new InMemoryDatabaseRoot();
 
         protected IntegrationTestBase()
         {
@@ -116,13 +121,17 @@ namespace LYBT.Tests.Common
                 services.Remove(descriptor);
             }
 
-            // ⚠️ Issue #1669: 使用固定数据库名，确保所有HTTP请求共享同一内存数据库实例
-            // 添加内存数据库
-            services.AddDbContext<AppDbContext>(options =>
+            // ⚠️ Issue #1669 Phase 6-7: 使用固定数据库名和共享DatabaseRoot，禁用RowVersion
+            // 确保测试中创建的数据与API请求时访问的数据在同一数据库实例
+            services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseInMemoryDatabase(TestDatabaseName);
+                options.UseInMemoryDatabase(TestDatabaseName, _sharedDatabaseRoot);
                 options.EnableSensitiveDataLogging();
                 options.EnableServiceProviderCaching();
+
+                // ⚠️ Issue #1669 Phase 7: InMemory数据库对RowVersion支持有限，导致DbUpdateConcurrencyException
+                // 解决方案：在测试环境中移除RowVersion的IsConcurrencyToken配置
+                options.ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCustomizer, TestModelCustomizer>();
             });
 
             // 构建服务提供器并创建数据库
@@ -318,6 +327,34 @@ namespace LYBT.Tests.Common
             }
 
             throw new InvalidOperationException("无法将WebApplicationFactory<Program>转换为WebApplicationFactory<TProgram>");
+        }
+    }
+
+    /// <summary>
+    /// 测试环境Model定制器 - Issue #1669 Phase 7
+    /// 移除RowVersion的IsConcurrencyToken配置，避免InMemory数据库并发冲突
+    /// </summary>
+    internal class TestModelCustomizer : Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizer
+    {
+        public TestModelCustomizer(Microsoft.EntityFrameworkCore.Infrastructure.ModelCustomizerDependencies dependencies)
+            : base(dependencies)
+        {
+        }
+
+        public override void Customize(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder, DbContext context)
+        {
+            base.Customize(modelBuilder, context);
+
+            // 移除MedicalCase实体的RowVersion并发令牌配置
+            var medicalCaseEntity = modelBuilder.Model.FindEntityType(typeof(LYBT.Entities.MedicalCase.MedicalCase));
+            if (medicalCaseEntity != null)
+            {
+                var rowVersionProperty = medicalCaseEntity.FindProperty("RowVersion");
+                if (rowVersionProperty != null)
+                {
+                    rowVersionProperty.IsConcurrencyToken = false;
+                }
+            }
         }
     }
 }
