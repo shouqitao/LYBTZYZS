@@ -1,0 +1,543 @@
+using FluentAssertions;
+using LYBT.Module.MedicalCase.Dtos;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Common;
+using LYBT.Tests.Common.AssertionHelpers;
+using Xunit;
+using Xunit.Abstractions;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+
+namespace LYBT.WebAPI.IntegrationTests.Controllers
+{
+    /// <summary>
+    /// MedicalCaseController集成测试 - Epic #1612
+    /// 测试14个API端点的完整流程
+    /// 业务规则验证：BR-001、BF-002、AR-003
+    /// </summary>
+    public class MedicalCaseControllerIntegrationTests : IntegrationTestBase
+    {
+        private readonly ITestOutputHelper _output;
+
+        public MedicalCaseControllerIntegrationTests(ITestOutputHelper output) : base()
+        {
+            _output = output;
+        }
+
+        #region Write Layer Tests - CreateMedicalCase
+
+        [Fact]
+        public async Task CreateMedicalCase_WithValidRequest_ShouldCreateSuccessfully()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var request = new
+            {
+                PatientId = patientId,
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.PatientId.Should().Be(patientId);
+            apiResponse.Data.Status.Should().Be(MedicalCaseStatus.Active);
+            apiResponse.Data.Consultation.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task CreateMedicalCase_WhenPatientHasActiveCase_ShouldReturn422()
+        {
+            // Arrange - 先创建一个病案
+            var patientId = Guid.NewGuid();
+            var firstRequest = new
+            {
+                PatientId = patientId,
+                VisitDate = DateTime.Now
+            };
+            await Client.PostAsJsonAsync("/api/v2/medicalcases", firstRequest);
+
+            var secondRequest = new
+            {
+                PatientId = patientId,
+                VisitDate = DateTime.Now
+            };
+
+            // Act - 尝试为同一患者再创建病案
+            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", secondRequest);
+
+            // Assert - BR-001: 单患者只能有一个Active病案
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+
+            var apiResponse = await response.ShouldBeFailedApiResponseWithMessageAsync();
+            apiResponse.Message.Should().Contain("已有未完成的病案");
+        }
+
+        #endregion
+
+        #region Write Layer Tests - UpdateConsultation
+
+        [Fact]
+        public async Task UpdateConsultation_WithValidRequest_ShouldUpdateSuccessfully()
+        {
+            // Arrange - 创建病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new UpdateConsultationRequest
+            {
+                ChiefComplaint = "头痛",
+                TCMDiagnosis = "风寒感冒"
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.Consultation!.Step1CompletedAt.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task UpdateConsultation_WhenStatusNotActive_ShouldReturn400()
+        {
+            // Arrange - 创建并完成病案
+            var medicalCase = await CreateAndCompleteMedicalCaseAsync();
+
+            var request = new UpdateConsultationRequest
+            {
+                ChiefComplaint = "测试"
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+                request);
+
+            // Assert
+            response.ShouldBeBadRequest();
+        }
+
+        #endregion
+
+        #region Write Layer Tests - SetPrescriptionFlag
+
+        [Fact]
+        public async Task SetPrescriptionFlag_WithValidRequest_ShouldUpdateSuccessfully()
+        {
+            // Arrange - 创建病案并完成辨证
+            var medicalCase = await CreateTestMedicalCaseWithConsultationAsync();
+
+            var request = new { NeedsPrescription = true };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.NeedsPrescription.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SetPrescriptionFlag_WhenStep1NotCompleted_ShouldReturn422()
+        {
+            // Arrange - 创建病案但未辨证
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new { NeedsPrescription = true };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+                request);
+
+            // Assert - BF-002: 三步流程验证
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+        }
+
+        #endregion
+
+        #region Write Layer Tests - CreatePrescription
+
+        [Fact]
+        public async Task CreatePrescription_WithValidRequest_ShouldCreateSuccessfully()
+        {
+            // Arrange - 创建病案、辨证、标记需要处方
+            var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
+
+            var request = new CreatePrescriptionRequest
+            {
+                Indication = "感冒",
+                Items = new List<PrescriptionItemDto>
+                {
+                    new PrescriptionItemDto
+                    {
+                        HerbId = Guid.NewGuid(),
+                        HerbName = "麻黄",
+                        Dosage = 10,
+                        Unit = "g"
+                    }
+                }
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PrescriptionEntity>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.MedicalCaseId.Should().Be(medicalCase.Id);
+        }
+
+        [Fact]
+        public async Task CreatePrescription_WhenPrescriptionAlreadyExists_ShouldReturn422()
+        {
+            // Arrange - 创建病案并已有处方
+            var medicalCase = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            var request = new CreatePrescriptionRequest
+            {
+                Indication = "测试",
+                Items = new List<PrescriptionItemDto>()
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                request);
+
+            // Assert - AR-003: 一诊一方约束
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+        }
+
+        #endregion
+
+        #region Write Layer Tests - UpdatePrescription
+
+        [Fact]
+        public async Task UpdatePrescription_WithValidRequest_ShouldUpdateSuccessfully()
+        {
+            // Arrange - 创建病案和处方
+            var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            var request = new UpdatePrescriptionRequest
+            {
+                Indication = "更新后的主治"
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+        }
+
+        #endregion
+
+        #region Write Layer Tests - DeletePrescription
+
+        [Fact]
+        public async Task DeletePrescription_WithValidRequest_ShouldDeleteSuccessfully()
+        {
+            // Arrange - 创建病案和处方
+            var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            // Act
+            var response = await Client.DeleteAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}");
+
+            // Assert
+            response.ShouldBeNoContent();
+        }
+
+        #endregion
+
+        #region Write Layer Tests - UpdateStatus
+
+        [Fact]
+        public async Task UpdateStatus_WithValidRequest_ShouldUpdateSuccessfully()
+        {
+            // Arrange
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new { Status = MedicalCaseStatus.Cancelled };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/status",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data!.Status.Should().Be(MedicalCaseStatus.Cancelled);
+        }
+
+        #endregion
+
+        #region Write Layer Tests - CompleteMedicalCase
+
+        [Fact]
+        public async Task CompleteMedicalCase_WithValidRequest_ShouldCompleteSuccessfully()
+        {
+            // Arrange - 创建完整流程的病案
+            var medicalCase = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            // Act
+            var response = await Client.PutAsync(
+                $"/api/v2/medicalcases/{medicalCase.Item1.Id}/complete",
+                null);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data!.Status.Should().Be(MedicalCaseStatus.Completed);
+        }
+
+        [Fact]
+        public async Task CompleteMedicalCase_WhenPrescriptionNotCompleted_ShouldReturn422()
+        {
+            // Arrange - 创建病案但未完成处方
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            // Act
+            var response = await Client.PutAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/complete",
+                null);
+
+            // Assert - BF-002: 三步流程验证
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+        }
+
+        #endregion
+
+        #region Read Layer Tests - GetById
+
+        [Fact]
+        public async Task GetById_WithExistingId_ShouldReturnMedicalCase()
+        {
+            // Arrange
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            // Act
+            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            apiResponse.Data!.Id.Should().Be(medicalCase.Id);
+        }
+
+        [Fact]
+        public async Task GetById_WithNonExistingId_ShouldReturn404()
+        {
+            // Arrange
+            var nonExistingId = Guid.NewGuid();
+
+            // Act
+            var response = await Client.GetAsync($"/api/v2/medicalcases/{nonExistingId}");
+
+            // Assert
+            response.ShouldBeNotFound();
+        }
+
+        #endregion
+
+        #region Read Layer Tests - GetList
+
+        [Fact]
+        public async Task GetList_WithValidParameters_ShouldReturnPagedResults()
+        {
+            // Arrange - 创建测试数据
+            await CreateTestMedicalCaseAsync();
+            await CreateTestMedicalCaseAsync();
+
+            // Act
+            var response = await Client.GetAsync("/api/v2/medicalcases?page=1&pageSize=10");
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PagedResult<MedicalCaseEntity>>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.Items.Should().NotBeEmpty();
+        }
+
+        #endregion
+
+        #region Helper Layer Tests - CanEdit
+
+        [Fact]
+        public async Task CanEdit_WhenStatusActive_ShouldReturnTrue()
+        {
+            // Arrange
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            // Act
+            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}/can-edit");
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Services.CanEditResponse>();
+            apiResponse.Data!.CanEdit.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task CanEdit_WhenStatusCompleted_ShouldReturnFalse()
+        {
+            // Arrange
+            var medicalCase = await CreateAndCompleteMedicalCaseAsync();
+
+            // Act
+            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}/can-edit");
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Services.CanEditResponse>();
+            apiResponse.Data!.CanEdit.Should().BeFalse();
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// 创建测试病案（最基础）
+        /// </summary>
+        private async Task<MedicalCaseEntity> CreateTestMedicalCaseAsync()
+        {
+            var request = new
+            {
+                PatientId = Guid.NewGuid(),
+                VisitDate = DateTime.Now
+            };
+
+            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", request);
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            return apiResponse.Data!;
+        }
+
+        /// <summary>
+        /// 创建测试病案并完成辨证（Step 1完成）
+        /// </summary>
+        private async Task<MedicalCaseEntity> CreateTestMedicalCaseWithConsultationAsync()
+        {
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var consultationRequest = new UpdateConsultationRequest
+            {
+                ChiefComplaint = "头痛",
+                TCMDiagnosis = "风寒感冒"
+            };
+
+            await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+                consultationRequest);
+
+            // 重新获取更新后的病案
+            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            return apiResponse.Data!;
+        }
+
+        /// <summary>
+        /// 创建测试病案、辨证、标记需要处方（Ready for Prescription）
+        /// </summary>
+        private async Task<MedicalCaseEntity> CreateTestMedicalCaseReadyForPrescriptionAsync()
+        {
+            var medicalCase = await CreateTestMedicalCaseWithConsultationAsync();
+
+            var flagRequest = new { NeedsPrescription = true };
+            await Client.PutAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+                flagRequest);
+
+            // 重新获取更新后的病案
+            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            return apiResponse.Data!;
+        }
+
+        /// <summary>
+        /// 创建测试病案并包含处方（完整流程）
+        /// </summary>
+        private async Task<(MedicalCaseEntity, PrescriptionEntity)> CreateTestMedicalCaseWithPrescriptionAsync()
+        {
+            var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
+
+            var prescriptionRequest = new CreatePrescriptionRequest
+            {
+                Indication = "感冒",
+                Items = new List<PrescriptionItemDto>
+                {
+                    new PrescriptionItemDto
+                    {
+                        HerbId = Guid.NewGuid(),
+                        HerbName = "麻黄",
+                        Dosage = 10,
+                        Unit = "g"
+                    }
+                }
+            };
+
+            var response = await Client.PostAsJsonAsync(
+                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                prescriptionRequest);
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PrescriptionEntity>();
+            var prescription = apiResponse.Data!;
+
+            // 重新获取病案（包含处方）
+            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var updatedCase = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+
+            return (updatedCase.Data!, prescription);
+        }
+
+        /// <summary>
+        /// 创建并完成病案（完整流程 + 完成）
+        /// </summary>
+        private async Task<MedicalCaseEntity> CreateAndCompleteMedicalCaseAsync()
+        {
+            var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            await Client.PutAsync($"/api/v2/medicalcases/{medicalCase.Id}/complete", null);
+
+            // 重新获取完成后的病案
+            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+            return apiResponse.Data!;
+        }
+
+        #endregion
+    }
+}

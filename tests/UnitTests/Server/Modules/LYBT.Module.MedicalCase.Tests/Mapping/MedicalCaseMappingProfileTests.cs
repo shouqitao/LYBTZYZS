@@ -235,7 +235,8 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
         [Theory]
         [InlineData(MedicalCaseStatus.Active)]
-        [InlineData(MedicalCaseStatus.Closed)]
+        [InlineData(MedicalCaseStatus.Completed)]
+        [InlineData(MedicalCaseStatus.Cancelled)]
         public void MedicalCase_To_MedicalCaseDto_ShouldMapAllStatuses(MedicalCaseStatus status)
         {
             // Arrange

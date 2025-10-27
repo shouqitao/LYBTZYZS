@@ -1,663 +1,502 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+
+// Epic #1612: 新Service接口和DTOs
+using NewMedicalCaseService = LYBT.Module.MedicalCase.Services.IMedicalCaseService;
+using LYBT.Module.MedicalCase.Services; // CanEditResponse, CanDeleteResponse
+using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, PrescriptionDetailDto
 
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 医疗案例管理 API - 基础CRUD功能
+    /// 医疗案例管理 API V2 - Epic #1612重构版
+    /// 遵循Write/Read/Helper Layer分离原则
+    /// 所有写操作通过MedicalCase聚合根
     /// </summary>
     [ApiController]
-    [ApiVersion("1")]
+    [ApiVersion("2")]
     [Route("api/v{version:apiVersion}/medicalcases")]
     [Authorize]
     public class MedicalCaseController : BaseApiController
     {
-        private readonly IMedicalCaseService _medicalCaseService;
+        private readonly NewMedicalCaseService _medicalCaseService;
 
         public MedicalCaseController(
-            IMedicalCaseService medicalCaseService,
+            NewMedicalCaseService medicalCaseService,
             ILogger<MedicalCaseController> logger,
             IMemoryCache cache) : base(logger, cache)
         {
             _medicalCaseService = medicalCaseService;
         }
 
+        // ========== Write Layer（写操作，通过聚合根）==========
+
         /// <summary>
-        /// 分页查询医疗案例
+        /// 创建新病案
+        /// Epic #1612 - AR-001: 通过聚合根创建
+        /// </summary>
+        /// <param name="request">创建请求</param>
+        [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> CreateMedicalCase(
+            [FromBody] CreateMedicalCaseRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("患者不存在"));
+
+                _logger.LogInformation("病案创建成功，ID: {Id}", result.Id);
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "病案创建成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // BR-001: 单个患者只能有一个Active病案
+                _logger.LogWarning(ex, "创建病案失败：业务规则验证失败");
+                return UnprocessableEntity(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "创建病案", request);
+            }
+        }
+
+        /// <summary>
+        /// 更新辨证信息（三步流程Step 1）
+        /// Epic #1612 - AR-001: 通过聚合根更新Consultation
+        /// </summary>
+        [HttpPut("{id}/consultation")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 400)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> UpdateConsultation(
+            Guid id,
+            [FromBody] UpdateConsultationRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.UpdateConsultationAsync(id, request);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
+
+                _logger.LogInformation("辨证信息更新成功，MedicalCaseId: {Id}", id);
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "辨证信息更新成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "更新辨证信息失败：状态不允许");
+                return BadRequest(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "更新辨证信息", new { id, request });
+            }
+        }
+
+        /// <summary>
+        /// 标记是否需要开处方（三步流程Step 2）
+        /// Epic #1612 - BF-002: 动态流程控制
+        /// </summary>
+        [HttpPut("{id}/prescription-flag")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> SetPrescriptionFlag(
+            Guid id,
+            [FromBody] SetPrescriptionFlagRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.SetPrescriptionFlagAsync(id, request.NeedsPrescription);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
+
+                _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
+                    id, request.NeedsPrescription);
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "处方标记更新成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // AR-003: 已有处方时不能再标记为需要开处方
+                _logger.LogWarning(ex, "处方标记更新失败：业务规则验证失败");
+                return UnprocessableEntity(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "更新处方标记", new { id, request });
+            }
+        }
+
+        /// <summary>
+        /// 创建处方（三步流程Step 3a）
+        /// Epic #1612 - AR-001/AR-003: 通过聚合根创建，一诊一方约束
+        /// </summary>
+        [HttpPost("{id}/prescriptions")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 422)]
+        public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> CreatePrescription(
+            Guid id,
+            [FromBody] CreatePrescriptionRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.CreatePrescriptionAsync(id, request);
+
+                if (result == null)
+                    return NotFound(ApiResponse<PrescriptionEntity>.CreateFail("病案不存在"));
+
+                _logger.LogInformation("处方创建成功，MedicalCaseId: {Id}, PrescriptionId: {PrescriptionId}",
+                    id, result.Id);
+                return Ok(ApiResponse<PrescriptionEntity>.CreateSuccess(result, "处方创建成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // AR-003: 一诊一方约束
+                _logger.LogWarning(ex, "处方创建失败：业务规则验证失败");
+                return UnprocessableEntity(ApiResponse<PrescriptionEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionEntity>(ex, "创建处方", new { id, request });
+            }
+        }
+
+        /// <summary>
+        /// 更新处方（三步流程Step 3b）
+        /// Epic #1612 - AR-001: 通过聚合根更新
+        /// </summary>
+        [HttpPut("{id}/prescriptions/{prescriptionId}")]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 403)]
+        public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> UpdatePrescription(
+            Guid id,
+            Guid prescriptionId,
+            [FromBody] UpdatePrescriptionRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, request);
+
+                if (result == null)
+                    return NotFound(ApiResponse<PrescriptionEntity>.CreateFail("病案或处方不存在"));
+
+                _logger.LogInformation("处方更新成功，MedicalCaseId: {Id}, PrescriptionId: {PrescriptionId}",
+                    id, prescriptionId);
+                return Ok(ApiResponse<PrescriptionEntity>.CreateSuccess(result, "处方更新成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // 处方不属于该病案
+                _logger.LogWarning(ex, "处方更新失败：验证失败");
+                return StatusCode(403, ApiResponse<PrescriptionEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<PrescriptionEntity>(ex, "更新处方", new { id, prescriptionId, request });
+            }
+        }
+
+        /// <summary>
+        /// 删除处方（软删除）
+        /// Epic #1612 - AR-001: 通过聚合根删除，修复V3违规
+        /// </summary>
+        [HttpDelete("{id}/prescriptions/{prescriptionId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse), 403)]
+        [ProducesResponseType(typeof(ApiResponse), 422)]
+        public async Task<ActionResult> DeletePrescription(
+            Guid id,
+            Guid prescriptionId)
+        {
+            try
+            {
+                var result = await _medicalCaseService.DeletePrescriptionAsync(id, prescriptionId);
+
+                if (!result)
+                    return NotFound(ApiResponse.CreateFail("病案或处方不存在"));
+
+                _logger.LogInformation("处方删除成功，MedicalCaseId: {Id}, PrescriptionId: {PrescriptionId}",
+                    id, prescriptionId);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // 处方不属于该病案 或 病案已完成
+                _logger.LogWarning(ex, "处方删除失败：业务规则验证失败");
+
+                if (ex.Message.Contains("不属于"))
+                    return StatusCode(403, ApiResponse.CreateFail(ex.Message));
+                else
+                    return UnprocessableEntity(ApiResponse.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, "删除处方", new { id, prescriptionId });
+                throw; // HandleException会抛出转换后的异常
+            }
+        }
+
+        /// <summary>
+        /// 更新病案状态
+        /// Epic #1612修正版: 支持Draft/Active/Completed/Cancelled状态流转
+        /// </summary>
+        [HttpPut("{id}/status")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> UpdateStatus(
+            Guid id,
+            [FromBody] UpdateStatusRequest request)
+        {
+            try
+            {
+                var result = await _medicalCaseService.UpdateStatusAsync(id, request.Status);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
+
+                _logger.LogInformation("病案状态更新成功，MedicalCaseId: {Id}, NewStatus: {Status}",
+                    id, request.Status);
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "状态更新成功"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // 状态转换不合法
+                _logger.LogWarning(ex, "状态更新失败：状态转换不合法");
+                return UnprocessableEntity(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "更新病案状态", new { id, request });
+            }
+        }
+
+        /// <summary>
+        /// 完成病案（三步流程最后一步）
+        /// Epic #1612 - BF-002: 三步流程验证
+        /// </summary>
+        [HttpPut("{id}/complete")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> CompleteMedicalCase(Guid id)
+        {
+            try
+            {
+                var result = await _medicalCaseService.CompleteAsync(id);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
+
+                _logger.LogInformation("病案完成，MedicalCaseId: {Id}", id);
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "病案已完成"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // BF-002: 三步流程验证失败
+                _logger.LogWarning(ex, "病案完成失败：流程验证失败");
+                return UnprocessableEntity(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "完成病案", new { id });
+            }
+        }
+
+        // ========== Read Layer（读操作，独立查询）==========
+
+        /// <summary>
+        /// 获取病案详情
+        /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
+        /// </summary>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> GetById(Guid id)
+        {
+            try
+            {
+                var result = await _medicalCaseService.GetByIdAsync(id);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
+
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "获取病案详情", new { id });
+            }
+        }
+
+        /// <summary>
+        /// 查询病案列表（分页）
+        /// Epic #1612: 支持按状态、患者ID过滤
         /// </summary>
         [HttpGet]
-        [ResponseCache(Duration = 1200, Location = ResponseCacheLocation.Any)]
-        [OutputCache(PolicyName = "MedicalCaseCache")]
-        public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseDto>>>> GetPaged(
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseEntity>>), 200)]
+        public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseEntity>>>> GetList(
+            [FromQuery] MedicalCaseStatus? status = null,
+            [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? keyword = null)
+            [FromQuery] int pageSize = 20)
         {
             try
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFailPaged<MedicalCaseDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return BadRequest(ApiResponse<PagedResult<MedicalCaseEntity>>.CreateFail(
+                        "页码和页大小参数无效（页码>0，页大小1-100）"));
                 }
 
-                var result = await _medicalCaseService.GetPagedAsync(page, pageSize, keyword);
-                return HandlePagedServiceResult(result, "查询成功");
+                var result = await _medicalCaseService.GetListAsync(status, patientId, page, pageSize);
+
+                return Ok(ApiResponse<PagedResult<MedicalCaseEntity>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<MedicalCaseDto>(ex, "获取医疗案例列表", new { page, pageSize, keyword });
+                return HandleException<PagedResult<MedicalCaseEntity>>(ex, "获取病案列表",
+                    new { status, patientId, page, pageSize });
             }
         }
 
         /// <summary>
-        /// 获取待看诊医案列表（Status=Active）
-        /// Epic #1583 - Phase 5
+        /// 查询辨证记录列表
+        /// Epic #1612: 返回病案的所有历史辨证记录
         /// </summary>
-        [HttpGet("pending")]
-        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases()
+        [HttpGet("{medicalCaseId}/consultations")]
+        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDetailDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<ConsultationDetailDto>>>> GetConsultationList(
+            Guid medicalCaseId)
         {
             try
             {
-                var result = await _medicalCaseService.GetPendingCasesAsync();
-                return HandleServiceResult(result, "查询成功");
+                var result = await _medicalCaseService.GetConsultationListAsync(medicalCaseId);
+
+                return Ok(ApiResponse<List<ConsultationDetailDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待看诊列表", null);
+                return HandleException<List<ConsultationDetailDto>>(ex, "获取辨证记录列表",
+                    new { medicalCaseId });
             }
         }
 
         /// <summary>
-        /// 查询病案列表（支持多条件组合查询）
-        /// Issue #1592 - Phase 3
+        /// 查询处方列表
+        /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
-        [HttpGet("query")]
-        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
-        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> Query(
-            [FromQuery] string? patientName = null,
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null,
-            [FromQuery] string? diagnosisKeyword = null)
+        [HttpGet("{medicalCaseId}/prescriptions")]
+        [ProducesResponseType(typeof(ApiResponse<List<PrescriptionDetailDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionDetailDto>>>> GetPrescriptionList(
+            Guid medicalCaseId)
         {
             try
             {
-                // 至少需要一个查询条件
-                if (string.IsNullOrWhiteSpace(patientName) &&
-                    !startDate.HasValue &&
-                    !endDate.HasValue &&
-                    string.IsNullOrWhiteSpace(diagnosisKeyword))
-                {
-                    return ValidationFail<List<MedicalCaseDto>>("请至少提供一个查询条件");
-                }
+                var result = await _medicalCaseService.GetPrescriptionListAsync(medicalCaseId);
 
-                // 日期范围验证
-                if (startDate.HasValue && endDate.HasValue && startDate > endDate)
-                {
-                    return ValidationFail<List<MedicalCaseDto>>("开始日期不能晚于结束日期");
-                }
-
-                var result = await _medicalCaseService.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
-                return HandleServiceResult(result, "查询成功");
+                return Ok(ApiResponse<List<PrescriptionDetailDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<MedicalCaseDto>>(ex, "查询病案列表", new { patientName, startDate, endDate, diagnosisKeyword });
+                return HandleException<List<PrescriptionDetailDto>>(ex, "获取处方列表",
+                    new { medicalCaseId });
             }
         }
 
+        // ========== Helper Layer（辅助功能）==========
+
         /// <summary>
-        /// 根据ID获取医疗案例详情
+        /// 验证病案是否可编辑
+        /// Epic #1612: 检查病案状态和权限
         /// </summary>
-        [HttpGet("{id}")]
-        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> GetById(Guid id)
+        [HttpGet("{id}/can-edit")]
+        [ProducesResponseType(typeof(ApiResponse<CanEditResponse>), 200)]
+        public async Task<ActionResult<ApiResponse<CanEditResponse>>> CanEdit(Guid id)
         {
             try
             {
-                var validation = ValidateGuid<MedicalCaseDto>(id, "医疗案例ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
+                var result = await _medicalCaseService.CanEditAsync(id);
 
-                var result = await _medicalCaseService.GetByIdAsync(id);
-                return HandleServiceResult(result, "查询成功");
+                return Ok(ApiResponse<CanEditResponse>.CreateSuccess(result, "验证成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseDto>(ex, "获取医疗案例详情", id);
+                return HandleException<CanEditResponse>(ex, "验证病案可编辑性", new { id });
             }
         }
 
         /// <summary>
-        /// 根据患者ID获取医疗案例列表
-        /// Issue #1584 - Bug修复
+        /// 验证处方是否可删除
+        /// Epic #1612: 检查处方打印状态
         /// </summary>
-        [HttpGet("by-patient/{patientId}")]
-        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "patientId" })]
-        public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetByPatientId(Guid patientId)
-        {
-            try
-            {
-                var validation = ValidateGuid<List<MedicalCaseDto>>(patientId, "患者ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _medicalCaseService.GetByPatientIdAsync(patientId);
-                return HandleServiceResult(result, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<MedicalCaseDto>>(ex, "根据患者ID获取医疗案例列表", patientId);
-            }
-        }
-
-        /// <summary>
-        /// 根据ID获取完整的医疗案例（包含所有关联数据）
-        /// </summary>
-        [HttpGet("{id}/with-details")]
-        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetByIdWithDetails(Guid id)
-        {
-            try
-            {
-                var validation = ValidateGuid<MedicalCaseDetailDto>(id, "医疗案例ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _medicalCaseService.GetByIdWithDetailsAsync(id);
-                return HandleServiceResult(result, "查询成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCaseDetailDto>(ex, "获取完整医疗案例", id);
-            }
-        }
-
-        /// <summary>
-        /// 创建新的医疗案例
-        /// </summary>
-        /// <summary>
-        /// 创建完整的医疗案例（包含诊疗和可选处方）
-        /// 作为聚合根统一管理整个诊疗流程
-        /// </summary>
-        [HttpPost("with-details")]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> CreateWithDetails([FromBody] MedicalCaseWithDetailsCreateDto dto)
-        {
-            try
-            {
-                var validation = ValidateModel<MedicalCaseDto>();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _medicalCaseService.CreateWithDetailsAsync(
-                    dto.MedicalCase,
-                    dto.Consultation,
-                    dto.Prescription);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("创建完整医疗案例", result.Data, result.Data.Id);
-                }
-
-                return HandleServiceResult(result, "医疗案例创建成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCaseDto>(ex, "创建完整医疗案例", dto);
-            }
-        }
-
-        /// <summary>
-        /// 创建医疗案例（基础信息）
-        /// </summary>
-        [HttpPost]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> Create([FromBody] MedicalCaseCreateDto dto)
-        {
-            try
-            {
-                var validation = ValidateModel<MedicalCaseDto>();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _medicalCaseService.CreateAsync(dto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("创建医疗案例", result.Data, result.Data.Id);
-                }
-
-                return HandleServiceResult(result, "医疗案例创建成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCaseDto>(ex, "创建医疗案例", dto);
-            }
-        }
-
-        /// <summary>
-        /// 更新医疗案例
-        /// </summary>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> Update(Guid id, [FromBody] MedicalCaseUpdateDto dto)
-        {
-            try
-            {
-                var idValidation = ValidateGuid<MedicalCaseDto>(id, "医疗案例ID");
-                if (idValidation != null)
-                {
-                    return idValidation;
-                }
-
-                var modelValidation = ValidateModel<MedicalCaseDto>();
-                if (modelValidation != null)
-                {
-                    return modelValidation;
-                }
-
-                var result = await _medicalCaseService.UpdateAsync(id, dto);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("更新医疗案例", result.Data, id);
-                }
-
-                return HandleServiceResult(result, "医疗案例更新成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCaseDto>(ex, "更新医疗案例", new { id, dto });
-            }
-        }
-
-        /// <summary>
-        /// 删除医疗案例（软删除）
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
-        {
-            try
-            {
-                var validation = ValidateGuid(id, "医疗案例ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _medicalCaseService.DeleteAsync(id);
-                return HandleServiceResult(result, "删除成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "删除医疗案例", id);
-            }
-        }
-
-        #region Issue #1477: 子实体更新API（架构纠正v2）
-
-        /// <summary>
-        /// 更新病案的诊断信息 (Issue #1477 架构纠正v2)
-        /// </summary>
-        /// <param name="id">病案ID</param>
-        /// <param name="dto">诊断更新信息</param>
-        /// <returns>更新后的诊断信息</returns>
-        /// <remarks>
-        /// 架构说明：
-        /// - MedicalCase是聚合根，所有写入操作必须通过它进行
-        /// - Consultation作为子实体，通过此API更新（而非ConsultationController）
-        /// - 1:1:1关系：MedicalCase.Id == Consultation.Id == Prescription.Id
-        /// </remarks>
-        [HttpPut("{id}/consultation")]
-        [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<ConsultationDto>>> UpdateConsultation(
+        [HttpGet("{id}/prescriptions/{prescriptionId}/can-delete")]
+        [ProducesResponseType(typeof(ApiResponse<CanDeleteResponse>), 200)]
+        public async Task<ActionResult<ApiResponse<CanDeleteResponse>>> CanDeletePrescription(
             Guid id,
-            [FromBody] ConsultationUpdateDto dto)
+            Guid prescriptionId)
         {
             try
             {
-                var idValidation = ValidateGuid<ConsultationDto>(id, "病案ID");
-                if (idValidation != null)
-                {
-                    return idValidation;
-                }
+                var result = await _medicalCaseService.CanDeletePrescriptionAsync(id, prescriptionId);
 
-                var modelValidation = ValidateModel<ConsultationDto>();
-                if (modelValidation != null)
-                {
-                    return modelValidation;
-                }
-
-                var result = await _medicalCaseService.UpdateConsultationAsync(id, dto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("更新病案诊断信息", result.Data, id);
-                }
-
-                return HandleServiceResult(result, "诊断信息更新成功");
+                return Ok(ApiResponse<CanDeleteResponse>.CreateSuccess(result, "验证成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<ConsultationDto>(ex, "更新病案诊断信息", new { id, dto });
+                return HandleException<CanDeleteResponse>(ex, "验证处方可删除性",
+                    new { id, prescriptionId });
             }
         }
+    }
 
-        /// <summary>
-        /// 更新病案的处方信息 (Issue #1477 架构纠正v2)
-        /// </summary>
-        /// <param name="id">病案ID</param>
-        /// <param name="dto">处方更新信息</param>
-        /// <returns>更新后的处方信息</returns>
-        /// <remarks>
-        /// 架构说明：
-        /// - MedicalCase是聚合根，所有写入操作必须通过它进行
-        /// - Prescription作为子实体，通过此API更新（而非PrescriptionsController）
-        /// - 1:1:1关系：MedicalCase.Id == Consultation.Id == Prescription.Id
-        /// </remarks>
-        [HttpPut("{id}/prescription")]
-        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> UpdatePrescription(
-            Guid id,
-            [FromBody] PrescriptionUpdateDto dto)
-        {
-            try
-            {
-                var idValidation = ValidateGuid<PrescriptionDto>(id, "病案ID");
-                if (idValidation != null)
-                {
-                    return idValidation;
-                }
+    // ========== Request DTOs ==========
 
-                var modelValidation = ValidateModel<PrescriptionDto>();
-                if (modelValidation != null)
-                {
-                    return modelValidation;
-                }
+    /// <summary>
+    /// 创建病案请求
+    /// </summary>
+    public class CreateMedicalCaseRequest
+    {
+        /// <summary>患者ID</summary>
+        public Guid PatientId { get; set; }
 
-                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, dto);
+        /// <summary>就诊日期</summary>
+        public DateTime VisitDate { get; set; }
+    }
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("更新病案处方信息", result.Data, id);
-                }
+    /// <summary>
+    /// 标记是否开处方请求
+    /// </summary>
+    public class SetPrescriptionFlagRequest
+    {
+        /// <summary>是否需要开处方</summary>
+        public bool NeedsPrescription { get; set; }
+    }
 
-                return HandleServiceResult(result, "处方信息更新成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<PrescriptionDto>(ex, "更新病案处方信息", new { id, dto });
-            }
-        }
-
-        /// <summary>
-        /// 创建病案处方（Issue #1608补充）
-        /// </summary>
-        [HttpPost("{id}/prescription")]
-        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> CreatePrescription(
-            Guid id,
-            [FromBody] PrescriptionCreateDto dto)
-        {
-            try
-            {
-                var idValidation = ValidateGuid<PrescriptionDto>(id, "病案ID");
-                if (idValidation != null)
-                {
-                    return idValidation;
-                }
-
-                var modelValidation = ValidateModel<PrescriptionDto>();
-                if (modelValidation != null)
-                {
-                    return modelValidation;
-                }
-
-                var result = await _medicalCaseService.CreatePrescriptionAsync(id, dto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("创建病案处方", result.Data, id);
-                }
-
-                return HandleServiceResult(result, "处方创建成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<PrescriptionDto>(ex, "创建病案处方", new { id, dto });
-            }
-        }
-
-        /// <summary>
-        /// 删除病案处方（Issue #1608补充）
-        /// </summary>
-        [HttpDelete("{id}/prescription")]
-        [ProducesResponseType(typeof(ApiResponse), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse>> DeletePrescription(Guid id)
-        {
-            try
-            {
-                var idValidation = ValidateGuid(id, "病案ID");
-                if (idValidation != null)
-                {
-                    return idValidation;
-                }
-
-                var result = await _medicalCaseService.DeletePrescriptionAsync(id);
-
-                if (result.IsSuccess)
-                {
-                    LogOperation("删除病案处方", null, id);
-                }
-
-                return HandleServiceResult(result, "处方删除成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "删除病案处方", new { id });
-            }
-        }
-
-
-        // ========== Epic #1589 - 三步工作流辅助端点（Issue #1600 Phase 4）==========
-
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Epic #1589 Phase 1 - 架构合规版本
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="request">Step1请求参数</param>
-        /// <returns>Step1完成状态</returns>
-        [HttpPost("{id}/complete-step1")]
-        [ProducesResponseType(typeof(ApiResponse<ConsultationStepDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<ConsultationStepDto>>> CompleteStep1(
-            Guid id,
-            [FromBody] CompleteStep1Request request)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<ConsultationStepDto>(id, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                var result = await _medicalCaseService.CompleteStep1Async(id, request);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<ConsultationStepDto>(ex, "完成Step1", new { MedicalCaseId = id });
-            }
-        }
-
-        /// <summary>
-        /// 重置诊疗步骤
-        /// Epic #1589 Phase 2 - 架构合规版本
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        [HttpPut("{id}/reset-consultation-steps")]
-        [ProducesResponseType(typeof(ApiResponse), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse>> ResetConsultationSteps(Guid id)
-        {
-            try
-            {
-                var validationResult = ValidateGuid(id, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                var result = await _medicalCaseService.ResetConsultationStepsAsync(id);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "重置诊疗步骤", new { MedicalCaseId = id });
-            }
-        }
-
-        /// <summary>
-        /// 清空处方内容（保留处方框架）
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        [HttpDelete("{id}/prescription/clear")]
-        [ProducesResponseType(typeof(ApiResponse), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse>> ClearPrescription(Guid id)
-        {
-            try
-            {
-                var validationResult = ValidateGuid(id, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                var result = await _medicalCaseService.ClearPrescriptionAsync(id);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "清空处方内容", new { MedicalCaseId = id });
-            }
-        }
-
-        /// <summary>
-        /// 从配方导入处方
-        /// Epic #1589 Phase 4 - 架构合规版本
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="formulaId">配方ID</param>
-        [HttpPost("{id}/prescription/import-formula/{formulaId}")]
-        [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> ImportFormulaIntoPrescription(
-            Guid id,
-            Guid formulaId)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<PrescriptionDto>(id, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                var formulaValidation = ValidateGuid<PrescriptionDto>(formulaId, "配方ID");
-                if (formulaValidation != null) return formulaValidation;
-
-                var result = await _medicalCaseService.ImportFormulaIntoPrescriptionAsync(id, formulaId);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<PrescriptionDto>(ex, "从配方导入处方", new { MedicalCaseId = id, FormulaId = formulaId });
-            }
-        }
-
-        /// <summary>
-        /// 暂存病案（保存当前状态，不完成整个流程）
-        /// Epic #1589 Phase 5 - 架构合规版本
-        /// </summary>
-        /// <param name="id">医案ID</param>
-        /// <param name="dto">病案更新信息</param>
-        [HttpPut("{id}/save-as-draft")]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> SaveAsDraft(
-            Guid id,
-            [FromBody] MedicalCaseUpdateDto dto)
-        {
-            try
-            {
-                var validationResult = ValidateGuid<MedicalCaseDto>(id, "医案ID");
-                if (validationResult != null) return validationResult;
-
-                // 调用现有的UpdateAsync方法（已符合架构）
-                var result = await _medicalCaseService.UpdateAsync(id, dto);
-                return HandleServiceResult(result, "病案已暂存");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCaseDto>(ex, "暂存病案", new { MedicalCaseId = id, dto });
-            }
-        }
-
-        #endregion
-
-        /// <summary>
-        /// 批量删除医疗案例（软删除）(Issue #1169)
-        /// </summary>
-        /// <param name="request">批量删除请求</param>
-        [HttpPost("batch-delete")]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<BatchOperationResultDto>>> BatchDeleteMedicalCases([FromBody] BatchDeleteRequestDto request)
-        {
-            try
-            {
-                // 验证请求
-                if (request.Ids == null || request.Ids.Count == 0)
-                {
-                    return ValidationFail<BatchOperationResultDto>("ID列表不能为空");
-                }
-
-                if (request.Ids.Count > 100)
-                {
-                    return ValidationFail<BatchOperationResultDto>("批量操作最多支持100条记录");
-                }
-
-                var result = await _medicalCaseService.BatchDeleteAsync(request.Ids);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("批量删除医疗案例", 
-                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount }, 
-                        null);
-                }
-
-                return HandleServiceResult(result, result.Data?.Message ?? "批量删除完成");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<BatchOperationResultDto>(ex, "批量删除医疗案例", new { IdCount = request.Ids?.Count });
-            }
-        }
+    /// <summary>
+    /// 更新病案状态请求
+    /// Epic #1612修正版
+    /// </summary>
+    public class UpdateStatusRequest
+    {
+        /// <summary>目标状态：Draft/Active/Completed/Cancelled</summary>
+        public MedicalCaseStatus Status { get; set; }
     }
 }

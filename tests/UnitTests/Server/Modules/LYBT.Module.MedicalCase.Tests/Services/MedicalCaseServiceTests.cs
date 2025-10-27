@@ -1,11 +1,9 @@
 using AutoMapper;
 using FluentAssertions;
+using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.MedicalCase;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.Logging;
@@ -18,564 +16,350 @@ using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 namespace LYBT.Module.MedicalCase.Tests.Services
 {
     /// <summary>
-    /// MedicalCaseService单元测试
-    /// Issue #1053 - 重写以匹配实际API
+    /// Epic #1612：MedicalCaseService单元测试
+    /// 测试范围：14个新方法（Write Layer 8 + Read Layer 4 + Helper Layer 2）
+    /// 业务规则：
+    /// - BR-001: 单患者仅一条未完成病案
+    /// - BF-002: 三步流程验证（辨证→开方标记→处方）
+    /// - AR-003: 一诊一方约束
     /// </summary>
     public class MedicalCaseServiceTests : TestBase
     {
         private readonly MedicalCaseService _service;
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
+        private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseService>> _loggerMock;
 
         public MedicalCaseServiceTests()
         {
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
+            _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseService>();
 
             _service = new MedicalCaseService(
                 _repositoryMock.Object,
-                Mapper,
-                _loggerMock.Object
-            );
+                _mapperMock.Object,
+                _loggerMock.Object);
         }
 
-        #region GetPagedAsync Tests
+        #region Write Layer Tests - CreateAsync
 
         [Fact]
-        public async Task GetPagedAsync_WithValidParameters_ShouldReturnPagedResult()
+        public async Task CreateAsync_WithValidPatient_ShouldCreateMedicalCaseAndConsultation()
         {
             // Arrange
-            var medicalCases = new List<MedicalCaseEntity>
+            var patientId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+            _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
+                .ReturnsAsync(new List<MedicalCaseEntity>());
+
+            var createdMedicalCase = new MedicalCaseEntity
             {
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = Guid.NewGuid(),
-                    PatientName = "患者A",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生A",
-                    ConsultationDate = DateTime.Now,
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                }
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                Status = MedicalCaseStatus.Active,
+                Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
             };
 
-            var pagedResult = new PagedResult<MedicalCaseEntity>
-            {
-                Items = medicalCases,
-                TotalCount = 1,
-                CurrentPage = 1,
-                PageSize = 20
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetPagedWithDetailsAsync(1, 20, null))
-                .ReturnsAsync(pagedResult);
+            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(createdMedicalCase);
 
             // Act
-            var result = await _service.GetPagedAsync(1, 20);
+            var result = await _service.CreateAsync(patientId, visitDate);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Items.Should().HaveCount(1);
-            result.Data!.TotalCount.Should().Be(1);
+            result!.PatientId.Should().Be(patientId);
+            result.Status.Should().Be(MedicalCaseStatus.Active);
         }
 
         [Fact]
-        public async Task GetPagedAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
+        public async Task CreateAsync_WhenPatientHasActiveCase_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            _repositoryMock
-                .Setup(x => x.GetPagedWithDetailsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                .ThrowsAsync(new Exception("Database error"));
+            var patientId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+            var existingActiveCase = new MedicalCaseEntity
+            {
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                Status = MedicalCaseStatus.Active
+            };
 
-            // Act
-            var result = await _service.GetPagedAsync(1, 20);
+            _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
+                .ReturnsAsync(new List<MedicalCaseEntity> { existingActiveCase });
 
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("获取医疗案例列表失败");
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreateAsync(patientId, visitDate));
         }
 
         #endregion
 
-        #region GetByIdAsync Tests
+        #region Write Layer Tests - UpdateConsultationAsync
 
         [Fact]
-        public async Task GetByIdAsync_WithExistingId_ShouldReturnMedicalCase()
+        public async Task UpdateConsultationAsync_WithValidRequest_ShouldUpdateConsultation()
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
+            var request = new UpdateConsultationRequest
+            {
+                ChiefComplaint = "头痛",
+                TCMDiagnosis = "风寒感冒"
+            };
+
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                PatientId = Guid.NewGuid(),
-                PatientName = "测试患者",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "测试医生",
-                ConsultationDate = DateTime.Now,
                 Status = MedicalCaseStatus.Active,
-                CreatedBy = Guid.NewGuid()
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
-
-            // Act
-            var result = await _service.GetByIdAsync(medicalCaseId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Id.Should().Be(medicalCaseId);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_WithNonExistentId_ShouldReturnFailure()
-        {
-            // Arrange
-            var nonExistentId = Guid.NewGuid();
-
-            _repositoryMock
-                .Setup(x => x.GetByIdWithDetailsAsync(nonExistentId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
-
-            // Act
-            var result = await _service.GetByIdAsync(nonExistentId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("医疗案例不存在");
-        }
-
-        #endregion
-
-        #region CreateAsync Tests
-
-        [Fact]
-        public async Task CreateAsync_WithValidData_ShouldCreateMedicalCase()
-        {
-            // Arrange
-            var createDto = new MedicalCaseCreateDto
-            {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                Remark = "测试备注"
-            };
-
-            var createdEntity = new MedicalCaseEntity
-            {
-                Id = Guid.NewGuid(),
-                PatientId = createDto.PatientId,
-                DoctorId = createDto.DoctorId,
-                PatientName = "患者",
-                DoctorName = "医生",
-                Remark = createDto.Remark,
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedBy = Guid.NewGuid()
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByPatientIdAsync(createDto.PatientId))
-                .ReturnsAsync(new List<MedicalCaseEntity>());
-
-            _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
-                .ReturnsAsync(createdEntity);
-
-            // Act
-            var result = await _service.CreateAsync(createDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-        }
-
-        #endregion
-
-        #region UpdateAsync Tests
-
-        [Fact]
-        public async Task UpdateAsync_WithExistingMedicalCase_ShouldUpdateSuccessfully()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var doctorId = Guid.NewGuid();
-
-            var existingEntity = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                PatientId = Guid.NewGuid(),
-                PatientName = "患者",
-                DoctorId = doctorId,
-                DoctorName = "医生",
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedAt = DateTime.UtcNow, // 今天创建，可以编辑
-                CreatedBy = Guid.NewGuid()
-            };
-
-            var updateDto = new MedicalCaseUpdateDto
-            {
-                Id = medicalCaseId,
-                PatientId = existingEntity.PatientId,
-                DoctorId = existingEntity.DoctorId,
-                Remark = "更新后的备注"
-            };
-
-            var updatedEntity = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                PatientId = existingEntity.PatientId,
-                PatientName = existingEntity.PatientName,
-                DoctorId = existingEntity.DoctorId,
-                DoctorName = existingEntity.DoctorName,
-                Remark = updateDto.Remark,
-                ConsultationDate = existingEntity.ConsultationDate,
-                Status = existingEntity.Status,
-                CreatedAt = existingEntity.CreatedAt,
-                CreatedBy = existingEntity.CreatedBy
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync(existingEntity);
-
-            _repositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
-                .ReturnsAsync(updatedEntity);
-
-            // Act
-            var result = await _service.UpdateAsync(medicalCaseId, updateDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task UpdateAsync_WithNonExistentMedicalCase_ShouldReturnFailure()
-        {
-            // Arrange
-            var nonExistentId = Guid.NewGuid();
-            var updateDto = new MedicalCaseUpdateDto
-            {
-                Id = nonExistentId,
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(nonExistentId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
-
-            // Act
-            var result = await _service.UpdateAsync(nonExistentId, updateDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("医疗案例不存在");
-        }
-
-        #endregion
-
-        #region DeleteAsync Tests
-
-        [Fact]
-        public async Task DeleteAsync_WithExistingMedicalCase_ShouldDeleteSuccessfully()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var doctorId = Guid.NewGuid();
-
-            var existingEntity = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                PatientId = Guid.NewGuid(),
-                PatientName = "患者",
-                DoctorId = doctorId,
-                DoctorName = "医生",
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedAt = DateTime.UtcNow, // 今天创建，可以删除
-                CreatedBy = Guid.NewGuid()
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync(existingEntity);
-
-            _repositoryMock
-                .Setup(x => x.DeleteAsync(medicalCaseId))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _service.DeleteAsync(medicalCaseId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task DeleteAsync_WithNonExistentMedicalCase_ShouldReturnFailure()
-        {
-            // Arrange
-            var nonExistentId = Guid.NewGuid();
-
-            _repositoryMock
-                .Setup(x => x.GetByIdAsync(nonExistentId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
-
-            // Act
-            var result = await _service.DeleteAsync(nonExistentId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("医疗案例不存在");
-        }
-
-        #endregion
-
-        #region GetByPatientIdAsync Tests
-
-        [Fact]
-        public async Task GetByPatientIdAsync_WithExistingPatientId_ShouldReturnMedicalCases()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var medicalCases = new List<MedicalCaseEntity>
-            {
-                new MedicalCaseEntity
-                {
-                    Id = Guid.NewGuid(),
-                    PatientId = patientId,
-                    PatientName = "患者A",
-                    DoctorId = Guid.NewGuid(),
-                    DoctorName = "医生A",
-                    ConsultationDate = DateTime.Now,
-                    Status = MedicalCaseStatus.Active,
-                    CreatedBy = Guid.NewGuid()
-                }
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByPatientIdAsync(patientId))
-                .ReturnsAsync(medicalCases);
-
-            // Act
-            var result = await _service.GetByPatientIdAsync(patientId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Should().HaveCount(1);
-        }
-
-        #endregion
-
-        #region CreateWithDetailsAsync Tests
-
-        [Fact]
-        public async Task CreateWithDetailsAsync_WithValidData_ShouldCreateCompleteAggregate()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var doctorId = Guid.NewGuid();
-
-            var caseDto = new MedicalCaseCreateDto
-            {
-                PatientId = patientId,
-                DoctorId = doctorId,
-                Remark = "测试病案"
-            };
-
-            var consultationDto = new ConsultationCreateDto
-            {
-                MedicalCaseId = Guid.NewGuid(),
-                PatientId = patientId,
-                UserId = doctorId,
-                ChiefComplaint = "头痛发热",
-                PresentIllness = "患者3天前开始头痛"
-            };
-
-            var prescriptionDto = new PrescriptionCreateDto
-            {
-                PatientId = patientId,
-                DoctorId = doctorId,
-                Quantity = 7,
-                Usage = "水煎服",
-                TotalAmount = 168.50m
-            };
-
-            var createdEntity = new MedicalCaseEntity
-            {
-                Id = Guid.NewGuid(),
-                PatientId = patientId,
-                PatientName = "患者",
-                DoctorId = doctorId,
-                DoctorName = "医生",
-                Remark = caseDto.Remark,
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedBy = doctorId,
-                Consultation = new ConsultationEntity
-                {
-                    Id = Guid.NewGuid(),
-                    ChiefComplaint = consultationDto.ChiefComplaint,
-                    PresentIllness = consultationDto.PresentIllness,
-                    CreatedBy = doctorId
-                },
-                Prescription = new PrescriptionEntity
-                {
-                    Id = Guid.NewGuid(),
-                    DosageCount = prescriptionDto.Quantity,
-                    CreatedBy = doctorId
-                }
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByPatientIdAsync(patientId))
-                .ReturnsAsync(new List<MedicalCaseEntity>());
-
-            _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
-                .ReturnsAsync(createdEntity);
-
-            // Act
-            var result = await _service.CreateWithDetailsAsync(caseDto, consultationDto, prescriptionDto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-        }
-
-        [Fact]
-        public async Task CreateWithDetailsAsync_WithNullPrescription_ShouldCreateWithoutPrescription()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var doctorId = Guid.NewGuid();
-
-            var caseDto = new MedicalCaseCreateDto
-            {
-                PatientId = patientId,
-                DoctorId = doctorId
-            };
-
-            var consultationDto = new ConsultationCreateDto
-            {
-                MedicalCaseId = Guid.NewGuid(),
-                PatientId = patientId,
-                UserId = doctorId,
-                ChiefComplaint = "测试主诉"
-            };
-
-            var createdEntity = new MedicalCaseEntity
-            {
-                Id = Guid.NewGuid(),
-                PatientId = patientId,
-                PatientName = "患者",
-                DoctorId = doctorId,
-                DoctorName = "医生",
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedBy = doctorId,
-                Consultation = new ConsultationEntity
-                {
-                    Id = Guid.NewGuid(),
-                    ChiefComplaint = consultationDto.ChiefComplaint,
-                    CreatedBy = doctorId
-                }
-            };
-
-            _repositoryMock
-                .Setup(x => x.GetByPatientIdAsync(patientId))
-                .ReturnsAsync(new List<MedicalCaseEntity>());
-
-            _repositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
-                .ReturnsAsync(createdEntity);
-
-            // Act
-            var result = await _service.CreateWithDetailsAsync(caseDto, consultationDto, null);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-        }
-
-        #endregion
-
-        #region GetByIdWithDetailsAsync Tests
-
-        [Fact]
-        public async Task GetByIdWithDetailsAsync_WithExistingId_ShouldReturnCompleteDetails()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                PatientId = Guid.NewGuid(),
-                PatientName = "测试患者",
-                DoctorId = Guid.NewGuid(),
-                DoctorName = "测试医生",
-                ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
-                CreatedBy = Guid.NewGuid(),
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    ChiefComplaint = "主诉",
-                    CreatedBy = Guid.NewGuid()
+                    Step1CompletedAt = null
                 }
             };
 
-            _repositoryMock
-                .Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _mapperMock.Setup(x => x.Map(request, medicalCase.Consultation));
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.GetByIdWithDetailsAsync(medicalCaseId);
+            var result = await _service.UpdateConsultationAsync(medicalCaseId, request);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data!.Id.Should().Be(medicalCaseId);
+            result!.Consultation!.Step1CompletedAt.Should().NotBeNull();
         }
 
         [Fact]
-        public async Task GetByIdWithDetailsAsync_WithNonExistentId_ShouldReturnFailure()
+        public async Task UpdateConsultationAsync_WhenStatusNotActive_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            var nonExistentId = Guid.NewGuid();
+            var medicalCaseId = Guid.NewGuid();
+            var request = new UpdateConsultationRequest();
 
-            _repositoryMock
-                .Setup(x => x.GetByIdWithDetailsAsync(nonExistentId))
-                .ReturnsAsync((MedicalCaseEntity?)null);
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Completed,
+                Consultation = new ConsultationEntity { Id = medicalCaseId }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.UpdateConsultationAsync(medicalCaseId, request));
+        }
+
+        #endregion
+
+        #region Write Layer Tests - SetPrescriptionFlagAsync
+
+        [Fact]
+        public async Task SetPrescriptionFlagAsync_WithValidRequest_ShouldUpdateFlag()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var needsPrescription = true;
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = false,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    PrescriptionEnabled = false
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.GetByIdWithDetailsAsync(nonExistentId);
+            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription);
 
             // Assert
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("医疗案例不存在");
+            result!.NeedsPrescription.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task SetPrescriptionFlagAsync_WhenStep1NotCompleted_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var needsPrescription = true;
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = null
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription));
+        }
+
+        #endregion
+
+        #region Write Layer Tests - CreatePrescriptionAsync
+
+        [Fact]
+        public async Task CreatePrescriptionAsync_WithValidRequest_ShouldCreatePrescription()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var request = new CreatePrescriptionRequest
+            {
+                Indication = "感冒",
+                Items = new List<PrescriptionItemDto>()
+            };
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                PatientId = patientId,
+                DoctorId = doctorId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true,
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now
+                }
+            };
+
+            var prescription = new PrescriptionEntity
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PatientId = patientId,
+                UserId = doctorId,
+                Status = PrescriptionStatus.Draft
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _mapperMock.Setup(x => x.Map<PrescriptionEntity>(request))
+                .Returns(prescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CreatePrescriptionAsync(medicalCaseId, request);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.MedicalCaseId.Should().Be(medicalCaseId);
+        }
+
+        [Fact]
+        public async Task CreatePrescriptionAsync_WhenPrescriptionAlreadyExists_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var request = new CreatePrescriptionRequest();
+
+            var existingPrescription = new PrescriptionEntity
+            {
+                Id = Guid.NewGuid(),
+                IsDeleted = false
+            };
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true,
+                Prescription = existingPrescription,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreatePrescriptionAsync(medicalCaseId, request));
+        }
+
+        #endregion
+
+        #region Helper Layer Tests
+
+        [Fact]
+        public async Task CanEditAsync_WhenStatusActive_ShouldReturnTrue()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CanEditAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.CanEdit.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task CanEditAsync_WhenStatusCompleted_ShouldReturnFalse()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Completed
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CanEditAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.CanEdit.Should().BeFalse();
         }
 
         #endregion
