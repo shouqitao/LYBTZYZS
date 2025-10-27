@@ -232,55 +232,147 @@ GET /api/v1/patients/import-template
 # 无需认证，直接下载模板文件
 ```
 
-## 📋 医案管理API (MedicalCaseController)
+## 📋 医案管理API (MedicalCaseController) - ⭐ Epic #1612重构版
 
-### 基础操作
+**架构设计**: Write/Read/Helper Layer分离，聚合根模式
+**详细文档**: `docs/api/medicalcase-api.md`
+**业务规则**: AR-001, AR-003, BF-002, BR-001
+
+### Write Layer - 写操作（8个端点）
+
 ```bash
-# 获取医案列表
-GET /api/v1/medical-case?page=1&pageSize=20&status=登记
+# 1. 创建新病案
+POST /api/v1/medicalcases
 Authorization: Bearer {token}
+Content-Type: application/json
+# 业务规则: AR-001（聚合根创建）, BR-001（单患者单Active病案）
 
-# 获取医案详情
-GET /api/v1/medical-case/{caseId}
+{
+  "patientId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "visitDate": "2025-10-27T10:00:00Z"
+}
+
+# 2. 更新辨证信息（三步流程Step 1）
+PUT /api/v1/medicalcases/{id}/consultation
 Authorization: Bearer {token}
+Content-Type: application/json
+# 业务规则: AR-001（聚合根更新）
 
-# 创建新医案
-POST /api/v1/medical-case
+{
+  "chiefComplaint": "头痛三天，伴恶寒发热",
+  "tcmDiagnosis": "风寒感冒",
+  "treatmentPrinciple": "辛温解表，宣肺散寒"
+}
+
+# 3. 标记是否开处方（三步流程Step 2）
+PUT /api/v1/medicalcases/{id}/prescription-flag
+Authorization: Bearer {token}
+Content-Type: application/json
+# 业务规则: BF-002（动态流程控制）
+
+{
+  "needsPrescription": true
+}
+
+# 4. 创建处方（三步流程Step 3a）
+POST /api/v1/medicalcases/{id}/prescriptions
+Authorization: Bearer {token}
+Content-Type: application/json
+# 业务规则: AR-001, AR-003（一诊一方约束）
+
+{
+  "dosageCount": 7,
+  "indication": "外感风寒",
+  "items": [
+    {
+      "herbId": "herb-guid",
+      "herbName": "桂枝",
+      "quantity": 7,
+      "unitPrice": 2.5
+    }
+  ]
+}
+
+# 5. 更新处方
+PUT /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "patientId": "patient-guid",
-  "doctorId": "doctor-guid",
-  "chiefComplaint": "头痛失眠",
-  "status": "登记"
+  "dosageCount": 14
 }
 
-# 更新医案
-PUT /api/v1/medical-case/{caseId}
+# 6. 删除处方
+DELETE /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}
+Authorization: Bearer {token}
+# 响应: 204 No Content
+
+# 7. 更新病案状态
+PUT /api/v1/medicalcases/{id}/status
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "chiefComplaint": "头痛失眠（已缓解）",
-  "status": "诊疗中"
+  "status": "Active"  // Draft/Active/Completed/Cancelled
 }
+
+# 8. 完成病案（三步流程最后一步）
+PUT /api/v1/medicalcases/{id}/complete
+Authorization: Bearer {token}
+# 业务规则: BF-002（三步流程验证）
 ```
 
-### 状态管理
+### Read Layer - 读操作（4个端点）
+
 ```bash
-# 获取医案状态枚举
-GET /api/v1/medical-case/statuses
+# 9. 获取病案详情
+GET /api/v1/medicalcases/{id}
+Authorization: Bearer {token}
+# 自动预加载Consultation和Prescription
+
+# 10. 查询病案列表（分页）
+GET /api/v1/medicalcases?status=Active&patientId={guid}&page=1&pageSize=20
+Authorization: Bearer {token}
+# 参数说明:
+#   - status: Active/Draft/Completed/Cancelled (可选)
+#   - patientId: 患者ID过滤 (可选)
+#   - page: 页码 (必填, ≥1)
+#   - pageSize: 每页大小 (必填, 1-100)
+
+# 11. 查询辨证记录列表
+GET /api/v1/medicalcases/{medicalCaseId}/consultations
 Authorization: Bearer {token}
 
-# 更新医案状态
-PATCH /api/v1/medical-case/{caseId}/status
+# 12. 查询处方列表
+GET /api/v1/medicalcases/{medicalCaseId}/prescriptions
 Authorization: Bearer {token}
-Content-Type: application/json
+```
 
-{
-  "status": "已完成"
-}
+### Helper Layer - 辅助功能（2个端点）
+
+```bash
+# 13. 验证病案是否可编辑
+GET /api/v1/medicalcases/{id}/can-edit
+Authorization: Bearer {token}
+# 响应: { "canEdit": true/false, "reason": "..." }
+
+# 14. 验证处方是否可删除
+GET /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}/can-delete
+Authorization: Bearer {token}
+# 响应: { "canDelete": true/false, "reason": "..." }
+```
+
+### 三步就诊流程
+
+```
+Step 1: UpdateConsultation（辨证） → step1CompletedAt
+  ↓
+Step 2: SetPrescriptionFlag（标记） → step2CompletedAt
+  ↓ needsPrescription=true
+Step 3a: CreatePrescription（开处方） → 完成
+  或
+  ↓ needsPrescription=false
+Step 3b: Complete（直接完成）
 ```
 
 ## 🩺 诊疗记录API (ConsultationController)

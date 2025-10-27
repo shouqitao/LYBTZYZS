@@ -371,6 +371,523 @@ private static HashSet<MedicalCaseStatus> GetValidTransitions(MedicalCaseStatus 
 }
 ```
 
+### Service层聚合根协调模式 (Epic #1612) ⭐
+
+```csharp
+/// <summary>
+/// 聚合根协调模式 - 通过MedicalCase聚合根管理Consultation和Prescription生命周期
+/// 业务规则：AR-001（聚合根管理）、AR-003（一诊一方）、BF-002（三步流程）
+/// </summary>
+public class MedicalCaseService : IMedicalCaseService
+{
+    private readonly IMedicalCaseRepository _repository;
+    private readonly IMapper _mapper;
+    private readonly ILogger<MedicalCaseService> _logger;
+
+    public MedicalCaseService(
+        IMedicalCaseRepository repository,
+        IMapper mapper,
+        ILogger<MedicalCaseService> logger)
+    {
+        _repository = repository;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Write Layer: 更新辨证信息（三步流程 Step 1）
+    /// 通过聚合根协调Consultation的创建和更新
+    /// </summary>
+    public async Task<MedicalCase?> UpdateConsultationAsync(
+        Guid medicalCaseId,
+        UpdateConsultationRequest request)
+    {
+        // 1. 获取聚合根（预加载Consultation）
+        var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+        if (medicalCase == null)
+            throw new NotFoundException($"MedicalCase {medicalCaseId} not found");
+
+        // 2. 业务规则验证
+        if (medicalCase.Status != MedicalCaseStatus.Active)
+            throw new InvalidOperationException(
+                "只能在Active状态下更新辨证信息");
+
+        // 3. 更新或创建Consultation（聚合根管理）
+        if (medicalCase.Consultation == null)
+        {
+            medicalCase.Consultation = new Consultation
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId
+            };
+        }
+
+        // 4. 映射数据
+        _mapper.Map(request, medicalCase.Consultation);
+        medicalCase.Consultation.Step1CompletedAt = DateTime.UtcNow;
+
+        // 5. 保存聚合根
+        await _repository.UpdateAsync(medicalCase);
+
+        _logger.LogInformation(
+            "辨证信息更新成功: MedicalCase={MedicalCaseId}",
+            medicalCaseId);
+
+        return medicalCase;
+    }
+
+    /// <summary>
+    /// Write Layer: 创建处方（三步流程 Step 3a）
+    /// 验证AR-003一诊一方约束
+    /// </summary>
+    public async Task<Prescription?> CreatePrescriptionAsync(
+        Guid medicalCaseId,
+        CreatePrescriptionRequest request)
+    {
+        // 1. 获取聚合根（预加载Prescription）
+        var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+        if (medicalCase == null)
+            throw new NotFoundException($"MedicalCase {medicalCaseId} not found");
+
+        // 2. 业务规则验证: AR-003一诊一方约束
+        if (medicalCase.Prescription != null)
+            throw new InvalidOperationException(
+                "该病案已有处方，请先删除现有处方（AR-003约束）");
+
+        // 3. 业务规则验证: BF-002三步流程
+        if (medicalCase.Consultation?.Step1CompletedAt == null)
+            throw new InvalidOperationException(
+                "未完成辨证（Step 1），无法开处方");
+
+        if (medicalCase.Consultation?.Step2CompletedAt == null)
+            throw new InvalidOperationException(
+                "未标记处方需求（Step 2），无法开处方");
+
+        if (!medicalCase.NeedsPrescription)
+            throw new InvalidOperationException(
+                "已标记不需要处方，无法开处方");
+
+        // 4. 创建处方（通过聚合根）
+        var prescription = new Prescription
+        {
+            Id = Guid.NewGuid(),
+            MedicalCaseId = medicalCaseId,
+            PrescriptionNumber = request.PrescriptionNumber
+                ?? GeneratePrescriptionNumber(),
+            Indication = request.Indication,
+            DosageCount = request.DosageCount,
+            Usage = request.Usage,
+            Discount = request.Discount,
+            Status = PrescriptionStatus.Active,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = GetCurrentUserId()
+        };
+
+        // 5. 创建处方明细
+        prescription.PrescriptionItems = request.Items
+            .Select(item => new PrescriptionItem
+            {
+                Id = Guid.NewGuid(),
+                PrescriptionId = prescription.Id,
+                HerbId = item.HerbId,
+                HerbName = item.HerbName,
+                Quantity = item.Quantity,
+                Unit = item.Unit,
+                UnitPrice = item.UnitPrice,
+                Subtotal = item.Quantity * item.UnitPrice,
+                Remark = item.Remark
+            })
+            .ToList();
+
+        // 6. 关联到聚合根
+        medicalCase.Prescription = prescription;
+
+        // 7. 保存聚合根
+        await _repository.UpdateAsync(medicalCase);
+
+        _logger.LogInformation(
+            "处方创建成功: MedicalCase={MedicalCaseId}, Prescription={PrescriptionId}",
+            medicalCaseId, prescription.Id);
+
+        return prescription;
+    }
+
+    /// <summary>
+    /// Read Layer: 获取病案详情（预加载关联实体）
+    /// </summary>
+    public async Task<MedicalCase?> GetByIdAsync(Guid medicalCaseId)
+    {
+        return await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+    }
+
+    /// <summary>
+    /// Helper Layer: 验证病案是否可编辑
+    /// </summary>
+    public async Task<CanEditResponse> CanEditAsync(Guid medicalCaseId)
+    {
+        var medicalCase = await _repository.GetByIdAsync(medicalCaseId);
+        if (medicalCase == null)
+            return new CanEditResponse
+            {
+                CanEdit = false,
+                Reason = "病案不存在"
+            };
+
+        // 业务规则：只能编辑Active状态的病案
+        if (medicalCase.Status != MedicalCaseStatus.Active)
+            return new CanEditResponse
+            {
+                CanEdit = false,
+                Reason = $"病案状态为{medicalCase.Status}，无法编辑"
+            };
+
+        // 业务规则：当天创建的可编辑
+        if (medicalCase.CreatedAt.Date != DateTime.Today)
+            return new CanEditResponse
+            {
+                CanEdit = false,
+                Reason = "只能编辑当天创建的病案"
+            };
+
+        return new CanEditResponse { CanEdit = true, Reason = string.Empty };
+    }
+}
+```
+
+### Repository层预加载模式 (Epic #1612) ⭐
+
+```csharp
+/// <summary>
+/// Repository层预加载模式 - 避免N+1查询
+/// 使用EF Core的Include预加载关联实体
+/// </summary>
+public class MedicalCaseRepository : IMedicalCaseRepository
+{
+    private readonly LYBTClinicDbContext _context;
+
+    public MedicalCaseRepository(LYBTClinicDbContext context)
+    {
+        _context = context;
+    }
+
+    /// <summary>
+    /// 预加载模式：一次查询获取完整聚合根
+    /// 避免N+1查询问题
+    /// </summary>
+    public async Task<MedicalCase?> GetByIdWithDetailsAsync(Guid id)
+    {
+        return await _context.MedicalCases
+            .Include(mc => mc.Consultation)  // 预加载Consultation
+            .Include(mc => mc.Prescription)   // 预加载Prescription
+                .ThenInclude(p => p.PrescriptionItems)  // 预加载PrescriptionItems
+            .FirstOrDefaultAsync(mc => mc.Id == id && !mc.IsDeleted);
+    }
+
+    /// <summary>
+    /// 分页查询预加载模式
+    /// </summary>
+    public async Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
+        int page,
+        int pageSize,
+        MedicalCaseStatus? status = null,
+        Guid? patientId = null)
+    {
+        var query = _context.MedicalCases
+            .Include(mc => mc.Consultation)
+            .Include(mc => mc.Prescription)
+            .Where(mc => !mc.IsDeleted);
+
+        // 条件过滤
+        if (status.HasValue)
+            query = query.Where(mc => mc.Status == status.Value);
+
+        if (patientId.HasValue)
+            query = query.Where(mc => mc.PatientId == patientId.Value);
+
+        // 总数统计
+        var totalCount = await query.CountAsync();
+
+        // 分页数据
+        var items = await query
+            .OrderByDescending(mc => mc.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<MedicalCase>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize
+        };
+    }
+
+    /// <summary>
+    /// 按患者ID查询（用于BR-001业务规则验证）
+    /// </summary>
+    public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId)
+    {
+        return await _context.MedicalCases
+            .Where(mc => mc.PatientId == patientId && !mc.IsDeleted)
+            .OrderByDescending(mc => mc.CreatedAt)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 标准更新模式（保存聚合根）
+    /// </summary>
+    public async Task<MedicalCase> UpdateAsync(MedicalCase medicalCase)
+    {
+        _context.MedicalCases.Update(medicalCase);
+        await _context.SaveChangesAsync();
+        return medicalCase;
+    }
+}
+```
+
+### Controller三层分离模式 (Epic #1612) ⭐
+
+```csharp
+/// <summary>
+/// Controller三层分离模式：Write/Read/Helper Layer
+/// Write Layer: 写操作（创建、更新、删除）
+/// Read Layer: 读操作（查询、列表）
+/// Helper Layer: 辅助操作（验证、权限）
+/// </summary>
+[ApiController]
+[Route("api/v1/[controller]")]
+[Authorize]
+public class MedicalCaseController : ControllerBase
+{
+    private readonly IMedicalCaseService _service;
+    private readonly IMapper _mapper;
+    private readonly ILogger<MedicalCaseController> _logger;
+
+    public MedicalCaseController(
+        IMedicalCaseService service,
+        IMapper mapper,
+        ILogger<MedicalCaseController> logger)
+    {
+        _service = service;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    // ========== Write Layer: 写操作 ==========
+
+    /// <summary>
+    /// 创建新病案
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<MedicalCase>>> CreateMedicalCase(
+        [FromBody] CreateMedicalCaseRequest request)
+    {
+        try
+        {
+            var medicalCase = await _service.CreateAsync(
+                request.PatientId,
+                request.VisitDate);
+
+            return Ok(ApiResponse<MedicalCase>.Success(
+                medicalCase,
+                "病案创建成功"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "创建病案失败: {Message}", ex.Message);
+            return BadRequest(ApiResponse<MedicalCase>.Failure(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建病案异常");
+            return StatusCode(500, ApiResponse<MedicalCase>.Failure(
+                "创建病案失败，请稍后重试"));
+        }
+    }
+
+    /// <summary>
+    /// 更新辨证信息（Step 1）
+    /// </summary>
+    [HttpPut("{id}/consultation")]
+    public async Task<ActionResult<ApiResponse<MedicalCase>>> UpdateConsultation(
+        Guid id,
+        [FromBody] UpdateConsultationRequest request)
+    {
+        try
+        {
+            var medicalCase = await _service.UpdateConsultationAsync(id, request);
+            return Ok(ApiResponse<MedicalCase>.Success(
+                medicalCase,
+                "辨证信息更新成功"));
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ApiResponse<MedicalCase>.Failure(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<MedicalCase>.Failure(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "更新辨证信息异常: MedicalCaseId={Id}", id);
+            return StatusCode(500, ApiResponse<MedicalCase>.Failure(
+                "更新辨证信息失败"));
+        }
+    }
+
+    /// <summary>
+    /// 创建处方（Step 3a）
+    /// </summary>
+    [HttpPost("{id}/prescriptions")]
+    public async Task<ActionResult<ApiResponse<Prescription>>> CreatePrescription(
+        Guid id,
+        [FromBody] CreatePrescriptionRequest request)
+    {
+        try
+        {
+            var prescription = await _service.CreatePrescriptionAsync(id, request);
+            return Ok(ApiResponse<Prescription>.Success(
+                prescription,
+                "处方创建成功"));
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ApiResponse<Prescription>.Failure(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            // 422: AR-003违规或BF-002流程违规
+            return UnprocessableEntity(ApiResponse<Prescription>.Failure(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建处方异常: MedicalCaseId={Id}", id);
+            return StatusCode(500, ApiResponse<Prescription>.Failure(
+                "创建处方失败"));
+        }
+    }
+
+    // ========== Read Layer: 读操作 ==========
+
+    /// <summary>
+    /// 获取病案详情（预加载Consultation和Prescription）
+    /// </summary>
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetById(Guid id)
+    {
+        try
+        {
+            var medicalCase = await _service.GetByIdAsync(id);
+            if (medicalCase == null)
+                return NotFound(ApiResponse<MedicalCaseDetailDto>.Failure(
+                    "病案不存在"));
+
+            var dto = _mapper.Map<MedicalCaseDetailDto>(medicalCase);
+            return Ok(ApiResponse<MedicalCaseDetailDto>.Success(dto));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取病案详情异常: Id={Id}", id);
+            return StatusCode(500, ApiResponse<MedicalCaseDetailDto>.Failure(
+                "获取病案详情失败"));
+        }
+    }
+
+    /// <summary>
+    /// 查询病案列表（分页 + 过滤）
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseDto>>>> GetList(
+        [FromQuery] MedicalCaseStatus? status = null,
+        [FromQuery] Guid? patientId = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            // 参数验证
+            if (page < 1 || pageSize < 1 || pageSize > 100)
+                return BadRequest(ApiResponse<PagedResult<MedicalCaseDto>>.Failure(
+                    "分页参数无效（page≥1, 1≤pageSize≤100）"));
+
+            var pagedResult = await _service.GetListAsync(
+                status, patientId, page, pageSize);
+
+            var dto = new PagedResult<MedicalCaseDto>
+            {
+                Items = _mapper.Map<List<MedicalCaseDto>>(pagedResult.Items),
+                TotalCount = pagedResult.TotalCount,
+                CurrentPage = pagedResult.CurrentPage,
+                PageSize = pagedResult.PageSize
+            };
+
+            return Ok(ApiResponse<PagedResult<MedicalCaseDto>>.Success(dto));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "查询病案列表异常");
+            return StatusCode(500,
+                ApiResponse<PagedResult<MedicalCaseDto>>.Failure(
+                    "查询病案列表失败"));
+        }
+    }
+
+    // ========== Helper Layer: 辅助操作 ==========
+
+    /// <summary>
+    /// 验证病案是否可编辑
+    /// </summary>
+    [HttpGet("{id}/can-edit")]
+    public async Task<ActionResult<ApiResponse<CanEditResponse>>> CanEdit(Guid id)
+    {
+        try
+        {
+            var response = await _service.CanEditAsync(id);
+            return Ok(ApiResponse<CanEditResponse>.Success(response));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "验证病案可编辑性异常: Id={Id}", id);
+            return StatusCode(500, ApiResponse<CanEditResponse>.Failure(
+                "验证失败"));
+        }
+    }
+
+    /// <summary>
+    /// 验证处方是否可删除
+    /// </summary>
+    [HttpGet("{id}/prescriptions/{prescriptionId}/can-delete")]
+    public async Task<ActionResult<ApiResponse<CanDeleteResponse>>> CanDeletePrescription(
+        Guid id,
+        Guid prescriptionId)
+    {
+        try
+        {
+            var response = await _service.CanDeletePrescriptionAsync(
+                id, prescriptionId);
+            return Ok(ApiResponse<CanDeleteResponse>.Success(response));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "验证处方可删除性异常: MedicalCaseId={Id}, PrescriptionId={PrescriptionId}",
+                id, prescriptionId);
+            return StatusCode(500, ApiResponse<CanDeleteResponse>.Failure(
+                "验证失败"));
+        }
+    }
+}
+```
+
+**关键设计原则**:
+- ✅ **Write/Read/Helper分离**: 清晰的端点职责划分
+- ✅ **聚合根协调**: Service层通过MedicalCase聚合根管理子实体
+- ✅ **预加载优化**: Repository层使用Include避免N+1查询
+- ✅ **业务规则验证**: Service层验证AR-001/AR-003/BF-002/BR-001
+- ✅ **异常处理分层**: Controller处理HTTP异常，Service处理业务异常
+
 ## 🩺 诊疗记录模块模式 (Consultation Module)
 
 ### 四诊合参录入模式

@@ -105,30 +105,60 @@
 
 ### BF-002: 三步看诊流程规则
 
-**规则描述**：
-- **Step 1：辨证**（ConsultationFormView）
-  - 填写四诊信息
+**规则描述**（Epic #1612架构）：
+- **Step 1：辨证**（Consultation）
+  - 填写四诊信息（望、闻、问、切）
   - 必填验证：主诉、中医诊断
-  - 保存后可前进到Step 2
+  - 完成时间戳：`Consultation.Step1CompletedAt`
+  - API端点：`PUT /api/v1/medicalcases/{id}/consultation`
 
-- **Step 2：施治**（PrescriptionEditorView）
-  - 开具处方
-  - 可选操作：验方导入、历史复制
-  - 保存后自动跳转到Step 3
+- **Step 2：标记处方需求**（Prescription Flag）
+  - 用户选择是否需要开处方（RadioBox：是/否）
+  - 更新 `MedicalCase.NeedsPrescription` 标志
+  - 完成时间戳：`Consultation.Step2CompletedAt`
+  - API端点：`PUT /api/v1/medicalcases/{id}/prescription-flag`
 
-- **Step 3：完成**（CompletionView）
-  - 显示医案汇总
-  - 确认后更新医案状态为Closed
-  - 返回患者选择
+- **Step 3：开处方/完成**（Prescription or Complete）
+  - **分支A（需要处方）**：
+    - 开具处方（调用 `POST /api/v1/medicalcases/{id}/prescriptions`）
+    - 可选操作：验方导入、历史复制
+    - 完成病案（调用 `PUT /api/v1/medicalcases/{id}/complete`）
+  - **分支B（不需要处方）**：
+    - 直接完成病案（调用 `PUT /api/v1/medicalcases/{id}/complete`）
+    - 状态更新为 `MedicalCaseStatus.Completed`
 
-**实现位置**：
+**实现位置**（Epic #1612重构）：
+- `Server`: `LYBT.Module.MedicalCase/Services/MedicalCaseService.cs`
+- `Server`: `LYBT.WebAPI/Controllers/MedicalCaseController.cs`
 - `Desktop`: `LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseFlowViewModel.cs`
-- Issue #1567
+- Epic #1612, Issue #1567
+
+**验证逻辑**（Service层）：
+```csharp
+// CompleteAsync() - 完成病案
+if (medicalCase.Consultation?.Step1CompletedAt == null)
+    throw new InvalidOperationException("未完成辨证（Step 1）");
+if (medicalCase.Consultation?.Step2CompletedAt == null)
+    throw new InvalidOperationException("未标记处方需求（Step 2）");
+if (medicalCase.NeedsPrescription && medicalCase.Prescription == null)
+    throw new InvalidOperationException("已标记需要处方，但未开具处方");
+```
 
 **流程约束**：
 - ✅ 允许前进（验证通过后）
 - ✅ 允许后退（数据不丢失）
-- ❌ 不允许跳步（必须按顺序）
+- ❌ 不允许跳步（必须按顺序完成Step 1 → Step 2 → Step 3）
+- ✅ 动态流程（根据 `NeedsPrescription` 决定是否开处方）
+
+**测试覆盖**（Epic #1612）：
+- ✅ 单元测试：32个测试，82.6%行覆盖率
+- ✅ 集成测试：18个测试，100%通过率
+- ✅ E2E场景：4个业务场景（含动态流程测试）
+
+**相关文档**：
+- `docs/modules/medical-case/README.md` - 三步流程详解
+- `docs/api/medicalcase-api.md` - API端点完整文档
+- `docs/reports/e2e-test-coverage-analysis.md` - E2E测试报告
 
 ---
 
@@ -198,14 +228,22 @@
    - 一次SaveChanges保存MedicalCase + Consultation
    - 级联删除：删除MedicalCase时自动删除Consultation和Prescription
 
-**实现位置**：
-- `Server`: `LYBT.Module.MedicalCase/Services/MedicalCaseService.cs`
-- `Server`: `LYBT.Module.MedicalCase/Repositories/MedicalCaseRepository.cs`
+**实现位置**（Epic #1612重构）：
+- `Server`: `LYBT.Module.MedicalCase/Services/MedicalCaseService.cs` - 14个聚合根协调方法
+- `Server`: `LYBT.Module.MedicalCase/Repositories/MedicalCaseRepository.cs` - 预加载优化
+- `Server`: `LYBT.WebAPI/Controllers/MedicalCaseController.cs` - 14个API端点
 - `Database`: Foreign Key约束（ON DELETE CASCADE）
-- Issue #1563
+- Epic #1612, Issue #1563
+
+**测试覆盖**（Epic #1612）：
+- ✅ 单元测试：32个测试验证聚合根协调逻辑
+- ✅ 集成测试：18个测试验证API端点
+- ✅ 架构测试：预加载避免N+1查询
 
 **架构文档**：
 - `docs/architecture/shared/medicalcase-architecture-correction-plan-v2.md`
+- `docs/modules/medical-case/README.md` - 聚合根边界详解
+- `docs/quick-reference/code-patterns.md` - Service层聚合根协调模式
 
 ---
 
@@ -234,29 +272,52 @@ if (activeCasesToday.Any())
 
 ---
 
-### AR-003: 一诊断一处方规则
+### AR-003: 一诊一方规则
 
 **规则描述**：
-- **约束**：一个Consultation只能有一个Prescription
-- **检查时机**：创建处方前
+- **约束**：一个MedicalCase只能有一个Prescription（聚合根约束）
+- **架构原则**：MedicalCase → Prescription为1:0..1关系
+- **检查时机**：创建处方前（`MedicalCaseService.CreatePrescriptionAsync()`）
 
-**验证逻辑**：
+**验证逻辑**（Epic #1612实现）：
 ```csharp
-if (existingPrescriptions.Any(p => p.MedicalCaseId == medicalCaseId))
-    throw new InvalidOperationException("该诊断已有处方,不能重复创建");
+// MedicalCaseService.CreatePrescriptionAsync
+var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+
+// AR-003验证：一诊一方约束
+if (medicalCase.Prescription != null)
+{
+    throw new InvalidOperationException(
+        "该病案已有处方，请先删除现有处方或使用更新接口（AR-003约束）");
+}
+
+// 业务流程验证（BF-002）
+if (medicalCase.Consultation?.Step1CompletedAt == null)
+    throw new InvalidOperationException("未完成辨证（Step 1），无法开处方");
+if (medicalCase.Consultation?.Step2CompletedAt == null)
+    throw new InvalidOperationException("未标记处方需求（Step 2），无法开处方");
+if (!medicalCase.NeedsPrescription)
+    throw new InvalidOperationException("已标记不需要处方，无法开处方");
 ```
 
-**实现位置**：
-- `Server`: `LYBT.Module.Prescriptions/Services/PrescriptionService.cs:CreateAsync()`
-- Issue #1423 RULE-2
+**实现位置**（Epic #1612重构）：
+- `Server`: `LYBT.Module.MedicalCase/Services/MedicalCaseService.cs:CreatePrescriptionAsync()`
+- `Server`: `LYBT.Module.MedicalCase/Repositories/MedicalCaseRepository.cs:GetByIdWithDetailsAsync()`
+- Epic #1612, Issue #1423 RULE-2
 
 **违规处理**：
-- 创建失败,抛出异常
-- 建议用户编辑现有处方
+- 创建失败，抛出 `InvalidOperationException`，HTTP 422
+- 建议用户删除现有处方（`DELETE /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}`）或使用更新接口（`PUT /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}`）
 
-**⚠️ 已知问题**：
-- 历史处方复制功能（CopyFromHistoryCommand）未验证此规则
-- 需要增强验证逻辑（优先级：中）
+**架构影响**（Epic #1612）：
+- ✅ 符合聚合根约束（AR-001）：通过MedicalCase聚合根管理Prescription
+- ✅ 符合三步流程（BF-002）：需完成Step 1（辨证）和Step 2（标记）才能开处方
+- ✅ 测试覆盖：32个单元测试，18个集成测试，100%通过率
+
+**相关文档**：
+- `docs/modules/medical-case/README.md` - 业务规则详解
+- `docs/api/medicalcase-api.md` - API端点文档
+- `docs/quick-reference/code-patterns.md` - Service层实现模式
 
 ---
 

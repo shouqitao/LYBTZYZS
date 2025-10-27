@@ -148,17 +148,145 @@ src/Server/
 - **核心实体**：Patient、PatientContact、PatientHistory
 - **关键特性**：批量导入、重复检查、数据统计
 
-#### 4. 医案管理模块 (MedicalCase Module)
+#### 4. 医案管理模块 (MedicalCase Module) - ⭐ Epic #1612重构版
 
 > **📚 权威参考**：详细实体关系定义参见 [clinical-workflow-entity-relationships.md](../shared/clinical-workflow-entity-relationships.md)（⭐⭐⭐权威文档）
+>
+> **📋 API文档**：完整API参考参见 [medicalcase-api.md](../../api/medicalcase-api.md)
+>
+> **🧪 测试报告**：E2E测试分析参见 [e2e-test-coverage-analysis.md](../../reports/e2e-test-coverage-analysis.md)
 
 **职责**：医案记录管理、状态流转、业务流程（**聚合根模式**：MedicalCase统一管理Consultation和Prescription生命周期）
-- **服务层**：MedicalCaseService、CaseWorkflowService、CaseStatusService
-- **数据层**：MedicalCaseRepository、MedicalCaseHistoryRepository
-- **核心实体**：MedicalCase（聚合根）、Consultation、Prescription、MedicalCaseHistory、CaseStatus
-- **关键特性**：状态机、工作流、审计跟踪、聚合根边界强制
 
-**本模块重点**：从WebAPI和Service层视角实现聚合根模式，确保Consultation/Prescription只能通过MedicalCase进行创建/更新/删除操作。
+**架构重构（Epic #1612）**：
+- ✅ 三层对齐架构实现
+- ✅ Write/Read/Helper Layer分离
+- ✅ 聚合根边界强制（AR-001）
+- ✅ 一诊一方约束（AR-003）
+- ✅ 三步流程验证（BF-002）
+- ✅ 单患者单Active病案（BR-001）
+
+##### 服务层（Application Layer）
+
+**IMedicalCaseService接口** (`src/Server/Modules/LYBT.Module.MedicalCase/Services/IMedicalCaseService.cs`)
+
+**Write Layer - 写操作（8个方法）**：
+```csharp
+// 1. 创建新病案
+Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate);
+
+// 2. 更新辨证信息（Step 1）
+Task<MedicalCaseEntity?> UpdateConsultationAsync(
+    Guid medicalCaseId, UpdateConsultationRequest request);
+
+// 3. 标记处方需求（Step 2）
+Task<MedicalCaseEntity?> SetPrescriptionFlagAsync(
+    Guid medicalCaseId, bool needsPrescription);
+
+// 4. 创建处方（Step 3a）
+Task<PrescriptionEntity?> CreatePrescriptionAsync(
+    Guid medicalCaseId, CreatePrescriptionRequest request);
+
+// 5. 更新处方
+Task<PrescriptionEntity?> UpdatePrescriptionAsync(
+    Guid medicalCaseId, Guid prescriptionId, UpdatePrescriptionRequest request);
+
+// 6. 删除处方
+Task<bool> DeletePrescriptionAsync(Guid medicalCaseId, Guid prescriptionId);
+
+// 7. 更新状态
+Task<MedicalCaseEntity?> UpdateStatusAsync(
+    Guid medicalCaseId, MedicalCaseStatus status);
+
+// 8. 完成病案（Step 3b）
+Task<MedicalCaseEntity?> CompleteAsync(Guid medicalCaseId);
+```
+
+**Read Layer - 读操作（4个方法）**：
+```csharp
+// 9. 获取病案详情（预加载Consultation/Prescription）
+Task<MedicalCaseEntity?> GetByIdAsync(Guid medicalCaseId);
+
+// 10. 查询病案列表（分页+过滤）
+Task<PagedResult<MedicalCaseEntity>> GetListAsync(
+    MedicalCaseStatus? status, Guid? patientId, int page, int pageSize);
+
+// 11. 查询辨证记录列表
+Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
+
+// 12. 查询处方列表
+Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+```
+
+**Helper Layer - 辅助功能（2个方法）**：
+```csharp
+// 13. 验证病案是否可编辑
+Task<CanEditResponse> CanEditAsync(Guid medicalCaseId);
+
+// 14. 验证处方是否可删除
+Task<CanDeleteResponse> CanDeletePrescriptionAsync(
+    Guid medicalCaseId, Guid prescriptionId);
+```
+
+**业务规则验证**：
+- **AR-001**：所有Consultation/Prescription操作必须通过MedicalCase聚合根
+- **AR-003**：一诊一方约束（已有处方时禁止再次创建）
+- **BF-002**：三步流程验证（辨证 → 标记 → 开处方/完成）
+- **BR-001**：单患者单Active病案约束
+
+##### 数据访问层（Infrastructure Layer）
+
+**IMedicalCaseRepository接口** (`src/Server/Modules/LYBT.Module.MedicalCase/Repositories/IMedicalCaseRepository.cs`)
+
+**核心查询方法（Epic #1612优化）**：
+```csharp
+// 详情查询（预加载关联）
+Task<MedicalCaseEntity?> GetByIdWithDetailsAsync(Guid id);
+
+// 分页查询（预加载+过滤）
+Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(
+    int page, int pageSize, string? keyword);
+
+// 按患者查询（支持Active状态过滤）
+Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId);
+```
+
+**性能优化**：
+- ✅ Include预加载：减少N+1查询
+- ✅ AsSplitQuery：优化多关联查询
+- ✅ AsNoTracking：只读查询性能提升
+
+##### 测试覆盖（Epic #1612）
+
+**单元测试** (`tests/UnitTests/Server/Modules/LYBT.Module.MedicalCase.Tests/Services/MedicalCaseServiceTests.cs`)：
+- 测试数量：32个测试
+- 行覆盖率：82.6%
+- 分支覆盖率：57.14%
+- 测试框架：xUnit + Moq + FluentAssertions
+
+**集成测试** (`tests/IntegrationTests/WebAPI.IntegrationTests/Controllers/MedicalCaseControllerIntegrationTests.cs`)：
+- 测试数量：18个测试
+- 通过率：100%
+- 覆盖范围：14个API端点（Write 8 + Read 4 + Helper 2）
+- E2E场景：4个完整业务流程验证
+
+##### 核心实体
+
+- **MedicalCase（聚合根）**：医案主实体，管理生命周期
+- **Consultation**：辨证信息（四诊、诊断、治则）
+- **Prescription**：处方信息（药品、剂数、价格）
+- **MedicalCaseHistory**：审计跟踪
+- **CaseStatus**：状态枚举（Draft/Active/Completed/Cancelled）
+
+##### 关键特性
+
+- ✅ 状态机模式：严格状态流转控制
+- ✅ 三步工作流：辨证 → 标记 → 开处方/完成
+- ✅ 审计跟踪：所有变更记录
+- ✅ 聚合根边界：强制通过MedicalCase操作
+- ✅ 业务规则验证：四条核心规则（AR-001, AR-003, BF-002, BR-001）
+
+**本模块重点**：从WebAPI和Service层视角实现聚合根模式，确保Consultation/Prescription只能通过MedicalCase进行创建/更新/删除操作。Epic #1612完成了完整的三层对齐架构重构，达到生产级质量标准。
 
 #### 5. 诊疗记录模块 (Consultation Module)
 **职责**：四诊信息记录、辨证论治、诊断结果
