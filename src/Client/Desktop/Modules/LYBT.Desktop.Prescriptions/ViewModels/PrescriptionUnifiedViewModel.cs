@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LYBT.Desktop.Prescriptions.ViewModels
+namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
     /// 统一处方ViewModel：整合8列快速输入和列表详细编辑两种模式
@@ -18,12 +18,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         private readonly IRegionManager _regionManager;
         private bool _isDetailedListMode;
         private bool _isViewMode;
-        private string _patientInfo;
-        private string _prescriptionNumber;
-        private string _diagnosis;
+        private string _patientInfo = string.Empty;
+        private string _prescriptionNumber = string.Empty;
+        private string _diagnosis = string.Empty;
         private int _dosageCount = 7;
         private string _usage = "水煎服，日一剂，分早晚服";
-        private string _advice;
+        private string _advice = string.Empty;
         private decimal _totalPrice;
         private int _status;
         #endregion
@@ -79,12 +79,12 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         #endregion
 
         #region 8列模式属性
-        public ObservableCollection<PrescriptionItemRow> ItemRows { get; set; } = new ObservableCollection<PrescriptionItemRow>();
-        public ObservableCollection<HerbDto> FilteredHerbs { get; set; } = new ObservableCollection<HerbDto>();
+        public ObservableCollection<PrescriptionUnifiedItemRow> ItemRows { get; set; } = new ObservableCollection<PrescriptionUnifiedItemRow>();
+        public ObservableCollection<UnifiedHerbDto> FilteredHerbs { get; set; } = new ObservableCollection<UnifiedHerbDto>();
         #endregion
 
         #region 列表模式属性
-        public ObservableCollection<PrescriptionItemDto> PrescriptionItems { get; set; } = new ObservableCollection<PrescriptionItemDto>();
+        public ObservableCollection<UnifiedPrescriptionItemDto> PrescriptionItems { get; set; } = new ObservableCollection<UnifiedPrescriptionItemDto>();
         #endregion
 
         #region 布局切换属性
@@ -129,7 +129,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         public DelegateCommand PreviewCommand { get; }
         public DelegateCommand CloseCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
-        public DelegateCommand<PrescriptionItemDto> DeleteHerbCommand { get; }
+        public DelegateCommand<UnifiedPrescriptionItemDto> DeleteHerbCommand { get; }
         public DelegateCommand LoadFormulaTemplateCommand { get; }
         #endregion
 
@@ -144,7 +144,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             PreviewCommand = new DelegateCommand(OnPreview);
             CloseCommand = new DelegateCommand(OnClose);
             AddHerbCommand = new DelegateCommand(OnAddHerb);
-            DeleteHerbCommand = new DelegateCommand<PrescriptionItemDto>(OnDeleteHerb);
+            DeleteHerbCommand = new DelegateCommand<UnifiedPrescriptionItemDto>(OnDeleteHerb);
             LoadFormulaTemplateCommand = new DelegateCommand(OnLoadFormulaTemplate);
 
             // 初始化数据
@@ -158,7 +158,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             // 初始化8列模式数据
             for (int i = 0; i < 10; i++)
             {
-                ItemRows.Add(new PrescriptionItemRow());
+                ItemRows.Add(new PrescriptionUnifiedItemRow());
             }
 
             // 默认使用8列快速输入模式
@@ -208,7 +208,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             var items = PrescriptionItems.ToList();
             for (int i = 0; i < items.Count; i += 4)
             {
-                var row = new PrescriptionItemRow
+                var row = new PrescriptionUnifiedItemRow
                 {
                     Item1 = i < items.Count ? ConvertToQuickItem(items[i]) : new QuickEntryItem(),
                     Item2 = i + 1 < items.Count ? ConvertToQuickItem(items[i + 1]) : new QuickEntryItem(),
@@ -219,9 +219,9 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             }
         }
 
-        private PrescriptionItemDto ConvertToItemDto(QuickEntryItem quickItem)
+        private UnifiedPrescriptionItemDto ConvertToItemDto(QuickEntryItem quickItem)
         {
-            return new PrescriptionItemDto
+            return new UnifiedPrescriptionItemDto
             {
                 HerbName = quickItem.HerbName,
                 Quantity = quickItem.Quantity,
@@ -233,7 +233,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
             };
         }
 
-        private QuickEntryItem ConvertToQuickItem(PrescriptionItemDto itemDto)
+        private QuickEntryItem ConvertToQuickItem(UnifiedPrescriptionItemDto itemDto)
         {
             return new QuickEntryItem
             {
@@ -274,10 +274,10 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
         private void OnAddHerb()
         {
-            PrescriptionItems.Add(new PrescriptionItemDto());
+            PrescriptionItems.Add(new UnifiedPrescriptionItemDto());
         }
 
-        private void OnDeleteHerb(PrescriptionItemDto item)
+        private void OnDeleteHerb(UnifiedPrescriptionItemDto item)
         {
             PrescriptionItems.Remove(item);
         }
@@ -331,49 +331,4 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
         }
         #endregion
     }
-
-    #region 辅助类
-    public class PrescriptionItemRow : BindableBase
-    {
-        public QuickEntryItem Item1 { get; set; } = new QuickEntryItem();
-        public QuickEntryItem Item2 { get; set; } = new QuickEntryItem();
-        public QuickEntryItem Item3 { get; set; } = new QuickEntryItem();
-        public QuickEntryItem Item4 { get; set; } = new QuickEntryItem();
-    }
-
-    public class QuickEntryItem : BindableBase
-    {
-        private string _herbName;
-        private decimal _quantity;
-
-        public string HerbName
-        {
-            get => _herbName;
-            set => SetProperty(ref _herbName, value);
-        }
-
-        public decimal Quantity
-        {
-            get => _quantity;
-            set => SetProperty(ref _quantity, value);
-        }
-    }
-
-    public class PrescriptionItemDto : BindableBase
-    {
-        public string HerbName { get; set; }
-        public string Specification { get; set; }
-        public string Unit { get; set; }
-        public decimal Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal Amount { get; set; }
-        public string Usage { get; set; }
-    }
-
-    public class HerbDto
-    {
-        public string Name { get; set; }
-        public string PinyinCode { get; set; }
-    }
-    #endregion
 }
