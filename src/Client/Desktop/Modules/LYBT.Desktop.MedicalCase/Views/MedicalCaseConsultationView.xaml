@@ -1,0 +1,331 @@
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseConsultationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converters="clr-namespace:LYBT.Desktop.MedicalCase.Converters"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Background="White">
+    <UserControl.Resources>
+        <!-- 转换器 -->
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
+        <!-- 字段标签样式 -->
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#333333"/>
+        </Style>
+
+        <!-- 文本框样式 -->
+        <Style x:Key="FieldTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- 多行文本框样式 -->
+        <Style x:Key="MultiLineTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource FieldTextBoxStyle}">
+            <Setter Property="MinHeight" Value="80"/>
+            <Setter Property="MaxHeight" Value="150"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+        </Style>
+
+        <!-- 分组标题样式 -->
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#2C5AA0"/>
+            <Setter Property="Margin" Value="0,20,0,15"/>
+        </Style>
+
+        <!-- 按钮样式 -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- 主按钮样式（蓝色） -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#2C5AA0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2C5AA0"/>
+        </Style>
+
+        <!-- 次要按钮样式（灰色） -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        </Style>
+
+        <!-- RadioButton样式 -->
+        <Style x:Key="RadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,30,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- BooleanToVisibility转换器 -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="30,20,30,30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Section 1: 辨证信息 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Section 2: 开处方决策 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Section 3: 处方面板 -->
+                <RowDefinition Height="Auto"/>
+                <!-- Section 4: 操作按钮 -->
+            </Grid.RowDefinitions>
+
+            <!-- ================================ -->
+            <!-- Section 1: 辨证信息（完整四诊字段） -->
+            <!-- ================================ -->
+            <StackPanel Grid.Row="0">
+                <TextBlock Text="辨证信息" Style="{StaticResource SectionHeaderStyle}"/>
+
+                <!-- 主诉 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="主诉：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding ChiefComplaint, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="患者就诊的主要症状和时间"/>
+                </Grid>
+
+                <!-- 现病史 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="现病史：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding PresentIllness, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="患者本次疾病的发生、发展和治疗经过"/>
+                </Grid>
+
+                <!-- 四诊：望闻问切 -->
+                <TextBlock Text="四诊"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Margin="0,10,0,10"
+                           Foreground="#555555"/>
+
+                <!-- 望诊 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="望诊：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Inspection, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="观察患者的神、色、形、态、舌象等"/>
+                </Grid>
+
+                <!-- 闻诊 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="闻诊：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding AuscultationOlfaction, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="听患者的声音、语言，嗅患者及其排泄物的气味"/>
+                </Grid>
+
+                <!-- 问诊 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="问诊：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Inquiry, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="询问患者的症状、感受、既往病史等"/>
+                </Grid>
+
+                <!-- 切诊 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="切诊：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Palpation, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="切脉、触摸患者体表特定部位"/>
+                </Grid>
+
+                <!-- 中医诊断 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="中医诊断：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding TCMDiagnosis, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="中医病名、证型"/>
+                </Grid>
+
+                <!-- 治疗原则 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="治疗原则：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding TreatmentPrinciple, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="治则治法，如：疏肝理气、活血化瘀"/>
+                </Grid>
+
+                <!-- 医嘱 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="医嘱：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding MedicalAdvice, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="用药注意事项、生活起居建议等"/>
+                </Grid>
+
+                <!-- 备注 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabelStyle}"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MultiLineTextBoxStyle}"
+                             ToolTip="其他需要记录的信息"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- ================================ -->
+            <!-- Section 2: 开处方决策（RadioBox） -->
+            <!-- ================================ -->
+            <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                <TextBlock Text="开处方决策" Style="{StaticResource SectionHeaderStyle}"/>
+
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="是否开处方："
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal">
+                        <RadioButton Content="是"
+                                     IsChecked="{Binding NeedsPrescription}"
+                                     GroupName="PrescriptionChoice"
+                                     Style="{StaticResource RadioButtonStyle}"/>
+                        <RadioButton Content="否"
+                                     IsChecked="{Binding NeedsPrescription, Converter={StaticResource InvertedBoolConverter}}"
+                                     GroupName="PrescriptionChoice"
+                                     Style="{StaticResource RadioButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="说明：选择「是」后将显示处方输入面板，选择「否」则隐藏处方面板。"
+                           FontSize="12"
+                           Foreground="#999999"
+                           Margin="120,0,0,0"/>
+            </StackPanel>
+
+            <!-- ================================ -->
+            <!-- Section 3: 处方面板（动态显示/隐藏） -->
+            <!-- ================================ -->
+            <Border Grid.Row="2"
+                    Margin="0,20,0,0"
+                    Padding="20"
+                    Background="#F8F9FA"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Visibility="{Binding ShowPrescriptionPanel, Converter={StaticResource BoolToVisConverter}}">
+                <StackPanel>
+                    <TextBlock Text="处方信息"
+                               Style="{StaticResource SectionHeaderStyle}"
+                               Margin="0,0,0,15"/>
+
+                    <TextBlock Text="处方输入功能将在后续任务中实现"
+                               FontSize="14"
+                               Foreground="#666666"
+                               HorizontalAlignment="Center"
+                               Margin="0,20,0,20"/>
+
+                    <TextBlock Text="提示：此区域将集成 PrescriptionEditorView，支持草药/颗粒/中成药处方录入。"
+                               FontSize="12"
+                               Foreground="#999999"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ================================ -->
+            <!-- Section 4: 操作按钮 -->
+            <!-- ================================ -->
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,30,0,0">
+
+                <!-- 保存辨证信息 -->
+                <Button Content="保存辨证信息"
+                        Command="{Binding SaveConsultationCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        ToolTip="保存当前填写的辨证信息"/>
+
+                <!-- 暂存病案 -->
+                <Button Content="暂存病案"
+                        Command="{Binding SaveDraftCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        ToolTip="暂存病案，稍后可继续看诊"/>
+
+                <!-- 完成病案 -->
+                <Button Content="完成病案"
+                        Command="{Binding CompleteCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        ToolTip="完成病案，标记为已完成状态"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
