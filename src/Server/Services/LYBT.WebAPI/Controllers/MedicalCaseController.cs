@@ -17,12 +17,13 @@ using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, PrescriptionDe
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 医疗案例管理 API V2 - Epic #1612重构版
+    /// 医疗案例管理 API V1 - Epic #1612重构版
     /// 遵循Write/Read/Helper Layer分离原则
     /// 所有写操作通过MedicalCase聚合根
+    /// 注：保持v1版本，v2升级延后到Phase 3完成后
     /// </summary>
     [ApiController]
-    [ApiVersion("2")]
+    [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
     [Authorize]
     public class MedicalCaseController : BaseApiController
