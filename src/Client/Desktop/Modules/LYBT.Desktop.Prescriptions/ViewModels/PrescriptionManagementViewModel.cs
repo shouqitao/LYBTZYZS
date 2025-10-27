@@ -352,7 +352,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         private void Create()
         {
-            NavigateTo("MainRegion", "PrescriptionView");
+            // Epic #1701: 使用统一处方View
+            NavigateTo("MainRegion", "PrescriptionUnifiedView");
         }
 
         /// <summary>
@@ -364,9 +365,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 var parameters = new NavigationParameters
                 {
-                    { "PrescriptionId", SelectedPrescription.Id }
+                    { "PrescriptionId", SelectedPrescription.Id },
+                    { "Mode", "Edit" },  // Epic #1701: 设置为编辑模式
+                    { "LayoutMode", "DetailedList" }  // Epic #1701: 从管理界面进入默认用列表模式
                 };
-                NavigateTo("MainRegion", "PrescriptionView", parameters);
+                // Epic #1701: 使用统一处方View
+                NavigateTo("MainRegion", "PrescriptionUnifiedView", parameters);
             }
         }
 
