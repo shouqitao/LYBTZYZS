@@ -469,8 +469,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void UpdateStepContent()
         {
-            // TODO: 根据当前步骤更新内容视图
-            // 这里可以根据CurrentStep返回不同的UserControl或View
             CurrentStepContent = CurrentStep switch
             {
                 ImportWizardStep.TemplateDownload => CreateTemplateDownloadContent(),
@@ -766,25 +764,21 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private object CreateTemplateDownloadContent()
         {
-            // TODO: 返回步骤1的具体UI内容
             return new { StepTitle = "下载导入模板", StepDescription = "请先下载Excel模板文件" };
         }
 
         private object CreateFileSelectionContent()
         {
-            // TODO: 返回步骤2的具体UI内容
             return new { StepTitle = "选择文件", StepDescription = "选择要导入的Excel文件", FilePath = SelectedFilePath };
         }
 
         private object CreateDataPreviewContent()
         {
-            // TODO: 返回步骤3的具体UI内容
             return new { StepTitle = "数据预览", PreviewData, ValidationResult };
         }
 
         private object CreateImportExecutionContent()
         {
-            // TODO: 返回步骤4的具体UI内容
             return new { StepTitle = "导入执行", ProgressInfo, IsImporting };
         }
 
