@@ -48,6 +48,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 状态管理
 
         private Guid _medicalCaseId;
+        private Guid _patientId;
+        private Guid _doctorId;
         private bool _isSaving;
         private bool _isSavingPrescriptionFlag;
         private bool _canEdit;
@@ -243,6 +245,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 var medicalCase = response.Data;
 
+                // Task 3.5 (#1662): 保存PatientId和DoctorId用于暂存功能
+                _patientId = medicalCase.PatientId;
+                _doctorId = medicalCase.DoctorId;
+
                 // 2. 恢复辨证信息（完整四诊字段）
                 if (medicalCase.Consultation != null)
                 {
@@ -433,11 +439,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
+                // Task 3.5 (#1662): 先保存辨证信息
+                await SaveConsultationAsync();
+
+                // 然后暂存病案状态
                 var request = new MedicalCaseUpdateDto
                 {
                     Id = _medicalCaseId,
-                    PatientId = Guid.Empty, // TODO: 从当前病案获取
-                    DoctorId = Guid.Empty,  // TODO: 从SessionManager获取
+                    PatientId = _patientId,
+                    DoctorId = _doctorId,
                     Remark = Remark,
                     Status = "Draft" // 暂存状态
                 };
