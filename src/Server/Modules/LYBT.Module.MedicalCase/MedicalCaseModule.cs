@@ -25,8 +25,8 @@ namespace LYBT.Module.MedicalCase
             // 仓储层 - 统一实现
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
 
-            // 服务层 - Epic #1612 Task 2.1: 临时禁用DI注册（Task 2.2-2.4实现新接口后恢复）
-            // services.AddScoped<IMedicalCaseService, MedicalCaseService>();
+            // 服务层 - Epic #1612: 新接口实现（14方法，Write/Read/Helper分离）
+            services.AddScoped<Services.IMedicalCaseService, MedicalCaseService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<MedicalCaseCreateDtoValidator>();
