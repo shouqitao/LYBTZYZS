@@ -80,6 +80,7 @@ URL:   https://github.com/shouqitao/LYBTZYZS
 - context7: 技术文档查询
 - microsoft_docs_mcp: Microsoft官方文档
 - sequential-thinking: 深度推理分析
+- drawio: Draw.io图表创建与编辑（架构图、流程图、UML图）
 
 ---
 
