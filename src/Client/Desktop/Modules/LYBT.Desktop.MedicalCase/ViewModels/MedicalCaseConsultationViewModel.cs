@@ -275,7 +275,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 CanEdit = medicalCase.CanEdit();
 
                 // 5. 如有处方，触发加载处方事件（后续集成任务）
-                // TODO: 跨模块集成 - 实现PrescriptionLoadedEvent通知PrescriptionEditor加载处方数据
+                // TODO #1705: 实现PrescriptionLoadedEvent通知PrescriptionEditor加载处方数据（Epic #1676 Phase 3）
                 // 说明：当前处方面板显示/隐藏已通过ShowPrescriptionPanel属性实现
                 // if (medicalCase.Prescription != null)
                 // {
@@ -494,7 +494,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // TODO: 实现完成病案的API调用
+                // TODO #1706: 实现完成病案的API调用（依赖Phase 4 - CloseCaseAsync，Epic #1676）
                 // 当前API接口中可能没有CompleteMedicalCaseAsync方法
                 // 可能需要通过UpdateStatusAsync或其他方法实现
 
@@ -552,7 +552,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             if (NeedsPrescription)
             {
-                // TODO: 检查是否已创建处方
+                // TODO #1707: 检查是否已创建处方（依赖Phase 4 - HasPrescriptionAsync，Epic #1676）
                 // 可通过PrescriptionViewModel状态判断
                 Logger.LogWarning("需要检查处方是否已创建");
             }
