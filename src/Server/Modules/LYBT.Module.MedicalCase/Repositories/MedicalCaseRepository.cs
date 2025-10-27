@@ -37,12 +37,14 @@ namespace LYBT.Module.MedicalCase.Repositories
 
         /// <summary>
         /// 详细查询 - 仅在需要时Include关联数据
+        /// Epic #1612 Task 1.5: 增强Include策略，预加载Prescription.Items避免N+1查询
         /// </summary>
         private IQueryable<MedicalCaseEntity> GetDetailQuery()
         {
             return _dbSet
                 .Include(m => m.Consultation)
-                .Include(m => m.Prescription)
+                .Include(m => m.Prescription!)
+                    .ThenInclude(p => p.Items)
                 .Where(m => !m.IsDeleted);
         }
 
