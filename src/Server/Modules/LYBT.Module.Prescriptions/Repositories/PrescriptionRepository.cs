@@ -12,7 +12,7 @@ namespace LYBT.Module.Prescriptions.Repositories
     /// <summary>
     /// 处方仓储 - 优化版，包含Include策略以解决N+1查询问题
     /// </summary>
-    public class PrescriptionRepository : BaseRepository<PrescriptionEntity>, IPrescriptionRepository
+    internal class PrescriptionRepository : BaseRepository<PrescriptionEntity>, IPrescriptionRepository
     {
         public PrescriptionRepository(AppDbContext context) : base(context)
         {

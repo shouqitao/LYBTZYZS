@@ -32,28 +32,6 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 分页查询诊疗记录
-        /// </summary>
-        /// <returns>分页的诊疗记录列表</returns>
-        [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<ConsultationDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<PagedResult<ConsultationDto>>>> GetConsultations(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? keyword = null)
-        {
-            try
-            {
-                var result = await _consultationService.GetPagedAsync(page, pageSize, keyword);
-                return HandlePagedServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleExceptionPaged<ConsultationDto>(ex, "获取诊疗记录列表");
-            }
-        }
-
-        /// <summary>
         /// 获取诊疗详情
         /// </summary>
         /// <param name="id">诊疗ID</param>
@@ -109,30 +87,5 @@ namespace LYBT.WebAPI.Controllers
 
         // ========== Write方法已移除（Issue #1600 Phase 4）==========
         // CompleteStep1 已删除，请使用 POST /api/v1/medicalcases/{id}/complete-step1
-
-        /// <summary>
-        /// 搜索诊疗记录
-        /// </summary>
-        /// <param name="keyword">搜索关键词</param>
-        /// <returns>匹配的诊疗记录列表</returns>
-        [HttpGet("search")]
-        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> Search([FromQuery] string keyword)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    return BadRequest(ApiResponse<List<ConsultationDto>>.CreateFail("搜索关键词不能为空"));
-                }
-
-                var result = await _consultationService.SearchAsync(keyword);
-                return HandleServiceResult(result);
-            }
-            catch (Exception ex)
-            {
-                return HandleException<List<ConsultationDto>>(ex, "搜索诊疗记录", new { Keyword = keyword });
-            }
-        }
     }
 }

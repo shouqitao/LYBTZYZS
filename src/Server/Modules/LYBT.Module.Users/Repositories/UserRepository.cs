@@ -12,7 +12,7 @@ namespace LYBT.Module.Users.Repositories
     /// 用户仓储实现（简化版本，使用统一数据库上下文）
     /// 遵循适度设计原则，避免过度的模块化设计
     /// </summary>
-    public class UserRepository : IUserRepository
+    internal class UserRepository : IUserRepository
     {
         private readonly AppDbContext _context;
         private readonly DbSet<User> _dbSet;

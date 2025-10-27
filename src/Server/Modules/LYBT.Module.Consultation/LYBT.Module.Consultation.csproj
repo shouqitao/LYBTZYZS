@@ -7,6 +7,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- 允许测试项目访问internal类 (Issue #1600 Phase 3) -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="LYBT.Module.Consultation.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\Core\LYBT.Server.Interfaces\LYBT.Server.Interfaces.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />

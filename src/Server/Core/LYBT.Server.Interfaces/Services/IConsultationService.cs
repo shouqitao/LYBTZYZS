@@ -11,11 +11,6 @@ namespace LYBT.Server.Interfaces.Services
     public interface IConsultationService
     {
         /// <summary>
-        /// 分页查询诊疗记录
-        /// </summary>
-        Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
-
-        /// <summary>
         /// 根据ID获取诊疗详情
         /// </summary>
         Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id);
@@ -23,11 +18,6 @@ namespace LYBT.Server.Interfaces.Services
         // ========== Write方法已移除（Issue #1600 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
-
-        /// <summary>
-        /// 搜索诊疗记录 - 支持多条件搜索
-        /// </summary>
-        Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 根据医案ID获取诊疗记录列表

@@ -10,7 +10,7 @@ namespace LYBT.Module.Patients.Repositories
     /// <summary>
     /// 患者仓储 - 优化版，包含查询优化和预加载支持
     /// </summary>
-    public class PatientRepository : BaseRepository<Patient>, IPatientRepository
+    internal class PatientRepository : BaseRepository<Patient>, IPatientRepository
     {
         public PatientRepository(AppDbContext context) : base(context)
         {

@@ -29,38 +29,6 @@ namespace LYBT.Module.Consultation.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResult<PagedResult<ConsultationDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
-        {
-            try
-            {
-                // 使用优化后的查询方法，包含Patient和User信息
-                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
-
-                // 手动映射，确保PatientName和DoctorName从预加载的导航属性获取
-                var items = pagedResult.Items.Select(c =>
-                {
-                    var dto = _mapper.Map<ConsultationDto>(c);
-                    dto.PatientName = c.MedicalCase?.PatientName ?? string.Empty;
-                    dto.DoctorName = c.MedicalCase?.DoctorName ?? string.Empty;
-                    return dto;
-                }).ToList();
-
-                var result = new PagedResult<ConsultationDto>
-                {
-                    Items = items,
-                    TotalCount = pagedResult.TotalCount,
-                    CurrentPage = pagedResult.CurrentPage,
-                    PageSize = pagedResult.PageSize
-                };
-                return ServiceResult<PagedResult<ConsultationDto>>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取诊疗记录列表失败");
-                return ServiceResult<PagedResult<ConsultationDto>>.Failure("获取诊疗记录列表失败");
-            }
-        }
-
         public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
         {
             try
@@ -110,24 +78,6 @@ namespace LYBT.Module.Consultation.Services
             {
                 _logger.LogError(ex, "根据医案ID获取诊疗记录失败");
                 return ServiceResult<List<ConsultationDto>>.Failure("获取诊疗记录失败");
-            }
-        }
-
-        public async Task<ServiceResult<List<ConsultationDto>>> SearchAsync(string keyword)
-        {
-            try
-            {
-                var entities = await _repository.FindAsync(c =>
-                    (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
-                    (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
-                    (c.PresentIllness != null && c.PresentIllness.Contains(keyword)));
-                var dtos = _mapper.Map<List<ConsultationDto>>(entities);
-                return ServiceResult<List<ConsultationDto>>.Success(dtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索诊疗记录失败: {Keyword}", keyword);
-                return ServiceResult<List<ConsultationDto>>.Failure("搜索诊疗记录失败");
             }
         }
 

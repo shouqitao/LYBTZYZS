@@ -9,7 +9,7 @@ namespace LYBT.Module.Herbs.Repositories
     /// <summary>
     /// 药材仓储 - 简化版，只包含基础CRUD
     /// </summary>
-    public class HerbRepository : BaseRepository<Herb>, IHerbRepository
+    internal class HerbRepository : BaseRepository<Herb>, IHerbRepository
     {
         public HerbRepository(AppDbContext context) : base(context)
         {

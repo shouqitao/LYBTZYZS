@@ -7,6 +7,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- 允许测试项目访问internal类 (Issue #1600 Phase 3) -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="LYBT.Module.Herbs.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />

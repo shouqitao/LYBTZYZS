@@ -12,7 +12,7 @@ namespace LYBT.Module.Consultation.Repositories
     /// <summary>
     /// 诊疗仓储 - 优化版，包含Include策略以解决N+1查询问题
     /// </summary>
-    public class ConsultationRepository : BaseRepository<ConsultationEntity>, IConsultationRepository
+    internal class ConsultationRepository : BaseRepository<ConsultationEntity>, IConsultationRepository
     {
         public ConsultationRepository(AppDbContext context) : base(context)
         {

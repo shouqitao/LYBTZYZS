@@ -16,7 +16,7 @@ namespace LYBT.Module.MedicalCase.Repositories
     /// <summary>
     /// 病案仓储 - 简化版，减少过度复杂的Include策略
     /// </summary>
-    public class MedicalCaseRepository : BaseRepository<MedicalCaseEntity>, IMedicalCaseRepository
+    internal class MedicalCaseRepository : BaseRepository<MedicalCaseEntity>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(AppDbContext context) : base(context)
         {

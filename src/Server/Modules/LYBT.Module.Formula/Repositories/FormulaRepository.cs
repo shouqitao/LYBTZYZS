@@ -11,7 +11,7 @@ namespace LYBT.Module.Formula.Repositories
     /// <summary>
     /// 方剂仓储 - 简化版，合并冗余查询方法
     /// </summary>
-    public class FormulaRepository : BaseRepository<FormulaEntity>, IFormulaRepository
+    internal class FormulaRepository : BaseRepository<FormulaEntity>, IFormulaRepository
     {
         public FormulaRepository(AppDbContext context) : base(context)
         {
