@@ -27,6 +27,9 @@ namespace LYBT.Tests.Common
 
         protected IntegrationTestBase()
         {
+            // ⚠️ 必须在创建Factory之前设置环境变量，确保Program.Main正确加载appsettings.Test.json
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+
             Factory = CreateWebApplicationFactory();
             Client = CreateHttpClient(Factory);
             ServiceProvider = Factory.Services;
@@ -54,6 +57,9 @@ namespace LYBT.Tests.Common
         /// </summary>
         protected virtual void ConfigureWebHost(IWebHostBuilder builder)
         {
+            // 设置测试环境
+            builder.UseEnvironment("Test");
+
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 ConfigureTestConfiguration(config);
@@ -70,16 +76,12 @@ namespace LYBT.Tests.Common
         /// </summary>
         protected virtual void ConfigureTestConfiguration(IConfigurationBuilder configBuilder)
         {
-            // 添加测试配置
+            // 添加测试配置（补充或覆盖appsettings.Test.json中的配置）
             configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Logging:LogLevel:Default"] = "Information",
                 ["Logging:LogLevel:Microsoft.AspNetCore"] = "Warning",
-                ["AllowedHosts"] = "*",
-                ["Jwt:Issuer"] = "TestIssuer",
-                ["Jwt:Audience"] = "TestAudience",
-                ["Jwt:SecretKey"] = "ThisIsASecretKeyForTestingOnly123456789",
-                ["Jwt:ExpirationMinutes"] = "60"
+                ["AllowedHosts"] = "*"
             });
         }
 
@@ -131,8 +133,11 @@ namespace LYBT.Tests.Common
         /// </summary>
         protected virtual void ConfigureTestSpecificServices(IServiceCollection services)
         {
-            // 注册Mock Logger
-            services.AddSingleton(MockLogger.Object);
+            // 集成测试使用真实的Serilog logger（已在Program.cs中配置）
+            // MockLogger仅供单元测试使用
+
+            // ✅ Issue #1668 Solution A：使用真实JWT Token（在GenerateTestToken中生成）
+            // 不需要自定义认证处理器，直接使用Program.cs中配置的JWT认证
 
             // 子类可重写此方法来添加额外的服务配置
         }
@@ -169,8 +174,29 @@ namespace LYBT.Tests.Common
         /// </summary>
         protected virtual string GenerateTestToken()
         {
-            // 简单的测试token - 实际项目中应该使用真实的JWT生成逻辑
-            return "test-jwt-token-for-integration-testing";
+            // 生成真实的JWT Token用于集成测试认证（Issue #1668 Solution A）
+            // ⚠️ 密钥、Issuer、Audience必须与LYBT.WebAPI/appsettings.Test.json完全一致
+            var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
+
+            var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
+            {
+                Subject = new System.Security.Claims.ClaimsIdentity(new[]
+                {
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "test-user-id"),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Test User"),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Admin")
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                Issuer = "LYBT.WebAPI.Tests",
+                Audience = "LYBT.Client.Tests",
+                SigningCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(
+                    new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
+                    Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         /// <summary>

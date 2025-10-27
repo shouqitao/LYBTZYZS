@@ -40,7 +40,11 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
             // services.AddScoped<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
 
             // 添加密钥旋转后台服务（使用工厂模式）
-            services.AddHostedService<KeyRotationBackgroundService>();
+            // ⚠️ Issue #1668：Test环境禁用密钥轮换，使用appsettings.Test.json中的固定密钥
+            if (!environment.IsEnvironment("Test"))
+            {
+                services.AddHostedService<KeyRotationBackgroundService>();
+            }
 
             return services;
         }
