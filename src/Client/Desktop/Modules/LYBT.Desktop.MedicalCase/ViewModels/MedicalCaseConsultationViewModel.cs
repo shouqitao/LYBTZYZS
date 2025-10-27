@@ -41,6 +41,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private bool _needsPrescription;
         private bool _showPrescriptionPanel;
+        private CancellationTokenSource? _setPrescriptionFlagCts;
 
         #endregion
 
@@ -48,6 +49,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private Guid _medicalCaseId;
         private bool _isSaving;
+        private bool _isSavingPrescriptionFlag;
         private bool _canEdit;
 
         #endregion
@@ -162,6 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 是否需要开处方（RadioBox绑定）
+        /// Task 3.4 (#1661): RadioBox变化时自动保存
         /// </summary>
         public bool NeedsPrescription
         {
@@ -171,9 +174,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (SetProperty(ref _needsPrescription, value))
                 {
                     // RadioBox变化时自动保存标志并切换UI
-                    // TODO: Task 3.4 (#1661) - 实现SetPrescriptionFlagAsync API调用
-                    // _ = SetPrescriptionFlagAsync(value);
                     ShowPrescriptionPanel = value;
+                    _ = SetPrescriptionFlagAsync(value);
                 }
             }
         }
@@ -191,6 +193,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             get => _isSaving;
             set => SetProperty(ref _isSaving, value);
+        }
+
+        /// <summary>
+        /// 是否正在保存开处方标志
+        /// </summary>
+        public bool IsSavingPrescriptionFlag
+        {
+            get => _isSavingPrescriptionFlag;
+            set => SetProperty(ref _isSavingPrescriptionFlag, value);
         }
 
         public bool CanEdit
@@ -338,32 +349,77 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 标记是否开处方（RadioBox变化时自动调用）
-        /// TODO: Task 3.4 (#1661) - 实现SetPrescriptionFlagAsync API
+        /// Task 3.4 (#1661): 实现防抖处理、错误回滚、加载指示器
         /// </summary>
         private async Task SetPrescriptionFlagAsync(bool needsPrescription)
         {
-            // TODO: 等待API实现后再启用此功能
-            // try
-            // {
-            //     var request = new SetPrescriptionFlagRequest
-            //     {
-            //         NeedsPrescription = needsPrescription
-            //     };
-            //
-            //     await _medicalCaseApi.SetPrescriptionFlagAsync(_medicalCaseId, request);
-            //     Logger.LogInformation("开处方标志已更新: {NeedsPrescription}", needsPrescription);
-            // }
-            // catch (Exception ex)
-            // {
-            //     // 恢复原值
-            //     _needsPrescription = !needsPrescription;
-            //     RaisePropertyChanged(nameof(NeedsPrescription));
-            //
-            //     Logger.LogError(ex, "更新开处方标志失败");
-            //     await ShowErrorMessageAsync($"操作失败: {ex.Message}");
-            // }
+            // 防抖处理：取消之前的请求
+            _setPrescriptionFlagCts?.Cancel();
+            _setPrescriptionFlagCts?.Dispose();
+            _setPrescriptionFlagCts = new CancellationTokenSource();
 
-            await Task.CompletedTask;
+            var cts = _setPrescriptionFlagCts;
+
+            try
+            {
+                // 防抖延迟（500ms）
+                await Task.Delay(500, cts.Token);
+
+                // 如果延迟期间被取消，则直接返回
+                if (cts.Token.IsCancellationRequested)
+                {
+                    Logger.LogDebug("开处方标志更新被取消（防抖）");
+                    return;
+                }
+
+                // 显示加载指示器
+                IsSavingPrescriptionFlag = true;
+
+                var request = new SetPrescriptionFlagRequest
+                {
+                    NeedsPrescription = needsPrescription
+                };
+
+                var response = await _medicalCaseApi.SetPrescriptionFlagAsync(_medicalCaseId, request);
+
+                if (response.Success)
+                {
+                    Logger.LogInformation("开处方标志已更新: {NeedsPrescription}", needsPrescription);
+                }
+                else
+                {
+                    // API返回失败，回滚UI状态
+                    _needsPrescription = !needsPrescription;
+                    RaisePropertyChanged(nameof(NeedsPrescription));
+                    ShowPrescriptionPanel = !needsPrescription;
+
+                    Logger.LogWarning("更新开处方标志失败: {Message}", response.Message);
+                    await ShowErrorMessageAsync($"操作失败: {response.Message}");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 防抖取消，正常情况，不记录错误
+                Logger.LogDebug("开处方标志更新被取消（用户快速切换）");
+            }
+            catch (Exception ex)
+            {
+                // 异常情况，回滚UI状态
+                _needsPrescription = !needsPrescription;
+                RaisePropertyChanged(nameof(NeedsPrescription));
+                ShowPrescriptionPanel = !needsPrescription;
+
+                Logger.LogError(ex, "更新开处方标志失败");
+                await ShowErrorMessageAsync($"操作失败: {ex.Message}");
+            }
+            finally
+            {
+                // 如果当前CTS未被替换，则隐藏加载指示器
+                if (_setPrescriptionFlagCts == cts)
+                {
+                    IsSavingPrescriptionFlag = false;
+                }
+            }
         }
 
         /// <summary>

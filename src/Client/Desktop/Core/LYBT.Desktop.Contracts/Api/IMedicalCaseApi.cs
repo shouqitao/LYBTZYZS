@@ -150,6 +150,15 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse> DeletePrescriptionAsync(Guid medicalCaseId);
 
         /// <summary>
+        /// 标记是否开处方
+        /// Task 3.4 (#1661): RadioBox变化时自动保存
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/prescription-flag")]
+        Task<ApiResponse<MedicalCaseDto>> SetPrescriptionFlagAsync(
+            Guid medicalCaseId,
+            [Refit.Body] SetPrescriptionFlagRequest request);
+
+        /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
         /// </summary>
