@@ -41,20 +41,12 @@ namespace LYBT.Desktop.Prescriptions
             // containerRegistry.Register<PrescriptionsMainViewModel>();  // 待重构 Issue #1608
             // containerRegistry.Register<PrescriptionViewModel>();  // 待重构 Issue #1608 (Issue #1461)
 
-            // Phase 2: 启用 Region Navigation 注册
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
-            // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();  // 待重构 Issue #1608
-            // containerRegistry.RegisterForNavigation<Views.PrescriptionsMainView>();  // 待重构 Issue #1608
-            // containerRegistry.RegisterForNavigation<Views.PrescriptionView>();  // 待重构 Issue #1608 (Issue #1461)
-
             // Epic #1701: 注册统一处方View（整合PrescriptionView + PrescriptionEditorDialog）
             containerRegistry.RegisterForNavigation<Views.PrescriptionUnifiedView, PrescriptionUnifiedViewModel>();
 
-            // Phase 3: 启用 Prism Dialog 注册
+            // 注册对话框
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
             containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
-            // containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();  // 待重构 Issue #1608 - Epic #1701已合并
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
             containerRegistry.RegisterDialog<Views.PrescriptionDeleteConfirmDialog, ViewModels.PrescriptionDeleteConfirmDialogViewModel>(); // Issue #1593 - Phase 4
         }
