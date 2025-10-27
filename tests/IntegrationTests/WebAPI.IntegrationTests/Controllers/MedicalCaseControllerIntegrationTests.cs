@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using FluentAssertions;
 using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Shared.Models.Contracts.Common;
@@ -20,10 +21,38 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
     public class MedicalCaseControllerIntegrationTests : IntegrationTestBase
     {
         private readonly ITestOutputHelper _output;
+        private Guid _testPatientId;
 
         public MedicalCaseControllerIntegrationTests(ITestOutputHelper output) : base()
         {
             _output = output;
+        }
+
+        /// <summary>
+        /// 重写种子数据方法，创建测试患者
+        /// </summary>
+        protected override void SeedBasicTestData(LYBT.Infrastructure.Data.AppDbContext context)
+        {
+            base.SeedBasicTestData(context);
+
+            // 创建测试患者
+            var testPatient = new LYBT.Entities.Patients.Patient
+            {
+                Id = Guid.NewGuid(),
+                Name = "测试患者",
+                Gender = LYBT.Shared.Models.Enums.Gender.Male,
+                PhoneNumber = "13800138000",
+                Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            context.Set<LYBT.Entities.Patients.Patient>().Add(testPatient);
+            context.SaveChanges();
+
+            _testPatientId = testPatient.Id;
+            // ⚠️ 注意：此时_output还未初始化（seed方法在base构造函数中调用）
+            // 测试患者ID已保存到_testPatientId字段供后续测试使用
         }
 
         #region Write Layer Tests - CreateMedicalCase
@@ -32,22 +61,28 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreateMedicalCase_WithValidRequest_ShouldCreateSuccessfully()
         {
             // Arrange
-            var patientId = Guid.NewGuid();
+            _output.WriteLine($"🔍 使用测试患者ID: {_testPatientId}");
+
             var request = new
             {
-                PatientId = patientId,
+                PatientId = _testPatientId,
                 VisitDate = DateTime.Now
             };
 
             // Act
-            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", request);
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // ⚠️ 临时调试代码
+            _output.WriteLine($"📡 HTTP状态码: {response.StatusCode}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            _output.WriteLine($"📄 响应内容: {responseContent}");
 
             // Assert
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
             apiResponse.Data.Should().NotBeNull();
-            apiResponse.Data!.PatientId.Should().Be(patientId);
+            apiResponse.Data!.PatientId.Should().Be(_testPatientId);
             apiResponse.Data.Status.Should().Be(MedicalCaseStatus.Active);
             apiResponse.Data.Consultation.Should().NotBeNull();
         }
@@ -62,7 +97,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 PatientId = patientId,
                 VisitDate = DateTime.Now
             };
-            await Client.PostAsJsonAsync("/api/v2/medicalcases", firstRequest);
+            await Client.PostAsJsonAsync("/api/v1/medicalcases", firstRequest);
 
             var secondRequest = new
             {
@@ -71,7 +106,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             };
 
             // Act - 尝试为同一患者再创建病案
-            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", secondRequest);
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", secondRequest);
 
             // Assert - BR-001: 单患者只能有一个Active病案
             response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
@@ -98,7 +133,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+                $"/api/v1/medicalcases/{medicalCase.Id}/consultation",
                 request);
 
             // Assert
@@ -122,7 +157,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+                $"/api/v1/medicalcases/{medicalCase.Id}/consultation",
                 request);
 
             // Assert
@@ -143,7 +178,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescription-flag",
                 request);
 
             // Assert
@@ -164,7 +199,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescription-flag",
                 request);
 
             // Assert - BF-002: 三步流程验证
@@ -189,16 +224,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new PrescriptionItemDto
                     {
                         HerbId = Guid.NewGuid(),
-                        HerbName = "麻黄",
-                        Dosage = 10,
-                        Unit = "g"
+                        Quantity = 10
                     }
                 }
             };
 
             // Act
             var response = await Client.PostAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions",
                 request);
 
             // Assert
@@ -213,7 +246,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreatePrescription_WhenPrescriptionAlreadyExists_ShouldReturn422()
         {
             // Arrange - 创建病案并已有处方
-            var medicalCase = await CreateTestMedicalCaseWithPrescriptionAsync();
+            var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
             var request = new CreatePrescriptionRequest
             {
@@ -223,7 +256,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PostAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions",
                 request);
 
             // Assert - AR-003: 一诊一方约束
@@ -247,7 +280,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}",
                 request);
 
             // Assert
@@ -266,7 +299,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.DeleteAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}");
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions/{prescription.Id}");
 
             // Assert
             response.ShouldBeNoContent();
@@ -286,7 +319,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/status",
+                $"/api/v1/medicalcases/{medicalCase.Id}/status",
                 request);
 
             // Assert
@@ -304,11 +337,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CompleteMedicalCase_WithValidRequest_ShouldCompleteSuccessfully()
         {
             // Arrange - 创建完整流程的病案
-            var medicalCase = await CreateTestMedicalCaseWithPrescriptionAsync();
+            var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
             // Act
             var response = await Client.PutAsync(
-                $"/api/v2/medicalcases/{medicalCase.Item1.Id}/complete",
+                $"/api/v1/medicalcases/{medicalCase.Id}/complete",
                 null);
 
             // Assert
@@ -326,7 +359,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             // Act
             var response = await Client.PutAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/complete",
+                $"/api/v1/medicalcases/{medicalCase.Id}/complete",
                 null);
 
             // Assert - BF-002: 三步流程验证
@@ -344,7 +377,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseAsync();
 
             // Act
-            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
 
             // Assert
             response.ShouldBeOk();
@@ -360,7 +393,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var nonExistingId = Guid.NewGuid();
 
             // Act
-            var response = await Client.GetAsync($"/api/v2/medicalcases/{nonExistingId}");
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{nonExistingId}");
 
             // Assert
             response.ShouldBeNotFound();
@@ -378,7 +411,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             await CreateTestMedicalCaseAsync();
 
             // Act
-            var response = await Client.GetAsync("/api/v2/medicalcases?page=1&pageSize=10");
+            var response = await Client.GetAsync("/api/v1/medicalcases?page=1&pageSize=10");
 
             // Assert
             response.ShouldBeOk();
@@ -399,7 +432,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseAsync();
 
             // Act
-            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}/can-edit");
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
 
             // Assert
             response.ShouldBeOk();
@@ -415,7 +448,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
 
             // Act
-            var response = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}/can-edit");
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
 
             // Assert
             response.ShouldBeOk();
@@ -430,16 +463,48 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         /// <summary>
         /// 创建测试病案（最基础）
+        /// ⚠️ Issue #1669: 每次调用创建独立患者，避免"患者已有未完成病案"错误
         /// </summary>
         private async Task<MedicalCaseEntity> CreateTestMedicalCaseAsync()
         {
+            // 为本次测试创建独立的患者（避免多个测试共享患者导致冲突）
+            var newPatientId = Guid.NewGuid();
+
+            // ⚠️ 在数据库中创建患者实体
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<LYBT.Infrastructure.Data.AppDbContext>();
+                var testPatient = new LYBT.Entities.Patients.Patient
+                {
+                    Id = newPatientId,
+                    Name = $"测试患者{newPatientId.ToString().Substring(0, 8)}",
+                    Gender = LYBT.Shared.Models.Enums.Gender.Male,
+                    PhoneNumber = "13800138000",
+                    Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                db.Set<LYBT.Entities.Patients.Patient>().Add(testPatient);
+                await db.SaveChangesAsync();
+            }
+
             var request = new
             {
-                PatientId = Guid.NewGuid(),
+                PatientId = newPatientId,
                 VisitDate = DateTime.Now
             };
 
-            var response = await Client.PostAsJsonAsync("/api/v2/medicalcases", request);
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // ⚠️ 临时调试代码：打印400错误的详细信息
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _output.WriteLine($"❌ 创建病案失败 - 状态码: {response.StatusCode}");
+                _output.WriteLine($"❌ 错误响应: {errorContent}");
+                _output.WriteLine($"❌ 使用的PatientId: {newPatientId}");
+            }
+
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
@@ -459,12 +524,16 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 TCMDiagnosis = "风寒感冒"
             };
 
-            await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/consultation",
+            var updateResponse = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/consultation",
                 consultationRequest);
 
+            // ⚠️ Issue #1669: 验证更新请求是否成功
+            updateResponse.ShouldBeOk();
+            await updateResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+
             // 重新获取更新后的病案
-            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
             var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
             return apiResponse.Data!;
         }
@@ -477,12 +546,16 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var medicalCase = await CreateTestMedicalCaseWithConsultationAsync();
 
             var flagRequest = new { NeedsPrescription = true };
-            await Client.PutAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescription-flag",
+            var flagResponse = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescription-flag",
                 flagRequest);
 
+            // ⚠️ Issue #1669: 验证标记请求是否成功
+            flagResponse.ShouldBeOk();
+            await flagResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
+
             // 重新获取更新后的病案
-            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
             var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
             return apiResponse.Data!;
         }
@@ -502,22 +575,20 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new PrescriptionItemDto
                     {
                         HerbId = Guid.NewGuid(),
-                        HerbName = "麻黄",
-                        Dosage = 10,
-                        Unit = "g"
+                        Quantity = 10
                     }
                 }
             };
 
             var response = await Client.PostAsJsonAsync(
-                $"/api/v2/medicalcases/{medicalCase.Id}/prescriptions",
+                $"/api/v1/medicalcases/{medicalCase.Id}/prescriptions",
                 prescriptionRequest);
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<PrescriptionEntity>();
             var prescription = apiResponse.Data!;
 
             // 重新获取病案（包含处方）
-            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
             var updatedCase = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
 
             return (updatedCase.Data!, prescription);
@@ -530,10 +601,14 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            await Client.PutAsync($"/api/v2/medicalcases/{medicalCase.Id}/complete", null);
+            var completeResponse = await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/complete", null);
+
+            // ⚠️ Issue #1669: 验证完成请求是否成功
+            completeResponse.ShouldBeOk();
+            await completeResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
 
             // 重新获取完成后的病案
-            var getResponse = await Client.GetAsync($"/api/v2/medicalcases/{medicalCase.Id}");
+            var getResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}");
             var apiResponse = await getResponse.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
             return apiResponse.Data!;
         }

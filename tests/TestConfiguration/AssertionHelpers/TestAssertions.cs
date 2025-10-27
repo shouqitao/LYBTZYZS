@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Xunit;
 
@@ -128,7 +129,9 @@ namespace LYBT.Tests.Common.AssertionHelpers
             response.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
 
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<T>(content);
+
+            // Issue #1669: 使用System.Net.Http.Json扩展方法，自动配置JSON序列化选项
+            var result = await response.Content.ReadFromJsonAsync<T>();
 
             result.Should().NotBeNull();
             return result!;

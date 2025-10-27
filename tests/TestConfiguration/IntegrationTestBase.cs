@@ -25,10 +25,16 @@ namespace LYBT.Tests.Common
         protected readonly IServiceProvider ServiceProvider;
         protected readonly Mock<ILogger> MockLogger;
 
+        // ⚠️ Issue #1669: 固定数据库名，确保同一测试实例的所有HTTP请求使用同一内存数据库
+        protected readonly string TestDatabaseName;
+
         protected IntegrationTestBase()
         {
             // ⚠️ 必须在创建Factory之前设置环境变量，确保Program.Main正确加载appsettings.Test.json
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+
+            // 为当前测试实例生成唯一但固定的数据库名
+            TestDatabaseName = $"TestDb_{Guid.NewGuid()}";
 
             Factory = CreateWebApplicationFactory();
             Client = CreateHttpClient(Factory);
@@ -110,10 +116,11 @@ namespace LYBT.Tests.Common
                 services.Remove(descriptor);
             }
 
+            // ⚠️ Issue #1669: 使用固定数据库名，确保所有HTTP请求共享同一内存数据库实例
             // 添加内存数据库
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}");
+                options.UseInMemoryDatabase(TestDatabaseName);
                 options.EnableSensitiveDataLogging();
                 options.EnableServiceProviderCaching();
             });
@@ -179,11 +186,14 @@ namespace LYBT.Tests.Common
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
 
+            // ⚠️ Issue #1669: NameIdentifier必须是有效的Guid，用于填充CreatedBy审计字段
+            var testUserId = Guid.NewGuid();
+
             var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
             {
                 Subject = new System.Security.Claims.ClaimsIdentity(new[]
                 {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "test-user-id"),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, testUserId.ToString()),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "Test User"),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Admin")
                 }),

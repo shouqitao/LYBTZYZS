@@ -20,16 +20,22 @@ public class Program
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
         var configBuilder = new ConfigurationBuilder();
 
-        if (environment == "Development")
+        // 测试环境单独处理（不加载包含MSSqlServer sink的appsettings.json）
+        if (environment == "Test")
+        {
+            configBuilder.AddJsonFile("appsettings.Test.json", optional: false);
+        }
+        else if (environment == "Development")
         {
             configBuilder.AddJsonFile("appsettings.json", optional: false);
+            configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
         }
         else
         {
             configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
+            configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
         }
 
-        configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
         configBuilder.AddEnvironmentVariables();
 
         // 配置Serilog
