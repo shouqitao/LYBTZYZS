@@ -265,11 +265,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 3. 恢复开处方标志
-                // TODO: Task 3.4 (#1661) - 从MedicalCase中获取NeedsPrescription
-                // NeedsPrescription = medicalCase.NeedsPrescription;
-                // ShowPrescriptionPanel = medicalCase.NeedsPrescription;
-
-                // 临时：根据是否有处方来判断
+                // Task 3.6 (#1663): 根据是否有处方来判断NeedsPrescription
+                // 说明：MedicalCaseDto没有NeedsPrescription字段，通过Prescription是否为null判断
                 bool hasPrescription = medicalCase.Prescription != null;
                 NeedsPrescription = hasPrescription;
                 ShowPrescriptionPanel = hasPrescription;
@@ -277,8 +274,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // 4. 检查是否可编辑（根据病案状态）
                 CanEdit = medicalCase.CanEdit();
 
-                // 5. 如有处方，触发加载处方事件
-                // TODO: Task 3.4 (#1661) - 实现PrescriptionLoadedEvent
+                // 5. 如有处方，触发加载处方事件（后续集成任务）
+                // TODO: 跨模块集成 - 实现PrescriptionLoadedEvent通知PrescriptionEditor加载处方数据
+                // 说明：当前处方面板显示/隐藏已通过ShowPrescriptionPanel属性实现
                 // if (medicalCase.Prescription != null)
                 // {
                 //     EventAggregator.GetEvent<PrescriptionLoadedEvent>()
