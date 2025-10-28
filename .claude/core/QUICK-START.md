@@ -36,7 +36,7 @@ MCP 工具 > Bash 工具（标准 Unix 命令） > PowerShell 命令（仅项目
 1. CLAUDE.md                    # 总览和核心约束
 2. .claude/core/WORKFLOW.md     # Issue 驱动工作流
 3. .claude/core/PRINCIPLES.md   # 执行原则
-4. docs/development/standards.md # 编码规范
+4. docs/development/README.md # 编码规范
 ```
 
 ### Step 2: 理解工作流程
@@ -169,7 +169,7 @@ git status                      # Git 状态
 1. `.claude/core/PRINCIPLES.md` - 执行原则
 2. `.claude/core/RULES.md` - 工具选择优先级
 3. `.claude/modes/` - 7种工作模式详解
-4. `docs/development/standards.md` - 编码规范
+4. `docs/development/README.md` - 编码规范
 
 ### 高级（深入）
 

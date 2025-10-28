@@ -115,8 +115,8 @@
 
 ### 2. **标准化**
 所有命令遵循项目规范：
-- 符合 `docs/development/standards.md`
-- 遵守 `docs/development/minimal-practice.md`
+- 符合 `docs/development/README.md`
+- 遵守 `docs/quick-reference/development-checklist.md`
 - 对接 `docs/architecture/` 架构标准
 
 ### 3. **自动化**
@@ -163,8 +163,8 @@
 ## 📚 参考资料
 
 ### 项目文档
-- `docs/development/standards.md` - 技术标准
-- `docs/development/minimal-practice.md` - 工作流程
+- `docs/development/README.md` - 技术标准
+- `docs/quick-reference/development-checklist.md` - 工作流程
 - `docs/architecture/` - 架构标准
 - `CLAUDE.md` - AI协同工作规范
 
