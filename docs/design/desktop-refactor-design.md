@@ -4,8 +4,8 @@
 **创建时间**：2025-10-27
 **最后更新**：2025-10-27（补充3项架构合规性建议）
 **需求来源**：[Desktop层架构重构需求文档](../requirements/desktop-refactor-requirements.md)
-**分析报告**：[Desktop层架构分析报告](../reports/desktop-refactor-analysis-2025-10-27.md)
-**架构审查**：[架构合规性验证报告](../reports/desktop-refactor-arch-validation-2025-10-27.md)
+**分析报告**：[Desktop层架构分析报告](../archive/reports/2025-10/desktop-refactor-analysis-2025-10-27.md)
+**架构审查**：[架构合规性验证报告](../archive/reports/2025-10/desktop-refactor-arch-validation-2025-10-27.md)
 **对应Epic**：待创建
 **设计状态**：✅ 架构审查通过（评分8.5/10，优秀）
 
@@ -1041,45 +1041,6 @@ dotnet build LYBT.All.sln -c Release --no-restore
 - ✅ **通用组件复用**: 全局ConfirmationDialog替换专用Dialog
 ```
 
-#### 更新5：生成总结报告
-
-**文件**：`docs/reports/desktop-refactor-summary-2025-10-27.md`
-
-**内容结构**：
-```markdown
-# Desktop层架构重构总结报告
-
-## 📋 重构概述
-- **重构范围**：5个Phase，涉及4个模块
-- **工作量**：实际X天（预计8-13天）
-- **质量标准**：0 errors, 0 warnings，100%运行时验证通过
-
-## 📊 量化成果
-| 指标 | 重构前 | 重构后 | 改进幅度 | 目标达成 |
-|-----|-------|-------|---------|---------|
-| View总数 | 39 | ~30 | -23% | ✅ 达成 |
-| TODO注释 | 36 | <20 | -44% | ✅ 达成 |
-| Services层 | 5 | 4 | -1 | ✅ 达成 |
-| Prescriptions模块View | 8 | 6-7 | -12~25% | ✅ 达成 |
-
-## 🎯 Phase完成情况
-- ✅ Phase 1：代码膨胀分析与合并评估（X天）
-- ✅ Phase 2：通用组件提取（X天）
-- ✅ Phase 3：技术债清理（X天）
-- ✅ Phase 4：Services层优化（X天）
-- ✅ Phase 5：文档同步更新（X天）
-
-## 📝 经验总结
-- ✅ **渐进式演进**：5个Phase分阶段实施，避免大爆炸式重构
-- ✅ **质量优先**：每个Phase强制编译验证 + 运行时验证
-- ✅ **文档同步**：代码变更必须同步更新文档
-
-## 🔗 参考资料
-- [分析报告](desktop-refactor-analysis-2025-10-27.md)
-- [需求文档](../requirements/desktop-refactor-requirements.md)
-- [设计文档](../design/desktop-refactor-design.md)
-```
-
 ### 5.2 实施步骤
 
 **Step 5.1**: 更新架构文档（4个文件）
@@ -1090,13 +1051,7 @@ dotnet build LYBT.All.sln -c Release --no-restore
 # 4. docs/index.md（导航链接、项目成果）
 ```
 
-**Step 5.2**: 生成总结报告
-```bash
-# 创建文件
-docs/reports/desktop-refactor-summary-2025-10-27.md
-```
-
-**Step 5.3**: 文档交叉引用检查
+**Step 5.2**: 文档交叉引用检查
 ```bash
 # 检查所有文档链接是否有效
 # 工具：使用markdown-link-check或手动验证
@@ -1107,7 +1062,7 @@ docs/reports/desktop-refactor-summary-2025-10-27.md
 # 3. 架构文档中的模块文档链接
 ```
 
-**Step 5.4**: 提交文档更新
+**Step 5.3**: 提交文档更新
 ```bash
 git add docs/
 git commit -m "docs: Desktop层架构重构文档同步更新
@@ -1134,8 +1089,7 @@ git push origin master
   - 包含请求参数、响应示例、错误码说明
 - [ ] **⭐ 更新`docs/quick-reference/api-reference.md`（同步端点列表）**
   - 在MedicalCase API章节补充2个新端点
-  - 更新端点总数统计
-- [ ] 生成Desktop重构总结报告（`docs/reports/desktop-refactor-summary-2025-10-27.md`）
+  - 更新端口总数统计
 - [ ] 文档交叉引用检查通过（无死链接）
 
 ---
@@ -1233,7 +1187,7 @@ dotnet build LYBT.All.sln -c Release --no-restore
 ## 🔗 参考资料
 
 ### 分析报告
-- **[Desktop层架构分析报告](../reports/desktop-refactor-analysis-2025-10-27.md)** - 5个核心发现、量化数据
+- **[Desktop层架构分析报告](../archive/reports/2025-10/desktop-refactor-analysis-2025-10-27.md)** - 5个核心发现、量化数据（已归档）
 
 ### 需求文档
 - **[Desktop层架构重构需求文档](../requirements/desktop-refactor-requirements.md)** - 5个功能需求、4个非功能需求
