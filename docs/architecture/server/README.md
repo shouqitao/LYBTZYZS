@@ -318,148 +318,142 @@
 `
 `## 🔧 服务层设计模式
 `
-`### 标准服务模板
-````csharp
-`/// <summary>
-`/// 标准业务服务基类
-`/// </summary>
-`public abstract class BaseService<T> : IBaseService<T> where T : class
-`{
-`    protected readonly IRepository<T> _repository;
-`    protected readonly ILogger _logger;
-`    protected readonly IMapper _mapper;
+`### Service层实现原则
+
+> **⚠️ 架构说明**：当前MVP阶段，Service层采用**直接实现接口**模式，不使用抽象基类。
+>
+> **设计原则**：
+> - ✅ 每个Service直接实现对应的IService接口（如`PatientService : IPatientService`）
+> - ✅ 通过构造函数注入Repository、Mapper、Logger等依赖
+> - ✅ 避免使用抽象基类（如BaseService&lt;T&gt;）造成的过度设计
+> - ✅ 符合YAGNI原则（You Aren't Gonna Need It），够用即好
+>
+> **演进触发条件**（参见ADR-005长期演进策略）：
+> - 业务规则数 &gt;20条（当前~14条）→ 演进到富领域模型
+> - Service方法长度 &gt;200行（当前&lt;100行）→ 拆分领域服务
+> - 聚合根关系 &gt;3层（当前2层）→ 引入领域事件
+>
+> **实际实现示例**见下文"实际Service实现示例"章节。
+
 `
-`    protected BaseService(IRepository<T> repository, ILogger logger, IMapper mapper)
-`    {
-`        _repository = repository;
-`        _logger = logger;
-`        _mapper = mapper;
-`    }
-`
-`    public virtual async Task<ServiceResult<T>> GetByIdAsync(Guid id)
-`    {
-`        try
-`        {
-`            var entity = await _repository.GetByIdAsync(id);
-`            if (entity == null)
-`                return ServiceResult<T>.Failure("实体不存在");
-`
-`            return ServiceResult<T>.Success(entity);
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "获取实体失败: {Id}", id);
-`            return ServiceResult<T>.Failure("获取实体失败");
-`        }
-`    }
-`
-`    public virtual async Task<ServiceResult<IEnumerable<T>>> GetAllAsync()
-`    {
-`        try
-`        {
-`            var entities = await _repository.GetAllAsync();
-`            return ServiceResult<IEnumerable<T>>.Success(entities);
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "获取实体列表失败");
-`            return ServiceResult<IEnumerable<T>>.Failure("获取实体列表失败");
-`        }
-`    }
-`
-`    public virtual async Task<ServiceResult<T>> CreateAsync(T entity)
-`    {
-`        try
-`        {
-`            // 业务验证
-`            var validationResult = await ValidateAsync(entity);
-`            if (!validationResult.IsValid)
-`                return ServiceResult<T>.Failure(validationResult.ErrorMessage);
-`
-`            // 创建实体
-`            var createdEntity = await _repository.AddAsync(entity);
-`            await _repository.SaveChangesAsync();
-`
-`            _logger.LogInformation("创建实体成功: {EntityType} - {Id}", 
-`                typeof(T).Name, createdEntity.Id);
-`
-`            return ServiceResult<T>.Success(createdEntity);
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "创建实体失败: {EntityType}", typeof(T).Name);
-`            return ServiceResult<T>.Failure("创建实体失败");
-`        }
-`    }
-`
-`    public virtual async Task<ServiceResult<T>> UpdateAsync(T entity)
-`    {
-`        try
-`        {
-`            // 业务验证
-`            var validationResult = await ValidateAsync(entity);
-`            if (!validationResult.IsValid)
-`                return ServiceResult<T>.Failure(validationResult.ErrorMessage);
-`
-`            // 更新实体
-`            await _repository.UpdateAsync(entity);
-`            await _repository.SaveChangesAsync();
-`
-`            _logger.LogInformation("更新实体成功: {EntityType} - {Id}", 
-`                typeof(T).Name, entity.Id);
-`
-`            return ServiceResult<T>.Success(entity);
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "更新实体失败: {EntityType} - {Id}", typeof(T).Name, entity.Id);
-`            return ServiceResult<T>.Failure("更新实体失败");
-`        }
-`    }
-`
-`    public virtual async Task<ServiceResult> DeleteAsync(Guid id)
-`    {
-`        try
-`        {
-`            // 检查实体是否存在
-`            var entity = await _repository.GetByIdAsync(id);
-`            if (entity == null)
-`                return ServiceResult.Failure("实体不存在");
-`
-`            // 软删除标记
-`            if (entity is ISoftDeletable deletableEntity)
-`            {
-`                deletableEntity.IsDeleted = true;
-`                deletableEntity.DeletedAt = DateTime.UtcNow;
-`                await _repository.UpdateAsync(entity);
-`            }
-`            else
-`            {
-`                await _repository.DeleteAsync(id);
-`            }
-`
-`            await _repository.SaveChangesAsync();
-`
-`            _logger.LogInformation("删除实体成功: {EntityType} - {Id}", typeof(T).Name, id);
-`
-`            return ServiceResult.Success();
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "删除实体失败: {EntityType} - {Id}", typeof(T).Name, id);
-`            return ServiceResult.Failure("删除实体失败");
-`        }
-`    }
-`
-`    protected virtual async Task<ValidationResult> ValidateAsync(T entity)
-`    {
-`        // 子类重写验证逻辑
-`        return ValidationResult.Success();
-`    }
-`}
-````
-`
-`### 仓储模式实现
+`### 实际Service实现示例
+
+以下展示实际项目中PatientService的典型实现，完整体现MVP阶段的设计原则：
+
+**接口定义** (LYBT.Module.Patients/Interfaces/IPatientService.cs)：
+```csharp
+public interface IPatientService
+{
+    Task<ServiceResult<PatientDto>> GetByIdAsync(int id);
+    Task<ServiceResult<PagedResult<PatientListDto>>> GetPagedAsync(PatientQueryDto query);
+    Task<ServiceResult<int>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult> UpdateAsync(int id, PatientUpdateDto dto);
+    Task<ServiceResult> DeleteAsync(int id);
+    Task<ServiceResult<PatientStatisticsDto>> GetStatisticsAsync();
+}
+```
+
+**Service实现** (LYBT.Module.Patients/Services/PatientService.cs)：
+```csharp
+public class PatientService : IPatientService
+{
+    private readonly IPatientRepository _repository;
+    private readonly IMapper _mapper;
+    private readonly ILogger<PatientService> _logger;
+
+    public PatientService(
+        IPatientRepository repository,
+        IMapper mapper,
+        ILogger<PatientService> logger)
+    {
+        _repository = repository;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    public async Task<ServiceResult<PatientDto>> GetByIdAsync(int id)
+    {
+        try
+        {
+            var patient = await _repository.GetByIdAsync(id);
+            if (patient == null)
+                return ServiceResult<PatientDto>.Failure("患者不存在");
+
+            var dto = _mapper.Map<PatientDto>(patient);
+            return ServiceResult<PatientDto>.Success(dto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取患者详情失败：{PatientId}", id);
+            return ServiceResult<PatientDto>.Failure("获取患者详情失败");
+        }
+    }
+
+    public async Task<ServiceResult<PagedResult<PatientListDto>>> GetPagedAsync(PatientQueryDto query)
+    {
+        try
+        {
+            var pagedResult = await _repository.GetPagedAsync(
+                query.PageIndex,
+                query.PageSize,
+                query.Keyword);
+
+            var dtos = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+            var result = new PagedResult<PatientListDto>
+            {
+                Items = dtos,
+                TotalCount = pagedResult.TotalCount,
+                PageIndex = pagedResult.PageIndex,
+                PageSize = pagedResult.PageSize
+            };
+
+            return ServiceResult<PagedResult<PatientListDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取患者分页列表失败");
+            return ServiceResult<PagedResult<PatientListDto>>.Failure("获取患者列表失败");
+        }
+    }
+
+    public async Task<ServiceResult<int>> CreateAsync(PatientCreateDto dto)
+    {
+        try
+        {
+            // 业务规则验证（MVP阶段的简化验证）
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                return ServiceResult<int>.Failure("患者姓名不能为空");
+
+            if (dto.Phone != null && await _repository.ExistsByPhoneAsync(dto.Phone))
+                return ServiceResult<int>.Failure("该手机号已存在");
+
+            var patient = _mapper.Map<Patient>(dto);
+            patient.CreatedAt = DateTime.Now;
+
+            var id = await _repository.AddAsync(patient);
+            await _repository.SaveChangesAsync();
+
+            _logger.LogInformation("创建患者成功：{PatientId}", id);
+            return ServiceResult<int>.Success(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建患者失败");
+            return ServiceResult<int>.Failure("创建患者失败");
+        }
+    }
+}
+```
+
+**设计特点**：
+- ✅ 直接实现IPatientService接口，无抽象基类
+- ✅ 构造函数注入依赖（Repository、Mapper、Logger）
+- ✅ 业务逻辑集中在Service层（手机号唯一性验证）
+- ✅ 统一的ServiceResult返回类型
+- ✅ 完整的异常处理和日志记录
+- ✅ 方法长度<100行，符合MVP标准
+
+### 仓储模式实现
 `
 `**Repository可见性约束**（Epic #1600 - Phase 3）：
 `
@@ -581,269 +575,261 @@
 `}
 ````
 `
-`## 🌐 API控制器设计
+`### 实际Repository实现示例
+
+以下展示实际项目中PatientRepository的典型实现，体现Epic #1600的internal可见性约束：
+
+**Repository接口** (LYBT.Module.Patients/Interfaces/IPatientRepository.cs)：
+```csharp
+public interface IPatientRepository
+{
+    Task<Patient?> GetByIdAsync(int id);
+    Task<PagedResult<Patient>> GetPagedAsync(int pageIndex, int pageSize, string? keyword);
+    Task<bool> ExistsByPhoneAsync(string phone);
+    Task<int> AddAsync(Patient patient);
+    Task UpdateAsync(Patient patient);
+    Task DeleteAsync(int id);
+    Task<int> SaveChangesAsync();
+}
+```
+
+**Repository实现** (LYBT.Module.Patients/Repositories/PatientRepository.cs)：
+```csharp
+// ⚠️ 注意：实现类为internal，强制执行聚合根模式（Epic #1600 Phase 3）
+internal class PatientRepository : IPatientRepository
+{
+    private readonly AppDbContext _context;
+
+    public PatientRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Patient?> GetByIdAsync(int id)
+    {
+        return await _context.Patients
+            .Include(p => p.MedicalCases)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<PagedResult<Patient>> GetPagedAsync(int pageIndex, int pageSize, string? keyword)
+    {
+        var query = _context.Patients.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(p =>
+                p.Name.Contains(keyword) ||
+                (p.Phone != null && p.Phone.Contains(keyword)) ||
+                (p.IdCard != null && p.IdCard.Contains(keyword)));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<Patient>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageIndex = pageIndex,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<bool> ExistsByPhoneAsync(string phone)
+    {
+        return await _context.Patients
+            .AnyAsync(p => p.Phone == phone);
+    }
+
+    public async Task<int> AddAsync(Patient patient)
+    {
+        _context.Patients.Add(patient);
+        await _context.SaveChangesAsync();
+        return patient.Id;
+    }
+
+    public async Task UpdateAsync(Patient patient)
+    {
+        _context.Patients.Update(patient);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var patient = await GetByIdAsync(id);
+        if (patient != null)
+        {
+            _context.Patients.Remove(patient);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<int> SaveChangesAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
+}
+```
+
+**设计特点**：
+- ⚠️ **internal可见性**：Repository实现类为internal，外部模块无法直接访问
+- ✅ **接口public**：IPatientRepository接口保持public，供依赖注入使用
+- ✅ **InternalsVisibleTo**：通过项目文件配置允许测试项目访问
+- ✅ **EF Core最佳实践**：使用Include加载关联实体、AsNoTracking优化查询
+- ✅ **强制聚合根模式**：外部模块必须通过PatientService访问，不能直接访问Repository
+
+**项目文件配置** (LYBT.Module.Patients.csproj)：
+```xml
+<ItemGroup>
+  <!-- 允许测试项目访问internal类 (Epic #1600 Phase 3) -->
+  <InternalsVisibleTo Include="LYBT.Module.Patients.Tests" />
+</ItemGroup>
+```
+
+## 🌐 API控制器设计
 `
-`### 标准控制器模板
-````csharp
-`/// <summary>
-`/// 标准API控制器基类
-`/// </summary>
-`[ApiController]
-`[Route("api/[controller]")]
-`[Authorize]
-`public abstract class BaseController<T, TDto, TCreateDto, TUpdateDto> : ControllerBase
-`    where T : BaseEntity
-`    where TDto : BaseDto
-`    where TCreateDto : BaseCreateDto
-`    where TUpdateDto : BaseUpdateDto
-`{
-`    protected readonly IBaseService<T> _service;
-`    protected readonly ILogger<BaseController<T, TDto, TCreateDto, TUpdateDto>> _logger;
-`    protected readonly IMapper _mapper;
-`
-`    protected BaseController(IBaseService<T> service, 
-`        ILogger<BaseController<T, TDto, TCreateDto, TUpdateDto>> logger,
-`        IMapper mapper)
-`    {
-`        _service = service;
-`        _logger = logger;
-`        _mapper = mapper;
-`    }
-`
-`    /// <summary>
-`    /// 根据ID获取实体
-`    /// </summary>
-`    /// <param name="id">实体ID</param>
-`    /// <returns>实体信息</returns>
-`    [HttpGet("{id}")]
-`    public async Task<ActionResult<ApiResponse<TDto>>> GetByIdAsync(Guid id)
-`    {
-`        try
-`        {
-`            var result = await _service.GetByIdAsync(id);
-`            if (!result.IsSuccess)
-`                return NotFound(new ApiResponse<TDto>
-`                {
-`                    Success = false,
-`                    Message = result.Message,
-`                    Code = "NOT_FOUND"
-`                });
-`
-`            var dto = _mapper.Map<TDto>(result.Data);
-`            return Ok(new ApiResponse<TDto>
-`            {
-`                Success = true,
-`                Data = dto,
-`                Message = "获取成功"
-`            });
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "获取实体失败: {Id}", id);
-`            return StatusCode(500, new ApiResponse<TDto>
-`            {
-`                Success = false,
-`                Message = "服务器内部错误",
-`                Code = "INTERNAL_ERROR"
-`            });
-`        }
-`    }
-`
-`    /// <summary>
-`    /// 分页查询实体列表
-`    /// </summary>
-`    /// <param name="parameters">查询参数</param>
-`    /// <returns>分页结果</returns>
-`    [HttpGet]
-`    public async Task<ActionResult<PagedResponse<TDto>>> GetPagedAsync(
-`        [FromQuery] BaseQueryParameters parameters)
-`    {
-`        try
-`        {
-`            var result = await _service.GetPagedAsync(
-`                parameters.Page, 
-`                parameters.PageSize, 
-`                parameters.Keyword);
-`
-`            var dtoItems = _mapper.Map<List<TDto>>(result.Data.Items);
-`            
-`            return Ok(new PagedResponse<TDto>
-`            {
-`                Success = true,
-`                Data = dtoItems,
-`                Page = result.Data.CurrentPage,
-`                PageSize = result.Data.PageSize,
-`                TotalCount = result.Data.TotalCount,
-`                TotalPages = result.Data.TotalPages,
-`                HasNextPage = result.Data.HasNextPage,
-`                HasPreviousPage = result.Data.HasPreviousPage,
-`                Message = "查询成功"
-`            });
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "分页查询失败: {Parameters}", parameters);
-`            return StatusCode(500, new PagedResponse<TDto>
-`            {
-`                Success = false,
-`                Message = "服务器内部错误",
-`                Code = "INTERNAL_ERROR"
-`            });
-`        }
-`    }
-`
-`    /// <summary>
-`    /// 创建实体
-`    /// </summary>
-`    /// <param name="request">创建请求</param>
-`    /// <returns>创建结果</returns>
-`    [HttpPost]
-`    public async Task<ActionResult<ApiResponse<TDto>>> CreateAsync([FromBody] TCreateDto request)
-`    {
-`        try
-`        {
-`            if (!ModelState.IsValid)
-`            return BadRequest(new ApiResponse<TDto>
-`            {
-`                Success = false,
-`                Message = "请求数据无效",
-`                Code = "INVALID_REQUEST"
-`            });
-`
-`            var entity = _mapper.Map<T>(request);
-`            var result = await _service.CreateAsync(entity);
-`
-`            if (!result.IsSuccess)
-`                return BadRequest(new ApiResponse<TDto>
-`                {
-`                    Success = false,
-`                    Message = result.Message,
-`                    Code = "CREATE_FAILED"
-`                });
-`
-`            var dto = _mapper.Map<TDto>(result.Data);
-`            return CreatedAtAction(nameof(GetByIdAsync), 
-`                new { id = dto.Id }, 
-`                new ApiResponse<TDto>
-`                {
-`                    Success = true,
-`                    Data = dto,
-`                    Message = "创建成功"
-`                });
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "创建实体失败: {Request}", request);
-`            return StatusCode(500, new ApiResponse<TDto>
-`            {
-`                Success = false,
-`                Message = "服务器内部错误",
-`                Code = "INTERNAL_ERROR"
-`            });
-`        }
-`    }
-`
-`    /// <summary>
-`    /// 更新实体
-`    /// </summary>
-`    /// <param name="id">实体ID</param>
-`    /// <param name="request">更新请求</param>
-`    /// <returns>更新结果</returns>
-`    [HttpPut("{id}")]
-`    public async Task<ActionResult<ApiResponse<TDto>>> UpdateAsync(
-`        Guid id, [FromBody] TUpdateDto request)
-`    {
-`        try
-`        {
-`            if (!ModelState.IsValid)
-`                return BadRequest(new ApiResponse<TDto>
-`                {
-`                    Success = false,
-`                    Message = "请求数据无效",
-`                    Code = "INVALID_REQUEST"
-`                });
-`
-`            var existingEntity = await _service.GetByIdAsync(id);
-`            if (!existingEntity.IsSuccess)
-`                return NotFound(new ApiResponse<TDto>
-`                {
-`                    Success = false,
-`                    Message = "实体不存在",
-`                    Code = "NOT_FOUND"
-`                });
-`
-`            var entity = _mapper.Map<T>(request);
-`            entity.Id = id;
-`            
-`            var result = await _service.UpdateAsync(entity);
-`            if (!result.IsSuccess)
-`                return BadRequest(new ApiResponse<TDto>
-`                {
-`                    Success = false,
-`                    Message = result.Message,
-`                    Code = "UPDATE_FAILED"
-`                });
-`
-`            var dto = _mapper.Map<TDto>(result.Data);
-`            return Ok(new ApiResponse<TDto>
-`            {
-`                Success = true,
-`                Data = dto,
-`                Message = "更新成功"
-`            });
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "更新实体失败: {Id} - {Request}", id, request);
-`            return StatusCode(500, new ApiResponse<TDto>
-`            {
-`                Success = false,
-`                Message = "服务器内部错误",
-`                Code = "INTERNAL_ERROR"
-`            });
-`        }
-`    }
-`
-`    /// <summary>
-`    /// 删除实体
-`    /// </summary>
-`    /// <param name="id">实体ID</param>
-`    /// <returns>删除结果</returns>
-`    [HttpDelete("{id}")]
-`    public async Task<ActionResult<ApiResponse<object>>> DeleteAsync(Guid id)
-`    {
-`        try
-`        {
-`            var result = await _service.DeleteAsync(id);
-`            if (!result.IsSuccess)
-`                return NotFound(new ApiResponse<object>
-`                {
-`                    Success = false,
-`                    Message = result.Message,
-`                    Code = "NOT_FOUND"
-`                });
-`
-`            return Ok(new ApiResponse<object>
-`            {
-`                Success = true,
-`                Message = "删除成功"
-`            });
-`        }
-`        catch (Exception ex)
-`        {
-`            _logger.LogError(ex, "删除实体失败: {Id}", id);
-`            return StatusCode(500, new ApiResponse<object>
-`            {
-`                Success = false,
-`                Message = "服务器内部错误",
-`                Code = "INTERNAL_ERROR"
-`            });
-`        }
-`    }
-`}
-````
-`
-`## 🔗 数据访问层设计
+`### Controller层实现原则
+
+> **⚠️ 架构说明**：当前MVP阶段，Controller层采用**两层设计**模式，不使用单层泛型基类。
+>
+> **两层设计架构**：
+> ```
+> BaseControllerCore (Layer 1 - 核心基础设施)
+>   ↓ 继承
+> BaseApiController (Layer 2 - API响应包装)
+>   ↓ 继承
+> 具体Controller (Layer 3 - 业务逻辑)
+> ```
+>
+> **设计优势**：
+> - ✅ **职责分离**：核心功能（日志、缓存、操作者信息）与API包装（响应格式）分离
+> - ✅ **灵活性高**：具体Controller可选择继承BaseControllerCore（需要核心功能）或BaseApiController（需要标准API响应）
+> - ✅ **方法级泛型**：使用`HandleServiceResult&lt;T&gt;()`等方法级泛型，比类级泛型更灵活
+> - ✅ **避免过度抽象**：不强制所有Controller实现固定的CRUD接口
+>
+> **核心组件**：
+> - **BaseControllerCore** (src/Server/Core/LYBT.Infrastructure/Web/BaseControllerCore.cs) - 147行
+>   - 提供：GetOperator()、LogOperation()、HandleExceptionCore()等核心方法
+> - **BaseApiController** (src/Server/Core/LYBT.Infrastructure/Web/BaseApiController.cs) - 475行
+>   - 提供：Success&lt;T&gt;()、HandleServiceResult&lt;T&gt;()、HandlePagedServiceResult&lt;T&gt;()等API包装方法
+>
+> **实际实现示例**见下文"实际Controller实现示例"章节。
+
+### 实际Controller实现示例
+
+以下展示实际项目中PatientsController的典型实现，完整体现两层设计模式：
+
+**Controller实现** (LYBT.WebAPI/Controllers/PatientsController.cs)：
+```csharp
+[ApiController]
+[ApiVersion("1")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class PatientsController : BaseApiController
+{
+    private readonly IPatientService _patientService;
+
+    public PatientsController(IPatientService patientService)
+    {
+        _patientService = patientService;
+    }
+
+    /// <summary>
+    /// 获取患者详情
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<PatientDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _patientService.GetByIdAsync(id);
+        return HandleServiceResult(result);
+    }
+
+    /// <summary>
+    /// 获取患者分页列表
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientListDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPaged([FromQuery] PatientQueryDto query)
+    {
+        var result = await _patientService.GetPagedAsync(query);
+        return HandlePagedServiceResult(result);
+    }
+
+    /// <summary>
+    /// 创建患者
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+    {
+        var result = await _patientService.CreateAsync(dto);
+        if (result.IsSuccess)
+        {
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = result.Data },
+                Success(result.Data, "创建患者成功"));
+        }
+        return HandleServiceResult(result);
+    }
+
+    /// <summary>
+    /// 更新患者
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(int id, [FromBody] PatientUpdateDto dto)
+    {
+        var result = await _patientService.UpdateAsync(id, dto);
+        return HandleServiceResult(result);
+    }
+
+    /// <summary>
+    /// 删除患者
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _patientService.DeleteAsync(id);
+        return HandleServiceResult(result);
+    }
+
+    /// <summary>
+    /// 获取患者统计信息
+    /// </summary>
+    [HttpGet("statistics")]
+    [ProducesResponseType(typeof(ApiResponse<PatientStatisticsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStatistics()
+    {
+        var result = await _patientService.GetStatisticsAsync();
+        return HandleServiceResult(result);
+    }
+}
+```
+
+**设计特点**：
+- ✅ 继承BaseApiController，获得统一API响应格式
+- ✅ 使用HandleServiceResult<T>()方法处理Service层返回结果
+- ✅ 标准RESTful API设计（GET/POST/PUT/DELETE）
+- ✅ API版本控制（v1）
+- ✅ 完整的XML注释和Swagger文档支持
+- ✅ 统一的异常处理（由BaseApiController提供）
+- ✅ 方法级泛型，灵活性高
+
+**BaseApiController提供的核心方法**：
+- `Success<T>(T data, string message)` - 成功响应
+- `HandleServiceResult<T>(ServiceResult<T> result)` - 处理Service结果
+- `HandlePagedServiceResult<T>(ServiceResult<PagedResult<T>> result)` - 处理分页结果
+- `BadRequest(string message)` - 错误请求响应
+- `NotFound(string message)` - 未找到资源响应
+
+## 🔗 数据访问层设计
 `
 `### 实体框架配置
 ````csharp

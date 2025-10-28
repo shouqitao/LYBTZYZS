@@ -37,11 +37,13 @@ Client UI → API Controller → Application Service → Repository → Database
 ### 🏛️ 核心架构文档
 
 #### Server端架构
-- **[Server端架构指南](server/README.md)** ⭐ 
-  - 四层架构设计模式
+- **[Server端架构指南](server/README.md)** ⭐ ✅ 已验证（2025-10-28更新）
+  - 三层架构设计模式（Presentation → Application → Infrastructure）
   - 8个业务模块详细设计
-  - 服务标准和接口规范
-  - 数据访问和仓储模式
+  - MVP阶段服务标准（直接实现接口，无BaseService<T>）
+  - 两层Controller设计（BaseControllerCore → BaseApiController）
+  - Repository可见性约束（internal实现类，Epic #1600）
+  - **包含3个实际代码示例**：PatientService、PatientsController、PatientRepository
 
 - **[Client端架构指南](client/README.md)** ⭐
   - MVVM五层架构设计

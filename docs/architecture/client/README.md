@@ -83,16 +83,38 @@ LYBT.Desktop (WPF应用) - 四层架构
     └── Interfaces/   # 接口定义
 ```
 
-**核心数据流**（Phase 2）：
+**核心数据流**（Phase 2/4 - Issue #1114, Epic #1676）：
+
+**主流模式**（90%场景）：
 ```
 User Interaction (View)
     ↓
 ViewModel (Command + INotifyPropertyChanged)
     ↓
-Repository (HTTP API Call) ⭐ 直接调用，无中间Service层
+Repository (封装Refit API接口) ⭐ 直接调用，无中间业务Service层
+    ↓
+HTTP Request (Refit自动生成)
     ↓
 Server API (REST Endpoint)
 ```
+
+**替代模式**（10%场景 - Issue #1606标记）：
+```
+User Interaction (View)
+    ↓
+ViewModel (Command + INotifyPropertyChanged)
+    ↓
+Refit API接口 (IMedicalCaseApi等) ⭐ 直接注入，绕过Repository
+    ↓
+HTTP Request (Refit自动生成)
+    ↓
+Server API (REST Endpoint)
+```
+
+> **⚠️ 架构演进说明**：
+> - **Phase 1**（已废弃）：ViewModel → Service → Repository → API
+> - **Phase 2/4**（当前）：ViewModel → Repository → API （移除业务Service层）
+> - **未来统一**：将10%直接API注入迁移到Repository模式（Epic #1606）
 
 ---
 
@@ -109,32 +131,83 @@ Server API (REST Endpoint)
 - `MainWindow.xaml` - 主窗口容器
 - `MainWindowViewModel.cs` - 主窗口视图模型
 
-**代码示例**：
+**代码示例**（真实代码：Shell/App.xaml.cs）：
+
 ```csharp
-// App.xaml.cs
-public partial class App : Application
+using Prism.DryIoc;
+using Prism.Ioc;
+using Prism.Modularity;
+
+/// <summary>
+/// 应用程序主入口 - WPF应用程序核心启动器
+/// 集成Prism.DryIoc容器管理,支持7个业务模块的统一协调
+/// Issue #1239: 修复 Prism 生命周期 - 同步调用 base.OnStartup
+/// Issue #1221: 延迟显示主窗口，先显示 Splash Screen
+/// </summary>
+public partial class App : PrismApplication    // ⭐ 继承PrismApplication（不是Application）
 {
+    /// <summary>
+    /// 应用程序启动入口
+    /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
+        // 1. 显示 Splash Screen
+        var splashScreen = new SplashScreenWindow();
+        splashScreen.Show();
+
+        // 2. ⭐ 同步调用 base.OnStartup（触发 Prism 生命周期）
+        // Prism 会依次调用：CreateShell → InitializeShell → OnInitialized
         base.OnStartup(e);
-        
-        // 初始化DI容器
-        var host = Host.CreateDefaultBuilder()
-            .ConfigureServices(ConfigureServices)
-            .Build();
-            
-        var mainWindow = host.Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
     }
-    
-    private void ConfigureServices(IServiceCollection services)
+
+    /// <summary>
+    /// 创建应用程序主窗体（Prism生命周期方法）
+    /// </summary>
+    protected override Window CreateShell()
     {
-        services.AddSingleton<MainWindow>();
-        services.AddSingleton<MainWindowViewModel>();
-        // 注册所有服务和模块
+        // ⭐ 使用Prism容器解析主窗口（不是ASP.NET Core的IServiceProvider）
+        var mainWindow = Container.Resolve<MainWindow>();
+        return mainWindow;
+    }
+
+    /// <summary>
+    /// 注册应用程序类型和服务（Prism生命周期方法）
+    /// ⚠️ Phase 2架构：只注册Infrastructure服务，业务Repository由各模块自己注册
+    /// </summary>
+    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // ⭐ 使用扩展方法统一注册所有服务（参见Extensions/ServiceCollectionExtensions.cs）
+        containerRegistry.RegisterAllServices();
+
+        // 显式注册 ViewModels（Prism 8.x 要求）
+        containerRegistry.Register<MainWindowViewModel>();
+    }
+
+    /// <summary>
+    /// 配置模块目录（Prism生命周期方法）
+    /// Issue #1553: 角色驱动模块加载
+    /// </summary>
+    protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
+    {
+        // ⭐ 注册7个业务模块（按依赖顺序）
+        moduleCatalog.AddModule<AuthenticationModule>();          // 认证模块（基础）
+        moduleCatalog.AddModule<UsersModule>();                   // 用户模块
+        moduleCatalog.AddModule<PatientsModule>();                // 患者模块
+        moduleCatalog.AddModule<MedicalCaseModule>();             // 病案模块
+        moduleCatalog.AddModule<ConsultationModule>();            // 诊断模块
+        moduleCatalog.AddModule<PrescriptionsModule>();           // 处方模块
+        moduleCatalog.AddModule<HerbsModule>();                   // 中药模块
     }
 }
 ```
+
+**Prism应用启动特征**：
+- ✅ **PrismApplication基类**：继承Prism.DryIoc.PrismApplication（不是WPF的Application）
+- ✅ **Prism生命周期方法**：OnStartup → CreateShell → RegisterTypes → ConfigureModuleCatalog → OnInitialized
+- ✅ **Container.Resolve**：使用Prism容器解析（不是ASP.NET Core的IServiceProvider.GetRequiredService）
+- ✅ **IContainerRegistry**：Prism DI容器注册接口（不是IServiceCollection）
+- ✅ **模块化架构**：ConfigureModuleCatalog注册7个业务模块（Prism Modularity）
+- ❌ **无Host.CreateDefaultBuilder**：Prism不使用ASP.NET Core的Host
 
 ### 2. Core层 - 核心基础设施
 **职责**：依赖注入、事件聚合、导航服务、共享工具
@@ -192,10 +265,21 @@ public abstract class ViewModelBase : ObservableObject, IDisposable
   - `MedicalCaseQueryService` - Epic #1676 Phase 4移除，改用IMedicalCaseRepository
   - 其他业务Service - Phase 2已全部移除
 
-**保留的Infrastructure服务**（非业务Service）：
-- `TokenService` - JWT令牌管理（Infrastructure层）
-- `HttpClientFactory` - HTTP客户端工厂（Infrastructure层）
-- `AuthenticationHandler` - 认证消息处理器（Infrastructure层）
+**保留的Infrastructure服务**（非业务Service，仍然存在）：
+
+**基础设施服务**：
+- `ITokenService`, `ITokenStorageService` - JWT令牌管理
+- `ISecurityService`, `IAuthenticationService` - 认证与安全
+- `ICacheService`, `IConfigurationService` - 缓存与配置
+- `IApiHealthCheckService` - API健康检查
+
+**UI基础设施服务**（Prism框架）：
+- `INavigationService` - 页面导航服务
+- `IDialogService` - 对话框服务
+- `INotificationService` - 用户通知服务
+- `IEventAggregator` - 事件聚合器
+
+> **⚠️ 区分要点**：Infrastructure服务是**通用技术能力**（如认证、缓存、导航），而非**业务逻辑封装**（如患者管理、病案管理）。
 
 **架构决策理由**：
 - ✅ **避免过度抽象**：Service层与Repository逻辑高度重复
@@ -253,22 +337,176 @@ public class TokenService : ITokenService
 ### 5. Modules层 - 业务模块
 **职责**：UI界面、业务逻辑、模块化组件
 
-**模块结构**：
+**模块结构**（Phase 2/4 - Repository模式）：
 ```
 Modules/
 ├── Auth/                    # 认证模块
-│   ├── Views/              # 视图
-│   ├── ViewModels/         # 视图模型
+│   ├── Views/              # 视图（XAML）
+│   ├── ViewModels/         # 视图模型（⭐ 直接依赖Repository）
 │   ├── Models/             # 数据模型
-│   └── Services/           # 模块服务
-├── Users/                  # 用户管理模块
-├── Patients/               # 患者管理模块
-├── MedicalCase/            # 医案管理模块
-├── Consultation/           # 诊疗模块
-├── Prescriptions/          # 处方模块
-├── Herbs/                  # 药材模块
-└── Formula/                # 验方模块
+│   ├── Repositories/       # 数据访问层（封装Refit API）⭐ Phase 2新增
+│   ├── Interfaces/         # 接口定义（IXxxRepository）
+│   └── XxxModule.cs        # Prism模块注册
+├── Users/                  # 用户管理模块（结构同上）
+├── Patients/               # 患者管理模块（结构同上）
+├── MedicalCase/            # 医案管理模块（结构同上）
+├── Consultation/           # 诊疗模块（无独立Repository，使用MedicalCaseRepository）
+├── Prescriptions/          # 处方模块（无独立Repository，使用MedicalCaseRepository）
+├── Herbs/                  # 药材模块（结构同上）
+└── Formula/                # 验方模块（结构同上）
 ```
+
+**关键变更**（Phase 2 - Issue #1114）：
+- ✅ **新增Repositories/**：各模块独立封装Refit API调用逻辑
+- ✅ **ViewModel直接依赖**：移除中间Service层，ViewModel直接注入IRepository
+- ❌ **移除Services/**：业务Service层已废弃（Infrastructure服务除外）
+
+#### 📦 Repository层 - 数据访问层（Phase 2核心）
+
+> **⚠️ 架构要点**：Repository封装Refit API接口，提供统一的数据访问抽象，ViewModel不直接依赖HTTP细节。
+
+**职责**：
+- ✅ **API调用封装**：通过Refit自动生成HTTP请求
+- ✅ **异常处理**：统一捕获API异常并记录日志
+- ✅ **数据转换**：DTO与Model之间的映射（如需要）
+- ✅ **聚合根边界维护**：如MedicalCaseRepository管理Consultation/Prescription关联操作
+
+**核心设计模式**：
+
+**1. RepositoryBase统一基类**（Project Standardization 3.0）：
+
+```csharp
+/// <summary>
+/// Repository基类 - 提供CRUD操作的统一实现
+/// Project Standardization 3.0 - 所有Repository继承此基类
+/// </summary>
+public abstract class RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>
+    where TDto : class
+    where TCreateDto : class
+    where TUpdateDto : class
+{
+    protected readonly TApi _api;
+    protected readonly ILogger _logger;
+
+    protected RepositoryBase(TApi api, ILogger logger)
+    {
+        _api = api ?? throw new ArgumentNullException(nameof(api));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    // ⭐ 统一CRUD方法（子类只需实现API调用）
+    public virtual async Task<TDto> CreateAsync(TCreateDto createDto)
+    {
+        try
+        {
+            var response = await CallApiCreateAsync(createDto);
+            return response.Data ?? throw new InvalidOperationException("创建失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建实体失败");
+            throw;
+        }
+    }
+
+    // 其他CRUD方法：GetByIdAsync, GetPagedAsync, UpdateAsync, DeleteAsync...
+
+    // ⭐ 子类需实现的抽象方法（API调用）
+    protected abstract Task<ApiResponse<TDto>> CallApiCreateAsync(TCreateDto createDto);
+    protected abstract Task<ApiResponse<TDto>> CallApiGetByIdAsync(Guid id);
+    // ...其他抽象方法
+}
+```
+
+**2. 具体Repository实现**（PatientRepository示例）：
+
+```csharp
+/// <summary>
+/// 患者数据仓储实现 - RepositoryBase统一架构
+/// Project Standardization 3.0 - 迁移到统一RepositoryBase
+/// </summary>
+public class PatientRepository : RepositoryBase<PatientDto, PatientCreateDto, PatientUpdateDto, IPatientApi>, IPatientRepository
+{
+    public PatientRepository(
+        IPatientApi patientApi,  // ⭐ Refit API接口注入
+        ILogger<PatientRepository> logger)
+        : base(patientApi, logger)
+    {
+    }
+
+    // ⭐ 实现RepositoryBase的抽象方法
+    protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientCreateDto createDto)
+    {
+        return _api.CreatePatientAsync(createDto);
+    }
+
+    protected override Task<ApiResponse<PatientDto>> CallApiGetByIdAsync(Guid id)
+    {
+        return _api.GetPatientByIdAsync(id);
+    }
+
+    // ⭐ 业务特定方法（超出标准CRUD）
+    public async Task<List<PatientDto>> GetAllAsync()
+    {
+        try
+        {
+            var pagedResult = await GetPagedAsync(1, 10000);
+            return pagedResult.Items ?? new List<PatientDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取所有患者失败");
+            return new List<PatientDto>();
+        }
+    }
+}
+```
+
+**3. 聚合根Repository**（MedicalCaseRepository示例 - DDD边界维护）：
+
+```csharp
+/// <summary>
+/// 医案仓储 - 聚合根边界管理
+/// Issue #1563, #1589 - 维护MedicalCase → Consultation/Prescription聚合根边界
+/// </summary>
+public class MedicalCaseRepository : RepositoryBase<MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseUpdateDto, IMedicalCaseApi>, IMedicalCaseRepository
+{
+    // ⭐ 聚合根方法：更新诊断记录（保持聚合根边界）
+    public async Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto)
+    {
+        if (medicalCaseId == Guid.Empty)
+            throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+        try
+        {
+            // ⭐ 通过聚合根API端点操作子实体
+            var response = await _api.UpdateConsultationAsync(medicalCaseId, dto);
+            return response.Data ?? throw new InvalidOperationException("更新诊断信息失败");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "更新医案诊断信息失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            throw;
+        }
+    }
+
+    // ⭐ 聚合根方法：创建医案（包含完整关联数据）
+    public async Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseCreateDto dto)
+    {
+        // 一次性创建医案+诊断+处方（保证数据一致性）
+        var response = await _api.CreateWithDetailsAsync(dto);
+        return response.Data ?? throw new InvalidOperationException("创建医案失败");
+    }
+}
+```
+
+**Repository架构特征总结**：
+- ✅ **RepositoryBase基类**：统一CRUD操作，减少重复代码
+- ✅ **Refit API注入**：Repository依赖IXxxApi接口，Refit自动生成HTTP请求
+- ✅ **异常日志统一**：所有API异常都在Repository层捕获并记录
+- ✅ **聚合根边界**：MedicalCaseRepository管理Consultation/Prescription子实体操作
+- ✅ **模块独立注册**：每个模块在XxxModule.cs中注册自己的Repository
+- ❌ **无业务逻辑**：Repository只负责数据访问，不包含业务规则（业务规则在ViewModel）
 
 #### 📋 Prescriptions模块架构演化（Issue #1445）
 
@@ -309,49 +547,68 @@ Modules/Prescriptions/
 - 编辑处方：`NavigateTo("MainRegion", "PrescriptionView", parameters)`
 - 管理列表：`NavigateTo("PrescriptionContentRegion", "PrescriptionManagementView")`
 
-**模块基类**：
-```csharp
-// Modules/ModuleBase.cs
-public abstract class ModuleBase : IModule
-{
-    protected IServiceProvider ServiceProvider { get; }
-    protected IEventAggregator EventAggregator { get; }
-    
-    protected ModuleBase(IServiceProvider serviceProvider, IEventAggregator eventAggregator)
-    {
-        ServiceProvider = serviceProvider;
-        EventAggregator = eventAggregator;
-    }
-    
-    public abstract void Initialize();
-    public abstract string ModuleName { get; }
-    public abstract string ModuleDescription { get; }
-}
+**Prism模块标准实现**（真实代码：Modules/LYBT.Desktop.Patients/PatientsModule.cs）：
 
-// Modules/Patients/PatientsModule.cs
-public class PatientsModule : ModuleBase
+```csharp
+using Prism.Ioc;
+using Prism.Modularity;
+
+/// <summary>
+/// 患者管理模块 - Phase 2架构
+/// Issue #1114: 移除业务Service层，ViewModel直接调用Repository
+/// Issue #1487: 快速创建患者对话框
+/// Issue #1547: 增强的患者数据导入导出功能
+/// Issue #1557: 患者详情视图增强
+/// </summary>
+[Module(ModuleName = nameof(PatientsModule))]
+[ModuleDependency("AuthenticationModule")]    // 依赖认证模块
+[ModuleDependency("UsersModule")]             // 依赖用户模块
+public class PatientsModule : IModule
 {
-    public PatientsModule(IServiceProvider serviceProvider, IEventAggregator eventAggregator)
-        : base(serviceProvider, eventAggregator)
+    /// <summary>
+    /// 注册模块类型到容器
+    /// ⚠️ Phase 2架构：只注册Repository、ViewModel、View，无业务Service
+    /// </summary>
+    public void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // ⭐ Phase 2：Repository由模块自己注册（不在Shell统一注册）
+        containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+        // ⭐ 注册视图模型 - MVP核心功能
+        containerRegistry.Register<ViewModels.PatientDetailViewModel>();          // Issue #1557
+        containerRegistry.Register<ViewModels.PatientImportWizardViewModel>();    // Issue #1547
+        containerRegistry.Register<ViewModels.PatientExportWizardViewModel>();
+
+        // ⭐ 注册视图用于导航（Prism区域导航）
+        containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
+        containerRegistry.RegisterForNavigation<Views.PatientManagementView>();
+
+        // ⭐ Issue #1487: 快速创建患者对话框（Prism对话框服务）
+        containerRegistry.RegisterDialog<Views.QuickCreatePatientDialog,
+                                         ViewModels.QuickCreatePatientDialogViewModel>();
     }
-    
-    public override void Initialize()
+
+    /// <summary>
+    /// 模块初始化（应用启动后调用）
+    /// Phase 2简化：无需启动时初始化，所有逻辑通过依赖注入延迟加载
+    /// </summary>
+    public void OnInitialized(IContainerProvider containerProvider)
     {
-        // 注册模块服务
-        var services = ServiceProvider.GetRequiredService<IServiceCollection>();
-        services.AddScoped<IPatientService, PatientService>();
-        services.AddScoped<IPatientRepository, PatientRepository>();
-        
-        // 注册视图和视图模型
-        services.AddTransient<PatientManagementView>();
-        services.AddTransient<PatientManagementViewModel>();
+        // Phase 2架构：无需启动时初始化
+        // ViewModel在导航时自动解析，Repository在ViewModel构造函数注入时解析
     }
-    
-    public override string ModuleName => "患者管理";
-    public override string ModuleDescription => "患者信息管理、查询统计功能";
 }
 ```
+
+**Prism模块关键特性**：
+- ✅ **IModule接口**：Prism标准模块接口（无需自定义基类）
+- ✅ **[Module]属性**：标记模块名称，用于模块发现和加载
+- ✅ **[ModuleDependency]属性**：声明模块依赖关系，确保加载顺序
+- ✅ **RegisterTypes方法**：注册模块内部类型（Repository、ViewModel、View）
+- ✅ **OnInitialized方法**：模块启动后初始化（Phase 2架构为空）
+- ✅ **IContainerRegistry**：Prism DI容器注册接口（不是ASP.NET Core的IServiceCollection）
+- ❌ **无ModuleBase基类**：Prism不需要自定义基类，直接实现IModule即可
+- ❌ **无业务Service注册**：Phase 2架构移除业务Service层
 
 ## 🎯 MVVM架构模式
 
@@ -463,262 +720,384 @@ public class PatientModel : ObservableObject
 ```
 
 ### ViewModel - 视图模型
-**职责**：业务逻辑、命令处理、数据转换、状态管理
+**职责**：UI逻辑、命令处理、数据转换、状态管理
+
+> **⚠️ 架构要点**：ViewModel **直接注入Repository**，无中间Service层（Phase 2/4架构）
+
+**真实示例**：`QuickCreatePatientDialogViewModel.cs`（Issue #1487）
 
 ```csharp
-// Modules/Patients/ViewModels/PatientManagementViewModel.cs
-public class PatientManagementViewModel : ViewModelBase
+public class QuickCreatePatientDialogViewModel : UnifiedViewModelBase, IDialogAware
 {
-    private readonly IPatientService _patientService;
-    private readonly IDialogService _dialogService;
-    
-    public PatientManagementViewModel(IPatientService patientService, 
-                                    IDialogService dialogService,
-                                    IEventAggregator eventAggregator)
-        : base(eventAggregator)
+    #region 服务依赖
+
+    // ⭐ 直接注入Repository，无中间Service层
+    private readonly IPatientRepository _patientRepository;
+
+    #endregion
+
+    #region 数据属性
+
+    private string _name = string.Empty;
+    private bool _isMale = true;
+    private int _age;
+    private string _phoneNumber = string.Empty;
+
+    public string Name
     {
-        _patientService = patientService;
-        _dialogService = dialogService;
-        
-        Patients = new ObservableCollection<PatientModel>();
-        LoadPatientsCommand = new AsyncRelayCommand(LoadPatientsAsync);
-        AddPatientCommand = new AsyncRelayCommand(AddPatientAsync);
-        EditPatientCommand = new AsyncRelayCommand<PatientModel>(EditPatientAsync);
-        DeletePatientCommand = new AsyncRelayCommand<PatientModel>(DeletePatientAsync);
-        SearchCommand = new AsyncRelayCommand(SearchPatientsAsync);
+        get => _name;
+        set
+        {
+            if (SetProperty(ref _name, value))
+            {
+                UpdateCommandStates();
+            }
+        }
     }
-    
-    public ObservableCollection<PatientModel> Patients { get; }
-    
-    private PatientModel _selectedPatient;
-    public PatientModel SelectedPatient
+
+    public int Age
     {
-        get => _selectedPatient;
-        set => SetProperty(ref _selectedPatient, value);
+        get => _age;
+        set
+        {
+            if (SetProperty(ref _age, value))
+            {
+                UpdateCommandStates();
+            }
+        }
     }
-    
-    private string _searchKeyword;
-    public string SearchKeyword
+
+    public Gender Gender => IsMale ? Gender.Male : (IsFemale ? Gender.Female : Gender.Unknown);
+
+    #endregion
+
+    #region 命令
+
+    public DelegateCommand SaveCommand { get; }
+    public DelegateCommand CancelCommand { get; }
+
+    #endregion
+
+    #region 构造函数
+
+    // ⭐ 构造函数注入：Repository + 基础设施服务
+    public QuickCreatePatientDialogViewModel(
+        IPatientRepository patientRepository,  // 业务数据访问
+        IEventAggregator eventAggregator,      // Prism事件聚合器
+        ILoggerFactory loggerFactory,           // 日志工厂
+        IRegionManager regionManager)           // Prism区域管理器
+        : base(eventAggregator, loggerFactory, regionManager)
     {
-        get => _searchKeyword;
-        set => SetProperty(ref _searchKeyword, value);
+        _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+
+        // 初始化命令
+        SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
+        CancelCommand = new DelegateCommand(Cancel);
     }
-    
-    public ICommand LoadPatientsCommand { get; }
-    public ICommand AddPatientCommand { get; }
-    public ICommand EditPatientCommand { get; }
-    public ICommand DeletePatientCommand { get; }
-    public ICommand SearchCommand { get; }
-    
-    public override string Title => "患者管理";
-    
-    private async Task LoadPatientsAsync()
+
+    #endregion
+
+    #region 命令实现
+
+    /// <summary>
+    /// 保存患者信息 - Issue #1487
+    /// 数据流：ViewModel → Repository → Refit API → Server
+    /// </summary>
+    private async Task SaveAsync()
     {
-        IsBusy = true;
         try
         {
-            var result = await _patientService.GetPatientsAsync();
-            if (result.IsSuccess)
+            // 验证表单
+            if (!ValidateForm(out string errorMessage))
             {
-                Patients.Clear();
-                foreach (var patient in result.Data)
-                {
-                    Patients.Add(patient);
-                }
+                ShowErrorMessage(errorMessage);
+                return;
             }
-            else
+
+            SetIsBusy(true, "正在保存...");
+
+            // 根据年龄推算出生日期
+            var birthDate = DateTime.Today.AddYears(-Age);
+
+            // ⭐ 创建DTO - ViewModel负责数据准备
+            var createDto = new PatientCreateDto
             {
-                await _dialogService.ShowErrorAsync(result.Message);
-            }
+                Name = Name.Trim(),
+                Gender = Gender,
+                BirthDate = birthDate,
+                PhoneNumber = PhoneNumber.Trim(),
+                Status = CommonStatus.Enabled
+            };
+
+            // ⭐ 调用Repository - Repository负责HTTP通信
+            var newPatient = await _patientRepository.CreateAsync(createDto);
+
+            Logger.LogInformation("快速创建患者成功: {PatientName} (ID: {PatientId})",
+                newPatient.Name, newPatient.Id);
+
+            // 通过对话框参数返回新创建的患者
+            var parameters = new DialogParameters
+            {
+                { "NewPatient", newPatient }
+            };
+
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
         }
         catch (Exception ex)
         {
-            await _dialogService.ShowErrorAsync($"加载患者列表失败: {ex.Message}");
+            Logger.LogError(ex, "创建患者失败: {PatientName}", Name);
+            await ShowErrorMessageAsync("保存失败，请稍后重试");
         }
         finally
         {
-            IsBusy = false;
+            SetIsBusy(false);
         }
     }
-    
-    private async Task AddPatientAsync()
+
+    private void Cancel()
     {
-        var dialog = new PatientEditDialog();
-        var viewModel = new PatientEditViewModel(_patientService, _dialogService, EventAggregator);
-        dialog.DataContext = viewModel;
-        
-        if (await _dialogService.ShowDialogAsync(dialog) == true)
-        {
-            await LoadPatientsAsync();
-        }
+        RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
     }
-    
-    private async Task EditPatientAsync(PatientModel patient)
+
+    #endregion
+
+    #region 验证逻辑
+
+    private bool ValidateForm(out string errorMessage)
     {
-        if (patient == null) return;
-        
-        var dialog = new PatientEditDialog();
-        var viewModel = new PatientEditViewModel(_patientService, _dialogService, EventAggregator, patient);
-        dialog.DataContext = viewModel;
-        
-        if (await _dialogService.ShowDialogAsync(dialog) == true)
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(Name))
         {
-            await LoadPatientsAsync();
+            errorMessage = "请输入患者姓名";
+            return false;
         }
+
+        if (Age <= 0 || Age > 150)
+        {
+            errorMessage = "请输入有效的年龄（1-150）";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(PhoneNumber) || PhoneNumber.Trim().Length != 11)
+        {
+            errorMessage = "请输入正确的11位手机号码";
+            return false;
+        }
+
+        return true;
     }
-    
-    private async Task DeletePatientAsync(PatientModel patient)
+
+    private bool CanSave()
     {
-        if (patient == null) return;
-        
-        var result = await _dialogService.ShowConfirmAsync($"确定要删除患者 {patient.Name} 吗？");
-        if (!result) return;
-        
-        IsBusy = true;
-        try
-        {
-            var deleteResult = await _patientService.DeletePatientAsync(patient.Id);
-            if (deleteResult.IsSuccess)
-            {
-                Patients.Remove(patient);
-                await _dialogService.ShowSuccessAsync("删除成功");
-            }
-            else
-            {
-                await _dialogService.ShowErrorAsync(deleteResult.Message);
-            }
-        }
-        catch (Exception ex)
-        {
-            await _dialogService.ShowErrorAsync($"删除失败: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        return !string.IsNullOrWhiteSpace(Name) &&
+               Gender != Gender.Unknown &&
+               Age > 0 &&
+               !string.IsNullOrWhiteSpace(PhoneNumber) &&
+               !IsBusy;
     }
-    
-    private async Task SearchPatientsAsync()
-    {
-        if (string.IsNullOrWhiteSpace(SearchKeyword))
-        {
-            await LoadPatientsAsync();
-            return;
-        }
-        
-        IsBusy = true;
-        try
-        {
-            var result = await _patientService.SearchPatientsAsync(SearchKeyword);
-            if (result.IsSuccess)
-            {
-                Patients.Clear();
-                foreach (var patient in result.Data)
-                {
-                    Patients.Add(patient);
-                }
-            }
-            else
-            {
-                await _dialogService.ShowErrorAsync(result.Message);
-            }
-        }
-        catch (Exception ex)
-        {
-            await _dialogService.ShowErrorAsync($"搜索失败: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+
+    #endregion
 }
 ```
+
+**架构特征总结**：
+- ✅ **依赖注入**：构造函数注入`IPatientRepository`（业务）+ 基础设施服务（Prism/Logging）
+- ✅ **DTO模式**：ViewModel创建`PatientCreateDto`，Repository返回`PatientDto`
+- ✅ **异步模式**：所有Repository调用都是`async/await`
+- ✅ **错误处理**：ViewModel层处理异常并显示用户友好提示
+- ✅ **状态管理**：`IsBusy`状态由ViewModel管理，UI自动响应
+- ❌ **无Service层**：直接`ViewModel → Repository`，无中间业务Service
 
 ## 🔧 依赖注入配置
 
-### 服务注册
+> **⚠️ 架构要点**：Phase 2/4架构移除业务Service层，ViewModel直接调用Repository + Infrastructure Service
+
+### 真实注册架构（三处分离注册）
+
+**1. Refit API接口注册**（Shell/Extensions/ServiceCollectionExtensions.cs）：
+
 ```csharp
-// Core/ServiceCollectionExtensions.cs
-public static class ServiceCollectionExtensions
+/// <summary>
+/// 注册HTTP相关服务
+/// Issue #1239 修复: 使用延迟解析注册 Refit 客户端（避免在注册阶段解析 HttpClient）
+/// </summary>
+private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
 {
-    public static IServiceCollection AddDesktopServices(this IServiceCollection services)
+    // 配置HttpClient（带Authorization header）
+    var apiBaseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+    containerRegistry.RegisterSingleton<HttpClient>(resolver =>
     {
-        // 核心服务
-        services.AddSingleton<IEventAggregator, EventAggregator>();
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IDialogService, DialogService>();
-        
-        // HTTP客户端
-        services.AddHttpClient("API", client =>
+        var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
+        authHandler.InnerHandler = new HttpClientHandler();
+        return new HttpClient(authHandler)
         {
-            client.BaseAddress = new Uri("https://localhost:5001/api/");
-            client.DefaultRequestHeaders.Authorization = 
-                new AuthenticationHeaderValue("Bearer", GetAccessToken());
-        });
-        
-        // 基础设施服务
-        services.AddSingleton<ITokenService, TokenService>();
-        services.AddSingleton<ICacheService, MemoryCacheService>();
-        services.AddSingleton<ISecureStorage, SecureStorageService>();
-        
-        // 业务服务
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IPatientService, PatientService>();
-        services.AddScoped<IMedicalCaseService, MedicalCaseService>();
-        services.AddScoped<IConsultationService, ConsultationService>();
-        services.AddScoped<IPrescriptionService, PrescriptionService>();
-        services.AddScoped<IHerbService, HerbService>();
-        services.AddScoped<IFormulaService, FormulaService>();
-        
-        // AutoMapper
-        services.AddAutoMapper(typeof(MappingProfile));
-        
-        return services;
-    }
+            BaseAddress = new Uri(apiBaseUrl),
+            Timeout = TimeSpan.FromSeconds(30)
+        };
+    });
+
+    // ⭐ Refit API接口注册（8个模块API）
+    containerRegistry.RegisterSingleton<IAuthApi>(resolver =>
+        RestService.For<IAuthApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IPatientApi>(resolver =>
+        RestService.For<IPatientApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IUserApi>(resolver =>
+        RestService.For<IUserApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IMedicalCaseApi>(resolver =>
+        RestService.For<IMedicalCaseApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IConsultationApi>(resolver =>
+        RestService.For<IConsultationApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IPrescriptionApi>(resolver =>
+        RestService.For<IPrescriptionApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IHerbApi>(resolver =>
+        RestService.For<IHerbApi>(resolver.Resolve<HttpClient>()));
+
+    containerRegistry.RegisterSingleton<IFormulaApi>(resolver =>
+        RestService.For<IFormulaApi>(resolver.Resolve<HttpClient>()));
 }
 ```
 
-### AutoMapper配置
+**2. Repository注册**（各模块的XxxModule.cs）：
+
 ```csharp
-// Core/MappingProfile.cs
+/// <summary>
+/// 患者管理模块 - Phase 2模块化架构
+/// Issue #1114 - Repository下沉到模块
+/// </summary>
+public class PatientsModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // ⭐ Phase 2：Repository由模块自己注册
+        containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+        // 注册ViewModel
+        containerRegistry.Register<PatientDetailViewModel>();
+        containerRegistry.RegisterDialog<QuickCreatePatientDialog, QuickCreatePatientDialogViewModel>();
+
+        // 注册视图用于导航
+        containerRegistry.RegisterForNavigation<PatientDetailView>();
+    }
+}
+
+// 其他模块类似：
+// - MedicalCaseModule → IMedicalCaseRepository, MedicalCaseRepository
+// - UsersModule → IUserRepository, UserRepository
+// - HerbsModule → IHerbRepository, HerbRepository
+// - FormulaModule → IFormulaRepository, FormulaRepository
+```
+
+**3. Infrastructure服务注册**（Shell/Extensions/ServiceCollectionExtensions.cs）：
+
+```csharp
+/// <summary>
+/// 注册 Foundation 层服务（Infrastructure Services）
+/// </summary>
+private static void RegisterFoundationServices(IContainerRegistry containerRegistry)
+{
+    // 认证服务 - Foundation/Security
+    containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
+
+    // Token 存储服务 - Foundation/Security
+    containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
+
+    // 用户名存储服务 - Foundation/Security (Issue #1245)
+    containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
+
+    // 安全凭据存储服务 - Foundation/Security (Issue #1246)
+    containerRegistry.RegisterSingleton<ISecureCredentialStorage, SecureCredentialStorage>();
+
+    // API 健康检查服务 - Foundation/HealthCheck
+    containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
+}
+
+/// <summary>
+/// 注册 Infrastructure 层服务
+/// </summary>
+private static void RegisterInfrastructureServices(IContainerRegistry containerRegistry)
+{
+    // 会话管理器
+    containerRegistry.RegisterSingleton<ISessionManager, SessionManager>();
+
+    // 用户通知服务
+    containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
+
+    // 主窗口服务门面
+    containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
+
+    // 标准错误处理器
+    containerRegistry.RegisterSingleton<IStandardErrorHandler, StandardErrorHandler>();
+
+    // 键盘快捷键服务
+    containerRegistry.RegisterSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
+
+    // 功能开关服务 (Issue #1477 #1479)
+    containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
+
+    // 角色导航服务 (Issue #1553)
+    containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
+}
+```
+
+**架构特征总结**：
+- ✅ **Refit API接口**：Shell统一注册，所有模块共享同一HttpClient（包含Authorization header）
+- ✅ **Repository层**：各模块独立注册，封装API调用逻辑
+- ✅ **Infrastructure服务**：Foundation + Infrastructure + Presentation三层服务，Shell统一注册
+- ❌ **无业务Service层**：ViewModel直接注入Repository + Infrastructure服务
+
+### AutoMapper配置
+
+> **⚠️ 项目现状**：当前项目**未使用AutoMapper**进行DTO-Model映射。
+> Phase 2架构中，Repository直接返回DTO，ViewModel使用DTO进行数据绑定。
+> 如未来需要AutoMapper，可参考以下配置模式。
+
+**当前手动映射方式**（真实代码：PatientSelectorViewModel.cs）：
+```csharp
+/// <summary>
+/// Phase 2架构：手动映射DTO属性（不使用AutoMapper）
+/// 注意：Presentation层不能引用Modules层，使用反射进行手动映射
+/// </summary>
+private PatientSelectedPayload CreatePatientSelectedPayload(object patientDto)
+{
+    var patientType = patientDto.GetType();
+    return new PatientSelectedPayload
+    {
+        PatientId = (Guid)patientType.GetProperty("Id")!.GetValue(patientDto)!,
+        PatientName = (string)patientType.GetProperty("Name")!.GetValue(patientDto)!,
+        Gender = (string?)patientType.GetProperty("Gender")?.GetValue(patientDto),
+        BirthDate = (DateTime?)patientType.GetProperty("BirthDate")?.GetValue(patientDto),
+        PhoneNumber = (string?)patientType.GetProperty("PhoneNumber")?.GetValue(patientDto)
+    };
+}
+```
+
+**未来AutoMapper配置示例**（如需引入）：
+```csharp
+// Core/Mapping/MappingProfile.cs
 public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        // ⚠️ 示例配置：项目当前未使用
+
         // Patient映射
         CreateMap<PatientDto, PatientModel>()
             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.BirthDate)));
-        CreateMap<PatientModel, PatientCreateRequest>();
-        CreateMap<PatientModel, PatientUpdateRequest>();
-        
+        CreateMap<PatientModel, PatientCreateDto>();
+        CreateMap<PatientModel, PatientUpdateDto>();
+
         // MedicalCase映射
         CreateMap<MedicalCaseDto, MedicalCaseModel>();
-        CreateMap<MedicalCaseModel, MedicalCaseCreateRequest>();
-        CreateMap<MedicalCaseModel, MedicalCaseUpdateRequest>();
-        
-        // Consultation映射
-        CreateMap<ConsultationDto, ConsultationModel>();
-        CreateMap<ConsultationModel, ConsultationCreateRequest>();
-        CreateMap<ConsultationModel, ConsultationUpdateRequest>();
-        
-        // Prescription映射
-        CreateMap<PrescriptionDto, PrescriptionModel>();
-        CreateMap<PrescriptionModel, PrescriptionCreateRequest>();
-        CreateMap<PrescriptionModel, PrescriptionUpdateRequest>();
-        
-        // Herb映射
-        CreateMap<HerbDto, HerbModel>();
-        CreateMap<HerbModel, HerbCreateRequest>();
-        CreateMap<HerbModel, HerbUpdateRequest>();
-        
-        // Formula映射
-        CreateMap<FormulaDto, FormulaModel>();
-        CreateMap<FormulaModel, FormulaCreateRequest>();
-        CreateMap<FormulaModel, FormulaUpdateRequest>();
+        CreateMap<MedicalCaseModel, MedicalCaseCreateDto>();
     }
-    
+
     private static int CalculateAge(DateTime birthDate)
     {
         var today = DateTime.Today;
@@ -883,52 +1262,95 @@ public class PatientManagementViewModel : ViewModelBase, IDisposable
 
 ## 🧪 测试策略
 
-### 单元测试
+> **⚠️ Phase 2测试原则**：ViewModel测试Mock IRepository（不是IService），测试ViewModel业务逻辑和UI交互
+
+### 单元测试示例（真实代码：UserManagementViewModelTests.cs）
+
 ```csharp
-[TestFixture]
-public class PatientManagementViewModelTests
+using FluentAssertions;
+using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels;
+using LYBT.Shared.Models.Contracts.Users;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Prism.Events;
+using Prism.Regions;
+using Xunit;
+
+/// <summary>
+/// UserManagementViewModel 单元测试
+/// Phase 2架构：Mock IUserRepository，测试ViewModel逻辑
+/// </summary>
+public class UserManagementViewModelTests
 {
-    private Mock<IPatientService> _mockPatientService;
-    private Mock<IDialogService> _mockDialogService;
-    private Mock<IEventAggregator> _mockEventAggregator;
-    private PatientManagementViewModel _viewModel;
-    
-    [SetUp]
-    public void Setup()
+    private readonly Mock<IUserRepository> _mockUserRepository;      // ⭐ Mock Repository（不是Service）
+    private readonly Mock<IEventAggregator> _mockEventAggregator;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+    private readonly Mock<IRegionManager> _mockRegionManager;
+    private readonly UserManagementViewModel _viewModel;
+
+    public UserManagementViewModelTests()
     {
-        _mockPatientService = new Mock<IPatientService>();
-        _mockDialogService = new Mock<IDialogService>();
+        // Arrange - Setup Mocks
+        _mockUserRepository = new Mock<IUserRepository>();
         _mockEventAggregator = new Mock<IEventAggregator>();
-        
-        _viewModel = new PatientManagementViewModel(
-            _mockPatientService.Object,
-            _mockDialogService.Object,
-            _mockEventAggregator.Object);
+        _mockLoggerFactory = new Mock<ILoggerFactory>();
+        _mockRegionManager = new Mock<IRegionManager>();
+
+        // ⭐ Phase 2构造函数：注入Repository + Infrastructure服务
+        _viewModel = new UserManagementViewModel(
+            _mockUserRepository.Object,       // Repository
+            _mockEventAggregator.Object,      // Prism EventAggregator
+            _mockLoggerFactory.Object,        // Logger
+            _mockRegionManager.Object         // Prism RegionManager
+        );
     }
-    
-    [Test]
-    public async Task LoadPatientsAsync_WhenServiceReturnsSuccess_ShouldPopulatePatients()
+
+    [Fact]
+    public async Task LoadPageAsync_WhenRepositoryReturnsData_ShouldPopulateUsers()
     {
-        // Arrange
-        var patients = new List<PatientModel>
+        // Arrange - 准备测试数据
+        var users = new List<UserDto>
         {
-            new PatientModel { Id = 1, Name = "张三" },
-            new PatientModel { Id = 2, Name = "李四" }
+            new UserDto { Id = Guid.NewGuid(), Username = "张三", Role = UserRole.Doctor },
+            new UserDto { Id = Guid.NewGuid(), Username = "李四", Role = UserRole.Admin }
         };
-        
-        _mockPatientService.Setup(x => x.GetPatientsAsync())
-            .ReturnsAsync(Result<List<PatientModel>>.Success(patients));
-        
-        // Act
-        await _viewModel.LoadPatientsCommand.ExecuteAsync(null);
-        
-        // Assert
-        Assert.AreEqual(2, _viewModel.Patients.Count);
-        Assert.AreEqual("张三", _viewModel.Patients[0].Name);
-        Assert.AreEqual("李四", _viewModel.Patients[1].Name);
+        var pagedResult = new PagedResult<UserDto>
+        {
+            Items = users,
+            TotalCount = 2,
+            PageNumber = 1,
+            PageSize = 20
+        };
+
+        // ⭐ Mock Repository方法（不是Service方法）
+        _mockUserRepository
+            .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<UserRole?>()))
+            .ReturnsAsync(pagedResult);
+
+        // Act - 执行命令
+        await _viewModel.LoadPageAsync(1);
+
+        // Assert - 验证结果（使用FluentAssertions）
+        _viewModel.Users.Should().HaveCount(2);
+        _viewModel.Users[0].Username.Should().Be("张三");
+        _viewModel.TotalCount.Should().Be(2);
+
+        // 验证Repository调用
+        _mockUserRepository.Verify(
+            x => x.GetPagedAsync(1, 20, null),
+            Times.Once);
     }
 }
 ```
+
+**Phase 2测试特征**：
+- ✅ **Mock IRepository**：测试Mock IUserRepository（不是IUserService）
+- ✅ **xUnit框架**：使用[Fact]特性（不是NUnit的[Test]）
+- ✅ **FluentAssertions**：Should().HaveCount()、Should().Be()等流式断言
+- ✅ **AAA模式**：Arrange-Act-Assert清晰分离
+- ✅ **依赖注入**：构造函数注入Repository + Prism服务（EventAggregator、RegionManager）
+- ❌ **无Service Mock**：Phase 2架构移除业务Service层
 
 ## 📋 最佳实践
 

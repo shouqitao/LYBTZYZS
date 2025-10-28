@@ -21,646 +21,367 @@ LYBT.Shared (共享层)
 ## 📐 核心组件详解
 
 ### 1. Models - 数据模型层
-**职责**：定义业务实体、数据传输对象、验证规则
 
-**核心组件**：
-- `Entities/` - 业务实体模型
-- `DTOs/` - 数据传输对象
-- `Requests/` - 请求模型
-- `Responses/` - 响应模型
-- `ViewModels/` - 视图模型
+> **⚠️ 架构说明**：当前MVP阶段，Models采用**按业务模块组织DTO**结构，不使用平坦的DTOs/目录。
 
-**代码示例**：
-```csharp
-// Models/Entities/Patient.cs
-public class Patient : BaseEntity
-{
-    public string Name { get; set; }
-    public string Gender { get; set; }
-    public DateTime BirthDate { get; set; }
-    public string Phone { get; set; }
-    public string Address { get; set; }
-    public string IdCard { get; set; }
-    public string MedicalHistory { get; set; }
-    public string Allergies { get; set; }
-    public string Notes { get; set; }
-    
-    // 导航属性
-    public virtual ICollection<MedicalCase> MedicalCases { get; set; }
-    public virtual ICollection<Prescription> Prescriptions { get; set; }
-    
-    // 计算属性
-    public int Age => DateTime.Today.Year - BirthDate.Year;
-    public string AgeText => $"{Age}岁";
-}
+**职责**：定义数据传输对象、枚举、常量、异常类、扩展方法
 
-// Models/DTOs/PatientDto.cs
-public class PatientDto
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Gender { get; set; }
-    public DateTime BirthDate { get; set; }
-    public string Phone { get; set; }
-    public string Address { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    
-    public int Age { get; set; }
-    public int MedicalCaseCount { get; set; }
-    public int PrescriptionCount { get; set; }
-    public string LastVisitDate { get; set; }
-}
+**实际目录结构**（src/Shared/LYBT.Shared.Models/）：
 
-// Models/Requests/PatientCreateRequest.cs
-public class PatientCreateRequest
-{
-    [Required(ErrorMessage = "患者姓名不能为空")]
-    [StringLength(50, ErrorMessage = "姓名长度不能超过50个字符")]
-    public string Name { get; set; }
-    
-    [Required(ErrorMessage = "性别不能为空")]
-    public string Gender { get; set; }
-    
-    [Required(ErrorMessage = "出生日期不能为空")]
-    [DataType(DataType.Date)]
-    public DateTime BirthDate { get; set; }
-    
-    [Required(ErrorMessage = "手机号不能为空")]
-    [Phone(ErrorMessage = "手机号格式不正确")]
-    [StringLength(11, MinimumLength = 11, ErrorMessage = "手机号必须是11位")]
-    public string Phone { get; set; }
-    
-    [StringLength(200, ErrorMessage = "地址长度不能超过200个字符")]
-    public string Address { get; set; }
-    
-    [StringLength(18, MinimumLength = 18, ErrorMessage = "身份证号必须是18位")]
-    [RegularExpression(@"^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$", 
-                     ErrorMessage = "身份证号格式不正确")]
-    public string IdCard { get; set; }
-    
-    [StringLength(1000, ErrorMessage = "病史长度不能超过1000个字符")]
-    public string MedicalHistory { get; set; }
-    
-    [StringLength(500, ErrorMessage = "过敏史长度不能超过500个字符")]
-    public string Allergies { get; set; }
-    
-    [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-    public string Notes { get; set; }
-}
+```
+Common/              # 通用DTO和基类
+  ├── BatchIdsDto.cs           # 批量ID操作DTO
+  ├── EnumItem.cs              # 枚举项DTO
+  ├── PagedResult.cs           # 分页结果
+  └── StatusDto.cs             # 状态DTO基类
 
-// Models/Responses/ApiResponse.cs
-public class ApiResponse<T>
-{
-    public bool Success { get; set; }
-    public string Message { get; set; }
-    public T Data { get; set; }
-    public int Code { get; set; }
-    public DateTime Timestamp { get; set; }
-    
-    public static ApiResponse<T> Success(T data, string message = "操作成功")
-    {
-        return new ApiResponse<T>
-        {
-            Success = true,
-            Message = message,
-            Data = data,
-            Code = 200,
-            Timestamp = DateTime.UtcNow
-        };
-    }
-    
-    public static ApiResponse<T> Error(string message, int code = 400)
-    {
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Data = default,
-            Code = code,
-            Timestamp = DateTime.UtcNow
-        };
-    }
-}
+Constants/           # 常量定义
+  ├── ErrorMessageKeys.cs      # 错误消息键
+  └── ValidationConstants.cs   # 验证常量
+
+Contracts/           # DTO按业务模块组织（核心架构）
+  ├── Auth/                    # 认证模块DTOs
+  ├── Consultation/            # 诊断模块DTOs
+  ├── Patients/                # 患者模块DTOs
+  │   ├── PatientDtos.cs              # PatientDto, PatientDetailDto
+  │   ├── PatientOperationDtos.cs     # 操作相关DTOs
+  │   └── PatientStatisticsDtos.cs    # 统计相关DTOs
+  ├── Prescriptions/           # 处方模块DTOs
+  ├── MedicalCase/             # 病案模块DTOs
+  └── ...
+
+Core/                # 核心基类
+  └── BaseAuthSession.cs       # 认证会话基类
+
+Enums/               # 枚举定义
+  ├── Gender.cs                # 性别枚举
+  ├── MedicalCaseEnums.cs      # 病案相关枚举（Status, Type等）
+  ├── UserRole.cs              # 用户角色
+  ├── PrescriptionStatus.cs    # 处方状态
+  └── ...（共9个枚举文件）
+
+Exceptions/          # 异常类定义
+  └── BusinessException.cs     # 业务异常基类
+
+Extensions/          # 扩展方法
+  ├── Application/             # 应用初始化扩展
+  └── ServiceCollection/       # 服务集合扩展
 ```
 
-### 2. Interfaces - 接口定义层
-**职责**：定义业务服务接口、仓储接口、通用接口
+**设计原则**：
+- ✅ **按业务模块组织**：Contracts/Patients/而不是平坦的DTOs/目录
+- ✅ **按功能分组**：PatientDtos.cs（基础）、PatientOperationDtos.cs（操作）、PatientStatisticsDtos.cs（统计）
+- ✅ **清晰的命名空间**：`LYBT.Shared.Models.Contracts.Patients`
+- ✅ **避免过度拆分**：相关DTOs放在同一个文件中（如PatientDto和PatientDetailDto）
 
-**核心组件**：
-- `Services/` - 业务服务接口
-- `Repositories/` - 仓储接口
-- `Common/` - 通用接口
+**实际代码示例**：
 
-**代码示例**：
 ```csharp
-// Interfaces/Services/IPatientService.cs
-public interface IPatientService
+// Contracts/Patients/PatientDtos.cs
+namespace LYBT.Shared.Models.Contracts.Patients
 {
-    Task<ApiResponse<PatientDto>> GetPatientByIdAsync(int id);
-    Task<ApiResponse<IEnumerable<PatientDto>>> GetPatientsAsync(int pageIndex = 1, int pageSize = 20);
-    Task<ApiResponse<IEnumerable<PatientDto>>> SearchPatientsAsync(string keyword);
-    Task<ApiResponse<PatientDto>> CreatePatientAsync(PatientCreateRequest request);
-    Task<ApiResponse<PatientDto>> UpdatePatientAsync(int id, PatientUpdateRequest request);
-    Task<ApiResponse<bool>> DeletePatientAsync(int id);
-    Task<ApiResponse<bool>> CheckPhoneExistsAsync(string phone, int? excludeId = null);
-    Task<ApiResponse<bool>> CheckIdCardExistsAsync(string idCard, int? excludeId = null);
-}
-
-// Interfaces/Repositories/IRepository.cs
-public interface IRepository<T> where T : class
-{
-    Task<T> GetByIdAsync(int id);
-    Task<IEnumerable<T>> GetAllAsync();
-    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-    Task<T> AddAsync(T entity);
-    Task UpdateAsync(T entity);
-    Task DeleteAsync(T entity);
-    Task<int> CountAsync();
-    Task<int> CountAsync(Expression<Func<T, bool>> predicate);
-}
-
-// Interfaces/Repositories/IPatientRepository.cs
-public interface IPatientRepository : IRepository<Patient>
-{
-    Task<Patient> GetByPhoneAsync(string phone);
-    Task<Patient> GetByIdCardAsync(string idCard);
-    Task<IEnumerable<Patient>> GetByNameAsync(string name);
-    Task<IEnumerable<Patient>> GetPatientsWithMedicalCasesAsync(int pageIndex = 1, int pageSize = 20);
-    Task<bool> IsPhoneExistsAsync(string phone, int? excludeId = null);
-    Task<bool> IsIdCardExistsAsync(string idCard, int? excludeId = null);
-}
-
-// Interfaces/Common/IValidationService.cs
-public interface IValidationService
-{
-    ValidationResult Validate<T>(T entity);
-    ValidationResult ValidateProperty<T, TProperty>(T entity, Expression<Func<T, TProperty>> property);
-    Task<ValidationResult> ValidateAsync<T>(T entity);
-}
-
-// Interfaces/Common/ICacheService.cs
-public interface ICacheService
-{
-    Task<T> GetAsync<T>(string key);
-    Task SetAsync<T>(string key, T value, TimeSpan? expiry = null);
-    Task RemoveAsync(string key);
-    Task<bool> ExistsAsync(string key);
-    Task ClearAsync();
-}
-```
-
-### 3. Infrastructure - 基础设施层
-**职责**：提供通用基础设施组件、数据访问、缓存、日志等
-
-**核心组件**：
-- `Data/` - 数据访问组件
-- `Caching/` - 缓存组件
-- `Logging/` - 日志组件
-- `Security/` - 安全组件
-- `Validation/` - 验证组件
-
-**代码示例**：
-```csharp
-// Infrastructure/Data/RepositoryBase.cs
-public abstract class RepositoryBase<T> : IRepository<T> where T : class
-{
-    protected readonly DbContext _context;
-    protected readonly DbSet<T> _dbSet;
-    
-    protected RepositoryBase(DbContext context)
+    /// &lt;summary&gt;
+    /// 患者信息DTO - UltraThink v2.0简化版
+    /// &lt;/summary&gt;
+    public class PatientDto : StatusDto
     {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
-    
-    public virtual async Task<T> GetByIdAsync(int id)
-    {
-        return await _dbSet.FindAsync(id);
-    }
-    
-    public virtual async Task<IEnumerable<T>> GetAllAsync()
-    {
-        return await _dbSet.ToListAsync();
-    }
-    
-    public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-    {
-        return await _dbSet.Where(predicate).ToListAsync();
-    }
-    
-    public virtual async Task<T> AddAsync(T entity)
-    {
-        await _dbSet.AddAsync(entity);
-        await _context.SaveChangesAsync();
-        return entity;
-    }
-    
-    public virtual async Task UpdateAsync(T entity)
-    {
-        _dbSet.Update(entity);
-        await _context.SaveChangesAsync();
-    }
-    
-    public virtual async Task DeleteAsync(T entity)
-    {
-        _dbSet.Remove(entity);
-        await _context.SaveChangesAsync();
-    }
-    
-    public virtual async Task<int> CountAsync()
-    {
-        return await _dbSet.CountAsync();
-    }
-    
-    public virtual async Task<int> CountAsync(Expression<Func<T, bool>> predicate)
-    {
-        return await _dbSet.CountAsync(predicate);
-    }
-}
-
-// Infrastructure/Caching/MemoryCacheService.cs
-public class MemoryCacheService : ICacheService
-{
-    private readonly IMemoryCache _cache;
-    private readonly ILogger<MemoryCacheService> _logger;
-    
-    public MemoryCacheService(IMemoryCache cache, ILogger<MemoryCacheService> logger)
-    {
-        _cache = cache;
-        _logger = logger;
-    }
-    
-    public async Task<T> GetAsync<T>(string key)
-    {
-        if (_cache.TryGetValue(key, out T value))
+        public string Name { get; set; } = string.Empty;
+        public Gender Gender { get; set; }
+        public DateTime? BirthDate { get; set; }
+        
+        /// &lt;summary&gt;年龄（基于出生日期的计算属性）&lt;/summary&gt;
+        public int? Age
         {
-            _logger.LogDebug("Cache hit for key: {Key}", key);
-            return value;
-        }
-        
-        _logger.LogDebug("Cache miss for key: {Key}", key);
-        return default;
-    }
-    
-    public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
-    {
-        var options = new MemoryCacheEntryOptions();
-        if (expiry.HasValue)
-        {
-            options.AbsoluteExpirationRelativeToNow = expiry.Value;
-        }
-        
-        _cache.Set(key, value, options);
-        _logger.LogDebug("Cache set for key: {Key}", key);
-    }
-    
-    public async Task RemoveAsync(string key)
-    {
-        _cache.Remove(key);
-        _logger.LogDebug("Cache removed for key: {Key}", key);
-    }
-    
-    public async Task<bool> ExistsAsync(string key)
-    {
-        return _cache.TryGetValue(key, out _);
-    }
-    
-    public async Task ClearAsync()
-    {
-        if (_cache is MemoryCache memoryCache)
-        {
-            memoryCache.Compact(1.0);
-        }
-        _logger.LogDebug("Cache cleared");
-    }
-}
-
-// Infrastructure/Validation/FluentValidationService.cs
-public class FluentValidationService : IValidationService
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<FluentValidationService> _logger;
-    
-    public FluentValidationService(IServiceProvider serviceProvider, ILogger<FluentValidationService> logger)
-    {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-    }
-    
-    public ValidationResult Validate<T>(T entity)
-    {
-        var validator = _serviceProvider.GetService<IValidator<T>>();
-        if (validator == null)
-        {
-            _logger.LogWarning("No validator found for type: {Type}", typeof(T).Name);
-            return ValidationResult.Success;
-        }
-        
-        var result = validator.Validate(entity);
-        return ConvertToValidationResult(result);
-    }
-    
-    public ValidationResult ValidateProperty<T, TProperty>(T entity, Expression<Func<T, TProperty>> property)
-    {
-        var validator = _serviceProvider.GetService<IValidator<T>>();
-        if (validator == null)
-        {
-            return ValidationResult.Success;
-        }
-        
-        var result = validator.Validate(entity, options => 
-            options.IncludeProperties(property.GetMemberName()));
-        return ConvertToValidationResult(result);
-    }
-    
-    public async Task<ValidationResult> ValidateAsync<T>(T entity)
-    {
-        var validator = _serviceProvider.GetService<IValidator<T>>();
-        if (validator == null)
-        {
-            return ValidationResult.Success;
-        }
-        
-        var result = await validator.ValidateAsync(entity);
-        return ConvertToValidationResult(result);
-    }
-    
-    private static ValidationResult ConvertToValidationResult(ValidationResult result)
-    {
-        if (result.IsValid)
-        {
-            return ValidationResult.Success;
-        }
-        
-        var errors = result.Errors.Select(e => new ValidationError
-        {
-            PropertyName = e.PropertyName,
-            ErrorMessage = e.ErrorMessage,
-            AttemptedValue = e.AttemptedValue
-        }).ToList();
-        
-        return ValidationResult.Failure(errors);
-    }
-}
-```
-
-### 4. Utilities - 工具类层
-**职责**：提供通用工具类、扩展方法、辅助函数
-
-**核心组件**：
-- `Extensions/` - 扩展方法
-- `Helpers/` - 辅助类
-- `Converters/` - 转换器
-- `Formatters/` - 格式化器
-
-**代码示例**：
-```csharp
-// Utilities/Extensions/StringExtensions.cs
-public static class StringExtensions
-{
-    public static bool IsNullOrEmpty(this string value)
-    {
-        return string.IsNullOrEmpty(value);
-    }
-    
-    public static bool IsNullOrWhiteSpace(this string value)
-    {
-        return string.IsNullOrWhiteSpace(value);
-    }
-    
-    public static string SafeTrim(this string value)
-    {
-        return value?.Trim() ?? string.Empty;
-    }
-    
-    public static string MaskPhone(this string phone)
-    {
-        if (string.IsNullOrWhiteSpace(phone) || phone.Length < 7)
-            return phone;
-        
-        return phone.Substring(0, 3) + "****" + phone.Substring(7);
-    }
-    
-    public static string MaskIdCard(this string idCard)
-    {
-        if (string.IsNullOrWhiteSpace(idCard) || idCard.Length < 8)
-            return idCard;
-        
-        return idCard.Substring(0, 4) + "**********" + idCard.Substring(idCard.Length - 4);
-    }
-    
-    public static string ToPinyin(this string chineseText)
-    {
-        // 实现中文转拼音的逻辑
-        return PinyinHelper.GetPinyin(chineseText);
-    }
-}
-
-// Utilities/Extensions/DateTimeExtensions.cs
-public static class DateTimeExtensions
-{
-    public static int CalculateAge(this DateTime birthDate)
-    {
-        var today = DateTime.Today;
-        var age = today.Year - birthDate.Year;
-        if (birthDate.Date > today.AddYears(-age)) age--;
-        return age;
-    }
-    
-    public static string ToAgeString(this DateTime birthDate)
-    {
-        var age = birthDate.CalculateAge();
-        return $"{age}岁";
-    }
-    
-    public static string ToChineseDateString(this DateTime date)
-    {
-        return date.ToString("yyyy年MM月dd日");
-    }
-    
-    public static string ToChineseDateTimeString(this DateTime dateTime)
-    {
-        return dateTime.ToString("yyyy年MM月dd日 HH:mm");
-    }
-    
-    public static bool IsWeekend(this DateTime date)
-    {
-        return date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
-    }
-    
-    public static DateTime GetFirstDayOfMonth(this DateTime date)
-    {
-        return new DateTime(date.Year, date.Month, 1);
-    }
-    
-    public static DateTime GetLastDayOfMonth(this DateTime date)
-    {
-        return new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-    }
-}
-
-// Utilities/Helpers/IdGeneratorHelper.cs
-public static class IdGeneratorHelper
-{
-    private static readonly ConcurrentDictionary<string, long> _counters = new();
-    
-    public static string GeneratePatientId()
-    {
-        var prefix = $"P{DateTime.Now:yyyyMMdd}";
-        var counter = _counters.AddOrUpdate(prefix, 1, (_, v) => v + 1);
-        return $"{prefix}{counter:D4}";
-    }
-    
-    public static string GenerateMedicalCaseId()
-    {
-        var prefix = $"M{DateTime.Now:yyyyMMdd}";
-        var counter = _counters.AddOrUpdate(prefix, 1, (_, v) => v + 1);
-        return $"{prefix}{counter:D4}";
-    }
-    
-    public static string GeneratePrescriptionId()
-    {
-        var prefix = $"R{DateTime.Now:yyyyMMdd}";
-        var counter = _counters.AddOrUpdate(prefix, 1, (_, v) => v + 1);
-        return $"{prefix}{counter:D4}";
-    }
-    
-    public static string GenerateConsultationId()
-    {
-        var prefix = $"C{DateTime.Now:yyyyMMdd}";
-        var counter = _counters.AddOrUpdate(prefix, 1, (_, v) => v + 1);
-        return $"{prefix}{counter:D4}";
-    }
-}
-
-// Utilities/Converters/EnumConverter.cs
-public static class EnumConverter
-{
-    public static string ToDescriptionString(this Enum value)
-    {
-        var field = value.GetType().GetField(value.ToString());
-        var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
-        return attribute?.Description ?? value.ToString();
-    }
-    
-    public static T FromDescriptionString<T>(string description) where T : Enum
-    {
-        var type = typeof(T);
-        var fields = type.GetFields();
-        
-        foreach (var field in fields)
-        {
-            var attribute = field.GetCustomAttribute<DescriptionAttribute>();
-            if (attribute?.Description == description)
+            get
             {
-                return (T)Enum.Parse(type, field.Name);
+                if (BirthDate == null) return null;
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Value.Year;
+                if (BirthDate.Value.Date &gt; today.AddYears(-age)) age--;
+                return age;
             }
         }
-        
-        throw new ArgumentException($"No enum value with description '{description}' found in {type.Name}");
+    }
+}
+
+// Common/PagedResult.cs - 通用分页结果
+public class PagedResult&lt;T&gt;
+{
+    public List&lt;T&gt; Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int CurrentPage { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages =&gt; (int)Math.Ceiling(TotalCount / (double)PageSize);
+    public bool HasNextPage =&gt; CurrentPage &lt; TotalPages;
+    public bool HasPreviousPage =&gt; CurrentPage &gt; 1;
+}
+
+// Enums/Gender.cs - 枚举定义
+public enum Gender
+{
+    Unknown = 0,
+    Male = 1,
+    Female = 2
+}
+```
+
+**关键差异说明**：
+- ❌ **文档描述**：Entities/, DTOs/, Requests/, Responses/, ViewModels/（平坦结构）
+- ✅ **实际实现**：Contracts/{Module}/（按业务模块组织）+ Common/（通用）+ Constants/（常量）+ Enums/（枚举）
+- **原因**：实际架构更符合MVP原则（够用即好），避免过度分层
+
+### 2. Interfaces - 接口定义层
+
+> **⚠️ 项目状态**：当前Shared.Interfaces项目为**空项目**（0个源文件），这是**有意的设计决策**。
+
+**空项目原因**（MVP架构原则）：
+
+当前v5.0架构采用**去中心化接口定义**模式，每个端定义自己的接口：
+
+```
+Server端接口定义：
+  src/Server/Core/LYBT.Server.Core.Interfaces/
+    ├── Services/         # 业务服务接口（IPatientService等）
+    ├── Repositories/     # 仓储接口（IPatientRepository等）
+    └── Common/           # 通用接口
+
+Client端接口定义：
+  src/Client/Shared/LYBT.Client.Shared.Interfaces/
+    ├── Services/         # 客户端服务接口
+    └── ViewModels/       # ViewModel接口
+
+Shared.Interfaces留空：
+  src/Shared/LYBT.Shared.Interfaces/
+    └── (empty - 仅保留项目结构)
+```
+
+**设计优势**：
+- ✅ **避免过早抽象**：Server和Client的接口需求不同，不强制共享
+- ✅ **依赖方向清晰**：Server依赖Server.Core.Interfaces，Client依赖Client.Shared.Interfaces
+- ✅ **职责明确**：每个端管理自己的接口定义
+- ✅ **符合MVP原则**：只在真正需要跨端共享接口时才引入到Shared.Interfaces
+
+**演进触发条件**（参见ADR-005）：
+- 出现真正需要跨端共享的接口（如通用验证接口IValidationService）
+- 达到接口共享阈值（>5个跨端接口）
+
+**当前结论**：Shared.Interfaces空项目是**正确的架构选择**，不是遗漏或Bug。
+
+### 3. Components - 跨端组件层
+
+> **⚠️ 项目说明**：当前项目名称为**LYBT.Shared.Components**（不是Infrastructure），包含少量跨端共享组件。
+
+**职责**：提供Desktop/Avalonia跨端共享的业务组件（当前专注于中药相关功能）
+
+**实际目录结构**（src/Shared/LYBT.Shared.Components/）：
+
+```
+Components/
+  ├── HerbCalculatorBase.cs       # 中药计算基类
+  ├── HerbValidatorBase.cs        # 中药验证基类
+  └── IHerbItem.cs                # 中药项接口
+```
+
+**组件说明**：
+
+1. **HerbCalculatorBase** - 中药剂量计算抽象基类
+   - 提供中药配方的剂量计算逻辑
+   - 支持Desktop和Avalonia端共享
+
+2. **HerbValidatorBase** - 中药验证抽象基类
+   - 提供中药配伍禁忌验证
+   - 支持Desktop和Avalonia端共享
+
+3. **IHerbItem** - 中药项通用接口
+   - 定义中药项的基本属性
+   - 支持Desktop和Avalonia端共享
+
+**设计原则**（MVP阶段）：
+- ✅ **仅包含真正需要跨端共享的组件**（当前仅3个中药相关组件）
+- ✅ **避免过度抽象**：不预先创建可能用不上的Infrastructure组件
+- ✅ **按需演进**：当出现新的跨端共享需求时再添加新组件
+- ❌ **不创建空目录**：没有Data/, Caching/, Logging/等未使用的目录
+
+**实际代码示例**：
+
+```csharp
+// Components/IHerbItem.cs - 中药项接口
+namespace LYBT.Shared.Components
+{
+    /// &lt;summary&gt;
+    /// 中药项通用接口 - Desktop/Avalonia跨端共享
+    /// &lt;/summary&gt;
+    public interface IHerbItem
+    {
+        string Name { get; set; }           // 中药名称
+        decimal Dosage { get; set; }        // 剂量（克）
+        string Unit { get; set; }           // 单位
+    }
+}
+
+// Components/HerbCalculatorBase.cs - 中药计算基类
+public abstract class HerbCalculatorBase
+{
+    /// &lt;summary&gt;
+    /// 计算处方总剂量
+    /// &lt;/summary&gt;
+    public abstract decimal CalculateTotalDosage(IEnumerable&lt;IHerbItem&gt; herbs);
+    
+    /// &lt;summary&gt;
+    /// 计算单味药占比
+    /// &lt;/summary&gt;
+    public abstract decimal CalculateProportion(IHerbItem herb, IEnumerable&lt;IHerbItem&gt; herbs);
+}
+```
+
+**关键差异说明**：
+- ❌ **文档描述**：Infrastructure/（Data/, Caching/, Logging/, Security/, Validation/）
+- ✅ **实际实现**：Components/（仅3个中药相关组件）
+- **原因**：MVP阶段避免过早抽象，仅实现真正需要的跨端共享功能
+
+**演进触发条件**（参见ADR-005）：
+- 出现更多跨端共享需求（>5个组件）
+- 需要通用的Data/Caching/Logging组件时
+- 当前Components/可能演进为Infrastructure/的子目录之一
+
+### 4. Utilities - 工具类层
+
+> **⚠️ 项目说明**：当前Utilities包含**少量跨端共享的工具类**，主要是启动初始化和缓存扩展。
+
+**实际目录结构**（src/Shared/LYBT.Shared.Utilities/）：
+
+```
+Utilities/
+  ├── Configuration/            # 配置相关（空目录，保留结构）
+  ├── Extensions/               # 扩展方法
+  │   ├── Application/
+  │   │   └── ApplicationInitializationExtensions.cs  # 应用启动初始化扩展
+  │   └── ServiceCollection/
+  │       └── CacheExtensions.cs                      # 缓存服务注册扩展
+  ├── Helpers/                  # 辅助类（空目录，保留结构）
+  └── Security/                 # 安全相关（空目录，保留结构）
+```
+
+**现有工具类**（仅2个）：
+
+**4.1 ApplicationInitializationExtensions.cs** - 应用启动初始化扩展：
+```csharp
+// 用途：提供应用启动时的初始化扩展方法
+// 位置：Extensions/Application/ApplicationInitializationExtensions.cs
+public static class ApplicationInitializationExtensions
+{
+    // 初始化应用（具体实现见代码）
+}
+```
+
+**4.2 CacheExtensions.cs** - 缓存服务注册扩展：
+```csharp
+// 用途：提供IServiceCollection的缓存服务注册扩展
+// 位置：Extensions/ServiceCollection/CacheExtensions.cs
+public static class CacheExtensions
+{
+    public static IServiceCollection AddMemoryCacheServices(this IServiceCollection services)
+    {
+        services.AddMemoryCache();
+        return services;
     }
 }
 ```
+
+**设计原则**（MVP阶段）：
+
+- ✅ **仅包含真正需要跨端共享的工具类**（当前仅2个扩展类）
+- ✅ **避免过度设计**：不预先创建StringExtensions、DateTimeExtensions等可能用不上的工具类
+- ✅ **按需添加**：未来如有真正需要跨端共享的工具方法，再添加对应类
+
+**注意事项**：
+
+1. **空目录保留原因**：Configuration/、Helpers/、Security/目录当前为空，但保留目录结构以便未来扩展
+2. **工具类最小化**：当前仅ApplicationInitializationExtensions和CacheExtensions，符合"够用即好"原则
+3. **端特定工具类**：
+   - Server端特定工具类 → 放在Server端项目
+   - Client端特定工具类 → 放在Client端项目
+   - 仅真正跨端共享的 → 放在Shared.Utilities
+
+**演进触发条件**（参见ADR-005）：
+- 当出现3个以上端都需要使用的相同工具方法时 → 提取到Shared.Utilities
+- 当前MVP阶段不主动创建"可能未来会用到"的工具类
 
 ### 5. Constants - 常量定义层
-**职责**：定义系统常量、配置常量、业务常量
 
-**代码示例**：
+> **⚠️ 项目说明**：当前Constants包含**少量验证和错误消息相关的常量**，不包含文档中描述的SystemConstants和BusinessConstants。
+
+**职责**：定义验证规则常量、错误消息键
+
+**实际目录结构**（src/Shared/LYBT.Shared.Models/Constants/）：
+
+```
+Constants/
+  ├── ErrorMessageKeys.cs      # 错误消息键定义
+  └── ValidationConstants.cs   # 验证常量定义
+```
+
+**实际代码示例**：
+
+**5.1 ValidationConstants.cs** - 验证规则常量：
 ```csharp
-// Constants/SystemConstants.cs
-public static class SystemConstants
+// 用途：定义统一的验证规则常量
+// 位置：Constants/ValidationConstants.cs
+namespace LYBT.Shared.Models.Constants
 {
-    public const string APPLICATION_NAME = "凌隐宝堂中医诊所管理系统";
-    public const string APPLICATION_VERSION = "5.0.0";
-    public const string DEFAULT_CULTURE = "zh-CN";
-    public const string DEFAULT_TIMEZONE = "Asia/Shanghai";
-    
-    // 缓存键
-    public static class CacheKeys
+    public static class ValidationConstants
     {
-        public const string PATIENT_LIST = "patient:list";
-        public const string PATIENT_DETAIL = "patient:detail:";
-        public const string HERB_LIST = "herb:list";
-        public const string FORMULA_LIST = "formula:list";
-        public const string USER_PERMISSIONS = "user:permissions:";
-        public const string USER_INFO = "user:info:";
-    }
-    
-    // 缓存过期时间
-    public static class CacheExpiry
-    {
-        public static readonly TimeSpan SHORT = TimeSpan.FromMinutes(5);
-        public static readonly TimeSpan MEDIUM = TimeSpan.FromMinutes(30);
-        public static readonly TimeSpan LONG = TimeSpan.FromHours(2);
-        public static readonly TimeSpan DAILY = TimeSpan.FromDays(1);
-    }
-    
-    // 分页默认值
-    public static class Pagination
-    {
-        public const int DEFAULT_PAGE_SIZE = 20;
+        // 患者验证
+        public const int PATIENT_NAME_MAX_LENGTH = 50;
+        public const int PATIENT_PHONE_LENGTH = 11;
+        public const int PATIENT_IDCARD_LENGTH = 18;
+        
+        // 处方验证
+        public const int PRESCRIPTION_NAME_MAX_LENGTH = 100;
+        public const decimal MIN_HERB_DOSAGE = 0.1m;
+        public const decimal MAX_HERB_DOSAGE = 1000m;
+        
+        // 分页验证
+        public const int MIN_PAGE_SIZE = 1;
         public const int MAX_PAGE_SIZE = 100;
-        public const int DEFAULT_PAGE_INDEX = 1;
-    }
-    
-    // 文件上传限制
-    public static class FileUpload
-    {
-        public const long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-        public const string[] ALLOWED_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx" };
-    }
-}
-
-// Constants/BusinessConstants.cs
-public static class BusinessConstants
-{
-    // 患者状态
-    public static class PatientStatus
-    {
-        public const string ACTIVE = "Active";
-        public const string INACTIVE = "Inactive";
-        public const string DECEASED = "Deceased";
-    }
-    
-    // 医案状态
-    public static class MedicalCaseStatus
-    {
-        public const string NEW = "New";
-        public const string IN_PROGRESS = "InProgress";
-        public const string COMPLETED = "Completed";
-        public const string CANCELLED = "Cancelled";
-    }
-    
-    // 处方状态
-    public static class PrescriptionStatus
-    {
-        public const string DRAFT = "Draft";
-        public const string CONFIRMED = "Confirmed";
-        public const string DISPENSED = "Dispensed";
-        public const string COMPLETED = "Completed";
-        public const string CANCELLED = "Cancelled";
-    }
-    
-    // 诊疗类型
-    public static class ConsultationTypes
-    {
-        public const string FIRST_VISIT = "FirstVisit";
-        public const string FOLLOW_UP = "FollowUp";
-        public const string EMERGENCY = "Emergency";
-    }
-    
-    // 支付方式
-    public static class PaymentMethods
-    {
-        public const string CASH = "Cash";
-        public const string CREDIT_CARD = "CreditCard";
-        public const string ALIPAY = "Alipay";
-        public const string WECHAT_PAY = "WechatPay";
-        public const string INSURANCE = "Insurance";
+        public const int DEFAULT_PAGE_SIZE = 20;
     }
 }
 ```
+
+**5.2 ErrorMessageKeys.cs** - 错误消息键：
+```csharp
+// 用途：定义统一的错误消息键（用于国际化）
+// 位置：Constants/ErrorMessageKeys.cs
+namespace LYBT.Shared.Models.Constants
+{
+    public static class ErrorMessageKeys
+    {
+        // 通用错误
+        public const string VALIDATION_FAILED = "validation.failed";
+        public const string NOT_FOUND = "not.found";
+        public const string UNAUTHORIZED = "unauthorized";
+        
+        // 患者相关
+        public const string PATIENT_NAME_REQUIRED = "patient.name.required";
+        public const string PATIENT_PHONE_INVALID = "patient.phone.invalid";
+        
+        // 处方相关
+        public const string PRESCRIPTION_EMPTY = "prescription.empty";
+        public const string HERB_DOSAGE_INVALID = "herb.dosage.invalid";
+    }
+}
+```
+
+**设计原则**（MVP阶段）：
+- ✅ **仅包含真正需要的常量**：验证规则和错误消息键
+- ✅ **避免过度设计**：不预先创建SystemConstants、BusinessConstants等大而全的常量类
+- ✅ **按需添加**：未来如需其他常量类型，再添加对应文件
+
+**注意事项**：
+1. **业务枚举值**：使用Enums/目录定义（如Gender、MedicalCaseStatus等），不使用字符串常量
+2. **配置值**：使用appsettings.json或环境变量，不硬编码在Constants中
+3. **最小化原则**：当前仅2个常量文件，符合MVP"够用即好"原则
 
 ### 6. Enums - 枚举类型层
 **职责**：定义业务枚举类型、系统枚举类型
