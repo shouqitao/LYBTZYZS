@@ -912,7 +912,7 @@ git status                      # 或 mcp__git__git_status
 |---------|---------|------|--------|
 | **开发工具** | serena, filesystem, git, ide | 语义代码编辑、文件操作、版本控制 | ⭐⭐⭐ |
 | **知识工具** | context7, microsoft_docs_mcp, memory | 文档查询、知识管理 | ⭐⭐⭐ |
-| **工作流工具** | spec-workflow, github, sequential-thinking | Spec流程、任务管理、推理 | ⭐⭐⭐ |
+| **工作流工具** | spec-workflow, github, sequential-thinking, shrimp-task-manager, interactive-feedback | Spec流程、任务管理、推理、人机交互 | ⭐⭐⭐ |
 | **测试工具** | playwright | E2E测试、浏览器自动化 | ⭐⭐ |
 | **时间工具** | time | 时间标准化 | ⭐⭐ |
 
@@ -1034,6 +1034,229 @@ serena（符号搜索） → serena（代码编辑） → filesystem（验证）
 github（创建Issue） → 代码修改 → github（创建PR） → github（合并PR）
 ```
 
+#### 5. interactive-feedback（人机交互反馈工具）⭐ v6.1新增
+
+**工具库ID**：`/noopstudios/interactive-feedback-mcp`
+
+**核心能力**：
+- 提供人机交互反馈循环（Human-in-the-Loop）
+- 在AI执行任务过程中获取用户确认和反馈
+- 适用于需要用户参与决策的工作流
+
+**使用场景**：
+- ✅ 关键操作前需要用户确认（如删除文件、修改配置）
+- ✅ 需要用户提供额外输入或选择方案
+- ✅ 验证AI生成的代码或文档质量
+- ✅ 多阶段任务中的中间检查点
+
+**工具调用**：
+```python
+# 请求用户反馈
+mcp__interactive-feedback__interactive_feedback(
+    project_directory="/absolute/path/to/project",  # 项目绝对路径
+    summary="简短的变更摘要（一行）"                # 变更描述
+)
+```
+
+**典型工作流**：
+```
+1. AI执行操作（如代码生成、文件修改）
+2. 调用interactive_feedback获取用户反馈
+3. 根据反馈调整后续行动
+4. 继续执行或回滚变更
+```
+
+**最佳实践**：
+- 在关键决策点使用，避免频繁打断用户
+- 提供清晰的summary说明做了什么变更
+- 根据反馈及时调整策略
+
+#### 6. shrimp-task-manager（智能任务管理工具）⭐ v6.1新增
+
+**工具库ID**：`/cjo4m06/mcp-shrimp-task-manager`
+
+**核心能力**：
+- 为AI Agent提供结构化任务管理框架
+- 支持任务规划、分解、执行、验证全流程
+- 提供任务记忆和上下文管理
+- 集成Git追踪任务历史
+
+**核心操作**（6个主要工具）：
+
+##### 6.1 任务规划（plan_task）
+```python
+mcp__shrimp-task-manager__plan_task(
+    description="完整详细的任务问题描述，包含任务目标、背景及预期成果",
+    requirements="可选：任务的特定技术要求、业务约束条件或质量标准",
+    existingTasksReference=False  # 是否参考现有任务作为规划基础
+)
+```
+
+**何时使用**：
+- 开始新功能开发前
+- 收到复杂需求时
+- 需要系统性规划时
+
+##### 6.2 任务分析（analyze_task）
+```python
+mcp__shrimp-task-manager__analyze_task(
+    summary="结构化的任务摘要，包含任务目标、范围与关键技术挑战，最少10个字符",
+    initialConcept="最少50个字符的初步解答构想，包含技术方案、架构设计和实施策略",
+    previousAnalysis="可选：前次迭代的分析结果，用于持续改进方案"
+)
+```
+
+**何时使用**：
+- 需要深度分析技术方案
+- 评估实施可行性
+- 识别潜在风险
+
+##### 6.3 任务拆分（split_tasks）
+```python
+mcp__shrimp-task-manager__split_tasks(
+    updateMode="clearAllTasks",  # clearAllTasks | append | overwrite | selective
+    tasksRaw="[{name:'任务名称', description:'详细描述', dependencies:[], ...}]",
+    globalAnalysisResult="可选：任务最终目标，来自之前分析适用于所有任务的通用部分"
+)
+```
+
+**拆分粒度控制**：
+- 单个子任务：1-2工作日（8-16小时）
+- 避免跨技术域（frontend + backend + database应拆分）
+- 推荐6-8个子任务/批次
+- 任务树深度≤3层
+
+**何时使用**：
+- 将Epic拆分为可执行的小任务
+- 明确任务依赖关系
+- 分配优先级和时间估算
+
+##### 6.4 任务执行（execute_task）
+```python
+mcp__shrimp-task-manager__execute_task(
+    taskId="UUID格式的任务ID"
+)
+```
+
+**返回内容**：
+- 任务详细信息（名称、描述、实施指南）
+- 相关文件列表
+- 验证标准
+- 依赖关系
+
+**何时使用**：
+- 获取任务执行指导
+- 查看实施细节
+- 确认验证标准
+
+##### 6.5 任务列表（list_tasks）
+```python
+mcp__shrimp-task-manager__list_tasks(
+    status="all"  # all | pending | in_progress | completed
+)
+```
+
+**何时使用**：
+- 查看当前任务状态
+- 选择下一个待执行任务
+- 跟踪整体进度
+
+##### 6.6 任务验证（verify_task）
+```python
+mcp__shrimp-task-manager__verify_task(
+    taskId="UUID格式的任务ID",
+    score=85,  # 0-100分，≥80分自动完成任务
+    summary="任务完成摘要或缺失/修正部分说明，最少30个字"
+)
+```
+
+**验证标准**（4个维度）：
+1. **需求符合度（30%）**：功能完整性、约束遵守、边界处理
+2. **技术质量（30%）**：架构一致性、代码健壮性、实现优雅性
+3. **集成兼容性（20%）**：系统集成、互操作性、兼容性维护
+4. **性能可扩展性（20%）**：性能优化、负载适应、资源管理
+
+**何时使用**：
+- 任务完成后的质量检查
+- 确认是否达到验收标准
+- 决定任务是否可以关闭
+
+**高级功能**：
+
+##### 深度思考（process_thought）
+```python
+mcp__shrimp-task-manager__process_thought(
+    thought="思维内容",
+    thought_number=1,
+    total_thoughts=10,
+    next_thought_needed=True,
+    stage="Problem Definition"  # 可选：Information Gathering, Research, Analysis等
+)
+```
+
+**使用场景**：
+- 需要深度推理的复杂问题
+- 多步骤分析（5-30步）
+- 不确定性高的架构决策
+
+##### 研究模式（research_mode）
+```python
+mcp__shrimp-task-manager__research_mode(
+    topic="要研究的编程主题内容，应该明确且具体",
+    currentState="当前Agent主要该执行的内容",
+    nextSteps="后续的计划、步骤或研究方向",
+    previousState=""  # 可选：之前的研究状态和内容摘要
+)
+```
+
+**使用场景**：
+- 技术调研（新框架、最佳实践）
+- 方案比对（多种实现方式）
+- 深度学习（复杂技术领域）
+
+**工具协同示例**：
+
+**完整Epic开发流程**：
+```
+1. plan_task（规划）
+   → 生成任务规划指导
+
+2. analyze_task（分析）
+   → 深度技术方案分析
+
+3. split_tasks（拆分）
+   → 生成8个子任务（18-24小时）
+
+4. list_tasks（查看）
+   → 选择pending任务
+
+5. execute_task（执行）
+   → 获取实施指南
+
+6. [编写代码、运行验证]
+
+7. verify_task（验证）
+   → 质量检查（≥80分完成）
+
+8. 重复4-7直到所有任务完成
+```
+
+**与interactive-feedback协同**：
+```
+shrimp（规划任务）
+  → interactive-feedback（用户确认方案）
+  → shrimp（执行任务）
+  → interactive-feedback（用户验证结果）
+  → shrimp（完成任务）
+```
+
+**最佳实践**：
+- ✅ 使用research_mode进行技术调研
+- ✅ 使用process_thought进行深度分析
+- ✅ 任务拆分遵循粒度控制（1-2天/任务）
+- ✅ 验证评分客观公正（参考4个维度）
+- ❌ 避免任务拆分过细（<4小时）或过大（>3天）
+- ❌ 禁止跳过验证环节直接标记完成
 
 > **📖 详细定义**：参见 `.claude/modes/` 目录
 
