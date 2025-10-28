@@ -81,8 +81,7 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Business Module Dependencies">
-    <ProjectReference Include="..\LYBT.Desktop.Patients\LYBT.Desktop.Patients.csproj" />
-  </ItemGroup>
+  <!-- Epic #1676 Phase 4 Task 4.5: 移除循环依赖 - MedicalCase不需要引用Patients -->
+  <!-- Prism [ModuleDependency] 只需要运行时加载顺序，不需要编译时项目引用 -->
 
 </Project>

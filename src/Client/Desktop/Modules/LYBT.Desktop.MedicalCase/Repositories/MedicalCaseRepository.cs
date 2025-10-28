@@ -298,6 +298,77 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.4
+        /// </summary>
+        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        {
+            if (patientId == Guid.Empty)
+                throw new ArgumentException("患者ID不能为空", nameof(patientId));
+
+            try
+            {
+                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+
+                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+                // 404表示没有未完成医案，这是正常情况
+                if (response.Data == null)
+                {
+                    _logger.LogInformation("患者无未完成医案，PatientId: {PatientId}", patientId);
+                    return null;
+                }
+
+                _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
+                    response.Data.Id, response.Data.Status);
+
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询未完成医案失败，PatientId: {PatientId}", patientId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.4
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        public async Task<bool> CloseCaseAsync(Guid medicalCaseId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            try
+            {
+                _logger.LogInformation("关闭病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                var response = await _api.CloseCaseAsync(medicalCaseId);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("病案关闭失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                        medicalCaseId, response.Message);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "关闭病案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);

@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -32,8 +33,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 服务依赖
 
         private readonly IPatientRepository _patientRepository;
+        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IDialogService _dialogService;
-        private readonly IMedicalCaseQueryService _medicalCaseQueryService;
         private readonly IMedicalCaseApi _medicalCaseApi;
         private System.Threading.Timer? _searchDebounceTimer;
 
@@ -221,8 +222,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientSelectionViewModel(
             IPatientRepository patientRepository,
+            IMedicalCaseRepository medicalCaseRepository,
             IDialogService dialogService,
-            IMedicalCaseQueryService medicalCaseQueryService,
             IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -232,8 +233,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _medicalCaseQueryService = medicalCaseQueryService ?? throw new ArgumentNullException(nameof(medicalCaseQueryService));
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
             // 初始化命令
@@ -610,7 +611,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 2. 缓存未命中，调用API查询
                 Logger.LogInformation("缓存未命中，调用API查询：PatientId={PatientId}", patientId);
 
-                var unfinishedCase = await _medicalCaseQueryService.GetUnfinishedCaseByPatientIdAsync(patientId);
+                var unfinishedCase = await _medicalCaseRepository.GetUnfinishedCaseByPatientIdAsync(patientId);
 
                 if (unfinishedCase != null)
                 {
@@ -709,7 +710,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     oldMedicalCaseId);
 
                 // 1. 关闭旧医案
-                var closed = await _medicalCaseQueryService.CloseAsync(oldMedicalCaseId);
+                var closed = await _medicalCaseRepository.CloseCaseAsync(oldMedicalCaseId);
 
                 if (closed)
                 {
@@ -745,7 +746,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     oldMedicalCaseId);
 
                 // 1. 关闭旧医案
-                var closed = await _medicalCaseQueryService.CloseAsync(oldMedicalCaseId);
+                var closed = await _medicalCaseRepository.CloseCaseAsync(oldMedicalCaseId);
 
                 if (closed)
                 {
@@ -785,7 +786,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("用户选择关闭旧医案：MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
                 // 1. 调用API关闭医案
-                var closed = await _medicalCaseQueryService.CloseAsync(medicalCaseId);
+                var closed = await _medicalCaseRepository.CloseCaseAsync(medicalCaseId);
 
                 if (closed)
                 {

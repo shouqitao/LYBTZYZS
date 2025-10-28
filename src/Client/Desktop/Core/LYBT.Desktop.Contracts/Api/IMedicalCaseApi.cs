@@ -166,5 +166,22 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
             Guid medicalCaseId,
             [Refit.Body] MedicalCaseUpdateDto request);
+
+        // ========== Epic #1676 Phase 4 Task 4.1 - 新增专用API ==========
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
+        Task<ApiResponse<MedicalCaseDto>> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{id}/close")]
+        Task<ApiResponse> CloseCaseAsync(Guid id);
     }
 }

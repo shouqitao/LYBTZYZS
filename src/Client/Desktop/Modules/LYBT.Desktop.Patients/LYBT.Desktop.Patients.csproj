@@ -78,4 +78,9 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Module Dependencies">
+    <!-- Epic #1676 Phase 4 Task 4.4: PatientSelectionViewModel需要IMedicalCaseRepository -->
+    <ProjectReference Include="..\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+  </ItemGroup>
+
 </Project>

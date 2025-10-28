@@ -87,5 +87,20 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// Epic #1589 Phase 5 - 架构合规版本
         /// </summary>
         Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseUpdateDto dto);
+
+        // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.4
+        /// </summary>
+        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.4
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        Task<bool> CloseCaseAsync(Guid medicalCaseId);
     }
 }
