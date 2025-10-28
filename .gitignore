@@ -149,6 +149,7 @@ nul
 !.claude/core/
 !.claude/modes/
 !.claude/skills/
+!.claude/docs/
 .serena/
 .ai/*
 !.ai/rules.json
