@@ -1,7 +1,7 @@
 {
   "description": "根目录文件白名单配置 - 仅这些文件/模式被允许存在于项目根目录",
-  "version": "1.0.2",
-  "last_updated": "2025-10-16",
+  "version": "1.0.3",
+  "last_updated": "2025-10-28",
 
   "allowed_files": [
     "README.md",
@@ -9,6 +9,7 @@
     "CONTRIBUTING.md",
     "LICENSE",
     "version.txt",
+    "shrimp-rules.md",
     ".gitignore",
     ".gitattributes",
     ".editorconfig",
@@ -67,6 +68,7 @@
     "allowed_files: 精确文件名匹配",
     "allowed_patterns: 支持通配符（如*.sln）",
     "allowed_dirs: 允许的目录（包括隐藏目录）",
-    "blocked_patterns: 明确禁止的模式（优先级高于允许规则）"
+    "blocked_patterns: 明确禁止的模式（优先级高于允许规则）",
+    "shrimp-rules.md: shrimp-task-manager MCP工具的必需配置文件"
   ]
 }

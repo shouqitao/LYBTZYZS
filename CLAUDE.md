@@ -80,6 +80,8 @@ URL:   https://github.com/shouqitao/LYBTZYZS
 - context7: 技术文档查询
 - microsoft_docs_mcp: Microsoft官方文档
 - sequential-thinking: 深度推理分析
+- shrimp-task-manager: 智能任务管理（配置文件：`shrimp-rules.md`）
+- interactive-feedback: 人机交互反馈
 - drawio: Draw.io图表创建与编辑（架构图、流程图、UML图）
 
 ---
@@ -678,10 +680,11 @@ gh pr merge --squash --delete-branch
 
 **核心原则**：
 - ❌ 禁止在根目录创建临时文件
+- ✅ **例外：允许MCP工具配置文件**（如`shrimp-rules.md`、工具特定配置等）
 - ✅ 文档归档到 `docs/` 对应分类目录（Level 1/2/3）
 - ✅ 脚本归档到 `scripts/` 对应功能目录
 - ✅ 输出文件归档到 `docs/reports/` 或 `scripts/analysis/outputs/`
-- ✅ Pre-commit hook 会自动检查根目录文件规范
+- ✅ Pre-commit hook 会自动检查根目录文件规范（已配置MCP配置文件例外）
 
 ### 高效执行策略
 - **并行优先**：Issue 含多个独立子任务时，优先规划并行执行
