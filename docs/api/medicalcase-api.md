@@ -19,14 +19,16 @@
   - [DELETE /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}](#6-delete-apiv1medicalcasesidprescriptionsprescriptionid---删除处方)
   - [PUT /api/v1/medicalcases/{id}/status](#7-put-apiv1medicalcasesidstatus---更新病案状态)
   - [PUT /api/v1/medicalcases/{id}/complete](#8-put-apiv1medicalcasesidcomplete---完成病案)
+  - [PUT /api/v1/medicalcases/{id}/close](#9-put-apiv1medicalcasesidclose---关闭病案epic-1676-phase-4新增) ⭐ **Phase 4新增**
 - [Read Layer - 读操作](#read-layer-读操作)
-  - [GET /api/v1/medicalcases/{id}](#9-get-apiv1medicalcasesid---获取病案详情)
-  - [GET /api/v1/medicalcases](#10-get-apiv1medicalcases---查询病案列表)
-  - [GET /api/v1/medicalcases/{medicalCaseId}/consultations](#11-get-apiv1medicalcasesmedicalcaseidconsultations---查询辨证记录列表)
-  - [GET /api/v1/medicalcases/{medicalCaseId}/prescriptions](#12-get-apiv1medicalcasesmedicalcaseidprescriptions---查询处方列表)
+  - [GET /api/v1/medicalcases/{id}](#10-get-apiv1medicalcasesid---获取病案详情)
+  - [GET /api/v1/medicalcases](#11-get-apiv1medicalcases---查询病案列表)
+  - [GET /api/v1/medicalcases/{medicalCaseId}/consultations](#12-get-apiv1medicalcasesmedicalcaseidconsultations---查询辨证记录列表)
+  - [GET /api/v1/medicalcases/{medicalCaseId}/prescriptions](#13-get-apiv1medicalcasesmedicalcaseidprescriptions---查询处方列表)
+  - [GET /api/v1/medicalcases/patients/{patientId}/unfinished](#14-get-apiv1medicalcasespatientspatientidunfinished---查询患者未完成病案epic-1676-phase-4新增) ⭐ **Phase 4新增**
 - [Helper Layer - 辅助功能](#helper-layer-辅助功能)
-  - [GET /api/v1/medicalcases/{id}/can-edit](#13-get-apiv1medicalcasesidcan-edit---验证病案是否可编辑)
-  - [GET /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}/can-delete](#14-get-apiv1medicalcasesidprescriptionsprescriptionidcan-delete---验证处方是否可删除)
+  - [GET /api/v1/medicalcases/{id}/can-edit](#15-get-apiv1medicalcasesidcan-edit---验证病案是否可编辑)
+  - [GET /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}/can-delete](#16-get-apiv1medicalcasesidprescriptionsprescriptionidcan-delete---验证处方是否可删除)
 - [通用响应格式](#通用响应格式)
 - [业务规则说明](#业务规则说明)
 
@@ -678,9 +680,78 @@ Authorization: Bearer {token}
 
 ---
 
+### 9. PUT /api/v1/medicalcases/{id}/close - 关闭病案（Epic #1676 Phase 4新增）
+
+**描述**: 直接关闭病案，将状态设置为Completed。与端点8（完成病案）的区别：不验证三步流程，直接标记为已完成。
+
+**业务规则**:
+- ✅ **不验证三步流程**：无需完成辨证、标记处方、开处方，可直接关闭
+- ✅ **用于特殊场景**：患者取消就诊、暂存病案需要关闭、Desktop端快速关闭操作
+- ❌ **不推荐常规使用**：正常就诊流程应使用端点8（PUT /complete）
+
+**请求**:
+```http
+PUT /api/v1/medicalcases/7c9e6679-7425-40de-944b-e07fc1f90ae7/close
+Authorization: Bearer {token}
+```
+
+**响应**:
+
+✅ **成功 - 200 OK**
+```json
+{
+  "success": true,
+  "message": "病案已关闭",
+  "data": {
+    "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "status": "Completed",
+    "closedAt": "2025-10-28T14:00:00Z"
+  }
+}
+```
+
+❌ **失败 - 404 Not Found**
+```json
+{
+  "success": false,
+  "message": "病案不存在",
+  "data": null
+}
+```
+
+❌ **失败 - 409 Conflict** (病案已完成)
+```json
+{
+  "success": false,
+  "message": "病案已处于Completed状态，无需重复关闭",
+  "data": null
+}
+```
+
+**Desktop端使用示例**:
+```csharp
+// PatientSelectionViewModel.cs - 快速关闭未完成病案
+var success = await _medicalCaseRepository.CloseCaseAsync(unfinishedCase.Id);
+if (success)
+{
+    MessageBox.Show("病案已关闭，可以创建新病案");
+}
+```
+
+**与端点8的对比**:
+
+| 特性 | 端点8: Complete | 端点9: Close (新增) |
+|------|----------------|-------------------|
+| **三步流程验证** | ✅ 强制验证 | ❌ 不验证 |
+| **使用场景** | 正常就诊完成 | 快速关闭、取消就诊 |
+| **状态变更** | Draft/Active → Completed | Draft/Active → Completed |
+| **推荐程度** | ⭐⭐⭐ 推荐 | ⭐ 特殊场景 |
+
+---
+
 ## Read Layer - 读操作
 
-### 9. GET /api/v1/medicalcases/{id} - 获取病案详情
+### 10. GET /api/v1/medicalcases/{id} - 获取病案详情
 
 **描述**: 获取病案完整信息，自动预加载Consultation和Prescription关联数据。
 
@@ -736,7 +807,7 @@ Authorization: Bearer {token}
 
 ---
 
-### 10. GET /api/v1/medicalcases - 查询病案列表
+### 11. GET /api/v1/medicalcases - 查询病案列表
 
 **描述**: 分页查询病案列表，支持按状态、患者ID过滤。
 
@@ -791,7 +862,7 @@ Authorization: Bearer {token}
 
 ---
 
-### 11. GET /api/v1/medicalcases/{medicalCaseId}/consultations - 查询辨证记录列表
+### 12. GET /api/v1/medicalcases/{medicalCaseId}/consultations - 查询辨证记录列表
 
 **描述**: 获取指定病案的所有历史辨证记录。
 
@@ -824,7 +895,7 @@ Authorization: Bearer {token}
 
 ---
 
-### 12. GET /api/v1/medicalcases/{medicalCaseId}/prescriptions - 查询处方列表
+### 13. GET /api/v1/medicalcases/{medicalCaseId}/prescriptions - 查询处方列表
 
 **描述**: 获取指定病案的所有历史处方记录。
 
@@ -866,9 +937,75 @@ Authorization: Bearer {token}
 
 ---
 
+### 14. GET /api/v1/medicalcases/patients/{patientId}/unfinished - 查询患者未完成病案（Epic #1676 Phase 4新增）
+
+**描述**: 查询指定患者的未完成病案（Status != Completed）。用于Desktop端PatientSelectionViewModel检测患者是否有正在进行的病案。
+
+**业务规则**:
+- ✅ 只返回状态不为Completed的病案（Draft/Active）
+- ✅ 一个患者理论上只有一个Active病案（BR-001），但可能有Draft状态的暂存病案
+- ✅ 如无未完成病案，返回404
+
+**请求**:
+```http
+GET /api/v1/medicalcases/patients/3fa85f64-5717-4562-b3fc-2c963f66afa6/unfinished
+Authorization: Bearer {token}
+```
+
+**路径参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| patientId | Guid | ✅ | 患者ID |
+
+**响应**:
+
+✅ **成功 - 200 OK** (存在未完成病案)
+```json
+{
+  "success": true,
+  "message": "查询成功",
+  "data": {
+    "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "patientId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "patientName": "张三",
+    "doctorId": "8b7d9f2a-3b14-4c8e-a9d6-1f2e3d4c5b6a",
+    "doctorName": "李医生",
+    "visitDate": "2025-10-27T10:00:00Z",
+    "status": "Active",
+    "needsPrescription": null,
+    "createdAt": "2025-10-27T10:00:00Z"
+  }
+}
+```
+
+❌ **失败 - 404 Not Found** (无未完成病案)
+```json
+{
+  "success": false,
+  "message": "患者无未完成病案",
+  "data": null
+}
+```
+
+**Desktop端使用示例**:
+```csharp
+// PatientSelectionViewModel.cs
+var unfinishedCase = await _medicalCaseRepository
+    .GetUnfinishedCaseByPatientIdAsync(selectedPatient.Id);
+
+if (unfinishedCase != null)
+{
+    // 提示用户继续现有病案或关闭后创建新病案
+    ShowUnfinishedCaseDialog(unfinishedCase);
+}
+```
+
+---
+
 ## Helper Layer - 辅助功能
 
-### 13. GET /api/v1/medicalcases/{id}/can-edit - 验证病案是否可编辑
+### 15. GET /api/v1/medicalcases/{id}/can-edit - 验证病案是否可编辑
 
 **描述**: 检查病案当前状态是否允许编辑，用于UI按钮状态控制。
 
@@ -906,7 +1043,7 @@ Authorization: Bearer {token}
 
 ---
 
-### 14. GET /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}/can-delete - 验证处方是否可删除
+### 16. GET /api/v1/medicalcases/{id}/prescriptions/{prescriptionId}/can-delete - 验证处方是否可删除
 
 **描述**: 检查处方是否可删除（如是否已打印），用于UI删除按钮状态控制。
 

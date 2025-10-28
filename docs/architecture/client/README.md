@@ -1,7 +1,7 @@
 # Client端架构指南
 
-**版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
+**版本**：v5.1 Phase 4优化版
+**更新时间**：2025-10-28
 **对应代码层**：LYBT.Desktop  
 
 ## 🏗️ Client端WPF架构设计
@@ -36,7 +36,39 @@ public class PatientDetailViewModel : UnifiedViewModelBase
 }
 ```
 
-### 📐 当前架构（Phase 2）
+### ⚠️ 架构优化说明（Phase 4 - Epic #1676）
+
+**重要变更**：基于Epic #1676，进一步优化Desktop层架构，移除临时Service层遗留：
+
+| 优化项目 | Phase 4前 | Phase 4后 | 实施时间 |
+|---------|----------|----------|----------|
+| **MedicalCase查询** | MedicalCaseQueryService（临时） | IMedicalCaseRepository | 2025-10-28 |
+| **Patient查询** | PatientSelectionViewModel独立查询 | IMedicalCaseRepository统一查询 | 2025-10-28 |
+| **依赖关系** | Patients ↔ MedicalCase循环依赖 | Patients → MedicalCase（单向） | 2025-10-28 |
+
+**变更原因**：
+- ✅ **彻底移除临时Service**：MedicalCaseQueryService是Phase 2遗留的临时方案，已完成历史使命
+- ✅ **统一架构模式**：所有ViewModel统一使用Repository模式，无例外
+- ✅ **解除循环依赖**：Prism模块依赖仅需运行时加载顺序，无需编译时项目引用
+- ✅ **API能力对齐**：Desktop端与Server端API完全对齐（GetUnfinishedCase、CloseCase）
+
+**实际代码证据**（PatientSelectionViewModel.cs）：
+```csharp
+// Epic #1676 Phase 4 Task 4.4 - 使用Repository替代临时Service
+private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+public PatientSelectionViewModel(
+    IRegionManager regionManager,
+    IPatientRepository patientRepository,
+    IMedicalCaseRepository medicalCaseRepository)  // ⭐ 注入Repository
+{
+    _regionManager = regionManager;
+    _patientRepository = patientRepository;
+    _medicalCaseRepository = medicalCaseRepository;  // ⭐ 替代IMedicalCaseQueryService
+}
+```
+
+### 📐 当前架构（Phase 4优化）
 
 ```
 LYBT.Desktop (WPF应用) - 四层架构
@@ -146,60 +178,30 @@ public abstract class ViewModelBase : ObservableObject, IDisposable
 }
 ```
 
-### 3. Services层 - 业务服务
-**职责**：API调用、业务逻辑、数据处理、缓存管理
+### 3. ~~Services层 - 业务服务~~ （已废弃 - Phase 2/4）
 
-**核心组件**：
-- `IAuthService.cs` - 认证服务接口
-- `IUserService.cs` - 用户服务接口
-- `IPatientService.cs` - 患者服务接口
-- `BaseService.cs` - 服务基类
+> **⚠️ 架构演进**：Phase 2（Issue #1114）移除了业务Service层，Phase 4（Epic #1676）清理了临时Service遗留。
 
-**代码示例**：
-```csharp
-// Services/AuthService.cs
-public class AuthService : BaseService, IAuthService
-{
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ITokenService _tokenService;
-    
-    public AuthService(IHttpClientFactory httpClientFactory, ITokenService tokenService)
-    {
-        _httpClientFactory = httpClientFactory;
-        _tokenService = tokenService;
-    }
-    
-    public async Task<AuthResult> LoginAsync(LoginRequest request)
-    {
-        try
-        {
-            var client = _httpClientFactory.CreateClient("API");
-            var response = await client.PostAsJsonAsync("/api/auth/login", request);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                await _tokenService.SaveTokensAsync(result.AccessToken, result.RefreshToken);
-                return AuthResult.Success(result.User);
-            }
-            
-            var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return AuthResult.Failure(error.Message);
-        }
-        catch (Exception ex)
-        {
-            return AuthResult.Failure($"登录失败: {ex.Message}");
-        }
-    }
-    
-    public async Task LogoutAsync()
-    {
-        await _tokenService.ClearTokensAsync();
-        // 发布用户登出事件
-        Publish(new UserLoggedOutEvent());
-    }
-}
-```
+**历史状态**（Phase 1，已废弃）：
+- ViewModel → Service → Repository（三层调用）
+- 存在中间Service层处理业务逻辑
+
+**当前状态**（Phase 4）：
+- ViewModel → Repository（直接调用）
+- **已移除的临时Service**：
+  - `MedicalCaseQueryService` - Epic #1676 Phase 4移除，改用IMedicalCaseRepository
+  - 其他业务Service - Phase 2已全部移除
+
+**保留的Infrastructure服务**（非业务Service）：
+- `TokenService` - JWT令牌管理（Infrastructure层）
+- `HttpClientFactory` - HTTP客户端工厂（Infrastructure层）
+- `AuthenticationHandler` - 认证消息处理器（Infrastructure层）
+
+**架构决策理由**：
+- ✅ **避免过度抽象**：Service层与Repository逻辑高度重复
+- ✅ **提升性能**：减少一层调用开销
+- ✅ **对齐Server**：与Server端Repository模式保持一致
+- ✅ **MVP原则**：够用即好，避免不必要的中间层
 
 ### 4. Infrastructure层 - 基础设施
 **职责**：数据持久化、外部服务集成、工具类

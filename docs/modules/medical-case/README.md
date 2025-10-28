@@ -566,6 +566,66 @@ public async Task<MedicalCase?> GetByIdWithDetailsAsync(Guid id)
 
 ---
 
+#### 4. Desktop端Repository使用指南（Epic #1676 Phase 4）
+
+**架构模式**: Desktop端直接使用`IMedicalCaseRepository`，不经过Service层。
+
+**核心组件**:
+- `IMedicalCaseRepository.cs` - Repository接口定义（Desktop/Modules/MedicalCase/Interfaces）
+- `MedicalCaseRepository.cs` - Repository实现（Desktop/Modules/MedicalCase/Repositories）
+- Refit HTTP Client - 类型安全的REST API调用
+
+**使用示例**:
+```csharp
+// ViewModel中注入Repository
+public class PatientSelectionViewModel : BindableBase
+{
+    private readonly IMedicalCaseRepository _medicalCaseRepository;
+
+    public PatientSelectionViewModel(
+        IPatientRepository patientRepository,
+        IMedicalCaseRepository medicalCaseRepository)  // ⭐ 注入Repository
+    {
+        _patientRepository = patientRepository;
+        _medicalCaseRepository = medicalCaseRepository;
+    }
+
+    // 查询未完成病案（Epic #1676 Phase 4新增）
+    private async Task CheckUnfinishedCaseAsync(Guid patientId)
+    {
+        var unfinishedCase = await _medicalCaseRepository
+            .GetUnfinishedCaseByPatientIdAsync(patientId);
+
+        if (unfinishedCase != null)
+        {
+            // 提示用户有未完成的病案
+            ShowUnfinishedCaseDialog(unfinishedCase);
+        }
+    }
+
+    // 关闭病案（Epic #1676 Phase 4新增）
+    private async Task CloseCaseAsync(Guid medicalCaseId)
+    {
+        var success = await _medicalCaseRepository.CloseCaseAsync(medicalCaseId);
+        if (success)
+        {
+            MessageBox.Show("病案已关闭");
+        }
+    }
+}
+```
+
+**Phase 4新增API**（2025-10-28）:
+- `GetUnfinishedCaseByPatientIdAsync(Guid patientId)` - 查询患者未完成病案
+- `CloseCaseAsync(Guid medicalCaseId)` - 关闭病案（直接标记为Completed）
+
+**架构约束**:
+- ✅ **统一Repository模式**: 所有ViewModel统一使用Repository，无例外
+- ❌ **禁止临时Service**: 不再创建中间Service层（如MedicalCaseQueryService已移除）
+- ✅ **API能力对齐**: Desktop端Repository方法完全对应Server端API端点
+
+---
+
 ## 🧪 测试覆盖
 
 **详细测试报告**: [`docs/deep/testing-strategies.md#模块测试覆盖报告`](../../deep/testing-strategies.md#模块测试覆盖报告)
@@ -613,6 +673,32 @@ public async Task<MedicalCase?> GetByIdWithDetailsAsync(Guid id)
 
 ## 🔄 变更历史
 
+### v2.1 (Epic #1676 Phase 4) - 2025-10-28
+
+**Desktop层架构优化**:
+- ✅ Desktop端Repository模式统一化
+- ✅ 移除临时Service层（MedicalCaseQueryService）
+- ✅ Desktop ↔ Server API完全对齐
+- ✅ 解除Patients ↔ MedicalCase循环依赖
+
+**新增Desktop API** (IMedicalCaseRepository):
+- ✅ `GetUnfinishedCaseByPatientIdAsync(Guid patientId)` - 查询未完成病案
+- ✅ `CloseCaseAsync(Guid medicalCaseId)` - 关闭病案
+
+**新增Server API** (IMedicalCaseApi):
+- ✅ `GET /api/v1/medicalcases/patients/{patientId}/unfinished` - 查询未完成病案
+- ✅ `PUT /api/v1/medicalcases/{id}/close` - 关闭病案
+
+**测试覆盖**:
+- ✅ 6个新增单元测试（Desktop Repository）
+- ✅ 100% API端点测试覆盖
+
+**文档更新**:
+- ✅ Desktop端Repository使用指南（本README）
+- ✅ Desktop架构文档更新（docs/architecture/client）
+
+---
+
 ### v2.0 (Epic #1612) - 2025-10-27
 
 **重构内容**:
@@ -637,6 +723,6 @@ public async Task<MedicalCase?> GetByIdWithDetailsAsync(Guid id)
 
 ---
 
-**维护团队**: Epic #1612开发团队
-**最后更新**: 2025-10-27
-**下次审查**: Epic #1612全部完成后
+**维护团队**: Epic #1612开发团队 / Epic #1676开发团队
+**最后更新**: 2025-10-28
+**下次审查**: Epic #1676全部完成后
