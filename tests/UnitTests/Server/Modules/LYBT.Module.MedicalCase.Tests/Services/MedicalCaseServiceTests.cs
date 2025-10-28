@@ -713,6 +713,80 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
         #endregion
 
+        #region Write Layer Tests - CloseCaseAsync (Epic #1676 Phase 4 Task 4.1)
+
+        [Fact]
+        public async Task CloseCaseAsync_WithValidId_ShouldCloseCaseSuccessfully()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                Consultation = new ConsultationEntity { Id = medicalCaseId }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CloseCaseAsync(medicalCaseId);
+
+            // Assert
+            result.Should().BeTrue();
+            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
+        }
+
+        [Fact]
+        public async Task CloseCaseAsync_WhenMedicalCaseNotFound_ShouldReturnFalse()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
+
+            // Act
+            var result = await _service.CloseCaseAsync(medicalCaseId);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task CloseCaseAsync_ShouldNotValidateThreeStepProcess()
+        {
+            // Arrange - 病案未完成三步流程（Consultation为空）
+            var medicalCaseId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                Consultation = null, // 未完成三步流程
+                NeedsPrescription = true,
+                Prescription = null  // 未开处方
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CloseCaseAsync(medicalCaseId);
+
+            // Assert - 应该直接关闭，不抛出异常
+            result.Should().BeTrue();
+            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
+        }
+
+        #endregion
+
         #region Read Layer Tests - GetByIdAsync, GetListAsync
 
         [Fact]
@@ -829,6 +903,70 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.Should().NotBeNull();
             result.Should().HaveCount(1);
             result.First().Indication.Should().Be("Test Indication");
+        }
+
+        [Fact]
+        public async Task GetUnfinishedCaseByPatientIdAsync_WithActiveCase_ShouldReturnCase()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var activeCase = new MedicalCaseEntity
+            {
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                Status = MedicalCaseStatus.Active,
+                Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
+            };
+
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+                .ReturnsAsync(activeCase);
+
+            // Act
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.PatientId.Should().Be(patientId);
+            result.Status.Should().Be(MedicalCaseStatus.Active);
+        }
+
+        [Fact]
+        public async Task GetUnfinishedCaseByPatientIdAsync_WithDraftCase_ShouldReturnCase()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var draftCase = new MedicalCaseEntity
+            {
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                Status = MedicalCaseStatus.Draft
+            };
+
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+                .ReturnsAsync(draftCase);
+
+            // Act
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Status.Should().Be(MedicalCaseStatus.Draft);
+        }
+
+        [Fact]
+        public async Task GetUnfinishedCaseByPatientIdAsync_WhenNoUnfinishedCase_ShouldReturnNull()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
+
+            // Act
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+            // Assert
+            result.Should().BeNull();
         }
 
         [Fact]
