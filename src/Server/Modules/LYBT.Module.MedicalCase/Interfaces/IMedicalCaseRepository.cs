@@ -49,5 +49,13 @@ namespace LYBT.Module.MedicalCase.Interfaces
             DateTime? startDate = null,
             DateTime? endDate = null,
             string? diagnosisKeyword = null);
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案实体，若无则返回null</returns>
+        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
     }
 }

@@ -108,6 +108,15 @@ namespace LYBT.Module.MedicalCase.Services
         /// <returns>完成后的病案实体</returns>
         Task<MedicalCaseEntity?> CompleteAsync(Guid medicalCaseId);
 
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <returns>关闭是否成功</returns>
+        Task<bool> CloseCaseAsync(Guid id);
+
         // ========== Read Layer（读操作，独立查询）==========
 
         /// <summary>
@@ -149,6 +158,14 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>处方DTO列表</returns>
         Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的病案实体（包含关联数据），若无则返回null</returns>
+        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
 
         // ========== Helper Layer（辅助功能）==========
 

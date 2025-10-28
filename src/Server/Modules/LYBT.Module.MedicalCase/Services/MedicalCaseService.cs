@@ -496,6 +496,48 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        public async Task<bool> CloseCaseAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("开始关闭病案，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 获取聚合根
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
+                if (medicalCase == null)
+                {
+                    _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", id);
+                    return false;
+                }
+
+                // 直接更新状态为Completed（不验证三步流程）
+                medicalCase.Status = MedicalCaseStatus.Completed;
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                // 设置CompletedAt时间戳
+                if (medicalCase.Consultation != null)
+                {
+                    medicalCase.Consultation.UpdatedAt = DateTime.Now;
+                }
+
+                // 保存
+                await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("病案关闭成功，MedicalCaseId: {MedicalCaseId}", id);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "关闭病案失败，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
         // ========== Read Layer（读操作，独立查询）==========
 
         /// <summary>
@@ -606,6 +648,37 @@ namespace LYBT.Module.MedicalCase.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "查询处方列表失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+
+                var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+                if (result != null)
+                {
+                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
+                        result.Id, result.Status);
+                }
+                else
+                {
+                    _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}", patientId);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询患者未完成医案失败，PatientId: {PatientId}", patientId);
                 throw;
             }
         }

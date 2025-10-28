@@ -317,5 +317,33 @@ namespace LYBT.Module.MedicalCase.Repositories
 
             return result;
         }
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
+        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        {
+            _logger?.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+
+            var result = await GetDetailQuery()
+                .Where(m => m.PatientId == patientId && m.Status != MedicalCaseStatus.Completed)
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (result != null)
+            {
+                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
+                    result.Id, result.Status);
+            }
+            else
+            {
+                _logger?.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}", patientId);
+            }
+
+            return result;
+        }
     }
 }

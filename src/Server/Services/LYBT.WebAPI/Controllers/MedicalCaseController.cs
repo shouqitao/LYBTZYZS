@@ -321,6 +321,32 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// 业务规则：直接设置状态为Completed，不验证三步流程
+        /// </summary>
+        [HttpPut("{id}/close")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<ActionResult<ApiResponse>> CloseMedicalCase(Guid id)
+        {
+            try
+            {
+                var result = await _medicalCaseService.CloseCaseAsync(id);
+
+                if (!result)
+                    return NotFound(ApiResponse.CreateFail("病案不存在"));
+
+                _logger.LogInformation("病案关闭，MedicalCaseId: {Id}", id);
+                return Ok(ApiResponse.CreateSuccess("病案已关闭"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "关闭病案", new { id });
+            }
+        }
+
         // ========== Read Layer（读操作，独立查询）==========
 
         /// <summary>
@@ -419,6 +445,32 @@ namespace LYBT.WebAPI.Controllers
             {
                 return HandleException<List<PrescriptionDetailDto>>(ex, "获取处方列表",
                     new { medicalCaseId });
+            }
+        }
+
+        /// <summary>
+        /// 获取患者的未完成医案（Status != Completed）
+        /// Epic #1676 Phase 4 Task 4.1
+        /// </summary>
+        [HttpGet("patient/{patientId}/unfinished")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> GetUnfinishedCaseByPatientId(
+            Guid patientId)
+        {
+            try
+            {
+                var result = await _medicalCaseService.GetUnfinishedCaseByPatientIdAsync(patientId);
+
+                if (result == null)
+                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("未找到该患者的未完成医案"));
+
+                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseEntity>(ex, "获取患者未完成医案",
+                    new { patientId });
             }
         }
 
