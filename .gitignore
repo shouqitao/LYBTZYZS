@@ -188,6 +188,7 @@ analyze_*.py
 use-cases/
 examples/
 templates/
+!docs/templates/  # 文档系统标准模板目录例外
 
 # 截图和图片文件
 *.png
