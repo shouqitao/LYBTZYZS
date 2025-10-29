@@ -302,8 +302,8 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 
 ## 📚 相关文档
 
-- [LYBT.基础设施（基础设施（Infrastructure））](../LYBT.基础设施（基础设施（Infrastructure））/README.md) - 基础设施层(包含AppDbContext)
-- [数据库迁移指南](../LYBT.基础设施（基础设施（Infrastructure））/README.md#数据库迁移) - EF Core迁移操作指南
+- [LYBT.Infrastructure](../LYBT.Infrastructure/README.md) - 基础设施层(包含AppDbContext)
+- [数据库迁移指南](../LYBT.Infrastructure/README.md#🗃️-数据库迁移管理) - EF Core迁移操作指南
 - [API规范文档](../../Services/LYBT.WebAPI/README.md) - RESTful API设计规范
 
 ---
@@ -311,9 +311,6 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 > 📌 **开发提醒**: 修改实体结构后务必生成数据库迁移并同步更新对应的DTO模型
 > 🎆 **成果**: 实体模型设计简洁高效，完美支持中医诊所核心业务流程
 
-
-
-## 📦 项目结构
 ## 📦 项目结构
 
 ```
@@ -324,19 +321,25 @@ LYBT.Entities/
 │   ├── MedicalCaseModel.cs    # 医疗案例实体
 │   ├── ConsultationModel.cs   # 诊疗记录实体
 │   ├── PrescriptionModel.cs   # 处方实体
+│   ├── PrescriptionItemModel.cs # 处方条目实体
 │   ├── HerbModel.cs           # 中药材实体
 │   └── FormulaModel.cs        # 验方模板实体
+├── Enums/                      # 枚举定义
+│   ├── UserRole.cs            # 用户角色枚举
+│   ├── UserStatus.cs          # 用户状态枚举
+│   ├── MedicalCaseStatus.cs   # 医案状态枚举
+│   ├── PrescriptionStatus.cs  # 处方状态枚举
+│   └── Gender.cs              # 性别枚举
 └── Infrastructure/             # 基础设施与基类
     └── BaseEntity.cs          # 所有实体的通用基类
 ```
 
 ## 🛠 技术栈
-## 🛠 技术栈
 
 - **.NET 8**: 目标框架
-- **Entity Framework Core 8**: ORM框架，用于定义数据实体与数据库的映射关系。
+- **Entity Framework Core 8**: ORM框架，用于定义数据实体与数据库的映射关系
+- **Data Annotations**: 数据验证特性
 
-## 🚀 快速开始
 ## 🚀 快速开始
 
 此项目是一个类库，不包含可执行文件。可以通过解决方案或以下命令进行构建：
@@ -346,10 +349,9 @@ LYBT.Entities/
 dotnet restore LYBT.All.sln
 
 # 构建此项目
-dotnet build src\Server\Core\LYBT.Entities\LYBT.Entities.csproj
+dotnet build src/Server/Core/LYBT.Entities/LYBT.Entities.csproj
 ```
 
-## 🔌 API 接口
 ## 🔌 API 接口
 
 此项目为数据实体层，不直接对外提供任何API接口。它定义的数据结构被业务服务层和数据访问层使用。

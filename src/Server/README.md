@@ -30,8 +30,7 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 - 前端固定 `/api/v1/*` 前缀，与上述约定天然匹配
 
 ## 参考
-- 架构概览: docs/architecture/overview.md
-- API 总览: docs/api/README.md
+- 架构概览: docs/explanation/architecture/overview.md
 - 配置与环境: docs/configuration.md
 - 运行手册: docs/runbook.md
 - PRD 工作流: 根 README 的“PRD 工作流（CCPM）”小节
@@ -263,8 +262,7 @@ LYBT Server提供超过90个RESTful API端点，覆盖8个核心业务领域。�
 ## 📚 相关文档
 
 ### 架构设计
-- [架构概览](../../docs/architecture/overview.md) - 系统整体架构设计说明
-- [API设计规范](../../docs/api/README.md) - RESTful API设计标准和最佳实践
+- [架构概览](../../docs/explanation/architecture/overview.md) - 系统整体架构设计说明
 - [数据库设计文档](../../docs/database/schema.md) - 数据库表结构和关系设计
 
 ### 模块文档
@@ -291,7 +289,6 @@ LYBT Server提供超过90个RESTful API端点，覆盖8个核心业务领域。�
 ### 开发指南
 - [代码规范](../../docs/development/coding-standards.md) - C#编码规范和最佳实践
 - [测试指南](../../docs/development/testing-guide.md) - 单元测试和集成测试规范
-- [API测试集合](../../docs/api/postman-collection.json) - Postman测试用例集合
 
 ### 共享组件
 - [Shared层文档](../../src/Shared/README.md) - 前后端共享组件说明

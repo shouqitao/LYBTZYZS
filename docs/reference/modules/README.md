@@ -1,7 +1,7 @@
 # 模块总览文档
 
 **版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
+**更新时间**：2025-10-29  
 **维护团队**：业务开发组  
 
 ## 🎯 业务模块导航
@@ -267,18 +267,18 @@ public class MedicalCaseStateMachine
 4. **医案归档**: 完成后自动归档
 
 ### API端点
-- `GET /api/medical-cases` - 获取医案列表
-- `GET /api/medical-cases/{id}` - 获取医案详情
-- `POST /api/medical-cases` - 创建医案
-- `PUT /api/medical-cases/{id}` - 更新医案
-- `PUT /api/medical-cases/{id}/status` - 更新医案状态
-- `GET /api/medical-cases/{id}/history` - 获取医案历史
-- `POST /api/medical-cases/{id}/template` - 应用医案模板
+- `GET /api/MedicalCases` - 获取医案列表
+- `GET /api/MedicalCases/{id}` - 获取医案详情
+- `POST /api/MedicalCases` - 创建医案
+- `PUT /api/MedicalCases/{id}` - 更新医案
+- `PUT /api/MedicalCases/{id}/status` - 更新医案状态
+- `GET /api/MedicalCases/{id}/history` - 获取医案历史
+- `POST /api/MedicalCases/{id}/template` - 应用医案模板
 
 ### 相关文档
-- **[医案模块详细文档](medical-case/README.md)**
-- **[医案状态管理指南](medical-case/status-guide.md)**
-- **[四诊记录规范](medical-case/four-examinations.md)**
+- **[医案模块详细文档](MedicalCase/README.md)**
+- **[医案状态管理指南](MedicalCase/status-guide.md)**
+- **[四诊记录规范](MedicalCase/four-examinations.md)**
 
 ## 🔍 诊疗模块 (Consultations)
 
@@ -584,5 +584,5 @@ public class FormulaRecommendationService
 
 ---
 
-**文档维护**：业务开发组 | **最后更新**：2025-10-15  
+**文档维护**：业务开发组 | **最后更新**：2025-10-29  
 **适用版本**：v5.0 对齐架构版 | **审核状态**：已审核

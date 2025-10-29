@@ -432,28 +432,48 @@ public class AuthService
 
 
 ## 📦 项目结构
-## 📦 项目结构
 
 ```
 LYBT.Infrastructure/
-├── Configuration/         # 配置管理 (Options, DTOs)
-├── Data/                  # 数据访问核心 (AppDbContext)
-├── Migrations/            # EF Core 数据库迁移
-├── Repositories/          # 通用仓储模式实现
-├── Security/              # 安全服务 (JWT, 加密)
-├── Storage/               # 文件存储服务
-└── Web/                   # Web API 控制器基类
+├── Authorization/           # 授权策略扩展
+├── Cache/                   # 查询缓存接口
+├── Caching/                 # 缓存服务实现
+│   ├── Adapters/            # 缓存适配器（MemoryCache、Null）
+│   ├── Interfaces/          # 缓存接口定义
+│   └── Models/              # 缓存模型（优先级、统计）
+├── Configuration/           # 配置管理
+│   ├── Extensions/          # 配置扩展方法
+│   ├── Options/             # 配置选项类（JWT、Database等）
+│   ├── Services/            # 配置服务实现
+│   └── Validation/          # 生产环境配置验证
+├── Data/                    # 数据访问核心
+│   ├── Configuration/       # 实体优化扩展
+│   ├── Configurations/      # EF Core实体配置（14个）
+│   ├── Interceptors/        # 查询性能拦截器
+│   ├── Migrations/          # 数据库迁移（Issue 1262等）
+│   └── Monitoring/          # 查询统计收集器
+├── DependencyInjection/     # 服务注册扩展
+├── Interfaces/              # 接口定义（Repository、UnitOfWork等）
+├── Logging/                 # 统一日志服务接口
+├── Mapping/                 # AutoMapper配置
+├── Migrations/              # 根级迁移（InitialCreateV2等）
+├── Repositories/            # 通用仓储实现
+├── Security/                # 安全服务
+│   └── Services/            # 密钥管理、数据保护、密钥轮换
+├── Specifications/          # 规约模式实现
+├── Utilities/               # 工具类（日志脱敏等）
+└── Web/                     # Web API基类（3个Controller基类）
 ```
 
 ## 🛠 技术栈
-## 🛠 技术栈
 
-- **.NET 8 / ASP.NET Core 8**: 目标框架。
-- **Entity Framework Core 8**: ORM框架，用于数据访问和数据库迁移。
-- **Microsoft.Extensions**: 用于依赖注入、配置、缓存等核心功能。
-- **JWT (JSON Web Tokens)**: 用于API的安全认证。
+- **.NET 8 / ASP.NET Core 8**: 目标框架
+- **Entity Framework Core 8**: ORM框架，用于数据访问和数据库迁移
+- **Microsoft.Extensions**: 用于依赖注入、配置、缓存等核心功能
+- **JWT (JSON Web Tokens)**: 用于API的安全认证
+- **AutoMapper**: 对象映射框架
+- **IMemoryCache**: 进程内缓存（适合小型部署）
 
-## 🚀 快速开始
 ## 🚀 快速开始
 
 此项目是一个类库，不包含可执行文件，但包含了数据库迁移的核心逻辑。可以通过解决方案或以下命令进行构建：
@@ -463,12 +483,11 @@ LYBT.Infrastructure/
 dotnet restore LYBT.All.sln
 
 # 构建此项目
-dotnet build src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj
+dotnet build src/Server/Core/LYBT.Infrastructure/LYBT.Infrastructure.csproj
 ```
 
 关于数据库迁移操作，请参考本文档的 `🗃️ 数据库迁移管理` 章节。
 
-## 🔌 API 接口
 ## 🔌 API 接口
 
 此项目为基础设施层，不直接对外提供任何API接口。它为上层服务（如 `LYBT.WebAPI`）提供数据库访问、安全、缓存等底层能力。

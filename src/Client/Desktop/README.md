@@ -289,12 +289,11 @@ public class UserModuleService : IUserService
 ## 📚 相关文档
 
 ### 架构设计
-- [系统架构概览](../../../docs/architecture/overview.md) - 整体架构设计和模块关系
+- [系统架构概览](../../../docs/explanation/architecture/overview.md) - 整体架构设计和模块关系
 - [WPF架构设计](../../../docs/client/wpf-architecture.md) - WPF客户端架构设计文档
 - [MVVM模式实践](../../../docs/client/mvvm-patterns.md) - MVVM架构模式和最佳实践
 
 ### API集成
-- [API接口文档](../../../docs/api/README.md) - 后端API接口规范和调用说明
 - [Refit客户端配置](../../../docs/client/refit-configuration.md) - HTTP客户端配置和使用指南
 - [认证流程设计](../../../docs/client/authentication-flow.md) - JWT认证和会话管理流程
 
@@ -332,6 +331,6 @@ public class UserModuleService : IUserService
 
 ### 共享组件
 - [Shared层文档](../../../src/Shared/README.md) - 前后端共享组件和DTO模型
-- [Server 端双层架构标准](../../../docs/architecture/server/two-layer-architecture-standard.md) - Server 端分层架构设计标准（仅适用于 Server 端）
+- [Server 端双层架构标准](../../../docs/explanation/architecture/server/two-layer-architecture-standard.md) - Server 端分层架构设计标准（仅适用于 Server 端）
 - [Prism框架集成](../../../docs/client/prism-integration.md) - Prism MVVM框架使用指南
 

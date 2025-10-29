@@ -320,7 +320,7 @@ private PatientSelectedPayload CreatePatientSelectedPayload(dynamic patient)
 - [Spec 需求文档](/.spec-workflow/specs/patient-selector/requirements.md)
 - [Spec 设计文档](/.spec-workflow/specs/patient-selector/design.md)
 - [Spec 任务清单](/.spec-workflow/specs/patient-selector/tasks.md)
-- [Client 端架构指南](/docs/architecture/client/README.md)
+- [Client 端架构指南](/docs/explanation/architecture/client/README.md)
 - [Presentation 层开发规范](/docs/development/client/README.md)
 
 ---
