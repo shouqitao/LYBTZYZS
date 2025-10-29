@@ -171,9 +171,9 @@
 
 ---
 
-## 4. 无关Issue（非LYBTZYZS项目）
+## 4. 无关Issue（非凌隐宝堂中医诊所项目）
 
-以下Issue不属于LYBTZYZS项目，已自动过滤：
+以下Issue不属于凌隐宝堂中医诊所项目，已自动过滤：
 
 - #193 - p2t serve HTTP服务
 - #72 - word导入答案问题

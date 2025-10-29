@@ -91,6 +91,78 @@
 
 - **[医案/诊断/处方三模块现状分析 (2025-10-24)](reports/medicalcase-consultation-prescription-current-status-analysis-2025-10-24.md)** - Server端3199行、Desktop端17231行、文档20078行完整统计分析，包含架构演进、代码复杂度、测试覆盖率、优化建议 ⭐⭐⭐
 
+## 📚 按文档类型导航（Diátaxis分类）
+
+> **🆕 新增导航方式**：按照Diátaxis文档分类框架组织，提供另一种查找文档的视角。与上述Level 1/2/3导航互为补充，根据您的需求选择最合适的导航方式。
+
+### 🎓 Tutorial（教程）- 学习导向
+
+**目标**：引导式学习，边学边做，快速上手
+
+- **[Tutorial总览](tutorials/README.md)** - 教程体系说明、学习路径、使用指南 ⭐ 新手必读
+- **[5分钟快速开始](tutorials/quick-start.md)** - 环境搭建、启动系统、首次操作 ⚠️ 占位文档
+- **[开发第一个功能](tutorials/first-feature.md)** - 完整端到端开发流程（Server + Client） ⚠️ 占位文档
+
+**适合人群**：完全新手、需要系统学习的开发者
+
+### 🛠️ How-to Guides（操作指南）- 任务导向
+
+**目标**：解决特定问题，假设有基础知识
+
+- **[开发指南总览](development/README.md)** - 开发规范和流程指导
+- **[Server端开发](development/server/README.md)** - Server开发规范和实践
+- **[Client端开发](development/client/README.md)** - WPF客户端开发指南
+- **[共享开发](development/shared/README.md)** - 跨端组件开发指南
+- **[任务工作流清单](development/shared/task-workflow-checklist.md)** - Issue驱动开发流程
+
+**适合人群**：有基础的开发者，需要解决具体问题
+
+### 📖 Reference（参考手册）- 信息导向
+
+**目标**：查阅信息，精确描述
+
+#### 快速参考（Level 1）
+- **[API快速参考](quick-reference/api-reference.md)** - 最常用API和调用示例
+- **[配置模板](quick-reference/config-templates.md)** - 常用配置文件模板
+- **[代码模式](quick-reference/code-patterns.md)** - 常用代码模式和模板
+- **[问题解决](quick-reference/troubleshooting.md)** - 常见问题和解决方案
+- **[开发清单](quick-reference/development-checklist.md)** - 开发流程和质量检查
+
+#### 深度参考（Level 3）
+- **[高级设计模式](deep/advanced-patterns.md)** - 7种设计模式在中医诊所系统中的实际应用
+- **[性能优化指南](deep/performance-optimization.md)** - 数据库、内存、并发、前端全方位性能优化
+- **[测试策略指南](deep/testing-strategies.md)** - 单元测试、集成测试、UI测试、性能测试完整方案
+- **[部署指南](deep/deployment-guide.md)** - 从开发到生产的完整部署流程
+- **[API设计最佳实践](deep/api-design-best-practices.md)** - RESTful设计、认证授权、版本控制、安全策略
+
+#### API与模块文档
+- **[API总览](api/README.md)** - 12个控制器完整API文档
+- **[模块总览](modules/README.md)** - 8个业务模块完整说明
+- **[医案模块](modules/medical-case/)** - 医案状态管理、业务流程
+- **[业务规则文档](business-rules.md)** - 14条核心业务规则（数据约束/业务流程/聚合根/计算规则/访问控制）
+
+**适合人群**：需要查阅具体信息、API接口、代码示例的开发者
+
+### 💡 Explanation（解释说明）- 理解导向
+
+**目标**：深入理解架构和概念
+
+#### 架构说明
+- **[架构总览](architecture/README.md)** - 对齐架构设计原理与导航 ⭐ 核心入口
+- **[Server端架构](architecture/server/README.md)** - 三层架构、8个模块、服务标准（含实际代码示例） ⭐ ✅ 已验证
+- **[Client端架构](architecture/client/README.md)** - MVVM架构、5层设计、UI标准 ⭐
+- **[Shell层架构设计](architecture/client/shell-layer-design.md)** - Shell层职责边界、组件结构、交互模式
+- **[共享架构](architecture/shared/README.md)** - 跨端组件、按模块组织的DTO、去中心化接口定义 ⭐ ✅ 已验证
+
+#### 业务架构
+- **[看诊流程实体关系](architecture/shared/clinical-workflow-entity-relationships.md)** - 挂号/医案/诊断/处方实体关系与状态机设计 ⭐⭐⭐ **权威文档**
+- **[医案/诊断/处方增强设计](design/medicalcase-consultation-prescription-enhancement-design.md)** - 三步工作流优化、处方管理增强、其他病案查询功能详细设计 ⭐
+- **[医案/诊断/处方差距分析](design/medicalcase-consultation-prescription-gap-analysis.md)** - 现有代码与设计的差距、修改计划、工作量估算 ⭐⭐
+
+**适合人群**：架构师、需要深入理解系统设计的开发者
+
+---
+
 ## 👥 角色导航
 
 ### 🛠️ 开发者导航

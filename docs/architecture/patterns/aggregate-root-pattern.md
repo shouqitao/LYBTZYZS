@@ -18,7 +18,7 @@ Aggregate Root（聚合根）是DDD（领域驱动设计）中的核心概念，
 
 ---
 
-## 🎯 LYBTZYZS项目的聚合根
+## 🎯 凌隐宝堂中医诊所项目的聚合根
 
 ### MedicalCase聚合根
 
