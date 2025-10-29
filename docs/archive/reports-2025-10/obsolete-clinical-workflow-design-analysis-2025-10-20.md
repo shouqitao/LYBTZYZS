@@ -426,9 +426,9 @@ containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // line 
 ### 阶段4：文档同步（0.5天）
 
 **任务清单**：
-1. 更新架构文档：`docs/architecture/client/README.md`
-2. 更新开发指南：`docs/development/client/README.md`
-3. 更新快速参考：`docs/quick-reference/code-patterns.md`
+1. 更新架构文档：`docs/explanation/architecture/client/README.md`
+2. 更新开发指南：`docs/how-to-guides/client/README.md`
+3. 更新快速参考：`docs/reference/quick-reference/code-patterns.md`
 4. 创建变更记录：`docs/reports/obsolete-design-cleanup-完成日期.md`
 
 ---
@@ -512,8 +512,8 @@ containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // line 
 
 ### 相关文档
 
-- 架构指南：`docs/architecture/client/README.md`
-- 开发指南：`docs/development/client/README.md`
+- 架构指南：`docs/explanation/architecture/client/README.md`
+- 开发指南：`docs/how-to-guides/client/README.md`
 - Phase 1完成总结：`docs/reports/phase1-complete-summary-2025-10-20.md`
 - 技术债务跟踪：`docs/reports/medical-case-flow-validation-debt-2025-10-20.md`
 

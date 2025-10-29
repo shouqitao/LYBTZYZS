@@ -50,7 +50,7 @@
 
 **问题描述**:
 
-文档 `docs/architecture/shared/clinical-workflow-entity-relationships.md` 第383-431行定义：
+文档 `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` 第383-431行定义：
 
 ```sql
 CREATE TABLE MedicalCases (
@@ -422,9 +422,9 @@ public class MedicalCase : BaseEntity
 ## 📚 参考资料
 
 ### 相关文档
-- `docs/architecture/shared/clinical-workflow-entity-relationships.md` - 看诊流程实体关系（需更新）
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/architecture/client/README.md` - Client端MVVM架构
+- `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` - 看诊流程实体关系（需更新）
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/explanation/architecture/client/README.md` - Client端MVVM架构
 
 ### 相关Issue
 - Issue #1544 - 更新MedicalCase.ConsultationId（本报告证明此Issue基于错误假设）

@@ -649,9 +649,9 @@ ViewModel（适配器）  Service（服务实现）
 ### Phase 7：文档同步（待实施）
 
 **文档更新**：
-1. `docs/architecture/client/README.md` - 更新MedicalCase模块架构图
-2. `docs/architecture/client/modules/prescriptions.md` - 更新依赖关系
-3. `docs/quick-reference/api-reference.md` - 添加IPrescriptionEditorService API
+1. `docs/explanation/architecture/client/README.md` - 更新MedicalCase模块架构图
+2. `docs/explanation/architecture/client/modules/prescriptions.md` - 更新依赖关系
+3. `docs/reference/quick-reference/api-reference.md` - 添加IPrescriptionEditorService API
 
 ---
 

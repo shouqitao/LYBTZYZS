@@ -470,7 +470,7 @@ dotnet test LYBT.All.sln -c Release --filter "MedicalCaseFlow"
 
 #### 4.1 更新需求讨论文档
 
-**文件**：`docs/architecture/client/medicalcase-flow-ui-refactor-discussion.md`
+**文件**：`docs/explanation/architecture/client/medicalcase-flow-ui-refactor-discussion.md`
 
 **更新内容**：
 - 标记所有问题为"✅已确认"

@@ -177,9 +177,9 @@ A network-related or instance-specific error occurred...
 
 恭喜完成快速开始！接下来推荐：
 
-1. **理解架构**：阅读[架构总览](../architecture/README.md)了解三层对齐架构
+1. **理解架构**：阅读[架构总览](../explanation/architecture/README.md)了解三层对齐架构
 2. **实战开发**：尝试[开发第一个功能](first-feature.md)教程
-3. **深入学习**：查阅[Server端开发指南](../development/server/README.md)和[Client端开发指南](../development/client/README.md)
+3. **深入学习**：查阅[Server端开发指南](../how-to-guides/server/README.md)和[Client端开发指南](../how-to-guides/client/README.md)
 
 ---
 
@@ -187,7 +187,7 @@ A network-related or instance-specific error occurred...
 
 - [项目README](../../README.md) - 项目总览
 - [文档导航中心](../index.md) - 完整文档索引
-- [常见问题解决](../quick-reference/troubleshooting.md) - 问题排查
+- [常见问题解决](../reference/quick-reference/troubleshooting.md) - 问题排查
 
 ---
 

@@ -204,7 +204,7 @@ Task<ServiceResult<PrescriptionDto>> UpdatePrescriptionAsync(
 ## 📚 参考资料
 
 **架构文档**：
-- `docs/architecture/shared/medicalcase-consultation-prescription-enhancement-discussion.md`
+- `docs/explanation/architecture/shared/medicalcase-consultation-prescription-enhancement-discussion.md`
   - A2决策：Prescription删除策略（软删除推荐，物理删除可选）
   - A5决策：严格1:1 Consultation:Prescription关系
   - A6决策：三表共享主键设计（长期Epic）

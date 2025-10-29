@@ -611,8 +611,8 @@ Phase 2完成后：
 - Epic #1600: MedicalCase聚合根架构全面重构
 - Issue #1604: Phase 4 - Controller层清理与扩展
 - Issue #1605: Phase 5 - Client端API调用同步修改
-- `docs/architecture/client/README.md`: Client端架构文档
-- `docs/architecture/server/README.md`: Server端架构文档
+- `docs/explanation/architecture/client/README.md`: Client端架构文档
+- `docs/explanation/architecture/server/README.md`: Server端架构文档
 
 ### B. 分析方法
 

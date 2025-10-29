@@ -414,8 +414,8 @@
 - 将DataGrid MaxHeight定义为可配置值，根据分辨率动态调整
 
 #### 优化3：文档完善
-- 更新 `docs/architecture/client/README.md`，添加小屏幕响应式设计约束
-- 创建 `docs/development/client/responsive-design-guidelines.md`（如有必要）
+- 更新 `docs/explanation/architecture/client/README.md`，添加小屏幕响应式设计约束
+- 创建 `docs/how-to-guides/client/responsive-design-guidelines.md`（如有必要）
 
 ---
 

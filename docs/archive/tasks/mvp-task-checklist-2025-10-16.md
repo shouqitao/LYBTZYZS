@@ -259,8 +259,8 @@
 
 ### 5. 文档同步
 - 代码变更后立即更新相关文档
-- 影响架构时更新 `docs/architecture/` 对应文档
-- 新增API时更新 `docs/api/README.md`
+- 影响架构时更新 `docs/explanation/architecture/` 对应文档
+- 新增API时更新 `docs/reference/api/README.md`
 
 ### 6. 提交规范
 - 提交信息使用中文

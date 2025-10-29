@@ -21,7 +21,7 @@
 **严重程度**: 轻微
 **影响范围**: 文档准确性
 
-**文档描述** (`docs/architecture/server/README.md`):
+**文档描述** (`docs/explanation/architecture/server/README.md`):
 ```
 Server端包含13个控制器：
 - 8个业务控制器
@@ -62,7 +62,7 @@ Server端包含13个控制器：
 **严重程度**: 严重
 **影响范围**: Application层架构设计
 
-**文档描述** (`docs/architecture/server/README.md`, lines 322-459):
+**文档描述** (`docs/explanation/architecture/server/README.md`, lines 322-459):
 ```csharp
 /// <summary>
 /// 服务基类 - 提供通用的CRUD操作和业务规则验证
@@ -152,7 +152,7 @@ public class PatientService : IPatientService
 **严重程度**: 中等
 **影响范围**: Presentation层架构设计
 
-**文档描述** (`docs/architecture/server/README.md`, lines 587-843):
+**文档描述** (`docs/explanation/architecture/server/README.md`, lines 587-843):
 ```csharp
 /// <summary>
 /// 控制器泛型基类 - 提供标准CRUD端点
@@ -312,7 +312,7 @@ public class PatientsController : BaseApiController
 **严重程度**: 无
 **影响范围**: Infrastructure层架构设计
 
-**文档描述** (`docs/architecture/server/README.md`, lines 497-582):
+**文档描述** (`docs/explanation/architecture/server/README.md`, lines 497-582):
 ```csharp
 public abstract class BaseRepository<T> where T : BaseEntity
 {
@@ -474,7 +474,7 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>, IRepos
 
 ### ServiceResult模式验证 ✅ 存在
 
-**文档描述** (`docs/architecture/server/README.md`):
+**文档描述** (`docs/explanation/architecture/server/README.md`):
 ```csharp
 public class ServiceResult<T>
 {
@@ -518,7 +518,7 @@ public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetList(..
 
 ### Repository可见性约束验证 ✅ 已应用
 
-**文档描述** (`docs/architecture/server/README.md`, lines 464-495):
+**文档描述** (`docs/explanation/architecture/server/README.md`, lines 464-495):
 > Epic #1600 Phase 3: 所有Repository实现声明为`internal`，强制外部通过Service层访问
 
 **实际代码验证** (PatientRepository.cs):
@@ -539,7 +539,7 @@ internal class PatientRepository : BaseRepository<Patient>, IPatientRepository
 
 ### Module组织模式验证 ✅ 一致
 
-**文档描述** (`docs/architecture/server/README.md`):
+**文档描述** (`docs/explanation/architecture/server/README.md`):
 ```
 每个模块包含:
 - Interfaces/ - 接口定义
@@ -708,7 +708,7 @@ LYBT.Module.Patients/
 - [x] `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs` (769行)
 
 **文档**:
-- [x] `docs/architecture/server/README.md` (1123行，lines 150-1123)
+- [x] `docs/explanation/architecture/server/README.md` (1123行，lines 150-1123)
 
 ### B. 搜索命令记录
 

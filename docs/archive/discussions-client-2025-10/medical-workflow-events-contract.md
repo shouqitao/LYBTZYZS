@@ -465,7 +465,7 @@ private async void OnPatientSelected(PatientSelectedPayload payload)
 ## 📚 参考文档
 
 - **Prism EventAggregator官方文档**: https://prismlibrary.com/docs/event-aggregator.html
-- **Client端架构指南**: `docs/architecture/client/README.md`
+- **Client端架构指南**: `docs/explanation/architecture/client/README.md`
 - **Issue #1557**: 看诊流程模块化迁移
 
 ---

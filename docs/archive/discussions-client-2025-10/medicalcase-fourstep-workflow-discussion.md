@@ -888,7 +888,7 @@ public interface IWorkflowStateRepository
 ---
 
 ## 📚 参考资料
-- `docs/architecture/client/README.md` - Client端MVVM架构指南
-- `docs/architecture/server/modules/medicalcase.md` - MedicalCase模块架构文档
+- `docs/explanation/architecture/client/README.md` - Client端MVVM架构指南
+- `docs/explanation/architecture/server/modules/medicalcase.md` - MedicalCase模块架构文档
 - `.claude/core/PRINCIPLES.md` - 核心架构原则（SOLID、KISS、DRY、YAGNI）
 - Epic #1494 - 医案流程四步走

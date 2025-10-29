@@ -630,7 +630,7 @@ PrescriptionViewModel.ExecuteCopyFromHistory()
 
 ## 📚 参考文档
 
-- **架构指南**：`docs/architecture/client/README.md`
+- **架构指南**：`docs/explanation/architecture/client/README.md`
 - **Epic #1456**：看诊流程完整实现
 - **Issue #1457**：临床工作台患者选择功能
 - **Issue #1463**：激进重构 - 导航到MedicalCaseEntryView

@@ -867,9 +867,9 @@ public async Task<List<MedicalCaseEntity>> GetPendingCasesAsync()
 ## 📚 参考资料
 
 **相关文档**：
-- `docs/architecture/client/README.md` - Client端MVVM架构
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/development/client/mvvm-patterns.md` - MVVM模式规范
+- `docs/explanation/architecture/client/README.md` - Client端MVVM架构
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/how-to-guides/client/mvvm-patterns.md` - MVVM模式规范
 
 **现有代码**：
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/PatientSelectionViewModel.cs`

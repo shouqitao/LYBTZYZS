@@ -253,7 +253,7 @@ dotnet build LYBT.All.sln -c Release --no-restore
 - Epic #1513: Workstation架构重构 - 角色业务模块化
 - Issue #1553: Phase 1实施Issue
 - ADR-003: 消除Workstation容器设计模式
-- `docs/architecture/client/workstation-refactoring-discussion.md`
+- `docs/explanation/architecture/client/workstation-refactoring-discussion.md`
 
 ---
 

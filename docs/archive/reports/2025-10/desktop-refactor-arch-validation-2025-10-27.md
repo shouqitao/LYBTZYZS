@@ -4,9 +4,9 @@
 **验证时间**：2025-10-27
 **验证范围**：Desktop层架构重构设计文档（docs/design/desktop-refactor-design.md）
 **验证依据**：
-- `docs/architecture/client/README.md` - Desktop端Phase 2四层架构
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/business-rules.md` - 14条核心业务规则
+- `docs/explanation/architecture/client/README.md` - Desktop端Phase 2四层架构
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/explanation/business-rules.md` - 14条核心业务规则
 - `.spec-workflow/steering/constitution.md` - 项目强制性原则
 
 ---
@@ -58,8 +58,8 @@
 **架构风险评估**：✅ 低风险
 
 **参考规范**：
-- `docs/architecture/client/README.md` - ViewModel设计规范
-- `docs/business-rules.md` - 无直接关联业务规则
+- `docs/explanation/architecture/client/README.md` - ViewModel设计规范
+- `docs/explanation/business-rules.md` - 无直接关联业务规则
 
 ---
 
@@ -118,7 +118,7 @@
 **架构风险评估**：✅ 低风险
 
 **参考规范**：
-- `docs/architecture/client/README.md` - Shell层职责、依赖注入规范
+- `docs/explanation/architecture/client/README.md` - Shell层职责、依赖注入规范
 - CLAUDE.md 第4.2节 - 依赖注入约定
 
 ---
@@ -175,8 +175,8 @@
 **架构风险评估**：⚠️ 中等风险（可通过严格Review缓解）
 
 **参考规范**：
-- `docs/business-rules.md` - AR-001聚合根约束
-- `docs/architecture/client/README.md` - Phase 2四层架构
+- `docs/explanation/business-rules.md` - AR-001聚合根约束
+- `docs/explanation/architecture/client/README.md` - Phase 2四层架构
 
 ---
 
@@ -306,9 +306,9 @@ if (!response.IsSuccessStatusCode)
 **架构风险评估**：✅ 低风险
 
 **参考规范**：
-- `docs/business-rules.md` - AR-001聚合根约束, BF-001状态流转规则
-- `docs/architecture/client/README.md` - Phase 2四层架构
-- `docs/architecture/server/README.md` - Repository模式规范
+- `docs/explanation/business-rules.md` - AR-001聚合根约束, BF-001状态流转规则
+- `docs/explanation/architecture/client/README.md` - Phase 2四层架构
+- `docs/explanation/architecture/server/README.md` - Repository模式规范
 
 ---
 
@@ -713,16 +713,16 @@ Git分支策略：
 ## 📚 参考资料
 
 ### 验证依据文档
-- `docs/architecture/client/README.md` - Desktop端Phase 2四层架构
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/business-rules.md` - 14条核心业务规则
+- `docs/explanation/architecture/client/README.md` - Desktop端Phase 2四层架构
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/explanation/business-rules.md` - 14条核心业务规则
 - `.spec-workflow/steering/constitution.md` - 项目强制性原则
 
 ### 设计文档
-- `docs/design/desktop-refactor-design.md` - Desktop层重构设计文档（本次验证对象）
+- `docs/explanation/design/desktop-refactor-design.md` - Desktop层重构设计文档（本次验证对象）
 
 ### 需求文档
-- `docs/requirements/desktop-refactor-requirements.md` - Desktop层重构需求文档
+- `docs/explanation/requirements/desktop-refactor-requirements.md` - Desktop层重构需求文档
 
 ### 分析报告
 - `docs/reports/desktop-refactor-analysis-2025-10-27.md` - Desktop层架构分析报告

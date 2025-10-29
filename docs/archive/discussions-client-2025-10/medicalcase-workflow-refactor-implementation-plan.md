@@ -3,7 +3,7 @@
 ## 📋 元信息
 
 - **Issue**: #1567
-- **讨论文档**: `docs/architecture/client/medicalcase-fourstep-workflow-discussion.md`
+- **讨论文档**: `docs/explanation/architecture/client/medicalcase-fourstep-workflow-discussion.md`
 - **预计工作量**: 6-7天
 - **风险等级**: 中
 - **优先级**: 高
@@ -1212,9 +1212,9 @@ public async Task Should_SaveDraft_WhenPausedInMiddle()
 #### **Task 4.2: 更新文档（0.5天）**
 
 **更新文件**：
-1. `docs/architecture/client/README.md` - 更新MedicalCase模块架构描述
-2. `docs/development/client/medicalcase-workflow-guide.md` - 更新工作流指南
-3. `docs/quick-reference/code-patterns.md` - 添加患者选择 + 看病流程的代码模式
+1. `docs/explanation/architecture/client/README.md` - 更新MedicalCase模块架构描述
+2. `docs/how-to-guides/client/medicalcase-workflow-guide.md` - 更新工作流指南
+3. `docs/reference/quick-reference/code-patterns.md` - 添加患者选择 + 看病流程的代码模式
 
 **验收**：
 - ✅ 文档与代码100%同步
@@ -1303,9 +1303,9 @@ Phase 1 (基础重构) ─┬─> Phase 2 (患者选择独立化)
 
 ## 📚 参考资料
 
-- 讨论文档：`docs/architecture/client/medicalcase-fourstep-workflow-discussion.md`
+- 讨论文档：`docs/explanation/architecture/client/medicalcase-fourstep-workflow-discussion.md`
 - GitHub Issue: #1567
-- 架构指南：`docs/architecture/client/README.md`
+- 架构指南：`docs/explanation/architecture/client/README.md`
 - Epic #1494：医案流程四步走
 
 ---

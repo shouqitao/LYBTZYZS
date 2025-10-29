@@ -20,7 +20,7 @@
 - **Reference**（参考手册）- 查阅信息，精确描述
 - **Explanation**（解释说明）- 深入理解架构和概念
 
-> **💡 提示**：如果你已经有开发经验，可能更适合直接查阅[Reference](../quick-reference/)或[Explanation](../architecture/)文档。Tutorial适合完全新手或需要系统学习的开发者。
+> **💡 提示**：如果你已经有开发经验，可能更适合直接查阅[Reference](../reference/quick-reference/)或[Explanation](../explanation/architecture/)文档。Tutorial适合完全新手或需要系统学习的开发者。
 
 ---
 
@@ -79,7 +79,7 @@
   └─ 基本操作
 
 步骤2: 理解架构
-[架构总览](../architecture/README.md) (20分钟)
+[架构总览](../explanation/architecture/README.md) (20分钟)
   ├─ 三层对齐架构
   ├─ Server端设计
   └─ Client端设计
@@ -91,8 +91,8 @@
   └─ 测试提交
 
 步骤4: 深入学习
-[Server端开发指南](../development/server/README.md) (参考)
-[Client端开发指南](../development/client/README.md) (参考)
+[Server端开发指南](../how-to-guides/server/README.md) (参考)
+[Client端开发指南](../how-to-guides/client/README.md) (参考)
   ├─ 代码规范
   ├─ 最佳实践
   └─ 常见模式
@@ -109,13 +109,13 @@
 [5分钟快速开始](quick-start.md) (5分钟)
 
 步骤2: 架构理解
-[架构总览](../architecture/README.md) (15分钟)
+[架构总览](../explanation/architecture/README.md) (15分钟)
   ├─ 三层对齐原理
   └─ 核心设计决策
 
 步骤3: 参考文档
-[API快速参考](../quick-reference/api-reference.md)
-[代码模式](../quick-reference/code-patterns.md)
+[API快速参考](../reference/quick-reference/api-reference.md)
+[代码模式](../reference/quick-reference/code-patterns.md)
   └─ 按需查阅
 
 总耗时：约20分钟 + 按需查阅
@@ -151,13 +151,13 @@
 Tutorial设计为引导式学习，有以下局限性：
 
 - ❌ **不覆盖所有功能** - 只展示核心流程
-  - → 需要全面了解请查阅[Reference](../quick-reference/)
+  - → 需要全面了解请查阅[Reference](../reference/quick-reference/)
 
 - ❌ **不深入解释原理** - 侧重"怎么做"而非"为什么"
-  - → 需要理解设计请查阅[Explanation](../architecture/)
+  - → 需要理解设计请查阅[Explanation](../explanation/architecture/)
 
 - ❌ **不解决特定问题** - 是通用学习路径
-  - → 需要解决具体问题请查阅[How-to Guides](../development/)
+  - → 需要解决具体问题请查阅[How-to Guides](../how-to-guides/)
 
 ---
 
@@ -183,8 +183,8 @@ Tutorial设计为引导式学习，有以下局限性：
 如果在学习过程中遇到问题：
 
 1. **查看文档**
-   - [常见问题解决](../quick-reference/troubleshooting.md) - 80%的问题都能找到答案
-   - [API快速参考](../quick-reference/api-reference.md) - 查阅接口用法
+   - [常见问题解决](../reference/quick-reference/troubleshooting.md) - 80%的问题都能找到答案
+   - [API快速参考](../reference/quick-reference/api-reference.md) - 查阅接口用法
 
 2. **搜索Issues**
    - [GitHub Issues](https://github.com/shouqitao/凌隐宝堂中医诊所/issues) - 搜索类似问题
@@ -226,9 +226,9 @@ Tutorial设计为引导式学习，有以下局限性：
 ## 📚 相关资源
 
 **其他文档类型**：
-- [How-to Guides](../development/) - 操作指南
-- [Reference](../quick-reference/) - 参考手册
-- [Explanation](../architecture/) - 解释说明
+- [How-to Guides](../how-to-guides/) - 操作指南
+- [Reference](../reference/quick-reference/) - 参考手册
+- [Explanation](../explanation/architecture/) - 解释说明
 
 **项目资源**：
 - [项目README](../../README.md) - 项目总览

@@ -703,7 +703,7 @@ var prescription = await _context.Prescriptions
 | Q5: 一诊断一处方 | ✅ 已确认 | 严格1:1关系+软删除恢复机制 | ✅ 需求文档已完成 |
 | Q6: 外键设计优化 | ✅ 已确认 | 三表共享主键（Long-term Epic） | ✅ 需求文档已完成 |
 
-**需求文档**：`docs/requirements/medicalcase-consultation-prescription-enhancement-requirements.md` ✅
+**需求文档**：`docs/explanation/requirements/medicalcase-consultation-prescription-enhancement-requirements.md` ✅
 
 ---
 

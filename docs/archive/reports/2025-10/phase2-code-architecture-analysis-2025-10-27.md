@@ -346,9 +346,9 @@ public class ConsultationController : BaseApiController
 - ✅ 管理Consultation和Prescription生命周期
 
 **文档对齐验证**：
-- ✅ `docs/architecture/shared/clinical-workflow-entity-relationships.md` 明确定义聚合根边界
-- ✅ `docs/architecture/server/README.md` 第4章引用权威文档
-- ✅ `docs/architecture/client/README.md` 第4章引用权威文档
+- ✅ `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` 明确定义聚合根边界
+- ✅ `docs/explanation/architecture/server/README.md` 第4章引用权威文档
+- ✅ `docs/explanation/architecture/client/README.md` 第4章引用权威文档
 
 **结论**：✅ ADR-005（聚合根模式）已正确实施，符合DDD原则
 
@@ -538,13 +538,13 @@ LYBT.Module.Patients/
 ## 📚 参考资料
 
 ### Phase 2使用的文档
-- `docs/architecture/server/README.md` - Server端三层架构指南
-- `docs/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md`
-- `docs/architecture/decisions/ADR-002-automapper-as-mapping-framework.md`
-- `docs/architecture/decisions/ADR-003-dependency-inversion-principle.md`（隐含）
-- `docs/architecture/decisions/ADR-004-ef-core-as-orm.md`（隐含）
-- `docs/architecture/decisions/ADR-005-aggregate-root-long-term-architecture.md`
-- `docs/business-rules.md` - 14条核心业务规则
+- `docs/explanation/architecture/server/README.md` - Server端三层架构指南
+- `docs/explanation/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md`
+- `docs/explanation/architecture/decisions/ADR-002-automapper-as-mapping-framework.md`
+- `docs/explanation/architecture/decisions/ADR-003-dependency-inversion-principle.md`（隐含）
+- `docs/explanation/architecture/decisions/ADR-004-ef-core-as-orm.md`（隐含）
+- `docs/explanation/architecture/decisions/ADR-005-aggregate-root-long-term-architecture.md`
+- `docs/explanation/business-rules.md` - 14条核心业务规则
 
 ### Phase 2生成的文档
 - 本报告：`docs/reports/phase2-code-architecture-analysis-2025-10-27.md`

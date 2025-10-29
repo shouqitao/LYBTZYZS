@@ -408,8 +408,8 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 
 ### 相关文档
 
-- `docs/architecture/client/README.md` - Client端MVVM架构
-- `docs/development/client/README.md` - Client端开发规范
+- `docs/explanation/architecture/client/README.md` - Client端MVVM架构
+- `docs/how-to-guides/client/README.md` - Client端开发规范
 - `.spec-workflow/steering/constitution.md` - 项目宪法（技术黑名单）
 - `CLAUDE.md` - 项目工作约束（v6.0）
 

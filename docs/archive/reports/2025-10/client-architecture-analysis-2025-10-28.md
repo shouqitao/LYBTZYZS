@@ -260,7 +260,7 @@ await _medicalCaseRepository.UpdateConsultationAsync(medicalCaseId, consultation
 - 可能导致误用直接API模式
 
 **建议**：
-- 更新 `docs/architecture/client/README.md`
+- 更新 `docs/explanation/architecture/client/README.md`
 - 明确Repository层职责和使用规范
 - 添加架构决策记录（ADR）说明为何使用Repository而非Service
 
@@ -303,7 +303,7 @@ View → ViewModel → Refit API接口 → HTTP → Server端
 ### 建议修正
 
 1. **更新架构文档**：
-   - `docs/architecture/client/README.md` → 修正架构图
+   - `docs/explanation/architecture/client/README.md` → 修正架构图
    - 添加Repository层说明
    - 删除Service层描述（或明确说明Client端无Service层）
 

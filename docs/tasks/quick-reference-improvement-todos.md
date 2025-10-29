@@ -45,7 +45,7 @@
   - [x] Admin端点有明确的隐藏标识
   - [x] 包含安全使用说明
   - [x] 文档格式与整体风格一致
-- **相关文档**: `docs/quick-reference/api-reference.md`
+- **相关文档**: `docs/reference/quick-reference/api-reference.md`
 - **依赖关系**: 无
 
 #### [P0-002] ✅ 补充UsersController额外端点文档
@@ -63,7 +63,7 @@
   - [x] 所有额外端点都有完整描述
   - [x] 包含请求参数和响应格式
   - [x] 提供使用示例
-- **相关文档**: `docs/quick-reference/api-reference.md`
+- **相关文档**: `docs/reference/quick-reference/api-reference.md`
 - **依赖关系**: [P0-001]
 
 #### [P0-003] ✅ 验证所有Controller端点完整性
@@ -81,7 +81,7 @@
   - [x] 所有Controller的端点都已文档化
   - [x] 路由格式与代码一致
   - [x] HTTP方法描述正确
-- **相关文档**: `docs/quick-reference/api-reference.md`
+- **相关文档**: `docs/reference/quick-reference/api-reference.md`
 - **依赖关系**: [P0-002]
 
 ### 配置文档补充任务
@@ -100,7 +100,7 @@
   - [x] Security配置文件有完整说明
   - [x] 包含使用场景和最佳实践
   - [x] 安全注意事项清晰明确
-- **相关文档**: `docs/quick-reference/config-templates.md`
+- **相关文档**: `docs/reference/quick-reference/config-templates.md`
 - **依赖关系**: 无
 
 #### [P0-005] ✅ 更新配置文件列表
@@ -117,7 +117,7 @@
   - [x] 配置文件列表完整准确
   - [x] 每个配置文件都有简要说明
   - [x] 提供使用场景指导
-- **相关文档**: `docs/quick-reference/config-templates.md`
+- **相关文档**: `docs/reference/quick-reference/config-templates.md`
 - **依赖关系**: [P0-004]
 
 #### [P0-006] ✅ 验证配置参数实际匹配度
@@ -134,7 +134,7 @@
   - [x] 所有关键配置参数都经过验证
   - [x] 发现的差异有记录和说明
   - [x] 配置示例可以正常工作
-- **相关文档**: `docs/quick-reference/config-templates.md`
+- **相关文档**: `docs/reference/quick-reference/config-templates.md`
 - **依赖关系**: [P0-005]
 
 ---
@@ -158,7 +158,7 @@
   - [x] 所有Controller文档格式统一
   - [x] 参数描述格式一致
   - [x] 代码示例风格统一
-- **相关文档**: `docs/quick-reference/api-reference.md`
+- **相关文档**: `docs/reference/quick-reference/api-reference.md`
 - **依赖关系**: [P0-003]
 
 #### [P1-002] ✅ 增强配置参数说明
@@ -175,7 +175,7 @@
   - [x] 配置参数说明详细完整
   - [x] 包含取值范围和默认值
   - [x] 提供配置优化建议
-- **相关文档**: `docs/development/configuration-parameters-guide.md`
+- **相关文档**: `docs/how-to-guides/configuration-parameters-guide.md`
 - **依赖关系**: [P0-006]
 
 #### [P1-003] ✅ 完善代码模式示例
@@ -192,7 +192,7 @@
   - [x] 每个模式都有完整示例
   - [x] 包含最佳实践说明
   - [x] 提供性能优化指导
-- **相关文档**: `docs/development/code-patterns-enhancement-summary.md`
+- **相关文档**: `docs/how-to-guides/code-patterns-enhancement-summary.md`
 - **依赖关系**: 无
 
 #### [P1-004] ✅ 优化问题解决方案结构
@@ -209,7 +209,7 @@
   - [x] 问题分类清晰合理
   - [x] 诊断步骤简单有效
   - [x] 解决方案选项多样
-- **相关文档**: `docs/quick-reference/troubleshooting-enhanced.md`
+- **相关文档**: `docs/reference/quick-reference/troubleshooting-enhanced.md`
 - **依赖关系**: 无
 
 #### [P1-005] ✅ 完善开发检查清单
@@ -226,7 +226,7 @@
   - [x] 检查项执行步骤清晰
   - [x] 包含工具和脚本建议
   - [x] 提供结果记录模板
-- **相关文档**: `docs/development/development-checklist-enhanced.md`
+- **相关文档**: `docs/how-to-guides/development-checklist-enhanced.md`
 - **依赖关系**: 无
 
 ### 验证机制建立任务

@@ -1,7 +1,7 @@
 # Shared端代码-文档差异分析报告
 
 **生成时间**: 2025-10-28
-**分析范围**: `src/Shared/` vs `docs/architecture/shared/README.md`
+**分析范围**: `src/Shared/` vs `docs/explanation/architecture/shared/README.md`
 **分析模式**: UltraThink深度对比
 
 ---

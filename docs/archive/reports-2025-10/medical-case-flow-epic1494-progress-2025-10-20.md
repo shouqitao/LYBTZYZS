@@ -367,4 +367,4 @@ MedicalCaseFlowViewModel
 
 - **技术债务**：`docs/reports/medical-case-flow-validation-debt-2025-10-20.md`
 - **MVP分析**：`docs/reports/mvp-analysis-report-2025-10-16.md`
-- **架构指南**：`docs/architecture/client/README.md`（MVVM五层设计）
+- **架构指南**：`docs/explanation/architecture/client/README.md`（MVVM五层设计）

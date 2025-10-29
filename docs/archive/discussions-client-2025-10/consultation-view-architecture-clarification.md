@@ -349,7 +349,7 @@ NavigateTo<MedicalCaseViewModel>(patientDto);
 **需要修正的文档**：
 - `clinical-workflow-ux-design-discussion.md`
 - `mvp-development-strategy-discussion.md`（如有相关表述）
-- `docs/architecture/client/README.md`（如有相关表述）
+- `docs/explanation/architecture/client/README.md`（如有相关表述）
 
 **术语替换规则**：
 ```
@@ -419,9 +419,9 @@ POST /api/medicalcase/create
 
 ## 5. 参考文档
 
-- **UI/UX设计讨论**：`docs/architecture/client/clinical-workflow-ux-design-discussion.md`
-- **Client端架构**：`docs/architecture/client/README.md`
-- **MVVM五层架构**：`docs/architecture/client/README.md` Section 2
+- **UI/UX设计讨论**：`docs/explanation/architecture/client/clinical-workflow-ux-design-discussion.md`
+- **Client端架构**：`docs/explanation/architecture/client/README.md`
+- **MVVM五层架构**：`docs/explanation/architecture/client/README.md` Section 2
 - **导航模式**：WPF MVVM Navigation Pattern（ContentControl + DataTemplate）
 
 ---

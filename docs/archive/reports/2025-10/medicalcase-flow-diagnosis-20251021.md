@@ -70,7 +70,7 @@ var createdDto = await _consultationRepository.CreateAsync(createDto);
 ```
 
 **文档要求**：
-根据 `docs/architecture/client/README.md:1023-1028` 的聚合根模式规范：
+根据 `docs/explanation/architecture/client/README.md:1023-1028` 的聚合根模式规范：
 
 ```csharp
 // ✅ 正确实现
@@ -186,7 +186,7 @@ var completionVM = _containerProvider.Resolve<CompletionViewModel>();
 
 ### 不一致1：聚合根模式实现 vs 文档要求
 
-**文档位置**：`docs/architecture/client/README.md:956-1053`
+**文档位置**：`docs/explanation/architecture/client/README.md:956-1053`
 
 | 对比项 | 文档描述 | 实际代码 | 一致性 |
 |-------|---------|---------|--------|
@@ -308,7 +308,7 @@ var completionVM = _containerProvider.Resolve<CompletionViewModel>();
 **目标**：确保文档与代码一致
 
 **修改清单**：
-1. ✅ 更新 `docs/architecture/client/README.md` 聚合根模式示例
+1. ✅ 更新 `docs/explanation/architecture/client/README.md` 聚合根模式示例
 2. ✅ 添加 ConsultationFormViewModel 的正确实现示例
 3. ✅ 更新 Phase 2 架构验证检查清单
 

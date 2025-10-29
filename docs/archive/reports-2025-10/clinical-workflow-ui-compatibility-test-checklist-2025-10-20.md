@@ -340,7 +340,7 @@
 - [ ] 建议ConsultationFormView的TextBox高度可配置化（MVP后优化）
 
 #### 文档层面
-- [ ] 更新 `docs/architecture/client/README.md`，说明响应式设计约束
+- [ ] 更新 `docs/explanation/architecture/client/README.md`，说明响应式设计约束
 - [ ] 创建小屏幕优化指南（如有必要）
 
 ---

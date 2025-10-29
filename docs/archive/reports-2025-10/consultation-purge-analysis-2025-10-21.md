@@ -594,9 +594,9 @@ public class ConsultationDto : StatusDto, IRemarkable
 
 #### Task 6.1: 更新文档
 - [ ] `README.md` - 更新 Consultation 模块说明
-- [ ] `docs/architecture/server/consultation-module.md` - 更新架构文档
-- [ ] `docs/api/consultation-api.md` - 删除废弃的 API 文档
-- [ ] `docs/development/consultation-development-guide.md` - 更新开发指南
+- [ ] `docs/explanation/architecture/server/consultation-module.md` - 更新架构文档
+- [ ] `docs/reference/api/consultation-api.md` - 删除废弃的 API 文档
+- [ ] `docs/how-to-guides/consultation-development-guide.md` - 更新开发指南
 
 ---
 

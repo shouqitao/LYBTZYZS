@@ -6,8 +6,8 @@
 **Epic**: #1494 - 医案流程UI重构
 **相关文档**:
 - `docs/reports/prescription-entry-requirements-2025-10-16.md`
-- `docs/architecture/client/prescription-editor-integration-design.md`
-- `docs/architecture/client/clinical-workflow-ui-prototypes.md`
+- `docs/explanation/architecture/client/prescription-editor-integration-design.md`
+- `docs/explanation/architecture/client/clinical-workflow-ui-prototypes.md`
 
 ---
 
@@ -1597,8 +1597,8 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 
 **设计文档**:
 - `docs/reports/prescription-entry-requirements-2025-10-16.md` - 处方录入完整需求
-- `docs/architecture/client/prescription-editor-integration-design.md` - 集成设计方案
-- `docs/architecture/client/clinical-workflow-ui-prototypes.md` - UI原型设计
+- `docs/explanation/architecture/client/prescription-editor-integration-design.md` - 集成设计方案
+- `docs/explanation/architecture/client/clinical-workflow-ui-prototypes.md` - UI原型设计
 
 **验证报告**:
 - `docs/reports/obsolete-clinical-workflow-design-analysis-2025-10-20.md` - 过期设计分析
@@ -1693,8 +1693,8 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 
 **设计文档**:
 - [处方录入需求](docs/reports/prescription-entry-requirements-2025-10-16.md)
-- [集成设计方案](docs/architecture/client/prescription-editor-integration-design.md)
-- [UI原型设计](docs/architecture/client/clinical-workflow-ui-prototypes.md)
+- [集成设计方案](docs/explanation/architecture/client/prescription-editor-integration-design.md)
+- [UI原型设计](docs/explanation/architecture/client/clinical-workflow-ui-prototypes.md)
 
 ---
 

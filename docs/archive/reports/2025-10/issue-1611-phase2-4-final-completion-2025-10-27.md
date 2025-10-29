@@ -159,7 +159,7 @@ public void AR001_MedicalCase_Should_Be_Aggregate_Root()
 **解决方案**：
 - ✅ 识别为**合理的架构例外**
 - ✅ 在测试中添加白名单
-- ✅ 在`docs/architecture/exceptions.md`中记录为EXC-003
+- ✅ 在`docs/explanation/architecture/exceptions.md`中记录为EXC-003
 - ✅ 每个例外都有详细的业务理由
 
 **测试结果**：✅ **通过**（152ms）
@@ -232,7 +232,7 @@ dotnet test tests/Architecture/LYBT.ArchTests.csproj --filter "FullyQualifiedNam
 
 **创建**: `EXC-003: 值对象和特殊实体的软删除例外`
 
-**记录位置**: `docs/architecture/exceptions.md`
+**记录位置**: `docs/explanation/architecture/exceptions.md`
 
 **例外清单**：
 1. **AdminSecretModel** - 安全敏感数据
@@ -493,9 +493,9 @@ Assert.Empty(consultationWriteMethods);
 
 ### 文档链接
 
-- **ADR索引**: [docs/architecture/decisions/README.md](../architecture/decisions/README.md)
-- **架构例外清单**: [docs/architecture/exceptions.md](../architecture/exceptions.md)
-- **业务规则文档**: [docs/business-rules.md](../business-rules.md)
+- **ADR索引**: [docs/architecture/decisions/README.md](../explanation/architecture/decisions/README.md)
+- **架构例外清单**: [docs/architecture/exceptions.md](../explanation/architecture/exceptions.md)
+- **业务规则文档**: [docs/business-rules.md](../explanation/business-rules.md)
 - **Phase 2详细报告**: [docs/reports/phase2-code-architecture-analysis-2025-10-27.md](./phase2-code-architecture-analysis-2025-10-27.md)
 
 ### Issue链接

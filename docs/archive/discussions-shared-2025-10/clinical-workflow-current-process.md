@@ -638,7 +638,7 @@ public Guid MedicalCaseId { get; set; }    // ✅ 属于医案（必须）
 ```
 
 **架构文档已确认**：
-- ✅ `docs/architecture/shared/clinical-workflow-entity-relationships.md` 明确了1:1:1关系
+- ✅ `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` 明确了1:1:1关系
 - ✅ 明确了"容器先于内容创建"的原则
 - ✅ 明确了MedicalCase是DDD聚合根
 
@@ -775,8 +775,8 @@ var targetMedicalCase = await _medicalCaseRepository.GetByIdAsync(targetConsulta
 ## 9. 参考文档
 
 - **架构分析报告**：`docs/reports/clinical-workflow-analysis-2025-10-18.md`
-- **实体关系文档**：`docs/architecture/shared/clinical-workflow-entity-relationships.md`
-- **Client端架构指南**：`docs/architecture/client/README.md`
+- **实体关系文档**：`docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md`
+- **Client端架构指南**：`docs/explanation/architecture/client/README.md`
 - **重构提交记录**：`git show 97f0b731`（Issue #1463）
 
 ---

@@ -464,7 +464,7 @@ LYBT.WebAPI.csproj → 所有Module（Presentation层正确依赖Application层�
 
 2. ✅ 更新架构文档
    - 更新 `medicalcase-architecture-correction-plan-v2.md`，标记为"已完全实施"
-   - 更新 `docs/architecture/server/README.md`，补充聚合根实施细节
+   - 更新 `docs/explanation/architecture/server/README.md`，补充聚合根实施细节
 
 3. ✅ 生成架构验证报告
    - 列出所有修复项
@@ -556,9 +556,9 @@ LYBT.WebAPI.csproj → 所有Module（Presentation层正确依赖Application层�
 ## 📚 参考资料
 
 ### 相关文档
-- `docs/architecture/shared/medicalcase-architecture-correction-plan-v2.md` - v2.0架构设计
+- `docs/explanation/architecture/shared/medicalcase-architecture-correction-plan-v2.md` - v2.0架构设计
 - `.spec-workflow/steering/constitution.md` - MVP技术约束
-- `docs/architecture/server/README.md` - Server端三层架构规范
+- `docs/explanation/architecture/server/README.md` - Server端三层架构规范
 
 ### 相关Issue
 - Issue #1477 - 架构纠正v2（部分实施）

@@ -908,9 +908,9 @@ public class MedicalCaseDetailViewModel : ViewModelBase
   - 记录v2方案决策
 
 **Day 1下午**：
-- [ ] 更新`docs/architecture/client/README.md`
+- [ ] 更新`docs/explanation/architecture/client/README.md`
   - 明确模块职责（主模块 vs 辅助模块）
-- [ ] 更新`docs/architecture/server/README.md`
+- [ ] 更新`docs/explanation/architecture/server/README.md`
   - 明确API层级（写入 vs 查询）
 - [ ] 创建PR：【架构纠正】文档更新（v2方案）
 
@@ -1072,11 +1072,11 @@ public class MedicalCaseDetailViewModel : ViewModelBase
 5. `src/Client/Desktop/appsettings.json` - 添加FeatureToggles配置
 
 **文档需更新文件**：
-1. `docs/architecture/client/clinical-workflow-ux-design-discussion.md` - 明确模块职责
-2. `docs/architecture/client/consultation-view-architecture-clarification.md` - 记录v2决策
-3. `docs/architecture/client/README.md` - 更新模块说明
-4. `docs/architecture/server/README.md` - 更新API层级说明
-5. `docs/architecture/shared/consultation-prescription-expansion-roadmap.md` - 新增扩展规划（可选）
+1. `docs/explanation/architecture/client/clinical-workflow-ux-design-discussion.md` - 明确模块职责
+2. `docs/explanation/architecture/client/consultation-view-architecture-clarification.md` - 记录v2决策
+3. `docs/explanation/architecture/client/README.md` - 更新模块说明
+4. `docs/explanation/architecture/server/README.md` - 更新API层级说明
+5. `docs/explanation/architecture/shared/consultation-prescription-expansion-roadmap.md` - 新增扩展规划（可选）
 
 ---
 

@@ -234,8 +234,8 @@ public PatientDto? SelectedPatient
 
 ## 📚 相关文档
 
-- `docs/architecture/client/README.md` - Client端架构总览
-- `docs/architecture/client/ui-standards.md` - UI设计规范
+- `docs/explanation/architecture/client/README.md` - Client端架构总览
+- `docs/explanation/architecture/client/ui-standards.md` - UI设计规范
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/MedicalCaseFlowView.xaml` - 父视图
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/PatientSelectionViewModel.cs` - ViewModel
 

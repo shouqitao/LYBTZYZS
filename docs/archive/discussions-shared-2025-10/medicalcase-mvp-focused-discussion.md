@@ -288,8 +288,8 @@ Step 1（辨证） → Step 2（施治） → Step 3（完成）
 - **Phase 2**：Epic #1343其他任务（视Phase 1完成情况）
 
 ### 参考资料
-- **详细设计文档**：`docs/design/medicalcase-consultation-prescription-enhancement-design.md`（1370行）
-- **差距分析文档**：`docs/design/medicalcase-consultation-prescription-gap-analysis.md`
+- **详细设计文档**：`docs/explanation/design/medicalcase-consultation-prescription-enhancement-design.md`（1370行）
+- **差距分析文档**：`docs/explanation/design/medicalcase-consultation-prescription-gap-analysis.md`
 - **Phase拆分计划**：设计文档第7章（5个Phase详细任务清单）
 
 ---

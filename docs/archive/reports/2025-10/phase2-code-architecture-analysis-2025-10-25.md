@@ -225,8 +225,8 @@ public class PrescriptionsController : BaseApiController
 - 或者Service层直接操作DbContext（违反Repository模式）
 
 **文档记录**：
-- `docs/architecture/evolution.md`（ADR-002）描述了聚合根模式决策
-- `docs/architecture/patterns/aggregate-root-pattern.md`提供了完整示例代码
+- `docs/explanation/architecture/evolution.md`（ADR-002）描述了聚合根模式决策
+- `docs/explanation/architecture/patterns/aggregate-root-pattern.md`提供了完整示例代码
 - 但**实际代码未完全遵循**文档描述
 
 ---

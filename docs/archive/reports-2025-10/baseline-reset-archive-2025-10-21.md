@@ -408,7 +408,7 @@
 - **基准线确认报告**: `docs/reports/baseline-assessment-2025-10-21.md`（570行）
 - **Issue/PR审查报告**: `docs/reports/baseline-reset-issue-pr-review-2025-10-21.md`（6000行）
 - **MVP战略文档**: `.spec-workflow/steering/constitution.md`
-- **架构决策记录**: `docs/architecture/decisions/adr-003-workstation-refactoring.md`
+- **架构决策记录**: `docs/explanation/architecture/decisions/adr-003-workstation-refactoring.md`
 
 ---
 

@@ -375,22 +375,22 @@ error CS0246: The type or namespace name 'UpdateMedicalCaseRemarkDto' could not 
 
 恭喜完成第一个功能开发！接下来推荐：
 
-1. **深入Server端**：阅读[Server端开发指南](../development/server/README.md)
-2. **深入Client端**：阅读[Client端开发指南](../development/client/README.md)
+1. **深入Server端**：阅读[Server端开发指南](../how-to-guides/server/README.md)
+2. **深入Client端**：阅读[Client端开发指南](../how-to-guides/client/README.md)
 3. **学习设计模式**：
-   - [Repository模式](../architecture/patterns/repository-pattern.md)
-   - [MVVM模式](../architecture/patterns/mvvm-pattern.md)
-   - [聚合根模式](../architecture/patterns/aggregate-root-pattern.md)
-4. **学习测试**：阅读[测试指南](../development/shared/testing-guide.md)
+   - [Repository模式](../explanation/architecture/patterns/repository-pattern.md)
+   - [MVVM模式](../explanation/architecture/patterns/mvvm-pattern.md)
+   - [聚合根模式](../explanation/architecture/patterns/aggregate-root-pattern.md)
+4. **学习测试**：阅读[测试指南](../how-to-guides/shared/testing-guide.md)
 
 ---
 
 ## 🔗 相关资源
 
-- [架构总览](../architecture/README.md) - 三层对齐架构
-- [API快速参考](../quick-reference/api-reference.md) - API文档
-- [代码模式](../quick-reference/code-patterns.md) - 常用代码模式
-- [常见问题解决](../quick-reference/troubleshooting.md) - 问题排查
+- [架构总览](../explanation/architecture/README.md) - 三层对齐架构
+- [API快速参考](../reference/quick-reference/api-reference.md) - API文档
+- [代码模式](../reference/quick-reference/code-patterns.md) - 常用代码模式
+- [常见问题解决](../reference/quick-reference/troubleshooting.md) - 问题排查
 
 ---
 

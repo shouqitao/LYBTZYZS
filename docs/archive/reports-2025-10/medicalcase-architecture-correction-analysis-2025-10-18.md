@@ -506,7 +506,7 @@ LYBT.Desktop.MedicalCase/
 
 #### Step 3.1：更新架构讨论文档
 
-**文件**：`docs/architecture/client/clinical-workflow-ux-design-discussion.md`
+**文件**：`docs/explanation/architecture/client/clinical-workflow-ux-design-discussion.md`
 
 **修改**：
 - Section 2.1：修正导航结构描述
@@ -516,7 +516,7 @@ LYBT.Desktop.MedicalCase/
 
 #### Step 3.2：更新架构澄清文档
 
-**文件**：`docs/architecture/client/consultation-view-architecture-clarification.md`
+**文件**：`docs/explanation/architecture/client/consultation-view-architecture-clarification.md`
 
 **当前状态**：
 - 已记录用户的强势修正决策
@@ -528,7 +528,7 @@ LYBT.Desktop.MedicalCase/
 
 #### Step 3.3：更新Client端架构文档
 
-**文件**：`docs/architecture/client/README.md`
+**文件**：`docs/explanation/architecture/client/README.md`
 
 **修改**：
 - 明确MedicalCase是唯一的病案聚合根
@@ -620,33 +620,33 @@ LYBT.Desktop.MedicalCase/
 ### 文档（6个文件）
 
 **架构讨论文档**：
-14. `docs/architecture/client/clinical-workflow-ux-design-discussion.md`
+14. `docs/explanation/architecture/client/clinical-workflow-ux-design-discussion.md`
     - Section 2.1：修正导航结构
     - Section 2.2：标题从"ConsultationView"改为"MedicalCaseView"
     - Section 3.1：View结构修正
     - Section 5：Task清单修正
     - 全文搜索替换错误术语
 
-15. `docs/architecture/client/consultation-view-architecture-clarification.md`
+15. `docs/explanation/architecture/client/consultation-view-architecture-clarification.md`
     - 添加"Phase 1-3修正完成记录"章节
 
 **Client端架构文档**：
-16. `docs/architecture/client/README.md`
+16. `docs/explanation/architecture/client/README.md`
     - 明确MedicalCase是聚合根
     - 更新模块列表
     - 添加DDD设计说明
 
 **Server端架构文档**（如有相关表述）：
-17. `docs/architecture/server/README.md`
+17. `docs/explanation/architecture/server/README.md`
     - 明确MedicalCase是聚合根
     - 更新模块说明
 
 **开发策略文档**（如有相关表述）：
-18. `docs/architecture/shared/mvp-development-strategy-discussion.md`
+18. `docs/explanation/architecture/shared/mvp-development-strategy-discussion.md`
     - 检查是否有错误术语
 
 **本次新建的文档**：
-19. `docs/architecture/client/consultation-view-architecture-clarification.md`
+19. `docs/explanation/architecture/client/consultation-view-architecture-clarification.md`
     - 已创建，记录用户纠正决策
     - 后续更新执行结果
 
@@ -772,8 +772,8 @@ LYBT.Desktop.MedicalCase/
 
 - [ ] `clinical-workflow-ux-design-discussion.md`术语修正完成
 - [ ] `consultation-view-architecture-clarification.md`添加执行结果记录
-- [ ] `docs/architecture/client/README.md`更新完成
-- [ ] `docs/architecture/server/README.md`更新完成（如需要）
+- [ ] `docs/explanation/architecture/client/README.md`更新完成
+- [ ] `docs/explanation/architecture/server/README.md`更新完成（如需要）
 - [ ] 全局搜索无遗漏的错误术语
 
 ### 7.4 UAT验收标准（用户验收）

@@ -237,10 +237,10 @@
 
 ## 📚 参考资料
 
-- **架构文档**：`docs/architecture/`
-- **开发指南**：`docs/development/`
+- **架构文档**：`docs/explanation/architecture/`
+- **开发指南**：`docs/how-to-guides/`
 - **Constitution**：`.spec-workflow/steering/constitution.md`
-- **任务工作流**：`docs/development/shared/task-workflow-checklist.md`
+- **任务工作流**：`docs/how-to-guides/shared/task-workflow-checklist.md`
 
 ---
 

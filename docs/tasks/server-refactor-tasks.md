@@ -2,8 +2,8 @@
 
 **创建时间**: 2025-10-27
 **版本**: v1.0
-**对应设计**: `docs/design/server-refactor-design.md`
-**对应需求**: `docs/requirements/server-refactor-requirements-v2.md`
+**对应设计**: `docs/explanation/design/server-refactor-design.md`
+**对应需求**: `docs/explanation/requirements/server-refactor-requirements-v2.md`
 
 ---
 
@@ -434,21 +434,21 @@ dotnet build LYBT.All.sln -c Release --no-restore
 完成实施后需同步更新以下文档：
 
 1. **架构文档**:
-   - [ ] `docs/architecture/server/README.md` - 更新Consultation/Prescription模块说明
-   - [ ] `docs/architecture/server/module-consultation.md` - 更新端点清单
-   - [ ] `docs/architecture/server/module-prescription.md` - 新增端点清单
+   - [ ] `docs/explanation/architecture/server/README.md` - 更新Consultation/Prescription模块说明
+   - [ ] `docs/explanation/architecture/server/module-consultation.md` - 更新端点清单
+   - [ ] `docs/explanation/architecture/server/module-prescription.md` - 新增端点清单
 
 2. **API文档**:
-   - [ ] `docs/api/prescriptions-api.md` - 新增Prescription API文档（4个端点）
-   - [ ] `docs/api/consultation-api.md` - 更新Consultation API（删除2个端点）
+   - [ ] `docs/reference/api/prescriptions-api.md` - 新增Prescription API文档（4个端点）
+   - [ ] `docs/reference/api/consultation-api.md` - 更新Consultation API（删除2个端点）
 
 3. **导航文档**:
    - [ ] `docs/index.md` - 更新导航链接
-   - [ ] `docs/quick-reference/api-reference.md` - 更新API快速参考
+   - [ ] `docs/reference/quick-reference/api-reference.md` - 更新API快速参考
 
 4. **开发指南**:
-   - [ ] `docs/development/server/controller-guidelines.md` - 补充只读Controller模式
-   - [ ] `docs/development/server/repository-guidelines.md` - 补充internal约束说明
+   - [ ] `docs/how-to-guides/server/controller-guidelines.md` - 补充只读Controller模式
+   - [ ] `docs/how-to-guides/server/repository-guidelines.md` - 补充internal约束说明
 
 ---
 

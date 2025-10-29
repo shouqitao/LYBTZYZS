@@ -5,9 +5,9 @@
 > **相关Issue**：#1568, #1569, #1570, #1571, #1572, #1573
 >
 > ⚠️ **注意**：本文档为业务需求讨论记录，结论已整合到正式文档：
-> - 需求文档：`docs/requirements/pending-medicalcase-queue-requirements.md`
-> - 设计文档：`docs/design/pending-medicalcase-queue-design.md`
-> - UI实施讨论：`docs/architecture/client/pending-medicalcase-queue-ui-implementation-discussion.md`
+> - 需求文档：`docs/explanation/requirements/pending-medicalcase-queue-requirements.md`
+> - 设计文档：`docs/explanation/design/pending-medicalcase-queue-design.md`
+> - UI实施讨论：`docs/explanation/architecture/client/pending-medicalcase-queue-ui-implementation-discussion.md`
 
 ---
 

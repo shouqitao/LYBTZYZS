@@ -13,9 +13,9 @@
 ### ✅ 已完成工作
 
 1. **架构设计文档** ✅
-   - 📄 `docs/architecture/shared/medical-workflow-module-migration-discussion.md` - 架构分析和方案对比
-   - 📄 `docs/architecture/client/medical-workflow-events-contract.md` - 事件聚合器契约（5个事件）
-   - 📄 `docs/architecture/client/medical-workflow-navigation-parameters.md` - NavigationParameters规范
+   - 📄 `docs/explanation/architecture/shared/medical-workflow-module-migration-discussion.md` - 架构分析和方案对比
+   - 📄 `docs/explanation/architecture/client/medical-workflow-events-contract.md` - 事件聚合器契约（5个事件）
+   - 📄 `docs/explanation/architecture/client/medical-workflow-navigation-parameters.md` - NavigationParameters规范
 
 2. **GitHub Issue创建** ✅
    - 🔗 Issue #1557: https://github.com/shouqitao/LYBTZYZS/issues/1557

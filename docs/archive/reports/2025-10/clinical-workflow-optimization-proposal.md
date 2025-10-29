@@ -656,7 +656,7 @@ private async void ExecuteSaveAndPrescribe()
 ### 5.2 实施约束
 
 - ✅ **必须遵守**: MVP原则,不引入新技术栈 (禁止Redis/CQRS/MediatR等)
-- ✅ **必须遵守**: 三层架构规范 (参考 `docs/architecture/client/README.md`)
+- ✅ **必须遵守**: 三层架构规范 (参考 `docs/explanation/architecture/client/README.md`)
 - ✅ **必须遵守**: Issue驱动开发 (每个组件创建对应Issue)
 
 ### 5.3 依赖检查
@@ -702,7 +702,7 @@ private async void ExecuteSaveAndPrescribe()
 
 ## 📚 七、参考资料
 
-- 📐 **三层架构规范**: `docs/architecture/client/README.md`
+- 📐 **三层架构规范**: `docs/explanation/architecture/client/README.md`
 - 📋 **Issue工作流**: `CLAUDE.md` 第2节
 - 🎯 **MVP原则**: `.spec-workflow/steering/constitution.md`
 - 🔧 **Prescriptions模块参考**: Epic #1445 (已完成的模块重构案例)

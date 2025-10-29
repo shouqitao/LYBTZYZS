@@ -334,8 +334,8 @@ Services/IPrescriptionPrintService.cs       - ✅ 合理（接口定义）
 **Issue #5**: 更新Desktop架构文档
 
 **目标**：
-- 更新`docs/architecture/client/README.md`（反映Phase 1-4改进）
-- 更新`docs/modules/`对应模块文档
+- 更新`docs/explanation/architecture/client/README.md`（反映Phase 1-4改进）
+- 更新`docs/reference/modules/`对应模块文档
 - 更新`docs/index.md`导航链接
 - 验证文档与代码100%同步
 
@@ -500,8 +500,8 @@ Phase 5: 文档同步 → 100%对齐
 ### C. 参考文档
 
 **架构文档**：
-- `docs/architecture/client/README.md` - Desktop层架构指南（v5.0）
-- `docs/architecture/server/README.md` - Server层架构指南
+- `docs/explanation/architecture/client/README.md` - Desktop层架构指南（v5.0）
+- `docs/explanation/architecture/server/README.md` - Server层架构指南
 
 **Epic/Issue参考**：
 - Epic #1600 - Server端重构（2025-10-27完成）
@@ -510,8 +510,8 @@ Phase 5: 文档同步 → 100%对齐
 - Issue #1114 - 架构演化（Phase 1→Phase 2）
 
 **代码规范**：
-- `docs/development/client/code-standards.md` - Desktop代码规范
-- `docs/development/shared/task-workflow-checklist.md` - 任务流程清单
+- `docs/how-to-guides/client/code-standards.md` - Desktop代码规范
+- `docs/how-to-guides/shared/task-workflow-checklist.md` - 任务流程清单
 
 ---
 

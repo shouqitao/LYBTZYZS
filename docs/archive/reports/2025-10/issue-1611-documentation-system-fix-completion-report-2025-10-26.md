@@ -176,8 +176,8 @@ public class PatientMappingProfile : Profile
 **本文档是MedicalCase/Consultation/Prescription实体关系的唯一权威定义**。
 
 **其他文档引用规则**：
-- **Client架构文档**（`docs/architecture/client/README.md`）：从MVVM聚合根模式视角引用本文档
-- **Server架构文档**（`docs/architecture/server/README.md`）：从Repository/Service视角引用本文档
+- **Client架构文档**（`docs/explanation/architecture/client/README.md`）：从MVVM聚合根模式视角引用本文档
+- **Server架构文档**（`docs/explanation/architecture/server/README.md`）：从Repository/Service视角引用本文档
 - **禁止重复**：其他文档应通过链接引用本文档，避免重复描述实体关系
 
 **文档分工**：
@@ -334,21 +334,21 @@ find "D:/source/repos/LYBTZYZS/docs/reports" -maxdepth 1 \
 | 文件路径 | 变更类型 | 变更内容 |
 |---------|---------|---------|
 | `README.md` | 编辑 | 更新版本标记v4.0→v5.1 |
-| `docs/api/README.md` | 编辑 | 补充Swagger UI使用说明（3处） |
-| `docs/business-rules.md` | 编辑 | 新增测试覆盖率和风险等级列 |
-| `docs/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md` | 创建 | FluentValidation选型ADR |
-| `docs/architecture/decisions/ADR-002-automapper-as-mapping-framework.md` | 创建 | AutoMapper选型ADR |
-| `docs/architecture/shared/clinical-workflow-entity-relationships.md` | 编辑 | 新增权威文档声明 |
-| `docs/architecture/client/README.md` | 编辑 | 新增权威文档引用 |
-| `docs/architecture/server/README.md` | 编辑 | 新增权威文档引用 |
+| `docs/reference/api/README.md` | 编辑 | 补充Swagger UI使用说明（3处） |
+| `docs/explanation/business-rules.md` | 编辑 | 新增测试覆盖率和风险等级列 |
+| `docs/explanation/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md` | 创建 | FluentValidation选型ADR |
+| `docs/explanation/architecture/decisions/ADR-002-automapper-as-mapping-framework.md` | 创建 | AutoMapper选型ADR |
+| `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` | 编辑 | 新增权威文档声明 |
+| `docs/explanation/architecture/client/README.md` | 编辑 | 新增权威文档引用 |
+| `docs/explanation/architecture/server/README.md` | 编辑 | 新增权威文档引用 |
 | `docs/archive/README.md` | 编辑 | 更新归档目录结构和历史 |
 
 ### 归档的文件（66个）
 
 | 归档目录 | 文件数量 | 原路径 |
 |---------|---------|--------|
-| `docs/archive/discussions-client-2025-10/` | 18 | `docs/architecture/client/` |
-| `docs/archive/discussions-shared-2025-10/` | 9 | `docs/architecture/shared/` |
+| `docs/archive/discussions-client-2025-10/` | 18 | `docs/explanation/architecture/client/` |
+| `docs/archive/discussions-shared-2025-10/` | 9 | `docs/explanation/architecture/shared/` |
 | `docs/archive/reports-2025-10/` | 39 | `docs/reports/` |
 
 ### 保留的报告（3个）
@@ -451,10 +451,10 @@ find "D:/source/repos/LYBTZYZS/docs/reports" -maxdepth 1 \
 ### 更新的核心文档
 - `README.md` - 项目首页（v5.1）
 - `docs/index.md` - 文档中心（v5.1）
-- `docs/business-rules.md` - 14条核心业务规则（含测试风险矩阵）
-- `docs/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md`
-- `docs/architecture/decisions/ADR-002-automapper-as-mapping-framework.md`
-- `docs/architecture/shared/clinical-workflow-entity-relationships.md`（权威文档）
+- `docs/explanation/business-rules.md` - 14条核心业务规则（含测试风险矩阵）
+- `docs/explanation/architecture/decisions/ADR-001-fluentvalidation-as-validation-framework.md`
+- `docs/explanation/architecture/decisions/ADR-002-automapper-as-mapping-framework.md`
+- `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md`（权威文档）
 
 ### 归档索引
 - `docs/archive/README.md` - 归档系统索引

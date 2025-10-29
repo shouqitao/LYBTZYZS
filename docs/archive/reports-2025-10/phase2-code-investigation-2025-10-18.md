@@ -658,8 +658,8 @@ src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseEntryV
 ## 📚 参考文档
 
 - **需求文档**：`docs/reports/prescription-entry-requirements-2025-10-16.md`
-- **架构指南**：`docs/architecture/client/README.md`（WPF MVVM 规范）
-- **API 文档**：`docs/api/README.md`（处方模块 API）
+- **架构指南**：`docs/explanation/architecture/client/README.md`（WPF MVVM 规范）
+- **API 文档**：`docs/reference/api/README.md`（处方模块 API）
 - **Epic #1343**：GitHub Issue #1343（MVP '能看诊' 功能实现）
 
 ---

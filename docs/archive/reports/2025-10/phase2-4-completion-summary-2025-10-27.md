@@ -49,7 +49,7 @@
 **ADR-005: 聚合根模式** ✅
 - 验证：ConsultationController注释明确"所有Write操作使用MedicalCaseController"
 - 质量：代码与文档对齐
-- 证据：`docs/architecture/shared/clinical-workflow-entity-relationships.md`权威文档
+- 证据：`docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md`权威文档
 
 #### 2. 三层架构依赖方向（✅ 无违规）
 

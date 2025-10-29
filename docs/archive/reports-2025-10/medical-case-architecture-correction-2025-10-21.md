@@ -1593,14 +1593,14 @@ dotnet test tests/IntegrationTests/ -c Release
 ### 项目相关文档
 
 - [病案流程分析报告](medical-case-workflow-analysis-2025-10-21.md)
-- [病案聚合设计讨论](../architecture/shared/medical-case-aggregate-design-discussion.md)
-- [实体关系文档](../architecture/shared/clinical-workflow-entity-relationships.md)
+- [病案聚合设计讨论](../explanation/architecture/shared/medical-case-aggregate-design-discussion.md)
+- [实体关系文档](../explanation/architecture/shared/clinical-workflow-entity-relationships.md)
 - [GitHub Issue #1561](https://github.com/shouqitao/LYBTZYZS/issues/1561)
 
 ### ADR文档
 
-- [ADR-001: MedicalCase聚合根设计](../architecture/adr/ADR-001-medical-case-aggregate-root.md)
-- [ADR-002: Repository边界的门面模式](../architecture/adr/ADR-002-facade-pattern-for-repository-boundary.md)
+- [ADR-001: MedicalCase聚合根设计](../explanation/architecture/adr/ADR-001-medical-case-aggregate-root.md)
+- [ADR-002: Repository边界的门面模式](../explanation/architecture/adr/ADR-002-facade-pattern-for-repository-boundary.md)
 
 ---
 

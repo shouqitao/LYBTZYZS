@@ -1139,9 +1139,9 @@ Step 3: 完成（CompletionView）
 - `src/Client/Desktop/Modules/LYBT.Desktop.Consultation/ViewModels/ConsultationFormViewModel.cs`（404行，四诊表单）
 
 **关键文档**：
-- `docs/architecture/shared/medicalcase-architecture-correction-plan-v2.md`（1152行，架构修正计划）
-- `docs/design/pending-medicalcase-queue-design.md`（1509行，待看诊队列设计）
-- `docs/requirements/pending-medicalcase-queue-requirements.md`（305行，Epic #1583需求）
+- `docs/explanation/architecture/shared/medicalcase-architecture-correction-plan-v2.md`（1152行，架构修正计划）
+- `docs/explanation/design/pending-medicalcase-queue-design.md`（1509行，待看诊队列设计）
+- `docs/explanation/requirements/pending-medicalcase-queue-requirements.md`（305行，Epic #1583需求）
 
 ### 10.2 统计数据汇总
 

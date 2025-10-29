@@ -631,13 +631,13 @@ dotnet build LYBT.All.sln -c Release --no-restore
 
 ### #1477相关文档
 - Issue #1477：[【架构纠正v2】MedicalCase聚合根强势修正（保留模块版）](https://github.com/shouqitao/LYBTZYZS/issues/1477)
-- 设计文档：`docs/architecture/shared/medicalcase-architecture-correction-plan-v2.md`
+- 设计文档：`docs/explanation/architecture/shared/medicalcase-architecture-correction-plan-v2.md`
 - 分析报告：`docs/reports/medicalcase-architecture-correction-analysis-2025-10-18.md`
 
 ### 架构文档
-- Server端架构：`docs/architecture/server/README.md`
-- Client端架构：`docs/architecture/client/README.md`
-- 共享架构：`docs/architecture/shared/README.md`
+- Server端架构：`docs/explanation/architecture/server/README.md`
+- Client端架构：`docs/explanation/architecture/client/README.md`
+- 共享架构：`docs/explanation/architecture/shared/README.md`
 
 ---
 

@@ -4,7 +4,7 @@
 > **创建日期**: 2025-10-21
 > **相关Issue**: #1513 - [Epic] Workstation架构重构 - 角色业务模块化
 > **状态**: ✅ 需求已确认
-> **讨论文档**: `docs/architecture/client/workstation-refactoring-discussion.md`
+> **讨论文档**: `docs/explanation/architecture/client/workstation-refactoring-discussion.md`
 
 ---
 
@@ -506,11 +506,11 @@ moduleCatalog.AddModule<AdminModule>();
 ## 📚 6. 相关文档
 
 ### 6.1 架构文档
-- `docs/architecture/client/README.md` - Client端架构总览
-- `docs/architecture/client/workstation-refactoring-discussion.md` - 重构讨论文档
+- `docs/explanation/architecture/client/README.md` - Client端架构总览
+- `docs/explanation/architecture/client/workstation-refactoring-discussion.md` - 重构讨论文档
 
 ### 6.2 设计文档
-- `docs/architecture/client/ui-standards.md` - UI设计规范
+- `docs/explanation/architecture/client/ui-standards.md` - UI设计规范
 - ADR-003: Workstation架构重构决策
 
 ### 6.3 代码参考

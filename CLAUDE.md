@@ -74,9 +74,9 @@ repo = "LYBTZYZS"
 - `.spec-workflow/steering/structure.md` - 项目结构指南
 
 **架构指南**（三层对齐）:
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/architecture/client/README.md` - Client端MVVM架构
-- `docs/architecture/shared/README.md` - 共享架构
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/explanation/architecture/client/README.md` - Client端MVVM架构
+- `docs/explanation/architecture/shared/README.md` - 共享架构
 
 > ⚠️ **强制要求**: 处理任务前必须先查阅 `docs/index.md` 定位相关文档，未理解文档禁止开始编码
 
@@ -115,9 +115,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - **Quality Checklists**: `.spec-workflow/templates/checklists/` - 通过率≥90%
 
 **三阶段文档化**:
-1. **需求讨论** → `docs/architecture/{client|server|shared}/*-discussion.md` (❌禁止代码)
-2. **需求文档** → `docs/requirements/*-requirements.md` (⚠️必须等待用户确认)
-3. **设计文档** → `docs/design/*-design.md` (包含架构、API、代码、Phase拆分)
+1. **需求讨论** → `docs/explanation/architecture/{client|server|shared}/*-discussion.md` (❌禁止代码)
+2. **需求文档** → `docs/explanation/requirements/*-requirements.md` (⚠️必须等待用户确认)
+3. **设计文档** → `docs/explanation/design/*-design.md` (包含架构、API、代码、Phase拆分)
 
 **文档读取规则**:
 - ⚠️ 需求分析前: 必读 docs/index.md, business-rules.md, 架构指南

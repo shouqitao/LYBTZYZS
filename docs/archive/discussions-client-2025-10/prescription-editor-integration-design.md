@@ -663,7 +663,7 @@ containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();
 
 - Issue #1499: [Task-5] Step 3 - PrescriptionEditor实现（8列DataGrid）
 - Epic #1494: 医案流程UI重构
-- `docs/architecture/client/medical-case-flow-ui-layouts.md` (Section 5)
+- `docs/explanation/architecture/client/medical-case-flow-ui-layouts.md` (Section 5)
 - `src/Client/Desktop/Modules/LYBT.Desktop.Prescriptions/ViewModels/PrescriptionViewModel.cs`
 - `src/Client/Desktop/Modules/LYBT.Desktop.Prescriptions/ViewModels/PrescriptionItemRow.cs`
 - `.claude/core/PRINCIPLES.md`: 最小充分交付、增量优化、避免过度设计

@@ -170,14 +170,14 @@ if (existing.Any())
 
 #### 6.2 需要更新的文档清单
 **架构文档**:
-- 📝 `docs/architecture/server/README.md` - 更新Consultation模块说明
-- 📝 `docs/architecture/client/consultation-view-architecture-clarification.md` - 更新Desktop端架构
+- 📝 `docs/explanation/architecture/server/README.md` - 更新Consultation模块说明
+- 📝 `docs/explanation/architecture/client/consultation-view-architecture-clarification.md` - 更新Desktop端架构
 
 **API文档**:
-- 📝 `docs/api/README.md` - 更新Consultation端点说明
+- 📝 `docs/reference/api/README.md` - 更新Consultation端点说明
 
 **参考文档**:
-- 📝 `docs/architecture/shared/consultation-prescription-relationship-pattern-discussion.md` - 更新关系说明
+- 📝 `docs/explanation/architecture/shared/consultation-prescription-relationship-pattern-discussion.md` - 更新关系说明
 
 ---
 

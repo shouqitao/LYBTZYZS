@@ -92,7 +92,7 @@
 
 ## 📡 API端点列表
 
-**完整API文档**: [`docs/api/[module-name]-api.md`](../../api/[module-name]-api.md)
+**完整API文档**: [`docs/reference/api/[module-name]-api.md`](../../api/[module-name]-api.md)
 
 ### Write Layer - 写操作（X个端点）
 
@@ -269,7 +269,7 @@ if ([条件2])
 4. 更新AutoMapper映射: `[模块]MappingProfile.cs`
 5. 更新Service接口和实现
 6. 更新Controller端点
-7. 更新API文档: `docs/api/[module-name]-api.md`
+7. 更新API文档: `docs/reference/api/[module-name]-api.md`
 
 **示例**:
 ```csharp
@@ -306,7 +306,7 @@ public async Task<[实体]?> [Method]Async(...)
 1. 在`[模块]Rules.cs`中添加验证方法
 2. 在Service层调用验证
 3. 更新单元测试验证覆盖
-4. 更新业务规则文档: `docs/business-rules.md`
+4. 更新业务规则文档: `docs/explanation/business-rules.md`
 
 **示例**:
 ```csharp
@@ -514,14 +514,14 @@ public class [ViewModel] : BindableBase
 ## 📚 相关文档
 
 ### 核心文档
-- **API参考**: [`docs/api/[module-name]-api.md`](../../api/[module-name]-api.md) - [X]个API端点完整文档
-- **架构指南**: [`docs/architecture/server/README.md`](../../architecture/server/README.md) - Server端三层架构
-- **业务规则**: [`docs/business-rules.md`](../../business-rules.md) - 14条核心业务规则
+- **API参考**: [`docs/reference/api/[module-name]-api.md`](../../api/[module-name]-api.md) - [X]个API端点完整文档
+- **架构指南**: [`docs/explanation/architecture/server/README.md`](../../architecture/server/README.md) - Server端三层架构
+- **业务规则**: [`docs/explanation/business-rules.md`](../../business-rules.md) - 14条核心业务规则
 - **测试策略**: [`docs/deep/testing-strategies.md`](../../deep/testing-strategies.md) - 测试金字塔和覆盖报告
 
 ### 快速参考
-- **代码模式**: [`docs/quick-reference/code-patterns.md`](../../quick-reference/code-patterns.md) - Service/Repository模式示例
-- **API速查**: [`docs/quick-reference/api-reference.md`](../../quick-reference/api-reference.md) - [模块] API速查表
+- **代码模式**: [`docs/reference/quick-reference/code-patterns.md`](../../quick-reference/code-patterns.md) - Service/Repository模式示例
+- **API速查**: [`docs/reference/quick-reference/api-reference.md`](../../quick-reference/api-reference.md) - [模块] API速查表
 
 ### 报告文档
 - **文档同步清单**: [`docs/reports/[module-name]-doc-sync-checklist.md`](../../reports/[module-name]-doc-sync-checklist.md)

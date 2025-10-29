@@ -3,7 +3,7 @@
 **文档版本**：v1.0
 **创建时间**：2025-10-27
 **关联Epic**：待创建（Desktop层架构重构与代码膨胀治理）
-**来源文档**：[设计文档](../design/desktop-refactor-design.md)
+**来源文档**：[设计文档](../explanation/design/desktop-refactor-design.md)
 **总工作量**：18-24小时（8-13天，按每天2-3小时计算）
 
 ---
@@ -930,9 +930,9 @@ dotnet run
 
 **输出**：
 - 更新文件：
-  - `docs/architecture/client/README.md`
-  - `docs/modules/medicalcase/README.md`
-  - `docs/modules/prescriptions/README.md`
+  - `docs/explanation/architecture/client/README.md`
+  - `docs/reference/modules/medicalcase/README.md`
+  - `docs/reference/modules/prescriptions/README.md`
   - `docs/index.md`
 
 **验收标准**：
@@ -971,8 +971,8 @@ dotnet run
 
 **输出**：
 - 更新文件：
-  - `docs/api/medicalcase-api.md`
-  - `docs/quick-reference/api-reference.md`
+  - `docs/reference/api/medicalcase-api.md`
+  - `docs/reference/quick-reference/api-reference.md`
 
 **验收标准**：
 - [ ] MedicalCase API文档新增2个端点（含请求参数、响应示例、错误码）
@@ -1148,8 +1148,8 @@ git revert <commit-hash>
 
 ## 🔗 参考资料
 
-- [需求文档](../requirements/desktop-refactor-requirements.md)
-- [设计文档](../design/desktop-refactor-design.md)
+- [需求文档](../explanation/requirements/desktop-refactor-requirements.md)
+- [设计文档](../explanation/design/desktop-refactor-design.md)
 - [架构验证报告](../reports/desktop-refactor-arch-validation-2025-10-27.md)
 - [分析报告](../reports/desktop-refactor-analysis-2025-10-27.md)
 

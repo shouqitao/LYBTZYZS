@@ -129,12 +129,12 @@ Task<ActionResult<ApiResponse>> CloseCase(Guid id);
 ### Phase 5已完成文档（2025-10-28）
 
 #### 架构文档
-- ✅ **`docs/architecture/client/README.md`**
+- ✅ **`docs/explanation/architecture/client/README.md`**
   - 更新版本：v5.0 → v5.1 Phase 4优化版
   - 添加Phase 4架构演进说明
   - 更新Services层部分（标记为已废弃）
 
-- ✅ **`docs/modules/medical-case/README.md`**
+- ✅ **`docs/reference/modules/medical-case/README.md`**
   - 添加Desktop端Repository使用指南
   - 新增v2.1 (Epic #1676 Phase 4)变更历史
 
@@ -143,7 +143,7 @@ Task<ActionResult<ApiResponse>> CloseCase(Guid id);
   - 更新最后更新日期：2025-10-28
 
 #### API文档
-- ✅ **`docs/api/medicalcase-api.md`**
+- ✅ **`docs/reference/api/medicalcase-api.md`**
   - 添加端点9: `PUT /api/v1/medicalcases/{id}/close`
   - 添加端点14: `GET /api/v1/medicalcases/patients/{patientId}/unfinished`
   - 更新所有后续端点编号（9-12 → 10-13, 13-14 → 15-16）

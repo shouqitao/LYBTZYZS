@@ -846,7 +846,7 @@ Phase 4：文档收尾（1-2h）
 ### 8.1 关键文件清单
 
 **设计文档**：
-- `docs/architecture/client/prescription-editor-integration-design.md` - 原始设计（推荐包装模式）
+- `docs/explanation/architecture/client/prescription-editor-integration-design.md` - 原始设计（推荐包装模式）
 - `docs/reports/prescription-interface-design-comparison-2025-10-20.md` - 界面对比报告
 - `docs/reports/prescription-entry-requirements-2025-10-16.md` - ENTRY任务需求
 

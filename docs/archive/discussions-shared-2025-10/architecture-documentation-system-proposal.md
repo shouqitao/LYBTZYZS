@@ -129,7 +129,7 @@ MedicalCase采用DDD聚合根模式后，Prescription和Consultation不应独立
 
 #### 2. 架构原则分级（Principles）
 
-**文件**: `docs/architecture/principles.md`
+**文件**: `docs/explanation/architecture/principles.md`
 
 **⭐ 强制性文档读取规则**：
 - **需求分析前**：必须先阅读 `docs/index.md` → 相关架构文档 → 业务规则文档
@@ -168,7 +168,7 @@ MedicalCase采用DDD聚合根模式后，Prescription和Consultation不应独立
 
 #### 3. 架构例外清单（Exceptions）
 
-**文件**: `docs/architecture/exceptions.md`
+**文件**: `docs/explanation/architecture/exceptions.md`
 
 ```markdown
 # 架构例外清单
@@ -263,7 +263,7 @@ await _medicalCaseRepository.CreatePrescriptionAsync(medicalCaseId, dto);
 
 #### 5. 架构合规检查清单（Compliance Checklist）
 
-**文件**: `docs/architecture/compliance-checklist.md`
+**文件**: `docs/explanation/architecture/compliance-checklist.md`
 
 ```markdown
 # 架构合规检查清单
@@ -344,18 +344,18 @@ Client端:
    - 过度设计重构建议
 
 4. **创建架构例外清单**
-   - `docs/architecture/exceptions.md`
+   - `docs/explanation/architecture/exceptions.md`
    - 记录Desktop三层架构违反
 
 **输出**:
 - 4个ADR文件
 - 1个架构例外清单
-- 更新`docs/architecture/README.md`索引
+- 更新`docs/explanation/architecture/README.md`索引
 
 ### 阶段2：架构原则和模式库（2-3小时）
 
 1. **编写架构原则分级**
-   - `docs/architecture/principles.md`
+   - `docs/explanation/architecture/principles.md`
    - 明确Mandatory/Recommended/Guideline三级
 
 2. **创建架构模式库**
@@ -378,11 +378,11 @@ Client端:
 ### 阶段3：合规检查清单和历史文档（1小时）
 
 1. **编写合规检查清单**
-   - `docs/architecture/compliance-checklist.md`
+   - `docs/explanation/architecture/compliance-checklist.md`
    - 6大类检查项
 
 2. **创建架构演进历史**
-   - `docs/architecture/evolution.md`
+   - `docs/explanation/architecture/evolution.md`
    - 记录重大架构变更时间线
 
 **输出**:
@@ -450,7 +450,7 @@ Client端:
 - [ADR工具和最佳实践](https://adr.github.io/)
 - [C4 Model架构文档](https://c4model.com/)
 - [ThoughtWorks技术雷达](https://www.thoughtworks.com/radar)
-- 项目现有架构文档：`docs/architecture/README.md`
+- 项目现有架构文档：`docs/explanation/architecture/README.md`
 
 ---
 

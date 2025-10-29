@@ -192,17 +192,17 @@
 **问题**：docs/architecture/shared/README.md缺失
 
 **影响**：
-- README.md和index.md都引用了`docs/architecture/shared/README.md`
+- README.md和index.md都引用了`docs/explanation/architecture/shared/README.md`
 - 三层对齐架构体系不完整（Server + Client + Shared）
 - 无法理解跨端共享组件和技术决策
 
 **证据**：
-- README.md:292 → "共享架构": `docs/architecture/shared/README.md`
+- README.md:292 → "共享架构": `docs/explanation/architecture/shared/README.md`
 - docs/index.md:39 → "共享架构": `architecture/shared/README.md`
 
 **建议**：
-- 创建`docs/architecture/shared/README.md`
-- 基于`docs/architecture/shared/`下已有的11个讨论文档整合
+- 创建`docs/explanation/architecture/shared/README.md`
+- 基于`docs/explanation/architecture/shared/`下已有的11个讨论文档整合
 - 覆盖：跨端组件、认证系统、技术决策、共享基础设施
 
 ---

@@ -650,7 +650,7 @@ Epic #1343的57个任务是否需要重新评估优先级？
 - [ ] 记录Phase 0任务清单到文档
 
 **输出**：
-- `docs/architecture/shared/phase0-task-definition.md`
+- `docs/explanation/architecture/shared/phase0-task-definition.md`
 
 ---
 
@@ -722,7 +722,7 @@ Epic #1343的57个任务是否需要重新评估优先级？
 - [ ] 确定后续Phase实施细节
 
 **输出**：
-- 更新 `docs/architecture/shared/clinical-workflow-current-process.md`
+- 更新 `docs/explanation/architecture/shared/clinical-workflow-current-process.md`
 - 将Q1-Q7标记为 ✅ [已确认-Q1] 等
 
 ---
@@ -815,8 +815,8 @@ Epic #1343的57个任务是否需要重新评估优先级？
 
 ## 9. 参考文档
 
-- **就诊流程文档**：`docs/architecture/shared/clinical-workflow-current-process.md`
-- **实体关系文档**：`docs/architecture/shared/clinical-workflow-entity-relationships.md`
+- **就诊流程文档**：`docs/explanation/architecture/shared/clinical-workflow-current-process.md`
+- **实体关系文档**：`docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md`
 - **Phase 2调查报告**：`docs/reports/phase2-code-investigation-2025-10-18.md`
 - **Epic #1343**：GitHub Issue（57个任务清单）
 - **CLAUDE.md**：Section 1.6 需求讨论与文档化规范
@@ -860,7 +860,7 @@ Epic #1343的57个任务是否需要重新评估优先级？
 - 或Claude搜索仓库中是否有任务清单文档
 
 **输出**：
-- `docs/architecture/shared/phase0-task-definition.md`
+- `docs/explanation/architecture/shared/phase0-task-definition.md`
 
 ---
 

@@ -49,9 +49,9 @@
 ### P0-2：API文档完全缺失 ❌
 
 **问题描述**：
-- `docs/api/README.md` 声称"12个控制器完整API文档"
-- 实际 `docs/api/auth/` 和 `docs/api/modules/` 目录完全为空
-- 根据 `docs/architecture/server/README.md`（line 46-95），实际有13个Controllers：
+- `docs/reference/api/README.md` 声称"12个控制器完整API文档"
+- 实际 `docs/reference/api/auth/` 和 `docs/reference/api/modules/` 目录完全为空
+- 根据 `docs/explanation/architecture/server/README.md`（line 46-95），实际有13个Controllers：
   - `AuthController`（认证）
   - `AdminSecretsController`（超级管理员）
   - 11个业务Controllers（Patients、MedicalCase、Consultation、Prescription等）
@@ -78,7 +78,7 @@
 - 劣势：维护成本高，容易过时
 
 **Option C**：**更新README.md说明使用Swagger**
-- 修改 `docs/api/README.md`：说明使用Swagger UI作为主要API文档
+- 修改 `docs/reference/api/README.md`：说明使用Swagger UI作为主要API文档
 - 提供Swagger端点链接：http://localhost:5001/swagger
 - 保留docs/api/目录用于补充说明
 - 优势：零开发成本，利用现有工具
@@ -98,7 +98,7 @@
 ### P0-3：模块文档目录结构缺失 ❌
 
 **问题描述**：
-- `docs/modules/` 应包含8个业务模块的详细文档
+- `docs/reference/modules/` 应包含8个业务模块的详细文档
 - 实际只有 `medical-case/` 子目录，且为空
 - 缺少7个模块的文档目录：
   ```
@@ -117,9 +117,9 @@
 - 模块级别的业务逻辑缺少文档化
 
 **根本原因分析**：
-- **可能原因1**：模块文档分散在 `docs/architecture/server/README.md` 中（实际部分内容存在）
+- **可能原因1**：模块文档分散在 `docs/explanation/architecture/server/README.md` 中（实际部分内容存在）
 - **可能原因2**：v5.0重构时计划生成但未完成
-- **可能原因3**：认为 `docs/architecture/` 已足够，无需重复
+- **可能原因3**：认为 `docs/explanation/architecture/` 已足够，无需重复
 
 **修复方案**：
 **Option A**（推荐）：**从代码自动生成模块文档骨架**
@@ -143,8 +143,8 @@
 - 优势：快速生成骨架，后续人工补充业务逻辑
 
 **Option B**：**重新评估是否需要独立模块文档**
-- 如果 `docs/architecture/server/README.md` 已包含足够细节，可能无需重复
-- 在 `docs/modules/README.md` 中说明：详细内容参见架构文档
+- 如果 `docs/explanation/architecture/server/README.md` 已包含足够细节，可能无需重复
+- 在 `docs/reference/modules/README.md` 中说明：详细内容参见架构文档
 - 删除 `docs/index.md` 中对模块文档的引用
 
 **Option C**：**手动编写8个模块的文档**
@@ -153,7 +153,7 @@
 
 **推荐方案**：**先执行Phase 2代码审查，再决定Option A或B**
 - Phase 2会深度分析代码架构
-- 如果发现 `docs/architecture/server/README.md` 已足够详细 → 选Option B
+- 如果发现 `docs/explanation/architecture/server/README.md` 已足够详细 → 选Option B
 - 如果发现需要模块级深度文档 → 选Option A
 
 **预计工作量**：
@@ -169,10 +169,10 @@
 ### P1-1：ADR-001和ADR-002缺失 📋
 
 **问题描述**：
-- `docs/architecture/shared/README.md` 提到：
+- `docs/explanation/architecture/shared/README.md` 提到：
   - Line 913："ADR-001：FluentValidation作为统一验证框架"
   - Line 929："ADR-002：AutoMapper作为统一映射框架"
-- 实际 `docs/architecture/decisions/` 目录只有：
+- 实际 `docs/explanation/architecture/decisions/` 目录只有：
   - ✅ ADR-003、ADR-004、ADR-005
   - ❌ ADR-001、ADR-002 缺失
 
@@ -188,7 +188,7 @@
 
 **修复方案**：
 **Option A**（推荐）：**补充完整的ADR-001和ADR-002**
-- 使用 `docs/architecture/decisions/template.md` 创建标准ADR
+- 使用 `docs/explanation/architecture/decisions/template.md` 创建标准ADR
 - 内容包括：
   - **背景**：为什么需要验证/映射框架
   - **决策**：选择FluentValidation/AutoMapper
@@ -197,7 +197,7 @@
 - 优势：完整的决策记录，便于未来回溯
 
 **Option B**：**更新Shared README移除ADR引用**
-- 将 `docs/architecture/shared/README.md` 中的ADR-001/002引用改为直接说明
+- 将 `docs/explanation/architecture/shared/README.md` 中的ADR-001/002引用改为直接说明
 - 例如："使用FluentValidation作为统一验证框架（项目标准）"
 - 劣势：失去决策追溯能力
 
@@ -214,9 +214,9 @@
 ### P1-2：重复的实体关系说明 🔄
 
 **问题描述**：
-- **位置1**：`docs/architecture/shared/clinical-workflow-entity-relationships.md`（标记⭐⭐⭐权威）
-- **位置2**：`docs/architecture/client/README.md`（line 944-1109，聚合根设计模式）
-- **位置3**：`docs/architecture/server/README.md`（包含部分实体说明）
+- **位置1**：`docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md`（标记⭐⭐⭐权威）
+- **位置2**：`docs/explanation/architecture/client/README.md`（line 944-1109，聚合根设计模式）
+- **位置3**：`docs/explanation/architecture/server/README.md`（包含部分实体说明）
 - 三处都描述了 MedicalCase/Consultation/Prescription 的关系，但角度不同
 
 **影响范围**：
@@ -233,7 +233,7 @@
 
 **修复方案**：
 **Option A**（推荐）：**建立引用机制，避免重复**
-- 在 `docs/architecture/shared/clinical-workflow-entity-relationships.md` 顶部标记：
+- 在 `docs/explanation/architecture/shared/clinical-workflow-entity-relationships.md` 顶部标记：
   ```markdown
   ## 📌 权威文档
   本文档是实体关系的权威定义。其他文档请通过引用本文档，避免重复描述。
@@ -263,7 +263,7 @@
 ### P1-3：测试覆盖率0%的业务规则 ⚠️
 
 **问题描述**：
-- `docs/business-rules.md`（line 370-386）包含验证矩阵：
+- `docs/explanation/business-rules.md`（line 370-386）包含验证矩阵：
 
 | 规则ID | 测试覆盖率 | 验证状态 |
 |--------|----------|---------|
@@ -314,15 +314,15 @@
 ### P2-1：讨论文档未归档 📁
 
 **问题描述**：
-- `docs/architecture/client/` 包含20个文件，其中19个是讨论文档（`*-discussion.md`、`*-analysis.md`）
-- `docs/architecture/shared/` 包含11个文件，其中10个是讨论/分析文档
+- `docs/explanation/architecture/client/` 包含20个文件，其中19个是讨论文档（`*-discussion.md`、`*-analysis.md`）
+- `docs/explanation/architecture/shared/` 包含11个文件，其中10个是讨论/分析文档
 - 只有2个文档被 `docs/index.md` 引用为"权威文档"：
   - ✅ `client/shell-layer-design.md`（line 38引用）
   - ✅ `shared/clinical-workflow-entity-relationships.md`（line 42标记⭐⭐⭐）
 - **问题**：27个讨论文档混在架构目录中，影响导航清晰度
 
 **影响范围**：
-- 用户浏览 `docs/architecture/` 时看到大量讨论文档，难以找到权威文档
+- 用户浏览 `docs/explanation/architecture/` 时看到大量讨论文档，难以找到权威文档
 - 文档目录膨胀，降低可维护性
 
 **根本原因分析**：
@@ -428,11 +428,11 @@
 ### 亮点2：三层架构文档实际代码对齐
 
 **优秀特性**：
-- `docs/architecture/server/README.md`：
+- `docs/explanation/architecture/server/README.md`：
   - ✅ 完整列出13个Controllers（line 46-95）
   - ✅ 包含实际代码模板（BaseService/BaseRepository/BaseController）
   - ✅ 明确说明"Module中不包含Controllers"（line 119）
-- `docs/architecture/client/README.md`：
+- `docs/explanation/architecture/client/README.md`：
   - ✅ 记录Phase 2演进历史（Issue #1114）
   - ✅ 包含实际代码证据（PatientDetailViewModel.cs，line 28-36）
   - ✅ 引用具体Issue（#1445、#1463、#1563）
@@ -501,7 +501,7 @@
 | 任务 | 工作量 | 说明 |
 |------|--------|------|
 | 验证API文档需求 | Phase 2 | 评估是否需要从Swagger生成静态文档 |
-| 验证模块文档需求 | Phase 2 | 评估 `docs/architecture/server/README.md` 是否已足够 |
+| 验证模块文档需求 | Phase 2 | 评估 `docs/explanation/architecture/server/README.md` 是否已足够 |
 | 验证ADR-001/002内容 | Phase 2 | 搜索代码确认FluentValidation/AutoMapper决策细节 |
 
 **说明**：Phase 2会深度分析代码，届时可准确判断P0-2和P0-3的最佳修复方案
@@ -566,7 +566,7 @@
 
 ### 风险2：模块文档可能重复架构文档
 
-**假设**：`docs/architecture/server/README.md` 已包含足够模块细节
+**假设**：`docs/explanation/architecture/server/README.md` 已包含足够模块细节
 **验证方法**：Phase 2对比架构文档与模块文档预期内容
 **应对方案**：如重复，P0-3降级为P2，删除docs/index.md中的模块文档引用
 

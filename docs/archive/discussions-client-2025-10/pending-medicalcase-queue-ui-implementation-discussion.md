@@ -2,14 +2,14 @@
 
 > **创建时间**：2025-10-23
 > **状态**：✅ 已完成（参考资料）
-> **基于文档**：`docs/design/pending-medicalcase-queue-design.md`
+> **基于文档**：`docs/explanation/design/pending-medicalcase-queue-design.md`
 > **目标文件**：`PatientSelectionView.xaml` 和 `PatientSelectionViewModel.cs`
 > **屏幕分辨率**：1080P（1920x1080，内容区约1760x940）
 >
 > ⚠️ **注意**：本文档为UI实施讨论记录，结论已整合到正式文档：
-> - 需求文档：`docs/requirements/pending-medicalcase-queue-requirements.md` (v2.0)
-> - 设计文档：`docs/design/pending-medicalcase-queue-design.md` (v2.0)
-> - 业务讨论：`docs/architecture/client/pending-medicalcase-queue-discussion.md`
+> - 需求文档：`docs/explanation/requirements/pending-medicalcase-queue-requirements.md` (v2.0)
+> - 设计文档：`docs/explanation/design/pending-medicalcase-queue-design.md` (v2.0)
+> - 业务讨论：`docs/explanation/architecture/client/pending-medicalcase-queue-discussion.md`
 
 ---
 
@@ -285,9 +285,9 @@
 
 ## 🔗 相关文档
 
-- **设计文档**：`docs/design/pending-medicalcase-queue-design.md`
-- **需求文档**：`docs/requirements/pending-medicalcase-queue-requirements.md`
-- **讨论文档**：`docs/architecture/client/pending-medicalcase-queue-discussion.md`
+- **设计文档**：`docs/explanation/design/pending-medicalcase-queue-design.md`
+- **需求文档**：`docs/explanation/requirements/pending-medicalcase-queue-requirements.md`
+- **讨论文档**：`docs/explanation/architecture/client/pending-medicalcase-queue-discussion.md`
 
 ---
 

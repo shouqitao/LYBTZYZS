@@ -923,10 +923,10 @@ Task 6（诊断表单） → Task 7（Entry Method #1） → Task 10（流程控
 
 ## 9. 参考文档
 
-- **开发策略讨论**：`docs/architecture/shared/mvp-development-strategy-discussion.md`
+- **开发策略讨论**：`docs/explanation/architecture/shared/mvp-development-strategy-discussion.md`
 - **处方录入需求**：`docs/reports/prescription-entry-requirements-2025-10-16.md`
 - **Phase 2调查报告**：`docs/reports/phase2-code-investigation-2025-10-18.md`
-- **Client端架构**：`docs/architecture/client/README.md`
+- **Client端架构**：`docs/explanation/architecture/client/README.md`
 - **CLAUDE.md**：Section 1.6 需求讨论与文档化规范
 - **Epic #1343**：GitHub Issue（57个任务清单）
 
@@ -1106,7 +1106,7 @@ Task 6（诊断表单） → Task 7（Entry Method #1） → Task 10（流程控
 **基础依据**（来自已有文档）：
 
 根据以下文档的分析结果：
-- `docs/architecture/shared/clinical-workflow-current-process.md` - 就诊流程逻辑
+- `docs/explanation/architecture/shared/clinical-workflow-current-process.md` - 就诊流程逻辑
 - `docs/reports/clinical-workflow-analysis-2025-10-18.md` - 架构分析报告
 - `docs/reports/prescription-entry-requirements-2025-10-16.md` - 处方录入需求
 

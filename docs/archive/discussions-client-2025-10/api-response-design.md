@@ -354,9 +354,9 @@ Task<ApiResponse<T>> MethodAsync(...);
 ## 📚 参考资料
 
 ### 相关文档
-- `docs/architecture/server/README.md` - Server端三层架构
-- `docs/architecture/shared/README.md` - 共享层契约设计
-- `docs/development/shared/task-workflow-checklist.md` - 开发流程清单
+- `docs/explanation/architecture/server/README.md` - Server端三层架构
+- `docs/explanation/architecture/shared/README.md` - 共享层契约设计
+- `docs/how-to-guides/shared/task-workflow-checklist.md` - 开发流程清单
 
 ### 相关代码
 - `src/Shared/LYBT.Shared.Models/Contracts/Common/ApiResponse.cs` - 类型定义

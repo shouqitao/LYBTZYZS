@@ -38,7 +38,7 @@
 | 文件 | 行数 | 最后更新 | 版本 | 状态 | 备注 |
 |------|------|---------|------|------|------|
 | `docs/index.md` | 202 | 2025-01-24 | v5.1 | ✅ 优秀 | 文档导航中心，三层对齐架构，包含完整导航体系 |
-| `docs/business-rules.md` | 465 | 2025-01-24 | v1.0 | ✅ 优秀 | 14条核心业务规则，包含验证矩阵和已知问题 |
+| `docs/explanation/business-rules.md` | 465 | 2025-01-24 | v1.0 | ✅ 优秀 | 14条核心业务规则，包含验证矩阵和已知问题 |
 
 **评估**：docs/index.md 是文档体系的核心枢纽，提供Level 0-4分层导航；business-rules.md 结构完整，包含DC/BF/AR/CR/AC五类规则。
 
@@ -66,10 +66,10 @@
 
 | 文件 | 行数 | 最后更新 | 版本 | 状态 | 备注 |
 |------|------|---------|------|------|------|
-| `docs/architecture/README.md` | 184 | - | - | ✅ 良好 | 架构总览，三层对齐原理，角色导航 |
-| `docs/architecture/server/README.md` | 955 | - | - | ✅ 优秀 | Server端三层架构，13个Controllers，8个模块详细说明，完整代码模板 |
-| `docs/architecture/client/README.md` | 1,123 | - | v5.0 Phase 2 | ✅ 优秀 | Client端MVVM架构，4层设计（Phase 2移除Service层），包含Issue #1114证据 |
-| `docs/architecture/shared/README.md` | 1,002 | - | v5.0 | ✅ 优秀 | 共享架构，Models/Interfaces/Infrastructure/Utilities，ADR引用 |
+| `docs/explanation/architecture/README.md` | 184 | - | - | ✅ 良好 | 架构总览，三层对齐原理，角色导航 |
+| `docs/explanation/architecture/server/README.md` | 955 | - | - | ✅ 优秀 | Server端三层架构，13个Controllers，8个模块详细说明，完整代码模板 |
+| `docs/explanation/architecture/client/README.md` | 1,123 | - | v5.0 Phase 2 | ✅ 优秀 | Client端MVVM架构，4层设计（Phase 2移除Service层），包含Issue #1114证据 |
+| `docs/explanation/architecture/shared/README.md` | 1,002 | - | v5.0 | ✅ 优秀 | 共享架构，Models/Interfaces/Infrastructure/Utilities，ADR引用 |
 
 **评估**：Level 2核心文档质量极高，包含大量实际代码示例、Issue引用、演进历史记录。
 
@@ -91,7 +91,7 @@
 
 ### 3.4 Client端讨论文档（待归档）
 
-**目录**：`docs/architecture/client/`
+**目录**：`docs/explanation/architecture/client/`
 **文件数量**：20个讨论文档
 **归档建议**：除 `shell-layer-design.md` 外，其余19个文档应归档到 `docs/archive/discussions-client-2025-10/`
 
@@ -111,7 +111,7 @@
 
 ### 3.6 Shared端讨论文档（待归档）
 
-**目录**：`docs/architecture/shared/`
+**目录**：`docs/explanation/architecture/shared/`
 **文件数量**：11个讨论/分析文档
 **归档建议**：除 `clinical-workflow-entity-relationships.md` 外，其余10个文档应归档
 
@@ -123,7 +123,7 @@
 
 ### 3.7 ADR（架构决策记录）
 
-**目录**：`docs/architecture/decisions/`
+**目录**：`docs/explanation/architecture/decisions/`
 **文件数量**：5个文件
 
 | 文件 | 状态 | 备注 |
@@ -214,7 +214,7 @@ docs/modules/
 
 ### 6.1 Design（设计文档）
 
-**目录**：`docs/design/`
+**目录**：`docs/explanation/design/`
 **文件数量**：15个设计文档（估算）
 
 **重点文件**（docs/index.md第44-45行引用）：
@@ -225,7 +225,7 @@ docs/modules/
 
 ### 6.2 Requirements（需求文档）
 
-**目录**：`docs/requirements/`
+**目录**：`docs/explanation/requirements/`
 **文件数量**：10个需求文档（估算）
 
 **重点文件**（根据git status）：

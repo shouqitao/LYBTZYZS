@@ -504,8 +504,8 @@
 - **类型**: Documentation
 - **文件范围**:
   - `docs/user-manual/medicalcase-flow.md`
-  - `docs/api/medicalcase-api.md`
-  - `docs/architecture/decisions/ADR-XXX-medicalcase-refactoring.md`
+  - `docs/reference/api/medicalcase-api.md`
+  - `docs/explanation/architecture/decisions/ADR-XXX-medicalcase-refactoring.md`
 - **验收标准**:
   - [ ] 用户手册更新（动态流程说明、RadioBox使用、暂存和继续看诊）
   - [ ] API文档更新（新端点文档、废弃端点标注）

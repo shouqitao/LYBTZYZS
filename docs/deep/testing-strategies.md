@@ -1560,7 +1560,7 @@ Unit Tests (70%)  ✅ 32个Service单元测试
 - `tests/IntegrationTests/WebAPI.IntegrationTests/Controllers/MedicalCaseControllerIntegrationTests.cs`
 
 **文档文件**:
-- `docs/api/medicalcase-api.md` - 14个API端点完整文档
+- `docs/reference/api/medicalcase-api.md` - 14个API端点完整文档
 - `docs/reports/e2e-test-coverage-analysis.md` - E2E测试覆盖分析
 - `docs/reports/epic-1612-doc-sync-checklist.md` - 文档同步清单
 

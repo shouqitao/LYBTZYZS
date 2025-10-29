@@ -182,7 +182,7 @@
 
 ### Phase 1整体验收标准
 
-**来自 `docs/design/desktop-refactor-design.md` Phase 1**：
+**来自 `docs/explanation/design/desktop-refactor-design.md` Phase 1**：
 
 - [x] ✅ **完成View XAML文件读取**（Task 1.1）
   - 读取了4个View文件（786行XAML代码）

@@ -460,9 +460,9 @@ GET /api/v1/medicalcases/search?keyword=XXX&includeConsultation=true
 ### 6.1 立即行动（优先级：高）
 
 1. **针对性阅读文档验证问题**
-   - 阅读`docs/business-rules.md`验证1:1:1原则
-   - 阅读`docs/architecture/server/README.md`验证聚合根规范
-   - 阅读`docs/api/medicalcase-api.md`验证API设计
+   - 阅读`docs/explanation/business-rules.md`验证1:1:1原则
+   - 阅读`docs/explanation/architecture/server/README.md`验证聚合根规范
+   - 阅读`docs/reference/api/medicalcase-api.md`验证API设计
 
 2. **生成需求文档**
    - 基于本分析报告

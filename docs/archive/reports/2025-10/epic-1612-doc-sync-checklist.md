@@ -30,7 +30,7 @@
 
 ### 1. 创建MedicalCase API文档 ⭐⭐⭐
 
-**文件**: `docs/api/medicalcase-api.md` (新建)
+**文件**: `docs/reference/api/medicalcase-api.md` (新建)
 
 **原因**:
 - Epic #1612重构了MedicalCaseController，新增14个API端点
@@ -170,7 +170,7 @@
 
 ### 2. 更新快速参考文档 ⭐⭐
 
-**文件**: `docs/quick-reference/api-reference.md`
+**文件**: `docs/reference/quick-reference/api-reference.md`
 
 **变更内容**:
 - 添加MedicalCase模块的14个API端点到快速参考表
@@ -189,7 +189,7 @@
 
 ### 3. 更新架构文档 - Service层 ⭐⭐
 
-**文件**: `docs/architecture/server/README.md` 或 `docs/architecture/server/services.md`
+**文件**: `docs/explanation/architecture/server/README.md` 或 `docs/explanation/architecture/server/services.md`
 
 **变更内容**:
 - 记录MedicalCaseService的重构
@@ -206,7 +206,7 @@
 
 ### 4. 更新架构文档 - Repository层 ⭐
 
-**文件**: `docs/architecture/server/README.md` 或 `docs/architecture/server/repositories.md`
+**文件**: `docs/explanation/architecture/server/README.md` 或 `docs/explanation/architecture/server/repositories.md`
 
 **变更内容**:
 - 记录MedicalCaseRepository的重构
@@ -219,7 +219,7 @@
 
 ### 5. 更新测试文档 ⭐
 
-**文件**: `docs/testing/README.md` 或 `docs/development/shared/testing-guide.md`
+**文件**: `docs/testing/README.md` 或 `docs/how-to-guides/shared/testing-guide.md`
 
 **变更内容**:
 - 记录Epic #1612的测试成果：
@@ -238,7 +238,7 @@
 
 ### 6. 创建MedicalCase模块文档 ⭐
 
-**文件**: `docs/modules/medicalcase/README.md` (新建)
+**文件**: `docs/reference/modules/medicalcase/README.md` (新建)
 
 **原因**:
 - 当前docs/modules/目录缺少模块级文档
@@ -258,7 +258,7 @@
 
 ### 7. 更新代码模式文档
 
-**文件**: `docs/quick-reference/code-patterns.md`
+**文件**: `docs/reference/quick-reference/code-patterns.md`
 
 **变更内容**:
 - 添加Service模式示例（基于MedicalCaseService）
@@ -271,7 +271,7 @@
 
 ### 8. 更新业务规则文档
 
-**文件**: `docs/business-rules.md`
+**文件**: `docs/explanation/business-rules.md`
 
 **变更内容**:
 - 确认是否需要更新AR-001, AR-003, BF-002, BR-001的描述
@@ -302,32 +302,32 @@
 - ✅ E2E测试报告: `docs/reports/e2e-test-coverage-analysis.md`
 
 **API文档归档**:
-- 🆕 待创建: `docs/api/medicalcase-api.md`
+- 🆕 待创建: `docs/reference/api/medicalcase-api.md`
 
 **模块文档归档**:
-- 🆕 待创建: `docs/modules/medicalcase/README.md` (可选)
+- 🆕 待创建: `docs/reference/modules/medicalcase/README.md` (可选)
 
 ---
 
 ## 🎯 优先级执行计划
 
 ### Phase 1: 核心API文档（必须）⭐⭐⭐
-1. 创建 `docs/api/medicalcase-api.md` - 14个API端点完整文档
-2. 更新 `docs/quick-reference/api-reference.md` - 添加快速参考表
+1. 创建 `docs/reference/api/medicalcase-api.md` - 14个API端点完整文档
+2. 更新 `docs/reference/quick-reference/api-reference.md` - 添加快速参考表
 
 **预计时间**: 2-3小时
 **理由**: API契约已稳定（集成测试100%通过），缺少API文档会影响前端开发和接口对接
 
 ### Phase 2: 架构和测试文档（必须）⭐⭐
-3. 更新 `docs/architecture/server/README.md` - Service/Repository重构
+3. 更新 `docs/explanation/architecture/server/README.md` - Service/Repository重构
 4. 更新 `docs/testing/README.md` - 测试成果记录
 
 **预计时间**: 1-2小时
 **理由**: 记录架构调整和测试覆盖率，保持文档与代码一致性
 
 ### Phase 3: 模块文档（建议）⭐
-5. 创建 `docs/modules/medicalcase/README.md` - 完整模块文档（可选）
-6. 更新 `docs/quick-reference/code-patterns.md` - 代码模式示例（可选）
+5. 创建 `docs/reference/modules/medicalcase/README.md` - 完整模块文档（可选）
+6. 更新 `docs/reference/quick-reference/code-patterns.md` - 代码模式示例（可选）
 
 **预计时间**: 2-3小时
 **理由**: 提升文档完整性，但不影响当前开发工作

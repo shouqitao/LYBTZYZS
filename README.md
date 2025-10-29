@@ -9,7 +9,7 @@
 
 **面向中医诊所的企业级管理解决方案**
 
-[快速开始](#快速开始) • [文档中心](docs/index.md) • [架构设计](docs/architecture/README.md) • [开发指南](docs/development/README.md) • [API文档](docs/api/)
+[快速开始](#快速开始) • [文档中心](docs/index.md) • [架构设计](docs/explanation/architecture/README.md) • [开发指南](docs/how-to-guides/README.md) • [API文档](docs/api/)
 
 </div>
 
@@ -283,19 +283,19 @@ dotnet format LYBT.All.sln
 
 ### 📋 文档导航
 - **[文档中心](docs/index.md)** - 统一文档导航入口（v5.1彻底重构版）⭐
-- **[架构设计](docs/architecture/README.md)** - Server/Client/Shared三层架构
-- **[开发指南](docs/development/README.md)** - 开发规范与最佳实践
+- **[架构设计](docs/explanation/architecture/README.md)** - Server/Client/Shared三层架构
+- **[开发指南](docs/how-to-guides/README.md)** - 开发规范与最佳实践
 - **[API文档](docs/api/)** - RESTful接口文档
 
 ### 🎯 核心架构文档
-- **[Server端架构](docs/architecture/server/README.md)** - 三层架构设计标准
-- **[Client端架构](docs/architecture/client/README.md)** - MVVM架构规范
-- **[共享架构](docs/architecture/shared/README.md)** - 跨端技术决策
+- **[Server端架构](docs/explanation/architecture/server/README.md)** - 三层架构设计标准
+- **[Client端架构](docs/explanation/architecture/client/README.md)** - MVVM架构规范
+- **[共享架构](docs/explanation/architecture/shared/README.md)** - 跨端技术决策
 
 ### 🛠️ 开发资源
-- **[测试指南](docs/development/shared/testing-guide.md)** - 测试架构与实施
-- **[代码规范](docs/development/shared/standards.md)** - 编码标准
-- **[文档规范](docs/development/shared/documentation-guidelines.md)** - 文档编写标准
+- **[测试指南](docs/how-to-guides/shared/testing-guide.md)** - 测试架构与实施
+- **[代码规范](docs/how-to-guides/shared/standards.md)** - 编码标准
+- **[文档规范](docs/how-to-guides/shared/documentation-guidelines.md)** - 文档编写标准
 
 ## 🤝 贡献指南
 

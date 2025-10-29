@@ -427,14 +427,14 @@ tests/UnitTests/Shared/
 - 📚 [文档导航](docs/index.md) - v5.0文档体系总入口
 
 ### 架构文档
-- 🖥️ [Server端架构](docs/architecture/server/README.md) - Server端三层架构标准
-- 💻 [Client端架构](docs/architecture/client/README.md) - Client端MVVM架构标准
-- 🔗 [共享架构](docs/architecture/shared/README.md) - Shared层架构设计
+- 🖥️ [Server端架构](docs/explanation/architecture/server/README.md) - Server端三层架构标准
+- 💻 [Client端架构](docs/explanation/architecture/client/README.md) - Client端MVVM架构标准
+- 🔗 [共享架构](docs/explanation/architecture/shared/README.md) - Shared层架构设计
 
 ### 开发指南
-- 🛠️ [Server开发](docs/development/server/README.md) - Server端开发规范
-- 🎨 [Client开发](docs/development/client/README.md) - Client端开发规范
-- 📖 [共享开发](docs/development/shared/README.md) - 测试和文档规范
+- 🛠️ [Server开发](docs/how-to-guides/server/README.md) - Server端开发规范
+- 🎨 [Client开发](docs/how-to-guides/client/README.md) - Client端开发规范
+- 📖 [共享开发](docs/how-to-guides/shared/README.md) - 测试和文档规范
 
 ### 验证报告
 - ✅ [代码文档验证报告](docs/reports/code-documentation-verification-2025-10-16.md) - 架构对齐验证

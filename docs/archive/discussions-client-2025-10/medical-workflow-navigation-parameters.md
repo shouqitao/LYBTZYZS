@@ -453,7 +453,7 @@ var isReadOnly = navigationContext.Parameters.GetValue<bool>("IsReadOnly") ?? fa
 ## 📚 参考文档
 
 - **Prism Navigation官方文档**: https://prismlibrary.com/docs/navigation.html
-- **事件聚合器契约**: `docs/architecture/client/medical-workflow-events-contract.md`
+- **事件聚合器契约**: `docs/explanation/architecture/client/medical-workflow-events-contract.md`
 - **Issue #1557**: 看诊流程模块化迁移
 
 ---
