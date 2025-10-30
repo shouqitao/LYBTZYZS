@@ -141,11 +141,11 @@
 
 | 我想... | 查阅文档 |
 |--------|---------|
-| 添加新模块 | [模块开发指南](how-to-guides/server/module-development.md) |
-| 创建新API | [API端点设计](how-to-guides/server/api-design.md) |
-| 开发新页面 | [MVVM开发指南](how-to-guides/client/mvvm-guide.md) |
-| 编写测试 | [测试编写指南](how-to-guides/shared/testing-guide.md) |
-| 提交代码 | [Git工作流](how-to-guides/shared/git-workflow.md) |
+| 添加新模块 | [Server端操作总览](how-to-guides/server/README.md) |
+| 创建新API | [WebAPI开发指南](how-to-guides/server/webapi-development.md) |
+| 开发新页面 | [Foundation层开发](how-to-guides/client/foundation-development.md) / [Presentation层开发](how-to-guides/client/presentation-development.md) |
+| 编写测试 | [任务工作流清单](how-to-guides/shared/task-workflow-checklist.md) |
+| 提交代码 | [任务工作流清单](how-to-guides/shared/task-workflow-checklist.md) |
 
 **下一步**：查阅[Reference](#-reference参考手册)获取具体API和配置信息
 
@@ -350,7 +350,7 @@
 3. [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues) - 进度跟踪
 
 **质量保证**：
-1. [测试指南](how-to-guides/shared/testing-guide.md) - 测试标准
+1. [任务工作流清单](how-to-guides/shared/task-workflow-checklist.md) - 测试标准与开发流程
 2. [开发清单](reference/quick-reference/development-checklist.md) - 质量检查
 3. [问题排查](reference/quick-reference/troubleshooting.md) - 常见问题
 
