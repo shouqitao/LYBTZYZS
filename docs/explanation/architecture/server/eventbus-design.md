@@ -28,7 +28,7 @@
 
 ### 1.1 定位与职责
 
-**LYBT.Core.EventBus** 是Server端的核心基础设施库，提供：
+**LYBT.EventBus** 是Server端的核心基础设施库，提供：
 
 1. **进程内事件总线（In-Memory Event Bus）**
    - 实现模块间松耦合通信
@@ -62,7 +62,7 @@
 ### 1.3 依赖关系
 
 ```
-LYBT.Core.EventBus (核心库)
+LYBT.EventBus (核心库)
 ├── 无内部项目依赖 (纯基础库)
 ├── Microsoft.Extensions.* (DI、Logging、Hosting抽象)
 └── 被8个业务模块 + LYBT.WebAPI 依赖
@@ -1482,7 +1482,7 @@ public async Task PublishAsync_触发多个处理器()
 - [共享架构设计](../shared/README.md) - 跨端通信机制
 
 **代码参考**:
-- `src/Server/Core/LYBT.Core.EventBus/README.md` - 项目说明
+- `src/Server/Core/LYBT.EventBus/README.md` - 项目说明
 - `docs/quick-reference/code-patterns.md` - 事件模式速查
 
 ---

@@ -390,7 +390,7 @@ public bool Subscribe(Type eventType, Type handlerType)
 在 `Program.cs` 或模块注册类中：
 
 ```csharp
-using LYBT.Core.EventBus.Extensions;
+using LYBT.EventBus.Extensions;
 
 public class Program
 {
