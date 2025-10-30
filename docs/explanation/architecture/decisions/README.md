@@ -46,10 +46,12 @@ Architecture Decision Record（ADR）是一种轻量级的文档格式，用于�
 
 | ADR编号 | 标题 | 状态 | 日期 | 影响范围 |
 |---------|------|------|------|----------|
-| [ADR-001](./ADR-001-three-tier-alignment.md) | 三层对齐架构标准 | ✅ Accepted | 2025-10-15 | 全系统 |
-| [ADR-002](./ADR-002-ddd-aggregate-root.md) | MedicalCase DDD聚合根模式 | ✅ Accepted | 2025-10-20 | Server端（医案/诊疗/处方） |
+| [ADR-001](./ADR-001-fluentvalidation-as-validation-framework.md) | FluentValidation作为统一验证框架 | ✅ Accepted | 2025-10-24 | 全系统（Server端+Client端） |
+| [ADR-002](./ADR-002-automapper-as-mapping-framework.md) | AutoMapper作为映射框架 | ✅ Accepted | 2025-10-24 | Server端（所有模块） |
 | [ADR-003](./ADR-003-repository-simplification.md) | Prescriptions/Consultation Repository层简化 | ✅ Accepted | 2025-10-24 | Desktop端（处方/诊疗模块） |
-| [ADR-004](./ADR-004-component-design-guidelines.md) | Component设计指南 | 📝 Proposed | 2025-10-25 | Desktop端（所有模块） |
+| [ADR-005](./ADR-005-aggregate-root-long-term-architecture.md) | 聚合根长期架构演进策略 ⭐⭐⭐ | ✅ Accepted | 2025-10-27 | Server端（核心架构） |
+| [ADR-006](./ADR-006-medicalcase-consultation-prescription-refactoring.md) | MedicalCase/Consultation/Prescription架构重构 | ✅ Accepted | 2025-10-28 | Server端（医案/诊疗/处方） |
+| [ADR-007](./ADR-007-repository-service-simplification.md) | Repository和Service层简化重构 ⭐ | ✅ Accepted | 2025-10-30 | Server端（Epic #1725） |
 
 ### 已弃用ADR（Deprecated）
 

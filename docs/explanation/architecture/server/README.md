@@ -329,6 +329,7 @@ Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId);
 > - ✅ 通过构造函数注入Repository、Mapper、Logger等依赖
 > - ✅ 避免使用抽象基类（如BaseService&lt;T&gt;）造成的过度设计
 > - ✅ 符合YAGNI原则（You Aren't Gonna Need It），够用即好
+> - ✅ **已移除EventBus依赖**（Epic #1725 Phase 1）- 7个Service类删除IEventBus注入，简化构造函数
 >
 > **演进触发条件**（参见ADR-005长期演进策略）：
 > - 业务规则数 &gt;20条（当前~14条）→ 演进到富领域模型
@@ -336,6 +337,12 @@ Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId);
 > - 聚合根关系 &gt;3层（当前2层）→ 引入领域事件
 >
 > **实际实现示例**见下文"实际Service实现示例"章节。
+
+> **📝 Epic #1725改进** - Service层简化（2025-10-30）：
+> - ✅ **Phase 1**: 移除所有Service类的IEventBus冗余依赖（~14行代码）
+> - ✅ **Phase 3**: PrescriptionService提取LoadRelatedDataAsync方法，消除重复逻辑（~30行）
+> - ✅ 标注MVP性能限制（全量加载、N+1查询），为未来优化提供指引
+> - 📖 详见[ADR-007](../decisions/ADR-007-repository-service-simplification.md)
 
 
 ### 实际Service实现示例
@@ -490,6 +497,13 @@ public class PatientService : IPatientService
 - ✅ **测试支持**：通过InternalsVisibleTo保证单元测试可访问
 
 **BaseRepository抽象类模板**：
+
+> **📝 Epic #1725改进** - 新增GetPagedResultAsync辅助方法（2025-10-30）：
+> - ✅ 提取分页逻辑到protected辅助方法，避免每个Repository重复实现
+> - ✅ 简化5个Repository实现（Consultation/Prescription/Formula/MedicalCase/Herb）
+> - ✅ 减少~100行重复代码，提升可维护性
+> - 📖 详见[ADR-007](../decisions/ADR-007-repository-service-simplification.md)
+
 ```csharp
 /// <summary>
 /// 标准仓储基类
@@ -520,7 +534,25 @@ public abstract class BaseRepository<T> : IRepository<T> where T : class
         return await _dbSet.Where(predicate).ToListAsync();
     }
 
-    public virtual async Task<PagedResult<T>> GetPagedAsync(int page, int pageSize, 
+    // ✅ Epic #1725新增：分页辅助方法（2025-10-30）
+    /// <summary>
+    /// 分页辅助方法 - 统一处理分页逻辑
+    /// </summary>
+    protected async Task<PagedResult<T>> GetPagedResultAsync(
+        IQueryable<T> query,
+        int pageNumber,
+        int pageSize)
+    {
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<T>(items, totalCount, pageNumber, pageSize);
+    }
+
+    public virtual async Task<PagedResult<T>> GetPagedAsync(int page, int pageSize,
         Expression<Func<T, bool>>? predicate = null)
     {
         var query = _dbSet.AsQueryable();
@@ -1094,6 +1126,14 @@ public static class ServiceCollectionExtensions
 - [深度参考文档](../../deep/README.md) - 完整技术细节
 - [API设计最佳实践](../../deep/api-design-best-practices.md) - API架构规范
 - [性能优化指南](../../deep/performance-optimization.md) - 性能架构优化
+
+### 📋 架构决策记录 (ADR)
+- [ADR-001: FluentValidation作为统一验证框架](../decisions/ADR-001-fluentvalidation-as-validation-framework.md)
+- [ADR-002: AutoMapper作为映射框架](../decisions/ADR-002-automapper-as-mapping-framework.md)
+- [ADR-003: Prescriptions/Consultation Repository层简化](../decisions/ADR-003-repository-simplification.md)
+- [ADR-005: 聚合根长期架构演进策略](../decisions/ADR-005-aggregate-root-long-term-architecture.md)
+- [ADR-006: MedicalCase/Consultation/Prescription架构重构](../decisions/ADR-006-medicalcase-consultation-prescription-refactoring.md)
+- [ADR-007: Repository和Service层简化重构](../decisions/ADR-007-repository-service-simplification.md) ⭐ Epic #1725
 
 ### 🛠️ 开发指南
 - [开发指南总览](../../development/README.md) - 开发规范和流程
