@@ -23,7 +23,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
-		<ProjectReference Include="..\..\Core\LYBT.Core.EventBus\LYBT.Core.EventBus.csproj" />
+		<ProjectReference Include="..\..\Core\LYBT.EventBus\LYBT.EventBus.csproj" />
 		<ProjectReference Include="..\..\Core\LYBT.Server.Interfaces\LYBT.Server.Interfaces.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />

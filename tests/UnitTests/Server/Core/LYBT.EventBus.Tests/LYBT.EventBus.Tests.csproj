@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Server\Core\LYBT.Core.EventBus\LYBT.Core.EventBus.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Server\Core\LYBT.EventBus\LYBT.EventBus.csproj" />
   </ItemGroup>
 
 </Project>
