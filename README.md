@@ -277,9 +277,9 @@ dotnet format LYBT.All.sln
 - 响应时间：<200ms（缓存命中）
 - 数据规模：<10万条记录
 
-## 📚 文档资源 ⭐v5.1三层对齐架构
+## 📚 文档资源 ⭐Phase 1完成 (20/20)
 
-**最后更新**：2025-10-26 - 同步v5.1文档体系
+**最后更新**：2025-10-30 - Phase 1文档全部完成
 
 ### 📋 文档导航
 - **[文档中心](docs/index.md)** - 统一文档导航入口（v5.1彻底重构版）⭐
@@ -287,12 +287,43 @@ dotnet format LYBT.All.sln
 - **[开发指南](docs/how-to-guides/README.md)** - 开发规范与最佳实践
 - **[API文档](docs/api/)** - RESTful接口文档
 
-### 🎯 核心架构文档
-- **[Server端架构](docs/explanation/architecture/server/README.md)** - 三层架构设计标准
-- **[Client端架构](docs/explanation/architecture/client/README.md)** - MVVM架构规范
-- **[共享架构](docs/explanation/architecture/shared/README.md)** - 跨端技术决策
+### 🎯 Phase 1 架构设计文档 (8/8)
 
-### 🛠️ 开发资源
+**Shared层架构**:
+- **[DTO设计标准](docs/explanation/architecture/shared/dto-design-standard.md)** - 跨端数据传输对象设计规范
+
+**Client端架构**:
+- **[Models层设计](docs/explanation/architecture/client/models-layer-design.md)** - ViewModel与领域模型设计
+- **[Infrastructure层设计](docs/explanation/architecture/client/infrastructure-layer-design.md)** - 客户端基础设施架构
+- **[Foundation层设计](docs/explanation/architecture/client/foundation-design.md)** - Prism框架与MVVM基础
+- **[病案管理(Client)设计](docs/explanation/architecture/client/medical-case-design.md)** - 客户端病案模块架构
+
+**Server端架构**:
+- **[Interfaces层设计](docs/explanation/architecture/server/interfaces-layer-design.md)** - 服务接口定义规范
+- **[WebAPI设计](docs/explanation/architecture/server/webapi-design.md)** - REST API架构与最佳实践
+- **[病案管理(Server)设计](docs/explanation/architecture/server/medical-case-design.md)** - 服务端病案模块架构
+
+### 🛠️ Phase 1 开发指南 (12/12)
+
+**Shared层开发**:
+- **[DTO开发指南](docs/how-to-guides/shared/dto-development.md)** - DTO创建、验证与映射实践
+
+**Client端开发**:
+- **[Models层使用指南](docs/how-to-guides/client/models-usage.md)** - ViewModel开发与数据绑定
+- **[Infrastructure层使用指南](docs/how-to-guides/client/infrastructure-usage.md)** - 依赖注入、导航、事件总线
+- **[Foundation层开发指南](docs/how-to-guides/client/foundation-development.md)** - Prism应用开发与模块化
+- **[病案管理(Client)开发指南](docs/how-to-guides/client/medical-case-development.md)** - 客户端病案功能实现
+- **[打印功能指南](docs/how-to-guides/client/print-functionality.md)** - WPF打印框架与实践
+
+**Server端开发**:
+- **[Interfaces层使用指南](docs/how-to-guides/server/interfaces-usage.md)** - 服务接口实现规范
+- **[WebAPI开发指南](docs/how-to-guides/server/webapi-development.md)** - Controller、Service、Repository开发
+- **[认证集成指南](docs/how-to-guides/server/auth-integration.md)** - JWT认证、授权与安全实践
+- **[病案管理(Server)开发指南](docs/how-to-guides/server/medical-case-development.md)** - 服务端病案功能实现
+- **[事件总线集成指南](docs/how-to-guides/server/eventbus-integration.md)** - 领域事件与异步通信
+- **[WebAPI部署指南](docs/how-to-guides/server/webapi-deployment.md)** - Kestrel/Windows Service/IIS部署 ⭐新增
+
+### 📚 传统文档资源
 - **[测试指南](docs/how-to-guides/shared/testing-guide.md)** - 测试架构与实施
 - **[代码规范](docs/how-to-guides/shared/standards.md)** - 编码标准
 - **[文档规范](docs/how-to-guides/shared/documentation-guidelines.md)** - 文档编写标准
