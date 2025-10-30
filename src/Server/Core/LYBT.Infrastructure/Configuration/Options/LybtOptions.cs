@@ -508,10 +508,10 @@ public class InfrastructureOptions
 public class DatabaseConfiguration
 {
     /// <summary>
-    /// 连接字符串
+    /// 连接字符串（可选，代码有fallback链：此处 → ConnectionStrings:DefaultConnection → 环境变量）
+    /// Issue #1726 Phase 4: 移除[Required]特性，支持fallback机制
     /// </summary>
-    [Required]
-    public string ConnectionString { get; set; } = null!;
+    public string? ConnectionString { get; set; }
 
     /// <summary>
     /// 连接池配置

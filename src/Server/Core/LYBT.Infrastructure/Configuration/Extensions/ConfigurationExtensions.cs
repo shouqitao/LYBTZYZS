@@ -196,9 +196,11 @@ public static class ConfigurationExtensions
         if (string.IsNullOrEmpty(options.Authentication.Jwt.Audience))
             validationResults.Add("JWT Audience is required");
 
-        // 数据库连接字符串验证
-        if (string.IsNullOrEmpty(options.Infrastructure.Database.ConnectionString))
-            validationResults.Add("Database ConnectionString is required");
+        // 数据库连接字符串验证 - Issue #1726 Phase 4: 移除验证
+        // 原因：代码使用fallback链（Lybt:Infrastructure:Database:ConnectionString → ConnectionStrings:DefaultConnection → 环境变量）
+        // 验证应由数据库初始化服务执行，而非配置验证层
+        // if (string.IsNullOrEmpty(options.Infrastructure.Database.ConnectionString))
+        //     validationResults.Add("Database ConnectionString is required");
 
         // 系统管理员必填项验证
         if (string.IsNullOrEmpty(options.Business.SystemAdmin.Username))
