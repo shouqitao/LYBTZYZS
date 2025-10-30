@@ -153,7 +153,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 }
             }
 
-            MedicalCaseEntity existingEntity;
+            MedicalCaseEntity? existingEntity;
 
             if (entry.State == EntityState.Detached)
             {
