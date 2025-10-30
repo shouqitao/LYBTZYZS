@@ -67,14 +67,60 @@
 
 ### 分层操作指南（三层对齐架构）
 
-- **[Server端操作](how-to-guides/server/README.md)**
+#### Server端开发指南
+
+- **[Server端操作总览](how-to-guides/server/README.md)** ⭐
   后端开发、API开发、数据库操作
+- **[认证集成指南](how-to-guides/server/auth-integration.md)**
+  JWT认证、双轨认证实现、权限验证
+- **[诊断模块开发](how-to-guides/server/consultation-development.md)**
+  Consultation Service/Controller/Repository开发
+- **[事件总线集成](how-to-guides/server/eventbus-integration.md)**
+  事件发布订阅、跨模块通信
+- **[方剂模块开发](how-to-guides/server/formula-development.md)**
+  Formula Service/Controller/Repository开发
+- **[接口层使用指南](how-to-guides/server/interfaces-usage.md)**
+  IRepository/IService接口规范
+- **[医案模块开发](how-to-guides/server/medical-case-development.md)**
+  MedicalCase Service/Controller/Repository开发
+- **[处方模块开发](how-to-guides/server/prescriptions-development.md)**
+  Prescription Service/Controller/Repository开发
+- **[WebAPI开发指南](how-to-guides/server/webapi-development.md)**
+  API端点设计、Swagger配置、错误处理
+- **[WebAPI部署指南](how-to-guides/server/webapi-deployment.md)**
+  生产环境部署、Windows Service配置、自动化脚本
 
-- **[Client端操作](how-to-guides/client/README.md)**
+#### Client端开发指南
+
+- **[Client端操作总览](how-to-guides/client/README.md)** ⭐
   WPF开发、UI设计、客户端逻辑
+- **[诊断模块开发](how-to-guides/client/consultation-development.md)**
+  ConsultationViewModel/View开发、四诊合参UI
+- **[方剂模块开发](how-to-guides/client/formula-development.md)**
+  FormulaViewModel/View开发、验方管理
+- **[Foundation层开发](how-to-guides/client/foundation-development.md)**
+  ViewModelBase、命令封装、依赖注入
+- **[Infrastructure层使用](how-to-guides/client/infrastructure-usage.md)**
+  ApiClient、事件聚合器、本地存储
+- **[医案模块开发](how-to-guides/client/medical-case-development.md)**
+  MedicalCaseViewModel/View开发、病案管理UI
+- **[Models层使用指南](how-to-guides/client/models-usage.md)**
+  ClientDTO设计、数据绑定、验证规则
+- **[处方模块开发](how-to-guides/client/prescriptions-development.md)**
+  PrescriptionViewModel/View开发、药材选择器
+- **[Presentation层开发](how-to-guides/client/presentation-development.md)**
+  样式主题、控件模板、资源字典
+- **[打印功能开发](how-to-guides/client/print-functionality.md)**
+  打印模板设计、FlowDocument生成、打印预览
 
-- **[共享操作](how-to-guides/shared/README.md)**
+#### 共享开发指南
+
+- **[共享操作总览](how-to-guides/shared/README.md)** ⭐
   跨端开发、通用组件、接口定义
+- **[DTO开发指南](how-to-guides/shared/dto-development.md)**
+  DTO创建五步法、验证规则、AutoMapper配置
+- **[共享组件使用](how-to-guides/shared/components-usage.md)**
+  Result/PagedResult/ApiResponse、通用工具类
 
 ### Phase 3 角色模块（⭐ 新增）
 
@@ -172,21 +218,69 @@
 - **[架构总览](explanation/architecture/README.md)** ⭐⭐⭐ **核心入口**
   对齐架构设计原理与导航
 
-- **[Server端架构](explanation/architecture/server/README.md)** ⭐ ✅ 已验证
+#### Server端架构设计
+
+- **[Server端架构总览](explanation/architecture/server/README.md)** ⭐⭐⭐ ✅ 已验证
   三层架构、8个模块、服务标准（含PatientService/Controller/Repository实际代码示例）
+- **[认证模块架构](explanation/architecture/server/auth-design.md)**
+  双轨认证设计、JWT令牌生成、权限验证机制
+- **[诊断模块架构](explanation/architecture/server/consultation-design.md)**
+  Consultation聚合根设计、四诊合参数据结构、辨证论治流程
+- **[事件总线架构](explanation/architecture/server/eventbus-design.md)**
+  事件发布订阅模式、跨模块通信机制、事件存储设计
+- **[方剂模块架构](explanation/architecture/server/formula-design.md)**
+  Formula聚合根设计、验方管理、配伍规则引擎
+- **[接口层设计](explanation/architecture/server/interfaces-layer-design.md)**
+  IRepository/IService接口规范、依赖注入策略
+- **[医案模块架构](explanation/architecture/server/medical-case-design.md)**
+  MedicalCase聚合根设计、状态机管理、生命周期控制
+- **[处方模块架构](explanation/architecture/server/prescriptions-design.md)**
+  Prescription聚合根设计、四种录入方式、药材配伍检查
+- **[WebAPI设计](explanation/architecture/server/webapi-design.md)**
+  API版本管理、错误处理、Swagger配置、跨域策略
 
-- **[Client端架构](explanation/architecture/client/README.md)** ⭐
+#### Client端架构设计
+
+- **[Client端架构总览](explanation/architecture/client/README.md)** ⭐⭐⭐
   MVVM架构、5层设计、UI标准
-  - **[Shell层架构设计](explanation/architecture/client/shell-layer-design.md)**
-    Shell层职责边界、组件结构、交互模式
-  - **Phase 3角色模块架构（⭐ 新增）**：
-    - **[Admin模块架构设计](explanation/architecture/client/admin-module-design.md)**
-      管理员控制台架构、AdminHomeViewModel设计、权限控制
-    - **[Clinical模块架构设计](explanation/architecture/client/clinical-module-design.md)**
-      诊疗工作台架构、ClinicalHomeViewModel设计、AC-001实现
+- **[Shell层架构设计](explanation/architecture/client/shell-layer-design.md)**
+  Shell层职责边界、组件结构、交互模式
+- **[认证模块架构](explanation/architecture/client/auth-design.md)**
+  登录流程设计、Token管理、会话持久化
+- **[诊断模块架构](explanation/architecture/client/consultation-design.md)**
+  ConsultationViewModel设计、四诊合参UI、辨证论治交互
+- **[Contracts层设计](explanation/architecture/client/contracts-design.md)**
+  接口定义、Service契约、事件契约
+- **[方剂模块架构](explanation/architecture/client/formula-design.md)**
+  FormulaViewModel设计、验方选择器、一键套用功能
+- **[Foundation层设计](explanation/architecture/client/foundation-design.md)**
+  ViewModelBase、命令封装、依赖注入容器配置
+- **[Infrastructure层设计](explanation/architecture/client/infrastructure-layer-design.md)**
+  ApiClient、事件聚合器、本地存储、日志框架
+- **[医案模块架构](explanation/architecture/client/medical-case-design.md)**
+  MedicalCaseViewModel设计、病案状态管理、UI交互流程
+- **[Models层设计](explanation/architecture/client/models-layer-design.md)**
+  ClientDTO设计、数据绑定模型、验证规则
+- **[处方模块架构](explanation/architecture/client/prescriptions-design.md)**
+  PrescriptionViewModel设计、药材选择器、处方生成逻辑
+- **[Presentation层设计](explanation/architecture/client/presentation-design.md)**
+  样式主题系统、控件模板、资源字典组织
 
-- **[共享架构](explanation/architecture/shared/README.md)** ⭐ ✅ 已验证
+#### Phase 3 角色模块架构（⭐ 新增）
+
+- **[Admin模块架构设计](explanation/architecture/client/admin-module-design.md)**
+  管理员控制台架构、AdminHomeViewModel设计、权限控制
+- **[Clinical模块架构设计](explanation/architecture/client/clinical-module-design.md)**
+  诊疗工作台架构、ClinicalHomeViewModel设计、AC-001实现
+
+#### 共享架构设计
+
+- **[共享架构总览](explanation/architecture/shared/README.md)** ⭐⭐⭐ ✅ 已验证
   跨端组件、按模块组织的DTO、去中心化接口定义（含实际Models/Components/Utilities结构说明）
+- **[DTO设计标准](explanation/architecture/shared/dto-design-standard.md)**
+  DTO基类体系、命名规范、验证规则、UltraThink v2.0简化原则
+- **[共享组件设计](explanation/architecture/shared/components-design.md)**
+  Result/PagedResult/ApiResponse设计、通用工具类、扩展方法
 
 ### 架构决策记录（ADR）
 
