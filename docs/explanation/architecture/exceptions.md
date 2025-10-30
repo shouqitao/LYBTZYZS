@@ -171,6 +171,76 @@
 
 ---
 
+#### EXC-004: EventBus项目和独立Repository保留（技术债）
+
+| 属性 | 值 |
+|------|------|
+| **例外编号** | EXC-004 |
+| **违反原则** | Dead Code清理原则 |
+| **影响模块** | `LYBT.EventBus`, `ConsultationRepository`, `PrescriptionRepository` |
+| **批准原因** | Epic #1725执行"温和改进"，"激进重构"暂时搁置，避免MVP阶段过度工程 |
+| **批准日期** | 2025-10-30 |
+| **批准者** | 开发团队 |
+| **相关ADR** | [ADR-007: Repository和Service层简化](./decisions/ADR-007-repository-service-simplification.md) |
+| **相关Issue** | #1724（Backlog） |
+| **风险级别** | P2（低风险） |
+| **审查周期** | 每年 |
+| **下次审查** | 2026-10-30 |
+
+**技术债内容**：
+1. **LYBT.EventBus项目保留**（~500行Dead Code）
+   - 问题：项目存在但仅保留IEventBus接口，无实际功能
+   - 现状：Epic #1725已移除所有IEventBus注入，不再有新引用
+   - 影响：占用代码库空间，但不影响功能
+
+2. **独立Repository保留**（ConsultationRepository, PrescriptionRepository）
+   - 问题：未完全对齐聚合根边界（MedicalCase聚合根）
+   - 现状：Epic #1725添加BaseRepository辅助方法，减少代码重复
+   - 影响：存在轻微的架构不一致，但功能正常
+
+3. **Service层依赖关系未重构**
+   - 问题：ConsultationService和PrescriptionService未改为依赖IMedicalCaseRepository
+   - 现状：Epic #1725提取LoadRelatedDataAsync方法，减少重复逻辑
+   - 影响：代码重复风险降低，但未达到"激进重构"目标
+
+**Epic #1725实际完成**：
+- ✅ Phase 1: 移除7个Service的IEventBus注入（~14行）
+- ✅ Phase 2: 添加BaseRepository.GetPagedResultAsync辅助方法（~101行简化）
+- ✅ Phase 3: 提取PrescriptionService.LoadRelatedDataAsync方法（~30行简化）
+- ✅ Phase 4: 创建ADR-007和验证报告
+- **完成度**：10%（145行 vs Issue #1724推荐的1370行）
+
+**"激进重构"剩余工作**（Issue #1724推荐但未执行）：
+- [ ] 删除LYBT.EventBus项目（~500行）
+- [ ] 删除ConsultationRepository和PrescriptionRepository（~270行）
+- [ ] 重构Service层依赖关系（~600行）
+- [ ] 创建ADR-006（EventBus删除）
+
+**触发"激进重构"条件**（ADR-005渐进式演进原则）：
+- 业务规则数量 >20条（当前：14条）
+- Service方法长度 >200行（当前：<150行）
+- 聚合根关系复杂度显著增加
+- MVP完成后的重大版本迭代
+
+**补救措施**：
+- [x] 在Issue #1724添加Backlog标记
+- [x] 在ADR-007记录技术债
+- [x] 在本清单跟踪此例外
+- [ ] **未来行动**：当达到触发条件时，创建新Epic执行"激进重构"
+
+**监控指标**：
+- EventBus项目引用数：0（Epic #1725后）
+- 独立Repository数量：2个（ConsultationRepository, PrescriptionRepository）
+- Dead Code总量：~500行（LYBT.EventBus项目）
+- 重构ROI：当前低，MVP后期提升
+
+**符合原则**：
+- ✅ ADR-005渐进式演进原则：温和改进 → 验证效果 → 再决定激进重构
+- ✅ Constitution MVP原则：避免过度工程，够用即好
+- ✅ 风险可控：Dead Code不影响当前功能，可在重大版本迭代时清理
+
+---
+
 ### 已解决例外（Resolved Exceptions）
 
 *当前无已解决例外*
@@ -201,7 +271,7 @@
 |---------|---------|------|------|
 | **P0（高风险）** | 每季度 | 0 | - |
 | **P1（中风险）** | 每半年 | 1 | EXC-001 |
-| **P2（低风险）** | 每年 | 2 | EXC-002, EXC-003 |
+| **P2（低风险）** | 每年 | 3 | EXC-002, EXC-003, EXC-004 |
 
 ### 按违反原则分类
 
@@ -209,6 +279,7 @@
 |---------|------|------|
 | **分层架构违反** | 1 | EXC-001 |
 | **软删除一致性违反** | 1 | EXC-003 |
+| **Dead Code清理违反** | 1 | EXC-004 |
 | **DDD边界违反** | 0 | - |
 | **技术黑名单违反** | 0 | - |
 | **Component设计违反** | 0 | - |
@@ -265,8 +336,9 @@
 |------|--------|---------|---------|------|
 | 2025-10-25 | Claude Code | EXC-001, EXC-002 | 批准 | 初始创建 |
 | 2025-10-27 | Claude Code | EXC-003 | 批准 | Issue #1611 Phase 4架构测试发现 |
+| 2025-10-30 | Claude Code | EXC-004 | 批准 | Issue #1724技术债，Epic #1725"温和改进"vs"激进重构" |
 
 ---
 
-**最后更新**: 2025-10-27
+**最后更新**: 2025-10-30
 **维护者**: 项目架构团队
