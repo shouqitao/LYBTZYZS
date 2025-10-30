@@ -84,6 +84,13 @@ public static class UnifiedMiddlewareConfiguration
         app.ConfigureSwaggerMiddleware();
 
         // ===== 阶段7: 终端映射（最后） =====
+        // Issue #1726 Phase 3: 健康检查端点
+        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health/database", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+        {
+            Predicate = (check) => check.Name == "database"
+        });
+
         app.MapControllers();
 
         return app;

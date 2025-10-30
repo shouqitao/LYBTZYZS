@@ -250,6 +250,11 @@ public static class UnifiedServiceRegistration
         services.AddScoped<LYBT.Infrastructure.Configuration.Services.DefaultPasswordService>();
         services.AddScoped<LYBT.Infrastructure.Data.DatabaseInitializationService>();
 
+        // Issue #1726 Phase 3: 数据库健康检查与启动诊断
+        services.AddHealthChecks()
+            .AddCheck<LYBT.WebAPI.HealthCheck.SqlServerHealthCheck>("database");
+        services.AddHostedService<LYBT.WebAPI.HealthCheck.DatabaseStartupDiagnostics>();
+
         return services;
     }
 
