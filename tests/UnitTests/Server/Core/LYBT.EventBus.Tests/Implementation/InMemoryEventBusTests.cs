@@ -1,6 +1,6 @@
-using LYBT.Core.EventBus.Abstractions;
-using LYBT.Core.EventBus.Events;
-using LYBT.Core.EventBus.Implementation;
+using LYBT.EventBus.Abstractions;
+using LYBT.EventBus.Events;
+using LYBT.EventBus.Implementation;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

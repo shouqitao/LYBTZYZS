@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using LYBT.Core.EventBus.Abstractions;
+using LYBT.EventBus.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.EventBus.Implementation;

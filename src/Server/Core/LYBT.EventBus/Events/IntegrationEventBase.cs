@@ -1,4 +1,4 @@
-﻿using LYBT.Core.EventBus.Abstractions;
+﻿using LYBT.EventBus.Abstractions;
 
 namespace LYBT.EventBus.Events;
 

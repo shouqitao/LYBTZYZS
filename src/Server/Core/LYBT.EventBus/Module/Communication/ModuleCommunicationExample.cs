@@ -1,5 +1,5 @@
-﻿using LYBT.Core.EventBus.Abstractions;
-using LYBT.Core.EventBus.Module.Events;
+﻿using LYBT.EventBus.Abstractions;
+using LYBT.EventBus.Module.Events;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.EventBus.Module.Communication;

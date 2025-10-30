@@ -1,4 +1,4 @@
-﻿using LYBT.Core.EventBus.Events;
+﻿using LYBT.EventBus.Events;
 
 namespace LYBT.EventBus.Module.Events;
 

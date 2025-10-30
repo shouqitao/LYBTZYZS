@@ -1,5 +1,5 @@
-﻿using LYBT.Core.EventBus.Abstractions;
-using LYBT.Core.EventBus.Implementation;
+﻿using LYBT.EventBus.Abstractions;
+using LYBT.EventBus.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

@@ -125,7 +125,7 @@ public class Startup
 
 ### 2. 定义集成事件(跨模块通信)
 ```csharp
-using LYBT.Core.EventBus.Events;
+using LYBT.EventBus.Events;
 
 // 患者创建事件(Patients模块发布)
 public class PatientCreatedEvent : IntegrationEventBase
