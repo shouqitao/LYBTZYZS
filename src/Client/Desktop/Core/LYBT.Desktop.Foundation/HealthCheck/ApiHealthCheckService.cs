@@ -30,7 +30,7 @@ public class ApiHealthCheckService : IApiHealthCheckService
         try
         {
             // 从配置中读取 WebAPI BaseUrl
-            var baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+            var baseUrl = _configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
             var healthUrl = $"{baseUrl.TrimEnd('/')}/health";
 
             using var cts = new CancellationTokenSource(timeout);

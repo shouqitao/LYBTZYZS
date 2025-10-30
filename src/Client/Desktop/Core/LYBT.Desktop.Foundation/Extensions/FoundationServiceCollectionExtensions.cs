@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Foundation.Extensions
         /// <returns>服务集合</returns>
         public static IServiceCollection ConfigureFoundationHttpClient(this IServiceCollection services, IConfiguration configuration)
         {
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+            var apiBaseUrl = configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
 
             services.AddHttpClient("FoundationClient", client =>
             {

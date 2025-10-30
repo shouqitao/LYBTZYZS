@@ -200,8 +200,8 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
         {
             // 获取 API 配置
-            var apiBaseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
-            var ignoreSslErrors = config.GetValue<bool>("ApiSettings:IgnoreSslErrors", false);
+            var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
+            var ignoreSslErrors = config.GetValue<bool>("Lybt:Client:Api:IgnoreSslErrors", false);
             
             // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();

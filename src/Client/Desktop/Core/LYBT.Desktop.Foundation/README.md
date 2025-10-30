@@ -144,7 +144,7 @@ protected override void RegisterTypes(IContainerRegistry containerRegistry)
     // 配置HTTP客户端（BaseUrl + Polly策略）
     containerRegistry.RegisterHttpClient<IApiService, ApiService>(options =>
     {
-        options.BaseAddress = new Uri(Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001");
+        options.BaseAddress = new Uri(Configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001");
         options.Timeout = TimeSpan.FromSeconds(30);
     });
 
@@ -486,10 +486,10 @@ public class AppConfigurationService
     {
         return new ApiConfiguration
         {
-            BaseUrl = _config.GetValue("ApiSettings:BaseUrl", "https://localhost:5001"),
-            Timeout = _config.GetValue("ApiSettings:TimeoutSeconds", 30),
-            RetryCount = _config.GetValue("ApiSettings:RetryCount", 3),
-            EnableLogging = _config.GetValue("ApiSettings:EnableLogging", true)
+            BaseUrl = _config.GetValue("Lybt:Client:Api:BaseUrl", "https://localhost:5001"),
+            Timeout = _config.GetValue("Lybt:Client:Api:TimeoutSeconds", 30),
+            RetryCount = _config.GetValue("Lybt:Client:Api:RetryCount", 3),
+            EnableLogging = _config.GetValue("Lybt:Client:Api:EnableLogging", true)
         };
     }
 
@@ -969,7 +969,7 @@ public static class FoundationServiceCollectionExtensions
         // 2. HTTP服务注册
         services.AddHttpClient<IApiService, ApiService>(client =>
         {
-            client.BaseAddress = new Uri(configuration["ApiSettings:BaseUrl"]
+            client.BaseAddress = new Uri(configuration["Lybt:Client:Api:BaseUrl"]
                 ?? "https://localhost:5001");
             client.Timeout = TimeSpan.FromSeconds(30);
         })
