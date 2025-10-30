@@ -76,6 +76,21 @@
 - **[共享操作](how-to-guides/shared/README.md)**
   跨端开发、通用组件、接口定义
 
+### Phase 3 角色模块（⭐ 新增）
+
+> **Phase 3文档增强**：2025-10-30完成，涵盖Admin和Clinical角色模块的完整架构设计和开发指南
+
+#### Client端角色模块开发
+
+- **[Admin模块开发](how-to-guides/client/admin-development.md)**
+  管理员控制台、用户管理、系统配置、数据库维护
+- **[Clinical模块开发](how-to-guides/client/clinical-development.md)**
+  诊疗工作台、待诊列表、快速开单、今日工作总结
+- **[Herbs模块集成](how-to-guides/client/herbs-integration.md)**
+  药材选择器集成、处方生成、药材搜索
+- **[Formula模块集成](how-to-guides/client/formula-integration.md)**
+  验方选择器集成、一键套用、验方保存
+
 ### 常用操作快速入口
 
 | 我想... | 查阅文档 |
@@ -164,6 +179,11 @@
   MVVM架构、5层设计、UI标准
   - **[Shell层架构设计](explanation/architecture/client/shell-layer-design.md)**
     Shell层职责边界、组件结构、交互模式
+  - **Phase 3角色模块架构（⭐ 新增）**：
+    - **[Admin模块架构设计](explanation/architecture/client/admin-module-design.md)**
+      管理员控制台架构、AdminHomeViewModel设计、权限控制
+    - **[Clinical模块架构设计](explanation/architecture/client/clinical-module-design.md)**
+      诊疗工作台架构、ClinicalHomeViewModel设计、AC-001实现
 
 - **[共享架构](explanation/architecture/shared/README.md)** ⭐ ✅ 已验证
   跨端组件、按模块组织的DTO、去中心化接口定义（含实际Models/Components/Utilities结构说明）
