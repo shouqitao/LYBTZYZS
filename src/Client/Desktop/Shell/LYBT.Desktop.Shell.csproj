@@ -12,8 +12,8 @@
     <WarningsAsErrors />
     
     <!-- 程序集版本信息 - 通过MSBuild属性设置 -->
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
     <!-- 禁用重复属性的自动生成，避免与GlobalAssemblyInfo.cs冲突 -->
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
@@ -22,7 +22,7 @@
     
     <!-- Package Information -->
     <PackageId>LYBT.Desktop.Shell</PackageId>
-    <PackageVersion>2.1.0</PackageVersion>
+    <PackageVersion>1.1.0</PackageVersion>
     <Authors>LYBT开发团队</Authors>
     <PackageDescription>LYBT WPF应用外壳 - Prism容器管理、模块编排、导航控制 | 企业级桌面应用启动器</PackageDescription>
     <PackageTags>WPF;Shell;应用外壳;Prism;模块化;中医;诊所;容器;导航</PackageTags>
