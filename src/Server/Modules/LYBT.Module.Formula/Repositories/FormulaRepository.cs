@@ -54,6 +54,7 @@ namespace LYBT.Module.Formula.Repositories
 
         /// <summary>
         /// 获取分页列表（简化版，减少复杂搜索逻辑）
+        /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
         /// </summary>
         public async Task<PagedResult<FormulaEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
@@ -68,21 +69,11 @@ namespace LYBT.Module.Formula.Repositories
                 query = query.Where(f => f.Name.Contains(keyword) || (f.Effect != null && f.Effect.Contains(keyword)));
             }
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .OrderByDescending(f => f.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<FormulaEntity>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = pageNumber,
-                PageSize = pageSize
-            };
+            // 使用BaseRepository辅助方法处理分页（Epic #1725）
+            return await GetPagedResultAsync(
+                query.OrderByDescending(f => f.CreatedAt),
+                pageNumber,
+                pageSize);
         }
 
         /// <summary>

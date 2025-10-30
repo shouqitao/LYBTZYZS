@@ -294,6 +294,7 @@
   - [ADR-004: 组件设计指南](explanation/architecture/decisions/ADR-004-component-design-guidelines.md)
   - [ADR-005: 聚合根长期架构](explanation/architecture/decisions/ADR-005-aggregate-root-long-term-architecture.md) ⭐⭐⭐ **重要**
   - [ADR-006: 病案/诊断/处方重构](explanation/architecture/decisions/ADR-006-medicalcase-consultation-prescription-refactoring.md)
+  - [ADR-007: Repository和Service层简化重构](explanation/architecture/decisions/ADR-007-repository-service-simplification.md) ⭐ Epic #1725
 
 ### 业务规则与设计
 

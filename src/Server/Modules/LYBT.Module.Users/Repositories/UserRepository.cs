@@ -49,11 +49,13 @@ namespace LYBT.Module.Users.Repositories
 
         public async Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize)
         {
-            var query = _dbSet.Where(u => !u.IsDeleted);
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(u => !u.IsDeleted)
+                .OrderBy(u => u.Email);
+
             var totalCount = await query.CountAsync();
             var items = await query
-                .AsNoTracking()
-                .OrderBy(u => u.Email)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -68,14 +70,14 @@ namespace LYBT.Module.Users.Repositories
             Expression<Func<User, object>>? orderBy = null,
             bool ascending = true)
         {
-            var query = _dbSet.Where(u => !u.IsDeleted).AsNoTracking().AsQueryable();
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(u => !u.IsDeleted);
 
             if (predicate != null)
             {
                 query = query.Where(predicate);
             }
-
-            var totalCount = await query.CountAsync();
 
             if (orderBy != null)
             {
@@ -86,6 +88,7 @@ namespace LYBT.Module.Users.Repositories
                 query = query.OrderBy(u => u.Email);
             }
 
+            var totalCount = await query.CountAsync();
             var items = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)

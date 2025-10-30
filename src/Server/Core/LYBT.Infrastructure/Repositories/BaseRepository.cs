@@ -673,6 +673,28 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet.FromSqlRaw(sql, parameters).ToListAsync();
         }
 
+        /// <summary>
+        /// 通用分页查询助手 - 返回PagedResult<T>
+        /// Phase 2: Repository层简化（Epic #1725）
+        /// </summary>
+        /// <param name="query">已配置的查询（包含Where和Include）</param>
+        /// <param name="pageNumber">页码（从1开始）</param>
+        /// <param name="pageSize">每页大小</param>
+        /// <returns>PagedResult分页结果</returns>
+        protected async Task<PagedResult<TEntity>> GetPagedResultAsync(
+            IQueryable<TEntity> query,
+            int pageNumber,
+            int pageSize)
+        {
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
+        }
+
         #endregion
 
         #region 批量操作
