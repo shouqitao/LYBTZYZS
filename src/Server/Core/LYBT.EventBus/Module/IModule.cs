@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Core.EventBus.Module;
+namespace LYBT.EventBus.Module;
 
 /// <summary>
 /// 模块基础接口

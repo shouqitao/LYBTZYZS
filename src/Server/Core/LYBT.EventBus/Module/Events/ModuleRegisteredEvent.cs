@@ -1,6 +1,6 @@
 ﻿using LYBT.Core.EventBus.Events;
 
-namespace LYBT.Core.EventBus.Module.Events;
+namespace LYBT.EventBus.Module.Events;
 
 /// <summary>
 /// 模块注册事件

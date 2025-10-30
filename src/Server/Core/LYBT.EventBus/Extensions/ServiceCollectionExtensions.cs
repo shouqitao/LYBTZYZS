@@ -3,7 +3,7 @@ using LYBT.Core.EventBus.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace LYBT.Core.EventBus.Extensions;
+namespace LYBT.EventBus.Extensions;
 
 /// <summary>
 /// 事件总线服务注册扩展

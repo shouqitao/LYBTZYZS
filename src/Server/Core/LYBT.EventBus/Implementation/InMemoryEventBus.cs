@@ -2,7 +2,7 @@
 using LYBT.Core.EventBus.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Core.EventBus.Implementation;
+namespace LYBT.EventBus.Implementation;
 
 /// <summary>
 /// 内存事件总线实现

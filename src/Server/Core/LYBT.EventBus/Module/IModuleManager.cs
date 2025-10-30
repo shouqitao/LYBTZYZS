@@ -1,4 +1,4 @@
-﻿namespace LYBT.Core.EventBus.Module;
+﻿namespace LYBT.EventBus.Module;
 
 /// <summary>
 /// 模块管理器接口

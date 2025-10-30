@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace LYBT.Core.EventBus.Services;
+namespace LYBT.EventBus.Services;
 
 /// <summary>
 /// 事件总线托管服务

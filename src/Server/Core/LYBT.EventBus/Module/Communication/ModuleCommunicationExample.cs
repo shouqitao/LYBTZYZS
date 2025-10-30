@@ -2,7 +2,7 @@
 using LYBT.Core.EventBus.Module.Events;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Core.EventBus.Module.Communication;
+namespace LYBT.EventBus.Module.Communication;
 
 /// <summary>
 /// 模块通信示例

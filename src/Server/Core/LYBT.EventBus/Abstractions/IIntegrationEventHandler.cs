@@ -1,4 +1,4 @@
-﻿namespace LYBT.Core.EventBus.Abstractions;
+﻿namespace LYBT.EventBus.Abstractions;
 
 /// <summary>
 /// 集成事件处理器基础接口

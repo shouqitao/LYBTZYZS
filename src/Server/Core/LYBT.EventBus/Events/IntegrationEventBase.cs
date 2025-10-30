@@ -1,6 +1,6 @@
 ﻿using LYBT.Core.EventBus.Abstractions;
 
-namespace LYBT.Core.EventBus.Events;
+namespace LYBT.EventBus.Events;
 
 /// <summary>
 /// 集成事件基础类

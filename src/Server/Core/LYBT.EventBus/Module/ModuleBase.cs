@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Core.EventBus.Module;
+namespace LYBT.EventBus.Module;
 
 /// <summary>
 /// 模块基础实现类
