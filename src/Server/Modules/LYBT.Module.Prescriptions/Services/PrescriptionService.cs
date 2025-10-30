@@ -20,6 +20,7 @@ namespace LYBT.Module.Prescriptions.Services
     /// 职责：提供处方记录的只读查询功能、价格计算和打印格式生成
     /// 所有Write操作必须通过MedicalCaseService聚合根进行
     /// IMedicalCaseRepository用于Read关联患者信息（合法用途）
+    /// Phase 3 (Epic #1725): 简化Service层，提取重复逻辑
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {
@@ -117,10 +118,43 @@ namespace LYBT.Module.Prescriptions.Services
             return total * discount;
         }
 
+        /// <summary>
+        /// 加载关联数据（提取重复逻辑 - Epic #1725 Phase 3）
+        /// 统一的Dictionary构建方法，消除SearchPrescriptionsAsync和GetPatientRecentPrescriptionsAsync中的重复代码
+        /// </summary>
+        /// <param name="includePatients">是否加载所有患者数据</param>
+        /// <returns>关联数据的Dictionary集合</returns>
+        private async Task<(
+            Dictionary<Guid, LYBT.Entities.MedicalCase.MedicalCase> medicalCases,
+            Dictionary<Guid, LYBT.Entities.Consultation.Consultation> consultations,
+            Dictionary<Guid, LYBT.Entities.Patients.Patient>? patients
+        )> LoadRelatedDataAsync(bool includePatients)
+        {
+            // 加载病历
+            var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
+            var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+
+            // 加载诊疗记录
+            var allConsultations = await _consultationRepository.GetAllAsync();
+            var consultationDict = allConsultations.ToDictionary(c => c.Id);
+
+            // 可选：加载患者
+            Dictionary<Guid, LYBT.Entities.Patients.Patient>? patientDict = null;
+            if (includePatients)
+            {
+                var allPatients = await _patientRepository.GetAllAsync();
+                patientDict = allPatients.ToDictionary(p => p.Id);
+            }
+
+            return (medicalCaseDict, consultationDict, patientDict);
+        }
+
 
         /// <summary>
         /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑
+        /// ⚠️ 性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
         /// </summary>
         /// <param name="patientName">患者姓名关键字（可空）</param>
         /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
@@ -140,17 +174,8 @@ namespace LYBT.Module.Prescriptions.Services
                 // 获取所有处方
                 var allPrescriptions = await _repository.GetAllAsync();
 
-                // 获取所有病历（用于关联患者）
-                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
-                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
-
-                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
-                var allConsultations = await _consultationRepository.GetAllAsync();
-                var consultationDict = allConsultations.ToDictionary(c => c.Id);
-
-                // 获取所有患者（用于关联 PatientName）
-                var allPatients = await _patientRepository.GetAllAsync();
-                var patientDict = allPatients.ToDictionary(p => p.Id);
+                // Epic #1725 Phase 3: 使用统一方法加载关联数据（消除重复代码）
+                var (medicalCaseDict, consultationDict, patientDict) = await LoadRelatedDataAsync(includePatients: true);
 
                 // 内存过滤与关联
                 var searchResults = new List<PrescriptionSearchResultDto>();
@@ -163,8 +188,8 @@ namespace LYBT.Module.Prescriptions.Services
                         continue; // 找不到关联病历，跳过
                     }
 
-                    // 关联患者
-                    if (!patientDict.TryGetValue(medicalCase.PatientId, out var patient))
+                    // 关联患者（patientDict在MVP场景下必定不为null）
+                    if (patientDict == null || !patientDict.TryGetValue(medicalCase.PatientId, out var patient))
                     {
                         continue; // 找不到关联患者，跳过
                     }
@@ -228,6 +253,9 @@ namespace LYBT.Module.Prescriptions.Services
         /// <summary>
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
+        /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑 + 修复N+1查询
+        /// ⚠️ 性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
+        /// ⚠️ N+1查询（已知MVP限制）：循环内查询处方Items，数据量增大后需优化
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5条）</param>
@@ -238,23 +266,18 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                // 获取所有处方
-                var allPrescriptions = await _repository.GetAllAsync();
-
-                // 获取所有病历（用于关联患者）
-                var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
-                var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
-
-                // 获取所有诊疗记录（用于获取 TCMDiagnosis）
-                var allConsultations = await _consultationRepository.GetAllAsync();
-                var consultationDict = allConsultations.ToDictionary(c => c.Id);
-
-                // 获取患者信息
+                // 获取患者信息（先验证患者存在）
                 var patient = await _patientRepository.GetByIdAsync(patientId);
                 if (patient == null)
                 {
                     return ServiceResult<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
                 }
+
+                // 获取所有处方
+                var allPrescriptions = await _repository.GetAllAsync();
+
+                // Epic #1725 Phase 3: 使用统一方法加载关联数据（消除重复代码）
+                var (medicalCaseDict, consultationDict, _) = await LoadRelatedDataAsync(includePatients: false);
 
                 // 内存过滤：找到该患者的所有处方
                 var patientPrescriptions = new List<PrescriptionSearchResultDto>();
@@ -276,7 +299,9 @@ namespace LYBT.Module.Prescriptions.Services
                     // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
                     consultationDict.TryGetValue(medicalCase.Id, out var consultation);
 
-                    // 获取处方项以计算药材数量（Issue #1370 ENTRY-12 新增需求）
+                    // ⚠️ N+1查询（已知MVP限制）：循环内查询处方Items
+                    // Issue #1370 ENTRY-12 新增需求：获取处方项以计算药材数量
+                    // TODO (Phase 4+): 添加Repository.GetByIdsWithItemsAsync批量查询方法
                     var prescriptionWithItems = await _repository.GetByIdWithItemsAsync(prescription.Id);
                     var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
 

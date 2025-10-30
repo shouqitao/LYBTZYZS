@@ -1,9 +1,7 @@
-using LYBT.Module.MedicalCase.Dtos;
+﻿using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Services
