@@ -39,6 +39,7 @@ namespace LYBT.Module.Consultation.Repositories
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// 优化：预加载Patient和User信息，避免N+1查询
+        /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
         /// </summary>
         public async Task<PagedResult<ConsultationEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
@@ -60,21 +61,11 @@ namespace LYBT.Module.Consultation.Repositories
                     c.MedicalCase.DoctorName.Contains(keyword));
             }
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .OrderByDescending(c => c.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<ConsultationEntity>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = pageNumber,
-                PageSize = pageSize
-            };
+            // 使用BaseRepository辅助方法处理分页（Epic #1725）
+            return await GetPagedResultAsync(
+                query.OrderByDescending(c => c.CreatedAt),
+                pageNumber,
+                pageSize);
         }
 
         /// <summary>

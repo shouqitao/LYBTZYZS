@@ -38,6 +38,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// 优化：预加载Items信息，避免N+1查询
+        /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
         /// </summary>
         public async Task<PagedResult<PrescriptionEntity>> GetPagedWithDetailsAsync(
             int pageNumber,
@@ -58,21 +59,11 @@ namespace LYBT.Module.Prescriptions.Repositories
                     p.Items.Any(i => i.HerbName.Contains(keyword)));
             }
 
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .OrderByDescending(p => p.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<PrescriptionEntity>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = pageNumber,
-                PageSize = pageSize
-            };
+            // 使用BaseRepository辅助方法处理分页（Epic #1725）
+            return await GetPagedResultAsync(
+                query.OrderByDescending(p => p.CreatedAt),
+                pageNumber,
+                pageSize);
         }
 
         /// <summary>

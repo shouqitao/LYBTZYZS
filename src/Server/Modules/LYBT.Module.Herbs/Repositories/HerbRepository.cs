@@ -2,12 +2,14 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Herbs.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Repositories
 {
     /// <summary>
-    /// 药材仓储 - 简化版，只包含基础CRUD
+    /// 药材仓储 - 简化版，包含基础CRUD和分页功能
+    /// Phase 2: Repository层简化（Epic #1725）- 新增分页支持
     /// </summary>
     internal class HerbRepository : BaseRepository<Herb>, IHerbRepository
     {
@@ -47,6 +49,34 @@ namespace LYBT.Module.Herbs.Repositories
                     && !h.IsDeleted);
 
             return pinyinMatch;
+        }
+
+        /// <summary>
+        /// 获取分页列表
+        /// Phase 2: Repository层简化（Epic #1725）- 新增分页功能（支持300+药材）
+        /// </summary>
+        public async Task<PagedResult<Herb>> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            string? keyword = null)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted);
+
+            // 关键字搜索（名称或拼音码）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(h =>
+                    h.Name.Contains(keyword) ||
+                    (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
+            }
+
+            // 使用BaseRepository辅助方法处理分页（Epic #1725）
+            return await GetPagedResultAsync(
+                query.OrderBy(h => h.Name),
+                pageNumber,
+                pageSize);
         }
     }
 }
