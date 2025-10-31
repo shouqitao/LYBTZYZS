@@ -670,19 +670,19 @@ namespace LYBT.Module.MedicalCase.Services
         /// 查询处方列表
         /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
-        public async Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId)
+        public async Task<List<MedicalCasePrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId)
         {
             try
             {
                 var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
                 if (medicalCase?.Prescription == null)
                 {
-                    return new List<PrescriptionDetailDto>();
+                    return new List<MedicalCasePrescriptionDto>();
                 }
 
                 // 当前架构下只有一条Prescription（一诊一方），直接映射
-                var dto = _mapper.Map<PrescriptionDetailDto>(medicalCase.Prescription);
-                return new List<PrescriptionDetailDto> { dto };
+                var dto = _mapper.Map<MedicalCasePrescriptionDto>(medicalCase.Prescription);
+                return new List<MedicalCasePrescriptionDto> { dto };
             }
             catch (Exception ex)
             {

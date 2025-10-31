@@ -1,10 +1,10 @@
 namespace LYBT.Module.MedicalCase.Dtos;
 
 /// <summary>
-/// 处方信息响应DTO（完整字段）
-/// Epic #1612 Task 1.3
+/// MedicalCase模块专用处方DTO（简化版本）
+/// Epic #1736 Phase 5: 区分模块边界，避免与Shared.PrescriptionDetailDto冲突
 /// </summary>
-public class PrescriptionDetailDto
+public class MedicalCasePrescriptionDto
 {
     public Guid Id { get; set; }
 

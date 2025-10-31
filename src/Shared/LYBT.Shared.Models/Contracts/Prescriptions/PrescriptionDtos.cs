@@ -81,36 +81,37 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
-    /// 处方详情DTO
+    /// 处方详情DTO - 扩展版本
+    /// 继承PrescriptionDto基础字段，添加运行时计算的警告信息和扩展字段
+    /// Epic #1736 Phase 5: 简化继承设计，去除new关键字
     /// </summary>
     public class PrescriptionDetailDto : PrescriptionDto, IRemarkable
     {
-
-        [DisplayName("方剂来源")]
-        public new string? FormulaSource { get; set; }
-
+        /// <summary>
+        /// 重复用药警告（运行时计算）
+        /// </summary>
         [DisplayName("重复用药警告")]
         public string? DuplicateWarning { get; set; }
 
+        /// <summary>
+        /// 缺药警告（运行时计算）
+        /// </summary>
         [DisplayName("缺药警告")]
         public string? MissingDrugWarning { get; set; }
 
+        /// <summary>
+        /// 格式化的处方编号（用于UI展示）
+        /// 注：与PrescriptionNumber字段不同，此字段用于特定格式化展示
+        /// </summary>
         [DisplayName("处方编号")]
         public string? PrescriptionNo { get; set; }
 
-        [DisplayName("用法")]
-        public new string? Usage { get; set; }
-
+        /// <summary>
+        /// 医嘱（从Consultation带来的扩展字段）
+        /// 注：与Advice字段不同，此字段来自关联的Consultation
+        /// </summary>
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
-
-        [DisplayName("折扣")]
-        public new decimal Discount { get; set; } = 1.0m;
-
-        /// <inheritdoc/>
-        [DisplayName("备注")]
-        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        public new string? Remark { get; set; }
     }
 
     /// <summary>

@@ -39,7 +39,7 @@ public class MedicalCaseDetailResponse
     /// <summary>
     /// 处方信息（可选）
     /// </summary>
-    public PrescriptionDetailDto? Prescription { get; set; }
+    public MedicalCasePrescriptionDto? Prescription { get; set; }
 
     /// <summary>
     /// 病案状态
