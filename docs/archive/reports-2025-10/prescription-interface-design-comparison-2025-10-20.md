@@ -1692,9 +1692,9 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 - [完整参考实现 ViewModel](src/Client/Desktop/Modules/LYBT.Desktop.Prescriptions/ViewModels/PrescriptionViewModel.cs) ⭐
 
 **设计文档**:
-- [处方录入需求](docs/reports/prescription-entry-requirements-2025-10-16.md)
-- [集成设计方案](docs/explanation/architecture/client/prescription-editor-integration-design.md)
-- [UI原型设计](docs/explanation/architecture/client/clinical-workflow-ui-prototypes.md)
+- [处方录入需求](prescription-entry-requirements-2025-10-16.md)
+- [集成设计方案](../discussions-client-2025-10/prescription-editor-integration-design.md)
+- [UI原型设计](../discussions-client-2025-10/clinical-workflow-ui-prototypes.md)
 
 ---
 

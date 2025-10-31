@@ -437,7 +437,7 @@ tests/UnitTests/Shared/
 - 📖 [共享开发](docs/how-to-guides/shared/README.md) - 测试和文档规范
 
 ### 验证报告
-- ✅ [代码文档验证报告](docs/reports/code-documentation-verification-2025-10-16.md) - 架构对齐验证
+- ✅ [代码文档验证报告](code-documentation-verification-2025-10-16.md) - 架构对齐验证
 
 ---
 
