@@ -438,7 +438,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>诊疗记录信息（必需）</summary>
         [Required(ErrorMessage = "诊疗信息不能为空")]
         [DisplayName("诊疗信息")]
-        public ConsultationCreateDto Consultation { get; set; } = new();
+        public ConsultationInputDto Consultation { get; set; } = new();
 
         /// <summary>处方信息（可选）</summary>
         [DisplayName("处方信息")]

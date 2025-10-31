@@ -337,7 +337,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogDebug("开始更新用户: {UserId} - {UserName}", UserId, UserName);
 
-                var updateDto = new UserUpdateDto
+                var updateDto = new UserInputDto
                 {
                     Id = UserId,
                     RealName = RealName.Trim(),

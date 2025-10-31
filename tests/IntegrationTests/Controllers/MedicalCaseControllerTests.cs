@@ -123,7 +123,7 @@ namespace LYBT.IntegrationTests.Api
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     Remark = "集成测试医疗案例"
                 },
-                Consultation = new ConsultationCreateDto
+                Consultation = new ConsultationInputDto
                 {
                     ChiefComplaint = "头痛发热3天",
                     PresentIllness = "患者3天前开始出现头痛",
@@ -169,7 +169,7 @@ namespace LYBT.IntegrationTests.Api
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
                 },
-                Consultation = new ConsultationCreateDto
+                Consultation = new ConsultationInputDto
                 {
                     ChiefComplaint = "测试主诉",
                     Diagnosis = "测试诊断"
@@ -202,7 +202,7 @@ namespace LYBT.IntegrationTests.Api
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
                 },
-                Consultation = new ConsultationCreateDto
+                Consultation = new ConsultationInputDto
                 {
                     ChiefComplaint = "查询测试",
                     Diagnosis = "测试诊断"
@@ -358,7 +358,7 @@ namespace LYBT.IntegrationTests.Api
                     PatientId = Guid.NewGuid(), // 不存在的患者ID
                     DoctorId = Guid.NewGuid()   // 不存在的医生ID
                 },
-                Consultation = new ConsultationCreateDto()
+                Consultation = new ConsultationInputDto()
             };
 
             var json = JsonConvert.SerializeObject(createDto);

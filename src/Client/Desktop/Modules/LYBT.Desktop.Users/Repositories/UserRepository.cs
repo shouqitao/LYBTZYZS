@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Users.Repositories
     /// 用户数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class UserRepository : RepositoryBase<UserDto, UserCreateDto, UserUpdateDto, IUserApi>, IUserRepository
+    public class UserRepository : RepositoryBase<UserDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
     {
         public UserRepository(
             IUserApi userApi,
@@ -103,12 +103,12 @@ namespace LYBT.Desktop.Users.Repositories
             return _api.GetUsersAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<UserDto>> CallApiCreateAsync(UserCreateDto dto)
+        protected override Task<ApiResponse<UserDto>> CallApiCreateAsync(UserInputDto dto)
         {
             return _api.CreateUserAsync(dto);
         }
 
-        protected override Task<ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserUpdateDto dto)
+        protected override Task<ApiResponse<UserDto>> CallApiUpdateAsync(Guid id, UserInputDto dto)
         {
             return _api.UpdateUserAsync(id, dto);
         }
@@ -118,7 +118,7 @@ namespace LYBT.Desktop.Users.Repositories
             return _api.DeleteUserAsync(id);
         }
 
-        protected override Guid? GetIdFromUpdateDto(UserUpdateDto dto)
+        protected override Guid? GetIdFromUpdateDto(UserInputDto dto)
         {
             return dto?.Id;
         }

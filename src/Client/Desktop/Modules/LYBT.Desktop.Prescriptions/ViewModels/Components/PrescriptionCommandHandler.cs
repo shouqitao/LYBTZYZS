@@ -381,11 +381,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// <summary>
         /// 转换为创建项列表
         /// </summary>
-        private List<PrescriptionItemCreateDto> ConvertToCreateItems(IEnumerable<PrescriptionItemViewModel>? items)
+        private List<PrescriptionItemInputDto> ConvertToCreateItems(IEnumerable<PrescriptionItemViewModel>? items)
         {
-            if (items == null) return new List<PrescriptionItemCreateDto>();
+            if (items == null) return new List<PrescriptionItemInputDto>();
 
-            return items.Select(i => new PrescriptionItemCreateDto
+            return items.Select(i => new PrescriptionItemInputDto
             {
                 HerbId = i.HerbId,
                 Quantity = i.Quantity,
@@ -397,11 +397,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// <summary>
         /// 转换为更新项列表
         /// </summary>
-        private List<PrescriptionItemUpdateDto> ConvertToUpdateItems(IEnumerable<PrescriptionItemViewModel>? items)
+        private List<PrescriptionItemInputDto> ConvertToUpdateItems(IEnumerable<PrescriptionItemViewModel>? items)
         {
-            if (items == null) return new List<PrescriptionItemUpdateDto>();
+            if (items == null) return new List<PrescriptionItemInputDto>();
 
-            return items.Select(i => new PrescriptionItemUpdateDto
+            return items.Select(i => new PrescriptionItemInputDto
             {
                 HerbId = i.HerbId,
                 Quantity = i.Quantity,

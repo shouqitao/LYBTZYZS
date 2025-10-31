@@ -122,7 +122,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreatePatient_WithValidData_ShouldReturnCreatedPatient()
         {
             // Arrange
-            var createPatientDto = new PatientCreateDto
+            var createPatientDto = new PatientInputDto
             {
                 Name = "张三",
                 PhoneNumber = "13800138000",
@@ -158,7 +158,7 @@ namespace LYBT.IntegrationTests.Controllers
             await SeedTestDataAsync();
             var existingPatient = await CreateTestPatientAsync();
             
-            var createPatientDto = new PatientCreateDto
+            var createPatientDto = new PatientInputDto
             {
                 Name = "李四",
                 PhoneNumber = existingPatient.PhoneNumber, // 重复的手机号
@@ -178,7 +178,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreatePatient_WithInvalidPhoneNumber_ShouldReturnValidationError()
         {
             // Arrange
-            var createPatientDto = new PatientCreateDto
+            var createPatientDto = new PatientInputDto
             {
                 Name = "王五",
                 PhoneNumber = "invalid-phone", // 无效手机号
@@ -198,7 +198,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreatePatient_WithFutureBirthDate_ShouldReturnValidationError()
         {
             // Arrange
-            var createPatientDto = new PatientCreateDto
+            var createPatientDto = new PatientInputDto
             {
                 Name = "赵六",
                 PhoneNumber = "13600136000",
@@ -226,7 +226,7 @@ namespace LYBT.IntegrationTests.Controllers
             await SeedTestDataAsync();
             var patient = await CreateTestPatientAsync();
             
-            var updatePatientDto = new PatientUpdateDto
+            var updatePatientDto = new PatientInputDto
             {
                 Id = patient.Id,
                 Name = "更新后的张三",
@@ -257,7 +257,7 @@ namespace LYBT.IntegrationTests.Controllers
         {
             // Arrange
             var nonExistentId = Guid.NewGuid();
-            var updatePatientDto = new PatientUpdateDto
+            var updatePatientDto = new PatientInputDto
             {
                 Id = nonExistentId,
                 Name = "不存在的患者"
@@ -280,7 +280,7 @@ namespace LYBT.IntegrationTests.Controllers
             var patient1 = await CreateTestPatientAsync("患者1", "13800138001");
             var patient2 = await CreateTestPatientAsync("患者2", "13800138002");
             
-            var updatePatientDto = new PatientUpdateDto
+            var updatePatientDto = new PatientInputDto
             {
                 Id = patient1.Id,
                 PhoneNumber = patient2.PhoneNumber // 使用另一个患者的手机号
@@ -407,7 +407,7 @@ namespace LYBT.IntegrationTests.Controllers
 
         private async Task<PatientDto> CreateTestPatientAsync(string name = "测试患者", string phoneNumber = "13800138000")
         {
-            var createPatientDto = new PatientCreateDto
+            var createPatientDto = new PatientInputDto
             {
                 Name = name,
                 PhoneNumber = phoneNumber,

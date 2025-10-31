@@ -131,7 +131,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? Advice { get; set; }
 
         [DisplayName("处方项目")]
-        public List<PrescriptionItemCreateDto> Items { get; set; } = new();
+        public List<PrescriptionItemInputDto> Items { get; set; } = new();
 
         /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
@@ -206,7 +206,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>
         /// 草药项目列表
         /// </summary>
-        public new List<PrescriptionItemCreateDto> Items { get; set; } = new();
+        public new List<PrescriptionItemInputDto> Items { get; set; } = new();
     }
 
     /// <summary>
@@ -285,81 +285,64 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
-    /// 创建处方项目DTO
+    /// 处方项输入DTO - 统一创建和更新
+    /// Phase 3: 合并PrescriptionItemCreateDto和PrescriptionItemUpdateDto
     /// </summary>
-    /// <summary>
-    /// 处方项更新DTO
-    /// </summary>
-    public class PrescriptionItemUpdateDto
+    public class PrescriptionItemInputDto
     {
-        /// <summary>
-        /// 草药ID
-        /// </summary>
+        /// <summary>项ID（更新时可填，创建时为null）</summary>
+        [DisplayName("项ID")]
+        public Guid? Id { get; set; }
+
+        /// <summary>草药ID</summary>
+        [Required]
         [DisplayName("草药ID")]
         public Guid HerbId { get; set; }
 
-        /// <summary>
-        /// 数量
-        /// </summary>
-        [DisplayName("数量")]
+        /// <summary>草药名称（创建时使用）</summary>
+        [StringLength(100)]
+        [DisplayName("草药名称")]
+        public string? HerbName { get; set; }
+
+        /// <summary>数量</summary>
         [Range(0.01, 9999.99)]
+        [DisplayName("数量")]
         public decimal Quantity { get; set; }
 
-        /// <summary>
-        /// 单位
-        /// </summary>
-        [DisplayName("单位")]
+        /// <summary>单位</summary>
+        [Required]
         [StringLength(20)]
-        public string Unit { get; set; } = string.Empty;
+        [DisplayName("单位")]
+        public string Unit { get; set; } = "g";
 
-        /// <summary>
-        /// 剂量
-        /// </summary>
+        /// <summary>剂量（更新时使用）</summary>
         [DisplayName("剂量")]
         public decimal Dosage { get; set; }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
-        [DisplayName("备注")]
-        [StringLength(200)]
-        public string? Remark { get; set; }
-    }
-
-    public class PrescriptionItemCreateDto
-    {
-
-        [Required]
-        public Guid HerbId { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string HerbName { get; set; } = string.Empty;
-
-        [Range(0.1, 1000)]
-        public decimal Quantity { get; set; }
-
-        [Required]
-        [StringLength(10)]
-        public string Unit { get; set; } = "g";
-
+        /// <summary>单价（创建时使用）</summary>
         [Range(0, 10000)]
+        [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
 
-        /// <summary>小计金额</summary>
+        /// <summary>小计金额（创建时使用）</summary>
         [Range(0, double.MaxValue)]
+        [DisplayName("小计金额")]
         public decimal Subtotal { get; set; }
 
-        /// <summary>用法说明</summary>
+        /// <summary>用法说明（创建时使用）</summary>
         [StringLength(200)]
+        [DisplayName("用法说明")]
         public string? Usage { get; set; }
 
-        /// <summary>备注（Note别名）</summary>
+        /// <summary>备注</summary>
         [StringLength(200)]
-        public string? Note { get; set; }
-
-        [StringLength(100)]
+        [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>备注（Note别名，创建时使用）</summary>
+        [StringLength(200)]
+        [DisplayName("备注")]
+        public string? Note { get; set; }
     }
 
     /// <summary>

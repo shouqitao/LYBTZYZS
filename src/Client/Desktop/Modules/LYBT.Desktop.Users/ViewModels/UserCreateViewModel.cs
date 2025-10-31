@@ -192,7 +192,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 // 创建用户数据传输对象
                 // Issue #1261: 移除 Password 字段，使用系统默认密码
-                var createDto = new UserCreateDto
+                var createDto = new UserInputDto
                 {
                     UserName = UserName.Trim(),
                     RealName = RealName.Trim(),

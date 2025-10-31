@@ -78,7 +78,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/consultation")]
-        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationUpdateDto request);
+        Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationInputDto request);
 
         /// <summary>
         /// 删除医疗案例（物理删除）

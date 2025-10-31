@@ -60,7 +60,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>
         /// 处方项目列表
         /// </summary>
-        public List<PrescriptionItemUpdateDto>? Items { get; set; }
+        public List<PrescriptionItemInputDto>? Items { get; set; }
 
         /// <summary>
         /// 剂数

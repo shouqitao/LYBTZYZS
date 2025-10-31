@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Formula.Repositories
     /// 验方数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class FormulaRepository : RepositoryBase<FormulaDto, FormulaCreateDto, FormulaUpdateDto, IFormulaApi>, IFormulaRepository
+    public class FormulaRepository : RepositoryBase<FormulaDto, FormulaInputDto, FormulaInputDto, IFormulaApi>, IFormulaRepository
     {
         public FormulaRepository(
             IFormulaApi formulaApi,
@@ -84,12 +84,12 @@ namespace LYBT.Desktop.Formula.Repositories
             return _api.GetFormulasAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaCreateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiCreateAsync(FormulaInputDto dto)
         {
             return _api.CreateFormulaAsync(dto);
         }
 
-        protected override Task<ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaUpdateDto dto)
+        protected override Task<ApiResponse<FormulaDto>> CallApiUpdateAsync(Guid id, FormulaInputDto dto)
         {
             return _api.UpdateFormulaAsync(id, dto);
         }
@@ -99,7 +99,7 @@ namespace LYBT.Desktop.Formula.Repositories
             return _api.DeleteFormulaAsync(id);
         }
 
-        protected override Guid? GetIdFromUpdateDto(FormulaUpdateDto dto)
+        protected override Guid? GetIdFromUpdateDto(FormulaInputDto dto)
         {
             return dto?.Id;
         }

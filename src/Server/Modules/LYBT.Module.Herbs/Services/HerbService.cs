@@ -79,7 +79,7 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        public async Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto)
+        public async Task<ServiceResult<HerbDto>> CreateAsync(HerbInputDto dto)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
-        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto)
+        public async Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto)
         {
             try
             {

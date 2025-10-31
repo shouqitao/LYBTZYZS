@@ -309,7 +309,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                var request = new ConsultationUpdateDto
+                var request = new ConsultationInputDto
                 {
                     Id = _medicalCaseId,
                     ChiefComplaint = ChiefComplaint,

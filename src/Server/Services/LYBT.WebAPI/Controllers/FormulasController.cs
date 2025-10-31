@@ -90,7 +90,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增验方
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaCreateDto dto)
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaInputDto dto)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新验方
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
             try
             {

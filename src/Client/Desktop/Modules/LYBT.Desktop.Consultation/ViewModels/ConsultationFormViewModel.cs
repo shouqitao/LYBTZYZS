@@ -330,10 +330,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     return false;
                 }
 
-                // Issue #1563: 构建ConsultationUpdateDto（使用聚合根方法）
-                // ConsultationUpdateDto只包含诊断信息字段，不需要PatientId/UserId等关联字段
+                // Issue #1563: 构建ConsultationInputDto（使用聚合根方法）
+                // ConsultationInputDto只包含诊断信息字段，不需要PatientId/UserId等关联字段
                 // 这些信息已经在MedicalCase聚合根中，Server端通过MedicalCaseId获取
-                var updateDto = new ConsultationUpdateDto
+                var updateDto = new ConsultationInputDto
                 {
                     Id = MedicalCaseId, // Consultation使用与MedicalCase相同的ID（共享主键）
                     ChiefComplaint = ChiefComplaint.Trim(),

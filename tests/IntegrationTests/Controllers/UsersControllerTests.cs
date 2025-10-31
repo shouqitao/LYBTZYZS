@@ -124,7 +124,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreateUser_WithValidData_ShouldReturnCreatedUser()
         {
             // Arrange
-            var createUserDto = new UserCreateDto
+            var createUserDto = new UserInputDto
             {
                 UserName = "testuser",
                 RealName = "测试用户",
@@ -157,7 +157,7 @@ namespace LYBT.IntegrationTests.Controllers
             await SeedTestDataAsync();
             var adminUser = await GetAdminUserAsync();
             
-            var createUserDto = new UserCreateDto
+            var createUserDto = new UserInputDto
             {
                 UserName = adminUser.UserName, // 重复的用户名
                 RealName = "重复用户",
@@ -178,7 +178,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreateUser_WithInvalidEmail_ShouldReturnValidationError()
         {
             // Arrange
-            var createUserDto = new UserCreateDto
+            var createUserDto = new UserInputDto
             {
                 UserName = "invaliduser",
                 RealName = "无效用户",
@@ -199,7 +199,7 @@ namespace LYBT.IntegrationTests.Controllers
         public async Task CreateUser_WithEmptyData_ShouldReturnValidationError()
         {
             // Arrange
-            var createUserDto = new UserCreateDto(); // 空数据
+            var createUserDto = new UserInputDto(); // 空数据
 
             var content = CreateJsonContent(createUserDto);
 
@@ -221,7 +221,7 @@ namespace LYBT.IntegrationTests.Controllers
             await SeedTestDataAsync();
             var user = await GetAdminUserAsync();
             
-            var updateUserDto = new UserUpdateDto
+            var updateUserDto = new UserInputDto
             {
                 Id = user.Id,
                 RealName = "更新后的管理员",
@@ -252,7 +252,7 @@ namespace LYBT.IntegrationTests.Controllers
         {
             // Arrange
             var nonExistentId = Guid.NewGuid();
-            var updateUserDto = new UserUpdateDto
+            var updateUserDto = new UserInputDto
             {
                 Id = nonExistentId,
                 RealName = "不存在的用户"
@@ -272,7 +272,7 @@ namespace LYBT.IntegrationTests.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var updateUserDto = new UserUpdateDto
+            var updateUserDto = new UserInputDto
             {
                 Id = Guid.NewGuid(), // 不匹配的ID
                 RealName = "ID不匹配的用户"

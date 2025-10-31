@@ -78,10 +78,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbCreateDto_To_Herb_Should_Success()
+        public void Map_HerbInputDto_To_Herb_Should_Success()
         {
             // Arrange
-            var createDto = new HerbCreateDto
+            var createDto = new HerbInputDto
             {
                 Name = "黄芪",
                 PinYinCode = "HQ",
@@ -115,10 +115,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbUpdateDto_To_Herb_Should_Success()
+        public void Map_HerbInputDto_For_Update_To_Herb_Should_Success()
         {
-            // Arrange
-            var updateDto = new HerbUpdateDto
+            // Arrange - 测试更新场景（带Id）
+            var updateDto = new HerbInputDto
             {
                 Id = Guid.NewGuid(),
                 Name = "人参",
@@ -319,10 +319,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbCreateDto_With_CompleteData_Should_Success()
+        public void Map_HerbInputDto_With_CompleteData_Should_Success()
         {
             // Arrange
-            var createDto = new HerbCreateDto
+            var createDto = new HerbInputDto
             {
                 Name = "柴胡",
                 PinYinCode = "CH",
@@ -350,10 +350,10 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         }
 
         [Fact]
-        public void Map_HerbUpdateDto_With_HighPrice_Should_Success()
+        public void Map_HerbInputDto_With_HighPrice_Should_Success()
         {
             // Arrange
-            var updateDto = new HerbUpdateDto
+            var updateDto = new HerbInputDto
             {
                 Id = Guid.NewGuid(),
                 Name = "冬虫夏草",

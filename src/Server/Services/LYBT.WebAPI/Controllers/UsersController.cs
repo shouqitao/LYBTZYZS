@@ -133,7 +133,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserCreateDto dto)
+        public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserInputDto dto)
         {
             try
             {
@@ -165,7 +165,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserInputDto dto)
         {
             try
             {

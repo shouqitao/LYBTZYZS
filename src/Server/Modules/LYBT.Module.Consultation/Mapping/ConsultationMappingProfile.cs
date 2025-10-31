@@ -21,8 +21,8 @@ namespace LYBT.Module.Consultation.Mapping
 
         // Issue #1562 Phase 2: 已删除ConsultationDetailDto类型的映射配置
 
-        // ConsultationCreateDto -> Consultation
-        CreateMap<ConsultationCreateDto, LYBT.Entities.Consultation.Consultation>()
+        // ConsultationInputDto -> Consultation
+        CreateMap<ConsultationInputDto, LYBT.Entities.Consultation.Consultation>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
             .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
             .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
@@ -38,9 +38,9 @@ namespace LYBT.Module.Consultation.Mapping
             .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-        // ConsultationUpdateDto -> Consultation
+        // ConsultationInputDto -> Consultation
         // Issue #1562 Phase 2: 已删除ConsultationStatus/EndTime字段映射
-        CreateMap<ConsultationUpdateDto, LYBT.Entities.Consultation.Consultation>()
+        CreateMap<ConsultationInputDto, LYBT.Entities.Consultation.Consultation>()
             .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
             .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
             // BaseEntity 审计字段

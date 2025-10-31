@@ -29,7 +29,7 @@ namespace LYBT.Module.Patients
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 
             // Epic #1731: 注册Patients模块Validators
-            services.AddValidatorsFromAssemblyContaining<PatientCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

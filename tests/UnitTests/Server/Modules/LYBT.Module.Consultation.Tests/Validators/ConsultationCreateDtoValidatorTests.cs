@@ -6,23 +6,23 @@ using Xunit;
 namespace LYBT.Module.Consultation.Tests.Validators;
 
 /// <summary>
-/// ConsultationCreateDtoValidator 单元测试
+/// ConsultationInputDtoValidator 单元测试
 /// Issue #864 - Phase 2.4: Consultation 模块测试
 /// </summary>
-public class ConsultationCreateDtoValidatorTests
+public class ConsultationInputDtoValidatorTests
 {
-    private readonly ConsultationCreateDtoValidator _validator;
+    private readonly ConsultationInputDtoValidator _validator;
 
-    public ConsultationCreateDtoValidatorTests()
+    public ConsultationInputDtoValidatorTests()
     {
-        _validator = new ConsultationCreateDtoValidator();
+        _validator = new ConsultationInputDtoValidator();
     }
 
     [Fact]
     public void Validate_WithValidData_PassesValidation()
     {
         // Arrange
-        var dto = new ConsultationCreateDto
+        var dto = new ConsultationInputDto
         {
             MedicalCaseId = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
@@ -42,7 +42,7 @@ public class ConsultationCreateDtoValidatorTests
     public void Validate_WithEmptyPatientId_FailsValidation()
     {
         // Arrange
-        var dto = new ConsultationCreateDto
+        var dto = new ConsultationInputDto
         {
             MedicalCaseId = Guid.NewGuid(),
             PatientId = Guid.Empty,
@@ -61,7 +61,7 @@ public class ConsultationCreateDtoValidatorTests
     public void Validate_WithChiefComplaintTooLong_FailsValidation()
     {
         // Arrange
-        var dto = new ConsultationCreateDto
+        var dto = new ConsultationInputDto
         {
             MedicalCaseId = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),

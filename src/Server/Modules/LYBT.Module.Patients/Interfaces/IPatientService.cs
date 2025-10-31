@@ -21,12 +21,12 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 创建新患者
         /// </summary>
-        Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+        Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 
         /// <summary>
         /// 更新患者信息
         /// </summary>
-        Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
+        Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto);
 
         /// <summary>
         /// 删除患者（软删除）

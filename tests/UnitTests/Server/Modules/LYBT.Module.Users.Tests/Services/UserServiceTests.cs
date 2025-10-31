@@ -217,7 +217,7 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task CreateAsync_WithValidData_ShouldCreateUser()
         {
             // Arrange
-            var createDto = new UserCreateDto
+            var createDto = new UserInputDto
             {
                 UserName = "newuser",
                 RealName = "新用户",
@@ -233,7 +233,7 @@ namespace LYBT.Module.Users.Tests.Services
                 RealName = createDto.RealName,
                 Email = createDto.Email,
                 PhoneNumber = createDto.PhoneNumber,
-                Role = createDto.Role,
+                Role = createDto.Role ?? UserRole.Doctor,
                 Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow
             };
@@ -260,7 +260,7 @@ namespace LYBT.Module.Users.Tests.Services
         public async Task CreateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
         {
             // Arrange
-            var createDto = new UserCreateDto
+            var createDto = new UserInputDto
             {
                 UserName = "newuser",
                 RealName = "新用户",
@@ -302,7 +302,7 @@ namespace LYBT.Module.Users.Tests.Services
             var userId = Guid.NewGuid();
             var existingUser = CreateTestUser(userId);
             
-            var updateDto = new UserUpdateDto
+            var updateDto = new UserInputDto
             {
                 RealName = "更新的名字",
                 Email = "updated@test.com",
@@ -349,7 +349,7 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var updateDto = new UserUpdateDto
+            var updateDto = new UserInputDto
             {
                 RealName = "更新的名字"
             };
@@ -376,7 +376,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
             var existingUser = CreateTestUser(userId);
-            var updateDto = new UserUpdateDto
+            var updateDto = new UserInputDto
             {
                 RealName = "更新的名字"
             };

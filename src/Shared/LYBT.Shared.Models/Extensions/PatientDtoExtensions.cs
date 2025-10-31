@@ -10,9 +10,10 @@ namespace LYBT.Shared.Models.Extensions
     public static class PatientDtoExtensions
     {
         /// <summary>
-        /// 将PatientCreateDto转换为PatientDto（用于创建预览）
+        /// 将PatientInputDto转换为PatientDto（用于创建预览）
+        /// Phase 3: 更新为PatientInputDto
         /// </summary>
-        public static PatientDto ToDto(this PatientCreateDto dto)
+        public static PatientDto ToDto(this PatientInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -48,9 +49,10 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将PatientUpdateDto的字段应用到现有PatientDto（用于更新）
+        /// 将PatientInputDto的字段应用到现有PatientDto（用于更新）
+        /// Phase 3: 更新为PatientInputDto
         /// </summary>
-        public static void ApplyUpdate(this PatientDto existing, PatientUpdateDto dto)
+        public static void ApplyUpdate(this PatientDto existing, PatientInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));
@@ -83,14 +85,15 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将PatientDto转换为PatientUpdateDto（用于编辑表单）
+        /// 将PatientDto转换为PatientInputDto（用于编辑表单）
+        /// Phase 3: 更新为PatientInputDto
         /// </summary>
-        public static PatientUpdateDto ToUpdateDto(this PatientDto dto)
+        public static PatientInputDto ToUpdateDto(this PatientDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            return new PatientUpdateDto
+            return new PatientInputDto
             {
                 Id = dto.Id,
 

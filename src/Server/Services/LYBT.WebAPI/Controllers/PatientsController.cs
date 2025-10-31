@@ -85,7 +85,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增患者
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientCreateDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientInputDto dto)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新患者信息
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDto>>> Update(Guid id, [FromBody] PatientUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<PatientDto>>> Update(Guid id, [FromBody] PatientInputDto dto)
         {
             try
             {

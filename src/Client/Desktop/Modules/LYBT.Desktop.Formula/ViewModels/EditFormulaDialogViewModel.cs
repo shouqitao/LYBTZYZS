@@ -167,7 +167,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (FormulaId.HasValue)
                 {
                     // 更新现有配方
-                    var updateDto = new FormulaUpdateDto
+                    var updateDto = new FormulaInputDto
                     {
                         Id = FormulaId.Value,
                         Name = FormulaName.Trim(),
@@ -185,7 +185,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 else
                 {
                     // 创建新配方
-                    var createDto = new FormulaCreateDto
+                    var createDto = new FormulaInputDto
                     {
                         Name = FormulaName.Trim(),
                         Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()

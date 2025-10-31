@@ -55,18 +55,45 @@ namespace LYBT.Shared.Models.Contracts.Users
 
     #endregion
 
-    #region 输入基础DTO
+    #region 创建和更新DTO
 
     /// <summary>
-    /// 用户输入基础DTO - 提取创建和更新的共同字段
+    /// 用户输入DTO - 统一创建和更新
+    /// Phase 3: 合并UserCreateDto和UserUpdateDto
+    /// Issue #1262: 密码改为可选，Server端使用默认值
     /// </summary>
-    public abstract class UserInputBaseDto
+    public class UserInputDto
     {
-        /// <summary>真实姓名</summary>
-        [Required(ErrorMessage = "真实姓名不能为空")]
+        /// <summary>用户ID（更新时必填，创建时为null）</summary>
+        [DisplayName("用户ID")]
+        public Guid? Id { get; set; }
+
+        /// <summary>用户名（创建时必填，更新时不可改）</summary>
+        [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
+        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
+        [DisplayName("用户名")]
+        public string? UserName { get; set; }
+
+        /// <summary>
+        /// 密码（创建时可选，更新时禁止）
+        /// Issue #1262: 如果不提供密码，Server端将使用配置的默认密码
+        /// </summary>
+        [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
+        [DisplayName("密码")]
+        public string? Password { get; set; }
+
+        /// <summary>
+        /// 确认密码（创建时可选，更新时禁止）
+        /// Issue #1262: 仅当提供密码时需要确认
+        /// </summary>
+        [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
+        [DisplayName("确认密码")]
+        public string? ConfirmPassword { get; set; }
+
+        /// <summary>真实姓名（创建时必填，更新时可选）</summary>
         [StringLength(50, ErrorMessage = "真实姓名长度不能超过50个字符")]
         [DisplayName("真实姓名")]
-        public string RealName { get; set; } = string.Empty;
+        public string? RealName { get; set; }
 
         /// <summary>手机号码</summary>
         [Phone(ErrorMessage = "电话号码格式不正确")]
@@ -80,72 +107,14 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("邮箱地址")]
         public string? Email { get; set; }
 
-        /// <summary>用户角色</summary>
-        [Required(ErrorMessage = "用户角色不能为空")]
+        /// <summary>用户角色（创建时必填，更新时可选）</summary>
         [DisplayName("用户角色")]
-        public UserRole Role { get; set; } = UserRole.Doctor;
+        public UserRole? Role { get; set; } = UserRole.Doctor;
 
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
-
-    #endregion
-
-    #region 创建和更新DTO
-
-    /// <summary>
-    /// 用户创建DTO - 继承输入基础DTO
-    /// </summary>
-    /// <summary>
-    /// 用户创建DTO - 继承输入基础DTO
-    /// Issue #1262: 密码改为可选，Server端使用默认值
-    /// </summary>
-    public class UserCreateDto : UserInputBaseDto
-    {
-        /// <summary>用户名</summary>
-        [Required(ErrorMessage = "用户名不能为空")]
-        [StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "用户名只能包含字母、数字和下划线")]
-        [DisplayName("用户名")]
-        public string UserName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 密码（可选）
-        /// Issue #1262: 如果不提供密码，Server端将使用配置的默认密码
-        /// </summary>
-        [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
-        [DisplayName("密码")]
-        public string? Password { get; set; }
-
-        /// <summary>
-        /// 确认密码（可选）
-        /// Issue #1262: 仅当提供密码时需要确认
-        /// </summary>
-        [Compare("Password", ErrorMessage = "两次输入的密码不一致")]
-        [DisplayName("确认密码")]
-        public string? ConfirmPassword { get; set; }
-    }
-
-    /// <summary>
-    /// 用户更新DTO - 继承输入基础DTO并实现ID接口
-    /// </summary>
-    public class UserUpdateDto : UserInputBaseDto, IIdentifiable<Guid>
-    {
-        /// <summary>用户ID</summary>
-        [Required(ErrorMessage = "用户ID不能为空")]
-        [DisplayName("用户ID")]
-        public Guid Id { get; set; }
-
-        /// <summary>真实姓名（可选更新）</summary>
-        [DisplayName("真实姓名")]
-        public new string? RealName { get; set; }
-
-        /// <summary>用户角色（可选更新）</summary>
-        [DisplayName("用户角色")]
-        public new UserRole? Role { get; set; }
-    }
-
 
     #endregion
 

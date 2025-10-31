@@ -25,12 +25,12 @@ namespace LYBT.Module.Formula.Interfaces
         /// <summary>
         /// 创建新验方
         /// </summary>
-        Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto);
+        Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto);
 
         /// <summary>
         /// 更新验方信息
         /// </summary>
-        Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto);
+        Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto);
 
         /// <summary>
         /// 删除验方（软删除）

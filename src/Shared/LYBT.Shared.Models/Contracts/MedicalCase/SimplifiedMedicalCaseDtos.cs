@@ -52,36 +52,29 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 简化的创建医疗案例DTO
+    /// 简化医疗案例输入DTO - 统一创建和更新
+    /// Phase 3: 合并SimplifiedMedicalCaseCreateDto和SimplifiedMedicalCaseUpdateDto
     /// </summary>
-    public class SimplifiedMedicalCaseCreateDto
+    public class SimplifiedMedicalCaseInputDto
     {
-        [Required(ErrorMessage = "患者ID不能为空")]
-        [DisplayName("患者ID")]
-        public Guid PatientId { get; set; }
-
-        [Required(ErrorMessage = "医生ID不能为空")]
-        [DisplayName("医生ID")]
-        public Guid DoctorId { get; set; }
-
-        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
-    }
-
-    /// <summary>
-    /// 简化的更新医疗案例DTO
-    /// </summary>
-    public class SimplifiedMedicalCaseUpdateDto
-    {
-        [Required(ErrorMessage = "医疗案例ID不能为空")]
+        /// <summary>医疗案例ID（更新时必填，创建时为null）</summary>
         [DisplayName("医疗案例ID")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
+        /// <summary>患者ID（创建时必填）</summary>
+        [DisplayName("患者ID")]
+        public Guid? PatientId { get; set; }
+
+        /// <summary>医生ID（创建时必填）</summary>
+        [DisplayName("医生ID")]
+        public Guid? DoctorId { get; set; }
+
+        /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
+        /// <summary>案例状态（更新时可选）</summary>
         [DisplayName("状态")]
         public MedicalCaseStatus? CaseStatus { get; set; }
     }
@@ -93,11 +86,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     {
         [Required(ErrorMessage = "医案信息不能为空")]
         [DisplayName("医案信息")]
-        public SimplifiedMedicalCaseCreateDto MedicalCase { get; set; } = new();
+        public SimplifiedMedicalCaseInputDto MedicalCase { get; set; } = new();
 
         [Required(ErrorMessage = "诊疗信息不能为空")]
         [DisplayName("诊疗信息")]
-        public ConsultationCreateDto Consultation { get; set; } = new();
+        public ConsultationInputDto Consultation { get; set; } = new();
 
         [DisplayName("处方信息")]
         public PrescriptionCreateDto? Prescription { get; set; }

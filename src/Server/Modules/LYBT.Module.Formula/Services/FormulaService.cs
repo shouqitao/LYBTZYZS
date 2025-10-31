@@ -87,7 +87,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto)
         {
             try
             {

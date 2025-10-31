@@ -25,7 +25,7 @@ namespace LYBT.Module.Formula
             // 统一服务 - 合并查询和业务逻辑
             services.AddScoped<IFormulaService, FormulaService>();
             // 注册验证器 - 自动注册所有Validator
-            services.AddValidatorsFromAssemblyContaining<FormulaCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
             return services;
         }

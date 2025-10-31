@@ -11,8 +11,8 @@ namespace LYBT.Desktop.Formula.Interfaces
     {
         Task<PagedResult<FormulaDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<FormulaDto?> GetByIdAsync(Guid id);
-        Task<FormulaDto> CreateAsync(FormulaCreateDto dto);
-        Task<FormulaDto> UpdateAsync(FormulaUpdateDto dto);
+        Task<FormulaDto> CreateAsync(FormulaInputDto dto);
+        Task<FormulaDto> UpdateAsync(FormulaInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<FormulaDto>> SearchAsync(string keyword);
         Task<FormulaDto> CloneFormulaAsync(Guid formulaId);

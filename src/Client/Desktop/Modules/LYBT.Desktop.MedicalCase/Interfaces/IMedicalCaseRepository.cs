@@ -18,7 +18,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<bool> DeleteAsync(Guid id);
         Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId);
         Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto,
-            ConsultationCreateDto consultationDto,
+            ConsultationInputDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null);
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
 
@@ -29,7 +29,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="medicalCaseId">医案ID</param>
         /// <param name="dto">诊断更新信息</param>
         /// <returns>更新后的诊断信息</returns>
-        Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto);
+        Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto);
 
         /// <summary>
         /// 查询病案列表（支持多条件组合查询）

@@ -10,11 +10,11 @@ namespace LYBT.Shared.Models.Extensions
     public static class HerbDtoExtensions
     {
         /// <summary>
-        /// 将HerbCreateDto转换为HerbDto
+        /// 将HerbInputDto转换为HerbDto
         /// Issue #1152: 替代AutoMapper
         /// 字段映射: Origin→Category, Spec→Properties
         /// </summary>
-        public static HerbDto ToDto(this HerbCreateDto dto)
+        public static HerbDto ToDto(this HerbInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -40,11 +40,11 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将HerbUpdateDto应用到现有HerbDto
+        /// 将HerbInputDto应用到现有HerbDto
         /// Issue #1152: 替代AutoMapper
         /// 字段映射: Origin→Category, Spec→Properties
         /// </summary>
-        public static void ApplyUpdate(this HerbDto existing, HerbUpdateDto dto)
+        public static void ApplyUpdate(this HerbDto existing, HerbInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));

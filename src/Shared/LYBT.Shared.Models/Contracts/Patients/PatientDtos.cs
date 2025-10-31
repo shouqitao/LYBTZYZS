@@ -88,9 +88,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
     }
 
     /// <summary>
-    /// 患者输入基础DTO - 提取创建和更新的共同字段
+    /// 患者输入DTO - 统一创建和更新
+    /// Phase 3: 合并PatientCreateDto和PatientUpdateDto
     /// </summary>
-    public abstract class PatientInputBaseDto
+    public class PatientInputDto
     {
 
         /// <summary>患者姓名</summary>
@@ -162,25 +163,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-    }
 
-    /// <summary>
-    /// 患者创建DTO - 继承输入基础DTO
-    /// </summary>
-    public class PatientCreateDto : PatientInputBaseDto
-    {
-        // 继承所有字段，无需额外定义
-    }
-
-    /// <summary>
-    /// 患者更新DTO - 继承输入基础DTO并实现ID接口
-    /// </summary>
-    public class PatientUpdateDto : PatientInputBaseDto, IIdentifiable<Guid>
-    {
-        /// <summary>患者ID</summary>
-        [Required(ErrorMessage = "患者ID不能为空")]
+        /// <summary>患者ID（更新时必填，创建时为null）</summary>
         [DisplayName("患者ID")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 
     /// <summary>

@@ -276,7 +276,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             updatedUser.Id = user.Id;
 
             _mockUserRepository
-                .Setup(x => x.UpdateAsync(It.Is<UserUpdateDto>(dto =>
+                .Setup(x => x.UpdateAsync(It.Is<UserInputDto>(dto =>
                     dto.Id == user.Id && dto.Status == CommonStatus.Disabled)))
                 .ReturnsAsync(updatedUser);
 
@@ -293,7 +293,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             await (Task)method!.Invoke(_viewModel, new object[] { user })!;
 
             // Assert
-            _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<UserUpdateDto>(dto =>
+            _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<UserInputDto>(dto =>
                 dto.Id == user.Id && dto.Status == CommonStatus.Disabled)), Times.Once);
         }
 

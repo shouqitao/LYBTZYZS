@@ -210,7 +210,7 @@ namespace LYBT.Desktop.Users.ViewModels
                     User.Id, User.Status, newStatus);
 
                 // 创建更新DTO
-                var updateDto = new UserUpdateDto
+                var updateDto = new UserInputDto
                 {
                     Id = User.Id,
                     RealName = User.RealName,

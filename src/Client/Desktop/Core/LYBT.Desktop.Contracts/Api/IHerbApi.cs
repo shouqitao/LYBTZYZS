@@ -27,13 +27,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 创建草药
         /// </summary>
         [Refit.Post("/api/v1/herbs")]
-        Task<ApiResponse<HerbDto>> CreateHerbAsync([Refit.Body] HerbCreateDto request);
+        Task<ApiResponse<HerbDto>> CreateHerbAsync([Refit.Body] HerbInputDto request);
 
         /// <summary>
         /// 更新草药
         /// </summary>
         [Refit.Put("/api/v1/herbs/{id}")]
-        Task<ApiResponse<HerbDto>> UpdateHerbAsync(Guid id, [Refit.Body] HerbUpdateDto request);
+        Task<ApiResponse<HerbDto>> UpdateHerbAsync(Guid id, [Refit.Body] HerbInputDto request);
 
         /// <summary>
         /// 删除草药

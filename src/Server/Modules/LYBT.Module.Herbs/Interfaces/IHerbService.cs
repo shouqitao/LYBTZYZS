@@ -25,12 +25,12 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <summary>
         /// 创建新药材
         /// </summary>
-        Task<ServiceResult<HerbDto>> CreateAsync(HerbCreateDto dto);
+        Task<ServiceResult<HerbDto>> CreateAsync(HerbInputDto dto);
 
         /// <summary>
         /// 更新药材信息
         /// </summary>
-        Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbUpdateDto dto);
+        Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto);
 
         /// <summary>
         /// 删除药材（软删除）
