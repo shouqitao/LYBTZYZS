@@ -164,77 +164,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材价格历史记录DTO
-    /// </summary>
-    public class HerbPriceHistoryDto
-    {
-        public Guid Id { get; set; }
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 原成本价
-        /// </summary>
-        public decimal OldCostPrice { get; set; }
-
-        /// <summary>
-        /// 新成本价
-        /// </summary>
-        public decimal NewCostPrice { get; set; }
-
-        /// <summary>
-        /// 原零售价
-        /// </summary>
-        public decimal OldPrice { get; set; }
-
-        /// <summary>
-        /// 新零售价
-        /// </summary>
-        public decimal NewPrice { get; set; }
-
-        /// <summary>
-        /// 原会员价
-        /// </summary>
-        public decimal OldMemberPrice { get; set; }
-
-        /// <summary>
-        /// 新会员价
-        /// </summary>
-        public decimal NewMemberPrice { get; set; }
-
-        /// <summary>
-        /// 变更时间
-        /// </summary>
-        public DateTime ChangeTime { get; set; }
-
-        /// <summary>
-        /// 操作者
-        /// </summary>
-        public string? OperatorName { get; set; }
-
-        /// <summary>
-        /// 变更原因
-        /// </summary>
-        public string? Reason { get; set; }
-
-        /// <summary>
-        /// 价格变化百分比（零售价）
-        /// </summary>
-        public decimal PriceChangePercentage
-        {
-            get
-            {
-                if (OldPrice == 0)
-                {
-                    return 0;
-                }
-
-                return Math.Round((NewPrice - OldPrice) / OldPrice * 100, 2);
-            }
-        }
-    }
-
-    /// <summary>
     /// 特价设置DTO
     /// </summary>
     public class HerbSpecialPriceDto
@@ -344,21 +273,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 药材用量DTO (处方中的药材用量信息) - HerbDosageDto的别名
-    /// </summary>
-    public class HerbDosageDto : FormulaIngredientDto
-    {
-
-        /// <summary>用法说明</summary>
-        [DisplayName("用法说明")]
-        public string? Usage { get; set; }
-
-        /// <summary>特殊要求</summary>
-        [DisplayName("特殊要求")]
-        public string? SpecialInstructions { get; set; }
-    }
-
-    /// <summary>
     /// 药材价格更新结果DTO
     /// </summary>
     public class HerbPriceUpdateResultDto
@@ -446,20 +360,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 处方价格计算结果DTO
-    /// </summary>
-    public class PrescriptionPriceCalculationDto
-    {
-        public List<HerbDosageDto> HerbItems { get; set; } = new List<HerbDosageDto>();
-        public decimal SubTotal { get; set; }
-        public decimal DiscountAmount { get; set; }
-        public decimal TaxAmount { get; set; }
-        public decimal TotalAmount { get; set; }
-        public string? DiscountReason { get; set; }
-        public string? PaymentMethod { get; set; }
-    }
-
-    /// <summary>
     /// 药材导入结果DTO - 继承自通用导入结果基类
     /// </summary>
     public class HerbImportResultDto : ImportResultDto
@@ -498,67 +398,4 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public int InvalidRowCount { get; set; }
     }
 
-    /// <summary>
-    /// 药材审核信息DTO
-    /// </summary>
-    public class HerbApprovalDto
-    {
-        public bool IsApproved { get; set; }
-        public string? ApprovalReason { get; set; }
-        public string? RejectionReason { get; set; }
-        public string? ApprovedBy { get; set; }
-        public DateTime? ApprovalTime { get; set; }
-    }
-
-    /// <summary>
-    /// 药材使用模式分析DTO
-    /// </summary>
-    public class HerbUsagePatternDto
-    {
-        public List<HerbUsageStatDto> UsageStats { get; set; } = new List<HerbUsageStatDto>();
-        public int TotalPrescriptions { get; set; }
-        public DateTime AnalysisPeriodStart { get; set; }
-        public DateTime AnalysisPeriodEnd { get; set; }
-    }
-
-    /// <summary>
-    /// 药材使用统计DTO
-    /// </summary>
-    public class HerbUsageStatDto
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public int UsageCount { get; set; }
-        public decimal TotalQuantity { get; set; }
-        public decimal AverageDosage { get; set; }
-        public decimal UsagePercentage { get; set; }
-    }
-
-    /// <summary>
-    /// 药材采购建议DTO
-    /// </summary>
-    public class HerbPurchaseSuggestionDto
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public decimal RecommendedPurchaseQuantity { get; set; }
-        public decimal EstimatedUsage { get; set; }
-        public string Unit { get; set; } = "克";
-        public string? Supplier { get; set; }
-        public decimal EstimatedCost { get; set; }
-        public string Priority { get; set; } = "Normal"; // Low, Normal, High, Urgent
-    }
-
-    /// <summary>
-    /// 处方优化建议DTO
-    /// </summary>
-    public class PrescriptionOptimizationDto
-    {
-        public List<HerbDosageDto> OptimizedFormula { get; set; } = new List<HerbDosageDto>();
-        public List<string> Improvements { get; set; } = new List<string>();
-        public decimal OriginalCost { get; set; }
-        public decimal OptimizedCost { get; set; }
-        public decimal CostSavings { get; set; }
-        public string? OptimizationReason { get; set; }
-    }
 }

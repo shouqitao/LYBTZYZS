@@ -486,27 +486,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
-    /// 处方复制DTO - 用于复制现有处方
-    /// </summary>
-    public class PrescriptionCopyDto
-    {
-
-        [Required(ErrorMessage = "新处方名称不能为空")]
-        [StringLength(200, ErrorMessage = "新处方名称不能超过200个字符")]
-        [DisplayName("新处方名称")]
-        public string NewName { get; set; } = string.Empty;
-
-        [DisplayName("复制处方项目")]
-        public bool CopyItems { get; set; } = true;
-
-        [DisplayName("复制用法用量")]
-        public bool CopyUsage { get; set; } = true;
-
-        [DisplayName("复制备注")]
-        public bool CopyRemark { get; set; } = false;
-    }
-
-    /// <summary>
     /// 处方统计DTO
     /// </summary>
     public class PrescriptionStatsDto
