@@ -1,0 +1,174 @@
+using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.WebAPI.Middleware;
+
+namespace LYBT.WebAPI.Extensions;
+
+/// <summary>
+/// API服务注册扩展
+/// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
+/// 职责：API版本管理、Swagger文档、ProblemDetails、AutoMapper、速率限制
+/// </summary>
+public static class ApiServiceCollectionExtensions
+{
+    /// <summary>
+    /// 注册 API 文档（Swagger）与统一异常处理
+    /// </summary>
+    public static IServiceCollection RegisterApiServices(this IServiceCollection services)
+    {
+        // API版本管理（MVP阶段仅v1.0，简化配置）
+        // Issue #1732 Phase 2: 移除3种版本读取器（QueryString/Header/UrlSegment），使用默认行为
+        services.AddApiVersioning(options =>
+        {
+            // 默认API版本：v1.0
+            options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+
+            // 当客户端未指定版本时使用默认版本
+            options.AssumeDefaultVersionWhenUnspecified = true;
+
+            // 在响应头中报告支持的API版本
+            options.ReportApiVersions = true;
+
+            // MVP阶段：移除ApiVersionReader配置，使用默认行为
+            // 原因：只有v1.0，6-12个月内无v2.0计划，3种读取方式（QueryString/Header/UrlSegment）属过度设计
+        }).AddMvc().AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
+        // ProblemDetails + 全局异常处理器
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        // Swagger（含 JWT）- 从服务提供者获取配置
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            // 由于这里无法直接访问配置，使用服务提供者在运行时获取配置
+            var serviceProvider = services.BuildServiceProvider();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            var lybtOptions = configuration.GetLybtOptions();
+            var swaggerConfig = lybtOptions.Application.WebApi.Swagger;
+
+            c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            {
+                Title = swaggerConfig.Title,
+                Version = "v1",
+                Description = swaggerConfig.Description,
+                Contact = new Microsoft.OpenApi.Models.OpenApiContact
+                {
+                    Name = swaggerConfig.ContactName,
+                    Email = swaggerConfig.ContactEmail,
+                    Url = !string.IsNullOrEmpty(swaggerConfig.ContactUrl) ? new Uri(swaggerConfig.ContactUrl) : null
+                },
+                License = new Microsoft.OpenApi.Models.OpenApiLicense
+                {
+                    Name = swaggerConfig.LicenseName,
+                    Url = !string.IsNullOrEmpty(swaggerConfig.LicenseUrl) ? new Uri(swaggerConfig.LicenseUrl) : null
+                }
+            });
+
+            // JWT Bearer security definition
+            c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                Name = "Authorization",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            // 不添加全局安全要求，让每个控制器方法通过[Authorize]特性自己决定是否需要认证
+            // 这样Swagger UI本身就不需要认证，只有标记了[Authorize]的API才需要Token
+            // c.AddSecurityRequirement(...) -- 已移除全局安全要求
+
+            // XML 注释 - 使用统一配置控制
+            if (swaggerConfig.EnableXmlComments)
+            {
+                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
+            }
+
+            // 避免 Schema ID 冲突
+            c.CustomSchemaIds(type =>
+            {
+                if (type.IsGenericType)
+                {
+                    var genericDef = type.GetGenericTypeDefinition();
+                    var genericTypeName = genericDef.FullName?.Split('`')[0]?.Replace(".", string.Empty) ?? genericDef.Name.Split('`')[0];
+
+                    var genericArgs = type.GetGenericArguments()
+                        .Select(arg => GetTypeSignature(arg))
+                        .ToArray();
+
+                    return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
+                }
+
+                return type.FullName?.Replace(".", string.Empty).Replace("+", string.Empty) ?? type.Name;
+            });
+        });
+
+        // AutoMapper 配置
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name?.StartsWith("LYBT.") == true)
+            .ToArray();
+        services.AddAutoMapper(cfg => cfg.AddMaps(assemblies), assemblies);
+
+        return services;
+
+        // 生成 Schema ID 的帮助方法
+        static string GetTypeSignature(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericDef = type.GetGenericTypeDefinition();
+                var genericTypeName = genericDef.Name.Split('`')[0];
+                var genericArgs = type.GetGenericArguments()
+                    .Select(arg => GetTypeSignature(arg))
+                    .ToArray();
+                return $"{genericTypeName}Of{string.Join("And", genericArgs)}";
+            }
+
+            return type.Name.Replace("[]", "Array");
+        }
+    }
+
+    /// <summary>
+    /// 配置速率限制（仅Login端点防暴力攻击）
+    /// Issue #1732 Phase 2: 简化为单层Login限流（MVP合规）
+    /// </summary>
+    public static IServiceCollection ConfigureRateLimiting(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
+    {
+        var lybtOptions = configuration.GetLybtOptions();
+        var rateLimitingConfig = lybtOptions.Security.RateLimiting;
+
+        // MVP阶段：仅启用Login限流防止暴力破解，移除Global和API限流（过度设计）
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            // 登录端点速率限制：基于IP的固定窗口限流器
+            options.AddPolicy("Login", httpContext =>
+            {
+                var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = rateLimitingConfig.LoginLimit.PermitLimit,
+                        Window = TimeSpan.FromSeconds(rateLimitingConfig.LoginLimit.WindowSeconds),
+                        QueueLimit = 0
+                    });
+            });
+        });
+
+        return services;
+    }
+}
