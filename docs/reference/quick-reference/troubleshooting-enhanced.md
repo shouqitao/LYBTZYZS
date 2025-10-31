@@ -502,8 +502,8 @@ dotnet restore --force
 
 **快速诊断**:
 ```csharp
-// 检查API基础URL
-var baseUrl = configuration["ApiSettings:BaseUrl"];
+// 检查API基础URL（Issue #1726: 使用新配置路径）
+var baseUrl = configuration["Lybt:Client:Api:BaseUrl"];
 Console.WriteLine($"API URL: {baseUrl}");
 
 // 测试连接
@@ -514,22 +514,27 @@ Console.WriteLine($"连接测试: {response.StatusCode}");
 
 **解决方案**:
 ```json
-// appsettings.json
+// appsettings.json（Issue #1726: 统一配置命名）
 {
-  "ApiSettings": {
-    "BaseUrl": "http://localhost:5001/",
-    "TimeoutSeconds": 30
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "https://localhost:5001/",
+        "TimeoutSeconds": 30,
+        "IgnoreSslErrors": true
+      }
+    }
   }
 }
 ```
 
 **网络配置**:
 ```csharp
-// 配置HttpClient
+// 配置HttpClient（Issue #1726: 使用新配置路径）
 services.AddHttpClient<ApiService>(client =>
 {
-    client.BaseAddress = new Uri(configuration["ApiSettings:BaseUrl"]);
-    client.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("ApiSettings:TimeoutSeconds", 30));
+    client.BaseAddress = new Uri(configuration["Lybt:Client:Api:BaseUrl"]);
+    client.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Lybt:Client:Api:TimeoutSeconds", 30));
 });
 ```
 

@@ -796,11 +796,16 @@ public interface IConfigurationService
 
 ```json
 {
-  "ApiSettings": {
-    "BaseUrl": "https://localhost:5001",
-    "Timeout": 30,
-    "RetryCount": 3,
-    "CircuitBreakerThreshold": 5
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "https://localhost:5001",
+        "TimeoutSeconds": 30,
+        "RetryCount": 3,
+        "CircuitBreakerThreshold": 5,
+        "IgnoreSslErrors": false
+      }
+    }
   },
   "CacheSettings": {
     "DefaultExpiration": "00:05:00",
@@ -855,12 +860,12 @@ public class ApiService : IApiService
         _httpClient = httpClient;
         _configService = configService;
 
-        // 从配置读取API基地址
-        var baseUrl = _configService.GetValue<string>("ApiSettings:BaseUrl");
+        // 从配置读取API基地址（Issue #1726: 使用新配置路径）
+        var baseUrl = _configService.GetValue<string>("Lybt:Client:Api:BaseUrl");
         _httpClient.BaseAddress = new Uri(baseUrl ?? "https://localhost:5001");
 
         // 读取超时设置
-        var timeout = _configService.GetValue<int>("ApiSettings:Timeout");
+        var timeout = _configService.GetValue<int>("Lybt:Client:Api:TimeoutSeconds");
         _httpClient.Timeout = TimeSpan.FromSeconds(timeout > 0 ? timeout : 30);
     }
 }
@@ -2157,9 +2162,10 @@ public static class FoundationServiceCollectionExtensions
         // 2. HTTP服务（带Polly策略）
         services.AddHttpClient<IApiService, ApiService>(client =>
         {
-            var baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+            // Issue #1726: 使用新配置路径
+            var baseUrl = configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
             client.BaseAddress = new Uri(baseUrl);
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Lybt:Client:Api:TimeoutSeconds", 30));
         })
         .AddHttpMessageHandler<AuthorizationMessageHandler>() // 自动JWT认证
         .AddPolicyHandler(GetRetryPolicy())                    // 重试策略

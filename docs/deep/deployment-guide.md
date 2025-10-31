@@ -324,12 +324,18 @@ Filename: "{app}\LYBT.Desktop.exe"; Description: "启动应用程序"; Flags: no
 #### 2.3 客户端配置文件
 ```json
 // appsettings.Production.json
+// Issue #1726: 使用统一配置命名规范
 {
-  "ApiSettings": {
-    "BaseUrl": "https://api.yourclinic.com",
-    "Timeout": "00:01:00",
-    "RetryCount": 3,
-    "RetryDelay": "00:00:01"
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "https://api.yourclinic.com",
+        "TimeoutSeconds": 60,
+        "RetryCount": 3,
+        "RetryDelaySeconds": 1,
+        "IgnoreSslErrors": false
+      }
+    }
   },
   "Logging": {
     "LogLevel": {

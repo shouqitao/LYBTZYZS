@@ -925,7 +925,8 @@ public class QuickCreatePatientDialogViewModel : UnifiedViewModelBase, IDialogAw
 private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
 {
     // 配置HttpClient（带Authorization header）
-    var apiBaseUrl = config["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+    // Issue #1726: 使用新配置路径
+    var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
     containerRegistry.RegisterSingleton<HttpClient>(resolver =>
     {
         var authHandler = resolver.Resolve<AuthorizationMessageHandler>();

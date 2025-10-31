@@ -174,11 +174,16 @@ public class PatientsModule : IModule
 
 ```json
 {
-  "ApiSettings": {
-    "BaseUrl": "https://localhost:5001",
-    "Timeout": 30,
-    "RetryCount": 3,
-    "RetryDelaySeconds": 2
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "https://localhost:5001",
+        "TimeoutSeconds": 30,
+        "RetryCount": 3,
+        "RetryDelaySeconds": 2,
+        "IgnoreSslErrors": false
+      }
+    }
   },
   "CacheSettings": {
     "DefaultExpirationMinutes": 5,
@@ -433,9 +438,10 @@ public static class FoundationServiceCollectionExtensions
         // 2. HTTP服务（带Polly策略）
         services.AddHttpClient<IApiService, ApiService>(client =>
         {
-            var baseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5001";
+            // Issue #1726: 使用新配置路径
+            var baseUrl = configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
             client.BaseAddress = new Uri(baseUrl);
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = TimeSpan.FromSeconds(configuration.GetValue<int>("Lybt:Client:Api:TimeoutSeconds", 30));
         })
         .AddHttpMessageHandler<AuthorizationMessageHandler>() // 自动JWT认证
         .AddPolicyHandler(GetRetryPolicy())                    // 重试策略
