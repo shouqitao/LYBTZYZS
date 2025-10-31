@@ -588,7 +588,7 @@ public async Task<ActionResult<ApiResponse<List<PrescriptionSearchResultDto>>>> 
 ```csharp
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;

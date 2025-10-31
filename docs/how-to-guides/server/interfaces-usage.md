@@ -205,7 +205,6 @@ using AutoMapper;                                    // IMapper
 using LYBT.Entities.Models;                         // Patient实体
 using LYBT.Infrastructure.Repositories;             // IBaseRepository
 using LYBT.Module.Patients.Interfaces;              // IPatientRepository
-using LYBT.Server.Interfaces.Services;              // IPatientService
 using LYBT.Shared.Models.Common;                    // ServiceResult
 using LYBT.Shared.Models.DTOs.Patients;             // PatientDto
 using Microsoft.Extensions.Logging;                 // ILogger
@@ -214,7 +213,7 @@ using Microsoft.Extensions.Logging;                 // ILogger
 **Controller文件** (PatientsController.cs):
 
 ```csharp
-using LYBT.Server.Interfaces.Services;              // IPatientService
+using LYBT.Module.Patients.Interfaces;              // IPatientService
 using LYBT.Shared.Models.DTOs.Patients;             // PatientCreateDto
 using Microsoft.AspNetCore.Mvc;                     // [ApiController], [HttpGet]
 ```
@@ -913,7 +912,6 @@ public async Task<IActionResult> ImportFromExcel(IFormFile file)
 using AutoMapper;
 using LYBT.Entities.Models;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.DTOs.Patients;
 using LYBT.Shared.Models.Pagination;
@@ -1282,7 +1280,6 @@ using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
 using LYBT.Module.Patients.Validators;
-using LYBT.Server.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -1422,7 +1419,7 @@ public class Startup
 **位置**: `src/Server/Services/LYBT.WebAPI/Controllers/PatientsController.cs`
 
 ```csharp
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.DTOs.Patients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -1840,7 +1837,7 @@ public interface IPatientRepository
 **位置**: `tests/UnitTests/Server/Services/LYBT.WebAPI.Tests/Controllers/PatientsControllerTests.cs`
 
 ```csharp
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.DTOs.Patients;
 using LYBT.WebAPI.Controllers;
@@ -1985,7 +1982,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.DTOs.Patients;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

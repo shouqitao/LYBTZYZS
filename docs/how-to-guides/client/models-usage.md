@@ -140,7 +140,7 @@ using LYBT.Desktop.Models.ViewModels.Base;
 
 // DTO和Service接口
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 ```
 
 ---
@@ -1424,7 +1424,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 ```csharp
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -1676,7 +1676,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 ```csharp
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;

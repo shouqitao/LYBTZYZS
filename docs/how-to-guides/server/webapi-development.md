@@ -388,7 +388,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Dtos.Patients;
-using LYBT.Server.Interfaces;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Infrastructure.Web;
 
 namespace LYBT.WebAPI.Controllers

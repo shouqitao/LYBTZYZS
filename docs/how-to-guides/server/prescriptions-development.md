@@ -1030,7 +1030,7 @@ public async Task<ServiceResult<PrescriptionDto>> CreatePrescriptionAsync(
 ```csharp
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -1740,7 +1740,7 @@ using FluentAssertions;
 using LYBT.Entities.Prescriptions;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -2297,7 +2297,7 @@ using AutoMapper;
 using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Common;
 using LYBT.Module.Prescriptions.Repositories;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
@@ -2608,7 +2608,7 @@ namespace LYBT.Module.Prescriptions.Repositories
 ```csharp
 using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.AspNetCore.Authorization;

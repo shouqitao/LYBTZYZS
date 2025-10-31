@@ -261,7 +261,7 @@ using System.Security.Claims;
 using System.Text;
 using LYBT.Entities;
 using LYBT.Infrastructure.Configuration;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Auth.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -516,8 +516,8 @@ public interface IAuthService
 using AutoMapper;
 using LYBT.Entities;
 using LYBT.Infrastructure.Data;
-using LYBT.Server.Interfaces.Repositories;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Dtos;
@@ -1181,7 +1181,7 @@ public abstract class BaseApiController : ControllerBase
 ```csharp
 // 位置: src/Server/Services/LYBT.WebAPI/Controllers/AuthController.cs
 
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Authorization;

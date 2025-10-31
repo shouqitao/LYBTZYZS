@@ -72,7 +72,7 @@
 ### 2.1 基础结构
 
 ```csharp
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.WebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -1402,7 +1402,7 @@ _logger.LogCritical(ex, "数据库连接失败，服务不可用");             
 using Xunit;
 using Moq;
 using LYBT.Module.MedicalCase.Services;
-using LYBT.Server.Interfaces.Repositories;
+using LYBT.Module.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.MedicalCase.Tests.Services
