@@ -14,25 +14,41 @@ namespace LYBT.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // 1. 添加NeedsPrescription字段
-            migrationBuilder.AddColumn<bool>(
-                name: "NeedsPrescription",
-                table: "MedicalCases",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
+            // 1. 添加NeedsPrescription字段（幂等性：仅在列不存在时添加）
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('MedicalCases')
+                    AND name = 'NeedsPrescription'
+                )
+                BEGIN
+                    ALTER TABLE [MedicalCases] ADD [NeedsPrescription] bit NOT NULL DEFAULT 0;
+                END
+            ");
 
-            // 2. 添加Status索引（优化查询性能）
-            migrationBuilder.CreateIndex(
-                name: "IX_MedicalCases_Status",
-                table: "MedicalCases",
-                column: "Status");
+            // 2. 添加Status索引（幂等性：仅在索引不存在时创建）
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE object_id = OBJECT_ID('MedicalCases')
+                    AND name = 'IX_MedicalCases_Status'
+                )
+                BEGIN
+                    CREATE INDEX [IX_MedicalCases_Status] ON [MedicalCases] ([Status]);
+                END
+            ");
 
-            // 3. 添加PatientId+Status复合索引（优化按患者查询病案）
-            migrationBuilder.CreateIndex(
-                name: "IX_MedicalCases_PatientId_Status",
-                table: "MedicalCases",
-                columns: new[] { "PatientId", "Status" });
+            // 3. 添加PatientId+Status复合索引（幂等性：仅在索引不存在时创建）
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE object_id = OBJECT_ID('MedicalCases')
+                    AND name = 'IX_MedicalCases_PatientId_Status'
+                )
+                BEGIN
+                    CREATE INDEX [IX_MedicalCases_PatientId_Status] ON [MedicalCases] ([PatientId], [Status]);
+                END
+            ");
         }
 
         /// <inheritdoc />
