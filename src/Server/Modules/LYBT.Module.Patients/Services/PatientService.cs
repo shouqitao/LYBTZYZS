@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;

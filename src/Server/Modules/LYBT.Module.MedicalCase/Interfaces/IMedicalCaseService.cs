@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Enums;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
-namespace LYBT.Module.MedicalCase.Services
+namespace LYBT.Module.MedicalCase.Interfaces
 {
     /// <summary>
     /// 病案Service接口 - Epic #1612 重构版

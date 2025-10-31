@@ -5,7 +5,6 @@ using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

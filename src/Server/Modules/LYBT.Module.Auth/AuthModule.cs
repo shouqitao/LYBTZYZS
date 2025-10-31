@@ -1,6 +1,5 @@
 ﻿using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Server.Interfaces.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,18 +20,13 @@ namespace LYBT.Module.Auth
             // 仅注册必要的核心服务
             services.AddSingleton<IJwtService, JwtService>(); // 优化：JWT服务无状态，使用Singleton
             services.AddScoped<IAuthService, AuthService>();
-
             return services;
         }
-
-        /// <summary>
         /// 配置认证模块中间件
-        /// </summary>
         public static IApplicationBuilder UseAuthModule(this IApplicationBuilder app)
         {
             app.UseAuthentication();
             app.UseAuthorization();
-
             return app;
         }
     }

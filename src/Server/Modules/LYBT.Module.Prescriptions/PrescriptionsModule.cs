@@ -3,7 +3,6 @@ using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Module.Prescriptions.Validators;
-using LYBT.Server.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.Prescriptions

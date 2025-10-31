@@ -2,7 +2,6 @@
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Users.Interfaces;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;

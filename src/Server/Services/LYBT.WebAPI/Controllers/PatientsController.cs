@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.AspNetCore.Authorization;

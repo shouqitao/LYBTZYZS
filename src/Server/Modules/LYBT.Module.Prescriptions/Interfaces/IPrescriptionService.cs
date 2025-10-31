@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Server.Interfaces.Services
+namespace LYBT.Module.Prescriptions.Interfaces
 {
     /// <summary>
     /// 处方服务接口 - 简化版，包含基础CRUD功能

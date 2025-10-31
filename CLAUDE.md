@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 本文件定义 Claude Code 在仓库中的工作约束与执行流程，确保所有改动可追踪、可验证、符合项目标准。
 
@@ -79,6 +79,23 @@ repo = "LYBTZYZS"
 - `docs/explanation/architecture/shared/README.md` - 共享架构
 
 > ⚠️ **强制要求**: 处理任务前必须先查阅 `docs/index.md` 定位相关文档，未理解文档禁止开始编码
+
+**📐 Server/Client 职责划分原则**（⭐ 项目宗旨）:
+
+**核心原则**: 业务模块的业务实现需要综合 Server 端和 Client 端考虑，**不是所有功能都放在 Server 端实现**。
+
+**职责划分**:
+- **Server 端**: 负责数据持久化、核心业务规则、数据校验、实体关系维护
+- **Client 端**: 负责工作流编排、UI 逻辑、用户交互流程、业务流程控制
+
+**设计决策时考虑**:
+- ✅ 数据一致性约束 → Server 端
+- ✅ 多步骤业务流程 → Client 端协调
+- ✅ 用户交互逻辑 → Client 端
+- ✅ 实体聚合根操作 → Server 端
+
+> 💡 **示例**: 三步诊疗流程（辨证→开方标记→处方）由 Client 端 ViewModel 编排，Server 端提供原子化的数据操作接口
+
 
 ### 1.2 Issue驱动工作流
 

@@ -10,8 +10,8 @@ using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 // Epic #1612: 新Service接口和DTOs
-using NewMedicalCaseService = LYBT.Module.MedicalCase.Services.IMedicalCaseService;
-using LYBT.Module.MedicalCase.Services; // CanEditResponse, CanDeleteResponse
+using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
+using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
 using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, PrescriptionDetailDto
 
 namespace LYBT.WebAPI.Controllers

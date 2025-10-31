@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
-namespace LYBT.Server.Interfaces.Services
+namespace LYBT.Module.Herbs.Interfaces
 {
     /// <summary>
     /// 药材服务接口 - 简化版，包含基础CRUD和分类筛选

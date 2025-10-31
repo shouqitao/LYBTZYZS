@@ -22,7 +22,7 @@ namespace LYBT.Module.Herbs
             // services.AddScoped<IHerbCategoryRepository, HerbCategoryRepository>();
 
             // 注册服务实现类（统一使用Shared接口）
-            services.AddScoped<LYBT.Server.Interfaces.Services.IHerbService, HerbService>();
+            services.AddScoped<IHerbService, HerbService>();
 
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
 

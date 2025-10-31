@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 
-namespace LYBT.Server.Interfaces.Services
+namespace LYBT.Module.Consultation.Interfaces
 {
     /// <summary>
     /// 诊疗服务接口 - Read Layer（Issue #1600 Phase 3）

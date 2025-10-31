@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Server.Interfaces.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;

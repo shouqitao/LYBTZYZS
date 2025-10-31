@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
-using LYBT.Server.Interfaces.Services;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

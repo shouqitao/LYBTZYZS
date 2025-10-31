@@ -46,7 +46,7 @@ global using System.Security.Cryptography;
 global using LYBT.Infrastructure.Data;
 global using LYBT.Shared.Models.Contracts.Common;
 global using LYBT.Shared.Models.Enums;
-global using LYBT.Server.Interfaces.Services;
+// Note: Service interfaces now in module-specific Interfaces namespaces (Issue #1729)
 global using LYBT.Entities.Common;
 global using LYBT.Infrastructure.Interfaces;
 global using LYBT.Infrastructure.Repositories;

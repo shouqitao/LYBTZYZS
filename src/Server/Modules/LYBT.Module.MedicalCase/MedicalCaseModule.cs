@@ -3,7 +3,6 @@ using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Module.MedicalCase.Validators;
-using LYBT.Server.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.MedicalCase
@@ -26,7 +25,7 @@ namespace LYBT.Module.MedicalCase
             services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
 
             // 服务层 - Epic #1612: 新接口实现（14方法，Write/Read/Helper分离）
-            services.AddScoped<Services.IMedicalCaseService, MedicalCaseService>();
+            services.AddScoped<IMedicalCaseService, MedicalCaseService>();
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<MedicalCaseCreateDtoValidator>();
