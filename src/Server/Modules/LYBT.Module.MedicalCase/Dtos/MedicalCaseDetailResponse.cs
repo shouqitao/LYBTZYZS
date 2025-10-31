@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.MedicalCase.Dtos;
@@ -34,7 +35,7 @@ public class MedicalCaseDetailResponse
     /// <summary>
     /// 辨证信息
     /// </summary>
-    public ConsultationDetailDto? Consultation { get; set; }
+    public ConsultationDto? Consultation { get; set; }
 
     /// <summary>
     /// 处方信息（可选）

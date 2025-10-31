@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Contracts.Prescriptions;
+
 namespace LYBT.Module.MedicalCase.Dtos;
 
 /// <summary>

@@ -1,6 +1,8 @@
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos;
+using LYBT.Module.MedicalCase.Dtos; // SetPrescriptionFlagRequest (模块专用)
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Services;
 using LYBT.Shared.Models.Contracts.Common;
@@ -103,7 +105,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var request = new UpdateConsultationRequest
+            var request = new ConsultationInputDto
             {
                 ChiefComplaint = "头痛",
                 TCMDiagnosis = "风寒感冒"
@@ -141,7 +143,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var request = new UpdateConsultationRequest();
+            var request = new ConsultationInputDto();
 
             var medicalCase = new MedicalCaseEntity
             {
@@ -233,7 +235,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
-            var request = new CreatePrescriptionRequest
+            var request = new PrescriptionCreateDto
             {
                 Indication = "感冒",
                 Items = new List<PrescriptionItemDto>()
@@ -285,7 +287,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var request = new CreatePrescriptionRequest();
+            var request = new PrescriptionCreateDto();
 
             var existingPrescription = new PrescriptionEntity
             {
@@ -326,7 +328,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
-            var request = new UpdatePrescriptionRequest
+            var request = new PrescriptionEditDto
             {
                 Indication = "更新后的主治",
                 Items = new List<PrescriptionItemDto>()
@@ -368,7 +370,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
-            var request = new UpdatePrescriptionRequest();
+            var request = new PrescriptionEditDto();
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync((MedicalCaseEntity?)null);
@@ -386,7 +388,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
-            var request = new UpdatePrescriptionRequest();
+            var request = new PrescriptionEditDto();
 
             var medicalCase = new MedicalCaseEntity
             {
@@ -412,7 +414,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
             var differentPrescriptionId = Guid.NewGuid();
-            var request = new UpdatePrescriptionRequest();
+            var request = new PrescriptionEditDto();
 
             var prescription = new PrescriptionEntity
             {
@@ -443,7 +445,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Arrange
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
-            var request = new UpdatePrescriptionRequest();
+            var request = new PrescriptionEditDto();
 
             var prescription = new PrescriptionEntity
             {
@@ -864,12 +866,12 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Consultation = consultation
             };
 
-            var consultationDto = new ConsultationDetailDto { Id = medicalCaseId, TCMDiagnosis = "Test Diagnosis" };
+            var consultationDto = new ConsultationDto { Id = medicalCaseId, TCMDiagnosis = "Test Diagnosis" };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
-            _mapperMock.Setup(x => x.Map<ConsultationDetailDto>(consultation))
+            _mapperMock.Setup(x => x.Map<ConsultationDto>(consultation))
                 .Returns(consultationDto);
 
             var result = await _service.GetConsultationListAsync(medicalCaseId);

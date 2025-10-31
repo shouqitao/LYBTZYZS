@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos;
+using LYBT.Module.MedicalCase.Dtos; // SetPrescriptionFlagRequest (模块专用)
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
@@ -126,7 +128,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new UpdateConsultationRequest
+            var request = new ConsultationInputDto
             {
                 ChiefComplaint = "头痛",
                 TCMDiagnosis = "风寒感冒"
@@ -151,7 +153,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建并完成病案
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
 
-            var request = new UpdateConsultationRequest
+            var request = new ConsultationInputDto
             {
                 ChiefComplaint = "测试"
             };
@@ -217,7 +219,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案、辨证、标记需要处方
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var request = new CreatePrescriptionRequest
+            var request = new PrescriptionCreateDto
             {
                 Indication = "感冒",
                 Items = new List<PrescriptionItemDto>
@@ -249,7 +251,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案并已有处方
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var request = new CreatePrescriptionRequest
+            var request = new PrescriptionCreateDto
             {
                 Indication = "测试",
                 Items = new List<PrescriptionItemDto>()
@@ -274,7 +276,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建病案和处方
             var (medicalCase, prescription) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var request = new UpdatePrescriptionRequest
+            var request = new PrescriptionEditDto
             {
                 Indication = "更新后的主治",
                 Items = new List<PrescriptionItemDto>
@@ -527,7 +529,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var consultationRequest = new UpdateConsultationRequest
+            var consultationRequest = new ConsultationInputDto
             {
                 ChiefComplaint = "头痛",
                 TCMDiagnosis = "风寒感冒"
@@ -576,7 +578,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var medicalCase = await CreateTestMedicalCaseReadyForPrescriptionAsync();
 
-            var prescriptionRequest = new CreatePrescriptionRequest
+            var prescriptionRequest = new PrescriptionCreateDto
             {
                 Indication = "感冒",
                 Items = new List<PrescriptionItemDto>

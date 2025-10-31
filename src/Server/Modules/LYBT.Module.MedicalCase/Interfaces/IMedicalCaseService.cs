@@ -1,5 +1,7 @@
 ﻿using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
@@ -39,7 +41,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>更新后的病案实体（包含Consultation）</returns>
         Task<MedicalCaseEntity?> UpdateConsultationAsync(
             Guid medicalCaseId,
-            UpdateConsultationRequest request,
+            ConsultationInputDto request,
             Guid currentUserId,
             bool isAdmin = false);
 
@@ -66,7 +68,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>创建的处方实体</returns>
         Task<PrescriptionEntity?> CreatePrescriptionAsync(
             Guid medicalCaseId,
-            CreatePrescriptionRequest request);
+            PrescriptionCreateDto request);
 
         /// <summary>
         /// 更新处方（三步流程Step 3b）
@@ -79,7 +81,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<PrescriptionEntity?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
-            UpdatePrescriptionRequest request,
+            PrescriptionEditDto request,
             Guid currentUserId,
             bool isAdmin = false);
 
@@ -158,7 +160,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>辨证记录DTO列表</returns>
-        Task<List<ConsultationDetailDto>> GetConsultationListAsync(Guid medicalCaseId);
+        Task<List<ConsultationDto>> GetConsultationListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 查询处方列表

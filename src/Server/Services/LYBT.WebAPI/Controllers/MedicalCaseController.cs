@@ -12,7 +12,9 @@ using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
-using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, MedicalCasePrescriptionDto
+using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescriptionFlagRequest (模块专用)
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -84,7 +86,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 400)]
         public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> UpdateConsultation(
             Guid id,
-            [FromBody] UpdateConsultationRequest request)
+            [FromBody] ConsultationInputDto request)
         {
             try
             {
@@ -160,7 +162,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionEntity>), 422)]
         public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> CreatePrescription(
             Guid id,
-            [FromBody] CreatePrescriptionRequest request)
+            [FromBody] PrescriptionCreateDto request)
         {
             try
             {
@@ -196,7 +198,7 @@ namespace LYBT.WebAPI.Controllers
         public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> UpdatePrescription(
             Guid id,
             Guid prescriptionId,
-            [FromBody] UpdatePrescriptionRequest request)
+            [FromBody] PrescriptionEditDto request)
         {
             try
             {
@@ -425,19 +427,19 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 返回病案的所有历史辨证记录
         /// </summary>
         [HttpGet("{medicalCaseId}/consultations")]
-        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDetailDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<ConsultationDetailDto>>>> GetConsultationList(
+        [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetConsultationList(
             Guid medicalCaseId)
         {
             try
             {
                 var result = await _medicalCaseService.GetConsultationListAsync(medicalCaseId);
 
-                return Ok(ApiResponse<List<ConsultationDetailDto>>.CreateSuccess(result, "查询成功"));
+                return Ok(ApiResponse<List<ConsultationDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<ConsultationDetailDto>>(ex, "获取辨证记录列表",
+                return HandleException<List<ConsultationDto>>(ex, "获取辨证记录列表",
                     new { medicalCaseId });
             }
         }
