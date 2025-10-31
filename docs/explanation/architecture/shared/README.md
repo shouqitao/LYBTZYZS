@@ -244,6 +244,467 @@ public abstract class HerbCalculatorBase
 - 需要通用的Data/Caching/Logging组件时
 - 当前Components/可能演进为Infrastructure/的子目录之一
 
+---
+
+## 📐 DTO设计原则
+
+> **⚠️ 核心架构原则**：本节记录Epic #1736 DTO优化的设计理念和最佳实践，确保整个项目的DTO设计保持一致性。
+
+### DTO设计演进历史
+
+**Epic #1736 (2025-10-31 - 2025-11-01)**: 五阶段DTO优化，从MVP超前设计回归到简单实用
+
+```
+Phase 1: 删除MVP超前设计DTO（22个）
+  ↓
+Phase 2: 移除DTO中的业务逻辑和计算属性
+  ↓
+Phase 3: 合并Create/Update DTOs为统一InputDto ⭐ 核心优化
+  ↓
+Phase 4: 清理DTO属性别名
+  ↓
+Phase 5: 修复PrescriptionDetailDto继承设计
+```
+
+---
+
+### 核心设计理念
+
+#### 1. InputDto统一模式（Phase 3核心优化）
+
+**设计理念**：合并CreateDto和UpdateDto为统一的InputDto，简化API设计和维护成本。
+
+**❌ 旧模式（过度设计）**：
+```csharp
+// 需要维护两个几乎相同的DTO
+public class PatientCreateDto
+{
+    public string Name { get; set; }
+    public Gender Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+    // ... 20个属性
+}
+
+public class PatientUpdateDto  // 95%字段与CreateDto重复
+{
+    public Guid Id { get; set; }  // 唯一差异
+    public string Name { get; set; }
+    public Gender Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+    // ... 20个属性
+}
+```
+
+**✅ 新模式（InputDto统一）**：
+```csharp
+/// <summary>
+/// 患者输入DTO - 统一创建和更新
+/// Epic #1736 Phase 3: 合并Create/Update DTOs
+/// </summary>
+public class PatientInputDto
+{
+    /// <summary>患者ID（更新时必填，创建时为null）</summary>
+    [DisplayName("患者ID")]
+    public Guid? Id { get; set; }
+
+    /// <summary>患者姓名</summary>
+    [Required(ErrorMessage = "患者姓名不能为空")]
+    [StringLength(50, ErrorMessage = "患者姓名长度不能超过50个字符")]
+    [DisplayName("患者姓名")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>性别</summary>
+    [Required(ErrorMessage = "性别不能为空")]
+    [DisplayName("性别")]
+    public Gender Gender { get; set; }
+
+    /// <summary>出生日期</summary>
+    [DisplayName("出生日期")]
+    public DateTime? BirthDate { get; set; }
+
+    // ... 其他业务属性
+}
+```
+
+**使用场景**：
+```csharp
+// 场景1: 创建患者（Id为null）
+var createInput = new PatientInputDto
+{
+    Id = null,  // 创建时为null
+    Name = "张三",
+    Gender = Gender.Male,
+    BirthDate = new DateTime(1980, 5, 15)
+};
+await patientService.CreateAsync(createInput);
+
+// 场景2: 更新患者（Id必填）
+var updateInput = new PatientInputDto
+{
+    Id = Guid.Parse("..."),  // 更新时必填
+    Name = "张三（已修改）",
+    Gender = Gender.Male,
+    BirthDate = new DateTime(1980, 5, 15)
+};
+await patientService.UpdateAsync(updateInput.Id.Value, updateInput);
+```
+
+**Service层处理逻辑**：
+```csharp
+public class PatientService : IPatientService
+{
+    // 创建方法：接收InputDto，Id必须为null
+    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto input)
+    {
+        if (input.Id.HasValue)
+            return ServiceResult<PatientDto>.Error("创建时不应提供ID");
+
+        var entity = _mapper.Map<Patient>(input);
+        entity.Id = Guid.NewGuid();  // Service层生成ID
+
+        var created = await _repository.AddAsync(entity);
+        return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(created));
+    }
+
+    // 更新方法：接收Guid和InputDto，InputDto.Id可选
+    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto input)
+    {
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing == null)
+            return ServiceResult<PatientDto>.Error("患者不存在");
+
+        _mapper.Map(input, existing);  // 仅映射业务属性，Id不变
+
+        var updated = await _repository.UpdateAsync(existing);
+        return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(updated));
+    }
+}
+```
+
+**Validator统一模式**：
+```csharp
+/// <summary>
+/// PatientInputDto验证器 - 同时用于创建和更新
+/// Epic #1736 Phase 3: 删除独立的UpdateValidator
+/// </summary>
+public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
+{
+    public PatientInputDtoValidator()
+    {
+        // 通用验证规则（创建和更新共享）
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("患者姓名不能为空")
+            .MaximumLength(50).WithMessage("患者姓名长度不能超过50个字符");
+
+        RuleFor(x => x.Gender)
+            .IsInEnum().WithMessage("性别值无效");
+
+        RuleFor(x => x.BirthDate)
+            .LessThan(DateTime.Today).WithMessage("出生日期不能晚于今天")
+            .When(x => x.BirthDate.HasValue);
+
+        // 创建时的特殊验证
+        RuleFor(x => x.Id)
+            .Null().WithMessage("创建时不应提供ID")
+            .When(x => x.Id.HasValue, ApplyConditionTo.CurrentValidator);
+    }
+}
+```
+
+**优势总结**：
+- ✅ **代码量减少50%**：无需维护两个几乎相同的DTO
+- ✅ **验证逻辑统一**：无需维护两个独立的Validator
+- ✅ **API简化**：创建和更新使用相同的DTO结构
+- ✅ **维护成本降低**：字段修改只需更新一处
+
+---
+
+#### 2. Dto vs DetailDto vs InputDto
+
+**三种DTO的职责划分**：
+
+| DTO类型 | 用途 | 场景 | 示例 |
+|---------|------|------|------|
+| **Dto** | 基础数据传输 | 列表查询、关联查询 | `PatientDto`, `ConsultationDto` |
+| **DetailDto** | 详情查询（扩展版） | 单个详情查询、包含计算字段/关联数据 | `PrescriptionDetailDto`, `MedicalCaseDetailDto` |
+| **InputDto** | 输入数据（创建/更新） | API请求体、表单提交 | `PatientInputDto`, `HerbInputDto` |
+
+**使用指南**：
+
+**2.1 基础Dto - 列表和关联查询**：
+```csharp
+/// <summary>
+/// 患者信息DTO - 基础版
+/// 用于列表查询、下拉选择、关联查询等场景
+/// </summary>
+public class PatientDto : StatusDto
+{
+    public string Name { get; set; } = string.Empty;
+    public Gender Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    // ⚠️ 不包含计算属性（如Age）
+    // ⚠️ 不包含关联数据（如MedicalCases列表）
+}
+
+// 使用场景：
+// 1. GET /api/patients?pageIndex=1&pageSize=20  → List<PatientDto>
+// 2. GET /api/medicalcases/{id}  → MedicalCaseDto { PatientDto Patient }
+```
+
+**2.2 DetailDto - 详情查询（扩展版）**：
+```csharp
+/// <summary>
+/// 处方详情DTO - 扩展版本
+/// 继承PrescriptionDto基础字段，添加运行时计算的警告信息
+/// Epic #1736 Phase 5: 简化继承设计，去除new关键字
+/// </summary>
+public class PrescriptionDetailDto : PrescriptionDto
+{
+    /// <summary>重复用药警告（运行时计算）</summary>
+    [DisplayName("重复用药警告")]
+    public string? DuplicateWarning { get; set; }
+
+    /// <summary>缺药警告（运行时计算）</summary>
+    [DisplayName("缺药警告")]
+    public string? MissingDrugWarning { get; set; }
+
+    /// <summary>格式化的处方编号（用于UI展示）</summary>
+    [DisplayName("处方编号")]
+    public string? PrescriptionNo { get; set; }
+}
+
+// 使用场景：
+// GET /api/prescriptions/{id}  → PrescriptionDetailDto（包含警告信息）
+```
+
+**2.3 InputDto - 创建和更新**：
+```csharp
+/// <summary>
+/// 中药材输入DTO - 统一创建和更新
+/// Epic #1736 Phase 3: 合并HerbCreateDto和HerbUpdateDto
+/// </summary>
+public class HerbInputDto
+{
+    /// <summary>药材ID（更新时必填，创建时为null）</summary>
+    [DisplayName("药材ID")]
+    public Guid? Id { get; set; }
+
+    /// <summary>药材名称</summary>
+    [Required(ErrorMessage = "药材名称不能为空")]
+    [StringLength(100)]
+    [DisplayName("药材名称")]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>单价</summary>
+    [Required]
+    [Range(0, 999999.99)]
+    [DisplayName("单价")]
+    public decimal Price { get; set; }
+
+    // ... 其他业务属性
+}
+
+// 使用场景：
+// POST /api/herbs  → Body: HerbInputDto (Id=null)
+// PUT /api/herbs/{id}  → Body: HerbInputDto (Id可选)
+```
+
+**何时使用DetailDto而非Dto**：
+- ✅ 需要运行时计算字段（如警告信息、统计数据）
+- ✅ 需要预加载关联数据（如订单详情包含订单项列表）
+- ✅ 需要格式化字段（如格式化的编号、显示用文本）
+- ❌ 如果只是多几个简单字段，直接扩展基础Dto即可
+
+---
+
+#### 3. DTO属性设计规范（Phase 2 & Phase 4）
+
+**Phase 2: 移除DTO中的业务逻辑和计算属性**
+
+**❌ 错误示例（DTO包含业务逻辑）**：
+```csharp
+public class PrescriptionDto
+{
+    public List<PrescriptionItemDto> Items { get; set; }
+
+    // ❌ 错误：DTO不应包含业务计算逻辑
+    public decimal TotalPrice
+    {
+        get
+        {
+            return Items.Sum(x => x.Quantity * x.UnitPrice) * (1 - Discount);
+        }
+    }
+}
+```
+
+**✅ 正确示例（Service层计算）**：
+```csharp
+// DTO仅存储数据
+public class PrescriptionDto : StatusDto
+{
+    public List<PrescriptionItemDto> Items { get; set; }
+    public decimal Discount { get; set; }
+
+    /// <summary>总价格（由Service层计算并设置）</summary>
+    [DisplayName("总价格")]
+    public decimal TotalPrice { get; set; }
+}
+
+// Service层负责计算
+public class PrescriptionService
+{
+    public async Task<PrescriptionDto> GetByIdAsync(Guid id)
+    {
+        var entity = await _repository.GetByIdAsync(id);
+        var dto = _mapper.Map<PrescriptionDto>(entity);
+
+        // Service层计算总价格
+        dto.TotalPrice = dto.Items.Sum(x => x.Quantity * x.UnitPrice) * (1 - dto.Discount);
+
+        return dto;
+    }
+}
+```
+
+**Phase 4: 清理DTO属性别名**
+
+**❌ 错误示例（属性别名混淆）**：
+```csharp
+public class PrescriptionItemDto
+{
+    public string? Remark { get; set; }
+
+    // ❌ 错误：属性别名造成混淆
+    public string? Notes { get => Remark; set => Remark = value; }
+}
+```
+
+**✅ 正确示例（统一属性名）**：
+```csharp
+public class PrescriptionItemDto
+{
+    /// <summary>备注</summary>
+    [DisplayName("备注")]
+    [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
+    public string? Remark { get; set; }
+
+    // ✅ 如需兼容旧代码，明确标注为兼容性别名
+    /// <summary>备注(兼容旧代码)</summary>
+    [DisplayName("备注")]
+    [Obsolete("请使用Remark属性")]
+    public string? Notes { get => Remark; set => Remark = value; }
+}
+```
+
+---
+
+### 实际案例：MedicalCase模块DTO优化
+
+**Issue #1738 (2025-11-01)**: 清理MedicalCase模块重复DTO，统一使用Shared层
+
+**优化前（5个重复DTO）**：
+```
+Module.MedicalCase/Dtos/
+├── ConsultationDetailDto.cs          ❌ 与Shared层ConsultationDto重复
+├── UpdateConsultationRequest.cs      ❌ 应使用ConsultationInputDto
+├── CreatePrescriptionRequest.cs      ❌ 应使用PrescriptionCreateDto
+├── UpdatePrescriptionRequest.cs      ❌ 应使用PrescriptionEditDto
+└── PrescriptionItemDto.cs            ❌ 与Shared层完全相同
+```
+
+**优化后（统一使用Shared层）**：
+```csharp
+// MedicalCaseController.cs - 更新后的API签名
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
+
+[HttpPut("{id}/consultation")]
+public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> UpdateConsultation(
+    Guid id,
+    [FromBody] ConsultationInputDto request)  // ✅ 使用Shared层InputDto
+
+[HttpPost("{id}/prescriptions")]
+public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> CreatePrescription(
+    Guid id,
+    [FromBody] PrescriptionCreateDto request)  // ✅ 使用Shared层CreateDto
+
+[HttpPut("{id}/prescriptions/{prescriptionId}")]
+public async Task<ActionResult<ApiResponse<PrescriptionEntity>>> UpdatePrescription(
+    Guid id,
+    Guid prescriptionId,
+    [FromBody] PrescriptionEditDto request)  // ✅ 使用Shared层EditDto
+
+[HttpGet("{medicalCaseId}/consultations")]
+[ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
+public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetConsultationList(
+    Guid medicalCaseId)  // ✅ 使用Shared层Dto
+```
+
+**优化效益**：
+- ✅ 删除5个重复DTO文件
+- ✅ 确保跨模块DTO一致性
+- ✅ 简化维护成本
+- ✅ 符合三层对齐架构原则
+
+---
+
+### DTO设计检查清单
+
+在设计新DTO或重构现有DTO时，请确认以下要点：
+
+#### ✅ 结构设计
+- [ ] DTO按业务模块组织在`Contracts/{Module}/`目录
+- [ ] 相关DTOs放在同一个文件中（如PatientDto和PatientDetailDto）
+- [ ] 使用清晰的命名空间：`LYBT.Shared.Models.Contracts.{Module}`
+
+#### ✅ InputDto模式
+- [ ] 优先使用InputDto统一创建和更新，避免Create/Update分离
+- [ ] InputDto包含可选的`Id`属性（创建时null，更新时必填）
+- [ ] 创建和更新共享相同的Validator
+
+#### ✅ 职责划分
+- [ ] 基础Dto用于列表和关联查询（不含计算属性）
+- [ ] DetailDto用于详情查询（可含运行时计算字段）
+- [ ] InputDto用于创建和更新（包含验证规则）
+
+#### ✅ 属性规范
+- [ ] DTO仅存储数据，不包含业务逻辑
+- [ ] 计算属性由Service层填充（如TotalPrice、Age）
+- [ ] 避免属性别名，使用统一的属性名
+- [ ] 使用`[DisplayName]`和`[Description]`标注属性
+
+#### ✅ 继承规范
+- [ ] DetailDto继承基础Dto，添加扩展字段
+- [ ] 避免使用`new`关键字隐藏基类属性（Epic #1736 Phase 5）
+- [ ] 明确标注继承关系和扩展理由
+
+#### ✅ 验证规范
+- [ ] 使用FluentValidation定义验证规则
+- [ ] InputDto的Validator同时用于创建和更新
+- [ ] 验证规则与DataAnnotations保持同步（如StringLength）
+
+---
+
+### 相关Issue和ADR
+
+**Epic #1736**: DTO优化Phase 1-5
+- Phase 1: 删除22个MVP超前设计DTO
+- Phase 2: 移除DTO中的业务逻辑和计算属性
+- Phase 3: 合并Create/Update DTOs为统一InputDto ⭐
+- Phase 4: 清理DTO属性别名
+- Phase 5: 修复PrescriptionDetailDto继承设计
+
+**Issue #1738**: 清理MedicalCase模块重复DTO
+
+**相关ADR**:
+- ADR-005: 长期演进触发条件（DTO设计复杂度指标）
+- ADR-001: 使用FluentValidation进行数据验证
+
+---
+
 ### 4. Utilities - 工具类层
 
 > **⚠️ 项目说明**：当前Utilities包含**少量跨端共享的工具类**，主要是启动初始化和缓存扩展。
