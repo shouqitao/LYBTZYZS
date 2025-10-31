@@ -1019,85 +1019,376 @@ public class AppDbContext : DbContext
 
 ## 🔧 依赖注入配置
 
-### 服务注册配置
+> **⚠️ 核心架构原则**：本节记录Issue #1732服务注册架构重构的演进历史和设计理念
+
+### 服务注册架构演进历史
+
+#### Issue #1732 (2025-10-31): 服务注册架构重构
+
+**演进动机（MVP原则）**:
+- ❌ **旧架构**：`UnifiedServiceRegistration.cs` - 单一类包含所有服务注册逻辑
+  - **过度抽象**：将所有服务注册集中在一个类中，违反单一职责原则
+  - **可维护性差**：超过500行代码，混合了数据库、认证、API、业务模块等不同职责
+  - **违背MVP原则**："够用即好"，无需过早抽象
+
+- ✅ **新架构**：按职责拆分为4个`ServiceCollectionExtensions`文件
+  - **清晰职责**：每个文件负责一个明确的领域
+  - **易于维护**：每个文件100-200行，职责单一
+  - **符合MVP原则**：简单直接，无过度抽象
+
+**架构拆分策略**:
+
+```
+📁 src/Server/Services/LYBT.WebAPI/Extensions/
+├── ServiceCollectionExtensions.cs              (主协调器)
+├── DatabaseServiceCollectionExtensions.cs      (基础设施)
+├── AuthenticationServiceCollectionExtensions.cs (认证安全)
+└── ApiServiceCollectionExtensions.cs           (API文档)
+```
+
+---
+
+### 4个ServiceCollectionExtensions文件职责
+
+#### 1. ServiceCollectionExtensions.cs（主协调器）
+
+**职责**：主入口协调、业务模块注册、控制器配置
+
+**核心方法**:
 ```csharp
 /// <summary>
-/// 依赖注入扩展方法
+/// 服务注册主入口
+/// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分并重组
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    /// <summary>
+    /// 注册应用服务（统一入口）
+    /// 协调10个步骤的服务注册
+    /// </summary>
+    public static IServiceCollection RegisterAllApplicationServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
-        // Register repositories
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPatientRepository, PatientRepository>();
-        services.AddScoped<IMedicalCaseRepository, MedicalCaseRepository>();
-        services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-        services.AddScoped<IHerbRepository, HerbRepository>();
-        services.AddScoped<IFormulaRepository, FormulaRepository>();
-        services.AddScoped<IAdminSecretRepository, AdminSecretRepository>();
+        // 1）基础设施（数据库、缓存、健康检查）
+        services.RegisterInfrastructureServices(configuration);
 
-        // Register services
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IPatientService, PatientService>();
-        services.AddScoped<IMedicalCaseService, MedicalCaseService>();
-        services.AddScoped<IConsultationService, ConsultationService>();
-        services.AddScoped<IPrescriptionService, PrescriptionService>();
-        services.AddScoped<IHerbService, HerbService>();
-        servicesocache<IFontulaService, FormulaService>();
+        // 2）认证与安全（JWT、授权策略）
+        services.RegisterAuthenticationServices(configuration);
 
-        // Register cross-module services
-        services.AddScoped<IModuleCommunicationService, ModuleCommunicationService>();
-        services.AddScoped<ICrossModuleDataService, CrossModuleDataService>();
+        // 3）业务模块（8个业务模块）
+        services.RegisterBusinessModules(configuration);
 
-        // Register validation services
-        services.AddScoped<IValidator<PatientCreateDto>, PatientCreateValidator>();
-        services.AddScoped<IValidator<PatientUpdateDto>, PatientUpdateValidator>();
-        services.AddScoped<IValidator<PrescriptionCreateDto>, PrescriptionCreateValidator>();
+        // 4）API 文档（Swagger、API版本）
+        services.RegisterApiServices();
+
+        // 5）控制器与 JSON（FluentValidation、JSON序列化）
+        services.RegisterControllerServices(configuration);
+
+        // 6）速率限制（Login端点防暴力攻击）
+        services.ConfigureRateLimiting(configuration, environment);
+
+        // 7）性能优化
+        services.ConfigurePerformanceOptimizations(configuration);
+
+        // 8）API 版本管理（已整合到RegisterApiServices）
+
+        // 9）安全服务（数据保护、密钥管理）
+        services.AddSecurityServices(configuration, environment);
+
+        // 10）环境感知配置校验（生产强校验）
+        services.AddEnvironmentAwareValidation(environment);
 
         return services;
     }
 
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+    /// <summary>
+    /// 注册业务模块
+    /// 使用各模块的静态扩展方法进行注册
+    /// </summary>
+    private static IServiceCollection RegisterBusinessModules(...)
+    {
+        // 8个业务模块按依赖顺序注册
+        services.AddAuthModule(configuration);           // 1. 认证模块
+        services.AddUsersModule(configuration);          // 2. 用户模块
+        services.AddPatientsModule(configuration);       // 3. 患者模块
+        services.AddHerbsModule(configuration);          // 4. 中药模块
+        services.AddConsultationModule(configuration);   // 5. 问诊模块
+        services.AddPrescriptionsModule();               // 6. 处方模块
+        services.AddFormulaModule();                     // 7. 配方模块
+        services.AddMedicalCaseModule();                 // 8. 病例模块
+
+        return services;
+    }
+
+    /// <summary>
+    /// 注册控制器与 JSON 配置
+    /// Epic #1731 Phase 3: 集成FluentValidation到ASP.NET Core Pipeline
+    /// </summary>
+    private static IServiceCollection RegisterControllerServices(...)
+    {
+        // FluentValidation全局自动验证
+        services.AddFluentValidationAutoValidation(config =>
+        {
+            config.DisableDataAnnotationsValidation = false; // 保留DataAnnotations
+        });
+        services.AddFluentValidationClientsideAdapters();
+
+        // JSON序列化配置、自动400响应等
+        services.AddControllers().AddJsonOptions(...);
+        services.Configure<ApiBehaviorOptions>(...);
+
+        return services;
+    }
+}
+```
+
+---
+
+#### 2. DatabaseServiceCollectionExtensions.cs（基础设施）
+
+**职责**：数据库配置、健康检查、性能优化
+
+**核心方法**:
+```csharp
+/// <summary>
+/// 数据库与基础设施服务注册扩展
+/// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
+/// </summary>
+public static class DatabaseServiceCollectionExtensions
+{
+    /// <summary>
+    /// 注册基础设施服务
+    /// 包含：DbContext、连接池、健康检查、性能优化
+    /// </summary>
+    public static IServiceCollection RegisterInfrastructureServices(
+        this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database context
+        // 1. DbContext配置（连接池、查询跟踪、日志）
         services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            options.EnableSensitiveDataLogging(false);
-            options.EnableDetailedErrors(false);
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                sqlOptions.CommandTimeout(30);
+            });
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
-        // Health checks
+        // 2. 健康检查
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>()
-            .AddSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            .AddSqlServer(connectionString);
+
+        // 3. 性能优化（内存缓存、响应压缩、响应缓存）
+        services.AddMemoryCache();
+        services.AddResponseCompression();
+        services.AddResponseCaching();
 
         return services;
     }
+}
+```
 
-    public static IServiceCollection AddPresentationServices(this IServiceCollection services)
+---
+
+#### 3. AuthenticationServiceCollectionExtensions.cs（认证安全）
+
+**职责**：JWT认证配置、授权策略
+
+**核心方法**:
+```csharp
+/// <summary>
+/// 认证与授权服务注册扩展
+/// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
+/// </summary>
+public static class AuthenticationServiceCollectionExtensions
+{
+    /// <summary>
+    /// 注册认证与授权服务
+    /// 包含：JWT认证、授权策略、多密钥轮换支持
+    /// </summary>
+    public static IServiceCollection RegisterAuthenticationServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        // Register controllers
-        services.AddControllers();
+        // 1. JWT 认证（支持环境变量覆盖）
+        var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
+                       configuration["Lybt:Authentication:Jwt:SecretKey"];
 
-        // API documentation
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                Title = "凌隐宝堂中医诊所管理系统 API",
-                Version = "v1",
-                Description = "凌隐宝堂中医诊所管理系统Web API接口文档"
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSecret)),
+                    ClockSkew = TimeSpan.FromSeconds(300),
+                    TryAllIssuerSigningKeys = true // 支持密钥轮换
+                };
             });
+
+        // 2. 授权策略
+        services.AddAuthorization(options =>
+        {
+            options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            options.AddPolicy("AdminOnly", policy =>
+                policy.RequireRole("Admin"));
+
+            options.AddPolicy("DoctorOrAdmin", policy =>
+                policy.RequireRole("Doctor", "Admin"));
         });
 
         return services;
     }
 }
 ```
+
+---
+
+#### 4. ApiServiceCollectionExtensions.cs（API文档）
+
+**职责**：Swagger配置、API版本管理、速率限制
+
+**核心方法**:
+```csharp
+/// <summary>
+/// API服务注册扩展
+/// Issue #1732 Phase 2.5: 从UnifiedServiceRegistration拆分
+/// </summary>
+public static class ApiServiceCollectionExtensions
+{
+    /// <summary>
+    /// 注册API服务
+    /// 包含：Swagger、API版本管理、ProblemDetails、AutoMapper
+    /// </summary>
+    public static IServiceCollection RegisterApiServices(
+        this IServiceCollection services)
+    {
+        // 1. Swagger配置
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "凌隐宝堂中医诊所管理系统 API",
+                Version = "v1.0.0",
+                Description = "基于ASP.NET Core 8.0的中医诊所管理系统Web API"
+            });
+
+            // JWT Bearer配置
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+        });
+
+        // 2. API版本管理
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+        });
+
+        // 3. ProblemDetails配置
+        services.AddProblemDetails();
+
+        // 4. AutoMapper配置
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+        return services;
+    }
+
+    /// <summary>
+    /// 配置速率限制
+    /// 防止Login端点暴力攻击
+    /// </summary>
+    public static IServiceCollection ConfigureRateLimiting(...)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.AddPolicy("LoginRateLimit", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1)
+                    }));
+        });
+
+        return services;
+    }
+}
+```
+
+---
+
+### Program.cs 使用示例
+
+**入口调用**（src/Server/Services/LYBT.WebAPI/Program.cs:53）:
+```csharp
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // ✅ 单一入口：调用RegisterAllApplicationServices
+        builder.Services.RegisterAllApplicationServices(
+            builder.Configuration,
+            builder.Environment);
+
+        var app = builder.Build();
+
+        // 配置中间件
+        app.ConfigureAllMiddleware();
+
+        await app.RunAsync();
+    }
+}
+```
+
+**加载顺序说明**:
+1. **基础设施优先**：数据库连接必须最先建立（RegisterInfrastructureServices）
+2. **认证配置**：依赖基础设施的配置加载（RegisterAuthenticationServices）
+3. **业务模块**：依赖数据库和认证（RegisterBusinessModules）
+4. **API文档**：依赖业务模块的Controller定义（RegisterApiServices）
+5. **控制器配置**：最后配置FluentValidation和JSON序列化（RegisterControllerServices）
+
+---
+
+### MVP设计理念总结
+
+#### ✅ 符合MVP的设计（Issue #1732 新架构）
+
+**原则**："够用即好" + "按职责拆分" + "避免过度抽象"
+
+1. **职责清晰**：4个文件各司其职，边界明确
+2. **易于维护**：每个文件100-200行，修改影响范围小
+3. **简单直接**：静态扩展方法，无复杂继承和抽象层级
+4. **易于测试**：职责单一，依赖关系清晰
+
+#### ❌ 违背MVP的设计（旧UnifiedServiceRegistration）
+
+**问题**："过度抽象" + "职责混乱" + "维护困难"
+
+1. **职责过重**：单一类包含所有服务注册（数据库+认证+API+业务）
+2. **难以维护**：超过500行代码，修改影响范围大
+3. **违背单一职责**：违反SOLID原则的Single Responsibility Principle
+4. **过早抽象**：MVP阶段无需将所有服务集中在一个类中
 
 ## 🎯 架构质量保证
 
