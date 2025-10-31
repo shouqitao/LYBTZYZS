@@ -1398,6 +1398,475 @@ private double CalculateDiagnosisMatchScore(string diagnosis, string treatmentPr
 }
 ```
 
+## 🔍 验证器模式 (FluentValidation)
+
+> **⚠️ 重要演进**：Epic #1731集成FluentValidation + Epic #1736 InputDto统一模式适配
+
+### 验证器架构演进历史
+
+#### Epic #1731 (2025-10-31): FluentValidation集成
+
+**演进动机**:
+- ❌ **旧方案**：DataAnnotations特性验证
+  - **局限性**：复杂验证逻辑难以表达（如跨字段验证）
+  - **可维护性差**：验证逻辑分散在DTO类中，难以测试
+  - **扩展性差**：无法灵活配置验证规则
+
+- ✅ **新方案**：FluentValidation框架
+  - **表达力强**：支持复杂验证逻辑和自定义规则
+  - **易于测试**：独立的Validator类，可单元测试
+  - **集成到Pipeline**：自动验证，返回标准400 ProblemDetails
+
+#### Epic #1736 (2025-11-01): InputDto统一模式的Validator适配
+
+**演进动机**:
+- ❌ **旧模式**：CreateValidator + UpdateValidator（重复验证规则）
+  - **代码重复**：Create和Update的验证规则90%相同
+  - **维护成本高**：修改验证规则需要同步两个Validator
+  - **违背DRY原则**：Don't Repeat Yourself
+
+- ✅ **新模式**：统一InputDtoValidator（一个Validator服务Create和Update）
+  - **消除重复**：验证规则只写一次
+  - **易于维护**：修改验证规则只需改一处
+  - **符合DRY**：遵循最佳实践
+
+**已删除的UpdateValidator**（Epic #1736清理）:
+- ~~ConsultationUpdateDtoValidator~~ → 使用 `ConsultationInputDtoValidator`
+- ~~FormulaUpdateDtoValidator~~ → 使用 `FormulaInputDtoValidator`
+- ~~HerbUpdateDtoValidator~~ → 使用 `HerbInputDtoValidator`
+- ~~PatientUpdateDtoValidator~~ → 使用 `PatientInputDtoValidator`
+- ~~UserUpdateDtoValidator~~ → 使用 `UserInputDtoValidator`
+
+**新增的Auth模块Validator**（Epic #1731补全）:
+- ✅ `LoginRequestValidator` - 登录请求验证
+- ✅ `ChangePasswordRequestValidator` - 修改密码验证
+- ✅ `SuperAdminLoginRequestValidator` - 超级管理员登录验证
+
+---
+
+### InputDto统一Validator模式 ⭐
+
+**核心理念**：一个Validator同时服务Create和Update操作
+
+#### 标准模式（Patients模块示例）
+
+```csharp
+/// <summary>
+/// 患者输入DTO验证器 - 统一服务创建和更新
+/// Epic #1736 Phase 3: 合并Create/Update Validators
+/// </summary>
+public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
+{
+    public PatientInputDtoValidator()
+    {
+        // ========== 通用验证规则（创建和更新共享） ==========
+
+        // 必填字段验证
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("患者姓名不能为空")
+            .MaximumLength(50).WithMessage("患者姓名最多50个字符");
+
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("联系电话不能为空")
+            .Matches(@"^1[3-9]\d{9}$").WithMessage("联系电话格式错误（需要11位手机号）");
+
+        // 可选字段验证
+        RuleFor(x => x.IdCardNumber)
+            .Matches(@"^\d{17}[\dXx]$").WithMessage("身份证号格式错误")
+            .When(x => !string.IsNullOrEmpty(x.IdCardNumber)); // 仅在提供时验证
+
+        RuleFor(x => x.Email)
+            .EmailAddress().WithMessage("邮箱格式错误")
+            .When(x => !string.IsNullOrEmpty(x.Email));
+
+        // 枚举验证
+        RuleFor(x => x.Gender)
+            .IsInEnum().WithMessage("性别值无效");
+
+        // ========== 创建时的特殊验证（条件规则） ==========
+
+        // 创建时ID必须为null
+        RuleFor(x => x.Id)
+            .Null().WithMessage("创建时不应提供ID")
+            .When(x => x.Id.HasValue); // 仅在提供时验证
+
+        // ========== 跨字段验证（高级规则） ==========
+
+        // 出生日期不能晚于今天
+        RuleFor(x => x.BirthDate)
+            .LessThanOrEqualTo(DateTime.Today).WithMessage("出生日期不能晚于今天")
+            .When(x => x.BirthDate.HasValue);
+
+        // 年龄合理性验证（0-150岁）
+        RuleFor(x => x)
+            .Must(dto => {
+                if (!dto.BirthDate.HasValue) return true;
+                var age = DateTime.Today.Year - dto.BirthDate.Value.Year;
+                return age >= 0 && age <= 150;
+            })
+            .WithMessage("年龄必须在0-150岁之间")
+            .When(x => x.BirthDate.HasValue);
+    }
+}
+```
+
+**Service层使用模式**:
+```csharp
+/// <summary>
+/// 创建患者（Validator自动验证）
+/// Epic #1731 Phase 3: FluentValidation Pipeline自动验证
+/// </summary>
+public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto input)
+{
+    // ⚠️ 无需手动验证！FluentValidation Pipeline自动验证
+    // 如果验证失败，会自动返回400 ProblemDetails
+
+    // 验证通过后的逻辑
+    var entity = _mapper.Map<Patient>(input);
+    entity.Id = Guid.NewGuid();  // Service层生成ID
+
+    var result = await _repository.AddAsync(entity);
+    return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(result));
+}
+
+/// <summary>
+/// 更新患者（使用同一个Validator）
+/// </summary>
+public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto input)
+{
+    // ⚠️ 同样无需手动验证！FluentValidation Pipeline自动验证
+
+    var existing = await _repository.GetByIdAsync(id);
+    if (existing == null)
+        return ServiceResult<PatientDto>.Error("患者不存在");
+
+    _mapper.Map(input, existing);  // 仅映射业务属性，不覆盖Id
+
+    var result = await _repository.UpdateAsync(existing);
+    return ServiceResult<PatientDto>.Success(_mapper.Map<PatientDto>(result));
+}
+```
+
+---
+
+### Auth模块Validator示例（Epic #1731新增）
+
+#### 1. 登录请求验证器
+
+```csharp
+/// <summary>
+/// 登录请求验证器
+/// Epic #1731 Phase 1: Auth模块Validators补全
+/// </summary>
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        // 用户名验证
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("用户名不能为空")
+            .MinimumLength(3).WithMessage("用户名至少3个字符")
+            .MaximumLength(50).WithMessage("用户名最多50个字符")
+            .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字和下划线");
+
+        // 密码验证
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("密码不能为空")
+            .MinimumLength(6).WithMessage("密码至少6个字符")
+            .MaximumLength(100).WithMessage("密码最多100个字符");
+    }
+}
+```
+
+#### 2. 修改密码验证器
+
+```csharp
+/// <summary>
+/// 修改密码请求验证器
+/// Epic #1731 Phase 1: Auth模块Validators补全
+/// </summary>
+public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
+{
+    public ChangePasswordRequestValidator()
+    {
+        // 旧密码验证
+        RuleFor(x => x.OldPassword)
+            .NotEmpty().WithMessage("旧密码不能为空");
+
+        // 新密码验证
+        RuleFor(x => x.NewPassword)
+            .NotEmpty().WithMessage("新密码不能为空")
+            .MinimumLength(6).WithMessage("新密码至少6个字符")
+            .MaximumLength(100).WithMessage("新密码最多100个字符");
+
+        // 新密码确认验证
+        RuleFor(x => x.ConfirmPassword)
+            .NotEmpty().WithMessage("确认密码不能为空")
+            .Equal(x => x.NewPassword).WithMessage("两次输入的新密码不一致");
+
+        // 跨字段验证：新旧密码不能相同
+        RuleFor(x => x)
+            .Must(req => req.NewPassword != req.OldPassword)
+            .WithMessage("新密码不能与旧密码相同")
+            .When(x => !string.IsNullOrEmpty(x.OldPassword) && !string.IsNullOrEmpty(x.NewPassword));
+    }
+}
+```
+
+#### 3. 超级管理员登录验证器
+
+```csharp
+/// <summary>
+/// 超级管理员登录请求验证器
+/// Epic #1731 Phase 1: Auth模块Validators补全
+/// 额外验证：超级管理员密码强度要求更高
+/// </summary>
+public class SuperAdminLoginRequestValidator : AbstractValidator<SuperAdminLoginRequest>
+{
+    public SuperAdminLoginRequestValidator()
+    {
+        // 用户名验证（超级管理员）
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("用户名不能为空")
+            .Equal("sysadmin").WithMessage("超级管理员用户名固定为sysadmin");
+
+        // 密码验证（更严格）
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("密码不能为空")
+            .MinimumLength(12).WithMessage("超级管理员密码至少12个字符")
+            .Matches(@"[A-Z]").WithMessage("密码必须包含大写字母")
+            .Matches(@"[a-z]").WithMessage("密码必须包含小写字母")
+            .Matches(@"\d").WithMessage("密码必须包含数字")
+            .Matches(@"[@$!%*?&#]").WithMessage("密码必须包含特殊字符");
+
+        // MFA Code验证（如果启用）
+        RuleFor(x => x.MfaCode)
+            .Matches(@"^\d{6}$").WithMessage("MFA验证码必须是6位数字")
+            .When(x => !string.IsNullOrEmpty(x.MfaCode));
+    }
+}
+```
+
+---
+
+### FluentValidation Pipeline集成 (Epic #1731 Phase 3)
+
+#### Program.cs / ServiceCollectionExtensions配置
+
+```csharp
+/// <summary>
+/// 注册FluentValidation到ASP.NET Core Pipeline
+/// Epic #1731 Phase 3: 集成FluentValidation到Pipeline
+/// </summary>
+public static IServiceCollection RegisterControllerServices(
+    this IServiceCollection services,
+    IConfiguration configuration)
+{
+    // ========== FluentValidation全局自动验证 ==========
+    services.AddFluentValidationAutoValidation(config =>
+    {
+        // 保留DataAnnotations验证（与FluentValidation共存）
+        config.DisableDataAnnotationsValidation = false;
+    });
+    services.AddFluentValidationClientsideAdapters();
+
+    // ========== 配置自动模型验证行为 ==========
+    services.Configure<ApiBehaviorOptions>(options =>
+    {
+        // 启用自动400响应（模型验证失败时）
+        options.SuppressModelStateInvalidFilter = false;
+
+        // 自定义400响应格式（使用ProblemDetails）
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "模型验证失败",
+                Detail = "请求数据包含验证错误，请检查输入",
+                Instance = context.HttpContext.Request.Path
+            };
+
+            // 添加追踪信息
+            problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+            problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+
+            return new BadRequestObjectResult(problemDetails)
+            {
+                ContentTypes = { "application/problem+json" }
+            };
+        };
+    });
+
+    // 控制器和JSON配置
+    services.AddControllers()
+        .AddJsonOptions(options => { /* JSON配置 */ });
+
+    return services;
+}
+```
+
+**Pipeline自动验证效果**:
+```
+请求 → FluentValidation验证 → 验证失败？
+                         ↓
+                    ✅ 通过 → Controller方法执行
+                         ↓
+                    ❌ 失败 → 自动返回400 ProblemDetails
+```
+
+**返回的ProblemDetails示例**:
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "模型验证失败",
+  "status": 400,
+  "detail": "请求数据包含验证错误，请检查输入",
+  "instance": "/api/v1/patients",
+  "traceId": "0HN4...",
+  "timestamp": "2025-11-01T10:30:00Z",
+  "errors": {
+    "Name": ["患者姓名不能为空"],
+    "PhoneNumber": ["联系电话格式错误（需要11位手机号）"]
+  }
+}
+```
+
+---
+
+### Validator单元测试模式
+
+```csharp
+/// <summary>
+/// Validator单元测试标准模式
+/// 使用FluentValidation.TestHelper
+/// </summary>
+public class PatientInputDtoValidatorTests
+{
+    private readonly PatientInputDtoValidator _validator;
+
+    public PatientInputDtoValidatorTests()
+    {
+        _validator = new PatientInputDtoValidator();
+    }
+
+    [Fact]
+    public void Validate_WithValidData_PassesValidation()
+    {
+        // Arrange
+        var dto = new PatientInputDto
+        {
+            Name = "张三",
+            PhoneNumber = "13800138000",
+            Gender = Gender.Male,
+            BirthDate = DateTime.Parse("1980-01-01")
+        };
+
+        // Act
+        var result = _validator.TestValidate(dto);
+
+        // Assert
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Validate_WithEmptyName_FailsValidation()
+    {
+        // Arrange
+        var dto = new PatientInputDto
+        {
+            Name = "",  // ❌ 违反验证规则
+            PhoneNumber = "13800138000"
+        };
+
+        // Act
+        var result = _validator.TestValidate(dto);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.Name)
+              .WithErrorMessage("患者姓名不能为空");
+    }
+
+    [Fact]
+    public void Validate_WithInvalidPhoneNumber_FailsValidation()
+    {
+        // Arrange
+        var dto = new PatientInputDto
+        {
+            Name = "张三",
+            PhoneNumber = "12345"  // ❌ 格式错误
+        };
+
+        // Act
+        var result = _validator.TestValidate(dto);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.PhoneNumber);
+    }
+
+    [Fact]
+    public void Validate_WithIdOnCreate_FailsValidation()
+    {
+        // Arrange
+        var dto = new PatientInputDto
+        {
+            Id = Guid.NewGuid(),  // ❌ 创建时不应提供ID
+            Name = "张三",
+            PhoneNumber = "13800138000"
+        };
+
+        // Act
+        var result = _validator.TestValidate(dto);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.Id)
+              .WithErrorMessage("创建时不应提供ID");
+    }
+}
+```
+
+---
+
+### Validator注册模式（模块级）
+
+#### 每个模块的ModuleServiceExtensions注册Validators
+
+```csharp
+/// <summary>
+/// Patients模块服务注册扩展
+/// Epic #1731: 注册FluentValidation Validators
+/// </summary>
+public static class PatientsModuleServiceExtensions
+{
+    public static IServiceCollection AddPatientsModule(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // 注册Repository
+        services.AddScoped<IPatientRepository, PatientRepository>();
+
+        // 注册Service
+        services.AddScoped<IPatientService, PatientService>();
+
+        // Epic #1731: 注册Validators
+        services.AddScoped<IValidator<PatientInputDto>, PatientInputDtoValidator>();
+
+        return services;
+    }
+}
+```
+
+**所有模块Validator注册清单**:
+- ✅ Auth: `LoginRequestValidator`, `ChangePasswordRequestValidator`, `SuperAdminLoginRequestValidator`
+- ✅ Users: `UserInputDtoValidator`
+- ✅ Patients: `PatientInputDtoValidator`
+- ✅ Herbs: `HerbInputDtoValidator`
+- ✅ Consultation: `ConsultationInputDtoValidator`
+- ✅ Prescriptions: `PrescriptionCreateDtoValidator`, `PrescriptionEditDtoValidator`
+- ✅ Formula: `FormulaInputDtoValidator`
+
+---
+
 ## 🔧 通用模式集合
 
 ### 错误处理模式
