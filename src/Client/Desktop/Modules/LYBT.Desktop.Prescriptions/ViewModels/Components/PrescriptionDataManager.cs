@@ -217,7 +217,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     TotalAmount = PrescriptionItems.Sum(x => x.Quantity * x.UnitPrice) * DosageCount * Discount,
                     Advice = MedicalAdvice,
                     Remark = Remark,
-                    Items = PrescriptionItems.Select(item => new PrescriptionItemCreateDto
+                    Items = PrescriptionItems.Select(item => new PrescriptionItemInputDto
                     {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,

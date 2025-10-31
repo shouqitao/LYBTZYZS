@@ -87,7 +87,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+        public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto)
         {
             try
             {
@@ -103,7 +103,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+        public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto)
         {
             try
             {
@@ -142,43 +142,6 @@ namespace LYBT.Module.Formula.Services
             {
                 _logger.LogError(ex, "搜索处方时发生错误，关键字：{Keyword}", keyword);
                 return ServiceResult<List<FormulaDto>>.Failure($"搜索处方失败：{ex.Message}");
-            }
-        }
-
-        public async Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId)
-        {
-            try
-            {
-                // 获取原始处方（包含药材信息）
-                var originalFormula = await _repository.GetByIdWithHerbsAsync(formulaId);
-                if (originalFormula == null)
-                {
-                    return ServiceResult<FormulaDto>.Failure("未找到要克隆的处方");
-                }
-
-                // 简化克隆逻辑 - 仅复制核心信息
-                var clonedFormula = new FormulaEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"{originalFormula.Name}_副本",
-                    Effect = originalFormula.Effect,
-                    Usage = originalFormula.Usage,
-                    Category = originalFormula.Category,
-                    FormulaType = originalFormula.FormulaType,
-                    IsShared = false, // 克隆的方剂默认不共享
-                                      // 不复制药材配伍，让用户重新配置
-                };
-
-                await _repository.AddAsync(clonedFormula);
-                await _repository.SaveChangesAsync();
-
-                var formulaDto = _mapper.Map<FormulaDto>(clonedFormula);
-                return ServiceResult<FormulaDto>.Success(formulaDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "克隆处方时发生错误，处方ID：{FormulaId}", formulaId);
-                return ServiceResult<FormulaDto>.Failure($"克隆处方失败：{ex.Message}");
             }
         }
 

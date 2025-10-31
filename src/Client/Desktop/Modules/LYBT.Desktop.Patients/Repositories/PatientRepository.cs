@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Patients.Repositories
     /// 患者数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class PatientRepository : RepositoryBase<PatientDto, PatientCreateDto, PatientUpdateDto, IPatientApi>, IPatientRepository
+    public class PatientRepository : RepositoryBase<PatientDto, PatientInputDto, PatientInputDto, IPatientApi>, IPatientRepository
     {
         public PatientRepository(
             IPatientApi patientApi,
@@ -49,12 +49,12 @@ namespace LYBT.Desktop.Patients.Repositories
             return _api.GetPatientsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientCreateDto dto)
+        protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientInputDto dto)
         {
             return _api.CreatePatientAsync(dto);
         }
 
-        protected override Task<ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientUpdateDto dto)
+        protected override Task<ApiResponse<PatientDto>> CallApiUpdateAsync(Guid id, PatientInputDto dto)
         {
             return _api.UpdatePatientAsync(id, dto);
         }
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Patients.Repositories
             return _api.DeletePatientAsync(id);
         }
 
-        protected override Guid? GetIdFromUpdateDto(PatientUpdateDto dto)
+        protected override Guid? GetIdFromUpdateDto(PatientInputDto dto)
         {
             return dto?.Id;
         }

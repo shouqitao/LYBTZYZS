@@ -22,8 +22,8 @@ namespace LYBT.Module.Herbs.Mapping
         // Herb -> HerbDetailDto
         CreateMap<Herb, HerbDetailDto>();
 
-        // HerbCreateDto -> Herb
-        CreateMap<HerbCreateDto, Herb>()
+        // HerbInputDto -> Herb
+        CreateMap<HerbInputDto, Herb>()
             // BaseEntity 审计字段
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -33,8 +33,8 @@ namespace LYBT.Module.Herbs.Mapping
             .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-        // HerbUpdateDto -> Herb
-        CreateMap<HerbUpdateDto, Herb>()
+        // HerbInputDto -> Herb
+        CreateMap<HerbInputDto, Herb>()
             // BaseEntity 审计字段
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

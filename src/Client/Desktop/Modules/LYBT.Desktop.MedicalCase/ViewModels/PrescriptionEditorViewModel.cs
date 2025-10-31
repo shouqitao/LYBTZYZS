@@ -412,7 +412,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var itemsWithPrice = allItems.Select(item =>
                 {
                     var herb = _allHerbs.FirstOrDefault(h => h.Id == item.HerbId);
-                    return new PrescriptionItemCreateDto
+                    return new PrescriptionItemInputDto
                     {
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,

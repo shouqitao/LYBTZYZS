@@ -66,8 +66,8 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // PrescriptionItemCreateDto -> PrescriptionItem
-            CreateMap<PrescriptionItemCreateDto, PrescriptionItem>()
+            // PrescriptionItemInputDto -> PrescriptionItem
+            CreateMap<PrescriptionItemInputDto, PrescriptionItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore());
 

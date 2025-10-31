@@ -11,8 +11,8 @@ namespace LYBT.Desktop.Herbs.Interfaces
     {
         Task<PagedResult<HerbDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<HerbDto?> GetByIdAsync(Guid id);
-        Task<HerbDto> CreateAsync(HerbCreateDto dto);
-        Task<HerbDto> UpdateAsync(HerbUpdateDto dto);
+        Task<HerbDto> CreateAsync(HerbInputDto dto);
+        Task<HerbDto> UpdateAsync(HerbInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<HerbDto>> SearchAsync(string keyword);
     }

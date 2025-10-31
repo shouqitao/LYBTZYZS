@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             {
                 _logger.LogInformation("保存配方: {FormulaId}", currentFormula.Id);
 
-                var updateDto = new FormulaUpdateDto
+                var updateDto = new FormulaInputDto
                 {
                     Id = currentFormula.Id,
                     Name = formulaName.Trim(),
@@ -45,7 +45,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
                     Remark = string.IsNullOrWhiteSpace(remark) ? null! : remark.Trim(),
                     IsShared = isShared,
-                    Herbs = herbItems.Select(h => new FormulaHerbItemUpdateDto
+                    Herbs = herbItems.Select(h => new FormulaHerbItemInputDto
                     {
                         Id = h.Id,
                         HerbId = h.HerbId,
@@ -79,21 +79,21 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             {
                 _logger.LogInformation("复制配方: {FormulaId} ({FormulaName})", sourceFormula.Id, sourceFormula.Name);
 
-                var createDto = new FormulaCreateDto
+                var createDto = new FormulaInputDto
                 {
                     Name = $"{sourceFormula.Name}_副本",
                     Effect = sourceFormula.Effect!,
                     Usage = sourceFormula.Usage!,
                     Remark = sourceFormula.Remark!,
                     IsShared = false, // 副本默认不共享
-                    Herbs = sourceFormula.Herbs?.Select(h => new FormulaHerbItemCreateDto
+                    Herbs = sourceFormula.Herbs?.Select(h => new FormulaHerbItemInputDto
                     {
                         HerbId = h.HerbId,
                         Quantity = h.Quantity,
                         Preparation = h.Preparation,
                         Usage = h.Usage,
                         SortOrder = h.SortOrder
-                    }).ToList() ?? new List<FormulaHerbItemCreateDto>()
+                    }).ToList() ?? new List<FormulaHerbItemInputDto>()
                 };
 
                 var newFormula = await _repository.CreateAsync(createDto);

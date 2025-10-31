@@ -26,27 +26,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄（基于出生日期的计算属性）</summary>
+        /// <summary>年龄（由Service层计算）</summary>
         [DisplayName("年龄")]
-        public int? Age
-        {
-            get
-            {
-                if (BirthDate == null)
-                {
-                    return null;
-                }
-
-                var today = DateTime.Today;
-                var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
-                    age--;
-                }
-
-                return age;
-            }
-        }
+        public int? Age { get; set; }
 
         /// <summary>身份证号</summary>
         [DisplayName("身份证号")]
@@ -106,9 +88,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
     }
 
     /// <summary>
-    /// 患者输入基础DTO - 提取创建和更新的共同字段
+    /// 患者输入DTO - 统一创建和更新
+    /// Phase 3: 合并PatientCreateDto和PatientUpdateDto
     /// </summary>
-    public abstract class PatientInputBaseDto
+    public class PatientInputDto
     {
 
         /// <summary>患者姓名</summary>
@@ -125,27 +108,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄（计算属性，基于出生日期）</summary>
+        /// <summary>年龄（由Service层计算）</summary>
         [DisplayName("年龄")]
-        public int? Age
-        {
-            get
-            {
-                if (BirthDate == null)
-                {
-                    return null;
-                }
-
-                var today = DateTime.Today;
-                var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
-                    age--;
-                }
-
-                return age;
-            }
-        }
+        public int? Age { get; set; }
 
         /// <summary>身份证号</summary>
         [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
@@ -198,25 +163,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>状态</summary>
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-    }
 
-    /// <summary>
-    /// 患者创建DTO - 继承输入基础DTO
-    /// </summary>
-    public class PatientCreateDto : PatientInputBaseDto
-    {
-        // 继承所有字段，无需额外定义
-    }
-
-    /// <summary>
-    /// 患者更新DTO - 继承输入基础DTO并实现ID接口
-    /// </summary>
-    public class PatientUpdateDto : PatientInputBaseDto, IIdentifiable<Guid>
-    {
-        /// <summary>患者ID</summary>
-        [Required(ErrorMessage = "患者ID不能为空")]
+        /// <summary>患者ID（更新时必填，创建时为null）</summary>
         [DisplayName("患者ID")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
     }
 
     /// <summary>
@@ -240,16 +190,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("年龄")]
         public int Age { get; set; }
 
-        /// <summary>推算出生日期（基于年龄）</summary>
+        /// <summary>推算出生日期（由Service层计算）</summary>
         [DisplayName("推算出生日期")]
-        public DateTime? BirthDate
-        {
-            get
-            {
-                if (Age <= 0) return null;
-                return DateTime.Today.AddYears(-Age);
-            }
-        }
+        public DateTime? BirthDate { get; set; }
 
         /// <summary>手机号码</summary>
         [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "手机号码长度不能超过{1}个字符")]

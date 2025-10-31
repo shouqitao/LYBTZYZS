@@ -79,7 +79,7 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
-        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
+        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
-        public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
+        public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto)
         {
             try
             {

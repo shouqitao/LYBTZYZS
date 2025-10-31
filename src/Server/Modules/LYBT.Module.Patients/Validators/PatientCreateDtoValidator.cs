@@ -6,9 +6,9 @@ namespace LYBT.Module.Patients.Validators
     /// <summary>
     /// 患者创建DTO验证器
     /// </summary>
-    public class PatientCreateDtoValidator : AbstractValidator<PatientCreateDto>
+    public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
     {
-        public PatientCreateDtoValidator()
+        public PatientInputDtoValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("姓名不能为空")

@@ -30,7 +30,7 @@ namespace LYBT.Module.Consultation
             // services.AddScoped<IDiagnosisService, DiagnosisService>();  // 不存在的类型
 
             // 注册验证器 - 自动注册所有Validator
-            services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<ConsultationInputDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

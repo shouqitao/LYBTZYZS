@@ -6,9 +6,9 @@ namespace LYBT.Module.Formula.Validators
     /// <summary>
     /// 验方创建DTO验证器
     /// </summary>
-    public class FormulaCreateDtoValidator : AbstractValidator<FormulaCreateDto>
+    public class FormulaInputDtoValidator : AbstractValidator<FormulaInputDto>
     {
-        public FormulaCreateDtoValidator()
+        public FormulaInputDtoValidator()
         {
             // 验方名称必填且不超过100字符
             RuleFor(x => x.Name)
@@ -72,16 +72,16 @@ namespace LYBT.Module.Formula.Validators
                 .WithMessage("必须包含至少一味中药材");
 
             // 验证每个药材项
-            RuleForEach(x => x.Herbs).SetValidator(new FormulaHerbItemCreateDtoValidator());
+            RuleForEach(x => x.Herbs).SetValidator(new FormulaHerbItemInputDtoValidator());
         }
     }
 
     /// <summary>
     /// 验方药材项创建DTO验证器
     /// </summary>
-    public class FormulaHerbItemCreateDtoValidator : AbstractValidator<FormulaHerbItemCreateDto>
+    public class FormulaHerbItemInputDtoValidator : AbstractValidator<FormulaHerbItemInputDto>
     {
-        public FormulaHerbItemCreateDtoValidator()
+        public FormulaHerbItemInputDtoValidator()
         {
             // 药材ID必填
             RuleFor(x => x.HerbId)

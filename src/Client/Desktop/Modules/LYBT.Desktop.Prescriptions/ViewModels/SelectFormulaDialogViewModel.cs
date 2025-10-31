@@ -335,7 +335,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 // 按功效筛选
                 if (!string.IsNullOrWhiteSpace(EffectFilter) && EffectFilter != "全部")
                 {
-                    filtered = filtered.Where(f => f.Effects?.Contains(EffectFilter) == true);
+                    filtered = filtered.Where(f => f.Effect?.Contains(EffectFilter) == true);
                 }
 
                 Formulas.Clear();
@@ -398,10 +398,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 FormulaDetails = details;
 
                 // 构建组成信息
-                if (formula.Items?.Any() == true)
+                if (formula.Herbs?.Any() == true)
                 {
                     var composition = "组成:\n";
-                    foreach (var item in formula.Items)
+                    foreach (var item in formula.Herbs)
                     {
                         composition += $"• {item.HerbName} {item.Quantity}{item.Unit}";
                         if (!string.IsNullOrEmpty(item.Processing))
@@ -529,10 +529,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 info += $"描述: {formula.Description}\n";
             }
 
-            if (formula.Items?.Any() == true)
+            if (formula.Herbs?.Any() == true)
             {
                 info += "\n药材组成:\n";
-                foreach (var item in formula.Items)
+                foreach (var item in formula.Herbs)
                 {
                     info += $"• {item.HerbName} {item.Quantity}{item.Unit}";
                     if (!string.IsNullOrEmpty(item.Processing))
@@ -558,9 +558,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 info += $"\n禁忌: {formula.Contraindications}\n";
             }
 
-            if (!string.IsNullOrEmpty(formula.Notes))
+            if (!string.IsNullOrEmpty(formula.Remark))
             {
-                info += $"\n备注: {formula.Notes}";
+                info += $"\n备注: {formula.Remark}";
             }
 
             return info;

@@ -27,13 +27,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 创建用户
         /// </summary>
         [Refit.Post("/api/v1/users")]
-        Task<ApiResponse<UserDto>> CreateUserAsync([Refit.Body] UserCreateDto request);
+        Task<ApiResponse<UserDto>> CreateUserAsync([Refit.Body] UserInputDto request);
 
         /// <summary>
         /// 更新用户
         /// </summary>
         [Refit.Put("/api/v1/users/{id}")]
-        Task<ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Refit.Body] UserUpdateDto request);
+        Task<ApiResponse<UserDto>> UpdateUserAsync(Guid id, [Refit.Body] UserInputDto request);
 
         /// <summary>
         /// 删除用户

@@ -79,7 +79,7 @@ namespace LYBT.Module.Prescriptions.Validators
             // 验证处方项目（可选）
             When(x => x.Items != null && x.Items.Count > 0, () =>
             {
-                RuleForEach(x => x.Items).SetValidator(new PrescriptionItemCreateDtoValidator());
+                RuleForEach(x => x.Items).SetValidator(new PrescriptionItemInputDtoValidator());
             });
         }
     }
@@ -87,9 +87,9 @@ namespace LYBT.Module.Prescriptions.Validators
     /// <summary>
     /// 处方项目创建DTO验证器
     /// </summary>
-    public class PrescriptionItemCreateDtoValidator : AbstractValidator<PrescriptionItemCreateDto>
+    public class PrescriptionItemInputDtoValidator : AbstractValidator<PrescriptionItemInputDto>
     {
-        public PrescriptionItemCreateDtoValidator()
+        public PrescriptionItemInputDtoValidator()
         {
             // 药材ID必填
             RuleFor(x => x.HerbId)

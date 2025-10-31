@@ -400,7 +400,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 Logger.LogDebug("{Action}用户: {UserId} - {UserName}", action, user.Id, user.UserName);
 
-                var updateDto = new UserUpdateDto
+                var updateDto = new UserInputDto
                 {
                     Id = user.Id,
                     Status = newStatus

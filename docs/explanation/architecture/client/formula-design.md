@@ -79,7 +79,7 @@ Domain层(Entities):
 | 职责类别 | 具体职责 | 实现位置 |
 |---------|---------|---------|
 | **验方列表管理** | 分页查询、搜索、删除验方 | FormulaManagementViewModel |
-| **验方详情编辑** | 新增、修改、克隆验方 | FormulaDetailViewModel |
+| **验方详情编辑** | 新增、修改验方（Issue #1733 已删除克隆功能） | FormulaDetailViewModel |
 | **药材组成管理** | 添加、删除、修改药材明细 | FormulaDetailViewModel.HerbItems |
 | **延迟绑定验证** | 显示未验证药材、打开药材选择对话框 | FormulaValidationViewModel |
 | **Excel导入** | 打开文件选择、上传文件、显示导入结果 | FormulaManagementViewModel.ImportCommand |
@@ -417,9 +417,6 @@ public DelegateCommand AddHerbCommand { get; }
 
 /// <summary>删除药材命令</summary>
 public DelegateCommand<FormulaHerbItemDto> RemoveHerbCommand { get; }
-
-/// <summary>克隆验方命令</summary>
-public DelegateCommand CloneCommand { get; }
 ```
 
 **导航参数接收**:
@@ -917,9 +914,6 @@ public class ValidationResult
         <ToolBar Grid.Row="0">
             <Button Command="{Binding SaveCommand}" Content="保存"/>
             <Button Command="{Binding CancelCommand}" Content="取消"/>
-            <Separator/>
-            <Button Command="{Binding CloneCommand}" Content="克隆验方"
-                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
         </ToolBar>
 
         <!-- BasicInfo -->
@@ -1426,9 +1420,8 @@ public interface IFormulaRepository
     Task<ServiceResult<byte[]>> ExportAsync(List<Guid>? formulaIds = null);
     ServiceResult<byte[]> GenerateImportTemplate();
 
-    // ========== 验证与克隆 ==========
+    // ========== 验证 ==========
     Task<ServiceResult> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
-    Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid sourceId);
 }
 ```
 

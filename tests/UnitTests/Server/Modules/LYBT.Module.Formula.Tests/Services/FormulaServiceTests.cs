@@ -58,7 +58,7 @@ namespace LYBT.Module.Formula.Tests.Services
             var herbId1 = Guid.NewGuid();
             var herbId2 = Guid.NewGuid();
 
-            var createDto = new FormulaCreateDto
+            var createDto = new FormulaInputDto
             {
                 Name = "桂枝汤",
                 Effect = "解肌发表，调和营卫",
@@ -69,7 +69,7 @@ namespace LYBT.Module.Formula.Tests.Services
                 Indications = "外感风寒表虚证",
                 Contraindications = "表实无汗者禁用",
                 IsShared = false,
-                Herbs = new List<FormulaHerbItemCreateDto>
+                Herbs = new List<FormulaHerbItemInputDto>
                 {
                     new() { HerbId = herbId1, Quantity = 9, SortOrder = 1 },
                     new() { HerbId = herbId2, Quantity = 9, SortOrder = 2 }
@@ -105,12 +105,12 @@ namespace LYBT.Module.Formula.Tests.Services
         public async Task CreateAsync_WithException_ShouldReturnFailure()
         {
             // Arrange
-            var createDto = new FormulaCreateDto
+            var createDto = new FormulaInputDto
             {
                 Name = "测试方剂",
                 Effect = "测试功效",
                 Usage = "测试用法",
-                Herbs = new List<FormulaHerbItemCreateDto>
+                Herbs = new List<FormulaHerbItemInputDto>
                 {
                     new() { HerbId = Guid.NewGuid(), Quantity = 10, SortOrder = 1 }
                 }
@@ -320,13 +320,13 @@ namespace LYBT.Module.Formula.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var updateDto = new FormulaUpdateDto
+            var updateDto = new FormulaInputDto
             {
                 Id = formulaId,
                 Name = "小柴胡汤（加减）",
                 Effect = "和解少阳，疏肝解郁",
                 Usage = "温服，日三次",
-                Herbs = new List<FormulaHerbItemUpdateDto>
+                Herbs = new List<FormulaHerbItemInputDto>
                 {
                     new() { HerbId = Guid.NewGuid(), Quantity = 9, SortOrder = 1 }
                 }
@@ -363,13 +363,13 @@ namespace LYBT.Module.Formula.Tests.Services
         {
             // Arrange
             var formulaId = Guid.NewGuid();
-            var updateDto = new FormulaUpdateDto
+            var updateDto = new FormulaInputDto
             {
                 Id = formulaId,
                 Name = "测试方剂",
                 Effect = "测试功效",
                 Usage = "测试用法",
-                Herbs = new List<FormulaHerbItemUpdateDto>()
+                Herbs = new List<FormulaHerbItemInputDto>()
             };
 
             _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))

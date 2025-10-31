@@ -28,13 +28,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 创建患者
         /// </summary>
         [Refit.Post("/api/v1/patients")]
-        Task<ApiResponse<PatientDto>> CreatePatientAsync([Refit.Body] PatientCreateDto request);
+        Task<ApiResponse<PatientDto>> CreatePatientAsync([Refit.Body] PatientInputDto request);
 
         /// <summary>
         /// 更新患者
         /// </summary>
         [Refit.Put("/api/v1/patients/{id}")]
-        Task<ApiResponse<PatientDto>> UpdatePatientAsync(Guid id, [Refit.Body] PatientUpdateDto request);
+        Task<ApiResponse<PatientDto>> UpdatePatientAsync(Guid id, [Refit.Body] PatientInputDto request);
 
         /// <summary>
         /// 删除患者（软删除）

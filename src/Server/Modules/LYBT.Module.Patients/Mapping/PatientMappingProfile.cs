@@ -22,8 +22,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber));
 
-            // PatientCreateDto转患者实体
-            CreateMap<PatientCreateDto, Patient>()
+            // PatientInputDto转患者实体
+            CreateMap<PatientInputDto, Patient>()
                 .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
@@ -39,8 +39,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // PatientUpdateDto转患者实体
-            CreateMap<PatientUpdateDto, Patient>()
+            // PatientInputDto转患者实体
+            CreateMap<PatientInputDto, Patient>()
                 .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
@@ -73,8 +73,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
             // UltraThink修复：添加缺失的DTO间映射配置
-            // PatientCreateDto -> PatientDto（用于验证服务）
-            CreateMap<PatientCreateDto, PatientDto>()
+            // PatientInputDto -> PatientDto（用于验证服务）
+            CreateMap<PatientInputDto, PatientDto>()
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())
@@ -84,8 +84,8 @@ namespace LYBT.Module.Patients.Mapping
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
-            // PatientUpdateDto -> PatientDto（用于验证服务）
-            CreateMap<PatientUpdateDto, PatientDto>()
+            // PatientInputDto -> PatientDto（用于验证服务）
+            CreateMap<PatientInputDto, PatientDto>()
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())

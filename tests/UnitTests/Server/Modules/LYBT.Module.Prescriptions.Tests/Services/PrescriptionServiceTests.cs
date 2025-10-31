@@ -218,9 +218,9 @@ namespace LYBT.Module.Prescriptions.Tests.Services
                 Quantity = 7,
                 Usage = "水煎服，每日一剂",
                 TotalAmount = 168.50m,
-                Items = new List<PrescriptionItemCreateDto>
+                Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemCreateDto
+                    new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
                         HerbName = "柴胡",

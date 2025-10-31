@@ -857,7 +857,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                         // 创建患者DTO
                         var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
-                        var patientDto = new PatientCreateDto
+                        var patientDto = new PatientInputDto
                         {
                             Name = name,
                             Gender = ParseGender(gender),

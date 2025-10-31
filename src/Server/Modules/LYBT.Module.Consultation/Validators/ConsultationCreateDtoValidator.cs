@@ -6,9 +6,9 @@ namespace LYBT.Module.Consultation.Validators
     /// <summary>
     /// 诊疗创建DTO验证器 - 简化版，只保留必要验证
     /// </summary>
-    public class ConsultationCreateDtoValidator : AbstractValidator<ConsultationCreateDto>
+    public class ConsultationInputDtoValidator : AbstractValidator<ConsultationInputDto>
     {
-        public ConsultationCreateDtoValidator()
+        public ConsultationInputDtoValidator()
         {
             // 只验证患者ID必填，其他字段允许为空（四诊信息可以逐步完善）
             RuleFor(x => x.PatientId)

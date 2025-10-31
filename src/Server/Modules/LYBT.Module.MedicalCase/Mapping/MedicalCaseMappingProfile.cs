@@ -133,8 +133,8 @@ namespace LYBT.Module.MedicalCase.Mapping
             // Response映射: Consultation -> ConsultationDetailDto
             CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDetailDto>();
 
-            // Response映射: Prescription -> PrescriptionDetailDto
-            CreateMap<LYBT.Entities.Prescriptions.Prescription, PrescriptionDetailDto>()
+            // Response映射: Prescription -> MedicalCasePrescriptionDto
+            CreateMap<LYBT.Entities.Prescriptions.Prescription, MedicalCasePrescriptionDto>()
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src =>
                     src.Items.Sum(i => i.Amount) * src.DosageCount * src.Discount));
 

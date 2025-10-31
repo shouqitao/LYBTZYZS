@@ -1001,7 +1001,8 @@ public static class ConsultationModule
         // ========== 注册验证器 - 自动注册所有Validator ==========
         services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
 
-        // ========== AutoMapper配置已在UnifiedServiceRegistration中集中注册 ==========
+        // ========== AutoMapper配置已在ApiServiceCollectionExtensions中集中注册 ==========
+        // 更新说明（Issue #1732 Phase 2.5）: 服务注册已从UnifiedServiceRegistration拆分为专责扩展类
 
         // ========== 模块无特殊配置需求（通用配置在appsettings.json）==========
 
@@ -1054,7 +1055,7 @@ services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();
 #### Step 3: AutoMapper集中注册
 
 ```csharp
-// UnifiedServiceRegistration.cs
+// ApiServiceCollectionExtensions.cs（Issue #1732 Phase 2.5更新）
 services.AddAutoMapper(typeof(ConsultationMappingProfile).Assembly);
 ```
 

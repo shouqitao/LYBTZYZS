@@ -25,8 +25,8 @@ namespace LYBT.Module.Formula.Mapping
         CreateMap<LYBT.Entities.Formula.Formula, FormulaDetailDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
-        // FormulaCreateDto -> Formula
-        CreateMap<FormulaCreateDto, LYBT.Entities.Formula.Formula>()
+        // FormulaInputDto -> Formula
+        CreateMap<FormulaInputDto, LYBT.Entities.Formula.Formula>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
             .ForMember(dest => dest.Property, opt => opt.Ignore())
             .ForMember(dest => dest.Herbs, opt => opt.Ignore())
@@ -43,8 +43,8 @@ namespace LYBT.Module.Formula.Mapping
             .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-        // FormulaUpdateDto -> Formula
-        CreateMap<FormulaUpdateDto, LYBT.Entities.Formula.Formula>()
+        // FormulaInputDto -> Formula
+        CreateMap<FormulaInputDto, LYBT.Entities.Formula.Formula>()
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.Property, opt => opt.Ignore())
             .ForMember(dest => dest.Herbs, opt => opt.Ignore())

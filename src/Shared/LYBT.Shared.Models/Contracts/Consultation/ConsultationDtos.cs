@@ -79,9 +79,10 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     // Issue #1562 Phase 2: 已删除 ConsultationDetailDto（与ConsultationDto重复，MedicalAdvice已合并）
 
     /// <summary>
-    /// 诊疗输入基础DTO - 提取创建和更新的共同字段
+    /// 诊疗输入DTO - 统一创建和更新
+    /// Phase 3: 合并ConsultationCreateDto和ConsultationUpdateDto
     /// </summary>
-    public abstract class ConsultationInputBaseDto : IRemarkable
+    public class ConsultationInputDto : IRemarkable
     {
         /// <summary>主诉</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "主诉长度不能超过{1}个字符")]
@@ -132,28 +133,22 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
-    }
 
-    /// <summary>
-    /// 诊疗创建DTO - 简化版（Issue #1562 Phase 2）
-    /// 移除了StartTime字段（Entity中不存在，使用CreatedAt代替）
-    /// </summary>
-    public class ConsultationCreateDto : ConsultationInputBaseDto
-    {
-        /// <summary>医疗案例ID（共享主键）</summary>
-        [Required(ErrorMessage = "医疗案例ID不能为空")]
+        /// <summary>诊疗ID（更新时必填，创建时为null，共享主键=MedicalCaseId）</summary>
+        [DisplayName("诊疗ID")]
+        public Guid? Id { get; set; }
+
+        /// <summary>医疗案例ID（创建时必填，共享主键）</summary>
         [DisplayName("医疗案例ID")]
-        public Guid MedicalCaseId { get; set; }
+        public Guid? MedicalCaseId { get; set; }
 
-        /// <summary>患者ID（从MedicalCase获取）</summary>
-        [Required(ErrorMessage = "患者ID不能为空")]
+        /// <summary>患者ID（创建时从MedicalCase获取）</summary>
         [DisplayName("患者ID")]
-        public Guid PatientId { get; set; }
+        public Guid? PatientId { get; set; }
 
-        /// <summary>关联用户ID（医生）</summary>
-        [Required(ErrorMessage = "关联用户ID不能为空")]
+        /// <summary>关联用户ID（医生，创建时必填）</summary>
         [DisplayName("关联用户ID")]
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>患者姓名（展示用）</summary>
         [DisplayName("患者姓名")]
@@ -162,18 +157,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>医生姓名（展示用）</summary>
         [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }
-    }
-
-    /// <summary>
-    /// 诊疗更新DTO - 简化版（Issue #1562 Phase 2）
-    /// 移除了ConsultationStatus和EndTime字段（Entity中不存在）
-    /// </summary>
-    public class ConsultationUpdateDto : ConsultationInputBaseDto, IIdentifiable<Guid>
-    {
-        /// <summary>诊疗ID（共享主键，等于MedicalCaseId）</summary>
-        [Required(ErrorMessage = "诊疗ID不能为空")]
-        [DisplayName("诊疗ID")]
-        public Guid Id { get; set; }
     }
 
     /// <summary>

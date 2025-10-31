@@ -35,7 +35,6 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选</param>
         [HttpGet]
-        [ResponseCache(Duration = 7200, Location = ResponseCacheLocation.Any)]
         [OutputCache(PolicyName = "FormulasCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<FormulaDto>>>> GetList(
             [FromQuery] int page = 1,
@@ -63,7 +62,6 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方详情
         /// </summary>
         [HttpGet("{id}")]
-        [ResponseCache(Duration = 1800, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<FormulaDto>>> GetById(Guid id)
         {
             try
@@ -92,7 +90,7 @@ namespace LYBT.WebAPI.Controllers
         /// 新增验方
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaCreateDto dto)
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Add([FromBody] FormulaInputDto dto)
         {
             try
             {
@@ -121,7 +119,7 @@ namespace LYBT.WebAPI.Controllers
         /// 更新验方
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaUpdateDto dto)
+        public async Task<ActionResult<ApiResponse<FormulaDto>>> Update(Guid id, [FromBody] FormulaInputDto dto)
         {
             try
             {
@@ -329,53 +327,11 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-
-        /// <summary>
-        /// 克隆验方 - 复制验方作为新验方 (Issue #1167)
-        /// </summary>
-        /// <param name="id">原验方ID</param>
-        /// <returns>新创建的验方副本</returns>
-        [HttpPost("{id}/copy")]
-        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<FormulaDto>>> CopyFormula(Guid id)
-        {
-            try
-            {
-                var validation = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                var result = await _service.CloneFormulaAsync(id);
-
-                if (!result.IsSuccess || result.Data == null)
-                {
-                    return NotFound<FormulaDto>(
-                        result.ErrorMessage ?? "验方不存在",
-                        ApiErrorCodes.FORMULANOTFOUND);
-                }
-
-                // 记录操作日志
-                LogOperation("克隆验方",
-                    new { OriginalId = id, NewId = result.Data.Id },
-                    result.Data.Id);
-
-                return Success(result.Data, "验方克隆成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<FormulaDto>(ex, "克隆验方", id);
-            }
-        }
-
         /// <summary>
         /// 获取待校验的验方列表 (Issue #1349)
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
         [HttpGet("pending-validation")]
-        [ResponseCache(Duration = 60)] // 缓存60秒
         [ProducesResponseType(typeof(ApiResponse<List<FormulaDto>>), 200)]
         public async Task<ActionResult<ApiResponse<List<FormulaDto>>>> GetPendingValidation()
         {

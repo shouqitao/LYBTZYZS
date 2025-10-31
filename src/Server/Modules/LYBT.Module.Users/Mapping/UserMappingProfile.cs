@@ -32,8 +32,8 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
-            // UserCreateDto转用户实体
-            CreateMap<UserCreateDto, User>()
+            // UserInputDto转用户实体
+            CreateMap<UserInputDto, User>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 映射Username到UserName
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
@@ -50,8 +50,8 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // UserUpdateDto转用户实体
-            CreateMap<UserUpdateDto, User>()
+            // UserInputDto转用户实体
+            CreateMap<UserInputDto, User>()
                 .ForMember(dest => dest.UserName, opt => opt.Ignore()) // 用户名不允许修改
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())

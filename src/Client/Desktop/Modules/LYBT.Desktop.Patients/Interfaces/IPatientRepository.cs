@@ -15,12 +15,12 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// <summary>
         /// 创建新患者（使用CreateDto）
         /// </summary>
-        Task<PatientDto> CreateAsync(PatientCreateDto patient);
+        Task<PatientDto> CreateAsync(PatientInputDto patient);
 
         /// <summary>
         /// 更新患者信息（使用UpdateDto）
         /// </summary>
-        Task<PatientDto> UpdateAsync(PatientUpdateDto patient);
+        Task<PatientDto> UpdateAsync(PatientInputDto patient);
 
         Task<bool> DeleteAsync(Guid id);
         Task<List<PatientDto>> SearchAsync(string keyword);

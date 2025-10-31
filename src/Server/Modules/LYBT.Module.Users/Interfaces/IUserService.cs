@@ -46,12 +46,12 @@ namespace LYBT.Module.Users.Interfaces
         /// <summary>
         /// 创建用户
         /// </summary>
-        Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto, CancellationToken cancellationToken = default);
+        Task<ServiceResult<UserDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 更新用户
         /// </summary>
-        Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto, CancellationToken cancellationToken = default);
+        Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 删除用户（软删除）

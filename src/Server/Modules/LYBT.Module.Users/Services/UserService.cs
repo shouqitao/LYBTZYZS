@@ -141,7 +141,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 创建用户
         /// </summary>
-        public async Task<ServiceResult<UserDto>> CreateAsync(UserCreateDto dto, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<UserDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -205,7 +205,7 @@ namespace LYBT.Module.Users.Services
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserUpdateDto dto, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -213,7 +213,7 @@ namespace LYBT.Module.Users.Services
                 if (entity == null)
                     return ServiceResult<UserDto>.Failure("用户不存在");
 
-                // 注意：UserUpdateDto不包含Username属性，用户名一旦创建不可更改
+                // 注意：UserInputDto不包含Username属性，用户名一旦创建不可更改
                 // 这也避免了用户后期尝试改为超级管理员用户名的风险
 
                 _mapper.Map(dto, entity);

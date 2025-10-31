@@ -853,7 +853,8 @@ public class Program
 ### 5.2 认证服务注册扩展
 
 ```csharp
-// 位置: src/Server/Services/LYBT.WebAPI/Extensions/UnifiedServiceRegistration.cs
+// 位置: src/Server/Services/LYBT.WebAPI/Extensions/ServiceCollectionExtensions.cs
+// 更新说明（Issue #1732 Phase 2.5）: 服务注册已拆分为专责扩展类
 
 using System.Text;
 using LYBT.Infrastructure.Configuration;
@@ -862,7 +863,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.WebAPI.Extensions;
 
-public static class UnifiedServiceRegistration
+public static class ServiceCollectionExtensions
 {
     public static IServiceCollection RegisterAllApplicationServices(
         this IServiceCollection services,
@@ -871,7 +872,7 @@ public static class UnifiedServiceRegistration
     {
         // ... 其他服务注册
 
-        // ⭐ 认证服务注册
+        // ⭐ 认证服务注册（实际实现在AuthenticationServiceCollectionExtensions）
         services.RegisterAuthenticationServices(configuration);
 
         return services;
@@ -1735,7 +1736,7 @@ public class PatientService : IPatientService
 ### 8.4 注册IHttpContextAccessor
 
 ```csharp
-// 在UnifiedServiceRegistration.cs中注册
+// 在ServiceCollectionExtensions.cs或相关扩展类中注册（Issue #1732 Phase 2.5更新）
 services.AddHttpContextAccessor();
 ```
 
@@ -2471,7 +2472,7 @@ public class PatientService
 ✅ **正确做法**:
 
 ```csharp
-// 在UnifiedServiceRegistration.cs中注册
+// 在ServiceCollectionExtensions.cs或相关扩展类中注册（Issue #1732 Phase 2.5更新）
 services.AddHttpContextAccessor();
 ```
 

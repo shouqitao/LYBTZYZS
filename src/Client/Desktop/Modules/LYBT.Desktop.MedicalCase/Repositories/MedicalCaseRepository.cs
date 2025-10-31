@@ -61,7 +61,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// </summary>
         public async Task<MedicalCaseDto> CreateWithDetailsAsync(
             MedicalCaseCreateDto caseDto,
-            ConsultationCreateDto consultationDto,
+            ConsultationInputDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null)
         {
             if (caseDto == null)
@@ -93,7 +93,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 更新医案的诊断信息（聚合根方法）
         /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
         /// </summary>
-        public async Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationUpdateDto dto)
+        public async Task<ConsultationDto> UpdateConsultationAsync(Guid medicalCaseId, ConsultationInputDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));

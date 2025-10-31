@@ -12,7 +12,7 @@ using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
-using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, PrescriptionDetailDto
+using LYBT.Module.MedicalCase.Dtos;     // ConsultationDetailDto, MedicalCasePrescriptionDto
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -447,19 +447,19 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
         [HttpGet("{medicalCaseId}/prescriptions")]
-        [ProducesResponseType(typeof(ApiResponse<List<PrescriptionDetailDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<PrescriptionDetailDto>>>> GetPrescriptionList(
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCasePrescriptionDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<MedicalCasePrescriptionDto>>>> GetPrescriptionList(
             Guid medicalCaseId)
         {
             try
             {
                 var result = await _medicalCaseService.GetPrescriptionListAsync(medicalCaseId);
 
-                return Ok(ApiResponse<List<PrescriptionDetailDto>>.CreateSuccess(result, "查询成功"));
+                return Ok(ApiResponse<List<MedicalCasePrescriptionDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<PrescriptionDetailDto>>(ex, "获取处方列表",
+                return HandleException<List<MedicalCasePrescriptionDto>>(ex, "获取处方列表",
                     new { medicalCaseId });
             }
         }

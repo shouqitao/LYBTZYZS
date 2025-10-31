@@ -447,10 +447,10 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 info += $"描述: {formula.Description}\n";
             }
 
-            if (formula.Items?.Any() == true)
+            if (formula.Herbs?.Any() == true)
             {
                 info += "\n药材组成:\n";
-                foreach (var item in formula.Items)
+                foreach (var item in formula.Herbs)
                 {
                     info += $"• {item.HerbName} {item.Quantity}{item.Unit}\n";
                 }

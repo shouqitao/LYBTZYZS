@@ -184,13 +184,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 var birthDate = DateTime.Today.AddYears(-Age);
 
                 // 创建患者DTO
-                var createDto = new PatientCreateDto
+                var createDto = new PatientInputDto
                 {
                     Name = Name.Trim(),
                     Gender = Gender,
                     BirthDate = birthDate,
                     PhoneNumber = PhoneNumber.Trim(),
-                    // TODO: 拼音码功能待后续扩展（需要扩展PatientCreateDto）
+                    // TODO: 拼音码功能待后续扩展（需要扩展PatientInputDto）
                     Status = Shared.Models.Enums.CommonStatus.Enabled
                 };
 

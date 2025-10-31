@@ -456,6 +456,29 @@
 
 ## 🔄 版本更新说明
 
+### Issue #1733 WebAPI MVP合规优化 (2025-10-31)
+
+**优化目标**：移除过度设计的监控系统，统一缓存策略，简化控制器逻辑
+
+**成果**：
+- 删除 PerformanceController（6个端点）- 性能监控委托给 Application Insights
+- 简化 HealthController（移除环境分支和复杂诊断）
+- 简化 CacheHealthController（保留核心管理功能）
+- 合并 AuthController 重复端点（2个）
+- 移除验方克隆端点（1个）
+- 统一缓存策略（移除7处 ResponseCache，使用 OutputCache 基础设施）
+
+**统计**：
+- 代码减少：804行
+- 端点减少：12个
+- 编译状态：✅ 0 errors, 0 warnings
+
+**详细变更记录**：[API文档 - 版本变更记录](reference/api/README.md#-版本变更记录)
+
+**相关Issue**：
+- [Issue #1733](https://github.com/shouqitao/LYBTZYZS/issues/1733) - WebAPI MVP合规优化
+- [Issue #1732](https://github.com/shouqitao/LYBTZYZS/issues/1732) - OutputCache基础设施配置（前置依赖）
+
 ### v6.0 Diátaxis框架重构 (2025-10-29)
 
 **重大变更**：完全采用Diátaxis框架重组文档体系
@@ -501,7 +524,7 @@
 
 *本文档中心基于Diátaxis框架重构，提供清晰、准确、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-10-29 - v6.0 Diátaxis框架重构版** 🎉
+**最后更新：2025-10-31 - Issue #1733 WebAPI MVP合规优化** 🎉
 **文档框架：Diátaxis 4种类型（Tutorial/How-to/Reference/Explanation）** 📚
 **架构特色：三层对齐架构（Server/Client/Shared）** 🏗️
 **总体完成度：91%（模块文档待补充）** ✅

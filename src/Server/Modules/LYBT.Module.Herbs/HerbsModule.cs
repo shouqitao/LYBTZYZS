@@ -29,7 +29,7 @@ namespace LYBT.Module.Herbs
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
 
             // Epic #1731: 注册Herbs模块Validators
-            services.AddValidatorsFromAssemblyContaining<HerbCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

@@ -30,7 +30,7 @@ namespace LYBT.Module.Users
             services.AddScoped<IUserService, UserService>();
 
             // 注册验证器 - 自动注册所有Validator
-            services.AddValidatorsFromAssemblyContaining<UserCreateDtoValidator>();
+            services.AddValidatorsFromAssemblyContaining<UserInputDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

@@ -216,7 +216,7 @@ namespace LYBT.Module.Patients.Tests.Services
         public async Task CreateAsync_WithValidData_ShouldCreatePatient()
         {
             // Arrange
-            var createDto = new PatientCreateDto
+            var createDto = new PatientInputDto
             {
                 Name = "张三",
                 Gender = Gender.Male,
@@ -264,7 +264,7 @@ namespace LYBT.Module.Patients.Tests.Services
         public async Task CreateAsync_WhenRepositoryThrowsException_ShouldReturnFailure()
         {
             // Arrange
-            var createDto = new PatientCreateDto
+            var createDto = new PatientInputDto
             {
                 Name = "张三",
                 Gender = Gender.Male,
@@ -306,7 +306,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var patientId = Guid.NewGuid();
             var existingPatient = CreateTestPatient(patientId);
             
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "更新的姓名",
                 PhoneNumber = "13900139000",
@@ -357,7 +357,7 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "更新的姓名"
             };
@@ -384,7 +384,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
             var existingPatient = CreateTestPatient(patientId);
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "更新的姓名"
             };

@@ -52,7 +52,7 @@ namespace LYBT.Module.Prescriptions.Validators
             // 验证处方项目（可选）
             When(x => x.Items != null && x.Items.Count > 0, () =>
             {
-                RuleForEach(x => x.Items).SetValidator(new PrescriptionItemCreateDtoValidator());
+                RuleForEach(x => x.Items).SetValidator(new PrescriptionItemInputDtoValidator());
             });
         }
     }

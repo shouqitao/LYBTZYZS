@@ -166,7 +166,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>处方DTO列表</returns>
-        Task<List<PrescriptionDetailDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+        Task<List<MedicalCasePrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）

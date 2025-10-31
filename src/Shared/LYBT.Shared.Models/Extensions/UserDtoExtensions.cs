@@ -10,9 +10,9 @@ namespace LYBT.Shared.Models.Extensions
     public static class UserDtoExtensions
     {
         /// <summary>
-        /// 将UserCreateDto转换为UserDto（用于创建预览）
+        /// 将UserInputDto转换为UserDto（用于创建预览）
         /// </summary>
-        public static UserDto ToDto(this UserCreateDto dto)
+        public static UserDto ToDto(this UserInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -26,7 +26,7 @@ namespace LYBT.Shared.Models.Extensions
                 RealName = dto.RealName,
                 PhoneNumber = dto.PhoneNumber,
                 Email = dto.Email,
-                Role = dto.Role,
+                Role = dto.Role ?? UserRole.Doctor,
 
                 // 系统字段（新建时的默认值）
                 Status = CommonStatus.Enabled,
@@ -38,10 +38,10 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将UserUpdateDto的字段应用到现有UserDto（用于更新）
-        /// 注意：UserUpdateDto中RealName和Role是可选字段
+        /// 将UserInputDto的字段应用到现有UserDto（用于更新）
+        /// 注意：UserInputDto中RealName和Role是可选字段
         /// </summary>
-        public static void ApplyUpdate(this UserDto existing, UserUpdateDto dto)
+        public static void ApplyUpdate(this UserDto existing, UserInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));

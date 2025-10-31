@@ -10,19 +10,19 @@ namespace LYBT.Shared.Models.Extensions
     public static class ConsultationDtoExtensions
     {
         /// <summary>
-        /// 将ConsultationCreateDto转换为ConsultationDto
+        /// 将ConsultationInputDto转换为ConsultationDto
         /// Issue #1152: 替代AutoMapper
         /// </summary>
-        public static ConsultationDto ToDto(this ConsultationCreateDto dto)
+        public static ConsultationDto ToDto(this ConsultationInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
             return new ConsultationDto
             {
-                MedicalCaseId = dto.MedicalCaseId,
-                PatientId = dto.PatientId,
-                UserId = dto.UserId,
+                MedicalCaseId = dto.MedicalCaseId ?? throw new ArgumentException("MedicalCaseId不能为空", nameof(dto)),
+                PatientId = dto.PatientId ?? throw new ArgumentException("PatientId不能为空", nameof(dto)),
+                UserId = dto.UserId ?? throw new ArgumentException("UserId不能为空", nameof(dto)),
                 PatientName = dto.PatientName,
                 DoctorName = dto.DoctorName,
                 ChiefComplaint = dto.ChiefComplaint,
@@ -43,10 +43,10 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将ConsultationUpdateDto应用到现有ConsultationDto
+        /// 将ConsultationInputDto应用到现有ConsultationDto
         /// Issue #1152: 替代AutoMapper
         /// </summary>
-        public static void ApplyUpdate(this ConsultationDto existing, ConsultationUpdateDto dto)
+        public static void ApplyUpdate(this ConsultationDto existing, ConsultationInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));

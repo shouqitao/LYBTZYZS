@@ -137,15 +137,12 @@ public class JwtConfiguration
     /// </summary>
     [Range(0, 600)] // 0到10分钟
     public int ClockSkewSeconds { get; set; } = 300; // 5分钟
-
-    /// <summary>
-    /// 是否启用多密钥验证（支持密钥轮换）
-    /// </summary>
-    public bool EnableMultiKeyValidation { get; set; } = true;
 }
 
 /// <summary>
 /// 密码策略配置
+/// MVP阶段：仅保留基础密码强度验证，移除未实现的历史/过期功能
+/// Issue #1732 Phase 1: 移除PasswordHistory/Expiration未实现配置
 /// </summary>
 public class PasswordPolicyConfiguration
 {
@@ -191,24 +188,6 @@ public class PasswordPolicyConfiguration
     /// 允许的特殊字符
     /// </summary>
     public string AllowedSpecialChars { get; set; } = "!@#$%^&*()_+-=[]{}|;:,.<>?";
-
-    /// <summary>
-    /// 密码历史记录数量（防止重复使用）
-    /// </summary>
-    [Range(0, 20)]
-    public int PasswordHistoryCount { get; set; } = 5;
-
-    /// <summary>
-    /// 密码过期天数（0表示不过期）
-    /// </summary>
-    [Range(0, 365)]
-    public int PasswordExpirationDays { get; set; } = 90;
-
-    /// <summary>
-    /// 密码过期提醒天数
-    /// </summary>
-    [Range(0, 30)]
-    public int PasswordExpirationWarningDays { get; set; } = 7;
 }
 
 /// <summary>
@@ -662,6 +641,8 @@ public class RetryPolicyConfiguration
 
 /// <summary>
 /// 缓存配置
+/// MVP阶段：仅使用内存缓存，避免Redis等分布式缓存的复杂度
+/// Issue #1732 Phase 1: 移除Redis相关配置
 /// </summary>
 public class CacheConfiguration
 {
@@ -669,11 +650,6 @@ public class CacheConfiguration
     /// 内存缓存配置
     /// </summary>
     public MemoryCacheConfiguration MemoryCache { get; set; } = new();
-
-    /// <summary>
-    /// 分布式缓存配置
-    /// </summary>
-    public DistributedCacheConfiguration DistributedCache { get; set; } = new();
 
     /// <summary>
     /// 缓存监控配置
@@ -715,48 +691,6 @@ public class MemoryCacheConfiguration
     /// </summary>
     [Range(1, 360)]
     public int DefaultSlidingExpirationMinutes { get; set; } = 10;
-}
-
-/// <summary>
-/// 分布式缓存配置
-/// </summary>
-public class DistributedCacheConfiguration
-{
-    /// <summary>
-    /// 缓存类型
-    /// </summary>
-    public DistributedCacheType Type { get; set; } = DistributedCacheType.Memory;
-
-    /// <summary>
-    /// Redis 连接字符串（如果使用Redis）
-    /// </summary>
-    public string RedisConnectionString { get; set; } = string.Empty;
-
-    /// <summary>
-    /// SQL Server 连接字符串（如果使用SQL Server）
-    /// </summary>
-    public string SqlServerConnectionString { get; set; } = string.Empty;
-
-    /// <summary>
-    /// SQL Server 缓存表名
-    /// </summary>
-    public string SqlServerTableName { get; set; } = "DistributedCache";
-
-    /// <summary>
-    /// 默认过期时间（分钟）
-    /// </summary>
-    [Range(1, 1440)]
-    public int DefaultExpirationMinutes { get; set; } = 60;
-}
-
-/// <summary>
-/// 分布式缓存类型
-/// </summary>
-public enum DistributedCacheType
-{
-    Memory,
-    Redis,
-    SqlServer
 }
 
 /// <summary>

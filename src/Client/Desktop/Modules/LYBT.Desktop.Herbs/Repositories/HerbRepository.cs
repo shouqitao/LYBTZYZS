@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Herbs.Repositories
     /// 药材数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
     /// </summary>
-    public class HerbRepository : RepositoryBase<HerbDto, HerbCreateDto, HerbUpdateDto, IHerbApi>, IHerbRepository
+    public class HerbRepository : RepositoryBase<HerbDto, HerbInputDto, HerbInputDto, IHerbApi>, IHerbRepository
     {
         public HerbRepository(
             IHerbApi herbApi,
@@ -50,12 +50,12 @@ namespace LYBT.Desktop.Herbs.Repositories
             return _api.GetHerbsAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<HerbDto>> CallApiCreateAsync(HerbCreateDto dto)
+        protected override Task<ApiResponse<HerbDto>> CallApiCreateAsync(HerbInputDto dto)
         {
             return _api.CreateHerbAsync(dto);
         }
 
-        protected override Task<ApiResponse<HerbDto>> CallApiUpdateAsync(Guid id, HerbUpdateDto dto)
+        protected override Task<ApiResponse<HerbDto>> CallApiUpdateAsync(Guid id, HerbInputDto dto)
         {
             return _api.UpdateHerbAsync(id, dto);
         }
@@ -65,7 +65,7 @@ namespace LYBT.Desktop.Herbs.Repositories
             return _api.DeleteHerbAsync(id);
         }
 
-        protected override Guid? GetIdFromUpdateDto(HerbUpdateDto dto)
+        protected override Guid? GetIdFromUpdateDto(HerbInputDto dto)
         {
             return dto?.Id;
         }

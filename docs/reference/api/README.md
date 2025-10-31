@@ -21,14 +21,14 @@
 
 | 模块 | 控制器 | 端点数量 | 主要功能 | 认证要求 |
 |------|--------|----------|----------|----------|
-| **认证模块** | AuthController | 6个 | 登录、注册、令牌管理 | 公开 |
+| **认证模块** | AuthController | 4个 | 登录、登出、密码管理 | 公开 |
 | **用户模块** | UsersController | 8个 | 用户管理、角色权限 | 需认证 |
 | **患者模块** | PatientsController | 10个 | 患者信息管理 | 需认证 |
 | **医案模块** | MedicalCasesController | 12个 | 医案流程管理 | 需认证 |
 | **诊疗模块** | ConsultationsController | 11个 | 诊疗记录管理 | 需认证 |
 | **处方模块** | PrescriptionsController | 14个 | 处方管理计算 | 需认证 |
 | **药材模块** | HerbsController | 9个 | 药材字典管理 | 需认证 |
-| **验方模块** | FormulasController | 11个 | 验方模板管理 | 需认证 |
+| **验方模块** | FormulasController | 10个 | 验方模板管理 | 需认证 |
 
 ## 🔐 认证与授权
 
@@ -637,3 +637,42 @@ Content-Type: application/json
 **文档分工**：
 - **本文档（docs/api/README.md）**：架构概览、认证机制、响应格式、错误处理、使用指南
 - **Swagger UI**：完整API端点列表、请求/响应Schema、参数说明、在线测试
+
+---
+
+## 📝 版本变更记录
+
+### Issue #1733 MVP合规优化（2025-10-31）
+
+**目标**: 移除过度设计，统一缓存策略
+
+**已删除端点**:
+- `PerformanceController` - 完整移除（6个端点）
+  - 性能监控改用Application Insights
+- `AuthController`
+  - ❌ `POST /api/v1/auth/admin/login` → 使用统一的 `POST /api/v1/auth/login`
+  - ❌ `POST /api/v1/auth/validate` → 使用 `GET /api/v1/auth/validate`
+- `CacheHealthController`
+  - ❌ `GET /api/v1/system/cache/health` - 移除诊断端点
+  - ❌ `POST /api/v1/system/cache/diagnose` - 移除诊断端点
+  - ❌ `GET /api/v1/system/cache/history` - 移除历史记录端点
+- `FormulasController`
+  - ❌ `POST /api/v1/formulas/{id}/copy` → Desktop端实现
+
+**已简化端点**:
+- `HealthController` - 简化为数据库连接检查
+  - ✅ `GET /api/v1/health` - 基础健康检查
+  - ✅ `GET /api/v1/health/details` - 详细健康检查（仅数据库）
+  - ✅ `GET /api/v1/health/ping` - Ping响应
+
+**缓存策略统一**:
+- 移除Controller层`ResponseCache`（7处）
+- 统一使用基础设施层`OutputCache`（Issue #1732已配置）
+- 影响Controller: PatientsController, FormulasController, HerbsController
+
+**成果统计**:
+- 代码减少: 804行
+- 端点减少: 12个
+- 编译状态: ✅ 0 errors, 0 warnings
+
+**详细变更**: 参见 `docs/reports/issue-1733-subtasks-checklist.md`

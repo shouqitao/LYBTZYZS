@@ -267,7 +267,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (Herb == null)
                 {
                     // 创建新药材
-                    var createDto = new HerbCreateDto
+                    var createDto = new HerbInputDto
                     {
                         Name = Name.Trim(),
                         PinYinCode = string.IsNullOrWhiteSpace(PinYinCode) ? null : PinYinCode.Trim(),
@@ -289,7 +289,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 else
                 {
                     // 更新现有药材
-                    var updateDto = new HerbUpdateDto
+                    var updateDto = new HerbInputDto
                     {
                         Id = Herb.Id,
                         Name = Name.Trim(),

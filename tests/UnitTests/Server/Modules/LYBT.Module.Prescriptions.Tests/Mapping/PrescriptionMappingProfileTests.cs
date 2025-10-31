@@ -185,10 +185,10 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_PrescriptionItemCreateDto_To_PrescriptionItem_Should_Success()
+        public void Map_PrescriptionItemInputDto_To_PrescriptionItem_Should_Success()
         {
             // Arrange
-            var createDto = new PrescriptionItemCreateDto
+            var createDto = new PrescriptionItemInputDto
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "黄芪",

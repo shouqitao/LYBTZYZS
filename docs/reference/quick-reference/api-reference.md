@@ -16,14 +16,13 @@
 7. **HerbsController** - 药材管理
 8. **FormulasController** - 验方管理
 
-### 系统控制器（5个）
+### 系统控制器（4个）
 位置：`src/Server/Services/LYBT.WebAPI/Controllers/`
 
-9. **HealthController** - 健康检查
-10. **CacheHealthController** - 缓存健康检查
-11. **PerformanceController** - 性能监控
-12. **RootHealthController** - 根路径健康检查
-13. **BaseApiController** - 基础控制器（抽象基类）
+9. **HealthController** - 健康检查（Issue #1733 MVP简化）
+10. **CacheHealthController** - 缓存管理（Issue #1733 MVP简化）
+11. **RootHealthController** - 根路径健康检查
+12. **BaseApiController** - 基础控制器（抽象基类）
 
 ---
 
@@ -673,16 +672,6 @@ Authorization: Bearer {token}
 # 下载验方导入模板
 GET /api/v1/formulas/import-template
 # 无需认证，直接下载模板文件
-
-# 复制验方
-POST /api/v1/formulas/{formulaId}/copy
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "name": "四物汤（复制）",
-  "copyHerbs": true
-}
 ```
 
 ### 智能推荐

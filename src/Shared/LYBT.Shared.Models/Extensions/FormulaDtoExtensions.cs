@@ -10,11 +10,11 @@ namespace LYBT.Shared.Models.Extensions
     public static class FormulaDtoExtensions
     {
         /// <summary>
-        /// 将FormulaCreateDto转换为FormulaDto
+        /// 将FormulaInputDto转换为FormulaDto
         /// Issue #1152: 替代AutoMapper
         /// 注意：Herbs集合需要在Service层单独处理
         /// </summary>
-        public static FormulaDto ToDto(this FormulaCreateDto dto)
+        public static FormulaDto ToDto(this FormulaInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -40,11 +40,11 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将FormulaUpdateDto应用到现有FormulaDto
+        /// 将FormulaInputDto应用到现有FormulaDto
         /// Issue #1152: 替代AutoMapper
         /// 注意：Herbs集合需要在Service层单独处理
         /// </summary>
-        public static void ApplyUpdate(this FormulaDto existing, FormulaUpdateDto dto)
+        public static void ApplyUpdate(this FormulaDto existing, FormulaInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));

@@ -27,13 +27,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 创建验方
         /// </summary>
         [Refit.Post("/api/v1/formulas")]
-        Task<ApiResponse<FormulaDto>> CreateFormulaAsync([Refit.Body] FormulaCreateDto request);
+        Task<ApiResponse<FormulaDto>> CreateFormulaAsync([Refit.Body] FormulaInputDto request);
 
         /// <summary>
         /// 更新验方
         /// </summary>
         [Refit.Put("/api/v1/formulas/{id}")]
-        Task<ApiResponse<FormulaDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaUpdateDto request);
+        Task<ApiResponse<FormulaDto>> UpdateFormulaAsync(Guid id, [Refit.Body] FormulaInputDto request);
 
         /// <summary>
         /// 删除验方

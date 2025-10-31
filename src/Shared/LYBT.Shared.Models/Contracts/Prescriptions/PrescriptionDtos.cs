@@ -61,13 +61,13 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("处方项目")]
         public List<PrescriptionItemDto> Items { get; set; } = new();
 
-        /// <summary>单帖价格（计算属性）</summary>
+        /// <summary>单帖价格（由Service层计算）</summary>
         [DisplayName("单帖价格")]
-        public decimal SingleDosePrice => CalculateSingleDosePrice();
+        public decimal SingleDosePrice { get; set; }
 
-        /// <summary>总价格（计算属性）</summary>
+        /// <summary>总价格（由Service层计算）</summary>
         [DisplayName("总价格")]
-        public decimal TotalPrice => SingleDosePrice * DosageCount;
+        public decimal TotalPrice { get; set; }
 
         /// <summary>
         /// 总金额（兼容性别名，映射到TotalPrice）
@@ -75,61 +75,43 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("总金额")]
         public decimal TotalAmount => TotalPrice;
 
-        /// <summary>总重量（计算属性）</summary>
+        /// <summary>总重量（由Service层计算）</summary>
         [DisplayName("总重量")]
-        public decimal TotalWeight => CalculateTotalWeight();
-
-        /// <summary>
-        /// 计算单帖价格 - 简化逻辑
-        /// </summary>
-        private decimal CalculateSingleDosePrice()
-        {
-            if (Items?.Any() != true) return 0m;
-            var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
-            return subtotal * Discount;
-        }
-
-        /// <summary>
-        /// 计算总重量 - 简化逻辑
-        /// </summary>
-        private decimal CalculateTotalWeight()
-        {
-            if (Items?.Any() != true) return 0m;
-            return Items.Sum(item => item.Quantity) * DosageCount;
-        }
+        public decimal TotalWeight { get; set; }
     }
 
     /// <summary>
-    /// 处方详情DTO
+    /// 处方详情DTO - 扩展版本
+    /// 继承PrescriptionDto基础字段，添加运行时计算的警告信息和扩展字段
+    /// Epic #1736 Phase 5: 简化继承设计，去除new关键字
     /// </summary>
     public class PrescriptionDetailDto : PrescriptionDto, IRemarkable
     {
-
-        [DisplayName("方剂来源")]
-        public new string? FormulaSource { get; set; }
-
+        /// <summary>
+        /// 重复用药警告（运行时计算）
+        /// </summary>
         [DisplayName("重复用药警告")]
         public string? DuplicateWarning { get; set; }
 
+        /// <summary>
+        /// 缺药警告（运行时计算）
+        /// </summary>
         [DisplayName("缺药警告")]
         public string? MissingDrugWarning { get; set; }
 
+        /// <summary>
+        /// 格式化的处方编号（用于UI展示）
+        /// 注：与PrescriptionNumber字段不同，此字段用于特定格式化展示
+        /// </summary>
         [DisplayName("处方编号")]
         public string? PrescriptionNo { get; set; }
 
-        [DisplayName("用法")]
-        public new string? Usage { get; set; }
-
+        /// <summary>
+        /// 医嘱（从Consultation带来的扩展字段）
+        /// 注：与Advice字段不同，此字段来自关联的Consultation
+        /// </summary>
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
-
-        [DisplayName("折扣")]
-        public new decimal Discount { get; set; } = 1.0m;
-
-        /// <inheritdoc/>
-        [DisplayName("备注")]
-        [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
-        public new string? Remark { get; set; }
     }
 
     /// <summary>
@@ -150,7 +132,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? Advice { get; set; }
 
         [DisplayName("处方项目")]
-        public List<PrescriptionItemCreateDto> Items { get; set; } = new();
+        public List<PrescriptionItemInputDto> Items { get; set; } = new();
 
         /// <inheritdoc/>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
@@ -225,7 +207,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         /// <summary>
         /// 草药项目列表
         /// </summary>
-        public new List<PrescriptionItemCreateDto> Items { get; set; } = new();
+        public new List<PrescriptionItemInputDto> Items { get; set; } = new();
     }
 
     /// <summary>
@@ -304,81 +286,64 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
-    /// 创建处方项目DTO
+    /// 处方项输入DTO - 统一创建和更新
+    /// Phase 3: 合并PrescriptionItemCreateDto和PrescriptionItemUpdateDto
     /// </summary>
-    /// <summary>
-    /// 处方项更新DTO
-    /// </summary>
-    public class PrescriptionItemUpdateDto
+    public class PrescriptionItemInputDto
     {
-        /// <summary>
-        /// 草药ID
-        /// </summary>
+        /// <summary>项ID（更新时可填，创建时为null）</summary>
+        [DisplayName("项ID")]
+        public Guid? Id { get; set; }
+
+        /// <summary>草药ID</summary>
+        [Required]
         [DisplayName("草药ID")]
         public Guid HerbId { get; set; }
 
-        /// <summary>
-        /// 数量
-        /// </summary>
-        [DisplayName("数量")]
+        /// <summary>草药名称（创建时使用）</summary>
+        [StringLength(100)]
+        [DisplayName("草药名称")]
+        public string? HerbName { get; set; }
+
+        /// <summary>数量</summary>
         [Range(0.01, 9999.99)]
+        [DisplayName("数量")]
         public decimal Quantity { get; set; }
 
-        /// <summary>
-        /// 单位
-        /// </summary>
-        [DisplayName("单位")]
+        /// <summary>单位</summary>
+        [Required]
         [StringLength(20)]
-        public string Unit { get; set; } = string.Empty;
+        [DisplayName("单位")]
+        public string Unit { get; set; } = "g";
 
-        /// <summary>
-        /// 剂量
-        /// </summary>
+        /// <summary>剂量（更新时使用）</summary>
         [DisplayName("剂量")]
         public decimal Dosage { get; set; }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
-        [DisplayName("备注")]
-        [StringLength(200)]
-        public string? Remark { get; set; }
-    }
-
-    public class PrescriptionItemCreateDto
-    {
-
-        [Required]
-        public Guid HerbId { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string HerbName { get; set; } = string.Empty;
-
-        [Range(0.1, 1000)]
-        public decimal Quantity { get; set; }
-
-        [Required]
-        [StringLength(10)]
-        public string Unit { get; set; } = "g";
-
+        /// <summary>单价（创建时使用）</summary>
         [Range(0, 10000)]
+        [DisplayName("单价")]
         public decimal UnitPrice { get; set; }
 
-        /// <summary>小计金额</summary>
+        /// <summary>小计金额（创建时使用）</summary>
         [Range(0, double.MaxValue)]
+        [DisplayName("小计金额")]
         public decimal Subtotal { get; set; }
 
-        /// <summary>用法说明</summary>
+        /// <summary>用法说明（创建时使用）</summary>
         [StringLength(200)]
+        [DisplayName("用法说明")]
         public string? Usage { get; set; }
 
-        /// <summary>备注（Note别名）</summary>
+        /// <summary>备注</summary>
         [StringLength(200)]
-        public string? Note { get; set; }
-
-        [StringLength(100)]
+        [DisplayName("备注")]
         public string? Remark { get; set; }
+
+        /// <summary>备注（Note别名，创建时使用）</summary>
+        [StringLength(200)]
+        [DisplayName("备注")]
+        public string? Note { get; set; }
     }
 
     /// <summary>
@@ -483,27 +448,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [DisplayName("药材名称")]
         public string? HerbName { get; set; }
-    }
-
-    /// <summary>
-    /// 处方复制DTO - 用于复制现有处方
-    /// </summary>
-    public class PrescriptionCopyDto
-    {
-
-        [Required(ErrorMessage = "新处方名称不能为空")]
-        [StringLength(200, ErrorMessage = "新处方名称不能超过200个字符")]
-        [DisplayName("新处方名称")]
-        public string NewName { get; set; } = string.Empty;
-
-        [DisplayName("复制处方项目")]
-        public bool CopyItems { get; set; } = true;
-
-        [DisplayName("复制用法用量")]
-        public bool CopyUsage { get; set; } = true;
-
-        [DisplayName("复制备注")]
-        public bool CopyRemark { get; set; } = false;
     }
 
     /// <summary>

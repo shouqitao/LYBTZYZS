@@ -101,7 +101,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreatePatient_WithValidData_ShouldReturnCreatedPatient()
         {
             // Arrange
-            var createDto = new PatientCreateDto
+            var createDto = new PatientInputDto
             {
                 Name = "集成测试患者",
                 Gender = Gender.Male,
@@ -132,7 +132,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         public async Task CreatePatient_WithInvalidData_ShouldReturnBadRequest()
         {
             // Arrange - 缺少必需字段
-            var invalidDto = new PatientCreateDto
+            var invalidDto = new PatientInputDto
             {
                 Name = "", // 空名称
                 Gender = Gender.Male
@@ -152,7 +152,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 先创建一个患者
             var existingPatient = await CreateTestPatientAsync();
             
-            var duplicateDto = new PatientCreateDto
+            var duplicateDto = new PatientInputDto
             {
                 Name = "重复身份证患者",
                 Gender = Gender.Female,
@@ -182,7 +182,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var createdPatient = await CreateTestPatientAsync();
             
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "更新后的患者姓名",
                 PhoneNumber = "13800138777",
@@ -213,7 +213,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             // Arrange
             var nonExistingId = Guid.NewGuid();
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "不存在的患者更新"
             };
@@ -232,7 +232,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var patient1 = await CreateTestPatientAsync();
             var patient2 = await CreateTestPatientAsync();
             
-            var updateDto = new PatientUpdateDto
+            var updateDto = new PatientInputDto
             {
                 Name = "尝试重复身份证",
                 IdNumber = patient2.IdNumber // 使用另一个患者的身份证号
@@ -323,7 +323,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         private async Task<PatientDto> CreateTestPatientAsync(string? name = null)
         {
-            var createDto = new PatientCreateDto
+            var createDto = new PatientInputDto
             {
                 Name = name ?? $"测试患者_{Guid.NewGuid():N}",
                 Gender = Gender.Male,
@@ -347,7 +347,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // 创建一些基础测试数据
             var patients = new[]
             {
-                new PatientCreateDto
+                new PatientInputDto
                 {
                     Name = "张三",
                     Gender = Gender.Male,
@@ -356,7 +356,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     IdNumber = "110101198005150001",
                     Address = "北京市朝阳区"
                 },
-                new PatientCreateDto
+                new PatientInputDto
                 {
                     Name = "李四",
                     Gender = Gender.Female,
@@ -365,7 +365,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     IdNumber = "110101198508200002",
                     Address = "北京市海淀区"
                 },
-                new PatientCreateDto
+                new PatientInputDto
                 {
                     Name = "王五",
                     Gender = Gender.Male,

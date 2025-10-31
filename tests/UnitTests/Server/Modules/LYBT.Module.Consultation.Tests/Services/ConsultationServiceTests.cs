@@ -119,7 +119,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var createDto = new ConsultationCreateDto
+            var createDto = new ConsultationInputDto
             {
                 MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉"
@@ -236,7 +236,7 @@ namespace LYBT.UnitTests.Core.Services
                 ChiefComplaint = "原始主诉"
             };
 
-            var updateDto = new ConsultationUpdateDto
+            var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "更新后的主诉",
                 TCMDiagnosis = "更新后的诊断"
@@ -428,7 +428,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var createDto = new ConsultationCreateDto
+            var createDto = new ConsultationInputDto
             {
                 MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉"
@@ -456,7 +456,7 @@ namespace LYBT.UnitTests.Core.Services
         {
             // Arrange
             var medicalCaseId = Guid.NewGuid();
-            var createDto = new ConsultationCreateDto
+            var createDto = new ConsultationInputDto
             {
                 MedicalCaseId = medicalCaseId,
                 ChiefComplaint = "测试主诉"
@@ -504,7 +504,7 @@ namespace LYBT.UnitTests.Core.Services
                 CreatedAt = DateTime.Today.AddHours(10) // 今天创建
             };
 
-            var updateDto = new ConsultationUpdateDto
+            var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "更新后的主诉",
                 TCMDiagnosis = "更新后的诊断"
@@ -558,7 +558,7 @@ namespace LYBT.UnitTests.Core.Services
                 CreatedAt = DateTime.Today.AddDays(-1).AddHours(10) // 昨天创建
             };
 
-            var updateDto = new ConsultationUpdateDto
+            var updateDto = new ConsultationInputDto
             {
                 ChiefComplaint = "尝试更新的主诉",
                 TCMDiagnosis = "尝试更新的诊断"
