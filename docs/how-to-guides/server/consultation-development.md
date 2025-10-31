@@ -554,7 +554,7 @@ public class ConsultationMappingProfile : Profile
             .ForMember(dest => dest.DoctorName, opt => opt.Ignore());  // Service层手动设置
 
         // ========== CreateDto → Entity ==========
-        CreateMap<ConsultationCreateDto, ConsultationEntity>()
+        CreateMap<ConsultationInputDto, ConsultationEntity>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())  // 由MedicalCase聚合根设置
             .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -562,7 +562,7 @@ public class ConsultationMappingProfile : Profile
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
         // ========== UpdateDto → Entity（Partial Update支持）==========
-        CreateMap<ConsultationUpdateDto, ConsultationEntity>()
+        CreateMap<ConsultationInputDto, ConsultationEntity>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -632,7 +632,7 @@ public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
 ```csharp
 public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
     Guid medicalCaseId,
-    ConsultationUpdateDto consultationDto)
+    ConsultationInputDto consultationDto)
 {
     var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
     if (medicalCase == null)
@@ -655,9 +655,9 @@ public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
 
 ## 5. FluentValidation验证
 
-### 5.1 ConsultationCreateDtoValidator实现
+### 5.1 ConsultationInputDtoValidator实现
 
-**Validator位置**：`LYBT.Module.Consultation/Validators/ConsultationCreateDtoValidator.cs`
+**Validator位置**：`LYBT.Module.Consultation/Validators/ConsultationInputDtoValidator.cs`
 
 ```csharp
 using FluentValidation;
@@ -668,9 +668,9 @@ namespace LYBT.Module.Consultation.Validators;
 /// <summary>
 /// 诊疗记录创建DTO验证器
 /// </summary>
-public class ConsultationCreateDtoValidator : AbstractValidator<ConsultationCreateDto>
+public class ConsultationInputDtoValidator : AbstractValidator<ConsultationInputDto>
 {
-    public ConsultationCreateDtoValidator()
+    public ConsultationInputDtoValidator()
     {
         // ========== 必填字段验证 ==========
         
@@ -724,9 +724,9 @@ public class ConsultationCreateDtoValidator : AbstractValidator<ConsultationCrea
 }
 ```
 
-### 5.2 ConsultationUpdateDtoValidator实现
+### 5.2 ConsultationInputDtoValidator实现
 
-**Validator位置**：`LYBT.Module.Consultation/Validators/ConsultationUpdateDtoValidator.cs`
+**Validator位置**：`LYBT.Module.Consultation/Validators/ConsultationInputDtoValidator.cs`
 
 ```csharp
 using FluentValidation;
@@ -738,9 +738,9 @@ namespace LYBT.Module.Consultation.Validators;
 /// 诊疗记录更新DTO验证器
 /// 注意：UpdateDto支持Partial Update，所有字段都是可选的
 /// </summary>
-public class ConsultationUpdateDtoValidator : AbstractValidator<ConsultationUpdateDto>
+public class ConsultationInputDtoValidator : AbstractValidator<ConsultationInputDto>
 {
-    public ConsultationUpdateDtoValidator()
+    public ConsultationInputDtoValidator()
     {
         // ========== 条件验证（只验证非null字段）==========
         
@@ -830,17 +830,17 @@ using FluentValidation;
 
 public class MedicalCaseService : IMedicalCaseService
 {
-    private readonly IValidator<ConsultationUpdateDto> _consultationUpdateValidator;
+    private readonly IValidator<ConsultationInputDto> _consultationUpdateValidator;
     
     public MedicalCaseService(
-        IValidator<ConsultationUpdateDto> consultationUpdateValidator)
+        IValidator<ConsultationInputDto> consultationUpdateValidator)
     {
         _consultationUpdateValidator = consultationUpdateValidator;
     }
     
     public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
         Guid medicalCaseId,
-        ConsultationUpdateDto consultationDto)
+        ConsultationInputDto consultationDto)
     {
         // ⚡ FluentValidation验证
         var validationResult = await _consultationUpdateValidator.ValidateAsync(consultationDto);
@@ -867,7 +867,7 @@ public class MedicalCaseController : ControllerBase
     [HttpPut("{id}/consultation")]
     public async Task<ActionResult<MedicalCaseDto>> UpdateConsultation(
         Guid id,
-        [FromBody] ConsultationUpdateDto consultationDto)  // ⚡ 自动验证
+        [FromBody] ConsultationInputDto consultationDto)  // ⚡ 自动验证
     {
         // 如果验证失败，返回400 BadRequest + ValidationProblemDetails
         // 如果验证成功，继续执行
@@ -1070,7 +1070,7 @@ public interface IMedicalCaseService
     /// </summary>
     Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
         Guid medicalCaseId,
-        ConsultationUpdateDto consultationDto);
+        ConsultationInputDto consultationDto);
     
     /// <summary>
     /// 完成Step1（辨证阶段）
@@ -1107,13 +1107,13 @@ public class MedicalCaseService : IMedicalCaseService
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IMapper _mapper;
-    private readonly IValidator<ConsultationUpdateDto> _consultationUpdateValidator;
+    private readonly IValidator<ConsultationInputDto> _consultationUpdateValidator;
     private readonly ILogger<MedicalCaseService> _logger;
 
     public MedicalCaseService(
         IMedicalCaseRepository repository,
         IMapper mapper,
-        IValidator<ConsultationUpdateDto> consultationUpdateValidator,
+        IValidator<ConsultationInputDto> consultationUpdateValidator,
         ILogger<MedicalCaseService> logger)
     {
         _repository = repository;
@@ -1127,7 +1127,7 @@ public class MedicalCaseService : IMedicalCaseService
     /// </summary>
     public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
         Guid medicalCaseId,
-        ConsultationUpdateDto consultationDto)
+        ConsultationInputDto consultationDto)
     {
         try
         {
@@ -1294,7 +1294,7 @@ public class MedicalCaseController : ControllerBase
     [HttpPut("{id}/consultation")]
     public async Task<ActionResult<MedicalCaseDto>> UpdateConsultation(
         Guid id,
-        [FromBody] ConsultationUpdateDto consultationDto)
+        [FromBody] ConsultationInputDto consultationDto)
     {
         var result = await _medicalCaseService.UpdateConsultationAsync(id, consultationDto);
         
@@ -1644,7 +1644,7 @@ _logger.LogCritical(ex, "系统崩溃级别的错误");  // Critical
 ```csharp
 public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
     Guid medicalCaseId,
-    ConsultationUpdateDto consultationDto)
+    ConsultationInputDto consultationDto)
 {
     try
     {
@@ -1875,16 +1875,16 @@ public async Task<ServiceResult<ConsultationDto>> GetByIdAsync(Guid id)
 
 **AutoMapper配置**：
 ```csharp
-CreateMap<ConsultationUpdateDto, ConsultationEntity>()
+CreateMap<ConsultationInputDto, ConsultationEntity>()
     // ⚡ 只映射非null字段
     .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 ```
 
 **FluentValidation配置**：
 ```csharp
-public class ConsultationUpdateDtoValidator : AbstractValidator<ConsultationUpdateDto>
+public class ConsultationInputDtoValidator : AbstractValidator<ConsultationInputDto>
 {
-    public ConsultationUpdateDtoValidator()
+    public ConsultationInputDtoValidator()
     {
         // ⚡ 只验证非null字段
         RuleFor(x => x.ChiefComplaint)
@@ -1909,7 +1909,7 @@ public class ConsultationUpdateDtoValidator : AbstractValidator<ConsultationUpda
 ```csharp
 public async Task<ServiceResult<MedicalCaseDto>> UpdateConsultationAsync(
     Guid medicalCaseId,
-    ConsultationUpdateDto consultationDto)
+    ConsultationInputDto consultationDto)
 {
     var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
     
@@ -2381,7 +2381,7 @@ var consultations = await _dbSet
 **排查步骤**：
 ```csharp
 // 1. 检查AutoMapper配置
-CreateMap<ConsultationUpdateDto, ConsultationEntity>()
+CreateMap<ConsultationInputDto, ConsultationEntity>()
     .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
 // 2. 检查前端发送的DTO

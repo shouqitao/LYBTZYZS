@@ -194,7 +194,7 @@ LYBTZYZS/
 
 ```csharp
 using LYBT.Shared.Models.Common;        // ServiceResult
-using LYBT.Shared.Models.DTOs.Patients; // PatientDto, PatientCreateDto
+using LYBT.Shared.Models.DTOs.Patients; // PatientDto, PatientInputDto
 using LYBT.Shared.Models.Pagination;    // PagedResult
 ```
 
@@ -214,7 +214,7 @@ using Microsoft.Extensions.Logging;                 // ILogger
 
 ```csharp
 using LYBT.Module.Patients.Interfaces;              // IPatientService
-using LYBT.Shared.Models.DTOs.Patients;             // PatientCreateDto
+using LYBT.Shared.Models.DTOs.Patients;             // PatientInputDto
 using Microsoft.AspNetCore.Mvc;                     // [ApiController], [HttpGet]
 ```
 
@@ -266,7 +266,7 @@ public interface IPatientService
     /// </summary>
     /// <param name="dto">患者创建DTO</param>
     /// <returns>创建成功的患者DTO</returns>
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 
     /// <summary>
     /// 更新患者信息
@@ -276,7 +276,7 @@ public interface IPatientService
     /// <returns>更新后的患者DTO</returns>
     Task<ServiceResult<PatientDto>> UpdateAsync(
         Guid id,
-        PatientUpdateDto dto);
+        PatientInputDto dto);
 
     /// <summary>
     /// 删除患者(软删除)
@@ -632,7 +632,7 @@ public class PatientService : IPatientService
 #### 示例2: 创建操作(带业务规则验证)
 
 ```csharp
-public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
+public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto)
 {
     try
     {
@@ -653,7 +653,7 @@ public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
         }
 
         // 3. 复杂验证(使用FluentValidation)
-        var validator = new PatientCreateDtoValidator();
+        var validator = new PatientInputDtoValidator();
         var validationResult = await validator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {
@@ -705,7 +705,7 @@ public async Task<ServiceResult<ImportResultDto<PatientDto>>> ImportFromExcelAsy
             try
             {
                 // 验证单条数据
-                var validator = new PatientCreateDtoValidator();
+                var validator = new PatientInputDtoValidator();
                 var validationResult = await validator.ValidateAsync(patientDto);
                 if (!validationResult.IsValid)
                 {
@@ -816,7 +816,7 @@ public class PatientsController : ControllerBase
 [HttpPost]
 [ProducesResponseType(typeof(PatientDto), StatusCodes.Status201Created)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 {
     var result = await _patientService.CreateAsync(dto);
 
@@ -876,7 +876,7 @@ public async Task<IActionResult> ImportFromExcel(IFormFile file)
         {
             f.RowNumber,
             f.ErrorMessage,
-            patientName = ((PatientCreateDto)f.Data).Name
+            patientName = ((PatientInputDto)f.Data).Name
         })
     });
 }
@@ -958,12 +958,12 @@ public class PatientService : IPatientService
         // 实现逻辑...
     }
 
-    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
+    public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto)
     {
         // 实现逻辑...
     }
 
-    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
+    public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto)
     {
         // 实现逻辑...
     }
@@ -978,7 +978,7 @@ public class PatientService : IPatientService
     /// <summary>
     /// 验证患者数据
     /// </summary>
-    private async Task<ServiceResult> ValidatePatientAsync(PatientCreateDto dto)
+    private async Task<ServiceResult> ValidatePatientAsync(PatientInputDto dto)
     {
         // 验证逻辑...
     }
@@ -1074,14 +1074,14 @@ public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(
 ### 5.3 完整实现示例(CreateAsync)
 
 ```csharp
-public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
+public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto)
 {
     try
     {
         // ========== 业务规则验证 ==========
 
         // 1. FluentValidation验证
-        var validator = new PatientCreateDtoValidator();
+        var validator = new PatientInputDtoValidator();
         var validationResult = await validator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {
@@ -1149,7 +1149,7 @@ public async Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto)
 ### 5.4 完整实现示例(UpdateAsync)
 
 ```csharp
-public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto)
+public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto)
 {
     try
     {
@@ -1165,7 +1165,7 @@ public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateD
         // ========== 业务规则验证 ==========
 
         // 1. FluentValidation验证
-        var validator = new PatientUpdateDtoValidator();
+        var validator = new PatientInputDtoValidator();
         var validationResult = await validator.ValidateAsync(dto);
         if (!validationResult.IsValid)
         {
@@ -1311,7 +1311,7 @@ public static class PatientsModuleExtensions
         // ========== 注册验证器 ==========
 
         // 自动注册当前程序集中的所有FluentValidation验证器
-        services.AddValidatorsFromAssemblyContaining<PatientCreateDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
 
         // ========== 注册AutoMapper配置 ==========
 
@@ -1536,7 +1536,7 @@ public async Task<IActionResult> GetById(Guid id)
 [HttpPost]
 [ProducesResponseType(typeof(PatientDto), StatusCodes.Status201Created)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 {
     _logger.LogInformation("创建患者: {Name}", dto.Name);
 
@@ -1581,7 +1581,7 @@ public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
 [ProducesResponseType(typeof(PatientDto), StatusCodes.Status200OK)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
 [ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<IActionResult> Update(Guid id, [FromBody] PatientUpdateDto dto)
+public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
 {
     _logger.LogInformation("更新患者: {Id}", id);
 
@@ -1913,7 +1913,7 @@ public class PatientsControllerTests
     public async Task Create_Should_Return_CreatedAtAction_When_Successful()
     {
         // Arrange
-        var createDto = new PatientCreateDto
+        var createDto = new PatientInputDto
         {
             Name = "李四",
             Phone = "13900139000",
@@ -1928,7 +1928,7 @@ public class PatientsControllerTests
         };
 
         // Mock IPatientService.CreateAsync
-        _mockPatientService.CreateAsync(Arg.Any<PatientCreateDto>())
+        _mockPatientService.CreateAsync(Arg.Any<PatientInputDto>())
             .Returns(ServiceResult<PatientDto>.Success(createdPatient));
 
         // Act
@@ -1940,14 +1940,14 @@ public class PatientsControllerTests
         Assert.Equal("李四", actualPatient.Name);
 
         // 验证Service方法被调用
-        await _mockPatientService.Received(1).CreateAsync(Arg.Any<PatientCreateDto>());
+        await _mockPatientService.Received(1).CreateAsync(Arg.Any<PatientInputDto>());
     }
 
     [Fact]
     public async Task Create_Should_Return_BadRequest_When_Validation_Fails()
     {
         // Arrange
-        var createDto = new PatientCreateDto
+        var createDto = new PatientInputDto
         {
             Name = "", // 空名称(验证失败)
             Phone = "13900139000"
@@ -1956,7 +1956,7 @@ public class PatientsControllerTests
         var errors = new List<string> { "患者姓名不能为空" };
 
         // Mock IPatientService.CreateAsync返回验证错误
-        _mockPatientService.CreateAsync(Arg.Any<PatientCreateDto>())
+        _mockPatientService.CreateAsync(Arg.Any<PatientInputDto>())
             .Returns(ServiceResult<PatientDto>.Fail(errors));
 
         // Act
@@ -2021,7 +2021,7 @@ public class PatientServiceTests : IDisposable
     public async Task CreateAsync_Should_Persist_To_Database()
     {
         // Arrange
-        var dto = new PatientCreateDto
+        var dto = new PatientInputDto
         {
             Name = "王五",
             Phone = "13700137000",
@@ -2091,7 +2091,7 @@ public class PatientServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act - 尝试创建相同身份证号的患者
-        var dto = new PatientCreateDto
+        var dto = new PatientInputDto
         {
             Name = "周八",
             Phone = "13400134000",
@@ -2132,14 +2132,14 @@ public class PatientServiceTests : IDisposable
 public interface IPatientService
 {
     Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 }
 
 // ========== v1.1 接口(兼容性变更:添加新方法) ==========
 public interface IPatientService
 {
     Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 
     // ✅ 新增方法(不影响现有调用)
     Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
@@ -2200,8 +2200,8 @@ public interface IReadOnlyPatientService
 // ========== 扩展接口(继承基础接口) ==========
 public interface IPatientService : IReadOnlyPatientService
 {
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
-    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientUpdateDto dto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
+    Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto);
     Task<ServiceResult> DeleteAsync(Guid id);
 }
 ```
@@ -2233,7 +2233,7 @@ public interface IPatientService
 // ✅ 接口方法参数使用DTO
 public interface IPatientService
 {
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto); // DTO
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto); // DTO
 }
 ```
 
@@ -2246,7 +2246,7 @@ public interface IPatientService
 /// 创建患者
 /// </summary>
 /// <exception cref="DuplicateIdCardException">身份证号重复时抛出</exception>
-Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 ```
 
 **问题**: 接口定义中承诺抛出特定异常,破坏了ServiceResult封装的初衷
@@ -2260,7 +2260,7 @@ Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
 /// <returns>
 /// 成功返回创建的患者DTO,失败返回错误消息
 /// </returns>
-Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 
 // 实现中:
 if (exists)
@@ -2315,10 +2315,10 @@ Task<ServiceResult<PatientDto>> CreatePatientAsync(
 
 ```csharp
 // ✅ 使用DTO封装
-Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
 
-// PatientCreateDto封装所有参数
-public class PatientCreateDto
+// PatientInputDto封装所有参数
+public class PatientInputDto
 {
     public string Name { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
@@ -2339,7 +2339,7 @@ public class PatientCreateDto
 public interface IPatientService
 {
     Task<PatientDto?> GetByIdAsync(Guid id); // 返回null表示失败
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto); // 返回ServiceResult
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto); // 返回ServiceResult
     Task<bool> DeleteAsync(Guid id); // 返回bool表示成功/失败
 }
 ```
@@ -2353,7 +2353,7 @@ public interface IPatientService
 public interface IPatientService
 {
     Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
-    Task<ServiceResult<PatientDto>> CreateAsync(PatientCreateDto dto);
+    Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
     Task<ServiceResult> DeleteAsync(Guid id);
 }
 ```

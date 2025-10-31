@@ -642,7 +642,7 @@ public async Task<ActionResult<ApiResponse<PatientDto>>> GetById(Guid id)
 [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
 [ProducesResponseType(typeof(ApiResponse), 400)]
 [ProducesResponseType(typeof(ApiResponse), 401)]
-public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientCreateDto dto)
+public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientInputDto dto)
 {
     try
     {
@@ -712,7 +712,7 @@ public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientC
 [ProducesResponseType(typeof(ApiResponse), 401)]
 public async Task<ActionResult<ApiResponse<PatientDto>>> Update(
     Guid id,
-    [FromBody] PatientUpdateDto dto)
+    [FromBody] PatientInputDto dto)
 {
     try
     {
@@ -1366,7 +1366,7 @@ public async Task<IActionResult> GetList()  // 所有已认证用户可访问
 
 [HttpPost]
 [Authorize(Policy = "DoctorOrAdmin")]  // 仅医生或管理员可访问
-public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 {
 }
 
@@ -1998,7 +1998,7 @@ public async Task<IActionResult> GetById(Guid id)
 
 ```csharp
 [HttpPost]
-public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 {
     var result = await _service.CreateAsync(dto);
 
@@ -2011,7 +2011,7 @@ public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
 
 ```csharp
 [HttpPost]
-public async Task<IActionResult> Create([FromBody] PatientCreateDto dto)
+public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 {
     var result = await _service.CreateAsync(dto);
 

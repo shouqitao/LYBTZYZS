@@ -131,21 +131,21 @@ public class FormulaMappingProfile : Profile
         CreateMap<Formula, FormulaDto>()
             .ForMember(dest => dest.Herbs, opt => opt.MapFrom(src => src.Herbs));
 
-        CreateMap<FormulaCreateDto, Formula>()
+        CreateMap<FormulaInputDto, Formula>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.ValidationStatus, opt => opt.MapFrom(src => FormulaValidationStatus.Draft))
             .ForMember(dest => dest.Herbs, opt => opt.MapFrom(src => src.Herbs));
 
-        CreateMap<FormulaUpdateDto, Formula>()
+        CreateMap<FormulaInputDto, Formula>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.Herbs, opt => opt.MapFrom(src => src.Herbs));
 
         // FormulaHerbItem映射
         CreateMap<FormulaHerbItem, FormulaHerbItemDto>();
-        CreateMap<FormulaHerbItemCreateDto, FormulaHerbItem>()
+        CreateMap<FormulaHerbItemInputDto, FormulaHerbItem>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IsValidated, opt => opt.MapFrom(src => src.HerbId != null));
-        CreateMap<FormulaHerbItemUpdateDto, FormulaHerbItem>()
+        CreateMap<FormulaHerbItemInputDto, FormulaHerbItem>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
     }
 }
@@ -546,9 +546,9 @@ public class FormulaRepository : Repository<Formula>, IFormulaRepository
 public interface IFormulaService
 {
     // ========== 基础CRUD ==========
-    Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto);
+    Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto);
     Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id);
-    Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto);
+    Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto);
     Task<ServiceResult> DeleteAsync(Guid id);
     Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
 
@@ -606,7 +606,7 @@ public class FormulaService : IFormulaService
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
 
-    public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaCreateDto dto)
+    public async Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto)
     {
         try
         {
@@ -644,7 +644,7 @@ public class FormulaService : IFormulaService
         }
     }
 
-    public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaUpdateDto dto)
+    public async Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto)
     {
         try
         {
@@ -1284,7 +1284,7 @@ public class FormulaController : ControllerBase
     /// <summary>创建验方</summary>
     [HttpPost]
     [SwaggerOperation(Summary = "创建验方", Description = "创建新的验方记录")]
-    public async Task<ActionResult<FormulaDto>> CreateAsync([FromBody] FormulaCreateDto dto)
+    public async Task<ActionResult<FormulaDto>> CreateAsync([FromBody] FormulaInputDto dto)
     {
         var result = await _formulaService.CreateAsync(dto);
         if (result.Succeeded && result.Data != null)
@@ -1308,7 +1308,7 @@ public class FormulaController : ControllerBase
     /// <summary>更新验方</summary>
     [HttpPut("{id}")]
     [SwaggerOperation(Summary = "更新验方", Description = "更新验方基本信息和药材组成")]
-    public async Task<ActionResult<FormulaDto>> UpdateAsync(Guid id, [FromBody] FormulaUpdateDto dto)
+    public async Task<ActionResult<FormulaDto>> UpdateAsync(Guid id, [FromBody] FormulaInputDto dto)
     {
         var result = await _formulaService.UpdateAsync(id, dto);
         if (result.Succeeded && result.Data != null)
@@ -1604,11 +1604,11 @@ public class FormulaServiceTests
     public async Task CreateAsync_ValidDto_ReturnsSuccess()
     {
         // Arrange
-        var dto = new FormulaCreateDto
+        var dto = new FormulaInputDto
         {
             Name = "小柴胡汤",
             Effect = "和解少阳",
-            Herbs = new List<FormulaHerbItemCreateDto>()
+            Herbs = new List<FormulaHerbItemInputDto>()
         };
 
         var formula = new Formula
