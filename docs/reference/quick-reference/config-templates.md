@@ -22,6 +22,35 @@
 3. **生产部署**: 使用 `appsettings.Production.json` + `appsettings.Security.json`
 4. **小型诊所**: 考虑使用 `appsettings.ClinicOptimized.json` 作为生产配置基础
 
+### Issue #1726 配置优化说明（⭐ 重要变更）
+
+**Phase 4核心变更**（2025-10-30实施）：
+
+1. **连接字符串统一管理**：
+   - ✅ 移除 `Lybt:Infrastructure:Database:ConnectionString` 重复定义
+   - ✅ 统一使用 `ConnectionStrings:DefaultConnection` 作为唯一数据源（Single Source of Truth）
+   - ✅ 添加 `Application Name=LYBT.WebAPI` 参数到所有连接字符串
+
+2. **Serilog配置优化**：
+   - ✅ MSSqlServer sink改用 `connectionStringName: "DefaultConnection"` 引用方式
+   - ✅ 避免在多处硬编码连接字符串
+
+3. **Health Check端点**（Phase 3新增）：
+   - `/health` - 应用程序健康检查
+   - `/health/database` - 数据库连接健康检查
+
+4. **Configuration Fallback链**：
+   ```
+   DatabaseOptions.ConnectionString 使用优先级：
+   1. Lybt:Infrastructure:Database:ConnectionString（已移除）
+   2. ConnectionStrings:DefaultConnection（统一使用）
+   3. LYBT_DATABASE_CONNECTION_STRING 环境变量（生产环境）
+   ```
+
+**参考文档**：
+- 完整变更：`docs/reports/issue-1726-configuration-analysis-2025-10-30.md`
+- 验证报告：`docs/reports/epic-1725-runtime-verification-report-2025-10-30.md`
+
 ### 开发环境配置 (appsettings.json)
 
 ```json
@@ -45,7 +74,7 @@
   },
 
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true"
+    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true;Application Name=LYBT.WebAPI"
   },
 
   "Lybt": {
@@ -111,7 +140,7 @@
     },
     "Infrastructure": {
       "Database": {
-        "ConnectionString": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true",
+        "_comment": "Issue #1726 Phase 4: 移除重复ConnectionString，使用ConnectionStrings:DefaultConnection",
         "Migration": {
           "AutoMigrate": false,
           "EnsureCreatedInDevelopment": true
@@ -196,7 +225,8 @@
       {
         "Name": "MSSqlServer",
         "Args": {
-          "connectionString": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true",
+          "connectionStringName": "DefaultConnection",
+          "_comment": "Issue #1726 Phase 4: 使用connectionStringName引用，避免重复定义",
           "sinkOptionsSection": {
             "tableName": "SystemLogs",
             "schemaName": "dbo",
@@ -232,7 +262,7 @@
   "AllowedHosts": "*",
 
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=10;Command Timeout=15;Max Pool Size=10;Min Pool Size=1;Pooling=true"
+    "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=10;Command Timeout=15;Max Pool Size=10;Min Pool Size=1;Pooling=true;Application Name=LYBT.WebAPI"
   },
 
   "Lybt": {
@@ -343,7 +373,7 @@
     },
     "Infrastructure": {
       "Database": {
-        "ConnectionString": "#{DATABASE_CONNECTION_STRING}#",
+        "_comment": "Issue #1726 Phase 4: 移除重复ConnectionString，使用ConnectionStrings:DefaultConnection",
         "Migration": {
           "AutoMigrate": false,
           "EnsureCreatedInDevelopment": false
@@ -430,7 +460,8 @@
       {
         "Name": "MSSqlServer",
         "Args": {
-          "connectionString": "#{DATABASE_CONNECTION_STRING}#",
+          "connectionStringName": "DefaultConnection",
+          "_comment": "Issue #1726 Phase 4: 使用connectionStringName引用，避免重复定义",
           "sinkOptionsSection": {
             "tableName": "SystemLogs",
             "schemaName": "dbo",
@@ -618,9 +649,15 @@ export RATE_LIMIT_BLOCK_THRESHOLD="100"
 
 ```json
 {
-  "ApiSettings": {
-    "BaseUrl": "http://localhost:5001/",
-    "TimeoutSeconds": 60
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "https://localhost:5001/",
+        "TimeoutSeconds": 60,
+        "IgnoreSslErrors": true,
+        "_comment": "开发环境API配置 - IgnoreSslErrors仅用于开发环境"
+      }
+    }
   },
   "Logging": {
     "LogLevel": {
@@ -632,13 +669,25 @@ export RATE_LIMIT_BLOCK_THRESHOLD="100"
 }
 ```
 
+**配置说明**：
+- **Issue #1726**: 统一配置命名规范 `ApiSettings:*` → `Lybt:Client:Api:*`
+- **BaseUrl**: API服务器地址，开发环境使用https://localhost:5001
+- **TimeoutSeconds**: HTTP请求超时时间（秒）
+- **IgnoreSslErrors**: 是否忽略SSL证书错误（仅开发环境使用）
+
 ### 生产环境客户端配置 (appsettings.Production.json)
 
 ```json
 {
-  "ApiSettings": {
-    "BaseUrl": "#{API_BASE_URL}#",
-    "TimeoutSeconds": 30
+  "Lybt": {
+    "Client": {
+      "Api": {
+        "BaseUrl": "#{API_BASE_URL}#",
+        "TimeoutSeconds": 30,
+        "IgnoreSslErrors": false,
+        "_comment": "生产环境API配置 - 必须使用有效SSL证书"
+      }
+    }
   },
   "Logging": {
     "LogLevel": {
