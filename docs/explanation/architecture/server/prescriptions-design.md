@@ -1556,7 +1556,7 @@ public static class PrescriptionsModule
         // FluentValidation验证器 - 自动注册所有Validator
         services.AddValidatorsFromAssemblyContaining<PrescriptionCreateDtoValidator>();
 
-        // AutoMapper配置已在UnifiedServiceRegistration中集中注册
+        // AutoMapper配置已在ApiServiceCollectionExtensions中集中注册（Issue #1732 Phase 2.5更新）
 
         return services;
     }

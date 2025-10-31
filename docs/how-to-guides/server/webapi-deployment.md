@@ -1218,7 +1218,9 @@ WHERE object_name LIKE '%SQLServer:General Statistics%'
 }
 ```
 
-**输出缓存策略**（`UnifiedServiceRegistration.cs:122-157`）：
+**输出缓存策略**（`DatabaseServiceCollectionExtensions.cs`）：
+
+> **更新说明（Issue #1732 Phase 2.5）**: 服务注册已从单体UnifiedServiceRegistration拆分为4个专责扩展类，输出缓存配置位于DatabaseServiceCollectionExtensions。
 
 ```csharp
 services.AddOutputCache(options =>
