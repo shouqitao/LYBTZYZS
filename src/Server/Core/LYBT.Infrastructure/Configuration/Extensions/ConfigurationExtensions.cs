@@ -238,24 +238,14 @@ public static class ConfigurationExtensions
             validationResults.Add("Database MinConnections cannot be greater than MaxConnections");
         }
 
-        // 验证缓存配置
-        if (options.Infrastructure.Cache.DistributedCache.Type == DistributedCacheType.Redis &&
-            string.IsNullOrEmpty(options.Infrastructure.Cache.DistributedCache.RedisConnectionString))
-        {
-            validationResults.Add("Redis connection string is required when using Redis distributed cache");
-        }
-
-        if (options.Infrastructure.Cache.DistributedCache.Type == DistributedCacheType.SqlServer &&
-            string.IsNullOrEmpty(options.Infrastructure.Cache.DistributedCache.SqlServerConnectionString))
-        {
-            validationResults.Add("SQL Server connection string is required when using SQL Server distributed cache");
-        }
+        // Issue #1732 Phase 1: 移除分布式缓存验证（MVP阶段仅使用MemoryCache）
     }
 
     #region Legacy Mapping Methods
 
     private static PasswordPolicy MapToLegacyPasswordPolicy(PasswordPolicyConfiguration config)
     {
+        // Issue #1732 Phase 1: 移除PasswordHistoryCount和PasswordExpirationDays（未实现功能）
         return new PasswordPolicy
         {
             MinLength = config.MinLength,
@@ -263,8 +253,8 @@ public static class ConfigurationExtensions
             RequireLowercase = config.RequireLowercase,
             RequireDigit = config.RequireDigit,
             RequireSpecialChar = config.RequireSpecialChar,
-            PasswordHistoryCount = config.PasswordHistoryCount,
-            PasswordExpireDays = config.PasswordExpirationDays
+            PasswordHistoryCount = 0,  // MVP阶段暂不支持密码历史
+            PasswordExpireDays = 0     // MVP阶段暂不支持密码过期
         };
     }
 
