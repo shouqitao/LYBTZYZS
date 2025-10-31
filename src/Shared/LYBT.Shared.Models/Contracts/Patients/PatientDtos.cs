@@ -26,27 +26,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄（基于出生日期的计算属性）</summary>
+        /// <summary>年龄（由Service层计算）</summary>
         [DisplayName("年龄")]
-        public int? Age
-        {
-            get
-            {
-                if (BirthDate == null)
-                {
-                    return null;
-                }
-
-                var today = DateTime.Today;
-                var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
-                    age--;
-                }
-
-                return age;
-            }
-        }
+        public int? Age { get; set; }
 
         /// <summary>身份证号</summary>
         [DisplayName("身份证号")]
@@ -125,27 +107,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
 
-        /// <summary>年龄（计算属性，基于出生日期）</summary>
+        /// <summary>年龄（由Service层计算）</summary>
         [DisplayName("年龄")]
-        public int? Age
-        {
-            get
-            {
-                if (BirthDate == null)
-                {
-                    return null;
-                }
-
-                var today = DateTime.Today;
-                var age = today.Year - BirthDate.Value.Year;
-                if (BirthDate.Value.Date > today.AddYears(-age))
-                {
-                    age--;
-                }
-
-                return age;
-            }
-        }
+        public int? Age { get; set; }
 
         /// <summary>身份证号</summary>
         [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
@@ -240,16 +204,9 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("年龄")]
         public int Age { get; set; }
 
-        /// <summary>推算出生日期（基于年龄）</summary>
+        /// <summary>推算出生日期（由Service层计算）</summary>
         [DisplayName("推算出生日期")]
-        public DateTime? BirthDate
-        {
-            get
-            {
-                if (Age <= 0) return null;
-                return DateTime.Today.AddYears(-Age);
-            }
-        }
+        public DateTime? BirthDate { get; set; }
 
         /// <summary>手机号码</summary>
         [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "手机号码长度不能超过{1}个字符")]

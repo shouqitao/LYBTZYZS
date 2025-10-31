@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -272,7 +273,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 ShowPrescriptionPanel = hasPrescription;
 
                 // 4. 检查是否可编辑（根据病案状态）
-                CanEdit = medicalCase.CanEdit();
+                // Phase 2: 将DTO业务逻辑移至ViewModel层
+                CanEdit = medicalCase.CaseStatus == MedicalCaseStatus.Active || medicalCase.CaseStatus == MedicalCaseStatus.Draft;
 
                 // 5. 如有处方，触发加载处方事件（后续集成任务）
                 // TODO #1705: 实现PrescriptionLoadedEvent通知PrescriptionEditor加载处方数据（Epic #1676 Phase 3）

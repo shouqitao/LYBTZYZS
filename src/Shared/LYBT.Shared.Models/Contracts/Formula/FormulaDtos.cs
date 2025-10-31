@@ -77,24 +77,13 @@ namespace LYBT.Shared.Models.Contracts.Formula
             set => Herbs = value;
         }
 
-        /// <summary>药材数量（计算属性）</summary>
+        /// <summary>药材数量（由Service层计算）</summary>
         [DisplayName("药材数量")]
-        public int HerbCount => Herbs?.Count ?? 0;
+        public int HerbCount { get; set; }
 
-        /// <summary>总价格（计算属性）</summary>
+        /// <summary>总价格（由Service层计算）</summary>
         [DisplayName("总价格")]
-        public decimal TotalPrice
-        {
-            get
-            {
-                if (Herbs == null || !Herbs.Any())
-                {
-                    return 0m;
-                }
-
-                return Herbs.Sum(h => (h.Herb?.Price ?? 0m) * h.Quantity);
-            }
-        }
+        public decimal TotalPrice { get; set; }
 
         /// <summary>药材名称列表</summary>
         public string HerbNames

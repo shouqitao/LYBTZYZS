@@ -61,13 +61,13 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("处方项目")]
         public List<PrescriptionItemDto> Items { get; set; } = new();
 
-        /// <summary>单帖价格（计算属性）</summary>
+        /// <summary>单帖价格（由Service层计算）</summary>
         [DisplayName("单帖价格")]
-        public decimal SingleDosePrice => CalculateSingleDosePrice();
+        public decimal SingleDosePrice { get; set; }
 
-        /// <summary>总价格（计算属性）</summary>
+        /// <summary>总价格（由Service层计算）</summary>
         [DisplayName("总价格")]
-        public decimal TotalPrice => SingleDosePrice * DosageCount;
+        public decimal TotalPrice { get; set; }
 
         /// <summary>
         /// 总金额（兼容性别名，映射到TotalPrice）
@@ -75,28 +75,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("总金额")]
         public decimal TotalAmount => TotalPrice;
 
-        /// <summary>总重量（计算属性）</summary>
+        /// <summary>总重量（由Service层计算）</summary>
         [DisplayName("总重量")]
-        public decimal TotalWeight => CalculateTotalWeight();
-
-        /// <summary>
-        /// 计算单帖价格 - 简化逻辑
-        /// </summary>
-        private decimal CalculateSingleDosePrice()
-        {
-            if (Items?.Any() != true) return 0m;
-            var subtotal = Items.Sum(item => item.UnitPrice * item.Quantity);
-            return subtotal * Discount;
-        }
-
-        /// <summary>
-        /// 计算总重量 - 简化逻辑
-        /// </summary>
-        private decimal CalculateTotalWeight()
-        {
-            if (Items?.Any() != true) return 0m;
-            return Items.Sum(item => item.Quantity) * DosageCount;
-        }
+        public decimal TotalWeight { get; set; }
     }
 
     /// <summary>

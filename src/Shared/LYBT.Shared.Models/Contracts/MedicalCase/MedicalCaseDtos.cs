@@ -57,49 +57,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
-
-        /// <summary>获取优先级 - 基于诊疗时间</summary>
-        public int GetPriority()
-        {
-            var hoursElapsed = (DateTime.Now - ConsultationDate).TotalHours;
-            if (hoursElapsed > 48)
-            {
-                return 3; // 高优先级
-            }
-
-            if (hoursElapsed > 24)
-            {
-                return 2; // 中优先级
-            }
-
-            return 1; // 低优先级
-        }
-
-        /// <summary>是否紧急</summary>
-        public bool IsUrgent() => GetPriority() >= 3;
-
-        /// <summary>是否需要医生注意 - 基于诊疗时间</summary>
-        public bool NeedsDoctorAttention() =>
-            (CaseStatus == MedicalCaseStatus.Active || CaseStatus == MedicalCaseStatus.Draft) &&
-            (DateTime.Now - ConsultationDate).TotalHours > 24;
-
-        /// <summary>是否可以开始诊疗</summary>
-        public bool CanStartConsultation() => CaseStatus == MedicalCaseStatus.Active;
-
-        /// <summary>是否可以完成</summary>
-        public bool CanComplete() => CaseStatus == MedicalCaseStatus.Active;
-
-        /// <summary>是否可以取消</summary>
-        public bool CanCancel() => CaseStatus == MedicalCaseStatus.Active;
-
-        /// <summary>是否可以删除 - Epic #1612修正版</summary>
-        public bool CanDelete() => CaseStatus == MedicalCaseStatus.Completed || CaseStatus == MedicalCaseStatus.Cancelled;
-
-        /// <summary>是否可以编辑 - Epic #1612修正版</summary>
-        public bool CanEdit() => CaseStatus == MedicalCaseStatus.Active || CaseStatus == MedicalCaseStatus.Draft;
-
-        /// <summary>是否已完成 - Epic #1612修正版</summary>
-        public bool IsCompleted() => CaseStatus == MedicalCaseStatus.Completed;
     }
 
     /// <summary>

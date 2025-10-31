@@ -36,9 +36,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         [DisplayName("数量")]
         public decimal Quantity { get; set; }
 
-        /// <summary>小计（自动计算）</summary>
+        /// <summary>小计（由Service层计算）</summary>
         [DisplayName("小计")]
-        public decimal TotalPrice => Price * Quantity;
+        public decimal TotalPrice { get; set; }
 
         /// <summary>备注</summary>
         [StringLength(200, ErrorMessage = "备注长度不能超过200个字符")]
@@ -206,11 +206,7 @@ namespace LYBT.Shared.Models.Contracts.Herbs
 
         public string? Description { get; set; }
 
-        // 验证结束时间必须大于开始时间
-        public bool IsValid()
-        {
-            return EndTime > StartTime && StartTime >= DateTime.Now.Date;
-        }
+
     }
 
     /// <summary>
@@ -224,52 +220,14 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public string Unit { get; set; } = "克";
         public DateTime? ExpiryDate { get; set; }
 
-        /// <summary>
-        /// 剩余天数
-        /// </summary>
-        public int DaysRemaining
-        {
-            get
-            {
-                if (!ExpiryDate.HasValue)
-                {
-                    return int.MaxValue;
-                }
+        /// <summary>剩余天数（由Service层计算）</summary>
+        public int DaysRemaining { get; set; }
 
-                return (int)(ExpiryDate.Value - DateTime.Now).TotalDays;
-            }
-        }
+        /// <summary>是否已过期（由Service层计算）</summary>
+        public bool IsExpired { get; set; }
 
-        /// <summary>
-        /// 是否已过期
-        /// </summary>
-        public bool IsExpired => DaysRemaining < 0;
-
-        /// <summary>
-        /// 预警级别
-        /// </summary>
-        public string WarningLevel
-        {
-            get
-            {
-                if (IsExpired)
-                {
-                    return "Expired";
-                }
-
-                if (DaysRemaining <= 7)
-                {
-                    return "Critical";
-                }
-
-                if (DaysRemaining <= 30)
-                {
-                    return "Warning";
-                }
-
-                return "Normal";
-            }
-        }
+        /// <summary>预警级别（由Service层计算）</summary>
+        public string WarningLevel { get; set; } = "Normal";
     }
 
     /// <summary>
