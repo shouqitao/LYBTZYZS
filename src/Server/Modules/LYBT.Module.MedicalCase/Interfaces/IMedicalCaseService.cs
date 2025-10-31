@@ -30,13 +30,18 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <summary>
         /// 更新辨证信息（三步流程Step 1）
         /// Epic #1612: 通过聚合根协调Consultation更新
+        /// Epic #1731: 添加权限检查（currentUserId）
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <param name="request">辨证信息请求</param>
+        /// <param name="currentUserId">当前操作用户ID</param>
+        /// <param name="isAdmin">是否管理员（默认false）</param>
         /// <returns>更新后的病案实体（包含Consultation）</returns>
         Task<MedicalCaseEntity?> UpdateConsultationAsync(
             Guid medicalCaseId,
-            UpdateConsultationRequest request);
+            UpdateConsultationRequest request,
+            Guid currentUserId,
+            bool isAdmin = false);
 
         /// <summary>
         /// 标记是否需要开处方（三步流程Step 2）
@@ -47,7 +52,9 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>更新后的病案实体</returns>
         Task<MedicalCaseEntity?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
-            bool needsPrescription);
+            bool needsPrescription,
+            Guid currentUserId,
+            bool isAdmin = false);
 
         /// <summary>
         /// 创建处方（三步流程Step 3a）
@@ -72,7 +79,9 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<PrescriptionEntity?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
-            UpdatePrescriptionRequest request);
+            UpdatePrescriptionRequest request,
+            Guid currentUserId,
+            bool isAdmin = false);
 
         /// <summary>
         /// 删除处方（软删除）
@@ -84,7 +93,9 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>删除是否成功</returns>
         Task<bool> DeletePrescriptionAsync(
             Guid medicalCaseId,
-            Guid prescriptionId);
+            Guid prescriptionId,
+            Guid currentUserId,
+            bool isAdmin = false);
 
         /// <summary>
         /// 更新病案状态

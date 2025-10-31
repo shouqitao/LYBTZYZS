@@ -49,15 +49,14 @@ namespace LYBT.Module.MedicalCase.Services
                 _logger.LogInformation("开始创建病案，PatientId: {PatientId}, VisitDate: {VisitDate}",
                     patientId, visitDate);
 
-                // 业务规则验证：BR-001（单患者仅一条未完成病案）
+                // 业务规则验证：BR-001（单患者仅一条未完成病案）- Epic #1731 集成Rules
                 var existingActiveCases = await _repository.GetByPatientIdAsync(patientId);
-                var activeCase = existingActiveCases.FirstOrDefault(c => c.Status == MedicalCaseStatus.Active);
-
-                if (activeCase != null)
+                if (!MedicalCaseRules.CanCreateNewCase(existingActiveCases))
                 {
+                    var activeCase = existingActiveCases.FirstOrDefault(c => c.Status == MedicalCaseStatus.Active);
                     _logger.LogWarning("患者已有未完成病案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
-                        patientId, activeCase.Id);
-                    throw new InvalidOperationException($"患者已有未完成病案（ID: {activeCase.Id}），请先完成或取消该病案");
+                        patientId, activeCase?.Id);
+                    throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
                 }
 
                 // 创建MedicalCase实体
@@ -106,7 +105,9 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<MedicalCaseEntity?> UpdateConsultationAsync(
             Guid medicalCaseId,
-            UpdateConsultationRequest request)
+            UpdateConsultationRequest request,
+            Guid currentUserId,
+            bool isAdmin = false)
         {
             try
             {
@@ -118,6 +119,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
+                }
+
+                // Epic #1731: 权限检查 - 集成CanEdit规则
+                if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
+                {
+                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        medicalCaseId, currentUserId);
+                    throw new UnauthorizedAccessException("无权限编辑此病案");
                 }
 
                 // 业务规则验证：BF-002（仅Active状态可编辑）
@@ -165,7 +174,9 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<MedicalCaseEntity?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
-            bool needsPrescription)
+            bool needsPrescription,
+            Guid currentUserId,
+            bool isAdmin = false)
         {
             try
             {
@@ -178,6 +189,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
+                }
+
+                // Epic #1731: 权限检查 - 集成CanEdit规则
+                if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
+                {
+                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        medicalCaseId, currentUserId);
+                    throw new UnauthorizedAccessException("无权限编辑此病案");
                 }
 
                 // 业务规则验证：BF-002（必须先完成Step1）
@@ -284,7 +303,9 @@ namespace LYBT.Module.MedicalCase.Services
         public async Task<PrescriptionEntity?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
-            UpdatePrescriptionRequest request)
+            UpdatePrescriptionRequest request,
+            Guid currentUserId,
+            bool isAdmin = false)
         {
             try
             {
@@ -297,6 +318,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
+                }
+
+                // Epic #1731: 权限检查 - 集成CanEdit规则
+                if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
+                {
+                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        medicalCaseId, currentUserId);
+                    throw new UnauthorizedAccessException("无权限编辑此病案");
                 }
 
                 // 验证Prescription存在且ID匹配
@@ -339,7 +368,9 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         public async Task<bool> DeletePrescriptionAsync(
             Guid medicalCaseId,
-            Guid prescriptionId)
+            Guid prescriptionId,
+            Guid currentUserId,
+            bool isAdmin = false)
         {
             try
             {
@@ -352,6 +383,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return false;
+                }
+
+                // Epic #1731: 权限检查 - 集成CanDelete规则
+                if (!MedicalCaseRules.CanDelete(medicalCase, currentUserId, isAdmin))
+                {
+                    _logger.LogWarning("无权限删除病案处方，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        medicalCaseId, currentUserId);
+                    throw new UnauthorizedAccessException("无权限删除此病案的处方");
                 }
 
                 // 验证Prescription存在且ID匹配

@@ -88,7 +88,11 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.UpdateConsultationAsync(id, request);
+                // Epic #1731: 获取当前用户信息以进行权限检查
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                var result = await _medicalCaseService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
@@ -121,7 +125,11 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.SetPrescriptionFlagAsync(id, request.NeedsPrescription);
+                // Epic #1731: 获取当前用户信息以进行权限检查
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                var result = await _medicalCaseService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("病案不存在"));
@@ -192,7 +200,11 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, request);
+                // Epic #1731: 获取当前用户信息以进行权限检查
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, request, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<PrescriptionEntity>.CreateFail("病案或处方不存在"));
@@ -228,7 +240,11 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.DeletePrescriptionAsync(id, prescriptionId);
+                // Epic #1731: 获取当前用户信息以进行权限检查
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+
+                var result = await _medicalCaseService.DeletePrescriptionAsync(id, prescriptionId, operatorId, isAdmin);
 
                 if (!result)
                     return NotFound(ApiResponse.CreateFail("病案或处方不存在"));
