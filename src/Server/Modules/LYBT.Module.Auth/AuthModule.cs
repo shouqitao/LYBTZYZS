@@ -1,5 +1,7 @@
-﻿using LYBT.Module.Auth.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
+using LYBT.Module.Auth.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +22,10 @@ namespace LYBT.Module.Auth
             // 仅注册必要的核心服务
             services.AddSingleton<IJwtService, JwtService>(); // 优化：JWT服务无状态，使用Singleton
             services.AddScoped<IAuthService, AuthService>();
+
+            // Epic #1731: 注册Auth模块Validators
+            services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
             return services;
         }
         /// 配置认证模块中间件
