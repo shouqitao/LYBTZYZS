@@ -419,16 +419,21 @@ public static class UnifiedServiceRegistration
     /// </summary>
     private static IServiceCollection RegisterApiServices(this IServiceCollection services)
     {
-        // API 版本管理
+        // API版本管理（MVP阶段仅v1.0，简化配置）
+        // Issue #1732 Phase 2: 移除3种版本读取器（QueryString/Header/UrlSegment），使用默认行为
         services.AddApiVersioning(options =>
         {
+            // 默认API版本：v1.0
             options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+            
+            // 当客户端未指定版本时使用默认版本
             options.AssumeDefaultVersionWhenUnspecified = true;
+            
+            // 在响应头中报告支持的API版本
             options.ReportApiVersions = true;
-            options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
-                new Asp.Versioning.QueryStringApiVersionReader("version"),
-                new Asp.Versioning.HeaderApiVersionReader("X-Version"),
-                new Asp.Versioning.UrlSegmentApiVersionReader());
+            
+            // MVP阶段：移除ApiVersionReader配置，使用默认行为
+            // 原因：只有v1.0，6-12个月内无v2.0计划，3种读取方式（QueryString/Header/UrlSegment）属过度设计
         }).AddMvc().AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";
@@ -620,138 +625,37 @@ public static class UnifiedServiceRegistration
 
 
     /// <summary>
-    /// 配置速率限制（全局与登录端点）。
-    /// </summary>
-    /// <summary>
-    /// 配置速率限制（全局与登录端点）。
+    /// 配置速率限制（仅Login端点防暴力攻击）。
+    /// Issue #1732 Phase 2: 简化为单层Login限流（MVP合规）
     /// </summary>
     private static IServiceCollection ConfigureRateLimiting(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        // =========== UltraThink Phase 2：使用统一配置 ===========
         var lybtOptions = configuration.GetLybtOptions();
         var rateLimitingConfig = lybtOptions.Security.RateLimiting;
 
-        // 如果禁用了速率限制，注册一个空的RateLimiter以避免中间件错误
-        if (!rateLimitingConfig.Enabled)
-        {
-            // 注册一个默认的RateLimiter，但不配置任何限制策略
-            services.AddRateLimiter(options =>
-            {
-                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-                // 不设置GlobalLimiter，相当于禁用
-            });
-            return services;
-        }
-
+        // MVP阶段：仅启用Login限流防止暴力破解，移除Global和API限流（过度设计）
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            // 全局速率限制 - 使用统一配置
-            options.GlobalLimiter = System.Threading.RateLimiting.PartitionedRateLimiter.Create<HttpContext, string>(context =>
-            {
-                var userKey = context.User?.Identity?.IsAuthenticated == true
-                    ? (context.User.Identity?.Name ?? "auth-anon")
-                    : (context.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip");
-
-                return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: userKey,
-                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = rateLimitingConfig.GlobalLimit.PermitLimit,
-                        Window = TimeSpan.FromSeconds(rateLimitingConfig.GlobalLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.GlobalLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
-                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
-                        QueueLimit = 0 // 不使用队列，直接拒绝
-                    });
-            });
-
-            // 登录端点速率限制 - 使用统一配置
+            // 登录端点速率限制：基于IP的固定窗口限流器
             options.AddPolicy("Login", httpContext =>
             {
-                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
-
-                // 检查是否为白名单IP
-                var isWhitelisted = IsWhitelistedIp(ip, lybtOptions.Security.IpSecurity.AllowedIpAddresses) ||
-                                   IsPrivateIp(ip);
-
-                // 如果是白名单IP，使用更宽松的限制
-                var limit = isWhitelisted
-                    ? rateLimitingConfig.LoginLimit.PermitLimit * 2  // 白名单IP双倍限制
-                    : rateLimitingConfig.LoginLimit.PermitLimit;
-
+                var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: ip,
+                    partitionKey: ipAddress,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = limit,
+                        PermitLimit = rateLimitingConfig.LoginLimit.PermitLimit,
                         Window = TimeSpan.FromSeconds(rateLimitingConfig.LoginLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.LoginLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
-                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
-                        QueueLimit = 0
-                    });
-            });
-
-            // API端点速率限制 - 使用统一配置
-            options.AddPolicy("Api", httpContext =>
-            {
-                var user = httpContext.User;
-                var isAdmin = user?.IsInRole("Admin") ?? false;
-                var userKey = user?.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                var limit = isAdmin
-                    ? rateLimitingConfig.ApiLimit.PermitLimit * 2  // 管理员双倍限制
-                    : rateLimitingConfig.ApiLimit.PermitLimit;
-
-                return System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: userKey,
-                    factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = limit,
-                        Window = TimeSpan.FromSeconds(rateLimitingConfig.ApiLimit.WindowSeconds),
-                        QueueProcessingOrder = rateLimitingConfig.ApiLimit.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                            ? System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
-                            : System.Threading.RateLimiting.QueueProcessingOrder.NewestFirst,
                         QueueLimit = 0
                     });
             });
         });
 
         return services;
-    }
-
-    /// <summary>
-    /// 检查是否为私有IP地址
-    /// </summary>
-    private static bool IsPrivateIp(string ip)
-    {
-        if (string.IsNullOrEmpty(ip)) return false;
-        if (ip.StartsWith("127.")) return true;
-        if (ip.Equals("::1")) return true;
-        if (ip.StartsWith("10.")) return true;
-        if (ip.StartsWith("192.168.")) return true;
-        if (ip.StartsWith("172."))
-        {
-            var parts = ip.Split('.');
-            if (parts.Length > 1 && int.TryParse(parts[1], out var b) && b >= 16 && b <= 31)
-                return true;
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// 检查是否为白名单IP
-    /// </summary>
-    private static bool IsWhitelistedIp(string ip, List<string> whitelistedIPs)
-    {
-        if (string.IsNullOrEmpty(ip) || whitelistedIPs == null || whitelistedIPs.Count == 0)
-            return false;
-
-        return whitelistedIPs.Contains(ip);
     }
 }
