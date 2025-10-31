@@ -49,11 +49,6 @@ namespace LYBT.Module.Formula.Interfaces
         Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
 
         /// <summary>
-        /// 克隆验方 - 复制验方并创建新实例
-        /// </summary>
-        Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid formulaId);
-
-        /// <summary>
         /// 从Excel文件导入验方数据 (Issue #1166, #1347)
         /// 返回FormulaImportResultDto包含药材匹配统计
         /// </summary>

@@ -58,10 +58,9 @@ src/Server/
 │   │   ├── PrescriptionsController.cs  # 处方管理API
 │   │   ├── HerbsController.cs          # 药材管理API
 │   │   ├── FormulasController.cs       # 验方管理API
-│   │   └── 系统控制器（5个）：
-│   │       ├── HealthController.cs         # 健康检查
-│   │       ├── CacheHealthController.cs    # 缓存健康检查
-│   │       ├── PerformanceController.cs    # 性能监控
+│   │   └── 系统控制器（4个）：
+│   │       ├── HealthController.cs         # 健康检查（Issue #1733 MVP简化）
+│   │       ├── CacheHealthController.cs    # 缓存管理（Issue #1733 MVP简化）
 │   │       ├── RootHealthController.cs     # 根路径健康检查
 │   │       └── BaseApiController.cs        # 基础控制器（抽象基类）
 │   ├── DTOs/                       # 数据传输对象

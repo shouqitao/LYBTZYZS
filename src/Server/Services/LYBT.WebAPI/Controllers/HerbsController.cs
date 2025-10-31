@@ -37,7 +37,6 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选</param>
         [HttpGet]
-        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         [OutputCache(PolicyName = "HerbsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<HerbDto>>>> GetList(
             [FromQuery] int page = 1,
@@ -65,7 +64,6 @@ namespace LYBT.WebAPI.Controllers
         /// 根据ID获取药材详情
         /// </summary>
         [HttpGet("{id}")]
-        [ResponseCache(Duration = 600, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<HerbDto>>> GetById(Guid id)
         {
             try

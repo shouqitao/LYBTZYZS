@@ -31,7 +31,6 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
-        [ResponseCache(Duration = 1800, Location = ResponseCacheLocation.Any)]
         [OutputCache(PolicyName = "PatientsCache")]
         public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetList(
             [FromQuery] int page = 1,
@@ -58,7 +57,6 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者详情
         /// </summary>
         [HttpGet("{id}")]
-        [ResponseCache(Duration = 900, VaryByQueryKeys = new[] { "id" })]
         public async Task<ActionResult<ApiResponse<PatientDto>>> GetById(Guid id)
         {
             try

@@ -11,7 +11,7 @@ namespace LYBT.WebAPI.Controllers
 {
 
     /// <summary>
-    /// 认证控制器 - UltraThink v2.0 精简版
+    /// 认证控制器 - MVP简化版（Issue #1733 Task 1.4）
     /// 提供用户登录、登出和密码管理功能
     /// </summary>
     [ApiController]
@@ -75,66 +75,6 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<LoginResponse>(ex, "用户登录", request);
-            }
-        }
-
-        /// <summary>
-        /// 超级管理员登录（隐藏端点）
-        /// 专用的超级管理员登录接口，用户名从配置读取，只需提供密码
-        /// </summary>
-        /// <param name="request">超级管理员登录请求（只包含密码）</param>
-        /// <returns>登录响应，包含JWT Token</returns>
-        [HttpPost("admin/login")]
-        [AllowAnonymous]  // 登录端点允许匿名访问
-        [EnableRateLimiting("Login")]  // 启用登录限流保护，防暴力破解
-        [ApiExplorerSettings(IgnoreApi = true)]  // 从Swagger文档中隐藏此端点
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> SuperAdminLoginAsync([FromBody] SuperAdminLoginRequest request)
-        {
-            try
-            {
-                // 参数验证
-                var validation = ValidateModel<LoginResponse>();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                if (request == null)
-                {
-                    return ValidationFail<LoginResponse>("登录请求不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(request.Password))
-                {
-                    return ValidationFail<LoginResponse>("密码不能为空");
-                }
-
-                // 从配置获取超级管理员用户名
-                var sysAdminUsername = Configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
-
-                // 构造标准登录请求
-                var loginRequest = new LoginRequest
-                {
-                    UserName = sysAdminUsername,
-                    Password = request.Password,
-                    RememberMe = false
-                };
-
-                // 调用认证服务进行登录
-                var result = await _authService.LoginAsync(loginRequest);
-
-                // 如果登录成功且是超级管理员，返回成功
-                if (result.IsSuccess && result.Data != null && result.Data.User.Id == Guid.Empty)
-                {
-                    return HandleServiceResult(result, "超级管理员登录成功");
-                }
-
-                // 登录失败或不是超级管理员
-                return ValidationFail<LoginResponse>("认证失败");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<LoginResponse>(ex, "超级管理员登录", request);
             }
         }
 
@@ -276,32 +216,6 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<object>(ex, "验证Token从Header", null);
-            }
-        }
-
-        /// <summary>
-        /// 验证Token (POST方法)
-        /// </summary>
-        /// <param name="token">要验证的Token</param>
-        /// <returns>验证结果</returns>
-        [HttpPost("validate")]
-        [AllowAnonymous]  // Token验证端点需要允许匿名访问（通过参数传递token）
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<bool>>> ValidateTokenAsync([FromBody] string token)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(token))
-                {
-                    return ValidationFail<bool>("Token不能为空");
-                }
-
-                // 调用认证服务验证Token
-                var result = await _authService.ValidateTokenAsync(token);
-                return HandleServiceResult(result, "Token验证完成");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<bool>(ex, "验证Token", token);
             }
         }
 

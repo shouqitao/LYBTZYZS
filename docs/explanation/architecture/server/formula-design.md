@@ -145,7 +145,6 @@ await _formulaService.ValidateFormulaHerbAsync(
 │ │ ├── GetPagedAsync() - 分页查询(支持Category过滤)             │ │
 │ │ ├── GetTemplatesAsync() - 获取验方模板                       │ │
 │ │ ├── SearchAsync() - 关键词搜索                               │ │
-│ │ ├── CloneFormulaAsync() - 克隆验方(不含药材)                 │ │
 │ │ ├── ImportFromExcelAsync() - Excel导入(主从表)               │ │
 │ │ ├── ExportAsync() - Excel导出                                │ │
 │ │ ├── GenerateImportTemplate() - 生成导入模板                  │ │
@@ -295,7 +294,7 @@ public interface IFormulaService
     /// <returns>模板文件流</returns>
     ServiceResult<byte[]> GenerateImportTemplate();
 
-    // ========== 验证与克隆(2个方法) ==========
+    // ========== 验证(1个方法) ==========
 
     /// <summary>
     /// 验证药材绑定(人工校验,Issue #1348 FORMULA-10)
@@ -307,11 +306,6 @@ public interface IFormulaService
         Guid formulaId,
         Guid herbItemId,
         Guid selectedHerbId);
-
-    /// <summary>
-    /// 克隆验方(复制核心信息,不复制药材组成)
-    /// </summary>
-    Task<ServiceResult<FormulaDto>> CloneFormulaAsync(Guid sourceId);
 }
 ```
 
@@ -813,7 +807,6 @@ public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<
 | GET | /api/formulas | GetPagedAsync | 分页查询 |
 | GET | /api/formulas/templates | GetTemplatesAsync | 获取验方模板 |
 | GET | /api/formulas/search | SearchAsync | 关键词搜索 |
-| POST | /api/formulas/{id}/clone | CloneFormulaAsync | 克隆验方 |
 | POST | /api/formulas/import | ImportFromExcelAsync | Excel导入 |
 | GET | /api/formulas/export | ExportAsync | Excel导出 |
 | GET | /api/formulas/import-template | GenerateImportTemplate | 生成导入模板 |
