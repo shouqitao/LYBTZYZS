@@ -176,8 +176,8 @@ public bool PrescriptionEnabled { get; set; } = true;
 │                                                                 │
 └────────────────────────────────────────────────────────────────┘
 
-对外接口 (Shared Interface):
-  LYBT.Server.Interfaces.Services.IConsultationService
+对外接口 (Module Interface):
+  LYBT.Module.Consultation.Interfaces.IConsultationService
 
 依赖关系:
   Service → Repository → Entity → DbContext
@@ -212,7 +212,6 @@ LYBT.Module.Consultation/
 | `LYBT.Entities` | 引用Consultation Entity、MedicalCase Entity、BaseEntity |
 | `LYBT.Infrastructure` | 使用AppDbContext、BaseRepository、IRepository接口 |
 | `LYBT.Shared.Models` | 引用ConsultationDto、ConsultationCreateDto、ConsultationUpdateDto等DTO |
-| `LYBT.Server.Interfaces` | 实现IConsultationService接口 |
 
 #### 被依赖项目
 
@@ -996,8 +995,8 @@ public static class ConsultationModule
         // ========== 注册仓储 ==========
         services.AddScoped<IConsultationRepository, ConsultationRepository>();
 
-        // ========== 注册服务实现类（统一使用Shared接口）==========
-        services.AddScoped<LYBT.Server.Interfaces.Services.IConsultationService, ConsultationService>();
+        // ========== 注册服务实现类（使用模块接口）==========
+        services.AddScoped<IConsultationService, ConsultationService>();
 
         // ========== 注册验证器 - 自动注册所有Validator ==========
         services.AddValidatorsFromAssemblyContaining<ConsultationCreateDtoValidator>();

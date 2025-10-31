@@ -42,6 +42,7 @@
 ⚠️ **关键架构说明**：
 - **Controllers位置**：所有API控制器统一在`LYBT.WebAPI/Controllers/`，不在各Module中
 - **Module组成**：各Module仅包含Services + Repositories + Interfaces，专注业务逻辑层
+- **接口定义**：服务接口（IXxxService）分散在各模块的`Interfaces/`文件夹，无集中式接口项目（Issue #1729）
 - **分层职责**：Controllers（表示层）→ Services（应用层）→ Repositories（数据访问层）
 
 ```
@@ -70,8 +71,7 @@ src/Server/
 │
 ├── Core/                           # Application Layer (Shared)
 │   ├── LYBT.Entities/              # 实体定义
-│   ├── LYBT.Infrastructure/        # 基础设施（含BaseApiController）
-│   └── LYBT.Server.Interfaces/     # 服务接口定义（IPatientService等）
+│   └── LYBT.Infrastructure/        # 基础设施（含BaseApiController）
 │
 ├── Modules/                        # ⭐ Application Layer (Business) - 仅包含业务逻辑
 │   ├── LYBT.Module.Auth/           # 认证模块

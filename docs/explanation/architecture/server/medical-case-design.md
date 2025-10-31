@@ -2516,7 +2516,8 @@ public class Startup
 - [Client端医案管理设计](../client/medical-case-design.md) - Client端对应设计（Task 7）
 
 **接口层设计**：
-- [Server端Interfaces层设计](./interfaces-layer-design.md) - IMedicalCaseService接口定义标准
+- [Server端架构说明](./README.md) - 模块化接口设计（当前架构）
+- [Server端Interfaces层设计（已归档）](../../../archive/v1.0/interfaces-layer-design.md) - 中心化接口架构（历史参考）
 
 **DTO设计**：
 - [DTO设计标准](../../shared/dto-design-standard.md) - DTO设计原则与命名规范
