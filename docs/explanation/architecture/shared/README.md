@@ -11,7 +11,6 @@
 ```
 LYBT.Shared (共享层)
 ├── Models/             # 数据模型和实体
-├── Interfaces/         # 业务接口定义
 ├── Infrastructure/     # 基础设施组件
 ├── Utilities/          # 工具类和扩展
 ├── Constants/          # 常量定义
@@ -130,11 +129,12 @@ public enum Gender
 - ✅ **实际实现**：Contracts/{Module}/（按业务模块组织）+ Common/（通用）+ Constants/（常量）+ Enums/（枚举）
 - **原因**：实际架构更符合MVP原则（够用即好），避免过度分层
 
-### 2. Interfaces - 接口定义层
+### 2. Interfaces - 接口定义层（已移除）
 
-> **⚠️ 项目状态**：当前Shared.Interfaces项目为**空项目**（0个源文件），这是**有意的设计决策**。
+> **⚠️ 项目状态**：Shared.Interfaces项目已于2025-10-31被彻底移除（Issue #1728）。
+> 该决策基于**MVP架构原则**：Server和Client端分别定义各自的接口，避免过早抽象。
 
-**空项目原因**（MVP架构原则）：
+**历史背景与移除原因**（MVP架构原则）：
 
 当前v5.0架构采用**去中心化接口定义**模式，每个端定义自己的接口：
 
@@ -150,22 +150,22 @@ Client端接口定义：
     ├── Services/         # 客户端服务接口
     └── ViewModels/       # ViewModel接口
 
-Shared.Interfaces留空：
-  src/Shared/LYBT.Shared.Interfaces/
-    └── (empty - 仅保留项目结构)
+Shared.Interfaces已移除：
+  src/Shared/LYBT.Shared.Interfaces/  ❌ 已删除（Issue #1728）
 ```
 
 **设计优势**：
 - ✅ **避免过早抽象**：Server和Client的接口需求不同，不强制共享
 - ✅ **依赖方向清晰**：Server依赖Server.Core.Interfaces，Client依赖Client.Shared.Interfaces
 - ✅ **职责明确**：每个端管理自己的接口定义
-- ✅ **符合MVP原则**：只在真正需要跨端共享接口时才引入到Shared.Interfaces
+- ✅ **符合MVP原则**：只在真正需要跨端共享接口时才引入到Shared层
 
 **演进触发条件**（参见ADR-005）：
 - 出现真正需要跨端共享的接口（如通用验证接口IValidationService）
 - 达到接口共享阈值（>5个跨端接口）
+- 如需重新引入Shared.Interfaces项目，需创建新Issue并记录ADR
 
-**当前结论**：Shared.Interfaces空项目是**正确的架构选择**，不是遗漏或Bug。
+**历史决策记录**：Shared.Interfaces空项目曾是**有意的架构选择**（ADR-005），现已演进为完全移除。
 
 ### 3. Components - 跨端组件层
 

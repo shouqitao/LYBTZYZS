@@ -164,12 +164,9 @@ LYBT.Desktop.Consultation
     │   └─ MessageService              # 消息服务
     │   └─ IFeatureToggleService       # 功能开关服务
     │
-    ├─ LYBT.Shared.Models              # 共享DTO模型
-    │   └─ ConsultationDto             # 诊断DTO
-    │   └─ UpdateConsultationDto       # 更新诊断DTO
-    │
-    └─ LYBT.Shared.Interfaces          # 共享接口定义
-        └─ IBaseRepository<T>          # 仓储基类接口
+    └─ LYBT.Shared.Models              # 共享DTO模型
+        └─ ConsultationDto             # 诊断DTO
+        └─ UpdateConsultationDto       # 更新诊断DTO
 ```
 
 #### 2.3.2 被依赖项目
