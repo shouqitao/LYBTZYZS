@@ -1,6 +1,8 @@
-﻿using LYBT.Module.Herbs.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
+using LYBT.Module.Herbs.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +28,8 @@ namespace LYBT.Module.Herbs
 
             // services.AddScoped<IHerbCategoryService, HerbCategoryService>();
 
-            // 注册验证器 - 暂时注释，待修复验证器后启用
-            // services.AddScoped<IValidator<HerbCreateDto>, HerbCreateDtoValidator>();
-            // services.AddScoped<IValidator<HerbUpdateDto>, HerbUpdateDtoValidator>();
+            // Epic #1731: 注册Herbs模块Validators
+            services.AddValidatorsFromAssemblyContaining<HerbCreateDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

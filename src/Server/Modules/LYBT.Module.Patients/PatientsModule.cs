@@ -1,6 +1,8 @@
-﻿using LYBT.Module.Patients.Interfaces;
+﻿using FluentValidation;
+using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
+using LYBT.Module.Patients.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +28,8 @@ namespace LYBT.Module.Patients
 
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 
-            // 注册验证器 - 暂时注释，待创建验证器后启用
-            // services.AddScoped<IValidator<PatientCreateDto>, PatientCreateDtoValidator>();
-            // services.AddScoped<IValidator<PatientUpdateDto>, PatientUpdateDtoValidator>();
+            // Epic #1731: 注册Patients模块Validators
+            services.AddValidatorsFromAssemblyContaining<PatientCreateDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
