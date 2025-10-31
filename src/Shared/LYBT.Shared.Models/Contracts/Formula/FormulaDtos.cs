@@ -22,10 +22,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("主治")]
         public string? Indications { get; set; }
 
-        [DisplayName("功效")]
-        public string? Effects { get => Effect; set => Effect = value; }
-
-        [DisplayName("验方描述")]
+[DisplayName("验方描述")]
         [StringLength(1000, ErrorMessage = "验方描述长度不能超过1000个字符")]
         public string? Description { get; set; }
 
@@ -58,26 +55,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [StringLength(500, ErrorMessage = "禁忌症长度不能超过500个字符")]
         public string? Contraindications { get; set; }
 
-        /// <summary>备注别名（兼容性）</summary>
-        [DisplayName("备注")]
-        public string? Notes
-        {
-            get => Remark;
-            set => Remark = value;
-        }
-
-        [DisplayName("药材组成")]
+[DisplayName("药材组成")]
         public List<FormulaHerbItemDto> Herbs { get; set; } = new();
 
-        /// <summary>药材组成别名（兼容性）</summary>
-        [DisplayName("药材组成")]
-        public List<FormulaHerbItemDto> Items
-        {
-            get => Herbs;
-            set => Herbs = value;
-        }
-
-        /// <summary>药材数量（由Service层计算）</summary>
+/// <summary>药材数量（由Service层计算）</summary>
         [DisplayName("药材数量")]
         public int HerbCount { get; set; }
 
