@@ -1,13 +1,14 @@
 ---
 name: lybtzyzs-doc-sync
 description: 检测LYBTZYZS项目代码变更并生成文档更新清单，确保文档与代码100%同步
-version: v1.0
-last_updated: 2025-10-21
+version: v2.0
+last_updated: 2025-10-30
 ---
 
 # LYBTZYZS 文档同步检查
 
 ## 变更记录
+- v2.0 (2025-10-30): 更新为Diátaxis文档框架，调整文档路径
 - v1.0 (2025-10-21): 初始版本
 
 ---
@@ -25,16 +26,40 @@ last_updated: 2025-10-21
 - **需求分析和设计文档前置检查**（⭐ 新增）
 - **架构调整文档同步强制验证**（⭐ 新增）
 
-**核心文档体系**（必须覆盖）：
-- **Level 0 - 导航中心**：`docs/index.md` - 文档体系总入口 ⭐⭐⭐
-- **Level 1 - 快速参考**：`docs/quick-reference/` - API参考、配置模板、代码模式、问题解决、开发清单
-- **Level 2 - 架构指南**：`docs/architecture/{server|client|shared}/` - 三层对齐架构文档
-  - `docs/architecture/server/README.md` - Server端三层架构
-  - `docs/architecture/client/README.md` - Client端MVVM架构
-  - `docs/architecture/shared/README.md` - 共享架构
-- **Level 3 - 深度参考**：`docs/deep/`, `docs/api/`, `docs/modules/` - 完整技术文档
-- **业务规则**：`docs/business-rules.md` - 14条核心业务规则 ⭐⭐⭐
-- **技术决策**：`docs/architecture/decisions/` - ADR架构决策记录（计划中）
+**核心文档体系**（基于Diátaxis框架，必须覆盖）：
+
+**导航中心**：
+- **`docs/index.md`** - 文档体系总入口 ⭐⭐⭐
+
+**Tutorial（教程 - 学习导向）**：
+- **`docs/tutorials/`** - 新手教程、快速开始、第一个功能
+
+**How-to Guides（操作指南 - 任务导向）**：
+- **`docs/how-to-guides/server/`** - Server端开发指南（API、模块、数据库）
+- **`docs/how-to-guides/client/`** - Client端开发指南（MVVM、UI、功能模块）
+- **`docs/how-to-guides/shared/`** - 共享开发指南（DTO、组件、通用工具）
+
+**Reference（参考手册 - 信息导向）**：
+- **`docs/reference/quick-reference/`** - 快速参考（API、配置、代码模式、问题排查）
+  - `api-reference.md` - API快速参考
+  - `config-templates.md` - 配置模板 ⭐ 最新变更（Issue #1726）
+  - `code-patterns.md` - 代码模式
+  - `troubleshooting.md` - 问题排查
+  - `development-checklist.md` - 开发清单
+- **`docs/reference/api/`** - API完整文档（12个控制器）
+- **`docs/reference/modules/`** - 模块完整文档（8个业务模块）
+
+**Explanation（概念解释 - 理解导向）**：
+- **`docs/explanation/architecture/server/`** - Server端架构设计（三层架构、8模块）⭐⭐⭐
+- **`docs/explanation/architecture/client/`** - Client端架构设计（MVVM、5层设计）⭐⭐⭐
+- **`docs/explanation/architecture/shared/`** - 共享架构设计（跨端组件、认证）⭐⭐⭐
+- **`docs/explanation/architecture/decisions/`** - ADR架构决策记录
+
+**核心业务规则**：
+- **`docs/business-rules.md`** - 14条核心业务规则 ⭐⭐⭐
+
+**深度参考**（遗留文档，逐步迁移到Diátaxis）：
+- **`docs/deep/`** - 高级主题、部署指南、深度设计模式
 
 ---
 
@@ -58,16 +83,16 @@ last_updated: 2025-10-21
    ### 核心必读（100%必须）
    - [ ] `docs/index.md` - 文档导航中心，了解文档体系结构
    - [ ] `docs/business-rules.md` - 14条核心业务规则
-   - [ ] `docs/architecture/{server|client|shared}/README.md` - 对应层的架构指南
+   - [ ] `docs/explanation/architecture/{server|client|shared}/README.md` - 对应层的架构指南
 
    ### 模块相关（根据需求选择）
-   - [ ] `docs/modules/{module-name}/README.md` - 相关模块文档
-   - [ ] `docs/api/{module-name}-api.md` - 相关API文档
-   - [ ] `docs/quick-reference/code-patterns.md` - 代码模式参考
+   - [ ] `docs/reference/modules/{module-name}/README.md` - 相关模块文档
+   - [ ] `docs/reference/api/{module-name}-api.md` - 相关API文档
+   - [ ] `docs/reference/quick-reference/code-patterns.md` - 代码模式参考
 
    ### 设计参考（可选）
-   - [ ] `docs/deep/advanced-patterns.md` - 高级设计模式
-   - [ ] `docs/deep/api-design-best-practices.md` - API设计最佳实践
+   - [ ] `docs/deep/advanced-patterns.md` - 高级设计模式（遗留文档）
+   - [ ] `docs/deep/api-design-best-practices.md` - API设计最佳实践（遗留文档）
    ```
 
 3. **验证文档阅读**：
@@ -89,8 +114,8 @@ Skill自动触发：
 📚 即将阅读以下核心文档：
 1. docs/index.md - 文档导航
 2. docs/business-rules.md - 业务规则
-3. docs/architecture/client/README.md - Client架构
-4. docs/modules/prescriptions/README.md - 处方模块
+3. docs/explanation/architecture/client/README.md - Client架构
+4. docs/reference/modules/prescriptions/README.md - 处方模块
 
 正在阅读文档...
 
@@ -118,17 +143,17 @@ Skill自动触发：
    ## 🏗️ 架构调整文档同步流程
 
    ### Step 1: 创建ADR（Architecture Decision Record）
-   - [ ] 在 `docs/architecture/decisions/` 创建 ADR-XXX.md
+   - [ ] 在 `docs/explanation/architecture/decisions/` 创建 ADR-XXX.md
    - [ ] 记录架构决策背景、方案对比、后果分析
    - [ ] 状态标记：Proposed → Accepted → Implemented
 
    ### Step 2: 更新架构文档
-   - [ ] 更新 `docs/architecture/{server|client|shared}/README.md`
-   - [ ] 如新增模块，创建 `docs/modules/{module-name}/README.md`
+   - [ ] 更新 `docs/explanation/architecture/{server|client|shared}/README.md`
+   - [ ] 如新增模块，创建 `docs/reference/modules/{module-name}/README.md`
    - [ ] 更新 `docs/index.md` 导航链接
 
    ### Step 3: 更新架构例外清单（如有违反）
-   - [ ] 在 `docs/architecture/exceptions.md` 记录例外
+   - [ ] 在 `docs/explanation/architecture/exceptions.md` 记录例外
    - [ ] 说明批准理由和补救措施
 
    ### Step 4: 确认后开始代码变更
@@ -160,11 +185,11 @@ Skill自动触发：
    - 分析Read/Write分离方案
    - 记录架构例外（Desktop三层架构违反）
 
-2. 更新 docs/architecture/client/README.md
+2. 更新 docs/explanation/architecture/client/README.md
    - 补充Repository层简化说明
    - 更新依赖关系图
 
-3. 更新 docs/architecture/exceptions.md
+3. 更新 docs/explanation/architecture/exceptions.md
    - 记录Desktop三层架构违反
    - 批准理由：DDD聚合根优先
 
@@ -207,20 +232,20 @@ serena find_symbol "Controller" --include-body
   Controller: PatientController.cs
   方法: CreatePrescription
   影响文档：
-    - docs/api/patients-api.md
-    - docs/quick-reference/api-reference.md
+    - docs/reference/api/patients-api.md
+    - docs/reference/quick-reference/api-reference.md
 
 修改端点：
 - GET /api/consultations/{id}
   变更: 返回类型从ConsultationDto改为ConsultationDetailDto
   影响文档：
-    - docs/api/consultations-api.md
-    - docs/quick-reference/api-reference.md
+    - docs/reference/api/consultations-api.md
+    - docs/reference/quick-reference/api-reference.md
 
 删除端点：
 - DELETE /api/temp-endpoint
   影响文档：
-    - docs/api/deprecated-apis.md（需移动至已废弃）
+    - docs/reference/api/deprecated-apis.md（需移动至已废弃）
 ```
 
 ---
@@ -249,18 +274,18 @@ serena search_for_pattern "class.*Repository" --paths_include_glob="*.cs"
 **影响范围分析**（需人工确认）：
 
 **新增模块**：
-- 影响：`docs/architecture/server/README.md`（8个模块列表）
-- 影响：`docs/modules/README.md`（模块索引）
+- 影响：`docs/explanation/architecture/server/README.md`（8个模块列表）
+- 影响：`docs/reference/modules/README.md`（模块索引）
 - 影响：`docs/index.md`（导航链接）
-- 建议：创建新模块文档`docs/modules/{module-name}/README.md`
+- 建议：创建新模块文档`docs/reference/modules/{module-name}/README.md`
 
 **Service变更**：
-- 影响：`docs/architecture/server/services.md`
-- 影响：`docs/quick-reference/code-patterns.md`（Service模式示例）
+- 影响：`docs/explanation/architecture/server/services.md`（如存在）
+- 影响：`docs/reference/quick-reference/code-patterns.md`（Service模式示例）
 
 **Repository变更**：
-- 影响：`docs/architecture/server/repositories.md`
-- 影响：`docs/quick-reference/code-patterns.md`（Repository模式示例）
+- 影响：`docs/explanation/architecture/server/repositories.md`（如存在）
+- 影响：`docs/reference/quick-reference/code-patterns.md`（Repository模式示例）
 
 **示例报告**：
 ```
@@ -270,15 +295,15 @@ serena search_for_pattern "class.*Repository" --paths_include_glob="*.cs"
 - 模块: LYBT.Server.Application.Reports
   路径: src/Server/Application/Reports/
   影响文档：
-    - docs/architecture/server/README.md（需添加第9个模块）
-    - docs/modules/README.md（需创建Reports模块文档）
+    - docs/explanation/architecture/server/README.md（需添加第9个模块）
+    - docs/reference/modules/README.md（需创建Reports模块文档）
     - docs/index.md（需添加导航链接）
 
 Service变更：
 - Service: IReportService
   变更: 新增接口
   影响文档：
-    - docs/architecture/server/services.md
+    - docs/explanation/architecture/server/services.md
 
 ❓ 请确认是否需要创建完整的Reports模块文档？
 ```
@@ -307,9 +332,9 @@ git diff HEAD~1 src/Shared/Enums/
 ```
 
 **影响文档**：
-- 实体变更 → `docs/architecture/server/domain-model.md`
-- DTO变更 → `docs/api/{module}-api.md`（请求/响应示例）
-- Enum变更 → `docs/quick-reference/api-reference.md`
+- 实体变更 → `docs/explanation/architecture/server/domain-model.md`（如存在）
+- DTO变更 → `docs/reference/api/{module}-api.md`（请求/响应示例）
+- Enum变更 → `docs/reference/quick-reference/api-reference.md`
 
 ---
 
@@ -324,8 +349,8 @@ git diff HEAD~1 src/Shared/Enums/
 - `Directory.Build.props`
 
 **影响文档**：
-- `docs/quick-reference/config-templates.md`
-- `docs/development/server/environment-setup.md`
+- `docs/reference/quick-reference/config-templates.md`
+- `docs/how-to-guides/server/environment-setup.md`（如存在）
 
 ---
 
@@ -349,13 +374,13 @@ grep -r "\[.*\](docs/" docs/ --include="*.md"
 🔗 文档链接验证
 
 失效链接：
-- 文档: docs/architecture/server/README.md:45
-  链接: docs/architecture/server/old-services.md
+- 文档: docs/explanation/architecture/server/README.md:45
+  链接: docs/explanation/architecture/server/old-services.md
   状态: 文件不存在
-  建议: 更新为docs/architecture/server/services.md
+  建议: 更新为docs/explanation/architecture/server/services.md
 
 - 文档: docs/index.md:12
-  链接: docs/modules/auth/README.md
+  链接: docs/reference/modules/auth/README.md
   状态: 文件不存在
   建议: 检查模块名称是否正确
 ```
@@ -376,35 +401,35 @@ grep -r "\[.*\](docs/" docs/ --include="*.md"
 ## 🔴 必须更新（自动检测到的变更）
 
 ### API文档
-- [ ] 更新`docs/api/patients-api.md`
+- [ ] 更新`docs/reference/api/patients-api.md`
   - 新增端点：POST /api/patients/{id}/prescriptions
   - 添加请求/响应示例
 
-- [ ] 更新`docs/quick-reference/api-reference.md`
+- [ ] 更新`docs/reference/quick-reference/api-reference.md`
   - 添加新端点到快速参考
 
 ### 架构文档
-- [ ] 更新`docs/architecture/server/README.md`
+- [ ] 更新`docs/explanation/architecture/server/README.md`
   - 添加第9个模块：Reports
 
 ## 🟡 建议更新（需人工确认）
 
 ### 模块文档
-- [ ] 创建`docs/modules/reports/README.md`
+- [ ] 创建`docs/reference/modules/reports/README.md`
   - 分析：新增Reports模块
   - 建议：创建完整模块文档（包含API、架构、使用指南）
   - 状态：等待确认
 
 ### 示例代码
-- [ ] 更新`docs/quick-reference/code-patterns.md`
+- [ ] 更新`docs/reference/quick-reference/code-patterns.md`
   - 分析：新增ReportService
   - 建议：添加Service模式示例
   - 状态：等待确认
 
 ## ✅ 链接验证
-- [ ] 修复`docs/architecture/server/README.md:45`
-  - 失效链接：docs/architecture/server/old-services.md
-  - 修复为：docs/architecture/server/services.md
+- [ ] 修复`docs/explanation/architecture/server/README.md:45`
+  - 失效链接：docs/explanation/architecture/server/old-services.md
+  - 修复为：docs/explanation/architecture/server/services.md
 ```
 
 ---
@@ -450,8 +475,8 @@ public async Task<ActionResult<PrescriptionDto>> CreatePrescription(
   Controller: PatientController
   方法: CreatePrescription
   影响文档：
-    - docs/api/patients-api.md
-    - docs/quick-reference/api-reference.md
+    - docs/reference/api/patients-api.md
+    - docs/reference/quick-reference/api-reference.md
 
 文档更新清单：
 - [ ] 在patients-api.md中添加新端点文档
@@ -476,13 +501,13 @@ public async Task<ActionResult<PrescriptionDto>> CreatePrescription(
 - 模块: Reports
   路径: src/Server/Application/Reports/
   影响文档：
-    - docs/architecture/server/README.md
-    - docs/modules/README.md
+    - docs/explanation/architecture/server/README.md
+    - docs/reference/modules/README.md
     - docs/index.md
 
 建议操作：
 1. 在server/README.md中添加Reports模块描述
-2. 创建docs/modules/reports/README.md
+2. 创建docs/reference/modules/reports/README.md
 3. 在index.md中添加Reports导航链接
 
 ❓ 请确认是否需要创建完整的Reports模块文档？
@@ -531,6 +556,6 @@ public async Task<ActionResult<PrescriptionDto>> CreatePrescription(
 ## 相关资源
 
 - 文档导航：`docs/index.md`
-- 文档维护指南：`docs/support/documentation-maintenance.md`
-- 快速参考：`docs/quick-reference/`
-- 架构文档：`docs/architecture/`
+- 文档维护指南：`docs/support/documentation-maintenance.md`（如存在）
+- 快速参考：`docs/reference/quick-reference/`
+- 架构文档：`docs/explanation/architecture/`
