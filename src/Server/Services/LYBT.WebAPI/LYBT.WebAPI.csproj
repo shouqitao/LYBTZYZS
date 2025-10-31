@@ -44,6 +44,8 @@
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" />
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+		<!-- Epic #1731: FluentValidation ASP.NET Core集成 -->
+		<PackageReference Include="FluentValidation.AspNetCore" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />

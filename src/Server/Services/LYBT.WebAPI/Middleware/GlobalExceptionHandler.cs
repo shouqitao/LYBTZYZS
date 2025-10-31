@@ -2,6 +2,7 @@
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace LYBT.WebAPI.Middleware
 {
@@ -91,7 +92,25 @@ namespace LYBT.WebAPI.Middleware
 
                     break;
 
-                case ValidationException validationException:
+                // Epic #1731 Phase 3: 处理FluentValidation.ValidationException
+                case FluentValidation.ValidationException fluentValidationException:
+                    problemDetails.Status = StatusCodes.Status400BadRequest;
+                    problemDetails.Title = "验证失败";
+                    problemDetails.Detail = "请求数据验证失败，请检查输入";
+
+                    // 格式化验证错误
+                    var errors = fluentValidationException.Errors
+                        .GroupBy(e => e.PropertyName)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(e => e.ErrorMessage).ToArray()
+                        );
+
+                    problemDetails.Extensions["errors"] = errors;
+                    problemDetails.Extensions["errorCode"] = "VALIDATION_FAILED";
+                    break;
+
+                case Shared.Models.Exceptions.ValidationException validationException:
                     problemDetails.Status = StatusCodes.Status400BadRequest;
                     problemDetails.Title = "验证失败";
                     problemDetails.Detail = validationException.UserMessage ?? validationException.Message;

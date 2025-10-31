@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Module.Auth;
@@ -14,6 +16,7 @@ using LYBT.Module.Users;
 using LYBT.WebAPI.Extensions.ServiceCollection;
 using LYBT.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -548,7 +551,16 @@ public static class UnifiedServiceRegistration
         // 确保 UTF-8 编码可用
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        services.AddControllers().AddJsonOptions(options =>
+        // Epic #1731 Phase 3: 配置FluentValidation全局自动验证（使用新API）
+        services.AddFluentValidationAutoValidation(config =>
+        {
+            // 保留DataAnnotations验证（与FluentValidation共存）
+            config.DisableDataAnnotationsValidation = false;
+        });
+        services.AddFluentValidationClientsideAdapters();
+
+        services.AddControllers()
+            .AddJsonOptions(options =>
         {
             // 使用统一配置的属性命名策略
             options.JsonSerializerOptions.PropertyNamingPolicy = jsonConfig.PropertyNamingPolicy switch
@@ -573,6 +585,34 @@ public static class UnifiedServiceRegistration
             options.JsonSerializerOptions.Encoder = jsonConfig.UnsafeRelaxedEscaping
                 ? JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 : JavaScriptEncoder.Default;
+        });
+
+        // Epic #1731 Phase 3: 配置自动模型验证行为
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            // 启用自动400响应（模型验证失败时）
+            options.SuppressModelStateInvalidFilter = false;
+
+            // 自定义400响应格式（使用ProblemDetails）
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var problemDetails = new ValidationProblemDetails(context.ModelState)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "模型验证失败",
+                    Detail = "请求数据包含验证错误，请检查输入",
+                    Instance = context.HttpContext.Request.Path
+                };
+
+                // 添加追踪信息
+                problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+                problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+
+                return new BadRequestObjectResult(problemDetails)
+                {
+                    ContentTypes = { "application/problem+json" }
+                };
+            };
         });
 
         return services;
