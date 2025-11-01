@@ -1,4 +1,5 @@
 using AutoMapper;
+using LYBT.Infrastructure.Utilities;
 using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -451,8 +452,8 @@ namespace LYBT.Module.MedicalCase.Services
                     return null;
                 }
 
-                // 业务规则验证：状态流转合法性
-                if (!IsValidStatusTransition(medicalCase.Status, status))
+                // 业务规则验证：状态流转合法性（Issue #1757: 使用ValidationHelper）
+                if (!ValidationHelper.IsValidMedicalCaseStatusTransition(medicalCase.Status, status))
                 {
                     _logger.LogWarning("非法的状态流转，从{OldStatus}到{NewStatus}",
                         medicalCase.Status, status);
@@ -812,28 +813,6 @@ namespace LYBT.Module.MedicalCase.Services
 
         // ========== Private Helper Methods ==========
 
-        /// <summary>
-        /// 验证病案状态流转合法性
-        /// Epic #1612修正版：支持Draft/Active/Completed/Cancelled四状态流转
-        /// </summary>
-        private bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
-        {
-            // 状态机规则（Epic #1612修正版）
-            return (from, to) switch
-            {
-                // Draft <-> Active
-                (MedicalCaseStatus.Draft, MedicalCaseStatus.Active) => true,   // 继续看诊
-                (MedicalCaseStatus.Active, MedicalCaseStatus.Draft) => true,   // 暂存 (Issue #1647)
-
-                // Active -> 终态
-                (MedicalCaseStatus.Active, MedicalCaseStatus.Completed) => true,  // 完成三步流程
-                (MedicalCaseStatus.Active, MedicalCaseStatus.Cancelled) => true,  // 取消
-
-                // Cancelled -> Active (允许重新激活)
-                (MedicalCaseStatus.Cancelled, MedicalCaseStatus.Active) => true,
-
-                _ => false // 其他流转禁止
-            };
-        }
+        // Issue #1757: IsValidStatusTransition已移至ValidationHelper.IsValidMedicalCaseStatusTransition
     }
 }

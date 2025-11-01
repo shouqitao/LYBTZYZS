@@ -102,6 +102,9 @@ src/Server/
     │   └── Migrations/
     ├── Repositories/               # 仓储基类实现
     │   └── BaseRepository.cs
+    ├── Utilities/                  # 工具类（Issue #1757）
+    │   ├── ValidationHelper.cs     # 验证工具类
+    │   └── PasswordHelper.cs       # 密码工具类
     ├── Configuration/              # 基础设施配置
     ├── Services/                   # 基础设施服务
     └── Extensions/                 # 扩展方法
@@ -123,6 +126,7 @@ src/Server/
    - ✅ DbContext和数据库配置
    - ✅ 基础仓储实现
    - ✅ 通用基础设施服务
+   - ✅ 工具类（Utilities）：无状态纯函数工具类
 
 ## 📋 业务模块架构
 

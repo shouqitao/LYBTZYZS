@@ -552,6 +552,7 @@ namespace LYBT.Module.Formula.Services
 
         /// <summary>
         /// 解析Sheet2药材明细，按验方编号分组
+        /// Issue #1758: 此方法应移至Client端，Server端不应依赖Excel格式
         /// </summary>
         private Dictionary<string, List<HerbItemData>> ParseHerbItems(ExcelWorksheet herbSheet)
         {
@@ -617,6 +618,7 @@ namespace LYBT.Module.Formula.Services
 
         /// <summary>
         /// 药材明细数据临时类
+        /// Issue #1758: 此类应移至Client端，Server端不应依赖Excel格式
         /// </summary>
         private class HerbItemData
         {

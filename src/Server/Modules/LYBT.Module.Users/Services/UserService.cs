@@ -1,5 +1,6 @@
 using AutoMapper;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Utilities;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
@@ -444,8 +445,8 @@ namespace LYBT.Module.Users.Services
                 if (entity == null)
                     return ServiceResult<ResetPasswordResponseDto>.Failure("用户不存在");
 
-                // 生成或使用提供的密码
-                string password = request.NewPassword ?? GenerateTemporaryPassword();
+                // 生成或使用提供的密码（Issue #1757: 使用PasswordHelper）
+                string password = request.NewPassword ?? PasswordHelper.GenerateTemporaryPassword();
 
                 // 哈希密码并更新
                 entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
@@ -544,37 +545,7 @@ namespace LYBT.Module.Users.Services
 
         #region 私有辅助方法
 
-        /// <summary>
-        /// 生成临时密码 (Issue #1162)
-        /// 格式：大写字母(1) + 小写字母(4) + 数字(3) = 8位
-        /// 示例：Abcd123
-        /// </summary>
-        private string GenerateTemporaryPassword()
-        {
-            const string upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
-            const string numberChars = "0123456789";
-
-            var random = new Random();
-            var password = new char[8];
-
-            // 1个大写字母
-            password[0] = upperChars[random.Next(upperChars.Length)];
-
-            // 4个小写字母
-            for (int i = 1; i <= 4; i++)
-            {
-                password[i] = lowerChars[random.Next(lowerChars.Length)];
-            }
-
-            // 3个数字
-            for (int i = 5; i < 8; i++)
-            {
-                password[i] = numberChars[random.Next(numberChars.Length)];
-            }
-
-            return new string(password);
-        }
+        // Issue #1757: GenerateTemporaryPassword已移至PasswordHelper.GenerateTemporaryPassword
 
         #endregion
     }
