@@ -6,17 +6,13 @@ namespace LYBT.Infrastructure.Configuration.Options
     /// <summary>
     /// JWT配置选项
     /// </summary>
-    /// <summary>
-    /// JWT配置选项 - 增强安全版本
-    /// </summary>
     public class JwtOptions
     {
         public const string SectionName = "JwtOptions";
 
         /// <summary>
-        /// JWT签名密钥（将被废弃，请使用密钥管理服务）
+        /// JWT签名密钥
         /// </summary>
-        [Obsolete("请使用ISecurityKeyService管理密钥")]
         public string Secret { get; set; } = string.Empty;
 
         /// <summary>
@@ -89,15 +85,5 @@ namespace LYBT.Infrastructure.Configuration.Options
         /// 最大并发刷新Token数（防止Token刷新攻击）
         /// </summary>
         public int MaxConcurrentRefreshTokens { get; set; } = 5;
-
-        /// <summary>
-        /// 是否启用密钥轮换
-        /// </summary>
-        public bool EnableKeyRotation { get; set; } = false;
-
-        /// <summary>
-        /// 密钥轮换间隔（天）
-        /// </summary>
-        public int KeyRotationIntervalDays { get; set; } = 30;
     }
 }

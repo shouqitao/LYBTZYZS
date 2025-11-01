@@ -1,8 +1,6 @@
 ﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Data.Interceptors;
-using LYBT.Infrastructure.Data.Monitoring;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -120,20 +118,6 @@ namespace LYBT.Infrastructure
                 });
                 options.EnableSensitiveDataLogging(false);
                 options.EnableServiceProviderCaching();
-
-                // 添加查询性能监控拦截器
-                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                if (loggerFactory != null)
-                {
-                    var logger = loggerFactory.CreateLogger<QueryPerformanceInterceptor>();
-                    var statisticsCollector = serviceProvider.GetService<IQueryStatisticsCollector>();
-                    var interceptor = new QueryPerformanceInterceptor(
-                        logger,
-                        slowQueryThresholdMs: 100,
-                        includeStackTrace: false,
-                        statisticsCollector);
-                    options.AddInterceptors(interceptor);
-                }
             });
 
             return services;
@@ -153,9 +137,6 @@ namespace LYBT.Infrastructure
 
             // 添加JWT认证
             services.AddJwtAuthentication(configuration);
-
-            // 添加查询性能监控服务
-            services.AddSingleton<IQueryStatisticsCollector, QueryStatisticsCollector>();
 
             // 添加JWT黑名单服务
             // services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
