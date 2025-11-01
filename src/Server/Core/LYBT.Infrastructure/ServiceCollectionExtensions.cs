@@ -27,13 +27,14 @@ namespace LYBT.Infrastructure
         {
             // 使用统一的 LybtOptions 配置系统
             var lybtOptions = configuration.GetSection("Lybt").Get<LybtOptions>();
-            if (lybtOptions?.Authentication?.Jwt == null)
+            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+            if (lybtOptions?.Jwt == null)
             {
                 throw new InvalidOperationException(
-                    "JWT 配置缺失。请检查 appsettings.json 中的 Lybt:Authentication:Jwt 配置节。");
+                    "JWT 配置缺失。请检查 appsettings.json 中的 Lybt:Jwt 配置节。");
             }
 
-            var jwtConfig = lybtOptions.Authentication.Jwt;
+            var jwtConfig = lybtOptions.Jwt;
 
             // 注册 LybtOptions 到 DI 容器（供其他服务如 JwtService 使用）
             services.Configure<LybtOptions>(configuration.GetSection("Lybt"));

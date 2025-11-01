@@ -125,13 +125,14 @@ internal static class SecurityHeadersMiddleware
 {
     public static WebApplication ConfigureSecurityHeadersFromOptions(this WebApplication app)
     {
-        var options = app.Services.GetService<IOptions<SecurityOptions>>()?.Value;
-        if (options == null)
+        // Issue #1761 Phase 3.1: SecurityOptions → LybtOptions.SecurityHeaders（完全扁平化）
+        var lybtOptions = app.Services.GetService<IOptions<LybtOptions>>()?.Value;
+        if (lybtOptions == null)
         {
             return app;
         }
 
-        var headers = options.SecurityHeaders;
+        var headers = lybtOptions.SecurityHeaders;
         app.Use(async (context, next) =>
         {
             if (!string.IsNullOrWhiteSpace(headers.ContentSecurityPolicy))

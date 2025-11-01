@@ -22,7 +22,8 @@ namespace LYBT.Infrastructure.Configuration.Services
 
         public DefaultPasswordService(IOptions<LybtOptions> lybtOptions, IWebHostEnvironment environment)
         {
-            _options = lybtOptions.Value.Authentication.DefaultPasswords;
+            // Issue #1761 Phase 3.1: Authentication.DefaultPasswords → DefaultPasswords（完全扁平化）
+            _options = lybtOptions.Value.DefaultPasswords;
             _environment = environment;
         }
 

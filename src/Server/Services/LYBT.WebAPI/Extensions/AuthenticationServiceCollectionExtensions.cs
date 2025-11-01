@@ -25,8 +25,9 @@ public static class AuthenticationServiceCollectionExtensions
         // JWT 认证 - 从统一配置读取
         try
         {
+            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
             var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                           lybtOptions.Authentication.Jwt.SecretKey;
+                           lybtOptions.Jwt.SecretKey;
 
             if (string.IsNullOrEmpty(jwtSecret))
             {
@@ -41,7 +42,8 @@ public static class AuthenticationServiceCollectionExtensions
 
             if (!string.IsNullOrEmpty(jwtSecret))
             {
-                var jwtConfig = lybtOptions.Authentication.Jwt;
+                // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+                var jwtConfig = lybtOptions.Jwt;
                 var issuer = jwtConfig.Issuer;
                 var audience = jwtConfig.Audience;
                 var clockSkew = 300; // 5分钟时钟偏差（安全默认值）

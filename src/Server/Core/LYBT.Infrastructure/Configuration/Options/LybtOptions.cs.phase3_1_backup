@@ -10,65 +10,24 @@ public class LybtOptions
 {
     public const string SectionName = "Lybt";
 
-    // =========== 认证与安全配置 ===========
-    
     /// <summary>
-    /// JWT配置
-    /// Issue #1761 Phase 3.1: 从Authentication.Jwt提升为顶层属性
+    /// 认证相关配置
+    /// 整合：AuthOptions, JwtOptions, DefaultPasswordOptions
     /// </summary>
-    public JwtConfiguration Jwt { get; set; } = new();
+    public AuthenticationOptions Authentication { get; set; } = new();
 
     /// <summary>
-    /// 密码策略配置
-    /// Issue #1761 Phase 3.1: 从Authentication.PasswordPolicy提升为顶层属性
+    /// 安全相关配置
+    /// 整合：SecurityOptions, RateLimitingOptions
+    /// Issue #1761 Phase 2.2: 移除RateLimiting和IpSecurity
     /// </summary>
-    public PasswordPolicyConfiguration PasswordPolicy { get; set; } = new();
+    public SecurityOptions Security { get; set; } = new();
 
     /// <summary>
-    /// 会话配置
-    /// Issue #1761 Phase 3.1: 从Authentication.Session提升为顶层属性
+    /// 业务逻辑配置
+    /// 整合：UserOptions, SysAdminOptions
     /// </summary>
-    public SessionConfiguration Session { get; set; } = new();
-
-    /// <summary>
-    /// 默认密码配置
-    /// Issue #1761 Phase 3.1: 从Authentication.DefaultPasswords提升为顶层属性
-    /// </summary>
-    public DefaultPasswordConfiguration DefaultPasswords { get; set; } = new();
-
-    /// <summary>
-    /// HTTPS配置
-    /// Issue #1761 Phase 3.1: 从Security.Https提升为顶层属性
-    /// </summary>
-    public HttpsConfiguration Https { get; set; } = new();
-
-    /// <summary>
-    /// 安全头配置
-    /// Issue #1761 Phase 3.1: 从Security.SecurityHeaders提升为顶层属性
-    /// </summary>
-    public SecurityHeadersConfiguration SecurityHeaders { get; set; } = new();
-
-    // =========== 业务配置 ===========
-
-    /// <summary>
-    /// 用户管理配置
-    /// Issue #1761 Phase 3.1: 从Business.UserManagement提升为顶层属性
-    /// </summary>
-    public UserManagementConfiguration UserManagement { get; set; } = new();
-
-    /// <summary>
-    /// 系统管理员配置
-    /// Issue #1761 Phase 3.1: 从Business.SystemAdmin提升为顶层属性
-    /// </summary>
-    public SystemAdminConfiguration SystemAdmin { get; set; } = new();
-
-    /// <summary>
-    /// 诊疗运营配置
-    /// Issue #1761 Phase 3.1: 从Business.MedicalOperations提升为顶层属性
-    /// </summary>
-    public MedicalOperationsConfiguration MedicalOperations { get; set; } = new();
-
-    // =========== 基础设施配置 ===========
+    public DomainOptions Business { get; set; } = new();
 
     /// <summary>
     /// 数据库配置
@@ -81,14 +40,6 @@ public class LybtOptions
     /// Issue #1761 Phase 2.2: 从Infrastructure.Cache.MemoryCache提升为顶层属性
     /// </summary>
     public MemoryCacheConfiguration MemoryCache { get; set; } = new();
-
-    /// <summary>
-    /// 日志配置
-    /// Issue #1761 Phase 2.2: 从Application.Logging提升为顶层属性
-    /// </summary>
-    public LoggingConfiguration Logging { get; set; } = new();
-
-    // =========== API配置 ===========
 
     /// <summary>
     /// 性能配置
@@ -114,13 +65,44 @@ public class LybtOptions
     /// </summary>
     public CorsConfiguration Cors { get; set; } = new();
 
-    // =========== 应用配置 ===========
-
     /// <summary>
     /// 桌面客户端配置
     /// Issue #1761 Phase 2.2: 从Application.DesktopClient提升为顶层属性
     /// </summary>
     public DesktopClientConfiguration DesktopClient { get; set; } = new();
+
+    /// <summary>
+    /// 日志配置
+    /// Issue #1761 Phase 2.2: 从Application.Logging提升为顶层属性
+    /// </summary>
+    public LoggingConfiguration Logging { get; set; } = new();
+}
+
+/// <summary>
+/// 认证相关配置选项
+/// 整合原 AuthOptions, JwtOptions, DefaultPasswordOptions
+/// </summary>
+public class AuthenticationOptions
+{
+    /// <summary>
+    /// JWT 配置
+    /// </summary>
+    public JwtConfiguration Jwt { get; set; } = new();
+
+    /// <summary>
+    /// 密码策略配置
+    /// </summary>
+    public PasswordPolicyConfiguration PasswordPolicy { get; set; } = new();
+
+    /// <summary>
+    /// 会话配置
+    /// </summary>
+    public SessionConfiguration Session { get; set; } = new();
+
+    /// <summary>
+    /// 默认密码配置
+    /// </summary>
+    public DefaultPasswordConfiguration DefaultPasswords { get; set; } = new();
 }
 
 /// <summary>
@@ -334,6 +316,23 @@ public class DefaultPasswordConfiguration
 }
 
 /// <summary>
+/// 安全相关配置选项
+/// 整合原 SecurityOptions, RateLimitingOptions
+/// </summary>
+public class SecurityOptions
+{
+    /// <summary>
+    /// HTTPS 配置
+    /// </summary>
+    public HttpsConfiguration Https { get; set; } = new();
+
+    /// <summary>
+    /// 安全头配置
+    /// </summary>
+    public SecurityHeadersConfiguration SecurityHeaders { get; set; } = new();
+}
+
+/// <summary>
 /// HTTPS 配置
 /// </summary>
 public class HttpsConfiguration
@@ -503,6 +502,28 @@ public class MemoryCacheConfiguration
     /// </summary>
     [Range(1, 360)]
     public int DefaultSlidingExpirationMinutes { get; set; } = 10;
+}
+
+/// <summary>
+/// 领域配置选项
+/// 整合原 UserOptions, SysAdminOptions
+/// </summary>
+public class DomainOptions
+{
+    /// <summary>
+    /// 用户管理配置
+    /// </summary>
+    public UserManagementConfiguration UserManagement { get; set; } = new();
+
+    /// <summary>
+    /// 系统管理员配置
+    /// </summary>
+    public SystemAdminConfiguration SystemAdmin { get; set; } = new();
+
+    /// <summary>
+    /// 诊疗运营配置
+    /// </summary>
+    public MedicalOperationsConfiguration MedicalOperations { get; set; } = new();
 }
 
 /// <summary>

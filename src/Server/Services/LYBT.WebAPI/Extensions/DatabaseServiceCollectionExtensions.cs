@@ -111,7 +111,8 @@ public static class DatabaseServiceCollectionExtensions
         // 这里仅显式验证关键配置选项以确保启动时验证
 
         // 验证 JWT 配置
-        if (string.IsNullOrEmpty(lybtOptions.Authentication.Jwt.SecretKey))
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        if (string.IsNullOrEmpty(lybtOptions.Jwt.SecretKey))
         {
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))

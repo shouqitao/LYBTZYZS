@@ -64,13 +64,14 @@ public class JwtService : IJwtService
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         // 直接从配置读取 JWT 密钥（解决配置绑定问题）
-        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
         if (string.IsNullOrEmpty(secretKey))
         {
-            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Authentication:Jwt:SecretKey 配置。");
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
         }
 
-        var jwtConfig = _options.Authentication.Jwt;
+        var jwtConfig = _options.Jwt;
 
         // 创建Claims
         var claims = new[]
@@ -116,13 +117,14 @@ public class JwtService : IJwtService
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
         // 直接从配置读取 JWT 密钥（解决配置绑定问题）
-        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
         if (string.IsNullOrEmpty(secretKey))
         {
-            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Authentication:Jwt:SecretKey 配置。");
+            throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
         }
 
-        var jwtConfig = _options.Authentication.Jwt;
+        var jwtConfig = _options.Jwt;
 
         // 创建基础Claims
         var claims = new List<Claim>
@@ -175,7 +177,8 @@ public class JwtService : IJwtService
 
         try
         {
-            var jwtConfig = _options.Authentication.Jwt;
+            // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+            var jwtConfig = _options.Jwt;
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
 
             var validationParameters = new TokenValidationParameters

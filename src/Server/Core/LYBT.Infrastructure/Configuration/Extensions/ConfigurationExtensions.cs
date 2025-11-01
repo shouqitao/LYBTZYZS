@@ -109,16 +109,17 @@ public static class ConfigurationExtensions
     private static void ValidateRequiredSettings(LybtOptions options, List<string> validationResults)
     {
         // JWT 必填项验证
-        if (string.IsNullOrEmpty(options.Authentication.Jwt.SecretKey))
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        if (string.IsNullOrEmpty(options.Jwt.SecretKey))
             validationResults.Add("JWT SecretKey is required");
 
-        if (options.Authentication.Jwt.SecretKey?.Length < 32)
+        if (options.Jwt.SecretKey?.Length < 32)
             validationResults.Add("JWT SecretKey must be at least 32 characters");
 
-        if (string.IsNullOrEmpty(options.Authentication.Jwt.Issuer))
+        if (string.IsNullOrEmpty(options.Jwt.Issuer))
             validationResults.Add("JWT Issuer is required");
 
-        if (string.IsNullOrEmpty(options.Authentication.Jwt.Audience))
+        if (string.IsNullOrEmpty(options.Jwt.Audience))
             validationResults.Add("JWT Audience is required");
 
         // 数据库连接字符串验证 - Issue #1726 Phase 4: 移除验证
@@ -128,13 +129,15 @@ public static class ConfigurationExtensions
         //     validationResults.Add("Database ConnectionString is required");
 
         // 系统管理员必填项验证
-        if (string.IsNullOrEmpty(options.Business.SystemAdmin.Username))
+        // Issue #1761 Phase 3.1: Business.SystemAdmin → SystemAdmin（完全扁平化）
+        if (string.IsNullOrEmpty(options.SystemAdmin.Username))
             validationResults.Add("SystemAdmin UserName is required");
 
-        if (string.IsNullOrEmpty(options.Business.SystemAdmin.Email))
+        if (string.IsNullOrEmpty(options.SystemAdmin.Email))
             validationResults.Add("SystemAdmin Email is required");
 
-        if (string.IsNullOrEmpty(options.Authentication.DefaultPasswords.SysAdminPassword))
+        // Issue #1761 Phase 3.1: Authentication.DefaultPasswords → DefaultPasswords（完全扁平化）
+        if (string.IsNullOrEmpty(options.DefaultPasswords.SysAdminPassword))
             validationResults.Add("SysAdmin Password is required");
     }
 
@@ -144,14 +147,16 @@ public static class ConfigurationExtensions
     private static void ValidateBusinessLogic(LybtOptions options, List<string> validationResults)
     {
         // 验证令牌过期时间逻辑
-        if (options.Authentication.Jwt.AccessTokenExpirationMinutes >=
-            options.Authentication.Jwt.RefreshTokenExpirationDays * 1440)
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        if (options.Jwt.AccessTokenExpirationMinutes >=
+            options.Jwt.RefreshTokenExpirationDays * 1440)
         {
             validationResults.Add("Access token expiration should be less than refresh token expiration");
         }
 
         // 验证密码策略逻辑
-        if (options.Authentication.PasswordPolicy.MinLength > options.Authentication.PasswordPolicy.MaxLength)
+        // Issue #1761 Phase 3.1: Authentication.PasswordPolicy → PasswordPolicy（完全扁平化）
+        if (options.PasswordPolicy.MinLength > options.PasswordPolicy.MaxLength)
         {
             validationResults.Add("Password MinLength cannot be greater than MaxLength");
         }

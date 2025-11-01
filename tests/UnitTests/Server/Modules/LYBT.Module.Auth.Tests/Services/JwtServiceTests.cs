@@ -22,18 +22,16 @@ public class JwtServiceTests
     public JwtServiceTests()
     {
         _mockOptions = new Mock<IOptions<LybtOptions>>();
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
         _mockOptions.Setup(o => o.Value).Returns(new LybtOptions
         {
-            Authentication = new AuthenticationOptions
+            Jwt = new JwtConfiguration
             {
-                Jwt = new JwtConfiguration
-                {
-                    SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
-                    Issuer = "LYBT",
-                    Audience = "LYBTUsers",
-                    AccessTokenExpirationMinutes = 30,
-                    RefreshTokenExpirationDays = 7
-                }
+                SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+                Issuer = "LYBT",
+                Audience = "LYBTUsers",
+                AccessTokenExpirationMinutes = 30,
+                RefreshTokenExpirationDays = 7
             }
         });
 
@@ -44,11 +42,12 @@ public class JwtServiceTests
     private static IConfiguration CreateMockConfiguration()
     {
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Authentication:Jwt:SecretKey"]).Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
-        config.Setup(c => c["Lybt:Authentication:Jwt:Issuer"]).Returns("LYBT");
-        config.Setup(c => c["Lybt:Authentication:Jwt:Audience"]).Returns("LYBTUsers");
-        config.Setup(c => c["Lybt:Authentication:Jwt:AccessTokenExpirationMinutes"]).Returns("30");
-        config.Setup(c => c["Lybt:Authentication:Jwt:RefreshTokenExpirationDays"]).Returns("7");
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
+        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
+        config.Setup(c => c["Lybt:Jwt:Issuer"]).Returns("LYBT");
+        config.Setup(c => c["Lybt:Jwt:Audience"]).Returns("LYBTUsers");
+        config.Setup(c => c["Lybt:Jwt:AccessTokenExpirationMinutes"]).Returns("30");
+        config.Setup(c => c["Lybt:Jwt:RefreshTokenExpirationDays"]).Returns("7");
         return config.Object;
     }
 
@@ -377,21 +376,19 @@ public class JwtServiceTests
     {
         // Arrange
         var mockOptions = new Mock<IOptions<LybtOptions>>();
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
         mockOptions.Setup(o => o.Value).Returns(new LybtOptions
         {
-            Authentication = new AuthenticationOptions
+            Jwt = new JwtConfiguration
             {
-                Jwt = new JwtConfiguration
-                {
                     SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
                     Issuer = "LYBT",
                     Audience = "LYBTUsers"
                 }
-            }
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Authentication:Jwt:SecretKey"])
+        config.Setup(c => c["Lybt:Jwt:SecretKey"])
               .Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
 
         // Act & Assert
@@ -404,21 +401,19 @@ public class JwtServiceTests
     {
         // Arrange
         var mockOptions = new Mock<IOptions<LybtOptions>>();
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
         mockOptions.Setup(o => o.Value).Returns(new LybtOptions
         {
-            Authentication = new AuthenticationOptions
+            Jwt = new JwtConfiguration
             {
-                Jwt = new JwtConfiguration
-                {
                     SecretKey = "TooShortKey123",
                     Issuer = "LYBT",
                     Audience = "LYBTUsers"
                 }
-            }
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Authentication:Jwt:SecretKey"]).Returns("TooShortKey123");
+        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("TooShortKey123");
 
         // Act & Assert
         var act = () => new JwtService(mockOptions.Object, config.Object);
@@ -430,21 +425,19 @@ public class JwtServiceTests
     {
         // Arrange
         var mockOptions = new Mock<IOptions<LybtOptions>>();
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
         mockOptions.Setup(o => o.Value).Returns(new LybtOptions
         {
-            Authentication = new AuthenticationOptions
+            Jwt = new JwtConfiguration
             {
-                Jwt = new JwtConfiguration
-                {
                     SecretKey = "12345678901234567890123456789012", // 正好 32 字符
                     Issuer = "LYBT",
                     Audience = "LYBTUsers"
                 }
-            }
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Authentication:Jwt:SecretKey"])
+        config.Setup(c => c["Lybt:Jwt:SecretKey"])
               .Returns("12345678901234567890123456789012");
 
         // Act & Assert
@@ -457,21 +450,19 @@ public class JwtServiceTests
     {
         // Arrange
         var mockOptions = new Mock<IOptions<LybtOptions>>();
+        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
         mockOptions.Setup(o => o.Value).Returns(new LybtOptions
         {
-            Authentication = new AuthenticationOptions
+            Jwt = new JwtConfiguration
             {
-                Jwt = new JwtConfiguration
-                {
                     SecretKey = "",
                     Issuer = "LYBT",
                     Audience = "LYBTUsers"
                 }
-            }
         });
 
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Authentication:Jwt:SecretKey"]).Returns("");
+        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("");
 
         // Act & Assert
         var act = () => new JwtService(mockOptions.Object, config.Object);
