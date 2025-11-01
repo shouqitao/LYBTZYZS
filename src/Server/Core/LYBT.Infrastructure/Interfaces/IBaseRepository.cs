@@ -120,23 +120,7 @@ namespace LYBT.Infrastructure.Repositories
 
         #endregion
 
-        #region 事务操作
-
-        /// <summary>
-        /// 开始事务
-        /// </summary>
-        Task<IDbContextTransaction> BeginTransactionAsync();
-
-        /// <summary>
-        /// 提交事务
-        /// </summary>
-        Task CommitTransactionAsync(IDbContextTransaction transaction);
-
-        /// <summary>
-        /// 回滚事务
-        /// </summary>
-        Task RollbackTransactionAsync(IDbContextTransaction transaction);
-
-        #endregion
+        // Issue #1756: 删除事务方法 - 事务管理应在Service层使用 DbContext.Database.BeginTransactionAsync()
+        // 移除的方法: BeginTransactionAsync, CommitTransactionAsync, RollbackTransactionAsync
     }
 }

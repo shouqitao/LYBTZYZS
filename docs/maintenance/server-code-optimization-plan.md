@@ -67,9 +67,12 @@
 
 ---
 
-### Phase 2: BaseRepository方法精简 ⭐⭐
+### Phase 2: BaseRepository方法精简 ⭐⭐ ✅ **已完成**
 
 **优先级**: 中
+**状态**: ✅ 已完成（2025-11-01）- 采用保守方案
+**Issue**: #1756
+
 **问题描述**:
 - 790行代码，47个方法
 - 过多方法重载（GetByIdAsync x3, DeleteAsync x3等）
@@ -77,40 +80,47 @@
 - 事务方法应在Service层处理
 - BulkDeleteAsync不必要（EF Core原生支持）
 
-**优化方案**:
-1. 精简重载方法（保留1-2个最常用）
-2. 移除事务方法（BeginTransactionAsync, CommitTransactionAsync, RollbackTransactionAsync）
-3. 移除BulkDeleteAsync
-4. 合并GetPagedAsync和GetPaginatedAsync
-5. 保留核心CRUD和查询方法
+**⚠️ 实施调整**:
+通过代码检索发现，原计划删除的部分方法实际在使用中：
+- `GetPagedResultAsync` - 被5个Repository使用（Epic #1725引入）
+- `GetSingleAsync` - 被UserRepository使用
+- 重载方法可能有隐藏使用场景
 
-**方法分类与处理**:
+**实际执行方案**（保守优化）:
+1. ✅ 移除3个事务方法（BeginTransactionAsync, CommitTransactionAsync, RollbackTransactionAsync）
+2. ✅ 删除GetPaginatedAsync（未使用，与GetPagedAsync重复）
+3. ✅ 删除GetPagedWithIncludesAsync（未使用，与GetPagedAsync重复）
+4. ✅ 删除BulkDeleteAsync（未使用，EF Core原生支持）
+5. ⚠️ **保留**GetPagedResultAsync（5个Repository使用中）
+6. ⚠️ **保留**GetSingleAsync（UserRepository使用中）
+7. ⚠️ **暂缓**重载方法精简（风险高，收益低）
 
-| 分类 | 当前方法 | 优化后 | 说明 |
-|-----|---------|--------|------|
-| 基础CRUD | GetByIdAsync(3个), AddAsync, UpdateAsync, DeleteAsync(3个) | 各保留1个 | 移除过多重载 |
-| 批量操作 | AddRangeAsync(2个), UpdateRangeAsync, DeleteRangeAsync(3个), BulkDeleteAsync | 保留AddRangeAsync(1个) | 移除BulkDeleteAsync |
-| 查询 | FindAsync(3个), GetAllAsync(2个), SelectAsync, GetSingleAsync | 保留FindAsync(1个), GetAllAsync(1个) | 精简重载 |
-| 分页 | GetPagedAsync(3个), GetPaginatedAsync, GetPagedWithIncludesAsync, GetPagedResultAsync | 保留GetPagedAsync(1个) | 合并功能 |
-| 统计 | ExistsAsync(3个), CountAsync(3个) | 各保留1个 | 移除过多重载 |
-| 高级 | GetQueryable, GetNoTrackingQueryable, FromSqlRawAsync | 保留 | 必要功能 |
-| 事务 | BeginTransactionAsync, CommitTransactionAsync, RollbackTransactionAsync | **删除** | 移至Service层 |
-| 持久化 | SaveChangesAsync | 保留 | 必要功能 |
-| 硬删除 | HardDeleteAsync | 保留 | 必要功能 |
+**实际删除的方法**（6个）:
+1. BeginTransactionAsync
+2. CommitTransactionAsync
+3. RollbackTransactionAsync
+4. GetPaginatedAsync
+5. GetPagedWithIncludesAsync
+6. BulkDeleteAsync
 
 **影响范围**:
-- **修改文件**（7个）:
+- **修改文件**（2个）:
+  - `src/Server/Core/LYBT.Infrastructure/Interfaces/IBaseRepository.cs`
   - `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs`
-  - 6个继承类：ConsultationRepository, FormulaRepository, HerbRepository, MedicalCaseRepository, PatientRepository, PrescriptionRepository
+- **分析文档**（2个）:
+  - `docs/maintenance/baserepository-method-analysis.md`
+  - `docs/maintenance/baserepository-usage-analysis.md`
 
-**预期收益**:
-- ✅ 减少~300行代码
-- ✅ 职责更清晰（Repository只负责数据访问）
-- ✅ 减少API混乱
+**实际收益**:
+- ✅ 减少~150行代码（从原计划300行调整）
+- ✅ 职责更清晰（事务管理移至Service层）
+- ✅ 移除重复功能（GetPaginatedAsync等）
+- ✅ 0编译错误，0警告
+- ✅ 低风险（确认无使用后才删除）
 
-**工作量**: 4-6小时
-**风险**: 中（需检查6个Repository使用情况）
-**ROI**: ⭐⭐⭐⭐
+**工作量**: 2小时（实际）
+**风险**: 低（保守方案，确认无使用）
+**ROI**: ⭐⭐⭐（从原来的⭐⭐⭐⭐降低，但风险更低）
 
 ---
 

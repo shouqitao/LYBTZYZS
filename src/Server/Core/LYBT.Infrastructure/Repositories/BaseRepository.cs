@@ -192,56 +192,8 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// 获取分页数据
-        /// </summary>
-        /// <param name="pageIndex">页码（从1开始）</param>
-        /// <param name="pageSize">每页大小</param>
-        /// <param name="predicate">查询条件</param>
-        /// <param name="orderBy">排序表达式</param>
-        /// <param name="includes">要预加载的导航属性</param>
-        /// <returns>分页结果</returns>
-        public virtual async Task<PaginatedList<TEntity>> GetPaginatedAsync(
-            int pageIndex,
-            int pageSize,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params string[] includes)
-        {
-            var query = _dbSet.Where(e => !e.IsDeleted);
-
-            // 应用查询条件
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            // 应用Include
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
-
-            // 获取总数
-            var totalCount = await query.CountAsync();
-
-            // 应用排序
-            if (orderBy != null)
-            {
-                query = orderBy(query);
-            }
-            else
-            {
-                query = query.OrderByDescending(e => e.CreatedAt);
-            }
-
-            // 应用分页
-            var items = await query
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PaginatedList<TEntity>(items, totalCount, pageIndex, pageSize);
-        }
+        // Issue #1756: 删除GetPaginatedAsync - 未使用，功能与GetPagedAsync重复
+        // 使用GetPagedAsync替代
 
         // IRepository实现
         async Task<IEnumerable<TEntity>> IRepository<TEntity>.FindAsync(Expression<Func<TEntity, bool>> predicate)
@@ -285,48 +237,8 @@ namespace LYBT.Infrastructure.Repositories
             return (items, totalCount);
         }
 
-        /// <summary>
-        /// 分页查询（包含关联数据）
-        /// </summary>
-        public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedWithIncludesAsync(
-            int pageNumber,
-            int pageSize,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Expression<Func<TEntity, object>>? orderBy = null,
-            bool descending = true,
-            params Expression<Func<TEntity, object>>[] includes)
-        {
-            var query = _dbSet.Where(e => !e.IsDeleted);
-
-            // 应用Include
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            var totalCount = await query.CountAsync();
-
-            if (orderBy != null)
-            {
-                query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
-            }
-            else
-            {
-                query = query.OrderByDescending(e => e.CreatedAt);
-            }
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return (items, totalCount);
-        }
+        // Issue #1756: 删除GetPagedWithIncludesAsync - 未使用，功能与GetPagedAsync重复
+        // 使用GetPagedAsync替代
 
         // IRepository GetPagedAsync实现
         async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(int pageNumber, int pageSize)
@@ -697,70 +609,20 @@ namespace LYBT.Infrastructure.Repositories
 
         #endregion
 
-        #region 批量操作
+        // Issue #1756: 删除BulkDeleteAsync - 未使用，EF Core已原生支持批量操作
+        // 使用DeleteRangeAsync替代
 
-        /// <summary>
-        /// 批量软删除
-        /// </summary>
-        public virtual async Task<int> BulkDeleteAsync(List<Guid> ids)
-        {
-            if (ids == null || !ids.Any())
-                throw new ArgumentException("ID列表不能为空", nameof(ids));
-
-            var entities = await _dbSet
-                .Where(e => ids.Contains(e.Id) && !e.IsDeleted)
-                .ToListAsync();
-
-            foreach (var entity in entities)
-            {
-                entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
-            }
-
-            _dbSet.UpdateRange(entities);
-            await SaveChangesAsync();
-
-            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
-                typeof(TEntity).Name, entities.Count);
-
-            return entities.Count;
-        }
-
-        #endregion
-
-        #region 事务支持
-
-        /// <summary>
-        /// 开始事务
-        /// </summary>
-        public virtual async Task<IDbContextTransaction> BeginTransactionAsync()
-        {
-            return await _context.Database.BeginTransactionAsync();
-        }
-
-        /// <summary>
-        /// 提交事务
-        /// </summary>
-        public virtual async Task CommitTransactionAsync(IDbContextTransaction transaction)
-        {
-            if (transaction == null)
-                throw new ArgumentNullException(nameof(transaction));
-
-            await transaction.CommitAsync();
-        }
-
-        /// <summary>
-        /// 回滚事务
-        /// </summary>
-        public virtual async Task RollbackTransactionAsync(IDbContextTransaction transaction)
-        {
-            if (transaction == null)
-                throw new ArgumentNullException(nameof(transaction));
-
-            await transaction.RollbackAsync();
-        }
-
-        #endregion
+        // Issue #1756: 删除事务方法 - 事务管理应在Service层直接使用 DbContext.Database.BeginTransactionAsync()
+        // 移除的方法: BeginTransactionAsync, CommitTransactionAsync, RollbackTransactionAsync
+        // 示例用法（Service层）:
+        //   using var transaction = await _context.Database.BeginTransactionAsync();
+        //   try {
+        //       // 操作
+        //       await transaction.CommitAsync();
+        //   } catch {
+        //       await transaction.RollbackAsync();
+        //       throw;
+        //   }
 
         #region 保护方法
 
