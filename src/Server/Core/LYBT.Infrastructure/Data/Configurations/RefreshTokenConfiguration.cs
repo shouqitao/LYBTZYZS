@@ -24,12 +24,13 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(e => e.DeviceId).HasMaxLength(128);
             entity.Property(e => e.DeviceName).HasMaxLength(200);
 
+            // Issue #1765: 仅保留Token唯一索引（JWT验证必需）
             entity.HasIndex(e => e.Token).IsUnique();
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.ExpiresAt);
-            entity.HasIndex(e => e.IsRevoked);
-            entity.HasIndex(e => e.Jti); // 添加Jti索引用于快速查找
-            entity.HasIndex(e => new { e.UserId, e.IsRevoked });
+
+            // 删除5个多余索引：
+            // - UserId: EF Core外键自动创建索引
+            // - ExpiresAt/IsRevoked/Jti: MVP阶段(<10K记录)无需额外索引
+            // - UserId+IsRevoked复合索引: MVP阶段无需
 
             // 与用户的关系
             entity.HasOne<User>()

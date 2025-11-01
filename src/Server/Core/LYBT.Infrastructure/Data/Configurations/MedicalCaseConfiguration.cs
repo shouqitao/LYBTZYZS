@@ -21,10 +21,9 @@ namespace LYBT.Infrastructure.Data.Configurations
                   .IsRequired()
                   .HasDefaultValue(false);
 
-            entity.HasIndex(m => m.PatientId);
-            entity.HasIndex(m => m.DoctorId);
-            entity.HasIndex(m => m.Status);
-            entity.HasIndex(m => m.CreatedAt);
+            // Issue #1765: 删除4个多余索引
+            // - PatientId/DoctorId: EF Core外键自动创建索引
+            // - Status/CreatedAt: MVP阶段(<10K记录)无需额外索引
 
             // 添加并发控制
             // ⚠️ Issue #1669 Phase 7: 临时禁用RowVersion验证InMemory数据库并发问题

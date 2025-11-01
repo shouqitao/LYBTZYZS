@@ -21,12 +21,9 @@ namespace LYBT.Infrastructure.Data.Configurations
                          .IsRequired()
                          .OnDelete(DeleteBehavior.Cascade);
 
-            // 添加索引以优化查询性能
-            entity.HasIndex(l => l.PrescriptionId)
-                         .HasDatabaseName("IX_PrescriptionPrintLogs_PrescriptionId");
-
-            entity.HasIndex(l => l.PrintedAt)
-                         .HasDatabaseName("IX_PrescriptionPrintLogs_PrintedAt");
+            // Issue #1765: 删除2个多余索引
+            // - PrescriptionId: EF Core外键自动创建索引
+            // - PrintedAt: MVP阶段(<10K记录)无需额外索引
 
             // 配置并发控制字段
             entity.Property(l => l.RowVersion).IsRowVersion().IsConcurrencyToken();

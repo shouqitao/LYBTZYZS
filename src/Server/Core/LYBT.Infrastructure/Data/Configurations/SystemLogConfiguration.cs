@@ -26,12 +26,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(sl => sl.ThreadId);
             entity.Property(sl => sl.Properties);
 
-            // 添加索引以提高查询性能
-            entity.HasIndex(sl => sl.Timestamp).HasDatabaseName("IX_SystemLogs_Timestamp");
-            entity.HasIndex(sl => sl.Level).HasDatabaseName("IX_SystemLogs_Level");
-            entity.HasIndex(sl => sl.LoggerName).HasDatabaseName("IX_SystemLogs_LoggerName");
-            entity.HasIndex(sl => sl.UserId).HasDatabaseName("IX_SystemLogs_UserId");
-            entity.HasIndex(sl => new { sl.Timestamp, sl.Level }).HasDatabaseName("IX_SystemLogs_Timestamp_Level");
+            // Issue #1765: 删除5个多余索引
+            // MVP阶段(<10K日志记录)无需任何索引
+            // 日志查询频率极低，全表扫描足够快
+            // 生产环境(>100K记录)时再考虑添加Timestamp索引
         }
     }
 }

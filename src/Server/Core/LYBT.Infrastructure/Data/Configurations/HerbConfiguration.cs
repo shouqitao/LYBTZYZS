@@ -27,8 +27,10 @@ namespace LYBT.Infrastructure.Data.Configurations
 
             // 配置Status枚举字段
             entity.Property(h => h.Status).HasConversion<int>();
-            entity.HasIndex(h => h.Name);
-            entity.HasIndex(h => h.PinYinCode);
+
+            // Issue #1765: 删除2个多余索引
+            // MVP阶段(<500个草药)无需Name/PinYinCode索引
+            // 全表扫描足够快（<10ms）
         }
     }
 }

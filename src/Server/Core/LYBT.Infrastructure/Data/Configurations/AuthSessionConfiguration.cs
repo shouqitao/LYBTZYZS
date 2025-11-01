@@ -18,9 +18,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(e => e.IpAddress).HasMaxLength(45);
             entity.Property(e => e.UserAgent).HasMaxLength(500);
             entity.Property(e => e.Status).HasConversion<int>();
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.LoginTime);
-            entity.HasIndex(e => e.Status);
+
+            // Issue #1765: 删除3个多余索引
+            // - UserId: EF Core外键自动创建索引
+            // - LoginTime/Status: MVP阶段(<10K记录)无需额外索引
         }
     }
 }
