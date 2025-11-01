@@ -364,146 +364,87 @@ namespace LYBT.Module.Formula.Services
         /// 从Excel文件导入验方数据 (Issue #1347: 重写为主-从表格式，支持延迟绑定)
         /// 格式：Sheet1=验方信息，Sheet2=药材明细
         /// </summary>
-        public async Task<ServiceResult<FormulaImportResultDto>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        /// <summary>
+        /// 从结构化数据导入验方 (Issue #1758: 架构重构 - Server端不再依赖Excel格式)
+        /// Client端负责Excel解析，Server端只处理业务逻辑
+        /// </summary>
+        /// <param name="formulas">已解析的验方列表（由Client端从Excel解析）</param>
+        /// <param name="fileName">原始文件名（用于日志记录）</param>
+        public async Task<ServiceResult<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null)
         {
             var result = new FormulaImportResultDto
             {
                 FileName = fileName,
                 ImportTime = DateTime.Now,
-                StartTime = DateTime.Now
+                StartTime = DateTime.Now,
+                TotalCount = formulas.Count
             };
 
             try
             {
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-                using var package = new ExcelPackage(stream);
-
-                // 获取Sheet1：验方信息
-                var formulaSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("验方") || ws.Index == 0);
-                if (formulaSheet == null)
+                // 逐个导入验方
+                int index = 0;
+                foreach (var formulaDto in formulas)
                 {
-                    result.IsSuccess = false;
-                    result.Message = "未找到验方信息工作表";
-                    return ServiceResult<FormulaImportResultDto>.Failure("Excel文件格式错误");
-                }
-
-                // 获取Sheet2：药材明细
-                var herbSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("药材") || ws.Index == 1);
-                if (herbSheet == null)
-                {
-                    result.IsSuccess = false;
-                    result.Message = "未找到药材明细工作表";
-                    return ServiceResult<FormulaImportResultDto>.Failure("Excel文件格式错误");
-                }
-
-                var formulaRowCount = formulaSheet.Dimension?.Rows ?? 0;
-                if (formulaRowCount <= 1)
-                {
-                    result.IsSuccess = false;
-                    result.Message = "验方信息表中没有数据行";
-                    return ServiceResult<FormulaImportResultDto>.Success(result);
-                }
-
-                result.TotalCount = formulaRowCount - 1;
-
-                // 第一步：解析Sheet2药材明细，按验方编号分组
-                var herbItemsByFormulaCode = ParseHerbItems(herbSheet);
-
-                // 第二步：逐行导入验方及其药材
-                for (int row = 2; row <= formulaRowCount; row++)
-                {
+                    index++;
                     try
                     {
-                        // 读取验方基础信息
-                        var formulaCode = formulaSheet.Cells[row, 1].Text?.Trim();
-                        var name = formulaSheet.Cells[row, 2].Text?.Trim();
-                        var category = formulaSheet.Cells[row, 3].Text?.Trim();
-                        var effect = formulaSheet.Cells[row, 4].Text?.Trim();
-                        var usage = formulaSheet.Cells[row, 5].Text?.Trim();
-                        var property = formulaSheet.Cells[row, 6].Text?.Trim();
-                        var formulaTypeText = formulaSheet.Cells[row, 7].Text?.Trim();
-                        var isSharedText = formulaSheet.Cells[row, 8].Text?.Trim();
-                        var remark = formulaSheet.Cells[row, 9].Text?.Trim();
-
-                        if (string.IsNullOrWhiteSpace(name))
+                        if (string.IsNullOrWhiteSpace(formulaDto.Name))
                         {
                             result.FailureCount++;
                             result.FailedItems.Add(new FormulaImportErrorDto
                             {
-                                RowIndex = row,
-                                FormulaName = name ?? string.Empty,
+                                RowIndex = index,
+                                FormulaName = formulaDto.Name ?? string.Empty,
                                 ErrorMessage = "验方名称不能为空"
                             });
                             continue;
                         }
 
-                        // 解析方剂类型（默认为经验方）
-                        var formulaType = FormulaType.Experience;
-                        if (!string.IsNullOrWhiteSpace(formulaTypeText))
-                        {
-                            if (formulaTypeText.Contains("经典", StringComparison.OrdinalIgnoreCase))
-                                formulaType = FormulaType.Classic;
-                        }
-
-                        // 解析是否共享（默认为否）
-                        var isShared = false;
-                        if (!string.IsNullOrWhiteSpace(isSharedText))
-                        {
-                            isShared = isSharedText.Equals("是", StringComparison.OrdinalIgnoreCase) ||
-                                      isSharedText.Equals("true", StringComparison.OrdinalIgnoreCase) ||
-                                      isSharedText.Equals("共享", StringComparison.OrdinalIgnoreCase);
-                        }
-
-                        // 创建验方实体
+                        // 创建验方实体（从DTO映射）
                         var formula = new FormulaEntity
                         {
-                            Name = name,
-                            Category = category,
-                            Effect = effect,
-                            Usage = usage,
-                            Property = property,
-                            FormulaType = formulaType,
-                            IsShared = isShared,
-                            Remark = remark,
+                            Name = formulaDto.Name,
+                            Effect = formulaDto.Effect,
+                            Usage = formulaDto.Usage,
+                            Property = formulaDto.Property,
+                            IsShared = formulaDto.IsShared,
+                            Remark = formulaDto.Remark,
+                            // Note: Indications, Contraindications, Preparation, Source exist in DTO but not in Entity
                             Status = CommonStatus.Enabled,
                             ValidationStatus = FormulaValidationStatus.Draft, // 导入的验方初始为Draft
                             CreatedAt = DateTime.Now,
                             Herbs = new List<FormulaHerbItem>()
                         };
 
-                        // 第三步：关联药材明细（如果有验方编号）
-                        if (!string.IsNullOrWhiteSpace(formulaCode) && herbItemsByFormulaCode.ContainsKey(formulaCode))
+                        // 添加药材（从DTO列表）
+                        foreach (var herbDto in formulaDto.Herbs)
                         {
-                            var herbItems = herbItemsByFormulaCode[formulaCode];
-                            foreach (var herbItem in herbItems)
+                            // 尝试自动匹配药材
+                            var matchedHerb = await TryMatchHerbAsync(herbDto.HerbName);
+
+                            formula.Herbs.Add(new FormulaHerbItem
                             {
-                                // 尝试自动匹配药材
-                                var matchedHerb = await TryMatchHerbAsync(herbItem.HerbName);
+                                Id = Guid.NewGuid(),
+                                HerbId = matchedHerb?.Id,
+                                HerbName = herbDto.HerbName,
+                                OriginalHerbName = herbDto.HerbName, // 保存原始名称
+                                IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
+                                Quantity = (int)herbDto.Quantity, // DTO是decimal，实体是int
+                                Unit = herbDto.Unit ?? "g",
+                                Usage = herbDto.Usage,
+                                ProcessingMethod = herbDto.Preparation // DTO的Preparation映射到ProcessingMethod
+                                // Note: SortOrder exists in DTO but not in Entity
+                            });
 
-                                formula.Herbs.Add(new FormulaHerbItem
-                                {
-                                    Id = Guid.NewGuid(),
-                                    HerbId = matchedHerb?.Id,
-                                    HerbName = herbItem.HerbName,
-                                    OriginalHerbName = herbItem.HerbName, // 保存原始名称
-                                    IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
-                                    Quantity = herbItem.Quantity,
-                                    Unit = herbItem.Unit ?? "g",
-                                    Usage = herbItem.Usage,
-                                    ProcessingMethod = herbItem.ProcessingMethod,
-                                    Remark = herbItem.Remark
-                                });
-
-                                // 统计药材匹配情况
-                                if (matchedHerb != null)
-                                {
-                                    result.MatchedHerbsCount++;
-                                }
-                                else
-                                {
-                                    result.UnmatchedHerbsCount++;
-                                }
+                            // 统计药材匹配情况
+                            if (matchedHerb != null)
+                            {
+                                result.MatchedHerbsCount++;
+                            }
+                            else
+                            {
+                                result.UnmatchedHerbsCount++;
                             }
                         }
 
@@ -514,23 +455,23 @@ namespace LYBT.Module.Formula.Services
                         }
 
                         var savedFormula = await _repository.AddAsync(formula);
-                        var formulaDto = _mapper.Map<FormulaDto>(savedFormula);
+                        var formulaResultDto = _mapper.Map<FormulaDto>(savedFormula);
 
                         result.SuccessCount++;
                         result.SuccessfulIds.Add(savedFormula.Id);
-                        result.SuccessfulFormulas.Add(formulaDto);
+                        result.SuccessfulFormulas.Add(formulaResultDto);
                     }
                     catch (Exception ex)
                     {
                         result.FailureCount++;
                         result.FailedItems.Add(new FormulaImportErrorDto
                         {
-                            RowIndex = row,
-                            FormulaName = string.Empty,
+                            RowIndex = index,
+                            FormulaName = formulaDto.Name ?? string.Empty,
                             ErrorMessage = $"导入失败：{ex.Message}",
                             ErrorDetails = ex.StackTrace
                         });
-                        _logger.LogError(ex, "导入第{Row}行时发生错误", row);
+                        _logger.LogError(ex, "导入验方 {FormulaName} 时发生错误", formulaDto.Name);
                     }
                 }
 
@@ -542,7 +483,7 @@ namespace LYBT.Module.Formula.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入验方数据时发生错误");
+                _logger.LogError(ex, "批量导入验方数据时发生错误");
                 result.EndTime = DateTime.Now;
                 result.IsSuccess = false;
                 result.Message = $"导入失败：{ex.Message}";
@@ -550,49 +491,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        /// <summary>
-        /// 解析Sheet2药材明细，按验方编号分组
-        /// Issue #1758: 此方法应移至Client端，Server端不应依赖Excel格式
-        /// </summary>
-        private Dictionary<string, List<HerbItemData>> ParseHerbItems(ExcelWorksheet herbSheet)
-        {
-            var result = new Dictionary<string, List<HerbItemData>>();
-            var rowCount = herbSheet.Dimension?.Rows ?? 0;
-
-            for (int row = 2; row <= rowCount; row++)
-            {
-                var formulaCode = herbSheet.Cells[row, 1].Text?.Trim();
-                var herbName = herbSheet.Cells[row, 2].Text?.Trim();
-                var quantityText = herbSheet.Cells[row, 3].Text?.Trim();
-                var unit = herbSheet.Cells[row, 4].Text?.Trim();
-                var usage = herbSheet.Cells[row, 5].Text?.Trim();
-                var processingMethod = herbSheet.Cells[row, 6].Text?.Trim();
-                var remark = herbSheet.Cells[row, 7].Text?.Trim();
-
-                if (string.IsNullOrWhiteSpace(formulaCode) || string.IsNullOrWhiteSpace(herbName))
-                    continue;
-
-                int.TryParse(quantityText, out int quantity);
-                if (quantity <= 0) quantity = 1;
-
-                if (!result.ContainsKey(formulaCode))
-                {
-                    result[formulaCode] = new List<HerbItemData>();
-                }
-
-                result[formulaCode].Add(new HerbItemData
-                {
-                    HerbName = herbName,
-                    Quantity = quantity,
-                    Unit = unit,
-                    Usage = usage,
-                    ProcessingMethod = processingMethod,
-                    Remark = remark
-                });
-            }
-
-            return result;
-        }
+        // Issue #1758: ParseHerbItems方法已移至Client端 ExcelParseHelper
 
         /// <summary>
         /// 尝试自动匹配药材（按名称或拼音码）
@@ -616,19 +515,7 @@ namespace LYBT.Module.Formula.Services
             }
         }
 
-        /// <summary>
-        /// 药材明细数据临时类
-        /// Issue #1758: 此类应移至Client端，Server端不应依赖Excel格式
-        /// </summary>
-        private class HerbItemData
-        {
-            public string HerbName { get; set; } = string.Empty;
-            public int Quantity { get; set; }
-            public string? Unit { get; set; }
-            public string? Usage { get; set; }
-            public string? ProcessingMethod { get; set; }
-            public string? Remark { get; set; }
-        }
+        // Issue #1758: HerbItemData类已移至Client端 ExcelParseHelper
 
         /// <summary>
         /// 导出验方数据到Excel (Issue #1166)

@@ -221,38 +221,24 @@ namespace LYBT.WebAPI.Controllers
 
 
         /// <summary>
-        /// 批量导入验方数据 (Issue #1166)
+        /// 批量导入验方数据 (Issue #1166, #1758)
+        /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
         /// </summary>
-        /// <param name="file">Excel文件（.xlsx格式）</param>
+        /// <param name="request">已解析的验方导入数据</param>
         /// <returns>导入结果，包含成功/失败数量和详细错误信息</returns>
         [HttpPost("import")]
-        [RequestSizeLimit(10 * 1024 * 1024)] // 限制10MB
-        public async Task<ActionResult<ApiResponse<FormulaImportResultDto>>> Import(IFormFile file)
+        public async Task<ActionResult<ApiResponse<FormulaImportResultDto>>> Import([FromBody] ImportFormulasDataRequest request)
         {
             try
             {
-                // 验证文件
-                if (file == null || file.Length == 0)
+                // 验证请求
+                if (request == null || request.Formulas == null || !request.Formulas.Any())
                 {
-                    return ValidationFail<FormulaImportResultDto>("文件不能为空");
+                    return ValidationFail<FormulaImportResultDto>("导入数据不能为空");
                 }
 
-                // 验证文件扩展名
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (extension != ".xlsx")
-                {
-                    return ValidationFail<FormulaImportResultDto>("仅支持.xlsx格式的Excel文件");
-                }
-
-                // 验证文件大小（10MB）
-                if (file.Length > 10 * 1024 * 1024)
-                {
-                    return ValidationFail<FormulaImportResultDto>("文件大小不能超过10MB");
-                }
-
-                // 导入数据
-                using var stream = file.OpenReadStream();
-                var result = await _service.ImportFromExcelAsync(stream, file.FileName);
+                // 调用Service导入数据
+                var result = await _service.ImportFromDataAsync(request.Formulas, request.FileName);
 
                 if (!result.IsSuccess || result.Data == null)
                 {
@@ -263,14 +249,14 @@ namespace LYBT.WebAPI.Controllers
 
                 // 记录操作日志
                 LogOperation("批量导入验方",
-                    new { FileName = file.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
+                    new { FileName = request.FileName, TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                     null);
 
                 return Success(result.Data, result.Data.Message);
             }
             catch (Exception ex)
             {
-                return HandleException<FormulaImportResultDto>(ex, "批量导入验方", new { FileName = file?.FileName });
+                return HandleException<FormulaImportResultDto>(ex, "批量导入验方", new { FileName = request?.FileName });
             }
         }
 

@@ -49,10 +49,11 @@ namespace LYBT.Module.Formula.Interfaces
         Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
 
         /// <summary>
-        /// 从Excel文件导入验方数据 (Issue #1166, #1347)
+        /// 从已解析的验方数据导入（Issue #1166, #1347, #1758）
+        /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
         /// 返回FormulaImportResultDto包含药材匹配统计
         /// </summary>
-        Task<ServiceResult<FormulaImportResultDto>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+        Task<ServiceResult<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null);
 
         /// <summary>
         /// 导出验方数据到Excel (Issue #1166)
