@@ -45,24 +45,4 @@ namespace LYBT.Module.Users
             return app;
         }
     }
-
-    /// <summary>
-    /// 用户模块扩展方法（保持向后兼容）
-    /// </summary>
-    public static class UsersModuleExtensions
-    {
-        /// <summary>
-        /// 注册本模块所有服务到 DI 容器（使用统一数据库上下文）
-        /// UltraThink双层架构：Query(查询专业化) + Business(业务逻辑和CRUD)
-        /// </summary>
-        [Obsolete("建议使用 UsersModule.AddUsersModule 方法")]
-        public static IServiceCollection AddUsersModuleServices(this IServiceCollection services)
-        {
-            // 为保持向后兼容，委托给新的静态方法
-            var configuration = services.BuildServiceProvider().GetService<IConfiguration>()
-                ?? throw new InvalidOperationException("IConfiguration not found in service collection");
-
-            return UsersModule.AddUsersModule(services, configuration);
-        }
-    }
 }

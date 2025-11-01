@@ -20,10 +20,10 @@ dotnet run --project src/Server/Services/LYBT.WebAPI
 
 ## 模块注册（与文档一致）
 - 在 `LYBT.WebAPI` 中通过扩展方法注册模块，例如：
- - `services.AddAuthModule();`
- - `services.AddUsersModuleServices();`
- - `services.AddPatientsModuleServices();`
- - 其余模块：`AddMedicalCaseModule()`、`AddConsultationModule()`、`AddPrescriptionsModule()`、`AddHerbsModule()`、`AddFormulaModule()`
+ - `services.AddAuthModule(configuration);`
+ - `services.AddUsersModule(configuration);`
+ - `services.AddPatientsModule(configuration);`
+ - 其余模块：`AddMedicalCaseModule()`、`AddConsultationModule(configuration)`、`AddPrescriptionsModule()`、`AddHerbsModule(configuration)`、`AddFormulaModule()`
 
 ## 路由与版本
 - 控制器特性：`[ApiVersion("1")]` + `[Route("api/v{version:apiVersion}/[controller]")]`
