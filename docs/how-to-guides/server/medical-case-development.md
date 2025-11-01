@@ -91,10 +91,10 @@ namespace LYBT.WebAPI.Controllers
 
         public MedicalCaseController(
             NewMedicalCaseService medicalCaseService,
-            ILogger<MedicalCaseController> logger,
-            IMemoryCache cache) : base(logger, cache)
+            ILogger<MedicalCaseController> logger) : base(logger)
         {
             _medicalCaseService = medicalCaseService;
+            // Issue #1748: BaseApiController已移除IMemoryCache参数
         }
 
         // Write Layer - 9个写操作端点

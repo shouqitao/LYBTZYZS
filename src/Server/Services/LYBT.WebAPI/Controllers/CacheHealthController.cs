@@ -1,71 +1,85 @@
-﻿using LYBT.Infrastructure.Caching.Interfaces;
-using LYBT.Infrastructure.Web;
+﻿using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 缓存管理控制器 - MVP简化版（Issue #1733 Task 1.3）
+    /// 缓存管理控制器 - MVP简化版（Issue #1754：直接使用IMemoryCache）
     /// </summary>
     [ApiController]
     [Route("api/v1/system/cache")]
     [Authorize(Roles = "Admin")]
     public class CacheHealthController : BaseSystemController
     {
-        private readonly ICacheService _cacheService;
+        private readonly IMemoryCache _memoryCache;
+        private static readonly ConcurrentDictionary<string, DateTime> _cacheKeys = new();
 
         public CacheHealthController(
-            ICacheService cacheService,
+            IMemoryCache memoryCache,
             ILogger<CacheHealthController> logger)
             : base(logger)
         {
-            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+            _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         }
 
         /// <summary>
-        /// 获取缓存统计信息
+        /// 设置缓存并跟踪键（内部辅助方法）
+        /// </summary>
+        /// <remarks>
+        /// 注意：此方法仅供CacheHealthController内部使用
+        /// 其他地方使用IMemoryCache不会被此Controller跟踪
+        /// </remarks>
+        private void SetCacheWithTracking<T>(string key, T value, TimeSpan? expiration = null)
+        {
+            var options = new MemoryCacheEntryOptions();
+
+            if (expiration.HasValue)
+            {
+                options.AbsoluteExpirationRelativeToNow = expiration;
+            }
+
+            // 注册过期回调，自动从跟踪字典中移除
+            options.RegisterPostEvictionCallback((k, v, reason, state) =>
+            {
+                if (k?.ToString() is string keyStr)
+                {
+                    _cacheKeys.TryRemove(keyStr, out _);
+                }
+            });
+
+            _memoryCache.Set(key, value, options);
+            _cacheKeys.TryAdd(key, DateTime.UtcNow.Add(expiration ?? TimeSpan.FromMinutes(10)));
+        }
+
+        /// <summary>
+        /// 获取缓存统计信息（MVP简化版）
         /// </summary>
         /// <returns>当前缓存统计</returns>
+        /// <remarks>
+        /// Issue #1754: 简化实现，只返回基本键数统计
+        /// IMemoryCache不提供完整统计API，详细统计需要Redis等专业缓存
+        /// </remarks>
         [HttpGet("statistics")]
-        public async Task<IActionResult> GetStatisticsAsync()
+        public IActionResult GetStatistics()
         {
             try
             {
                 LogOperation("获取缓存统计", null, null);
 
-                var statistics = await _cacheService.GetStatisticsAsync();
+                var totalKeys = _cacheKeys.Count;
 
                 var response = new
                 {
                     summary = new
                     {
-                        totalKeys = statistics.TotalKeys,
-                        totalRequests = statistics.TotalRequests,
-                        hitCount = statistics.HitCount,
-                        missCount = statistics.MissCount,
-                        hitRatio = statistics.HitRatio
+                        totalKeys,
+                        message = "MVP简化版：仅提供键数统计"
                     },
-                    memory = new
-                    {
-                        usedMemoryMB = statistics.UsedMemory / (1024.0 * 1024.0),
-                        totalMemoryUsageMB = statistics.TotalMemoryUsage / (1024.0 * 1024.0)
-                    },
-                    eviction = new
-                    {
-                        expiredKeys = statistics.ExpiredKeys,
-                        evictedKeys = statistics.EvictedKeys,
-                        evictionCount = statistics.EvictionCount,
-                        evictionRate = statistics.EvictionRate
-                    },
-                    capacity = new
-                    {
-                        currentItemCount = statistics.CurrentItemCount,
-                        maxCapacity = statistics.MaxCapacity,
-                        capacityUsageRatio = statistics.CapacityUsageRatio
-                    },
-                    timestamp = statistics.Timestamp
+                    timestamp = DateTime.UtcNow
                 };
 
                 return SystemOk(response, "缓存统计获取成功");
@@ -81,7 +95,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         /// <returns>操作结果</returns>
         [HttpDelete("clear")]
-        public async Task<IActionResult> ClearCacheAsync()
+        public IActionResult ClearCache()
         {
             try
             {
@@ -92,21 +106,21 @@ namespace LYBT.WebAPI.Controllers
 
                 LogOperation("清空缓存", null, null);
 
-                // 获取清空前的统计
-                var beforeStats = await _cacheService.GetStatisticsAsync();
+                var beforeKeys = _cacheKeys.Count;
 
-                // 清空缓存
-                _cacheService.Clear();
-
-                // 获取清空后的统计
-                var afterStats = await _cacheService.GetStatisticsAsync();
+                // 清空所有缓存项
+                var keysToRemove = _cacheKeys.Keys.ToList();
+                foreach (var key in keysToRemove)
+                {
+                    _memoryCache.Remove(key);
+                }
+                _cacheKeys.Clear();
 
                 var response = new
                 {
-                    clearedItems = beforeStats.TotalKeys,
-                    clearedMemoryMB = beforeStats.UsedMemory / (1024.0 * 1024.0),
-                    beforeKeys = beforeStats.TotalKeys,
-                    afterKeys = afterStats.TotalKeys,
+                    clearedItems = beforeKeys,
+                    beforeKeys,
+                    afterKeys = 0,
                     operationTime = DateTime.UtcNow
                 };
 
@@ -121,10 +135,10 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 按模式清除缓存
         /// </summary>
-        /// <param name="pattern">缓存键模式，支持通配符</param>
+        /// <param name="pattern">缓存键模式，支持通配符（*和?）</param>
         /// <returns>操作结果</returns>
         [HttpDelete("clear-pattern")]
-        public async Task<IActionResult> ClearByPatternAsync([FromQuery] string pattern)
+        public IActionResult ClearByPattern([FromQuery] string pattern)
         {
             try
             {
@@ -140,16 +154,30 @@ namespace LYBT.WebAPI.Controllers
 
                 LogOperation("按模式清除缓存", new { pattern }, null);
 
-                var removedCount = await _cacheService.RemoveByPatternAsync(pattern);
+                // 将通配符转换为正则表达式
+                var regexPattern = "^" + Regex.Escape(pattern)
+                    .Replace("\\*", ".*")
+                    .Replace("\\?", ".") + "$";
+                var regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
+
+                // 查找匹配的键
+                var keysToRemove = _cacheKeys.Keys.Where(k => regex.IsMatch(k)).ToList();
+
+                // 移除匹配的缓存项
+                foreach (var key in keysToRemove)
+                {
+                    _memoryCache.Remove(key);
+                    _cacheKeys.TryRemove(key, out _);
+                }
 
                 var response = new
                 {
                     pattern,
-                    removedCount,
+                    removedCount = keysToRemove.Count,
                     operationTime = DateTime.UtcNow
                 };
 
-                return SystemOk(response, $"已清除{removedCount}个匹配的缓存项");
+                return SystemOk(response, $"已清除{keysToRemove.Count}个匹配的缓存项");
             }
             catch (Exception ex)
             {

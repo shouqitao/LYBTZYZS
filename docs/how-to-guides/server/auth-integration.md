@@ -1069,12 +1069,13 @@ namespace LYBT.WebAPI.Controllers;
 public abstract class BaseApiController : ControllerBase
 {
     protected readonly ILogger _logger;
-    protected readonly IMemoryCache? _cache;
+    // Issue #1748: BaseApiController已移除IMemoryCache参数
+    // protected readonly IMemoryCache? _cache;
 
-    protected BaseApiController(ILogger logger, IMemoryCache? cache = null)
+    protected BaseApiController(ILogger logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _cache = cache;
+        // _cache = cache;
     }
 
     /// <summary>
@@ -1204,12 +1205,12 @@ public class AuthController : BaseApiController
     public AuthController(
         IAuthService authService,
         ILogger<AuthController> logger,
-        IMemoryCache cache,
         IConfiguration configuration)
-        : base(logger, cache)
+        : base(logger)
     {
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        // Issue #1748: BaseApiController已移除IMemoryCache参数
     }
 
     /// <summary>

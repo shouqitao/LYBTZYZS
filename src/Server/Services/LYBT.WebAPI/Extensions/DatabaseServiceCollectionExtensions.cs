@@ -48,8 +48,18 @@ public static class DatabaseServiceCollectionExtensions
                               Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
 
-        // 缓存配置 - 使用统一配置
-        services.AddMemoryCache(); // 总是添加基础的MemoryCache
+        // 缓存配置 - Issue #1754: 直接使用IMemoryCache，移除ICacheService抽象层
+        services.Configure<MemoryCacheOptions>(options =>
+        {
+            var sizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
+            if (sizeLimit > 0)
+            {
+                options.SizeLimit = sizeLimit;
+                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
+            }
+        });
+        services.AddMemoryCache(); // 添加IMemoryCache服务
 
         // 响应缓存配置
         services.AddResponseCaching(options =>
@@ -95,25 +105,6 @@ public static class DatabaseServiceCollectionExtensions
                 builder.Expire(TimeSpan.FromMinutes(10))
                        .Tag("permissions"));
         });
-
-        if (lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit <= 0)
-        {
-            // 使用 NullCacheService
-            services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.NullCacheService>();
-        }
-        else
-        {
-            // 配置 MemoryCache
-            services.Configure<MemoryCacheOptions>(options =>
-            {
-                options.SizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
-                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
-            });
-
-            // 使用 MemoryCacheAdapter
-            services.AddSingleton<LYBT.Infrastructure.Caching.Interfaces.ICacheService, LYBT.Infrastructure.Caching.Adapters.MemoryCacheAdapter>();
-        }
 
         // =========== 保持向后兼容：注册传统配置选项 ===========
         // 注意：这些配置选项已通过 AddLybtConfiguration 自动映射和注册

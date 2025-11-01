@@ -333,7 +333,8 @@ public class PatientService : IPatientService
     private readonly IMapper _mapper;
     private readonly IValidator<PatientCreateRequest> _createValidator;
     private readonly IValidator<PatientUpdateRequest> _updateValidator;
-    private readonly ICacheService _cacheService;
+    // Issue #1754: 已移除ICacheService，如需缓存请直接注入IMemoryCache
+    // private readonly IMemoryCache _cache;
     private readonly ILogger<PatientService> _logger;
 
     public PatientService(
@@ -341,25 +342,24 @@ public class PatientService : IPatientService
         IMapper mapper,
         IValidator<PatientCreateRequest> createValidator,
         IValidator<PatientUpdateRequest> updateValidator,
-        ICacheService cacheService,
+        // Issue #1754: 如需缓存，直接注入IMemoryCache
+        // IMemoryCache cache,
         ILogger<PatientService> logger)
     {
         _patientRepository = patientRepository;
         _mapper = mapper;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
-        _cacheService = cacheService;
+        // _cache = cache;
         _logger = logger;
     }
 
     public async Task<PatientDto> GetPatientByIdAsync(int id)
     {
-        var cacheKey = $"patient:{id}";
-        var cached = await _cacheService.GetAsync<PatientDto>(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
+        // Issue #1754: 已移除ICacheService，如需缓存可使用IMemoryCache
+        // var cacheKey = $"patient:{id}";
+        // var cached = _cache.TryGetValue(cacheKey, out PatientDto cachedDto) ? cachedDto : null;
+        // if (cached != null) return cached;
 
         var patient = await _patientRepository.GetByIdAsync(id);
         if (patient == null)
@@ -368,27 +368,29 @@ public class PatientService : IPatientService
         }
 
         var patientDto = _mapper.Map<PatientDto>(patient);
-        await _cacheService.SetAsync(cacheKey, patientDto, TimeSpan.FromMinutes(30));
-        
+
+        // Issue #1754: 如需缓存
+        // _cache.Set(cacheKey, patientDto, TimeSpan.FromMinutes(30));
+
         return patientDto;
     }
 
     public async Task<PagedResult<PatientDto>> GetPatientsAsync(int pageIndex, int pageSize, string keyword = null)
     {
-        var cacheKey = $"patients:{pageIndex}:{pageSize}:{keyword}";
-        var cached = await _cacheService.GetAsync<PagedResult<PatientDto>>(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
+        // Issue #1754: 已移除ICacheService
+        // var cacheKey = $"patients:{pageIndex}:{pageSize}:{keyword}";
+        // var cached = _cache.TryGetValue(cacheKey, out PagedResult<PatientDto> cachedResult) ? cachedResult : null;
+        // if (cached != null) return cached;
 
         var totalCount = await _patientRepository.CountAsync(keyword);
         var patients = await _patientRepository.GetPagedAsync(pageIndex, pageSize, keyword);
         var patientDtos = _mapper.Map<List<PatientDto>>(patients);
 
         var result = PagedResult<PatientDto>.Create(patientDtos, pageIndex, pageSize, totalCount);
-        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(10));
-        
+
+        // Issue #1754: 如需缓存
+        // _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+
         return result;
     }
 
@@ -805,7 +807,9 @@ public class PatientServiceTests
     private Mock<IMapper> _mockMapper;
     private Mock<IValidator<PatientCreateRequest>> _mockCreateValidator;
     private Mock<IValidator<PatientUpdateRequest>> _mockUpdateValidator;
-    private Mock<ICacheService> _mockCacheService;
+    // Issue #1754: 已移除ICacheService
+    // 如需缓存测试，使用 Mock<IMemoryCache>
+    // private Mock<IMemoryCache> _mockCache;
     private Mock<ILogger<PatientService>> _mockLogger;
     private PatientService _patientService;
 
@@ -816,7 +820,8 @@ public class PatientServiceTests
         _mockMapper = new Mock<IMapper>();
         _mockCreateValidator = new Mock<IValidator<PatientCreateRequest>>();
         _mockUpdateValidator = new Mock<IValidator<PatientUpdateRequest>>();
-        _mockCacheService = new Mock<ICacheService>();
+        // Issue #1754: 如需缓存测试
+        // _mockCache = new Mock<IMemoryCache>();
         _mockLogger = new Mock<ILogger<PatientService>>();
 
         _patientService = new PatientService(
@@ -824,7 +829,8 @@ public class PatientServiceTests
             _mockMapper.Object,
             _mockCreateValidator.Object,
             _mockUpdateValidator.Object,
-            _mockCacheService.Object,
+            // Issue #1754: 如需缓存
+            // _mockCache.Object,
             _mockLogger.Object);
     }
 
