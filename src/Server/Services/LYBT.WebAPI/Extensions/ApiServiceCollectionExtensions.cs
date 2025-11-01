@@ -140,16 +140,15 @@ public static class ApiServiceCollectionExtensions
     /// <summary>
     /// 配置速率限制（仅Login端点防暴力攻击）
     /// Issue #1732 Phase 2: 简化为单层Login限流（MVP合规）
+    /// Issue #1761 Phase 2.1: 使用硬编码默认值，移除配置依赖（MVP简化）
     /// </summary>
     public static IServiceCollection ConfigureRateLimiting(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        var lybtOptions = configuration.GetLybtOptions();
-        var rateLimitingConfig = lybtOptions.Security.RateLimiting;
-
-        // MVP阶段：仅启用Login限流防止暴力破解，移除Global和API限流（过度设计）
+        // MVP阶段：仅启用Login限流防止暴力破解，使用硬编码默认值
+        // 默认配置：5次尝试/60秒（合理的防暴力破解策略）
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -162,9 +161,9 @@ public static class ApiServiceCollectionExtensions
                     partitionKey: ipAddress,
                     factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = rateLimitingConfig.LoginLimit.PermitLimit,
-                        Window = TimeSpan.FromSeconds(rateLimitingConfig.LoginLimit.WindowSeconds),
-                        QueueLimit = 0
+                        PermitLimit = 5,        // 每个窗口允许5次尝试
+                        Window = TimeSpan.FromSeconds(60),  // 60秒窗口
+                        QueueLimit = 0          // 不排队
                     });
             });
         });

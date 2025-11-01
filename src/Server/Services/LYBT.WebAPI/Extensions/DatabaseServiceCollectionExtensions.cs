@@ -148,16 +148,14 @@ public static class DatabaseServiceCollectionExtensions
                         null);
                 });
 
-                // 使用统一配置的监控设置
-                options.EnableSensitiveDataLogging(lybtOptions.Infrastructure.Database.Monitoring.LogAllQueries);
+                // Issue #1761 Phase 2.1: 使用硬编码默认值，移除Monitoring和ConnectionPool配置依赖
+                // MVP阶段：开发环境默认启用详细日志，生产环境关闭敏感数据
+                options.EnableSensitiveDataLogging(false); // 生产环境默认关闭
                 options.EnableDetailedErrors(true); // 开发环境启用详细错误
                 options.EnableServiceProviderCaching();
 
-                // 设置命令超时
-                if (lybtOptions.Infrastructure.Database.ConnectionPool.CommandTimeoutSeconds > 0)
-                {
-                    options.UseSqlServer(opt => opt.CommandTimeout(lybtOptions.Infrastructure.Database.ConnectionPool.CommandTimeoutSeconds));
-                }
+                // 设置命令超时（默认30秒）
+                options.UseSqlServer(opt => opt.CommandTimeout(30));
             });
         }
         else

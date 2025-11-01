@@ -55,12 +55,12 @@ public static class UnifiedMiddlewareConfiguration
         // 3.2 CORS（如需要，在认证之前）
         // app.UseCors(); // 根据需要启用
 
-        // 3.3 速率限制（在路由之后，认证之前）
-        var config = app.Configuration.GetLybtOptions();
-        if (config.Security.RateLimiting.Enabled)
-        {
-            app.UseRateLimiter();
-        }
+        // 3.3 速率限制 - Issue #1761 Phase 2.1: MVP阶段不使用速率限制
+        // var config = app.Configuration.GetLybtOptions();
+        // if (config.Security.RateLimiting.Enabled)
+        // {
+        //     app.UseRateLimiter();
+        // }
 
         // ===== 阶段4: 认证和授权 =====
         // 4.1 认证

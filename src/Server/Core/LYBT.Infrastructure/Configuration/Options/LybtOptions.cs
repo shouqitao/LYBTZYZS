@@ -293,16 +293,6 @@ public class SecurityOptions
     /// 安全头配置
     /// </summary>
     public SecurityHeadersConfiguration SecurityHeaders { get; set; } = new();
-
-    /// <summary>
-    /// 速率限制配置
-    /// </summary>
-    public RateLimitingConfiguration RateLimiting { get; set; } = new();
-
-    /// <summary>
-    /// IP 安全配置
-    /// </summary>
-    public IpSecurityConfiguration IpSecurity { get; set; } = new();
 }
 
 /// <summary>
@@ -369,123 +359,6 @@ public class SecurityHeadersConfiguration
 }
 
 /// <summary>
-/// 速率限制配置
-/// </summary>
-public class RateLimitingConfiguration
-{
-    /// <summary>
-    /// 全局速率限制
-    /// </summary>
-    public RateLimitRule GlobalLimit { get; set; } = new()
-    {
-        PermitLimit = 1000,
-        WindowSeconds = 60,
-        ReplenishmentPeriodSeconds = 1
-    };
-
-    /// <summary>
-    /// 登录API速率限制
-    /// </summary>
-    public RateLimitRule LoginLimit { get; set; } = new()
-    {
-        PermitLimit = 5,
-        WindowSeconds = 60,
-        ReplenishmentPeriodSeconds = 12
-    };
-
-    /// <summary>
-    /// 普通API速率限制
-    /// </summary>
-    public RateLimitRule ApiLimit { get; set; } = new()
-    {
-        PermitLimit = 100,
-        WindowSeconds = 60,
-        ReplenishmentPeriodSeconds = 1
-    };
-
-    /// <summary>
-    /// 是否启用速率限制
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-}
-
-/// <summary>
-/// 速率限制规则
-/// </summary>
-public class RateLimitRule
-{
-    /// <summary>
-    /// 允许的请求数
-    /// </summary>
-    [Range(1, 10000)]
-    public int PermitLimit { get; set; } = 100;
-
-    /// <summary>
-    /// 时间窗口（秒）
-    /// </summary>
-    [Range(1, 3600)]
-    public int WindowSeconds { get; set; } = 60;
-
-    /// <summary>
-    /// 补充周期（秒）
-    /// </summary>
-    [Range(1, 3600)]
-    public int ReplenishmentPeriodSeconds { get; set; } = 1;
-
-    /// <summary>
-    /// 队列处理顺序
-    /// </summary>
-    public QueueProcessingOrder QueueProcessingOrder { get; set; } = QueueProcessingOrder.OldestFirst;
-}
-
-/// <summary>
-/// 队列处理顺序
-/// </summary>
-public enum QueueProcessingOrder
-{
-    OldestFirst,
-    NewestFirst
-}
-
-/// <summary>
-/// IP 安全配置
-/// </summary>
-public class IpSecurityConfiguration
-{
-    /// <summary>
-    /// 允许的IP地址列表
-    /// </summary>
-    public List<string> AllowedIpAddresses { get; set; } = new();
-
-    /// <summary>
-    /// 禁止的IP地址列表
-    /// </summary>
-    public List<string> BlockedIpAddresses { get; set; } = new();
-
-    /// <summary>
-    /// 是否启用IP白名单
-    /// </summary>
-    public bool EnableIpWhitelist { get; set; } = false;
-
-    /// <summary>
-    /// 是否启用IP黑名单
-    /// </summary>
-    public bool EnableIpBlacklist { get; set; } = true;
-
-    /// <summary>
-    /// 失败尝试阈值
-    /// </summary>
-    [Range(1, 100)]
-    public int FailedAttemptsThreshold { get; set; } = 5;
-
-    /// <summary>
-    /// 锁定持续时间（分钟）
-    /// </summary>
-    [Range(1, 1440)]
-    public int LockoutDurationMinutes { get; set; } = 30;
-}
-
-/// <summary>
 /// 基础设施配置选项
 /// 保留原 DatabaseOptions, CacheOptions
 /// </summary>
@@ -514,16 +387,6 @@ public class DatabaseConfiguration
     public string? ConnectionString { get; set; }
 
     /// <summary>
-    /// 连接池配置
-    /// </summary>
-    public ConnectionPoolConfiguration ConnectionPool { get; set; } = new();
-
-    /// <summary>
-    /// 监控配置
-    /// </summary>
-    public DatabaseMonitoringConfiguration Monitoring { get; set; } = new();
-
-    /// <summary>
     /// 迁移配置
     /// </summary>
     public MigrationConfiguration Migration { get; set; } = new();
@@ -532,81 +395,6 @@ public class DatabaseConfiguration
     /// 重试策略配置
     /// </summary>
     public RetryPolicyConfiguration RetryPolicy { get; set; } = new();
-}
-
-/// <summary>
-/// 连接池配置
-/// </summary>
-public class ConnectionPoolConfiguration
-{
-    /// <summary>
-    /// 最大连接数
-    /// </summary>
-    [Range(1, 1000)]
-    public int MaxConnections { get; set; } = 100;
-
-    /// <summary>
-    /// 最小连接数
-    /// </summary>
-    [Range(0, 100)]
-    public int MinConnections { get; set; } = 5;
-
-    /// <summary>
-    /// 连接超时时间（秒）
-    /// </summary>
-    [Range(1, 3600)]
-    public int ConnectionTimeoutSeconds { get; set; } = 30;
-
-    /// <summary>
-    /// 命令超时时间（秒）
-    /// </summary>
-    [Range(1, 3600)]
-    public int CommandTimeoutSeconds { get; set; } = 30;
-
-    /// <summary>
-    /// 连接生命周期（秒）
-    /// </summary>
-    [Range(0, 3600)]
-    public int ConnectionLifetimeSeconds { get; set; } = 0;
-
-    /// <summary>
-    /// 连接空闲超时（秒）
-    /// </summary>
-    [Range(60, 3600)]
-    public int ConnectionIdleTimeoutSeconds { get; set; } = 300;
-}
-
-/// <summary>
-/// 数据库监控配置
-/// </summary>
-public class DatabaseMonitoringConfiguration
-{
-    /// <summary>
-    /// 是否启用监控
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
-    /// <summary>
-    /// 慢查询阈值（毫秒）
-    /// </summary>
-    [Range(100, 60000)]
-    public int SlowQueryThresholdMs { get; set; } = 1000;
-
-    /// <summary>
-    /// 是否记录所有查询
-    /// </summary>
-    public bool LogAllQueries { get; set; } = false;
-
-    /// <summary>
-    /// 是否记录参数
-    /// </summary>
-    public bool LogParameters { get; set; } = true;
-
-    /// <summary>
-    /// 监控统计间隔（秒）
-    /// </summary>
-    [Range(10, 3600)]
-    public int StatisticsIntervalSeconds { get; set; } = 60;
 }
 
 /// <summary>
@@ -671,11 +459,6 @@ public class CacheConfiguration
     /// 内存缓存配置
     /// </summary>
     public MemoryCacheConfiguration MemoryCache { get; set; } = new();
-
-    /// <summary>
-    /// 缓存监控配置
-    /// </summary>
-    public CacheMonitoringConfiguration Monitoring { get; set; } = new();
 }
 
 /// <summary>
@@ -712,39 +495,6 @@ public class MemoryCacheConfiguration
     /// </summary>
     [Range(1, 360)]
     public int DefaultSlidingExpirationMinutes { get; set; } = 10;
-}
-
-/// <summary>
-/// 缓存监控配置
-/// </summary>
-public class CacheMonitoringConfiguration
-{
-    /// <summary>
-    /// 是否启用监控
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
-    /// <summary>
-    /// 统计间隔（秒）
-    /// </summary>
-    [Range(10, 3600)]
-    public int StatisticsIntervalSeconds { get; set; } = 60;
-
-    /// <summary>
-    /// 是否记录缓存未命中
-    /// </summary>
-    public bool LogCacheMisses { get; set; } = false;
-
-    /// <summary>
-    /// 是否记录缓存命中
-    /// </summary>
-    public bool LogCacheHits { get; set; } = false;
-
-    /// <summary>
-    /// 低命中率阈值（百分比）
-    /// </summary>
-    [Range(0.1, 1.0)]
-    public double LowHitRateThreshold { get; set; } = 0.5; // 50%
 }
 
 /// <summary>

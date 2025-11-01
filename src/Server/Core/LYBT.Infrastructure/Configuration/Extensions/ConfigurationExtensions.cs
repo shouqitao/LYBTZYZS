@@ -90,7 +90,6 @@ public static class ConfigurationExtensions
             opt.Enabled = true; // 默认启用
             opt.GlobalKeyPrefix = "LYBT:";
             opt.Memory = MapToLegacyMemoryCacheConfig(lybtOptions.Infrastructure.Cache.MemoryCache);
-            opt.Monitoring = MapToLegacyMonitoringConfig(lybtOptions.Infrastructure.Cache.Monitoring);
         });
     }
 
@@ -157,14 +156,8 @@ public static class ConfigurationExtensions
             validationResults.Add("Password MinLength cannot be greater than MaxLength");
         }
 
-        // 验证数据库连接池配置
-        if (options.Infrastructure.Database.ConnectionPool.MinConnections >
-            options.Infrastructure.Database.ConnectionPool.MaxConnections)
-        {
-            validationResults.Add("Database MinConnections cannot be greater than MaxConnections");
-        }
-
         // Issue #1732 Phase 1: 移除分布式缓存验证（MVP阶段仅使用MemoryCache）
+        // Issue #1761 Phase 2.1: 移除ConnectionPool和Monitoring验证（MVP阶段不需要）
     }
 
     #region Legacy Mapping Methods（仅保留CacheOptions相关）
@@ -174,14 +167,6 @@ public static class ConfigurationExtensions
         return new MemoryCacheConfig
         {
             // 映射到实际字段，需要根据 MemoryCacheConfig 类确定具体字段
-        };
-    }
-
-    private static MonitoringConfig MapToLegacyMonitoringConfig(CacheMonitoringConfiguration config)
-    {
-        return new MonitoringConfig
-        {
-            // 映射到实际字段
         };
     }
 
