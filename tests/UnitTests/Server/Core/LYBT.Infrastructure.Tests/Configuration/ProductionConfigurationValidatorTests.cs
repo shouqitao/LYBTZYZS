@@ -14,11 +14,11 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "Server=test;Database=LYBTDB;User Id=sa;Password=Test123;",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "ThisIsAVeryLongSecretKeyForJWT123456",
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123",
-                ["Lybt:Business:SystemAdmin:Username"] = "admin",
-                ["Lybt:Business:SystemAdmin:Email"] = "admin@example.com",
+                ["Lybt:Jwt:SecretKey"] = "ThisIsAVeryLongSecretKeyForJWT123456",
+                ["Lybt:DefaultPasswords:SysAdminPassword"] = "Admin@123",
+                ["Lybt:DefaultPasswords:NewUserPassword"] = "User@123",
+                ["Lybt:SystemAdmin:Username"] = "admin",
+                ["Lybt:SystemAdmin:Email"] = "admin@example.com",
                 ["AllowedHosts"] = "example.com"
             })
             .Build();
@@ -54,11 +54,11 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "#{DATABASE_CONNECTION_STRING}#",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123",
-                ["Lybt:Business:SystemAdmin:Username"] = "admin",
-                ["Lybt:Business:SystemAdmin:Email"] = "admin@example.com"
+                ["Lybt:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
+                ["Lybt:DefaultPasswords:SysAdminPassword"] = "Admin@123",
+                ["Lybt:DefaultPasswords:NewUserPassword"] = "User@123",
+                ["Lybt:SystemAdmin:Username"] = "admin",
+                ["Lybt:SystemAdmin:Email"] = "admin@example.com"
             })
             .Build();
 
@@ -78,11 +78,11 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "Server=test;Database=LYBTDB;",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "Short", // < 32 字符
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123",
-                ["Lybt:Business:SystemAdmin:Username"] = "admin",
-                ["Lybt:Business:SystemAdmin:Email"] = "admin@example.com"
+                ["Lybt:Jwt:SecretKey"] = "Short", // < 32 字符
+                ["Lybt:DefaultPasswords:SysAdminPassword"] = "Admin@123",
+                ["Lybt:DefaultPasswords:NewUserPassword"] = "User@123",
+                ["Lybt:SystemAdmin:Username"] = "admin",
+                ["Lybt:SystemAdmin:Email"] = "admin@example.com"
             })
             .Build();
 
@@ -102,11 +102,11 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "Server=test;Database=LYBTDB;",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123",
-                ["Lybt:Business:SystemAdmin:Username"] = "admin",
-                ["Lybt:Business:SystemAdmin:Email"] = "invalid-email" // 无效邮箱格式
+                ["Lybt:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
+                ["Lybt:DefaultPasswords:SysAdminPassword"] = "Admin@123",
+                ["Lybt:DefaultPasswords:NewUserPassword"] = "User@123",
+                ["Lybt:SystemAdmin:Username"] = "admin",
+                ["Lybt:SystemAdmin:Email"] = "invalid-email" // 无效邮箱格式
             })
             .Build();
 
@@ -125,11 +125,11 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "Server=test;Database=LYBTDB;",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
-                ["Lybt:Authentication:DefaultPasswords:SysAdminPassword"] = "Admin@123",
-                ["Lybt:Authentication:DefaultPasswords:NewUserPassword"] = "User@123",
-                ["Lybt:Business:SystemAdmin:Username"] = "admin",
-                ["Lybt:Business:SystemAdmin:Email"] = "admin@example.com"
+                ["Lybt:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars",
+                ["Lybt:DefaultPasswords:SysAdminPassword"] = "Admin@123",
+                ["Lybt:DefaultPasswords:NewUserPassword"] = "User@123",
+                ["Lybt:SystemAdmin:Username"] = "admin",
+                ["Lybt:SystemAdmin:Email"] = "admin@example.com"
                 // AllowedHosts 未设置
             })
             .Build();
@@ -148,7 +148,7 @@ public class ProductionConfigurationValidatorTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = "Server=test;Database=LYBTDB;",
-                ["Lybt:Authentication:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars"
+                ["Lybt:Jwt:SecretKey"] = "ValidSecretKeyWithAtLeast32Chars"
                 // 缺少其他 Important 配置
             })
             .Build();

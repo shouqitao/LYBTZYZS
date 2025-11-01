@@ -34,7 +34,7 @@ public static class AuthenticationServiceCollectionExtensions
                 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
                 if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Lybt:Authentication:Jwt:SecretKey）。");
+                    throw new InvalidOperationException("生产环境必须配置 JWT 密钥（JWT_SECRET 或 Lybt:Jwt:SecretKey）。");
                 }
 
                 jwtSecret = "DefaultDevelopmentSecretKeyForJWTAuthentication_ShouldBeReplacedInProduction";

@@ -25,8 +25,8 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Authentication:Jwt:SecretKey",
-            EnvVarName = "Lybt__Authentication__Jwt__SecretKey",
+            Key = "Lybt:Jwt:SecretKey",
+            EnvVarName = "Lybt__Jwt__SecretKey",
             Severity = Severity.Critical,
             Description = "JWT 签名密钥",
             MinLength = 32,
@@ -34,8 +34,8 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Authentication:DefaultPasswords:SysAdminPassword",
-            EnvVarName = "Lybt__Authentication__DefaultPasswords__SysAdminPassword",
+            Key = "Lybt:DefaultPasswords:SysAdminPassword",
+            EnvVarName = "Lybt__DefaultPasswords__SysAdminPassword",
             Severity = Severity.Important,
             Description = "系统管理员默认密码",
             Example = "Admin@123456"

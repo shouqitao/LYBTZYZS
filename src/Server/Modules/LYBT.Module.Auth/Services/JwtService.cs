@@ -35,12 +35,12 @@ public class JwtService : IJwtService
     /// </summary>
     private void ValidateSecretKeyStrength()
     {
-        var secretKey = _configuration["Lybt:Authentication:Jwt:SecretKey"];
+        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
 
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException(
-                "JWT SecretKey 未配置。请在 appsettings.json 中设置 Lybt:Authentication:Jwt:SecretKey 配置项。");
+                "JWT SecretKey 未配置。请在 appsettings.json 中设置 Lybt:Jwt:SecretKey 配置项。");
         }
 
         if (secretKey.Length < 32)
