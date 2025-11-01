@@ -14,7 +14,8 @@ namespace LYBT.Infrastructure.Repositories
     /// 仓储基类
     /// 提供通用的CRUD操作和查询功能
     /// </summary>
-    public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>, IRepository<TEntity>
+    /// Issue #1766: 删除IBaseRepository - 未被任何地方使用，简化接口层次
+    public abstract class BaseRepository<TEntity> : IRepository<TEntity>
         where TEntity : BaseEntity
     {
         protected readonly AppDbContext _context;
@@ -44,45 +45,11 @@ namespace LYBT.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        /// <summary>
-        /// 根据ID获取实体（优化版，支持预加载）
-        /// </summary>
-        /// <param name="id">实体ID</param>
-        /// <param name="includes">要预加载的导航属性</param>
-        /// <returns>实体</returns>
-        public virtual async Task<TEntity?> GetByIdAsync(Guid id, params string[] includes)
-        {
-            var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
+        // Issue #1766: 删除GetByIdAsync(Guid, params string[]) - 未被使用，MVP阶段Repository子类都实现自己的WithDetails方法
 
-            // 应用Include
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
+        // Issue #1766: 删除显式接口实现GetByIdAsync(Guid) - public方法已自动实现接口
 
-            return await query.FirstOrDefaultAsync();
-        }
-
-        // IRepository实现
-        async Task<TEntity?> IRepository<TEntity>.GetByIdAsync(Guid id)
-        {
-            return await GetByIdAsync(id);
-        }
-
-        /// <summary>
-        /// 根据ID获取实体（包含关联数据）
-        /// </summary>
-        public virtual async Task<TEntity?> GetByIdWithIncludesAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
-        {
-            var query = _dbSet.Where(e => e.Id == id && !e.IsDeleted);
-
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
-
-            return await query.FirstOrDefaultAsync();
-        }
+        // Issue #1766: 删除GetByIdWithIncludesAsync - 未被使用，MVP阶段Repository子类都实现自己的WithDetails方法
 
         /// <summary>
         /// 获取所有实体
@@ -289,17 +256,13 @@ namespace LYBT.Infrastructure.Repositories
                 .AnyAsync(predicate);
         }
 
-        // IRepository ExistsAsync(Guid)实现
+        // IRepository ExistsAsync(Guid)实现 - 保留（BaseRepository无此重载）
         async Task<bool> IRepository<TEntity>.ExistsAsync(Guid id)
         {
             return await ExistsAsync(e => e.Id == id);
         }
 
-        // IRepository ExistsAsync(Expression)实现
-        async Task<bool> IRepository<TEntity>.ExistsAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await ExistsAsync(predicate);
-        }
+        // Issue #1766: 删除显式接口实现ExistsAsync(Expression) - public方法已自动实现接口
 
         /// <summary>
         /// 获取数量
@@ -447,7 +410,7 @@ namespace LYBT.Infrastructure.Repositories
             return true;
         }
 
-        // IRepository DeleteAsync(TEntity)实现
+        // IRepository DeleteAsync(TEntity)实现 - 保留（BaseRepository无此重载）
         async Task<bool> IRepository<TEntity>.DeleteAsync(TEntity entity)
         {
             if (entity == null)
@@ -456,11 +419,7 @@ namespace LYBT.Infrastructure.Repositories
             return await DeleteAsync(entity.Id);
         }
 
-        // IRepository DeleteAsync(Guid)实现
-        async Task<bool> IRepository<TEntity>.DeleteAsync(Guid id)
-        {
-            return await DeleteAsync(id);
-        }
+        // Issue #1766: 删除显式接口实现DeleteAsync(Guid) - public方法已自动实现接口
 
         /// <summary>
         /// 批量软删除
