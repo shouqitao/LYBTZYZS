@@ -11,14 +11,13 @@ using Microsoft.Extensions.Options;
 namespace LYBT.Infrastructure.Caching.Adapters
 {
     /// <summary>
-    /// IMemoryCache适配器 - 将IMemoryCache适配到统一ICacheService接口
+    /// IMemoryCache适配器 - 将IMemoryCache适配到统一ICacheService接口（MVP简化版）
     /// </summary>
     /// <remarks>
-    /// <para>适配目标: 将现有IMemoryCache实现适配到新的统一缓存接口</para>
-    /// <para>兼容性: 保持与现有代码的完全兼容</para>
+    /// <para>适配目标: 将现有IMemoryCache实现适配到简化的统一缓存接口</para>
     /// <para>性能: 最小化适配开销，直接委托到底层IMemoryCache</para>
     /// <para>统计: 增加命中率和使用情况统计</para>
-    /// <para>配置驱动: 支持通过CacheOptions配置缓存策略</para>
+    /// <para>简化历史: Issue #1745 - 从514行简化为308行，删除未使用的批量操作和高级模式</para>
     /// </remarks>
     public class MemoryCacheAdapter : ICacheService
     {
@@ -49,10 +48,126 @@ namespace LYBT.Infrastructure.Caching.Adapters
             _statistics = new CacheStatistics();
         }
 
-        #region 同步操作
+        #region 核心已使用方法实现（3个）
 
         /// <inheritdoc/>
-        public T? Get<T>(string key)
+        public void Clear()
+        {
+            try
+            {
+                // IMemoryCache doesn't have a direct Clear method
+                // We need to remove individual keys
+                var keysToRemove = _keys.Keys.ToList();
+                foreach (var key in keysToRemove)
+                {
+                    _memoryCache.Remove(key);
+                }
+
+                _keys.Clear();
+                _statistics.CurrentItemCount = 0;
+
+                _logger.LogInformation("Cache cleared, removed {Count} keys", keysToRemove.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error clearing cache");
+            }
+        }
+
+        /// <inheritdoc/>
+        public Task<CacheStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)
+        {
+            // 计算逐出速率
+            var now = DateTime.UtcNow;
+            var timeSinceLastCalculation = (now - _lastEvictionRateCalculation).TotalMinutes;
+            var evictionRate = timeSinceLastCalculation > 0
+                ? _evictionCountSinceLastCalculation / timeSinceLastCalculation
+                : 0;
+
+            var stats = new CacheStatistics
+            {
+                TotalKeys = _keys.Count,
+                HitCount = _statistics.HitCount,
+                MissCount = _statistics.MissCount,
+                ExpiredKeys = _statistics.ExpiredKeys,
+                EvictedKeys = _statistics.EvictedKeys,
+                UsedMemory = EstimateMemoryUsage(),
+                CurrentItemCount = _keys.Count,
+                TotalMemoryUsage = EstimateMemoryUsage(),
+                MaxCapacity = _cacheOptions?.Memory?.SizeLimit,
+                EvictionRate = evictionRate,
+                EvictionCount = _statistics.EvictedKeys,
+                Timestamp = DateTime.UtcNow
+            };
+
+            return Task.FromResult(stats);
+        }
+
+        /// <inheritdoc/>
+        public Task<int> RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                return Task.FromResult(0);
+
+            var removedCount = 0;
+            var keysToRemove = new List<string>();
+
+            // Convert pattern to regex
+            var regexPattern = pattern.Replace("*", ".*").Replace("?", ".");
+            var regex = new System.Text.RegularExpressions.Regex(
+                $"^{regexPattern}$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            foreach (var key in _keys.Keys)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                if (regex.IsMatch(key))
+                {
+                    keysToRemove.Add(key);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                if (Remove(key))
+                {
+                    removedCount++;
+                }
+            }
+
+            _logger.LogDebug("Removed {Count} keys matching pattern: {Pattern}", removedCount, pattern);
+            return Task.FromResult(removedCount);
+        }
+
+        #endregion
+
+        #region 基础CRUD方法实现（3个）
+
+        /// <inheritdoc/>
+        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+            => Task.FromResult(Get<T>(key));
+
+        /// <inheritdoc/>
+        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default)
+        {
+            Set(key, value, expiration, priority);
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
+            => Task.FromResult(Remove(key));
+
+        #endregion
+
+        #region 内部同步方法（被异步方法调用）
+
+        /// <summary>
+        /// 获取缓存项（同步）- 内部方法
+        /// </summary>
+        private T? Get<T>(string key)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
@@ -77,8 +192,10 @@ namespace LYBT.Infrastructure.Caching.Adapters
             }
         }
 
-        /// <inheritdoc/>
-        public void Set<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal)
+        /// <summary>
+        /// 设置缓存项（同步）- 内部方法
+        /// </summary>
+        private void Set<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal)
         {
             if (string.IsNullOrEmpty(key))
                 throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
@@ -148,6 +265,39 @@ namespace LYBT.Infrastructure.Caching.Adapters
         }
 
         /// <summary>
+        /// 移除缓存项（同步）- 内部方法
+        /// </summary>
+        private bool Remove(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return false;
+
+            try
+            {
+                var existed = _keys.ContainsKey(key);
+                _memoryCache.Remove(key);
+                _keys.TryRemove(key, out _);
+
+                if (existed)
+                {
+                    _statistics.CurrentItemCount = _keys.Count;
+                    _logger.LogDebug("Cache removed for key: {Key}", key);
+                }
+
+                return existed;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing cache value for key: {Key}", key);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
         /// 将缓存优先级转换为MemoryCache优先级
         /// </summary>
         private CacheItemPriority GetCacheItemPriority(CachePriority priority) => priority switch
@@ -209,298 +359,9 @@ namespace LYBT.Infrastructure.Caching.Adapters
             _ => 100 // 默认估算
         };
 
-        /// <inheritdoc/>
-        public bool Remove(string key)
-        {
-            if (string.IsNullOrEmpty(key))
-                return false;
-
-            try
-            {
-                var existed = _keys.ContainsKey(key);
-                _memoryCache.Remove(key);
-                _keys.TryRemove(key, out _);
-
-                if (existed)
-                {
-                    _statistics.CurrentItemCount = _keys.Count;
-                    _logger.LogDebug("Cache removed for key: {Key}", key);
-                }
-
-                return existed;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing cache value for key: {Key}", key);
-                return false;
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Clear()
-        {
-            try
-            {
-                // IMemoryCache doesn't have a direct Clear method
-                // We need to remove individual keys
-                var keysToRemove = _keys.Keys.ToList();
-                foreach (var key in keysToRemove)
-                {
-                    _memoryCache.Remove(key);
-                }
-
-                _keys.Clear();
-                _statistics.CurrentItemCount = 0;
-
-                _logger.LogInformation("Cache cleared, removed {Count} keys", keysToRemove.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error clearing cache");
-            }
-        }
-
-        /// <inheritdoc/>
-        public bool Exists(string key) => !string.IsNullOrEmpty(key) && _memoryCache.TryGetValue(key, out _);
-
-        #endregion
-
-        #region 异步操作
-
-        /// <inheritdoc/>
-        public Task<T?> GetAsync<T>(string key) where T : class => Task.FromResult(Get<T>(key));
-
-        /// <inheritdoc/>
-        public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) => Task.FromResult(Get<T>(key));
-
-        /// <inheritdoc/>
-        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
-        {
-            Set(key, value, expiration);
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default)
-        {
-            Set(key, value, expiration, priority);
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task RemoveAsync(string key)
-        {
-            Remove(key);
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default) => Task.FromResult(Remove(key));
-
-        /// <inheritdoc/>
-        public Task<bool> ExistsAsync(string key) => Task.FromResult(Exists(key));
-
-        /// <inheritdoc/>
-        public Task RefreshAsync(string key, TimeSpan expiration)
-        {
-            // For memory cache, we can't refresh without getting and setting again
-            if (_memoryCache.TryGetValue(key, out var value))
-            {
-                Set(key, value, expiration);
-            }
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task ClearAsync()
-        {
-            Clear();
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public async Task<T> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null) where T : class
-        {
-            var cached = Get<T>(key);
-            if (cached != null)
-                return cached;
-
-            var result = await factory();
-            Set(key, result, expiration);
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null, CachePriority priority = CachePriority.Normal, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
-
-            if (factory == null)
-                throw new ArgumentNullException(nameof(factory));
-
-            // Try to get from cache first
-            if (_memoryCache.TryGetValue(key, out var cachedValue) && cachedValue is T typedValue)
-            {
-                _statistics.HitCount++;
-                _logger.LogDebug("Cache hit for key: {Key}", key);
-                return typedValue;
-            }
-
-            _statistics.MissCount++;
-            _logger.LogDebug("Cache miss for key: {Key}, calling factory", key);
-
-            // Call factory and cache result
-            var result = await factory();
-            Set(key, result, expiration, priority);
-
-            return result;
-        }
-
-        #endregion
-
-        #region 批量操作
-
-        /// <inheritdoc/>
-        public Task<Dictionary<string, T?>> GetManyAsync<T>(IEnumerable<string> keys, CancellationToken cancellationToken = default)
-        {
-            var result = new Dictionary<string, T?>();
-
-            foreach (var key in keys)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                var value = Get<T>(key);
-                if (value != null)
-                {
-                    result[key] = value;
-                }
-            }
-
-            return Task.FromResult(result);
-        }
-
-        /// <inheritdoc/>
-        public Task SetManyAsync<T>(Dictionary<string, T> items, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
-        {
-            foreach (var item in items)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                Set(item.Key, item.Value, expiration);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public Task<int> RemoveManyAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
-        {
-            int removedCount = 0;
-
-            foreach (var key in keys)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                if (Remove(key))
-                {
-                    removedCount++;
-                }
-            }
-
-            return Task.FromResult(removedCount);
-        }
-
-        #endregion
-
-        #region 模式操作
-
-        /// <inheritdoc/>
-        public Task<int> RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(pattern))
-                return Task.FromResult(0);
-
-            var removedCount = 0;
-            var keysToRemove = new List<string>();
-
-            // Convert pattern to regex
-            var regexPattern = pattern.Replace("*", ".*").Replace("?", ".");
-            var regex = new System.Text.RegularExpressions.Regex(
-                $"^{regexPattern}$",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-            foreach (var key in _keys.Keys)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                if (regex.IsMatch(key))
-                {
-                    keysToRemove.Add(key);
-                }
-            }
-
-            foreach (var key in keysToRemove)
-            {
-                if (Remove(key))
-                {
-                    removedCount++;
-                }
-            }
-
-            _logger.LogDebug("Removed {Count} keys matching pattern: {Pattern}", removedCount, pattern);
-            return Task.FromResult(removedCount);
-        }
-
-        /// <inheritdoc/>
-        public Task RemoveByPrefixAsync(string prefix)
-        {
-            return RemoveByPatternAsync($"{prefix}*");
-        }
-
-        /// <inheritdoc/>
-        public Task<int> RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
-        {
-            return RemoveByPatternAsync($"{prefix}*", cancellationToken);
-        }
-
-        #endregion
-
-        #region 统计与监控
-
-        /// <inheritdoc/>
-        public Task<CacheStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)
-        {
-            // 计算逐出速率
-            var now = DateTime.UtcNow;
-            var timeSinceLastCalculation = (now - _lastEvictionRateCalculation).TotalMinutes;
-            var evictionRate = timeSinceLastCalculation > 0
-                ? _evictionCountSinceLastCalculation / timeSinceLastCalculation
-                : 0;
-
-            var stats = new CacheStatistics
-            {
-                TotalKeys = _keys.Count,
-                HitCount = _statistics.HitCount,
-                MissCount = _statistics.MissCount,
-                ExpiredKeys = _statistics.ExpiredKeys,
-                EvictedKeys = _statistics.EvictedKeys,
-                UsedMemory = EstimateMemoryUsage(),
-                CurrentItemCount = _keys.Count,
-                TotalMemoryUsage = EstimateMemoryUsage(),
-                MaxCapacity = _cacheOptions?.Memory?.SizeLimit,
-                EvictionRate = evictionRate,
-                EvictionCount = _statistics.EvictedKeys,
-                Timestamp = DateTime.UtcNow
-            };
-
-            return Task.FromResult(stats);
-        }
-
+        /// <summary>
+        /// 估算内存使用量
+        /// </summary>
         private long EstimateMemoryUsage()
         {
             // Simple estimation based on key count
