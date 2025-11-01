@@ -409,9 +409,8 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         public PatientsController(
             IPatientService service,
-            IMemoryCache cache,
             ILogger<PatientsController> logger)
-            : base(logger, cache)
+            : base(logger)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
@@ -444,9 +443,8 @@ public class PatientsController : BaseApiController
     // ✅ 正确：通过构造函数注入依赖
     public PatientsController(
         IPatientService service,
-        IMemoryCache cache,
         ILogger<PatientsController> logger)
-        : base(logger, cache)  // 调用父类构造函数
+        : base(logger)  // 调用父类构造函数
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
@@ -455,7 +453,6 @@ public class PatientsController : BaseApiController
 
 **注入项说明**：
 - `IPatientService`：业务逻辑服务接口（必需）
-- `IMemoryCache`：内存缓存（BaseApiController需要，可选）
 - `ILogger<T>`：结构化日志（BaseApiController需要，必需）
 
 #### 4.1.2 禁止的反模式
@@ -2040,9 +2037,8 @@ public async Task<IActionResult> Create([FromBody] PatientInputDto dto)
 
 - [ ] **2. 构造函数注入**
   - [ ] 注入IXxxService接口
-  - [ ] 注入IMemoryCache（可选）
   - [ ] 注入ILogger<TController>
-  - [ ] 调用父类构造函数: `base(logger, cache)`
+  - [ ] 调用父类构造函数: `base(logger)`
   - [ ] 添加空值检查: `?? throw new ArgumentNullException(...)`
 
 - [ ] **3. XML注释**

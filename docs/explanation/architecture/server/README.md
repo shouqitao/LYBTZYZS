@@ -740,7 +740,7 @@ internal class PatientRepository : IPatientRepository
 > ```
 >
 > **设计优势**：
-> - ✅ **职责分离**：核心功能（日志、缓存、操作者信息）与API包装（响应格式）分离
+> - ✅ **职责分离**：核心功能（日志、操作者信息）与API包装（响应格式）分离
 > - ✅ **灵活性高**：具体Controller可选择继承BaseControllerCore（需要核心功能）或BaseApiController（需要标准API响应）
 > - ✅ **方法级泛型**：使用`HandleServiceResult&lt;T&gt;()`等方法级泛型，比类级泛型更灵活
 > - ✅ **避免过度抽象**：不强制所有Controller实现固定的CRUD接口
