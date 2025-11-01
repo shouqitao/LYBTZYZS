@@ -152,12 +152,6 @@ public static class ConfigurationExtensions
             opt.ExpiryDays = 30; // Default 30 days
         });
 
-        // 注册传统 RateLimitingOptions
-        services.Configure<RateLimitingOptions>(opt =>
-        {
-            MapToLegacyRateLimitingOptions(lybtOptions.Security.RateLimiting, opt);
-        });
-
         // 注册传统 SysAdminOptions
         services.Configure<SysAdminOptions>(opt =>
         {
@@ -308,12 +302,6 @@ public static class ConfigurationExtensions
     {
         // 映射安全相关配置
         // 需要根据实际的 SecurityOptions 类结构进行映射
-    }
-
-    private static void MapToLegacyRateLimitingOptions(RateLimitingConfiguration config, RateLimitingOptions legacyOptions)
-    {
-        // 映射速率限制配置
-        // 需要根据实际的 RateLimitingOptions 类结构进行映射
     }
 
     #endregion
