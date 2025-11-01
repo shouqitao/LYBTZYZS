@@ -5,7 +5,6 @@ using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -26,9 +25,8 @@ namespace LYBT.WebAPI.Controllers
         public AuthController(
             IAuthService authService,
             ILogger<AuthController> logger,
-            IMemoryCache cache,
             IConfiguration configuration)
-            : base(logger, cache)
+            : base(logger)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));

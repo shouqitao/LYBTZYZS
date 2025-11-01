@@ -18,9 +18,8 @@ namespace LYBT.WebAPI.Controllers
 
         public CacheHealthController(
             ICacheService cacheService,
-            ILogger<CacheHealthController> logger,
-            IMemoryCache cache)
-            : base(logger, cache)
+            ILogger<CacheHealthController> logger)
+            : base(logger)
         {
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }

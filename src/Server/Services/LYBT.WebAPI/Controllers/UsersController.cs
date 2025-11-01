@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -21,8 +20,8 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService, ILogger<UsersController> logger, IMemoryCache? cache = null)
-            : base(logger, cache)
+        public UsersController(IUserService userService, ILogger<UsersController> logger)
+            : base(logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }

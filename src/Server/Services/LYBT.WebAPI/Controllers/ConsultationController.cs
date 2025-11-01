@@ -24,9 +24,8 @@ namespace LYBT.WebAPI.Controllers
 
         public ConsultationController(
             IConsultationService consultationService,
-            ILogger<ConsultationController> logger,
-            IMemoryCache? cache = null)
-            : base(logger, cache)
+            ILogger<ConsultationController> logger)
+            : base(logger)
         {
             _consultationService = consultationService ?? throw new ArgumentNullException(nameof(consultationService));
         }

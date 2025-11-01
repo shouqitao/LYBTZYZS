@@ -21,8 +21,8 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IPatientService _service;
 
-        public PatientsController(IPatientService service, IMemoryCache cache, ILogger<PatientsController> logger)
-            : base(logger, cache)
+        public PatientsController(IPatientService service, ILogger<PatientsController> logger)
+            : base(logger)
         {
             _service = service;
         }

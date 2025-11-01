@@ -1,7 +1,6 @@
 ﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web
@@ -14,8 +13,8 @@ namespace LYBT.Infrastructure.Web
     public abstract class BaseApiController : BaseControllerCore
     {
 
-        protected BaseApiController(ILogger logger, IMemoryCache? cache = null)
-            : base(logger, cache)
+        protected BaseApiController(ILogger logger)
+            : base(logger)
         {
         }
 

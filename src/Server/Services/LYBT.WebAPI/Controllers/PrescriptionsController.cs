@@ -20,8 +20,8 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IPrescriptionService _service;
 
-        public PrescriptionsController(IPrescriptionService service, IMemoryCache cache, ILogger<PrescriptionsController> logger)
-            : base(logger, cache)
+        public PrescriptionsController(IPrescriptionService service, ILogger<PrescriptionsController> logger)
+            : base(logger)
         {
             _service = service;
         }

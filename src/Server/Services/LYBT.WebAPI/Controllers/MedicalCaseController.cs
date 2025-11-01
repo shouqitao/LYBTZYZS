@@ -34,8 +34,8 @@ namespace LYBT.WebAPI.Controllers
 
         public MedicalCaseController(
             NewMedicalCaseService medicalCaseService,
-            ILogger<MedicalCaseController> logger,
-            IMemoryCache cache) : base(logger, cache)
+            ILogger<MedicalCaseController> logger)
+            : base(logger)
         {
             _medicalCaseService = medicalCaseService;
         }

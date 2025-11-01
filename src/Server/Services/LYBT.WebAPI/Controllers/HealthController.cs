@@ -19,8 +19,8 @@ public class HealthController : BaseApiController
 {
     private readonly AppDbContext _dbContext;
 
-    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger, IMemoryCache? cache = null)
-        : base(logger, cache)
+    public HealthController(AppDbContext dbContext, ILogger<HealthController> logger)
+        : base(logger)
     {
         _dbContext = dbContext;
     }

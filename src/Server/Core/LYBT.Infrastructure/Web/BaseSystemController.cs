@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web;
@@ -12,8 +11,8 @@ namespace LYBT.Infrastructure.Web;
 public abstract class BaseSystemController : BaseControllerCore
 {
 
-    protected BaseSystemController(ILogger logger, IMemoryCache? cache = null)
-        : base(logger, cache)
+    protected BaseSystemController(ILogger logger)
+        : base(logger)
     {
     }
 
@@ -150,40 +149,6 @@ public abstract class BaseSystemController : BaseControllerCore
     }
 
     #endregion 系统异常处理
-
-    #region 缓存操作增强
-
-    /// <summary>
-    /// 清除缓存并记录操作
-    /// </summary>
-    protected override void ClearCacheByPattern(string pattern)
-    {
-        try
-        {
-            // 这里可以实现具体的缓存清理逻辑
-            // 例如使用 IMemoryCache 或 Redis 的模式匹配删除
-            LogOperation($"清除缓存", new { pattern }, null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "清除缓存失败: {Pattern}", pattern);
-        }
-    }
-
-    /// <summary>
-    /// 获取缓存统计信息
-    /// </summary>
-    protected object GetCacheStats()
-    {
-        // 返回缓存统计信息，具体实现根据使用的缓存类型决定
-        return new
-        {
-            cacheProvider = _cache?.GetType().Name ?? "None",
-            timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-        };
-    }
-
-    #endregion 缓存操作增强
 
     #region 系统监控辅助方法
 

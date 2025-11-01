@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using LYBT.Infrastructure.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web;
@@ -15,12 +14,10 @@ namespace LYBT.Infrastructure.Web;
 public abstract class BaseControllerCore : ControllerBase
 {
     protected readonly ILogger _logger;
-    protected readonly IMemoryCache? _cache;
 
-    protected BaseControllerCore(ILogger logger, IMemoryCache? cache = null)
+    protected BaseControllerCore(ILogger logger)
     {
         _logger = logger;
-        _cache = cache;
     }
 
     #region 核心通用功能
@@ -114,14 +111,6 @@ public abstract class BaseControllerCore : ControllerBase
     protected string GetRequestId()
     {
         return HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
-    }
-
-    /// <summary>
-    /// 清除缓存的基础方法
-    /// </summary>
-    protected virtual void ClearCacheByPattern(string pattern)
-    {
-        // 基础实现，子类可以重写提供具体的缓存清理逻辑
     }
 
     #endregion 核心通用功能

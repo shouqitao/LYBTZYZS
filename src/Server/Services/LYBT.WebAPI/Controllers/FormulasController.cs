@@ -21,8 +21,8 @@ namespace LYBT.WebAPI.Controllers
     {
         private readonly IFormulaService _service;
 
-        public FormulasController(IFormulaService service, IMemoryCache cache, ILogger<FormulasController> logger)
-            : base(logger, cache)
+        public FormulasController(IFormulaService service, ILogger<FormulasController> logger)
+            : base(logger)
         {
             _service = service;
         }

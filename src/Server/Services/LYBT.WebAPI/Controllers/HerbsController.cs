@@ -23,8 +23,8 @@ namespace LYBT.WebAPI.Controllers
 
         public HerbsController(
             IHerbService herbService,
-            ILogger<HerbsController> logger,
-            IMemoryCache cache) : base(logger, cache)
+            ILogger<HerbsController> logger)
+            : base(logger)
         {
             _herbService = herbService;
         }
