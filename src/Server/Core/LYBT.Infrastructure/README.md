@@ -2,35 +2,7 @@
 
 LYBT.Infrastructure是系统的核心基础设施模块，采用分层架构设计，专为小型中医诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
 
-## 🎆 P8-01E架构重构成果 (历史性完成)
-
-**目录结构简化 (2025-09-02完成)**:
-- ✅ **目录精简52%**: 从21个目录 → 10个目录
-- ✅ **命名空间统一**: 消除层级混乱，统一命名规范 
-- ✅ **功能集中化**: Data、Configuration、Security功能明确分离
-- ✅ **标准化迁移**: Migrations目录符合EF Core标准位置
-- ✅ **代码无冗余**: 移除单文件目录和过度嵌套结构
-
-**重构前后对比**:
-```
-重构前 (21个目录):                重构后 (10个目录):
-├── Data/                        ├── Configuration/
-├── Database/                    │   ├── Options/      (配置选项类)
-├── Options/                     │   └── Dtos/         (配置DTO)
-├── Extensions/                  ├── Data/             (数据访问核心)
-├── Logging/                     ├── Migrations/       (EF Core迁移)
-├── Services/                    ├── Repositories/     (仓储模式)  
-├── Specifications/              ├── Security/         (安全服务)
-├── Security/                    │   └── Services/     (安全子服务)
-│   ├── Data/                    ├── Storage/          (文件存储)
-│   └── Interfaces/              ├── Web/              (Web基类)
-├── Repositories/                ├── Interfaces/       (接口定义)  
-│   ├── Base/                    └── [根级文件]        (基础组件)
-│   └── Optimized/
-└── ...13 more directories
-```
-
-## 🏗️ 核心架构 (简化版)
+## 🏗️ 核心架构
 
 ### 统一数据访问 - AppDbContext
 
@@ -55,31 +27,9 @@ public class AppDbContext : DbContext
 }
 ```
 
-### 优化Repository模式
+### Repository模式
 
-```csharp
-public class OptimizedBaseRepository<T> : IBaseRepository<T> where T : BaseEntity
-{
-    protected readonly AppDbContext _context;
-    protected readonly IMemoryCache _cache;
-    protected readonly ILogger _logger;
-    
-    // 智能缓存CRUD操作
-    public async Task<T?> GetByIdAsync(Guid id, bool useCache = true)
-    {
-        if (useCache && _cache.TryGetValue($"{typeof(T).Name}_{id}", out T? cached))
-            return cached;
-            
-        var entity = await _context.Set<T>()
-            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-            
-        if (entity != null && useCache)
-            _cache.Set($"{typeof(T).Name}_{id}", entity, TimeSpan.FromMinutes(10));
-            
-        return entity;
-    }
-}
-```
+基于EF Core的标准Repository实现，提供统一的数据访问接口。详见 `Repositories/` 目录。
 
 ## 📦 核心组件架构
 
@@ -95,9 +45,9 @@ public class OptimizedBaseRepository<T> : IBaseRepository<T> where T : BaseEntit
 
 | 组件 | 功能描述 | 状态 |
 |------|----------|------|
-| **SimplifiedConfigurationService** | 简化配置服务，环境变量支持 | ✅ 完成 |
 | **Options/** | 所有配置选项类(Auth, Database, JWT等) | ✅ 完成 |
-| **Dtos/** | 配置相关DTO类 | ✅ 完成 |
+| **Extensions/** | 配置扩展方法 | ✅ 完成 |
+| **Validation/** | 生产环境配置验证 | ✅ 完成 |
 
 #### 配置选项体系
 
@@ -129,40 +79,7 @@ public class CacheOptions
 
 ### 3. 安全服务层 (Security/)
 
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **EnhancedJwtService** | JWT生成、验证、刷新 | ✅ 完成 |
-| **EncryptionService** | 数据加密解密 | ✅ 完成 |
-| **InputValidationService** | 输入验证和SQL注入防护 | ✅ 完成 |
-| **SecurityConfigurationService** | 安全配置管理 | ✅ 完成 |
-| **Services/DatabaseTokenStoreService** | JWT Token持久化存储 | ✅ 完成 |
-| **Services/TokenCleanupService** | 过期Token清理 | ✅ 完成 |
-
-#### JWT安全增强
-
-```csharp
-public class EnhancedJwtService : IEnhancedJwtService
-{
-    // JWT生成与验证
-    public async Task<JwtTokenResult> GenerateTokenAsync(User user, bool rememberMe = false)
-    {
-        var tokenId = Guid.NewGuid();
-        var expiry = rememberMe 
-            ? DateTime.UtcNow.AddDays(_jwtOptions.RememberMeExpiryInDays)
-            : DateTime.UtcNow.AddHours(_jwtOptions.ExpiryInHours);
-            
-        // Token持久化存储
-        await _tokenStore.StoreTokenAsync(tokenId, user.Id, expiry);
-        
-        return new JwtTokenResult
-        {
-            Token = GenerateJwtToken(user, tokenId, expiry),
-            RefreshToken = GenerateRefreshToken(),
-            ExpiresAt = expiry
-        };
-    }
-}
-```
+提供基础的安全配置和ASP.NET Core DataProtection支持。详见 `Security/` 目录。
 
 ### 4. Repository层 (Repositories/)
 
@@ -170,8 +87,6 @@ public class EnhancedJwtService : IEnhancedJwtService
 |------|----------|------|
 | **IBaseRepository** | Repository接口定义 | ✅ 完成 |
 | **BaseRepository** | 基础Repository实现 | ✅ 完成 |
-| **OptimizedBaseRepository** | 带缓存优化的Repository | ✅ 完成 |
-| **RepositoryBase** | 通用Repository基类 | ✅ 完成 |
 
 ### 5. Web基础设施 (Web/)
 
@@ -181,13 +96,6 @@ public class EnhancedJwtService : IEnhancedJwtService
 | **BaseApiController** | 业务API控制器基类 | ✅ 完成 |
 | **BaseSystemController** | 系统管理控制器基类 | ✅ 完成 |
 | **ApiErrorCodes** | 统一错误码定义 | ✅ 完成 |
-
-### 6. 存储服务 (Storage/)
-
-| 组件 | 功能描述 | 状态 |
-|------|----------|------|
-| **IFileStorageService** | 文件存储接口 | ✅ 完成 |
-| **LocalFileStorageService** | 本地文件存储实现 | ✅ 完成 |
 
 ## 🗃️ 数据库迁移管理
 
@@ -286,47 +194,27 @@ public async Task BatchUpdateStatusAsync(List<Guid> ids, EntityStatus status)
 
 ### 统一服务注册
 
-```csharp
-public static class ServiceCollectionExtensions
-{
-    public static IServiceCollection RegisterInfrastructureServices(
-        this IServiceCollection services, IConfiguration configuration)
-    {
-        // 1. 数据库上下文
-        services.AddDbContext<AppDbContext>();
-        
-        // 2. Repository层
-        services.AddScoped(typeof(IBaseRepository<>), typeof(OptimizedBaseRepository<>));
-        
-        // 3. 配置服务
-        services.AddSingleton<ISimplifiedConfigurationService, SimplifiedConfigurationService>();
-        
-        // 4. 安全服务
-        services.AddScoped<IEnhancedJwtService, EnhancedJwtService>();
-        services.AddScoped<IEncryptionService, EncryptionService>();
-        services.AddScoped<ITokenStoreService, DatabaseTokenStoreService>();
-        
-        // 5. 缓存和存储
-        services.AddMemoryCache();
-        services.AddScoped<IFileStorageService, LocalFileStorageService>();
-        
-        // 6. 数据库初始化
-        services.AddScoped<DatabaseInitializationService>();
-        
-        return services;
-    }
-}
-```
+Infrastructure层的服务注册通过多个扩展方法分离管理，详见：
+- `ServiceCollectionExtensions.cs` - 主要服务注册
+- `DependencyInjection/` - 分类扩展方法
+
+主要注册内容：
+- **数据库上下文**: AppDbContext (EF Core)
+- **Repository层**: IBaseRepository<T> 及其实现
+- **配置管理**: IOptions<T> 模式配置
+- **缓存服务**: IMemoryCache 及适配器
+- **安全配置**: ASP.NET Core DataProtection
+- **数据库初始化**: DatabaseInitializationService
 
 ## 🎯 分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
-- ✅ **目录精简**: 52%目录减少，结构清晰易维护
+- ✅ **结构清晰**: 按功能模块组织，易于理解和维护
 - ✅ **智能缓存**: IMemoryCache适合小规模部署，无需Redis
 - ✅ **统一数据访问**: 单一AppDbContext管理所有实体
-- ✅ **安全增强**: JWT Token持久化，防重放攻击
+- ✅ **安全配置**: ASP.NET Core DataProtection支持
 - ✅ **性能优化**: 连接池、批量操作、缓存策略优化
-- ✅ **配置简化**: 环境变量覆盖，敏感信息保护
+- ✅ **配置简化**: IOptions模式，环境变量支持
 
 ## 🧪 使用示例
 
@@ -337,62 +225,35 @@ public static class ServiceCollectionExtensions
 public class PatientService
 {
     private readonly IBaseRepository<PatientModel> _repository;
-    
+    private readonly AppDbContext _context;
+
     public async Task<PatientDto> CreatePatientAsync(CreatePatientDto dto)
     {
-        var patient = _mapper.Map<PatientModel>(dto);
-        
-        // 自动缓存管理
+        var patient = new PatientModel
+        {
+            Name = dto.Name,
+            PhoneNumber = dto.PhoneNumber,
+            // ... 其他属性映射
+        };
+
         var created = await _repository.CreateAsync(patient);
-        
-        return _mapper.Map<PatientDto>(created);
+        return MapToDto(created);
     }
-    
+
     public async Task<List<PatientDto>> SearchPatientsAsync(string keyword)
     {
-        // 缓存查询结果
-        var cacheKey = $"PatientSearch_{keyword.GetHashCode()}";
-        
-        if (_cache.TryGetValue(cacheKey, out List<PatientDto>? cached))
-            return cached;
-            
-        var patients = await _repository.FindAsync(p => 
-            p.Name.Contains(keyword) || 
+        var patients = await _repository.FindAsync(p =>
+            p.Name.Contains(keyword) ||
             p.PhoneNumber.Contains(keyword));
-            
-        var result = _mapper.Map<List<PatientDto>>(patients);
-        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
-        
-        return result;
+
+        return patients.Select(MapToDto).ToList();
     }
 }
 ```
 
-### 安全服务使用
+### EF Core直接使用
 
-```csharp
-// JWT服务使用
-public class AuthService
-{
-    private readonly IEnhancedJwtService _jwtService;
-    
-    public async Task<LoginResponse> LoginAsync(LoginRequest request)
-    {
-        // 用户验证...
-        
-        // 生成JWT Token
-        var tokenResult = await _jwtService.GenerateTokenAsync(user, request.RememberMe);
-        
-        return new LoginResponse
-        {
-            AccessToken = tokenResult.Token,
-            RefreshToken = tokenResult.RefreshToken,
-            ExpiresAt = tokenResult.ExpiresAt,
-            User = _mapper.Map<UserDto>(user)
-        };
-    }
-}
-```
+业务模块也可以直接注入AppDbContext使用EF Core进行数据操作，无需通过Repository层。
 
 ## 📚 相关文档
 
@@ -426,8 +287,8 @@ public class AuthService
 
 ---
 
-> 📌 **分层架构清晰，适合小型诊所部署
-> 🎆 **生产就绪**: 编译通过，完整的安全、缓存、数据库基础设施，可直接投入生产使用
+> 📌 **分层架构清晰，适合小型诊所部署**
+> 🎆 **生产就绪**: 编译通过，提供缓存、数据库基础设施，可投入生产使用
 
 
 
@@ -444,22 +305,20 @@ LYBT.Infrastructure/
 ├── Configuration/           # 配置管理
 │   ├── Extensions/          # 配置扩展方法
 │   ├── Options/             # 配置选项类（JWT、Database等）
-│   ├── Services/            # 配置服务实现
 │   └── Validation/          # 生产环境配置验证
 ├── Data/                    # 数据访问核心
 │   ├── Configuration/       # 实体优化扩展
 │   ├── Configurations/      # EF Core实体配置（14个）
 │   ├── Interceptors/        # 查询性能拦截器
-│   ├── Migrations/          # 数据库迁移（Issue 1262等）
+│   ├── Migrations/          # 数据库迁移
 │   └── Monitoring/          # 查询统计收集器
 ├── DependencyInjection/     # 服务注册扩展
-├── Interfaces/              # 接口定义（Repository、UnitOfWork等）
+├── Interfaces/              # 接口定义（Repository等）
 ├── Logging/                 # 统一日志服务接口
 ├── Mapping/                 # AutoMapper配置
 ├── Migrations/              # 根级迁移（InitialCreateV2等）
 ├── Repositories/            # 通用仓储实现
-├── Security/                # 安全服务
-│   └── Services/            # 密钥管理、数据保护、密钥轮换
+├── Security/                # 安全服务（ASP.NET Core DataProtection）
 ├── Specifications/          # 规约模式实现
 ├── Utilities/               # 工具类（日志脱敏等）
 └── Web/                     # Web API基类（3个Controller基类）
