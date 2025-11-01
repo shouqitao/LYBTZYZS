@@ -23,23 +23,7 @@ public static class DatabaseServiceCollectionExtensions
         // 注册新的统一配置系统，同时保持向后兼容
         services.AddLybtConfiguration(configuration);
 
-        // 验证配置（生产环境强制验证）
-        var validationResult = configuration.ValidateLybtConfiguration();
-        if (!validationResult.IsValid)
-        {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-            var errors = string.Join(Environment.NewLine, validationResult.Errors);
-
-            if (environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"生产环境配置验证失败：{Environment.NewLine}{errors}");
-            }
-            else
-            {
-                // 开发环境记录警告但继续运行
-                Console.WriteLine($"配置验证警告：{Environment.NewLine}{errors}");
-            }
-        }
+        // 配置验证由IValidateOptions<LybtOptions>自动处理
 
         // 数据库配置 - 从统一配置读取
         var lybtOptions = configuration.GetLybtOptions();
