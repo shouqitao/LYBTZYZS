@@ -20,10 +20,10 @@ namespace LYBT.Shared.Models.Extensions
             return new UserDto
             {
                 // 用户名映射：UserName → UserName
-                UserName = dto.UserName,
+                UserName = dto.UserName ?? string.Empty,
 
                 // 基本信息
-                RealName = dto.RealName,
+                RealName = dto.RealName ?? string.Empty,
                 PhoneNumber = dto.PhoneNumber,
                 Email = dto.Email,
                 Role = dto.Role ?? UserRole.Doctor,

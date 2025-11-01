@@ -514,7 +514,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Items = createDto.Items.Select(item => new PrescriptionItemDto
                     {
                         HerbId = item.HerbId,
-                        HerbName = item.HerbName,
+                        HerbName = item.HerbName ?? string.Empty,
                         Dosage = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,

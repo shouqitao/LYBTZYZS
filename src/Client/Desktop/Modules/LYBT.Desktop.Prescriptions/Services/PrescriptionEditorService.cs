@@ -233,7 +233,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                     {
                         Id = Guid.NewGuid(),
                         HerbId = item.HerbId,
-                        HerbName = item.HerbName,
+                        HerbName = item.HerbName ?? string.Empty,
                         Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,
