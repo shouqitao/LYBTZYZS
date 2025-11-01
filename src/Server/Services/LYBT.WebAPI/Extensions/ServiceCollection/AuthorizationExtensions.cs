@@ -79,28 +79,5 @@ namespace LYBT.WebAPI.Extensions.ServiceCollection
             };
         }
 
-        /// <summary>
-        /// 添加Claims规范化支持
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>配置后的服务集合</returns>
-        public static IServiceCollection AddClaimsNormalization(this IServiceCollection services)
-        {
-            // 添加Claims转换器
-            services.AddSingleton<IClaimsTransformation, ClaimsTransformationService>();
-            return services;
-        }
-    }
-
-    /// <summary>
-    /// Claims转换服务
-    /// </summary>
-    public class ClaimsTransformationService : IClaimsTransformation
-    {
-        public Task<System.Security.Claims.ClaimsPrincipal> TransformAsync(System.Security.Claims.ClaimsPrincipal principal)
-        {
-            // 这里可以实现Claims的规范化逻辑
-            return Task.FromResult(principal);
-        }
     }
 }
