@@ -19,14 +19,9 @@ public class LybtOptions
     /// <summary>
     /// 安全相关配置
     /// 整合：SecurityOptions, RateLimitingOptions
+    /// Issue #1761 Phase 2.2: 移除RateLimiting和IpSecurity
     /// </summary>
     public SecurityOptions Security { get; set; } = new();
-
-    /// <summary>
-    /// 基础设施配置
-    /// 保留：DatabaseOptions, CacheOptions
-    /// </summary>
-    public InfrastructureOptions Infrastructure { get; set; } = new();
 
     /// <summary>
     /// 业务逻辑配置
@@ -35,10 +30,52 @@ public class LybtOptions
     public DomainOptions Business { get; set; } = new();
 
     /// <summary>
-    /// 应用层配置
-    /// 整合：WebApiConfigurationOptions
+    /// 数据库配置
+    /// Issue #1761 Phase 2.2: 从Infrastructure提升为顶层属性
     /// </summary>
-    public ApplicationOptions Application { get; set; } = new();
+    public DatabaseConfiguration Database { get; set; } = new();
+
+    /// <summary>
+    /// 内存缓存配置
+    /// Issue #1761 Phase 2.2: 从Infrastructure.Cache.MemoryCache提升为顶层属性
+    /// </summary>
+    public MemoryCacheConfiguration MemoryCache { get; set; } = new();
+
+    /// <summary>
+    /// 性能配置
+    /// Issue #1761 Phase 2.2: 从Application.WebApi.Performance提升为顶层属性
+    /// </summary>
+    public PerformanceConfiguration Performance { get; set; } = new();
+
+    /// <summary>
+    /// Swagger配置
+    /// Issue #1761 Phase 2.2: 从Application.WebApi.Swagger提升为顶层属性
+    /// </summary>
+    public SwaggerConfiguration Swagger { get; set; } = new();
+
+    /// <summary>
+    /// JSON序列化配置
+    /// Issue #1761 Phase 2.2: 从Application.WebApi.Json提升为顶层属性
+    /// </summary>
+    public JsonConfiguration Json { get; set; } = new();
+
+    /// <summary>
+    /// CORS跨域配置
+    /// Issue #1761 Phase 2.2: 从Application.WebApi.Cors提升为顶层属性
+    /// </summary>
+    public CorsConfiguration Cors { get; set; } = new();
+
+    /// <summary>
+    /// 桌面客户端配置
+    /// Issue #1761 Phase 2.2: 从Application.DesktopClient提升为顶层属性
+    /// </summary>
+    public DesktopClientConfiguration DesktopClient { get; set; } = new();
+
+    /// <summary>
+    /// 日志配置
+    /// Issue #1761 Phase 2.2: 从Application.Logging提升为顶层属性
+    /// </summary>
+    public LoggingConfiguration Logging { get; set; } = new();
 }
 
 /// <summary>
@@ -359,23 +396,6 @@ public class SecurityHeadersConfiguration
 }
 
 /// <summary>
-/// 基础设施配置选项
-/// 保留原 DatabaseOptions, CacheOptions
-/// </summary>
-public class InfrastructureOptions
-{
-    /// <summary>
-    /// 数据库配置
-    /// </summary>
-    public DatabaseConfiguration Database { get; set; } = new();
-
-    /// <summary>
-    /// 缓存配置
-    /// </summary>
-    public CacheConfiguration Cache { get; set; } = new();
-}
-
-/// <summary>
 /// 数据库配置
 /// </summary>
 public class DatabaseConfiguration
@@ -446,19 +466,6 @@ public class RetryPolicyConfiguration
     /// 是否启用指数退避
     /// </summary>
     public bool UseExponentialBackoff { get; set; } = true;
-}
-
-/// <summary>
-/// 缓存配置
-/// MVP阶段：仅使用内存缓存，避免Redis等分布式缓存的复杂度
-/// Issue #1732 Phase 1: 移除Redis相关配置
-/// </summary>
-public class CacheConfiguration
-{
-    /// <summary>
-    /// 内存缓存配置
-    /// </summary>
-    public MemoryCacheConfiguration MemoryCache { get; set; } = new();
 }
 
 /// <summary>
@@ -625,54 +632,6 @@ public class MedicalOperationsConfiguration
     /// </summary>
     [Range(1, 365)]
     public int PrescriptionValidityDays { get; set; } = 30;
-}
-
-/// <summary>
-/// 应用层配置选项
-/// 整合原 WebApiConfigurationOptions
-/// </summary>
-public class ApplicationOptions
-{
-    /// <summary>
-    /// Web API 配置
-    /// </summary>
-    public WebApiConfiguration WebApi { get; set; } = new();
-
-    /// <summary>
-    /// 桌面客户端配置
-    /// </summary>
-    public DesktopClientConfiguration DesktopClient { get; set; } = new();
-
-    /// <summary>
-    /// 日志配置
-    /// </summary>
-    public LoggingConfiguration Logging { get; set; } = new();
-}
-
-/// <summary>
-/// Web API 配置
-/// </summary>
-public class WebApiConfiguration
-{
-    /// <summary>
-    /// 性能配置
-    /// </summary>
-    public PerformanceConfiguration Performance { get; set; } = new();
-
-    /// <summary>
-    /// Swagger 配置
-    /// </summary>
-    public SwaggerConfiguration Swagger { get; set; } = new();
-
-    /// <summary>
-    /// JSON 配置
-    /// </summary>
-    public JsonConfiguration Json { get; set; } = new();
-
-    /// <summary>
-    /// CORS 配置
-    /// </summary>
-    public CorsConfiguration Cors { get; set; } = new();
 }
 
 /// <summary>

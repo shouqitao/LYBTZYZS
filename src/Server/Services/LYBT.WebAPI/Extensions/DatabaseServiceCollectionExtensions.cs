@@ -43,7 +43,7 @@ public static class DatabaseServiceCollectionExtensions
 
         // 数据库配置 - 从统一配置读取
         var lybtOptions = configuration.GetLybtOptions();
-        var connectionString = lybtOptions.Infrastructure.Database.ConnectionString ??
+        var connectionString = lybtOptions.Database.ConnectionString ??
                               configuration.GetConnectionString("DefaultConnection") ??
                               Environment.GetEnvironmentVariable("CONNECTION_STRING") ??
                               string.Empty;
@@ -51,12 +51,12 @@ public static class DatabaseServiceCollectionExtensions
         // 缓存配置 - Issue #1754: 直接使用IMemoryCache，移除ICacheService抽象层
         services.Configure<MemoryCacheOptions>(options =>
         {
-            var sizeLimit = lybtOptions.Infrastructure.Cache.MemoryCache.SizeLimit;
+            var sizeLimit = lybtOptions.MemoryCache.SizeLimit;
             if (sizeLimit > 0)
             {
                 options.SizeLimit = sizeLimit;
-                options.CompactionPercentage = lybtOptions.Infrastructure.Cache.MemoryCache.CompactionPercentage;
-                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.Infrastructure.Cache.MemoryCache.ExpirationScanFrequencySeconds);
+                options.CompactionPercentage = lybtOptions.MemoryCache.CompactionPercentage;
+                options.ExpirationScanFrequency = TimeSpan.FromSeconds(lybtOptions.MemoryCache.ExpirationScanFrequencySeconds);
             }
         });
         services.AddMemoryCache(); // 添加IMemoryCache服务
@@ -143,8 +143,8 @@ public static class DatabaseServiceCollectionExtensions
                 {
                     sqlOptions.MigrationsAssembly("LYBT.Infrastructure");
                     sqlOptions.EnableRetryOnFailure(
-                        lybtOptions.Infrastructure.Database.RetryPolicy.MaxRetryCount,
-                        TimeSpan.FromMilliseconds(lybtOptions.Infrastructure.Database.RetryPolicy.MaxDelayMs),
+                        lybtOptions.Database.RetryPolicy.MaxRetryCount,
+                        TimeSpan.FromMilliseconds(lybtOptions.Database.RetryPolicy.MaxDelayMs),
                         null);
                 });
 

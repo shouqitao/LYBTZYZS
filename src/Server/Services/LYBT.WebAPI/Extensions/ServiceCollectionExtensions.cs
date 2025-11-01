@@ -111,7 +111,7 @@ public static class ServiceCollectionExtensions
     {
         // =========== UltraThink Phase 2：使用统一配置 ===========
         var lybtOptions = configuration.GetLybtOptions();
-        var jsonConfig = lybtOptions.Application.WebApi.Json;
+        var jsonConfig = lybtOptions.Json;
 
         // 确保 UTF-8 编码可用
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

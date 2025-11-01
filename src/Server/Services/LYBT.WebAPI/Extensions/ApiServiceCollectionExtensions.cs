@@ -48,7 +48,7 @@ public static class ApiServiceCollectionExtensions
             var serviceProvider = services.BuildServiceProvider();
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
             var lybtOptions = configuration.GetLybtOptions();
-            var swaggerConfig = lybtOptions.Application.WebApi.Swagger;
+            var swaggerConfig = lybtOptions.Swagger;
 
             c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
             {

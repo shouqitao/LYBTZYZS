@@ -89,7 +89,7 @@ public static class ConfigurationExtensions
         {
             opt.Enabled = true; // 默认启用
             opt.GlobalKeyPrefix = "LYBT:";
-            opt.Memory = MapToLegacyMemoryCacheConfig(lybtOptions.Infrastructure.Cache.MemoryCache);
+            opt.Memory = MapToLegacyMemoryCacheConfig(lybtOptions.MemoryCache);
         });
     }
 
