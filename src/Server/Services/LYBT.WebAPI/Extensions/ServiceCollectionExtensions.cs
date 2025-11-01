@@ -59,8 +59,7 @@ public static class ServiceCollectionExtensions
         // 9）安全服务（数据保护、密钥管理、密钥旋转）
         services.AddSecurityServices(configuration, environment);
 
-        // 10）环境感知配置校验（生产强校验）- 使用Infrastructure统一实现
-        services.AddEnvironmentAwareValidation(environment);
+        // 10）环境感知配置校验 - 已移除，统一使用LybtOptions配置验证
 
         return services;
     }

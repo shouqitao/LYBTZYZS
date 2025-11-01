@@ -13,16 +13,16 @@ namespace LYBT.Infrastructure.Configuration.Services
     /// 核心治理规则:
     /// 1. 生产环境：强制禁用所有默认密码功能
     /// 2. 开发环境：可选启用默认密码以便调试
-    /// 3. 单点逻辑：统一从DefaultPasswordOptions获取所有默认密码
+    /// 3. 单点逻辑：统一从LybtOptions.DefaultPasswordConfiguration获取所有默认密码
     /// </remarks>
     public class DefaultPasswordService
     {
-        private readonly DefaultPasswordOptions _options;
+        private readonly DefaultPasswordConfiguration _options;
         private readonly IWebHostEnvironment _environment;
 
-        public DefaultPasswordService(IOptions<DefaultPasswordOptions> options, IWebHostEnvironment environment)
+        public DefaultPasswordService(IOptions<LybtOptions> lybtOptions, IWebHostEnvironment environment)
         {
-            _options = options.Value;
+            _options = lybtOptions.Value.Authentication.DefaultPasswords;
             _environment = environment;
         }
 
@@ -38,7 +38,7 @@ namespace LYBT.Infrastructure.Configuration.Services
                 return null;
             }
 
-            return _options.SystemAdmin;
+            return _options.SysAdminPassword;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace LYBT.Infrastructure.Configuration.Services
                 return null;
             }
 
-            return _options.NewUser;
+            return _options.NewUserPassword;
         }
 
         /// <summary>

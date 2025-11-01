@@ -83,82 +83,14 @@ public static class ConfigurationExtensions
     {
         var lybtOptions = configuration.GetLybtOptions();
 
-        // 注册传统 AuthOptions
-        services.Configure<AuthOptions>(opt =>
-        {
-            opt.MaxFailedLoginAttempts = lybtOptions.Security.IpSecurity.FailedAttemptsThreshold;
-            opt.AccountLockoutDuration = TimeSpan.FromMinutes(lybtOptions.Security.IpSecurity.LockoutDurationMinutes);
-            opt.EnableDetailedLoginLogging = true; // 默认启用
-            opt.SupportedLoginTypes = new List<string> { "Password" };
-            opt.PasswordPolicy = MapToLegacyPasswordPolicy(lybtOptions.Authentication.PasswordPolicy);
-            opt.SessionOptions = MapToLegacySessionOptions(lybtOptions.Authentication.Session);
-        });
-
-        // 注册传统 JwtOptions
-        services.Configure<JwtOptions>(opt =>
-        {
-#pragma warning disable CS0618 // 类型或成员已过时
-            opt.Secret = lybtOptions.Authentication.Jwt.SecretKey;
-#pragma warning restore CS0618 // 类型或成员已过时
-            opt.Issuer = lybtOptions.Authentication.Jwt.Issuer;
-            opt.Audience = lybtOptions.Authentication.Jwt.Audience;
-            opt.ExpireMinutes = lybtOptions.Authentication.Jwt.AccessTokenExpirationMinutes;
-            opt.RememberMeExpireMinutes = lybtOptions.Authentication.Jwt.RememberMeExpirationDays * 1440;
-            opt.ClockSkewSeconds = 300; // Default 5 minutes
-        });
-
-        // 注册传统 DatabaseOptions
-        services.Configure<DatabaseOptions>(opt =>
-        {
-            opt.EnableAutoMigration = lybtOptions.Infrastructure.Database.Migration.AutoMigrate;
-            opt.EnableSensitiveDataLogging = lybtOptions.Infrastructure.Database.Monitoring.LogAllQueries;
-            opt.EnableDetailedErrors = true; // 默认启用
-            opt.CommandTimeout = lybtOptions.Infrastructure.Database.ConnectionPool.CommandTimeoutSeconds;
-            opt.ConnectionPool = MapToLegacyConnectionPoolOptions(lybtOptions.Infrastructure.Database.ConnectionPool);
-            opt.Monitoring = MapToLegacyDatabaseMonitoringOptions(lybtOptions.Infrastructure.Database.Monitoring);
-            opt.Backup = new DatabaseBackupOptions(); // 使用默认值
-        });
-
-        // 注册传统 CacheOptions
+        // 注册传统 CacheOptions（仅保留真实使用的配置）
+        // MemoryCacheAdapter依赖此配置
         services.Configure<CacheOptions>(opt =>
         {
             opt.Enabled = true; // 默认启用
             opt.GlobalKeyPrefix = "LYBT:";
             opt.Memory = MapToLegacyMemoryCacheConfig(lybtOptions.Infrastructure.Cache.MemoryCache);
             opt.Monitoring = MapToLegacyMonitoringConfig(lybtOptions.Infrastructure.Cache.Monitoring);
-        });
-
-        // 注册传统 SecurityOptions
-        services.Configure<SecurityOptions>(opt =>
-        {
-            MapToLegacySecurityOptions(lybtOptions.Security, opt);
-        });
-
-        // 注册传统 UserOptions
-        services.Configure<UserOptions>(opt =>
-        {
-            opt.EnableUserCache = true;
-            opt.UserCacheExpirationMinutes = 30;
-            opt.SessionTimeoutMinutes = lybtOptions.Business.SystemAdmin.SessionTimeoutMinutes;
-            opt.EnableDetailedAuditLogging = true;
-            opt.EnableOnlineStatusTracking = true;
-        });
-
-        // 注册传统 DefaultPasswordOptions
-        services.Configure<DefaultPasswordOptions>(opt =>
-        {
-            opt.SystemAdmin = lybtOptions.Authentication.DefaultPasswords.SysAdminPassword;
-            opt.NewUser = lybtOptions.Authentication.DefaultPasswords.NewUserPassword;
-            opt.ExpiryDays = 30; // Default 30 days
-        });
-
-        // 注册传统 SysAdminOptions
-        services.Configure<SysAdminOptions>(opt =>
-        {
-            opt.Username = lybtOptions.Business.SystemAdmin.Username;
-            opt.DefaultPassword = lybtOptions.Authentication.DefaultPasswords.SysAdminPassword;
-            opt.RequirePasswordChangeOnFirstLogin = lybtOptions.Authentication.DefaultPasswords.ForceChangeOnFirstLogin;
-            opt.EnableAccountLockout = false;
         });
     }
 
@@ -235,52 +167,7 @@ public static class ConfigurationExtensions
         // Issue #1732 Phase 1: 移除分布式缓存验证（MVP阶段仅使用MemoryCache）
     }
 
-    #region Legacy Mapping Methods
-
-    private static PasswordPolicy MapToLegacyPasswordPolicy(PasswordPolicyConfiguration config)
-    {
-        // Issue #1732 Phase 1: 移除PasswordHistoryCount和PasswordExpirationDays（未实现功能）
-        return new PasswordPolicy
-        {
-            MinLength = config.MinLength,
-            RequireUppercase = config.RequireUppercase,
-            RequireLowercase = config.RequireLowercase,
-            RequireDigit = config.RequireDigit,
-            RequireSpecialChar = config.RequireSpecialChar,
-            PasswordHistoryCount = 0,  // MVP阶段暂不支持密码历史
-            PasswordExpireDays = 0     // MVP阶段暂不支持密码过期
-        };
-    }
-
-    private static SessionOptions MapToLegacySessionOptions(SessionConfiguration config)
-    {
-        return new SessionOptions
-        {
-            TimeoutMinutes = config.TimeoutMinutes,
-            SlidingExpiration = config.SlidingExpiration,
-            AllowConcurrentSessions = config.AllowConcurrentSessions,
-            MaxConcurrentSessions = config.MaxConcurrentSessions
-        };
-    }
-
-    private static ConnectionPoolOptions MapToLegacyConnectionPoolOptions(ConnectionPoolConfiguration config)
-    {
-        // 注意：需要根据实际的 ConnectionPoolOptions 类结构进行映射
-        // 这里提供基础映射，可能需要调整字段名
-        return new ConnectionPoolOptions
-        {
-            // 映射到实际字段，具体字段名需要根据 ConnectionPoolOptions 类确定
-        };
-    }
-
-    private static DatabaseMonitoringOptions MapToLegacyDatabaseMonitoringOptions(DatabaseMonitoringConfiguration config)
-    {
-        // 注意：需要根据实际的 DatabaseMonitoringOptions 类结构进行映射
-        return new DatabaseMonitoringOptions
-        {
-            // 映射到实际字段
-        };
-    }
+    #region Legacy Mapping Methods（仅保留CacheOptions相关）
 
     private static MemoryCacheConfig MapToLegacyMemoryCacheConfig(MemoryCacheConfiguration config)
     {
@@ -296,12 +183,6 @@ public static class ConfigurationExtensions
         {
             // 映射到实际字段
         };
-    }
-
-    private static void MapToLegacySecurityOptions(SecurityOptions config, Options.SecurityOptions legacyOptions)
-    {
-        // 映射安全相关配置
-        // 需要根据实际的 SecurityOptions 类结构进行映射
     }
 
     #endregion
