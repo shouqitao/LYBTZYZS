@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
@@ -13,7 +14,9 @@ using LYBT.Module.Patients;
 using LYBT.Module.Prescriptions;
 using LYBT.Module.Users;
 using LYBT.WebAPI.Extensions.ServiceCollection;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -179,6 +182,69 @@ public static class ServiceCollectionExtensions
                 };
             };
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 配置性能优化服务
+    /// Issue #1732 Phase 3: 仅保留响应压缩配置
+    /// 响应缓存、输出缓存、健康检查已在DatabaseServiceCollectionExtensions中配置
+    /// </summary>
+    private static IServiceCollection ConfigurePerformanceOptimizations(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // 响应压缩（Brotli + Gzip）
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+            {
+                "application/json",
+                "application/xml",
+                "text/json",
+                "text/xml"
+            });
+        });
+
+        // 配置Brotli压缩级别
+        services.Configure<BrotliCompressionProviderOptions>(options =>
+        {
+            options.Level = CompressionLevel.Optimal;
+        });
+
+        // 配置Gzip压缩级别
+        services.Configure<GzipCompressionProviderOptions>(options =>
+        {
+            options.Level = CompressionLevel.Optimal;
+        });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 添加安全相关服务（ASP.NET Core DataProtection）
+    /// Issue #1743: 仅保留ASP.NET Core DataProtection配置
+    /// </summary>
+    private static IServiceCollection AddSecurityServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
+    {
+        // 配置数据保护（ASP.NET Core密钥管理）
+        services.AddDataProtection()
+            .SetApplicationName("LYBT")
+            .PersistKeysToFileSystem(new DirectoryInfo(
+                Path.Combine(environment.ContentRootPath, "DataProtection-Keys")));
+
+        if (environment.IsProduction())
+        {
+            // 生产环境：使用证书保护密钥（可选，未来配置）
+            // services.AddDataProtection().ProtectKeysWithCertificate(certificate);
+        }
 
         return services;
     }
