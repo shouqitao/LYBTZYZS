@@ -1,4 +1,6 @@
-﻿using LYBT.Desktop.Patients.Interfaces;
+﻿using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Patients.Components;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -23,6 +25,9 @@ namespace LYBT.Desktop.Patients
         {
             // Phase 2：Repository由模块自己注册
             containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+            // Issue #1781 Task 8 Phase 1: 注册Excel解析服务（Singleton生命周期）
+            containerRegistry.RegisterSingleton<IExcelParserService, ExcelParserService>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();
