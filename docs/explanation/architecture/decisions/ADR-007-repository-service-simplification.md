@@ -422,6 +422,11 @@ var (medicalCaseDict, consultationDict, patientDict) = await LoadRelatedDataAsyn
   - [x] Service层初始化验证（无EventBus错误）✅
   - [x] 无Epic #1725相关运行时错误 ✅
   - [x] 验证报告文档创建（`docs/reports/epic-1725-runtime-verification-report-2025-10-30.md`）✅
+---
+
+## 🔗 相关决策（Related Decisions）
+
+- [ADR-008: Desktop端Consultation/Prescription不独立实现Repository](ADR-008-desktop-consultation-prescription-no-independent-repository.md) - ADR-007在Desktop端的实践，完全删除空接口桩（2025-11-02）
 
 ---
 
@@ -431,6 +436,7 @@ var (medicalCaseDict, consultationDict, patientDict) = await LoadRelatedDataAsyn
 |------|------|----------|------|
 | 2025-10-30 | v1.0 | 初始创建，记录Epic #1725实施决策 | Claude Code |
 | 2025-10-30 | v1.1 | Phase 4完成，运行时验证通过，创建验证报告 | Claude Code + shouqitao |
+| 2025-11-02 | v1.2 | 添加ADR-008 Desktop端实践引用 | Claude Code |
 
 ---
 

@@ -1,5 +1,7 @@
 # ADR-XXX: [简短描述性标题]
 
+> 💡 **使用提示**: 本模板提供ADR编写结构和示例。推荐参考 [ADR-008](ADR-008-desktop-consultation-prescription-no-independent-repository.md) 作为完整的YAGNI原则和DDD聚合根模式实践案例。
+
 **日期**: YYYY-MM-DD
 **状态**: Proposed | Accepted | Deprecated | Superseded
 **决策者**: [姓名/角色]
@@ -163,6 +165,9 @@ await _medicalCaseRepository.UpdatePrescriptionAsync(prescriptionId, updateDto);
 - **相关PR**: #XXXX
 - **架构文档**: `docs/explanation/architecture/server/README.md`
 - **业务规则**: `docs/explanation/business-rules.md`
+- **ADR示例参考**:
+  - [ADR-008: Desktop端Consultation/Prescription不独立实现Repository](ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完整的YAGNI原则和DDD聚合根模式实践案例
+  - [ADR-003: Repository层简化](ADR-003-repository-simplification.md) - 本模板中的示例来源
 - **外部资源**: [链接]
 
 ---

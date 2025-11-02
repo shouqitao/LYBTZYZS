@@ -562,11 +562,19 @@ MVP替代方案评估：
 
 ---
 
+## 🔗 相关决策（Related Decisions）
+
+- [ADR-006: MedicalCase/Consultation/Prescription重构](ADR-006-medicalcase-consultation-prescription-refactoring.md) - 聚合根模式的初步实施
+- [ADR-008: Desktop端Consultation/Prescription不独立实现Repository](ADR-008-desktop-consultation-prescription-no-independent-repository.md) - ADR-005原则的实践案例，体现YAGNI和MVP原则（2025-11-02）
+
+---
+
 ## 📅 更新日志（Change Log）
 
 | 日期 | 版本 | 变更内容 | 作者 |
 |------|------|----------|------|
 | 2025-10-25 | v1.0 | 初始创建（基于Epic #1611架构审查 + 用户要求"立足长期目标"） | Claude Code |
+| 2025-11-02 | v1.1 | 添加ADR-008实践案例引用 | Claude Code |
 
 ---
 
