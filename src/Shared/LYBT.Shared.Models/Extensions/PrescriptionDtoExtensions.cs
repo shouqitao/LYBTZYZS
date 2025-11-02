@@ -39,6 +39,27 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
+        /// 将PrescriptionDto转换为PrescriptionUpdateDto
+        /// Issue #1778: 组件化架构需要
+        /// </summary>
+        public static PrescriptionUpdateDto ToUpdateDto(this PrescriptionDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return new PrescriptionUpdateDto
+            {
+                PrescriptionNumber = dto.PrescriptionNumber,
+                Diagnosis = dto.Indication ?? string.Empty, // Indication → Diagnosis
+                DosageCount = dto.DosageCount,
+                Usage = dto.Usage,
+                Discount = dto.Discount,
+                Advice = dto.Advice,
+                Remark = dto.Remark
+            };
+        }
+
+        /// <summary>
         /// 将PrescriptionUpdateDto应用到现有PrescriptionDto
         /// Issue #1152: 替代AutoMapper
         /// </summary>

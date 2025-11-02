@@ -33,5 +33,14 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
         /// <param name="dto">待验证的DTO对象</param>
         /// <returns>FluentValidation验证结果</returns>
         ValidationResult Validate<T>(T dto) where T : class;
+
+        /// <summary>
+        /// 快速验证DTO对象（简化版本）
+        /// </summary>
+        /// <typeparam name="T">DTO类型</typeparam>
+        /// <param name="dto">待验证的DTO对象</param>
+        /// <param name="errorMessage">验证失败时的错误信息</param>
+        /// <returns>验证是否通过</returns>
+        bool IsValid<T>(T dto, out string errorMessage) where T : class;
     }
 }

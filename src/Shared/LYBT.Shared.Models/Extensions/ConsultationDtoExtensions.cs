@@ -43,6 +43,35 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
+        /// 将ConsultationDto转换为ConsultationInputDto
+        /// Issue #1778: 组件化架构需要
+        /// </summary>
+        public static ConsultationInputDto ToInputDto(this ConsultationDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return new ConsultationInputDto
+            {
+                MedicalCaseId = dto.MedicalCaseId,
+                PatientId = dto.PatientId,
+                UserId = dto.UserId,
+                PatientName = dto.PatientName,
+                DoctorName = dto.DoctorName,
+                ChiefComplaint = dto.ChiefComplaint,
+                PresentIllness = dto.PresentIllness,
+                Inspection = dto.Inspection,
+                AuscultationOlfaction = dto.AuscultationOlfaction,
+                Inquiry = dto.Inquiry,
+                Palpation = dto.Palpation,
+                TCMDiagnosis = dto.TCMDiagnosis,
+                TreatmentPrinciple = dto.TreatmentPrinciple,
+                MedicalAdvice = dto.MedicalAdvice,
+                Remark = dto.Remark
+            };
+        }
+
+        /// <summary>
         /// 将ConsultationInputDto应用到现有ConsultationDto
         /// Issue #1152: 替代AutoMapper
         /// </summary>

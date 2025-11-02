@@ -43,6 +43,44 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
+        /// 将MedicalCaseDto转换为MedicalCaseUpdateDto
+        /// Issue #1778: 组件化架构需要
+        /// </summary>
+        public static MedicalCaseUpdateDto ToUpdateDto(this MedicalCaseDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return new MedicalCaseUpdateDto
+            {
+                Id = dto.Id,
+                ChiefComplaint = dto.ChiefComplaint,
+                PatientId = dto.PatientId,
+                DoctorId = dto.DoctorId,
+                Remark = dto.Remark
+            };
+        }
+
+        /// <summary>
+        /// 将MedicalCaseDetailDto转换为MedicalCaseUpdateDto
+        /// Issue #1778: 组件化架构需要
+        /// </summary>
+        public static MedicalCaseUpdateDto ToUpdateDto(this MedicalCaseDetailDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            return new MedicalCaseUpdateDto
+            {
+                Id = dto.Id,
+                ChiefComplaint = dto.ChiefComplaint,
+                PatientId = dto.PatientId,
+                DoctorId = dto.DoctorId,
+                Remark = dto.Remark
+            };
+        }
+
+        /// <summary>
         /// 将MedicalCaseUpdateDto应用到现有MedicalCaseDto
         /// Issue #1152: 替代AutoMapper
         /// 注意：MedicalCaseDto字段有限，UpdateDto中的很多字段无法映射
