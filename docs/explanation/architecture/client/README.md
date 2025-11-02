@@ -1381,11 +1381,12 @@ public class UserManagementViewModelTests
 
 **本节重点**：从MVVM视角说明如何在Desktop端实现聚合根模式，避免ViewModel直接操作Consultation/Prescription Repository。
 
-#### ❌ 错误实现
+#### ❌ 错误实现（已禁止）
 ```csharp
 public class ConsultationEntryViewModel
 {
-    private readonly IConsultationRepository _consultationRepository;
+    // ❌ Desktop端已删除此接口（ADR-008）
+    // private readonly IConsultationRepository _consultationRepository;
     private readonly IMedicalCaseRepository _medicalCaseRepository;
 
     // ❌ 错误：分两步创建，破坏聚合根模式
@@ -1398,17 +1399,18 @@ public class ConsultationEntryViewModel
             MedicalCaseId = medicalCase.Id;
         }
 
-        // 2. 单独创建Consultation
-        consultationDto.MedicalCaseId = MedicalCaseId.Value;
-        await _consultationRepository.CreateAsync(consultationDto);
+        // 2. ❌ 禁止：Desktop端不存在IConsultationRepository（ADR-008）
+        // consultationDto.MedicalCaseId = MedicalCaseId.Value;
+        // await _consultationRepository.CreateAsync(consultationDto);
     }
 }
 ```
 
 **问题**：
-- 破坏原子性（两次API调用，可能部分失败）
-- 违反DDD聚合根模式（子实体独立创建）
-- 依赖混乱（同时注入MedicalCase和Consultation的Repository）
+- ❌ **接口不存在**：Desktop端已删除`IConsultationRepository`和`IPrescriptionRepository`（[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)）
+- ❌ **破坏原子性**：两次API调用，可能部分失败
+- ❌ **违反DDD聚合根模式**：子实体独立创建
+- ❌ **依赖混乱**：同时注入MedicalCase和Consultation的Repository
 
 #### ✅ 正确实现
 ```csharp
@@ -1512,7 +1514,7 @@ public class ConsultationFormViewModel
 ```
 
 **关键点**：
-- ✅ **聚合根方法**：使用`UpdateConsultationAsync`而非直接调用IConsultationRepository
+- ✅ **聚合根方法**：使用`UpdateConsultationAsync`而非独立Repository（Desktop端已删除子实体Repository，见[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)）
 - ✅ **共享主键**：ConsultationUpdateDto.Id = MedicalCaseId（一对一关系）
 - ✅ **字段简化**：UpdateDto不需要PatientId/UserId（Server端从MedicalCase获取）
 - ✅ **依赖单一**：ViewModel只注入IMedicalCaseRepository
@@ -1524,7 +1526,7 @@ public class ConsultationFormViewModel
 1. **聚合识别**：MedicalCase = Consultation + Prescription（一对一关系，共享主键）
 2. **创建规则**：必须通过`IMedicalCaseRepository.CreateWithDetailsAsync()`创建
 3. **更新规则**：必须通过`IMedicalCaseRepository.UpdateConsultationAsync()`或`UpdatePrescriptionAsync()`更新子实体
-4. **禁止模式**：禁止ViewModel直接调用`IConsultationRepository`的Create/Update方法
+4. **禁止模式** ⚠️：Desktop端已删除`IConsultationRepository`和`IPrescriptionRepository`（[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)），所有操作必须通过`IMedicalCaseRepository`聚合根
 5. **模块依赖**：ConsultationModule保留`[ModuleDependency("MedicalCaseModule")]`确保初始化顺序
 
 **参考**：

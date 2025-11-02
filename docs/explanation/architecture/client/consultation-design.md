@@ -1,19 +1,24 @@
 # LYBT.Desktop.Consultation - Client端诊疗管理架构设计
 
+> ⚠️ **重要架构变更（2025-11-02）**
+> Desktop端已删除`IConsultationRepository`接口（[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)）。
+> **所有Consultation操作必须通过`IMedicalCaseRepository`聚合根**进行，符合DDD聚合边界原则。
+> 本文档中的Repository设计部分仅作为**历史参考**，实际开发请参考[Desktop端架构指南](README.md#聚合根模式mvvm实践)。
+
 ## 📋 文档信息
 
 **文档类型**: 架构设计文档（Architecture Design Document）
 **目标读者**: 架构师、高级开发工程师、技术负责人
 **关联文档**:
-- **需求文档**: `docs/requirements/consultation-requirements.md` *(待创建)*
+- **架构决策**: [ADR-008: Desktop端Consultation/Prescription不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
 - **开发指南**: `docs/how-to-guides/client/consultation-development.md` *(待创建)*
-- **Server端设计**: `docs/explanation/architecture/server/consultation-design.md` *(待创建)*
+- **Server端设计**: `docs/explanation/architecture/server/consultation-design.md`
 - **业务规则**: `docs/explanation/business-rules.md` (BF-002三步工作流、DC-003必填验证)
 - **接口契约**: `docs/explanation/architecture/client/contracts-design.md` *(待创建)*
 
-**文档版本**: v1.0.0
+**文档版本**: v1.1.0
 **创建日期**: 2025-10-30
-**最后更新**: 2025-10-30
+**最后更新**: 2025-11-02（添加ADR-008架构变更说明）
 
 ---
 
@@ -124,8 +129,8 @@
 
 ```
 LYBT.Desktop.Consultation/
-├── Interfaces/                         # 接口定义
-│   └── IConsultationRepository.cs      # 诊断仓储接口(继承基类)
+├── Interfaces/                         # 接口定义（已清空）
+│   └── (已删除IConsultationRepository - ADR-008)
 ├── Models/                             # 数据模型
 │   └── ConsultationItem.cs             # 诊断条目模型(列表显示)
 ├── ViewModels/                         # MVVM视图模型
@@ -794,20 +799,23 @@ public async Task OnNavigatedTo(NavigationContext navigationContext)
 /// 诊断列表管理ViewModel - 支持加载、搜索、查看详情
 /// 职责：诊断记录列表管理、搜索、详情查看
 /// </summary>
+/// ⚠️ 注意：此代码示例为历史设计参考，Desktop端已删除IConsultationRepository（ADR-008）
+/// 实际实现应通过IMedicalCaseRepository聚合根访问Consultation数据
 public class ConsultationManagementViewModel : UnifiedViewModelBase
 {
-    private readonly IConsultationRepository _consultationApi;
+    // ❌ 已删除：private readonly IConsultationRepository _consultationApi; (ADR-008)
+    // ✅ 应使用：private readonly IMedicalCaseRepository _medicalCaseRepository;
     private readonly IRegionManager _regionManager;
     private readonly IMessageService _messageService;
     private readonly ILogger<ConsultationManagementViewModel> _logger;
 
     public ConsultationManagementViewModel(
-        IConsultationRepository consultationApi,
+        // IConsultationRepository consultationApi,  // ❌ Desktop端已删除此接口
         IRegionManager regionManager,
         IMessageService messageService,
         ILogger<ConsultationManagementViewModel> logger)
     {
-        _consultationApi = consultationApi;
+        // _consultationApi = consultationApi;  // ❌ 已删除
         _regionManager = regionManager;
         _messageService = messageService;
         _logger = logger;

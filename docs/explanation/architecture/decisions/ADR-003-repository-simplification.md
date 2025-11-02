@@ -240,12 +240,19 @@ await _medicalCaseRepository.DeletePrescriptionAsync(prescriptionId);
 
 ---
 
+## 🔗 相关决策（Related Decisions）
+
+- [ADR-008: Desktop端Consultation/Prescription不独立实现Repository](ADR-008-desktop-consultation-prescription-no-independent-repository.md) - ADR-003的后续决策，完全删除Desktop端空接口桩（2025-11-02）
+
+---
+
 ## 📅 更新日志（Change Log）
 
 | 日期 | 版本 | 变更内容 | 作者 |
 |------|------|----------|------|
 | 2025-10-24 | v1.0 | 初始创建（回顾Issue #1606决策） | Claude Code |
 | 2025-10-25 | v1.1 | 添加实施计划和验收标准 | Claude Code |
+| 2025-11-02 | v1.2 | 添加ADR-008后续决策引用 | Claude Code |
 
 ---
 

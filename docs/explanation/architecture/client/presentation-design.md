@@ -811,7 +811,7 @@ public class HerbSelectionDialogViewModel : ViewModelBase, IDialogAware
 ```csharp
 /// <summary>
 /// 处方管理模块 - 简化版
-/// Issue #1606 Phase 3: 移除IPrescriptionRepository（已迁移至MedicalCaseRepository聚合根）
+/// ADR-008: Desktop端已删除IPrescriptionRepository，所有操作通过MedicalCaseRepository聚合根
 /// </summary>
 [Module(ModuleName = nameof(PrescriptionsModule))]
 [ModuleDependency("ConsultationModule")] // 处方依赖诊疗

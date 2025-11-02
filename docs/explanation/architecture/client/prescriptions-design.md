@@ -48,9 +48,13 @@
 - ✅ 处方PDF导出
 - ✅ 批量打印支持
 
-### 1.3 架构重大变更 (Issue #1606 Phase 3)
+### 1.3 架构重大变更 (Issue #1606 Phase 3 → ADR-008)
 
-**核心变更**:所有Write操作从IPrescriptionRepository迁移至IMedicalCaseRepository聚合根
+**核心变更**:所有操作从IPrescriptionRepository迁移至IMedicalCaseRepository聚合根
+
+> ⚠️ **最新更新（2025-11-02 - ADR-008）**
+> Desktop端已**完全删除**`IPrescriptionRepository`接口（不再是Obsolete空接口桩）。
+> 详见：[ADR-008: Desktop端Consultation/Prescription不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
 
 ```csharp
 // ❌ 旧方式 (Issue #1606前)
@@ -85,7 +89,7 @@ public class PrescriptionsModule : IModule
 ```
 
 **影响范围**:
-- **IPrescriptionRepository** → 变成Obsolete空接口桩(编译过渡)
+- **IPrescriptionRepository** → ~~Obsolete空接口桩(Issue #1606)~~ → **完全删除**(ADR-008, 2025-11-02)
 - **PrescriptionDataManager** → 使用IPrescriptionApi和IMedicalCaseRepository
 - **6个ViewModel待重构** → 临时注释DI注册(Issue #1608)
 
@@ -195,7 +199,7 @@ LYBT.Desktop.Prescriptions/
 │   ├── BasicValidator.cs               # 基础验证器
 │   └── PriceCalculator.cs              # 价格计算器
 └── Interfaces/
-    └── IPrescriptionRepository.cs      # ⚠️ Obsolete空接口桩(Issue #1606)
+    └── (空目录 - IPrescriptionRepository已删除, ADR-008)
 ```
 
 ### 2.3 依赖关系
