@@ -1,60 +1,57 @@
 ﻿using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
-
     /// <summary>
-    /// 患者详情视图模型 - Phase 2模块化架构
-    /// Issue #1114 - 直接使用Repository，去除Service层
+    /// 患者详情视图模型 - 组件化架构
+    /// Epic #1773 Task 4: Patients模块组件化改造
+    /// 使用PatientDataManager、PatientCommandHandler、PatientValidator三个组件
     /// </summary>
     public class PatientDetailViewModel : UnifiedViewModelBase
     {
-
         #region 私有字段
 
-        private readonly IPatientRepository _patientRepository;
-
-private Guid _patientId;
-        private PatientDto? _patient;
-        private bool _isLoading;
-        private bool _isReadOnly = true;
+        private readonly PatientDataManager _dataManager;
+        private readonly PatientCommandHandler _commandHandler;
+        private readonly PatientValidator _validator;
 
         #endregion 私有字段
 
         #region 属性
 
-        public Guid PatientId
-        {
-            get => _patientId;
-            set => SetProperty(ref _patientId, value);
-        }
+        /// <summary>患者ID</summary>
+        public Guid PatientId => _dataManager.PatientId;
 
-        public PatientDto? Patient
-        {
-            get => _patient;
-            set => SetProperty(ref _patient, value);
-        }
+        /// <summary>当前患者数据</summary>
+        public PatientDto? Patient => _dataManager.CurrentPatient;
 
-        public new bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
+        /// <summary>是否正在加载</summary>
+        public new bool IsLoading => _dataManager.IsLoading;
 
+        /// <summary>是否只读模式</summary>
         public bool IsReadOnly
         {
-            get => _isReadOnly;
-            set => SetProperty(ref _isReadOnly, value);
+            get => _dataManager.IsReadOnly;
+            set
+            {
+                if (_dataManager.IsReadOnly != value)
+                {
+                    _dataManager.IsReadOnly = value;
+                    RaisePropertyChanged();
+                    RefreshCommands();
+                }
+            }
         }
+
+        /// <summary>是否有未保存的变更</summary>
+        public bool HasChanges => _dataManager.HasChanges;
 
         // 患者基本信息属性
         public string PatientName => Patient?.Name ?? string.Empty;
@@ -80,20 +77,22 @@ private Guid _patientId;
 
         #region 命令
 
-        public ICommand LoadDataCommand { get; }
-        public ICommand BackCommand { get; }
-        public ICommand EditCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelEditCommand { get; }
+        public ICommand LoadDataCommand => _commandHandler.BackCommand; // 使用返回命令
+        public ICommand BackCommand => _commandHandler.BackCommand;
+        public ICommand EditCommand => _commandHandler.EditCommand;
+        public ICommand SaveCommand => _commandHandler.SaveCommand;
+        public ICommand CancelEditCommand => _commandHandler.CancelEditCommand;
         public ICommand PrintCommand { get; }
-        public ICommand ViewMedicalHistoryCommand { get; }
+        public ICommand ViewMedicalHistoryCommand => _commandHandler.ViewMedicalHistoryCommand;
 
         #endregion 命令
 
         #region 构造函数
 
         public PatientDetailViewModel(
-            IPatientRepository patientRepository,
+            PatientDataManager dataManager,
+            PatientCommandHandler commandHandler,
+            PatientValidator validator,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -101,21 +100,26 @@ private Guid _patientId;
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
 
-// 初始化命令
-            LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            BackCommand = new DelegateCommand(NavigateBack);
-            EditCommand = new DelegateCommand(EnableEdit, CanEdit);
-            SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
-            CancelEditCommand = new DelegateCommand(CancelEdit, CanCancelEdit);
-            PrintCommand = new DelegateCommand(async () => await PrintPatientAsync());
-            ViewMedicalHistoryCommand = new DelegateCommand(async () => await ViewMedicalHistoryAsync());
+            // 设置组件依赖
+            _commandHandler.SetDependencies(_dataManager, _validator);
+
+            // 订阅组件事件
+            _commandHandler.OnEditEnabled += HandleEditEnabled;
+            _commandHandler.OnEditCancelled += HandleEditCancelled;
+            _commandHandler.OnPatientSaved += HandlePatientSaved;
+            _commandHandler.OnPatientDeleted += HandlePatientDeleted;
+
+            // 打印命令（待实现）
+            PrintCommand = new Prism.Commands.DelegateCommand(async () => await PrintPatientAsync());
         }
 
         #endregion 构造函数
 
-        #region 导航生命周期 (Issue #1240)
+        #region 导航生命周期
 
         /// <summary>
         /// 处理导航参数（同步）- Issue #1240
@@ -127,13 +131,15 @@ private Guid _patientId;
             // 立即设置导航参数，避免UI延迟
             if (parameters.ContainsKey("PatientId"))
             {
-                PatientId = parameters.GetValue<Guid>("PatientId");
+                var patientId = parameters.GetValue<Guid>("PatientId");
 
                 if (parameters.ContainsKey("ViewMode"))
                 {
                     var viewMode = parameters.GetValue<string>("ViewMode");
                     IsReadOnly = viewMode != "Edit";
                 }
+
+                // 在InitializeAsync中加载数据
             }
         }
 
@@ -145,9 +151,10 @@ private Guid _patientId;
             await base.InitializeAsync(parameters);
 
             // 在UI线程上异步加载数据
-            if (PatientId != Guid.Empty)
+            if (parameters.ContainsKey("PatientId"))
             {
-                await LoadDataAsync();
+                var patientId = parameters.GetValue<Guid>("PatientId");
+                await LoadDataAsync(patientId);
             }
         }
 
@@ -168,7 +175,7 @@ private Guid _patientId;
         {
             base.OnNavigatedFrom(navigationContext);
 
-            if (!IsReadOnly && HasUnsavedChanges())
+            if (HasChanges)
             {
                 // 可以在这里添加保存确认逻辑
             }
@@ -178,61 +185,59 @@ private Guid _patientId;
 
         #region 数据操作
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync(Guid patientId)
         {
-            if (PatientId == Guid.Empty)
-            {
-                return;
-            }
-
             try
             {
-                IsLoading = true;
-
-                // Phase 2: 直接使用Repository，无ServiceResult包装
-                Patient = await _patientRepository.GetByIdAsync(PatientId);
-
-                if (Patient != null)
-                {
-                    RefreshProperties();
-                }
-                else
-                {
-                    await ShowErrorMessageAsync("未找到该患者信息");
-                }
+                await _dataManager.InitializeAsync(patientId);
+                RefreshProperties();
             }
             catch (Exception ex)
             {
                 await ShowErrorMessageAsync($"加载患者详情失败: {ex.Message}");
             }
-            finally
-            {
-                IsLoading = false;
-            }
         }
 
-        private async Task SaveAsync()
-        {
-            if (Patient == null)
-            {
-                return;
-            }
+        #endregion 数据操作
 
+        #region 事件处理
+
+        private void HandleEditEnabled()
+        {
+            IsReadOnly = false;
+        }
+
+        private async void HandleEditCancelled()
+        {
+            IsReadOnly = true;
+            await _dataManager.ReloadAsync();
+            RefreshProperties();
+        }
+
+        private async void HandlePatientSaved()
+        {
             try
             {
-                IsLoading = true;
-
-                // Phase 2: 使用扩展方法映射到UpdateDto后更新 (Issue #1152)
-                var updateDto = Patient.ToUpdateDto();
-                var updatedPatient = await _patientRepository.UpdateAsync(updateDto);
-
-                if (updatedPatient != null)
+                // 验证患者数据
+                if (Patient != null)
                 {
-                    Patient = updatedPatient;
+                    var inputDto = _validator.ConvertToInputDto(Patient);
+                    var validationResult = await _validator.ValidatePatientInputAsync(inputDto);
+
+                    if (!_validator.IsValid(validationResult, out string errorMessage))
+                    {
+                        await ShowErrorMessageAsync($"数据验证失败: {errorMessage}");
+                        return;
+                    }
+                }
+
+                // 保存患者数据
+                var success = await _dataManager.SaveAsync();
+
+                if (success)
+                {
                     IsReadOnly = true;
                     RefreshProperties();
-                    RaiseCanExecuteChanged();
-
                     await ShowSuccessMessageAsync("患者信息保存成功");
                 }
                 else
@@ -244,41 +249,36 @@ private Guid _patientId;
             {
                 await ShowErrorMessageAsync($"保存失败: {ex.Message}");
             }
-            finally
+        }
+
+        private async void HandlePatientDeleted()
+        {
+            try
             {
-                IsLoading = false;
+                var success = await _dataManager.DeleteAsync();
+
+                if (success)
+                {
+                    await ShowSuccessMessageAsync("患者删除成功");
+                    RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("删除失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessageAsync($"删除失败: {ex.Message}");
             }
         }
 
-        #endregion 数据操作
+        #endregion 事件处理
 
-        #region 命令处理
-
-        private void NavigateBack()
-        {
-            RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
-        }
-
-        private void EnableEdit()
-        {
-            IsReadOnly = false;
-            RaiseCanExecuteChanged();
-        }
-
-        private void CancelEdit()
-        {
-            IsReadOnly = true;
-
-            // Issue #1240: 使用 Dispatcher.InvokeAsync 替代 Task.Run
-            _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                await LoadDataAsync();
-            });
-        }
+        #region 辅助方法
 
         /// <summary>
         /// 患者病历打印功能（待实现 Issue #1202）
-        /// 将在 Issue #1202 中实现统一的打印系统（Desktop.Presentation/Print/，使用 QuestPDF）
         /// </summary>
         private async Task PrintPatientAsync()
         {
@@ -291,7 +291,6 @@ private Guid _patientId;
             try
             {
                 // TODO (Issue #1202): 等待新的打印系统实现后重新启用此功能
-                // 新打印服务位于 Desktop.Presentation/Print/，使用 QuestPDF
                 await ShowWarningMessageAsync("打印功能正在开发中（Issue #1202）");
                 return;
             }
@@ -301,53 +300,11 @@ private Guid _patientId;
             }
         }
 
-        private async Task ViewMedicalHistoryAsync()
-        {
-            if (Patient == null)
-            {
-                return;
-            }
-
-            try
-            {
-                // 导航到医疗历史视图 - 使用Task.Run包装同步操作以修复CS1998警告
-                var navigationParameters = new NavigationParameters
-                {
-                    { "PatientId", Patient.Id }
-                };
-                // 使用同步导航
-                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView", navigationParameters);
-                await Task.CompletedTask; // 保持异步签名
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorMessageAsync($"操作失败: {ex.Message}");
-            }
-        }
-
-        #endregion 命令处理
-
-        #region 命令状态
-
-        private bool CanEdit() => Patient != null && IsReadOnly && !IsLoading;
-
-        private bool CanSave() => Patient != null && !IsReadOnly && !IsLoading;
-
-        private bool CanCancelEdit() => Patient != null && !IsReadOnly && !IsLoading;
-
-        private void RaiseCanExecuteChanged()
-        {
-            ((DelegateCommand)EditCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-            ((DelegateCommand)CancelEditCommand).RaiseCanExecuteChanged();
-        }
-
-        #endregion 命令状态
-
-        #region 辅助方法
-
         private void RefreshProperties()
         {
+            RaisePropertyChanged(nameof(PatientId));
+            RaisePropertyChanged(nameof(Patient));
+            RaisePropertyChanged(nameof(IsLoading));
             RaisePropertyChanged(nameof(PatientName));
             RaisePropertyChanged(nameof(Gender));
             RaisePropertyChanged(nameof(Age));
@@ -359,6 +316,13 @@ private Guid _patientId;
             RaisePropertyChanged(nameof(CreatedAt));
             RaisePropertyChanged(nameof(UpdatedAt));
             RaisePropertyChanged(nameof(StatusText));
+            RaisePropertyChanged(nameof(HasChanges));
+        }
+
+        private new void RefreshCommands()
+        {
+            // 命令由CommandHandler管理，这里刷新CanExecute状态
+            RefreshProperties();
         }
 
         private string GetStatusText()
@@ -369,12 +333,6 @@ private Guid _patientId;
             }
 
             return "已禁用";
-        }
-
-        private bool HasUnsavedChanges()
-        {
-            // 简单实现：如果处于编辑模式就认为有未保存的更改
-            return !IsReadOnly;
         }
 
         #endregion 辅助方法
