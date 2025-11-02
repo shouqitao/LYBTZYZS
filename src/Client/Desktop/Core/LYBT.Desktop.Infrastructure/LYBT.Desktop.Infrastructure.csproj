@@ -29,6 +29,7 @@
 
   <!-- WPF Framework Dependencies -->
   <ItemGroup Label="WPF Framework">
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="NPOI" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.Wpf" />

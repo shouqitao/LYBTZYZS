@@ -22,17 +22,12 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
         /// <summary>
         /// 当前实体数据
         /// </summary>
-        TDto? CurrentEntity { get; }
+        TDto? Current { get; }
 
         /// <summary>
         /// 是否有未保存的变更
         /// </summary>
         bool HasChanges { get; }
-
-        /// <summary>
-        /// 是否正在加载数据
-        /// </summary>
-        bool IsLoading { get; }
 
         /// <summary>
         /// 初始化数据（加载现有数据或创建新数据）
@@ -53,13 +48,8 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
         Task<bool> DeleteAsync();
 
         /// <summary>
-        /// 重置数据到原始状态（撤销所有变更）
+        /// 重新加载数据
         /// </summary>
-        void Reset();
-
-        /// <summary>
-        /// 标记数据已变更
-        /// </summary>
-        void MarkAsChanged();
+        Task ReloadAsync();
     }
 }

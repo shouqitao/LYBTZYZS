@@ -28,8 +28,7 @@ namespace LYBT.Desktop.Infrastructure.Interfaces.Components
         /// 检查命令是否可执行
         /// </summary>
         /// <param name="commandName">命令名称</param>
-        /// <param name="parameter">命令参数（可选）</param>
         /// <returns>命令是否可执行</returns>
-        bool CanExecute(string commandName, object? parameter = null);
+        bool CanExecute(string commandName);
     }
 }
