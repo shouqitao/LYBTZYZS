@@ -1,7 +1,9 @@
 # Client端处方管理开发指南
 
-> **版本**: v1.0
-> **最后更新**: 2025-10-30
+> 💡 **架构变更提示（2025-11-02）**: Desktop端已删除`IPrescriptionRepository`，所有操作通过`IMedicalCaseRepository`聚合根。详见[ADR-008](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+> **版本**: v1.1
+> **最后更新**: 2025-11-02
 > **维护负责**: Client端开发组
 
 ---
@@ -2385,9 +2387,15 @@ private async Task ExecutePrintPreviewAsync()
 
 ## 🔗 8. Repository集成
 
+> ⚠️ **架构决策**: Desktop端已**完全删除**`IPrescriptionRepository`接口（包括空接口桩）
+> - 详见：[ADR-008: Desktop端不独立实现Repository](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+> - 原决策：[ADR-003: Repository层简化](../../explanation/architecture/decisions/ADR-003-repository-simplification.md)
+> - 历史参考：Issue #1606（Prescription聚合根整合）
+
 ### 8.1 IMedicalCaseRepository聚合根操作
 
-**核心原则**：
+**核心原则**：Prescription作为MedicalCase聚合根的子实体，所有Write操作必须通过聚合根访问。
+
 - ✅ 所有Write操作通过IMedicalCaseRepository聚合根
 - ✅ Read操作使用IPrescriptionApi（轻量级）
 - ❌ IPrescriptionRepository已移除（Issue #1606）
@@ -3163,15 +3171,26 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 - [Client端MVVM架构指南](../../explanation/architecture/client/README.md) - 五层架构规范
 - [Server端处方管理架构设计](../../explanation/architecture/server/prescriptions-design.md) - API端点契约
 
+**架构决策（ADR）**：
+- **ADR-008**: [Desktop端不独立实现Repository](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完全删除空接口桩（2025-11-02）
+- **ADR-003**: [Repository层简化](../../explanation/architecture/decisions/ADR-003-repository-simplification.md) - Desktop端初步简化决策
+
 **开发指南**：
 - [Client端患者管理开发指南](./patients-development.md) - MVVM开发规范参考
 - [Client端诊疗管理开发指南](./consultation-development.md) - Three-Step工作流参考
 - [Server端处方管理开发指南](../server/prescriptions-development.md) - API端点开发
 
+**业务规则**：
+- **REQ-002**: 处方数据完整性验证（中药名称+剂量必填）
+- **Issue #1606**: Prescription聚合根整合（历史参考）
+
 **快速参考**：
 - [代码模式](../../quick-reference/code-patterns.md) - WPF常用模式
 - [API参考](../../quick-reference/api-reference.md) - IPrescriptionApi端点
 - [配置模板](../../quick-reference/config-templates.md) - Prism模块注册
+
+**相关Issue**：
+- **Issue #1769**: ADR-008架构决策实施
 
 ---
 
@@ -3192,6 +3211,7 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 | 版本 | 日期 | 修改内容 | 负责人 |
 |------|------|---------|--------|
 | v1.0 | 2025-10-30 | 初始版本，包含完整开发指南 | Client端开发组 |
+| v1.1 | 2025-11-02 | 补充ADR-008引用，强调Desktop端不实现Repository的YAGNI原则 | Client端开发组 |
 
 ---
 
@@ -3208,5 +3228,6 @@ namespace LYBT.Desktop.Prescriptions.ViewModels
 
 ---
 
-**最后更新**: 2025-10-30
+**最后更新**: 2025-11-02
 **维护负责**: Client端开发组
+**文档状态**: ✅ 完整版（v1.1 - ADR-008适配）

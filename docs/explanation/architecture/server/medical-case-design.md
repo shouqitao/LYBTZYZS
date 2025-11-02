@@ -1,5 +1,11 @@
 # LYBT.Module.MedicalCase - Server端医案管理模块架构设计
 
+> ⚠️ **Server/Desktop端Repository区别**（2025-11-02）：
+> - **本文档描述Server端聚合根模式**（EF Core + 数据库访问）
+> - **Desktop端Repository**已完全删除Consultation/Prescription独立Repository
+> - Desktop端通过`IMedicalCaseRepository`聚合根方法（HTTP Client）访问子实体
+> - 详见：[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
 ## 文档元信息
 
 | 属性 | 值 |
@@ -7,9 +13,10 @@
 | 文档类型 | 架构设计文档 |
 | 目标读者 | Server端开发人员、架构师、技术负责人 |
 | 层级范围 | Server端 - LYBT.Module.MedicalCase模块 |
-| 最后更新 | 2025-10-29 |
-| 文档版本 | v1.0 |
+| 最后更新 | 2025-11-02 |
+| 文档版本 | v1.1 |
 | 对齐文档 | [Client端医案管理设计](../client/medical-case-design.md) |
+| 架构决策 | [ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md), [ADR-006](../decisions/ADR-006-medicalcase-consultation-prescription-refactoring.md) |
 
 ---
 

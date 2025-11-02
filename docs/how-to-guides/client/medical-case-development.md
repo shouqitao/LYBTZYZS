@@ -1,7 +1,9 @@
 # 病案管理(Client端)开发指南
 
-> **文档版本**: v1.0
-> **最后更新**: 2025-01-30
+> 💡 **聚合根模式提示（2025-11-02）**: MedicalCase是聚合根，Consultation/Prescription作为子实体通过聚合根方法访问。详见[ADR-008](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+> **文档版本**: v1.1
+> **最后更新**: 2025-11-02
 > **适用范围**: LYBT.Desktop.MedicalCase 模块开发
 
 ## 📋 目录
@@ -1272,9 +1274,46 @@ namespace LYBT.Client.Infrastructure.Repositories
         /// 删除病案
         /// </summary>
         Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+        // =========================================
+        // 聚合根方法（ADR-008）
+        // =========================================
+
+        /// <summary>
+        /// 创建诊疗记录（通过聚合根）
+        /// Issue #1563: Consultation作为MedicalCase子实体，通过聚合根创建
+        /// </summary>
+        Task<ConsultationDto> CreateConsultationAsync(Guid medicalCaseId, ConsultationCreateDto createDto, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 更新诊疗记录（通过聚合根）
+        /// </summary>
+        Task<ConsultationDto> UpdateConsultationAsync(Guid consultationId, ConsultationUpdateDto updateDto, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 创建处方（通过聚合根）
+        /// Issue #1606: Prescription作为MedicalCase子实体，通过聚合根创建
+        /// </summary>
+        Task<PrescriptionDto> CreatePrescriptionAsync(Guid medicalCaseId, PrescriptionCreateDto createDto, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 更新处方（通过聚合根）
+        /// </summary>
+        Task<PrescriptionDto> UpdatePrescriptionAsync(Guid prescriptionId, PrescriptionUpdateDto updateDto, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 删除处方（通过聚合根，级联删除处方项）
+        /// </summary>
+        Task DeletePrescriptionAsync(Guid medicalCaseId, CancellationToken cancellationToken = default);
     }
 }
 ```
+
+> ⚠️ **聚合根模式说明**（ADR-008）：
+> - **Desktop端已删除** `IConsultationRepository` 和 `IPrescriptionRepository`
+> - Consultation和Prescription的Write操作**必须**通过`IMedicalCaseRepository`的聚合根方法
+> - Read操作可直接使用`IConsultationApi`和`IPrescriptionApi`（Refit）
+> - 详见：[ADR-008](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
 
 ### 6.2 Repository实现（HTTP调用）
 
@@ -2838,13 +2877,26 @@ public async Task<MedicalCaseDto> CreateAsync(MedicalCaseCreateDto createDto)
 - [病案管理架构设计](../../architecture/client/medical-case-design.md) - MedicalCase模块架构详解
 - [Foundation设计文档](../../architecture/client/foundation-design.md) - UnifiedViewModelBase基类设计
 
+**架构决策（ADR）**：
+- **ADR-008**: [Desktop端不独立实现Repository](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 聚合根模式实践（2025-11-02）
+- **ADR-006**: [MedicalCase/Consultation/Prescription架构重构](../../explanation/architecture/decisions/ADR-006-medicalcase-consultation-prescription-refactoring.md) - 聚合根模式决策
+
 **相关开发指南**：
 - [Models层使用指南](../client/models-usage.md) - DTO模型使用
 - [Infrastructure使用指南](../client/infrastructure-usage.md) - Repository模式
 - [Foundation开发指南](../client/foundation-development.md) - UnifiedViewModelBase详解
+- [Consultation开发指南](./consultation-development.md) - 诊疗记录管理
+- [Prescriptions开发指南](./prescriptions-development.md) - 处方管理
+
+**业务规则**：
+- **Issue #1563**: Consultation聚合根整合（历史参考）
+- **Issue #1606**: Prescription聚合根整合（历史参考）
 
 **API文档**：
 - [MedicalCase API参考](../../api/medical-case-api.md) - Server端API接口定义
+
+**相关Issue**：
+- **Issue #1769**: ADR-008架构决策实施
 
 ### 15.2 外部资源
 
@@ -2871,3 +2923,7 @@ public async Task<MedicalCaseDto> CreateAsync(MedicalCaseCreateDto createDto)
 如有问题或建议，请联系：
 - **技术支持**：LYBT开发团队
 - **文档维护**：Client端开发组
+
+---
+
+**文档状态**: ✅ 完整版（v1.1 - ADR-008适配，聚合根模式完整说明）

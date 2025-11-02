@@ -27,10 +27,10 @@ Repository模式是一种数据访问抽象层，将业务逻辑与数据访问�
    - 需要统一事务管理的场景
    - 需要集中查询逻辑的场景
 
-2. **Desktop端数据访问**（⚠️ 例外情况）：
-   - 需要缓存层的场景（未来）
-   - 需要离线支持的场景（未来）
-   - 当前MVP阶段：Read操作可以直接使用API，Write操作通过聚合根Repository
+2. **Desktop端数据访问**（⚠️ 例外情况 - 详见[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)）：
+   - ❌ **当前MVP阶段**：Desktop端**不实现**子实体Repository（Consultation/Prescription）
+   - ✅ **聚合根Repository**：仅保留`IMedicalCaseRepository`，通过聚合根访问子实体
+   - ⏭️ **未来场景**：需要缓存层或离线支持时，渐进式恢复Read-only Repository
 
 ### ❌ 不应该使用Repository的场景
 
@@ -60,17 +60,21 @@ LYBT.Server.{Module}.Domain/
       └─ ...
 ```
 
-### Desktop端Repository标准结构（⚠️ 例外）
+### Desktop端Repository标准结构（⚠️ 架构例外）
 
 ```
 LYBT.Desktop.{Module}/
   ├─ Interfaces/
-  │   └─ I{Entity}Repository.cs         # 接口定义（已删除）
+  │   └─ I{Entity}Repository.cs         # ❌ 子实体Repository已删除（ADR-008）
   └─ Repositories/
-      └─ {Entity}Repository.cs          # 实现类（已删除）
+      └─ {Entity}Repository.cs          # ❌ 子实体Repository已删除（ADR-008）
 
-⚠️ 当前状态：Prescriptions/Consultation模块已删除Repository层
-详见：ADR-003（Repository层简化）
+⚠️ **当前状态（2025-11-02）**：
+- ❌ Consultation/Prescription模块已**完全删除** Repository层
+- ✅ 仅保留聚合根Repository（IMedicalCaseRepository）
+- 📚 详见：
+  - [ADR-003: Repository层简化](../decisions/ADR-003-repository-simplification.md) - 初步决策
+  - [ADR-008: Desktop端不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完全删除空接口桩
 ```
 
 ---
@@ -316,13 +320,17 @@ public class MedicalCaseRepository : IMedicalCaseRepository
 
 ---
 
-### Desktop端Repository实现（⚠️ 已删除）
+### Desktop端Repository实现（⚠️ 已完全删除 - ADR-008）
 
-#### 当前状态（ADR-003后）
+> 💡 **架构决策**: Desktop端Consultation/Prescription已**完全删除**Repository层（包括空接口桩）
+> 详见：[ADR-008: Desktop端不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+#### 当前状态（ADR-008后，2025-11-02）
 
 ```csharp
-// ❌ 已删除：LYBT.Desktop.Prescriptions/Interfaces/IPrescriptionRepository.cs
-// ❌ 已删除：LYBT.Desktop.Prescriptions/Repositories/PrescriptionRepository.cs
+// ❌ 已完全删除：LYBT.Desktop.Prescriptions/Interfaces/IPrescriptionRepository.cs
+// ❌ 已完全删除：LYBT.Desktop.Prescriptions/Repositories/PrescriptionRepository.cs
+// ❌ 已完全删除：LYBT.Desktop.Consultation/Interfaces/IConsultationRepository.cs
 
 // ✅ 当前实践：ViewModel直接使用API + 聚合根Repository
 
@@ -561,7 +569,9 @@ public async Task<MedicalCaseEntity?> GetByIdAsync(
 ## 🔗 相关资源
 
 - **架构原则**: [docs/architecture/principles.md](../principles.md) - P0-2（依赖方向）、P0-3（聚合根边界）
-- **ADR-003**: [Repository层简化](../decisions/ADR-003-repository-simplification.md) - Desktop端例外
+- **架构决策（ADR）**:
+  - [ADR-003: Repository层简化](../decisions/ADR-003-repository-simplification.md) - Desktop端初步简化决策
+  - [ADR-008: Desktop端不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完全删除空接口桩，体现YAGNI原则
 - **Server端架构**: [docs/architecture/server/README.md](../server/README.md) - 三层架构
 - **聚合根模式**: [aggregate-root-pattern.md](./aggregate-root-pattern.md)
 - **业务规则**: [docs/business-rules.md](../../business-rules.md) - 规则#3（聚合根边界）
@@ -573,8 +583,9 @@ public async Task<MedicalCaseEntity?> GetByIdAsync(
 | 日期 | 版本 | 变更内容 | 作者 |
 |------|------|----------|------|
 | 2025-10-25 | v1.0 | 初始创建 | Claude Code |
+| 2025-11-02 | v1.1 | 补充ADR-008引用，强调Desktop端不实现子实体Repository的YAGNI原则 | Claude Code |
 
 ---
 
-**最后更新**: 2025-10-25
+**最后更新**: 2025-11-02
 **维护者**: 项目架构团队

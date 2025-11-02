@@ -1,7 +1,13 @@
 # Server端诊疗管理模块架构设计文档
 
-> **文档版本**: v1.0
-> **最后更新**: 2025-10-30
+> ⚠️ **Server/Desktop端Repository区别**（2025-11-02）：
+> - **本文档描述Server端Repository**（EF Core + 数据库访问）
+> - **Desktop端Repository**（HTTP Client + API调用）已完全删除Consultation独立Repository
+> - Desktop端通过`IMedicalCaseRepository`聚合根方法访问Consultation
+> - 详见：[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+> **文档版本**: v1.1
+> **最后更新**: 2025-11-02
 > **作者**: LYBT开发团队
 > **适用范围**: LYBT诊疗系统 Server端 - 诊疗管理模块
 

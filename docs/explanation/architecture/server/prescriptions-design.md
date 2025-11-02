@@ -1,9 +1,16 @@
 # Server端处方管理模块架构设计
 
-> **文档版本**: v1.0
+> ⚠️ **Server/Desktop端Repository区别**（2025-11-02）：
+> - **本文档描述Server端Repository**（EF Core + 数据库访问）
+> - **Desktop端Repository**（HTTP Client + API调用）已完全删除Prescription独立Repository
+> - Desktop端通过`IMedicalCaseRepository`聚合根方法访问Prescription
+> - 详见：[ADR-008](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+> **文档版本**: v1.1
 > **创建日期**: 2025-01-30
+> **最后更新**: 2025-11-02
 > **维护状态**: ✅ 活跃维护
-> **关联Issue**: #1600, #1601, #1606, #1551, #1372, #1371
+> **关联Issue**: #1600, #1601, #1606, #1551, #1372, #1371, #1769
 > **架构版本**: UltraThink v2.0 简化版
 
 ## 📋 目录

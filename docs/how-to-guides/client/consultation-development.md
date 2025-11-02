@@ -1,7 +1,9 @@
 # Client端诊疗管理开发指南
 
-> **文档版本**: v1.0
-> **最后更新**: 2025-01-30
+> 💡 **架构变更提示（2025-11-02）**: Desktop端已删除`IConsultationRepository`，所有操作通过`IMedicalCaseRepository`聚合根。详见[ADR-008](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+
+> **文档版本**: v1.1
+> **最后更新**: 2025-11-02
 > **目标读者**: Client端开发者
 > **前置阅读**: [Client端诊疗管理架构设计](../../explanation/architecture/client/consultation-design.md)
 
@@ -953,7 +955,12 @@ public override bool IsNavigationTarget(NavigationContext navigationContext)
 
 ### 6.1 IMedicalCaseRepository接口
 
-**Issue #1563说明**：Consultation不再有独立Repository，通过MedicalCaseRepository聚合根访问。
+> ⚠️ **架构决策**: Desktop端已**完全删除**`IConsultationRepository`接口（包括空接口桩）
+> - 详见：[ADR-008: Desktop端不独立实现Repository](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md)
+> - 原决策：[ADR-003: Repository层简化](../../explanation/architecture/decisions/ADR-003-repository-simplification.md)
+> - 历史参考：Issue #1563（Consultation聚合根整合）
+
+**核心原则**：Consultation作为MedicalCase聚合根的子实体，所有Write操作必须通过聚合根访问。
 
 **相关方法**：
 ```csharp
@@ -2187,18 +2194,23 @@ public async Task CompleteStep1Async_ValidData_CallsRepository()
 - `src/Client/Desktop/Modules/LYBT.Desktop.Consultation/Views/ConsultationFormView.xaml`
 - `src/Client/Desktop/Core/LYBT.Desktop.Core/UnifiedViewModelBase.cs`
 
+### 架构决策（ADR）
+- **ADR-008**: [Desktop端不独立实现Repository](../../explanation/architecture/decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完全删除空接口桩（2025-11-02）
+- **ADR-003**: [Repository层简化](../../explanation/architecture/decisions/ADR-003-repository-simplification.md) - Desktop端初步简化决策
+
 ### 业务规则
 - **BF-002**: 诊断必填项验证（主诉+中医诊断）
 - **REQ-001**: 三步工作流优化（Step1 → Step2 → Step3）
-- **Issue #1563**: Consultation聚合根整合（移除IConsultationRepository）
+- **Issue #1563**: Consultation聚合根整合（历史参考）
 
 ### 相关Issue
 - **Epic #1343**: MVP核心功能实现
 - **Issue #1562**: 工作流事件精简（Phase 1）
 - **Issue #1606**: MedicalCase聚合根边界重构
+- **Issue #1769**: ADR-008架构决策实施
 
 ---
 
-**最后更新**: 2025-01-30
+**最后更新**: 2025-11-02
 **维护负责**: Client端开发组
-**文档状态**: ✅ 完整版
+**文档状态**: ✅ 完整版（v1.1 - ADR-008适配）
