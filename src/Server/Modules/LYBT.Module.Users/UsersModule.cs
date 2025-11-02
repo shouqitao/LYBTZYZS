@@ -3,7 +3,7 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Mapping;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
-using LYBT.Module.Users.Validators;
+using LYBT.Shared.Validators.Users;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

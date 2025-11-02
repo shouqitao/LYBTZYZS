@@ -25,6 +25,7 @@
 		<ProjectReference Include="..\..\Core\LYBT.Entities\LYBT.Entities.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
 		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
+		<ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
 	</ItemGroup>
 
 </Project>

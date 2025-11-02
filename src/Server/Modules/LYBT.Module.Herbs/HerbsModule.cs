@@ -2,7 +2,7 @@
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
-using LYBT.Module.Herbs.Validators;
+using LYBT.Shared.Validators.Herbs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

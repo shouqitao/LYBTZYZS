@@ -1,5 +1,5 @@
 ﻿using FluentValidation.TestHelper;
-using LYBT.Module.Consultation.Validators;
+using LYBT.Shared.Validators.Consultation;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Xunit;
 

@@ -2,7 +2,7 @@
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.MedicalCase.Repositories;
 using LYBT.Module.MedicalCase.Services;
-using LYBT.Module.MedicalCase.Validators;
+using LYBT.Shared.Validators.MedicalCase;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Module.MedicalCase

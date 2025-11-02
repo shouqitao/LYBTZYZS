@@ -2,7 +2,7 @@
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Repositories;
 using LYBT.Module.Patients.Services;
-using LYBT.Module.Patients.Validators;
+using LYBT.Shared.Validators.Patients;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -3,7 +3,7 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
-using LYBT.Module.Consultation.Validators;
+using LYBT.Shared.Validators.Consultation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

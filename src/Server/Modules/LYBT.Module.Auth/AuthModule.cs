@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Services;
-using LYBT.Module.Auth.Validators;
+using LYBT.Shared.Validators.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

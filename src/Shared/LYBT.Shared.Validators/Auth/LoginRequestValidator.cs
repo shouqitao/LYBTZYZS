@@ -1,11 +1,10 @@
 using FluentValidation;
 using LYBT.Shared.Models.Contracts.Auth;
 
-namespace LYBT.Module.Auth.Validators
+namespace LYBT.Shared.Validators.Auth
 {
     /// <summary>
-    /// 用户登录请求验证器
-    /// Epic #1731: 补全Auth模块Validators
+    /// 登录请求验证器
     /// </summary>
     public class LoginRequestValidator : AbstractValidator<LoginRequest>
     {

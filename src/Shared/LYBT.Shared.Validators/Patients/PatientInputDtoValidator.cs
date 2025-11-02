@@ -1,7 +1,7 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Module.Patients.Validators
+namespace LYBT.Shared.Validators.Patients
 {
     /// <summary>
     /// 患者创建DTO验证器

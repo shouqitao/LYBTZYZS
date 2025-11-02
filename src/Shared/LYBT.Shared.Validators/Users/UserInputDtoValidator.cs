@@ -1,7 +1,7 @@
-﻿using FluentValidation;
+using FluentValidation;
 using LYBT.Shared.Models.Contracts.Users;
 
-namespace LYBT.Module.Users.Validators
+namespace LYBT.Shared.Validators.Users
 {
     public class UserInputDtoValidator : AbstractValidator<UserInputDto>
     {
