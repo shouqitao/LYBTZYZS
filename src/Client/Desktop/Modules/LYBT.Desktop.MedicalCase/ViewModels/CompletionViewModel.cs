@@ -130,8 +130,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogInformation("打印处方，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                // TODO #1703: 实现处方打印功能（Epic: 打印系统，Epic #1676）
-                // TODO #1502: 相关Issue - 处方打印功能
                 // Issue #1564: MVP阶段暂不显示提示（dialogService可为null）
                 if (_dialogService != null)
                 {
@@ -155,8 +153,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 Logger.LogInformation("查看病案详情，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                // TODO #1709: 实现病案详情对话框（Epic #1676 Phase 3）
-                // TODO #1502: 相关Issue - 病案详情对话框
                 // Issue #1564: MVP阶段暂不显示提示（dialogService可为null）
                 if (_dialogService != null)
                 {

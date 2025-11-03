@@ -290,8 +290,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             try
             {
-                // TODO (Issue #1202): 等待新的打印系统实现后重新启用此功能
-                await ShowWarningMessageAsync("打印功能正在开发中（Issue #1202）");
+                await ShowWarningMessageAsync("打印功能正在开发中");
                 return;
             }
             catch (Exception ex)

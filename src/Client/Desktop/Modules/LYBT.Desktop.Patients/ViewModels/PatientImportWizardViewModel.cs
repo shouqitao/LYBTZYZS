@@ -216,9 +216,6 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Constructor
 
-        // TODO #1708: 考虑迁移到 UnifiedViewModelBase（需处理 IDisposable 冲突，Epic #1676 Phase 4D）
-        // 当前继承 BindableBase + IDisposable,使用 BackgroundWorker 实现长时间导入任务
-        // 若迁移,需在 UnifiedViewModelBase 添加 IDisposable 支持或在子类保留 Dispose 实现
         // Issue #1788: 注入CommandHandler替代Repository
         // Issue #1781 Task 8 Phase 1: 注入ExcelParserService
         public PatientImportWizardViewModel(

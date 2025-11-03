@@ -277,15 +277,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // Phase 2: 将DTO业务逻辑移至ViewModel层
                 CanEdit = medicalCase.CaseStatus == MedicalCaseStatus.Active || medicalCase.CaseStatus == MedicalCaseStatus.Draft;
 
-                // 5. 如有处方，触发加载处方事件（后续集成任务）
-                // TODO #1705: 实现PrescriptionLoadedEvent通知PrescriptionEditor加载处方数据（Epic #1676 Phase 3）
-                // 说明：当前处方面板显示/隐藏已通过ShowPrescriptionPanel属性实现
-                // if (medicalCase.Prescription != null)
-                // {
-                //     EventAggregator.GetEvent<PrescriptionLoadedEvent>()
-                //         .Publish(medicalCase.Prescription);
-                // }
-
                 Logger.LogInformation("病案数据加载成功");
             }
             catch (Exception ex)
@@ -332,11 +323,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     await ShowSuccessMessageAsync("辨证信息已保存");
                     Logger.LogInformation("辨证信息保存成功");
-
-                    // 发布事件通知其他组件
-                    // TODO: Task 3.4 (#1661) - 实现ConsultationSavedEvent
-                    // EventAggregator.GetEvent<ConsultationSavedEvent>()
-                    //     .Publish(response.Data);
                 }
                 else
                 {
@@ -462,11 +448,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     await ShowSuccessMessageAsync("病案已暂存，可稍后继续看诊");
                     Logger.LogInformation("病案暂存成功");
-
-                    // 导航回病案列表
-                    // TODO: Task 3.5 (#1662) - 实现NavigateRequestEvent
-                    // EventAggregator.GetEvent<NavigateRequestEvent>()
-                    //     .Publish("MedicalCaseList");
                 }
                 else
                 {
@@ -500,10 +481,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // TODO #1706: 实现完成病案的API调用（依赖Phase 4 - CloseCaseAsync，Epic #1676）
-                // 当前API接口中可能没有CompleteMedicalCaseAsync方法
-                // 可能需要通过UpdateStatusAsync或其他方法实现
-
                 await ShowWarningMessageAsync("完成病案功能待实现");
                 Logger.LogWarning("完成病案功能尚未实现");
 
@@ -558,8 +535,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             if (NeedsPrescription)
             {
-                // TODO #1707: 检查是否已创建处方（依赖Phase 4 - HasPrescriptionAsync，Epic #1676）
-                // 可通过PrescriptionViewModel状态判断
                 Logger.LogWarning("需要检查处方是否已创建");
             }
 
