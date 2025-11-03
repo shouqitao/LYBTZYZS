@@ -104,181 +104,11 @@ namespace LYBT.Desktop.Patients.Components
             }
             else
             {
-                // 检查必需列
-                var requiredColumns = new[] { "姓名", "性别" };
-                var optionalColumns = new[] { "年龄", "电话", "证件号", "地址", "过敏史" };
-
-                foreach (var column in requiredColumns)
-                {
-                    if (!dataTable.Columns.Contains(column))
-                    {
-                        errors.Add($"缺少必需列: {column}");
-                    }
-                }
-
-                // 检查列格式并给出提示
-                var allExpectedColumns = requiredColumns.Concat(optionalColumns).ToArray();
-                foreach (DataColumn column in dataTable.Columns)
-                {
-                    if (!allExpectedColumns.Contains(column.ColumnName))
-                    {
-                        warnings.Add($"未识别的列: {column.ColumnName}，此列数据将被忽略");
-                    }
-                }
-
-                // 验证数据行
-                int validRows = 0;
-                int invalidRows = 0;
-                var duplicateNames = new HashSet<string>();
-                var phoneNumbers = new HashSet<string>();
-                var idNumbers = new HashSet<string>();
-
-                for (int i = 0; i < dataTable.Rows.Count; i++)
-                {
-                    var row = dataTable.Rows[i];
-                    var rowErrors = new List<string>();
-                    var rowWarnings = new List<string>();
-
-                    // 检查是否为空行
-                    bool isEmptyRow = true;
-                    foreach (DataColumn col in dataTable.Columns)
-                    {
-                        if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
-                        {
-                            isEmptyRow = false;
-                            break;
-                        }
-                    }
-
-                    if (isEmptyRow)
-                    {
-                        rowWarnings.Add("空行，将被跳过");
-                        continue;
-                    }
-
-                    // 验证姓名
-                    var name = row["姓名"]?.ToString()?.Trim();
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        rowErrors.Add("姓名不能为空");
-                    }
-                    else if (name.Length > 50)
-                    {
-                        rowErrors.Add("姓名长度不能超过50个字符");
-                    }
-                    else if (duplicateNames.Contains(name))
-                    {
-                        rowWarnings.Add($"姓名'{name}'重复，请确认是否为同一人");
-                    }
-                    else
-                    {
-                        duplicateNames.Add(name);
-                    }
-
-                    // 验证性别
-                    var gender = row["性别"]?.ToString()?.Trim();
-                    if (string.IsNullOrEmpty(gender))
-                    {
-                        rowErrors.Add("性别不能为空");
-                    }
-                    else if (gender != "男" && gender != "女" && gender != "未知")
-                    {
-                        rowErrors.Add("性别只能是'男'、'女'或'未知'");
-                    }
-
-                    // 验证年龄（可选）
-                    var ageText = row["年龄"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(ageText))
-                    {
-                        if (!int.TryParse(ageText, out var age) || age < 0 || age > 150)
-                        {
-                            rowErrors.Add("年龄必须是0-150之间的整数");
-                        }
-                    }
-
-                    // 验证电话（可选）
-                    var phone = row["电话"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(phone))
-                    {
-                        if (phone.Length < 7 || phone.Length > 15)
-                        {
-                            rowErrors.Add("电话号码长度应在7-15位之间");
-                        }
-                        else if (!Regex.IsMatch(phone, @"^[0-9\-\+\(\)\s]+$"))
-                        {
-                            rowErrors.Add("电话号码格式不正确，只能包含数字、横线、加号、括号和空格");
-                        }
-                        else if (phoneNumbers.Contains(phone))
-                        {
-                            rowWarnings.Add($"电话号码'{phone}'重复");
-                        }
-                        else
-                        {
-                            phoneNumbers.Add(phone);
-                        }
-                    }
-
-                    // 验证证件号（可选）
-                    var idNumber = row["证件号"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(idNumber))
-                    {
-                        if (idNumber.Length != 18 && idNumber.Length != 15)
-                        {
-                            rowWarnings.Add("证件号长度不是标准的15位或18位，请确认");
-                        }
-                        else if (idNumbers.Contains(idNumber))
-                        {
-                            rowErrors.Add($"证件号'{idNumber}'重复，不能导入重复证件号");
-                        }
-                        else
-                        {
-                            idNumbers.Add(idNumber);
-                        }
-                    }
-
-                    // 验证地址（可选）
-                    var address = row["地址"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(address) && address.Length > 200)
-                    {
-                        rowErrors.Add("地址长度不能超过200个字符");
-                    }
-
-                    // 验证过敏史（可选）
-                    var allergy = row["过敏史"]?.ToString()?.Trim();
-                    if (!string.IsNullOrEmpty(allergy) && allergy.Length > 500)
-                    {
-                        rowErrors.Add("过敏史长度不能超过500个字符");
-                    }
-
-                    // 统计结果
-                    if (rowErrors.Count > 0)
-                    {
-                        invalidRows++;
-                        errors.Add($"第{i + 2}行: {string.Join("; ", rowErrors)}");
-                    }
-                    else
-                    {
-                        validRows++;
-                        if (rowWarnings.Count > 0)
-                        {
-                            warnings.Add($"第{i + 2}行: {string.Join("; ", rowWarnings)}");
-                        }
-                    }
-                }
-
-                result.ValidRowCount = validRows;
-                result.InvalidRowCount = invalidRows;
-                result.IsValid = errors.Count == 0 && validRows > 0;
-
-                // 添加汇总信息
-                if (validRows > 0 && invalidRows == 0)
-                {
-                    warnings.Add($"验证通过，共{validRows}行有效数据可以导入");
-                }
-                else if (validRows > 0 && invalidRows > 0)
-                {
-                    warnings.Add($"部分验证通过，{validRows}行有效数据可以导入，{invalidRows}行数据有错误将被跳过");
-                }
+                ValidateColumns(dataTable, errors, warnings);
+                ValidateRows(dataTable, errors, warnings, result);
+                
+                result.IsValid = errors.Count == 0 && result.ValidRowCount > 0;
+                AddSummaryMessages(result, warnings);
             }
 
             result.Errors = errors;
@@ -288,6 +118,282 @@ namespace LYBT.Desktop.Patients.Components
                 result.ValidRowCount, result.InvalidRowCount);
 
             return result;
+        }
+
+        /// <summary>
+        /// 验证列结构
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateColumns(DataTable dataTable, List<string> errors, List<string> warnings)
+        {
+            var requiredColumns = new[] { "姓名", "性别" };
+            var optionalColumns = new[] { "年龄", "电话", "证件号", "地址", "过敏史" };
+
+            foreach (var column in requiredColumns)
+            {
+                if (!dataTable.Columns.Contains(column))
+                {
+                    errors.Add($"缺少必需列: {column}");
+                }
+            }
+
+            var allExpectedColumns = requiredColumns.Concat(optionalColumns).ToArray();
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                if (!allExpectedColumns.Contains(column.ColumnName))
+                {
+                    warnings.Add($"未识别的列: {column.ColumnName}，此列数据将被忽略");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证所有数据行
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateRows(DataTable dataTable, List<string> errors, List<string> warnings, ImportValidationResult result)
+        {
+            int validRows = 0;
+            int invalidRows = 0;
+            var duplicateTrackers = InitializeDuplicateTrackers();
+
+            for (int i = 0; i < dataTable.Rows.Count; i++)
+            {
+                var row = dataTable.Rows[i];
+
+                if (IsEmptyRow(row, dataTable.Columns))
+                {
+                    warnings.Add($"第{i + 2}行: 空行，将被跳过");
+                    continue;
+                }
+
+                var rowErrors = ValidateRow(row, duplicateTrackers);
+
+                if (rowErrors.Count > 0)
+                {
+                    invalidRows++;
+                    errors.Add($"第{i + 2}行: {string.Join("; ", rowErrors)}");
+                }
+                else
+                {
+                    validRows++;
+                }
+            }
+
+            result.ValidRowCount = validRows;
+            result.InvalidRowCount = invalidRows;
+        }
+
+        /// <summary>
+        /// 初始化重复数据追踪器
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private DuplicateTrackers InitializeDuplicateTrackers()
+        {
+            return new DuplicateTrackers
+            {
+                Names = new HashSet<string>(),
+                PhoneNumbers = new HashSet<string>(),
+                IdNumbers = new HashSet<string>()
+            };
+        }
+
+        /// <summary>
+        /// 检查是否为空行
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private bool IsEmptyRow(DataRow row, DataColumnCollection columns)
+        {
+            foreach (DataColumn col in columns)
+            {
+                if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 验证单行数据
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private List<string> ValidateRow(DataRow row, DuplicateTrackers trackers)
+        {
+            var rowErrors = new List<string>();
+
+            ValidateNameField(row, trackers.Names, rowErrors);
+            ValidateGenderField(row, rowErrors);
+            ValidateAgeField(row, rowErrors);
+            ValidatePhoneField(row, trackers.PhoneNumbers, rowErrors);
+            ValidateIdNumberField(row, trackers.IdNumbers, rowErrors);
+            ValidateAddressField(row, rowErrors);
+            ValidateAllergyField(row, rowErrors);
+
+            return rowErrors;
+        }
+
+        /// <summary>
+        /// 验证姓名字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateNameField(DataRow row, HashSet<string> duplicateNames, List<string> errors)
+        {
+            var name = row["姓名"]?.ToString()?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                errors.Add("姓名不能为空");
+            }
+            else if (name.Length > 50)
+            {
+                errors.Add("姓名长度不能超过50个字符");
+            }
+            else if (duplicateNames.Contains(name))
+            {
+                errors.Add($"姓名'{name}'重复，请确认是否为同一人");
+            }
+            else
+            {
+                duplicateNames.Add(name);
+            }
+        }
+
+        /// <summary>
+        /// 验证性别字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateGenderField(DataRow row, List<string> errors)
+        {
+            var gender = row["性别"]?.ToString()?.Trim();
+            if (string.IsNullOrEmpty(gender))
+            {
+                errors.Add("性别不能为空");
+            }
+            else if (gender != "男" && gender != "女" && gender != "未知")
+            {
+                errors.Add("性别只能是'男'、'女'或'未知'");
+            }
+        }
+
+        /// <summary>
+        /// 验证年龄字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateAgeField(DataRow row, List<string> errors)
+        {
+            var ageText = row["年龄"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(ageText))
+            {
+                if (!int.TryParse(ageText, out var age) || age < 0 || age > 150)
+                {
+                    errors.Add("年龄必须是0-150之间的整数");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证电话字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidatePhoneField(DataRow row, HashSet<string> phoneNumbers, List<string> errors)
+        {
+            var phone = row["电话"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(phone))
+            {
+                if (phone.Length < 7 || phone.Length > 15)
+                {
+                    errors.Add("电话号码长度应在7-15位之间");
+                }
+                else if (!Regex.IsMatch(phone, @"^[0-9\-\+\(\)\s]+$"))
+                {
+                    errors.Add("电话号码格式不正确，只能包含数字、横线、加号、括号和空格");
+                }
+                else if (phoneNumbers.Contains(phone))
+                {
+                    errors.Add($"电话号码'{phone}'重复");
+                }
+                else
+                {
+                    phoneNumbers.Add(phone);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证证件号字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateIdNumberField(DataRow row, HashSet<string> idNumbers, List<string> errors)
+        {
+            var idNumber = row["证件号"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(idNumber))
+            {
+                if (idNumber.Length != 18 && idNumber.Length != 15)
+                {
+                    errors.Add("证件号长度不是标准的15位或18位，请确认");
+                }
+                else if (idNumbers.Contains(idNumber))
+                {
+                    errors.Add($"证件号'{idNumber}'重复，不能导入重复证件号");
+                }
+                else
+                {
+                    idNumbers.Add(idNumber);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证地址字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateAddressField(DataRow row, List<string> errors)
+        {
+            var address = row["地址"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(address) && address.Length > 200)
+            {
+                errors.Add("地址长度不能超过200个字符");
+            }
+        }
+
+        /// <summary>
+        /// 验证过敏史字段
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void ValidateAllergyField(DataRow row, List<string> errors)
+        {
+            var allergy = row["过敏史"]?.ToString()?.Trim();
+            if (!string.IsNullOrEmpty(allergy) && allergy.Length > 500)
+            {
+                errors.Add("过敏史长度不能超过500个字符");
+            }
+        }
+
+        /// <summary>
+        /// 添加汇总消息
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private void AddSummaryMessages(ImportValidationResult result, List<string> warnings)
+        {
+            if (result.ValidRowCount > 0 && result.InvalidRowCount == 0)
+            {
+                warnings.Add($"验证通过，共{result.ValidRowCount}行有效数据可以导入");
+            }
+            else if (result.ValidRowCount > 0 && result.InvalidRowCount > 0)
+            {
+                warnings.Add($"部分验证通过，{result.ValidRowCount}行有效数据可以导入，{result.InvalidRowCount}行数据有错误将被跳过");
+            }
+        }
+
+        /// <summary>
+        /// 重复数据追踪器
+        /// Issue #1789: 从ValidateImportData提取
+        /// </summary>
+        private class DuplicateTrackers
+        {
+            public HashSet<string> Names { get; set; } = new();
+            public HashSet<string> PhoneNumbers { get; set; } = new();
+            public HashSet<string> IdNumbers { get; set; } = new();
         }
 
         /// <inheritdoc/>

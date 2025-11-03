@@ -28,99 +28,153 @@ namespace LYBT.Desktop.Formula.Utilities
 
             using var package = new ExcelPackage(stream);
 
-            // 获取Sheet1：验方信息
-            var formulaSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("验方") || ws.Index == 0);
-            if (formulaSheet == null)
-            {
-                throw new InvalidOperationException("未找到验方信息工作表");
-            }
-
-            // 获取Sheet2：药材明细
-            var herbSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("药材") || ws.Index == 1);
-            if (herbSheet == null)
-            {
-                throw new InvalidOperationException("未找到药材明细工作表");
-            }
+            var formulaSheet = GetFormulaWorksheet(package);
+            var herbSheet = GetHerbWorksheet(package);
 
             var formulaRowCount = formulaSheet.Dimension?.Rows ?? 0;
             if (formulaRowCount <= 1)
             {
-                return formulas; // 空列表
+                return formulas;
             }
 
-            // 第一步：解析Sheet2药材明细，按验方编号分组
             var herbItemsByFormulaCode = ParseHerbItems(herbSheet);
 
-            // 第二步：逐行解析验方信息
             for (int row = 2; row <= formulaRowCount; row++)
             {
                 try
                 {
-                    // 读取验方基础信息（与Server端原实现一致）
-                    var formulaCode = formulaSheet.Cells[row, 1].Text?.Trim();
-                    var name = formulaSheet.Cells[row, 2].Text?.Trim();
-                    var category = formulaSheet.Cells[row, 3].Text?.Trim();
-                    var effect = formulaSheet.Cells[row, 4].Text?.Trim();
-                    var usage = formulaSheet.Cells[row, 5].Text?.Trim();
-                    var property = formulaSheet.Cells[row, 6].Text?.Trim();
-                    var formulaTypeText = formulaSheet.Cells[row, 7].Text?.Trim();
-                    var isSharedText = formulaSheet.Cells[row, 8].Text?.Trim();
-                    var remark = formulaSheet.Cells[row, 9].Text?.Trim();
-
-                    if (string.IsNullOrWhiteSpace(name))
+                    var formulaDto = ParseFormulaRow(formulaSheet, row, herbItemsByFormulaCode);
+                    if (formulaDto != null)
                     {
-                        continue; // 跳过无效行
+                        formulas.Add(formulaDto);
                     }
-
-                    // 解析是否共享（默认为否）
-                    var isShared = false;
-                    if (!string.IsNullOrWhiteSpace(isSharedText))
-                    {
-                        isShared = isSharedText.Equals("是", StringComparison.OrdinalIgnoreCase) ||
-                                  isSharedText.Equals("true", StringComparison.OrdinalIgnoreCase) ||
-                                  isSharedText.Equals("共享", StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    // 创建FormulaImportDto
-                    var formulaDto = new FormulaImportDto
-                    {
-                        Name = name,
-                        Effect = effect,
-                        Usage = usage,
-                        Property = property,
-                        IsShared = isShared,
-                        Remark = remark,
-                        Herbs = new List<FormulaHerbImportDto>()
-                    };
-
-                    // 添加关联的药材
-                    if (!string.IsNullOrWhiteSpace(formulaCode) && herbItemsByFormulaCode.ContainsKey(formulaCode))
-                    {
-                        var herbItems = herbItemsByFormulaCode[formulaCode];
-                        foreach (var herbItem in herbItems)
-                        {
-                            formulaDto.Herbs.Add(new FormulaHerbImportDto
-                            {
-                                HerbName = herbItem.HerbName,
-                                Quantity = herbItem.Quantity,
-                                Unit = herbItem.Unit ?? "g",
-                                Usage = herbItem.Usage,
-                                Preparation = herbItem.ProcessingMethod // ProcessingMethod映射到Preparation
-                            });
-                        }
-                    }
-
-                    formulas.Add(formulaDto);
                 }
                 catch (Exception ex)
                 {
-                    // 记录错误但继续处理下一行
-                    // TODO: 可以添加日志记录
                     Console.WriteLine($"解析第{row}行时发生错误: {ex.Message}");
                 }
             }
 
             return formulas;
+        }
+
+
+        /// <summary>
+        /// 获取验方工作表
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装工作表查找逻辑
+        /// </summary>
+        private static ExcelWorksheet GetFormulaWorksheet(ExcelPackage package)
+        {
+            var formulaSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("验方") || ws.Index == 0);
+            if (formulaSheet == null)
+            {
+                throw new InvalidOperationException("未找到验方信息工作表");
+            }
+            return formulaSheet;
+        }
+
+        /// <summary>
+        /// 获取药材工作表
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装工作表查找逻辑
+        /// </summary>
+        private static ExcelWorksheet GetHerbWorksheet(ExcelPackage package)
+        {
+            var herbSheet = package.Workbook.Worksheets.FirstOrDefault(ws => ws.Name.Contains("药材") || ws.Index == 1);
+            if (herbSheet == null)
+            {
+                throw new InvalidOperationException("未找到药材明细工作表");
+            }
+            return herbSheet;
+        }
+
+        /// <summary>
+        /// 解析单行验方数据
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装单行解析逻辑
+        /// </summary>
+        private static FormulaImportDto? ParseFormulaRow(ExcelWorksheet formulaSheet, int row, 
+            Dictionary<string, List<HerbItemData>> herbItemsByFormulaCode)
+        {
+            var formulaCode = formulaSheet.Cells[row, 1].Text?.Trim();
+            var name = formulaSheet.Cells[row, 2].Text?.Trim();
+            var category = formulaSheet.Cells[row, 3].Text?.Trim();
+            var effect = formulaSheet.Cells[row, 4].Text?.Trim();
+            var usage = formulaSheet.Cells[row, 5].Text?.Trim();
+            var property = formulaSheet.Cells[row, 6].Text?.Trim();
+            var formulaTypeText = formulaSheet.Cells[row, 7].Text?.Trim();
+            var isSharedText = formulaSheet.Cells[row, 8].Text?.Trim();
+            var remark = formulaSheet.Cells[row, 9].Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            var isShared = ParseIsSharedField(isSharedText);
+            var formulaDto = CreateFormulaDto(name, effect, usage, property, isShared, remark);
+            AddHerbsToFormula(formulaDto, formulaCode, herbItemsByFormulaCode);
+
+            return formulaDto;
+        }
+
+        /// <summary>
+        /// 解析是否共享字段
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装共享字段解析逻辑
+        /// </summary>
+        private static bool ParseIsSharedField(string? isSharedText)
+        {
+            if (string.IsNullOrWhiteSpace(isSharedText))
+            {
+                return false;
+            }
+
+            return isSharedText.Equals("是", StringComparison.OrdinalIgnoreCase) ||
+                   isSharedText.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                   isSharedText.Equals("共享", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 创建FormulaImportDto对象
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装DTO创建逻辑
+        /// </summary>
+        private static FormulaImportDto CreateFormulaDto(string name, string? effect, string? usage, 
+            string? property, bool isShared, string? remark)
+        {
+            return new FormulaImportDto
+            {
+                Name = name,
+                Effect = effect,
+                Usage = usage,
+                Property = property,
+                IsShared = isShared,
+                Remark = remark,
+                Herbs = new List<FormulaHerbImportDto>()
+            };
+        }
+
+        /// <summary>
+        /// 添加药材到验方
+        /// Issue #1789: 从ParseFormulasFromExcel提取，封装药材添加逻辑
+        /// </summary>
+        private static void AddHerbsToFormula(FormulaImportDto formulaDto, string? formulaCode,
+            Dictionary<string, List<HerbItemData>> herbItemsByFormulaCode)
+        {
+            if (string.IsNullOrWhiteSpace(formulaCode) || !herbItemsByFormulaCode.ContainsKey(formulaCode))
+            {
+                return;
+            }
+
+            var herbItems = herbItemsByFormulaCode[formulaCode];
+            foreach (var herbItem in herbItems)
+            {
+                formulaDto.Herbs.Add(new FormulaHerbImportDto
+                {
+                    HerbName = herbItem.HerbName,
+                    Quantity = herbItem.Quantity,
+                    Unit = herbItem.Unit ?? "g",
+                    Usage = herbItem.Usage,
+                    Preparation = herbItem.ProcessingMethod
+                });
+            }
         }
 
         /// <summary>

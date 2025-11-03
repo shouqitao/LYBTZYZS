@@ -59,121 +59,117 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterLogging(IContainerRegistry containerRegistry)
         {
+            RegisterLoggerFactory(containerRegistry);
+            RegisterInfrastructureLoggers(containerRegistry);
+            RegisterFoundationLoggers(containerRegistry);
+            RegisterPresentationAndShellLoggers(containerRegistry);
+            RegisterModuleLoggers(containerRegistry);
+            RegisterRepositoryLoggers(containerRegistry);
+            RegisterServiceLoggers(containerRegistry);
+        }
+
+
+        /// <summary>
+        /// 注册LoggerFactory
+        /// Issue #1789: 从RegisterLogging提取，封装LoggerFactory注册逻辑
+        /// </summary>
+        private static void RegisterLoggerFactory(IContainerRegistry containerRegistry)
+        {
             containerRegistry.RegisterSingleton<ILoggerFactory>(() =>
             {
                 return LoggerFactory.Create(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Information));
             });
+        }
 
-            // 注册 ILogger<T> - 为每个需要日志的服务单独注册
-            // ViewModelBase 通过 ILoggerFactory.CreateLogger(GetType()) 创建自己的 Logger
-            // 以下服务需要 ILogger<T> 构造函数注入：
+        /// <summary>
+        /// 通用Logger注册辅助方法
+        /// Issue #1789: 从RegisterLogging提取，减少重复代码
+        /// </summary>
+        private static void RegisterLogger<T>(IContainerRegistry containerRegistry)
+        {
+            containerRegistry.RegisterSingleton<ILogger<T>>(
+                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<T>());
+        }
 
-            // Infrastructure 层服务
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>());
+        /// <summary>
+        /// 注册Infrastructure层Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>(containerRegistry);
+        }
 
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>());
+        /// <summary>
+        /// 注册Foundation层Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterFoundationLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Foundation.Http.ApiService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>(containerRegistry);
+        }
 
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>());
+        /// <summary>
+        /// 注册Presentation和Shell层Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterPresentationAndShellLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Presentation.Notifications.NotificationService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Shell.App>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>(containerRegistry);
+        }
 
-            // Foundation 层服务
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.ApiService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.ApiService>());
+        /// <summary>
+        /// 注册业务模块Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterModuleLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Auth.AuthenticationModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Users.UsersModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Patients.PatientsModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Consultation.ConsultationModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Herbs.HerbsModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Formula.FormulaModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Clinical.ClinicalModule>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Admin.AdminModule>(containerRegistry);
+        }
 
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>());
+        /// <summary>
+        /// 注册Repository层Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterRepositoryLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Users.Repositories.UserRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Patients.Repositories.PatientRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>(containerRegistry);
+        }
 
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.AuthenticationService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>());
-
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.TokenStorageService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>());
-
-            // Issue #1245 修复: 注册 UsernameStorageService 的 Logger
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>());
-
-            // Issue #1246 修复: 注册 SecureCredentialStorage 的 Logger
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>());
-
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>());
-
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>());
-
-            // Presentation 层服务
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.NotificationService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.NotificationService>());
-
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>());
-
-            // Shell 层服务
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.App>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.App>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>());
-
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>());
-
-            // Issue #1239 修复: 注册所有 Prism 模块的 ILogger<T>
-            // 业务模块 (8个)
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Auth.AuthenticationModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Auth.AuthenticationModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Users.UsersModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Users.UsersModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Patients.PatientsModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Patients.PatientsModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.ConsultationModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.ConsultationModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Herbs.HerbsModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Herbs.HerbsModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.FormulaModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.FormulaModule>());
-
-            // Issue #1553: 角色主页模块 (2个)
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Clinical.ClinicalModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Clinical.ClinicalModule>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Admin.AdminModule>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Admin.AdminModule>());
-
-            // Issue #1553: 角色导航服务Logger
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>());
-
-            // Issue #1239 修复: 业务模块 Repositories (7个)
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Users.Repositories.UserRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Users.Repositories.UserRepository>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Patients.Repositories.PatientRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Patients.Repositories.PatientRepository>());
-            // Issue #1606 Phase 3: ConsultationRepository已删除
-            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>>(
-            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationRepository>());
-            // Issue #1590: REQ-001 - ConsultationApiClient已删除（Issue #1606）
-            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>>(
-            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Consultation.Repositories.ConsultationApiClient>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>());
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>());
-            // Issue #1606 Phase 3: PrescriptionRepository已删除
-            // containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>>(
-            //     resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Repositories.PrescriptionRepository>());
-
-            // Issue #1564: 业务模块 Services Logger（处方编辑器服务）
-            containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>>(
-                resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>());
+        /// <summary>
+        /// 注册业务服务Logger
+        /// Issue #1789: 从RegisterLogging提取，分组管理Logger注册
+        /// </summary>
+        private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
+        {
+            RegisterLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>(containerRegistry);
         }
 
         /// <summary>

@@ -622,122 +622,206 @@ namespace LYBT.Desktop.Patients.ViewModels
                     var row = dataTable.Rows[i];
                     var currentName = row["姓名"]?.ToString()?.Trim() ?? $"第{i + 2}行";
 
-                    try
-                    {
-                        // 检查是否为空行
-                        bool isEmptyRow = true;
-                        foreach (DataColumn col in dataTable.Columns)
-                        {
-                            if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
-                            {
-                                isEmptyRow = false;
-                                break;
-                            }
-                        }
+                    var rowResult = await ProcessSingleImportRow(row, i, dataTable.Columns);
+                    
+                    successCount += rowResult.Success ? 1 : 0;
+                    failCount += rowResult.Failed ? 1 : 0;
+                    skipCount += rowResult.Skipped ? 1 : 0;
+                    
+                    if (rowResult.Error != null)
+                        errors.Add(rowResult.Error);
 
-                        if (isEmptyRow)
-                        {
-                            skipCount++;
-                            _logger.LogInformation($"跳过空行: 第{i + 2}行");
-                            continue;
-                        }
-
-                        // 验证必需字段
-                        var name = row["姓名"]?.ToString()?.Trim();
-                        var gender = row["性别"]?.ToString()?.Trim();
-
-                        if (string.IsNullOrEmpty(name))
-                        {
-                            failCount++;
-                            var error = $"第{i + 2}行：姓名不能为空";
-                            errors.Add(error);
-                            _logger.LogWarning(error);
-                            continue;
-                        }
-
-                        if (string.IsNullOrEmpty(gender) || (gender != "男" && gender != "女" && gender != "未知"))
-                        {
-                            failCount++;
-                            var error = $"第{i + 2}行 ({name})：性别格式错误，应为'男'、'女'或'未知'";
-                            errors.Add(error);
-                            _logger.LogWarning(error);
-                            continue;
-                        }
-
-                        // 创建患者DTO
-                        var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
-                        var patientDto = new PatientInputDto
-                        {
-                            Name = name,
-                            Gender = ParseGender(gender),
-                            BirthDate = age > 0 ? DateTime.Today.AddYears(-age) : null,
-                            PhoneNumber = row["电话"]?.ToString()?.Trim(),
-                            IdNumber = row["证件号"]?.ToString()?.Trim(),
-                            Address = row["地址"]?.ToString()?.Trim(),
-                            AllergyHistory = row["过敏史"]?.ToString()?.Trim()
-                        };
-
-                        // Issue #1788: 使用CommandHandler创建患者
-                        var result = await _commandHandler.CreatePatientAsync(patientDto);
-                        if (result.IsSuccess && result.Data != null)
-                        {
-                            successCount++;
-                            _logger.LogInformation($"成功导入患者: {name} (第{i + 2}行)");
-                        }
-                        else
-                        {
-                            failCount++;
-                            var error = $"第{i + 2}行 ({name})：创建失败 - {result.ErrorMessage}";
-                            errors.Add(error);
-                            _logger.LogWarning(error);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        failCount++;
-                        var error = $"第{i + 2}行 ({currentName})：处理数据时发生异常 - {ex.Message}";
-                        errors.Add(error);
-                        _logger.LogError(ex, $"处理第{i + 2}行数据时发生错误: {currentName}");
-                    }
-
-                    // 报告进度
-                    var progress = new ImportProgressInfo
-                    {
-                        PercentComplete = (int)((double)(i + 1) / totalCount * 100),
-                        ProcessedCount = i + 1,
-                        TotalCount = totalCount,
-                        CurrentItem = currentName,
-                        Message = $"正在导入患者数据... ({i + 1}/{totalCount})"
-                    };
-
-                    worker.ReportProgress(progress.PercentComplete, progress);
-
-                    // 适当的处理延时，避免过快处理导致界面无法响应
+                    ReportImportProgress(worker, i, totalCount, currentName);
                     await Task.Delay(50);
                 }
 
-                e.Result = new
-                {
-                    SuccessCount = successCount,
-                    FailCount = failCount,
-                    SkipCount = skipCount,
-                    Errors = errors,
-                    TotalProcessed = successCount + failCount + skipCount
-                };
+                e.Result = CreateImportResult(successCount, failCount, skipCount, errors);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "导入过程中发生严重错误");
-                e.Result = new
+                e.Result = CreateImportResult(successCount, failCount, skipCount, errors, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 处理单行导入数据
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装单行处理逻辑
+        /// </summary>
+        private async Task<ImportRowResult> ProcessSingleImportRow(DataRow row, int rowIndex, DataColumnCollection columns)
+        {
+            var currentName = row["姓名"]?.ToString()?.Trim() ?? $"第{rowIndex + 2}行";
+
+            try
+            {
+                if (IsImportRowEmpty(row, columns))
                 {
-                    SuccessCount = successCount,
-                    FailCount = failCount,
-                    SkipCount = skipCount,
-                    Error = ex.Message,
-                    Errors = errors,
-                    TotalProcessed = successCount + failCount + skipCount
+                    _logger.LogInformation($"跳过空行: 第{rowIndex + 2}行");
+                    return ImportRowResult.CreateSkip();
+                }
+
+                var validationError = ValidateImportRequiredFields(row, rowIndex);
+                if (validationError != null)
+                {
+                    _logger.LogWarning(validationError);
+                    return ImportRowResult.CreateFail(validationError);
+                }
+
+                var patientDto = CreatePatientDtoFromRow(row);
+                var result = await _commandHandler.CreatePatientAsync(patientDto);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    _logger.LogInformation($"成功导入患者: {currentName} (第{rowIndex + 2}行)");
+                    return ImportRowResult.CreateSuccess();
+                }
+                else
+                {
+                    var error = $"第{rowIndex + 2}行 ({currentName})：创建失败 - {result.ErrorMessage}";
+                    _logger.LogWarning(error);
+                    return ImportRowResult.CreateFail(error);
+                }
+            }
+            catch (Exception ex)
+            {
+                var error = $"第{rowIndex + 2}行 ({currentName})：处理数据时发生异常 - {ex.Message}";
+                _logger.LogError(ex, $"处理第{rowIndex + 2}行数据时发生错误: {currentName}");
+                return ImportRowResult.CreateFail(error);
+            }
+        }
+
+        /// <summary>
+        /// 检查导入行是否为空
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装空行检查逻辑
+        /// </summary>
+        private static bool IsImportRowEmpty(DataRow row, DataColumnCollection columns)
+        {
+            foreach (DataColumn col in columns)
+            {
+                if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 验证导入行的必需字段
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装必需字段验证逻辑
+        /// </summary>
+        private static string? ValidateImportRequiredFields(DataRow row, int rowIndex)
+        {
+            var name = row["姓名"]?.ToString()?.Trim();
+            var gender = row["性别"]?.ToString()?.Trim();
+
+            if (string.IsNullOrEmpty(name))
+            {
+                return $"第{rowIndex + 2}行：姓名不能为空";
+            }
+
+            if (string.IsNullOrEmpty(gender) || (gender != "男" && gender != "女" && gender != "未知"))
+            {
+                return $"第{rowIndex + 2}行 ({name})：性别格式错误，应为'男'、'女'或'未知'";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 从DataRow创建PatientInputDto
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装DTO创建逻辑
+        /// </summary>
+        private PatientInputDto CreatePatientDtoFromRow(DataRow row)
+        {
+            var name = row["姓名"]?.ToString()?.Trim() ?? string.Empty;
+            var gender = row["性别"]?.ToString()?.Trim() ?? string.Empty;
+            var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
+
+            return new PatientInputDto
+            {
+                Name = name,
+                Gender = ParseGender(gender),
+                BirthDate = age > 0 ? DateTime.Today.AddYears(-age) : null,
+                PhoneNumber = row["电话"]?.ToString()?.Trim(),
+                IdNumber = row["证件号"]?.ToString()?.Trim(),
+                Address = row["地址"]?.ToString()?.Trim(),
+                AllergyHistory = row["过敏史"]?.ToString()?.Trim()
+            };
+        }
+
+        /// <summary>
+        /// 报告导入进度
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装进度报告逻辑
+        /// </summary>
+        private static void ReportImportProgress(BackgroundWorker worker, int currentIndex, int totalCount, string currentName)
+        {
+            var progress = new ImportProgressInfo
+            {
+                PercentComplete = (int)((double)(currentIndex + 1) / totalCount * 100),
+                ProcessedCount = currentIndex + 1,
+                TotalCount = totalCount,
+                CurrentItem = currentName,
+                Message = $"正在导入患者数据... ({currentIndex + 1}/{totalCount})"
+            };
+
+            worker.ReportProgress(progress.PercentComplete, progress);
+        }
+
+        /// <summary>
+        /// 创建导入结果对象
+        /// Issue #1789: 从ImportWorker_DoWork提取，封装结果创建逻辑
+        /// </summary>
+        private static object CreateImportResult(int successCount, int failCount, int skipCount, List<string> errors, string? errorMessage = null)
+        {
+            var result = new
+            {
+                SuccessCount = successCount,
+                FailCount = failCount,
+                SkipCount = skipCount,
+                Errors = errors,
+                TotalProcessed = successCount + failCount + skipCount
+            };
+
+            if (errorMessage != null)
+            {
+                return new
+                {
+                    result.SuccessCount,
+                    result.FailCount,
+                    result.SkipCount,
+                    Error = errorMessage,
+                    result.Errors,
+                    result.TotalProcessed
                 };
             }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// 导入行处理结果
+        /// Issue #1789: ProcessSingleImportRow的返回类型
+        /// </summary>
+        private readonly struct ImportRowResult
+        {
+            public bool Success { get; }
+            public bool Failed { get; }
+            public bool Skipped { get; }
+            public string? Error { get; }
+
+            private ImportRowResult(bool success, bool failed, bool skipped, string? error)
+            {
+                Success = success;
+                Failed = failed;
+                Skipped = skipped;
+                Error = error;
+            }
+
+            public static ImportRowResult CreateSuccess() => new(true, false, false, null);
+            public static ImportRowResult CreateFail(string error) => new(false, true, false, error);
+            public static ImportRowResult CreateSkip() => new(false, false, true, null);
         }
 
         private void ImportWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
