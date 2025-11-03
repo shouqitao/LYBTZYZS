@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +19,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
+        // Issue #1786: 使用DataManager替代直接Repository访问
+        private readonly PrescriptionDataManager _dataManager;
 
         #endregion
 
@@ -203,15 +204,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public SelectFormulaDialogViewModel(
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaRepository formulaService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -285,7 +287,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载验方列表...");
 
-                var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var pagedData = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
                 Formulas.Clear();
                 foreach (var item in pagedData.Items)
                 {
@@ -314,7 +317,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var allFormulas = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
                 var filtered = allFormulas.Items.AsEnumerable();
 
                 // 按关键字筛选
