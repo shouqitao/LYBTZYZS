@@ -131,6 +131,52 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
 
         #endregion
 
+        #region 基本CRUD操作
+
+        /// <summary>
+        /// 创建配方（Issue #1787: 支持基本创建操作）
+        /// </summary>
+        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> CreateAsync(FormulaInputDto createDto)
+        {
+            try
+            {
+                _logger.LogInformation("创建配方: {FormulaName}", createDto.Name);
+
+                var createdFormula = await _repository.CreateAsync(createDto);
+                _logger.LogInformation("配方创建成功: {FormulaId}", createdFormula.Id);
+
+                return (true, createdFormula, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建配方时发生异常: {FormulaName}", createDto.Name);
+                return (false, null, "创建配方时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 更新配方（Issue #1787: 支持基本更新操作）
+        /// </summary>
+        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> UpdateAsync(FormulaInputDto updateDto)
+        {
+            try
+            {
+                _logger.LogInformation("更新配方: {FormulaId}", updateDto.Id);
+
+                var updatedFormula = await _repository.UpdateAsync(updateDto);
+                _logger.LogInformation("配方更新成功: {FormulaName}", updatedFormula.Name);
+
+                return (true, updatedFormula, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新配方时发生异常: {FormulaId}", updateDto.Id);
+                return (false, null, "更新配方时发生系统错误");
+            }
+        }
+
+        #endregion
+
         #region 其他操作
 
         /// <summary>

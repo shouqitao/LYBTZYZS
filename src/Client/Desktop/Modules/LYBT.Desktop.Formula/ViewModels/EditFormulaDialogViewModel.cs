@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,8 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
+        // Issue #1787: 使用CommandHandler替代直接Repository访问
+        private readonly FormulaCommandHandler _commandHandler;
 
         #endregion
 
@@ -125,7 +127,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public EditFormulaDialogViewModel(
-            IFormulaRepository formulaRepository,
+            FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -133,7 +135,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            // Issue #1787: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化选项
             StatusOptions = Enum.GetValues<CommonStatus>();
@@ -174,10 +177,17 @@ namespace LYBT.Desktop.Formula.ViewModels
                         Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
                     };
 
-                    var updatedFormula = await _formulaRepository.UpdateAsync(updateDto);
+                    // Issue #1787: 使用CommandHandler更新
+                    var result = await _commandHandler.UpdateAsync(updateDto);
+                    if (!result.success || result.formula == null)
+                    {
+                        await ShowErrorMessageAsync(result.errorMessage ?? "更新配方失败");
+                        return;
+                    }
+
                     var parameters = new DialogParameters
                     {
-                        { "Formula", updatedFormula }
+                        { "Formula", result.formula }
                     };
                     RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
                     Logger.LogInformation("配方更新成功: {FormulaId}", FormulaId);
@@ -191,10 +201,17 @@ namespace LYBT.Desktop.Formula.ViewModels
                         Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
                     };
 
-                    var createdFormula = await _formulaRepository.CreateAsync(createDto);
+                    // Issue #1787: 使用CommandHandler创建
+                    var result = await _commandHandler.CreateAsync(createDto);
+                    if (!result.success || result.formula == null)
+                    {
+                        await ShowErrorMessageAsync(result.errorMessage ?? "创建配方失败");
+                        return;
+                    }
+
                     var parameters = new DialogParameters
                     {
-                        { "Formula", createdFormula }
+                        { "Formula", result.formula }
                     };
                     RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
                     Logger.LogInformation("配方创建成功");
@@ -293,16 +310,17 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     SetIsBusy(true, "正在加载配方信息...");
 
-                    var formula = await _formulaRepository.GetByIdAsync(formulaId.Value);
-                    if (formula == null)
+                    // Issue #1787: 使用CommandHandler查询
+                    var result = await _commandHandler.GetByIdAsync(formulaId.Value);
+                    if (!result.success || result.formula == null)
                     {
-                        await ShowErrorMessageAsync("配方不存在");
+                        await ShowErrorMessageAsync(result.errorMessage ?? "配方不存在");
                         return;
                     }
 
-                    FormulaName = formula.Name ?? string.Empty;
-                    Description = formula.Remark ?? string.Empty;
-                    Status = formula.Status;
+                    FormulaName = result.formula.Name ?? string.Empty;
+                    Description = result.formula.Remark ?? string.Empty;
+                    Status = result.formula.Status;
                 }
                 else
                 {
