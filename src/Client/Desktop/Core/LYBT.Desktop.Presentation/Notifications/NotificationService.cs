@@ -10,9 +10,6 @@ namespace LYBT.Desktop.Presentation.Notifications
     public class NotificationService : INotificationService
     {
         private readonly ILogger<NotificationService> _logger;
-#pragma warning disable CS0414 // Field is assigned but never used
-        private bool _isLoading = false;
-#pragma warning restore CS0414
 
         public NotificationService(ILogger<NotificationService> logger)
         {
@@ -129,8 +126,6 @@ namespace LYBT.Desktop.Presentation.Notifications
         {
             try
             {
-                _isLoading = true;
-
                 LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
                 {
                     IsLoading = true,
@@ -152,8 +147,6 @@ namespace LYBT.Desktop.Presentation.Notifications
         {
             try
             {
-                _isLoading = false;
-
                 LoadingStateChanged?.Invoke(this, new LoadingStateChangedEventArgs
                 {
                     IsLoading = false,

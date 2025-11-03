@@ -33,9 +33,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>当前患者数据</summary>
         public PatientDto? CurrentPatient { get; private set; }
 
-        /// <summary>原始患者数据（用于变更检测）</summary>
-        private PatientDto? _originalPatient;
-
         /// <summary>是否为新患者</summary>
         public bool IsNewPatient { get; private set; } = true;
 
@@ -70,7 +67,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                     // 新建患者模式
                     IsNewPatient = true;
                     CurrentPatient = null;
-                    _originalPatient = null;
                     IsReadOnly = false;
                     _logger.LogInformation("初始化为新建患者模式");
                 }
@@ -107,8 +103,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
 
                 if (CurrentPatient != null)
                 {
-                    // 保存原始数据副本用于变更检测
-                    _originalPatient = ClonePatient(CurrentPatient);
                     IsNewPatient = false;
                     _logger.LogInformation("成功加载患者数据: {PatientName}", CurrentPatient.Name);
                 }
@@ -162,7 +156,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 if (savedPatient != null)
                 {
                     CurrentPatient = savedPatient;
-                    _originalPatient = ClonePatient(savedPatient);
                     PatientId = savedPatient.Id;
                     IsNewPatient = false;
                     HasChanges = false;
@@ -204,7 +197,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 {
                     _logger.LogInformation("删除患者成功");
                     CurrentPatient = null;
-                    _originalPatient = null;
                     PatientId = Guid.Empty;
                 }
 
@@ -268,39 +260,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 EmergencyContactPhone = patient.EmergencyContactPhone,
                 EmergencyContactRelation = patient.EmergencyContactRelation,
                 Status = patient.Status
-            };
-        }
-
-        /// <summary>
-        /// 克隆患者对象（用于变更检测）
-        /// </summary>
-        private PatientDto ClonePatient(PatientDto patient)
-        {
-            return new PatientDto
-            {
-                Id = patient.Id,
-                Name = patient.Name,
-                Gender = patient.Gender,
-                BirthDate = patient.BirthDate,
-                Age = patient.Age,
-                IdNumber = patient.IdNumber,
-                PhoneNumber = patient.PhoneNumber,
-                Address = patient.Address,
-                MaritalStatus = patient.MaritalStatus,
-                IdType = patient.IdType,
-                BloodType = patient.BloodType,
-                AllergyHistory = patient.AllergyHistory,
-                EmergencyContactName = patient.EmergencyContactName,
-                EmergencyContactPhone = patient.EmergencyContactPhone,
-                EmergencyContactRelation = patient.EmergencyContactRelation,
-                LastVisitTime = patient.LastVisitTime,
-                VisitCount = patient.VisitCount,
-                DisableReason = patient.DisableReason,
-                PinYinCode = patient.PinYinCode,
-                Status = patient.Status,
-                // IsEnabled 是只读属性，由Status自动计算
-                CreatedAt = patient.CreatedAt,
-                UpdatedAt = patient.UpdatedAt
             };
         }
 

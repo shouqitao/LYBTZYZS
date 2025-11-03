@@ -22,7 +22,6 @@ namespace LYBT.Desktop.Users.ViewModels
         private readonly UserCommandHandler _commandHandler;
         private readonly ISessionManager _sessionManager;
         private Guid _currentUserId;
-        private string? _avatarFilePath;
 
         #region 属性
 
@@ -308,7 +307,6 @@ namespace LYBT.Desktop.Users.ViewModels
 
                     AvatarSource = bitmap;
                     HasAvatar = true;
-                    _avatarFilePath = filePath;
 
                     ClearError();
                     Logger.LogInformation("已选择头像: {FilePath}", filePath);
@@ -328,7 +326,6 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             AvatarSource = null;
             HasAvatar = false;
-            _avatarFilePath = null;
             UpdateAvatarInitial();
             Logger.LogInformation("已删除头像");
         }
