@@ -239,6 +239,46 @@ namespace LYBT.Desktop.MedicalCase.Components
 
         #endregion
 
+        #region 简单CRUD方法（非聚合根场景）
+
+        /// <summary>
+        /// 简单获取病案数据（不使用聚合根模式）
+        /// 用于只需要病案基本信息的场景（如DetailView）
+        /// </summary>
+        public virtual async Task<MedicalCaseDto?> GetByIdSimpleAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogDebug("简单获取病案数据: {MedicalCaseId}", id);
+                return await _repository.GetByIdAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "简单获取病案数据失败: {MedicalCaseId}", id);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 简单更新病案数据（不使用聚合根模式）
+        /// 用于只需要更新病案基本信息的场景（如DetailView）
+        /// </summary>
+        public virtual async Task<MedicalCaseDto?> UpdateSimpleAsync(MedicalCaseUpdateDto dto)
+        {
+            try
+            {
+                _logger.LogDebug("简单更新病案数据: {MedicalCaseId}", dto.Id);
+                return await _repository.UpdateAsync(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "简单更新病案数据失败: {MedicalCaseId}", dto.Id);
+                return null;
+            }
+        }
+
+        #endregion
+
         #region 聚合根专用方法
 
         /// <summary>
