@@ -12,6 +12,10 @@ namespace LYBT.Desktop.Infrastructure.Helpers
     /// </summary>
     public static class ExcelHelper
     {
+        /// <summary>
+        /// Excel列的最小宽度
+        /// </summary>
+        private const int MIN_COLUMN_WIDTH = 3000;
 
         /// <summary>
         /// 导出数据到Excel
@@ -63,16 +67,7 @@ namespace LYBT.Desktop.Infrastructure.Helpers
             }
 
             // 自动调整列宽
-            for (int i = 0; i < columns.Count; i++)
-            {
-                sheet.AutoSizeColumn(i);
-
-                // 设置最小列宽
-                if (sheet.GetColumnWidth(i) < 3000)
-                {
-                    sheet.SetColumnWidth(i, 3000);
-                }
-            }
+            AutoResizeColumns(sheet, columns.Count);
 
             // 保存文件
             using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -123,16 +118,7 @@ namespace LYBT.Desktop.Infrastructure.Helpers
             }
 
             // 自动调整列宽
-            for (int i = 0; i < columns.Length; i++)
-            {
-                sheet.AutoSizeColumn(i);
-
-                // 设置最小列宽
-                if (sheet.GetColumnWidth(i) < 3000)
-                {
-                    sheet.SetColumnWidth(i, 3000);
-                }
-            }
+            AutoResizeColumns(sheet, columns.Length);
 
             // 保存文件
             using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -141,6 +127,21 @@ namespace LYBT.Desktop.Infrastructure.Helpers
             }
 
             workbook.Close();
+        }
+
+        /// <summary>
+        /// 自动调整列宽
+        /// </summary>
+        private static void AutoResizeColumns(ISheet sheet, int columnCount)
+        {
+            for (int i = 0; i < columnCount; i++)
+            {
+                sheet.AutoSizeColumn(i);
+                if (sheet.GetColumnWidth(i) < MIN_COLUMN_WIDTH)
+                {
+                    sheet.SetColumnWidth(i, MIN_COLUMN_WIDTH);
+                }
+            }
         }
 
         /// <summary>

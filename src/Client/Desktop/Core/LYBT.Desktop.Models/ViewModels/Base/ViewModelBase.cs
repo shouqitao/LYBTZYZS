@@ -221,6 +221,29 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #region 安全执行方法
 
         /// <summary>
+        /// 状态消息自动清除延时（秒）
+        /// </summary>
+        private const int STATUS_MESSAGE_AUTO_CLEAR_DELAY_SECONDS = 3;
+
+        /// <summary>
+        /// 延时自动清除状态消息
+        /// </summary>
+        private void AutoClearStatusMessage(string message)
+        {
+            _ = Task.Delay(TimeSpan.FromSeconds(STATUS_MESSAGE_AUTO_CLEAR_DELAY_SECONDS))
+                .ContinueWith(_ =>
+                {
+                    RunOnUIThread(() =>
+                    {
+                        if (StatusMessage == message)
+                        {
+                            StatusMessage = string.Empty;
+                        }
+                    });
+                });
+        }
+
+        /// <summary>
         /// 安全执行异步操作
         /// </summary>
         protected async Task ExecuteSafelyAsync(
@@ -243,21 +266,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 if (showProgress)
                 {
                     StatusMessage = $"{operationName ?? "操作"}完成";
-
-                    // 延迟3秒后自动清除StatusMessage，避免永久显示
-                    var completionMessage = StatusMessage;
-                    _ = Task.Delay(TimeSpan.FromSeconds(3))
-                        .ContinueWith(_ =>
-                        {
-                            // 只清除当前的完成消息，避免误清除后续操作的消息
-                            RunOnUIThread(() =>
-                            {
-                                if (StatusMessage == completionMessage)
-                                {
-                                    StatusMessage = string.Empty;
-                                }
-                            });
-                        });
+                    AutoClearStatusMessage(StatusMessage);
                 }
             }
             catch (TaskCanceledException)
@@ -300,21 +309,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 if (showProgress)
                 {
                     StatusMessage = $"{operationName ?? "操作"}完成";
-
-                    // 延迟3秒后自动清除StatusMessage，避免永久显示
-                    var completionMessage = StatusMessage;
-                    _ = Task.Delay(TimeSpan.FromSeconds(3))
-                        .ContinueWith(_ =>
-                        {
-                            // 只清除当前的完成消息，避免误清除后续操作的消息
-                            RunOnUIThread(() =>
-                            {
-                                if (StatusMessage == completionMessage)
-                                {
-                                    StatusMessage = string.Empty;
-                                }
-                            });
-                        });
+                    AutoClearStatusMessage(StatusMessage);
                 }
 
                 return result;

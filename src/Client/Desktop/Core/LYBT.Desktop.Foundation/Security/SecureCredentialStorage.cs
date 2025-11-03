@@ -51,42 +51,25 @@ namespace LYBT.Desktop.Foundation.Security
                 if (rememberPassword && !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                 {
                     _logger.LogInformation("✅ [SaveCredentials] 参数校验通过，开始加密密码");
-
                     // 1. 加密密码（使用 DPAPI）
-                    var passwordBytes = Encoding.UTF8.GetBytes(password);
-                    var encryptedPassword = ProtectedData.Protect(
-                        passwordBytes,
-                        null, // entropy: 不使用额外的熵（足够安全，因为绑定到 Windows 用户）
-                        DataProtectionScope.CurrentUser); // 只有当前用户能解密
-
-                    _logger.LogInformation("✅ [SaveCredentials] 密码加密成功，Base64 长度: {Length}", Convert.ToBase64String(encryptedPassword).Length);
+                    var encryptedPassword = EncryptPassword(password);
+                    _logger.LogInformation("✅ [SaveCredentials] 密码加密成功，Base64 长度: {Length}", encryptedPassword.Length);
 
                     // 2. 构建存储对象
                     var storage = new CredentialStorage
                     {
                         Username = username,
-                        EncryptedPassword = Convert.ToBase64String(encryptedPassword),
+                        EncryptedPassword = encryptedPassword,
                         RememberPassword = true
                     };
 
                     // 3. 序列化为 JSON 并保存
-                    var json = JsonSerializer.Serialize(storage, new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                    });
-
                     _logger.LogInformation("📝 [SaveCredentials] 准备写入文件: {Path}", _storageFilePath);
-                    await File.WriteAllTextAsync(_storageFilePath, json, Encoding.UTF8);
+                    await SaveStorageToFileAsync(storage);
                     _logger.LogInformation("✅ [SaveCredentials] 文件写入成功");
 
                     // 4. 缓存到内存（已解密状态）
-                    _cachedCredentials = new CredentialCache
-                    {
-                        Username = username,
-                        Password = password,
-                        RememberPassword = true
-                    };
+                    UpdateCache(username, password, true);
 
                     _logger.LogInformation("✅ [SaveCredentials] 凭据已保存并加密（DPAPI）: {UserName}, 文件路径: {Path}", username, _storageFilePath);
                 }
@@ -127,38 +110,12 @@ namespace LYBT.Desktop.Foundation.Security
                 }
 
                 // 2. 从文件加载
-                if (!File.Exists(_storageFilePath))
-                {
-                    _logger.LogWarning("⚠️ [LoadCredentials] 文件不存在: {Path}", _storageFilePath);
-                    return null;
-                }
-
-                _logger.LogInformation("📖 [LoadCredentials] 文件存在，开始读取");
-
-                var json = await File.ReadAllTextAsync(_storageFilePath, Encoding.UTF8);
-                _logger.LogInformation("📄 [LoadCredentials] JSON读取成功，长度: {Length}", json.Length);
-
-                var storage = JsonSerializer.Deserialize<CredentialStorage>(json);
-
-                if (storage == null || !storage.RememberPassword || string.IsNullOrEmpty(storage.EncryptedPassword))
-                {
-                    _logger.LogWarning("⚠️ [LoadCredentials] 数据校验失败 - Storage null: {IsNull}, RememberPassword: {RememberPassword}, EncryptedPassword empty: {IsEmpty}",
-                        storage == null, storage?.RememberPassword, string.IsNullOrEmpty(storage?.EncryptedPassword));
-                    return null;
-                }
-
-                _logger.LogInformation("✅ [LoadCredentials] JSON反序列化成功，UserName: {UserName}", storage.Username);
+                var storage = await LoadStorageFromFileAsync();
+                if (storage == null) return null;
 
                 // 3. 解密密码（使用 DPAPI）
-                var encryptedBytes = Convert.FromBase64String(storage.EncryptedPassword);
-                _logger.LogInformation("🔓 [LoadCredentials] 开始解密，加密数据长度: {Length}", encryptedBytes.Length);
-
-                var decryptedBytes = ProtectedData.Unprotect(
-                    encryptedBytes,
-                    null, // entropy
-                    DataProtectionScope.CurrentUser);
-
-                var password = Encoding.UTF8.GetString(decryptedBytes);
+                _logger.LogInformation("🔓 [LoadCredentials] 开始解密，加密数据长度: {Length}", storage.EncryptedPassword.Length);
+                var password = DecryptPassword(storage.EncryptedPassword);
                 _logger.LogInformation("✅ [LoadCredentials] 密码解密成功");
 
                 // 4. 缓存到内存
@@ -241,6 +198,88 @@ namespace LYBT.Desktop.Foundation.Security
                 throw;
             }
         }
+
+        #region 私有辅助方法
+
+        /// <summary>
+        /// 使用DPAPI加密密码
+        /// </summary>
+        private string EncryptPassword(string password)
+        {
+            var passwordBytes = Encoding.UTF8.GetBytes(password);
+            var encryptedPassword = ProtectedData.Protect(
+                passwordBytes,
+                null,
+                DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(encryptedPassword);
+        }
+
+        /// <summary>
+        /// 使用DPAPI解密密码
+        /// </summary>
+        private string DecryptPassword(string encryptedPasswordBase64)
+        {
+            var encryptedBytes = Convert.FromBase64String(encryptedPasswordBase64);
+            var decryptedBytes = ProtectedData.Unprotect(
+                encryptedBytes,
+                null,
+                DataProtectionScope.CurrentUser);
+            return Encoding.UTF8.GetString(decryptedBytes);
+        }
+
+        /// <summary>
+        /// 从文件加载凭据存储对象
+        /// </summary>
+        private async Task<CredentialStorage?> LoadStorageFromFileAsync()
+        {
+            if (!File.Exists(_storageFilePath))
+            {
+                _logger.LogWarning("⚠️ [LoadCredentials] 文件不存在: {Path}", _storageFilePath);
+                return null;
+            }
+
+            _logger.LogInformation("📖 [LoadCredentials] 文件存在，开始读取");
+            var json = await File.ReadAllTextAsync(_storageFilePath, Encoding.UTF8);
+            _logger.LogInformation("📄 [LoadCredentials] JSON读取成功，长度: {Length}", json.Length);
+
+            var storage = JsonSerializer.Deserialize<CredentialStorage>(json);
+            if (storage == null || !storage.RememberPassword || string.IsNullOrEmpty(storage.EncryptedPassword))
+            {
+                _logger.LogWarning("⚠️ [LoadCredentials] 数据校验失败");
+                return null;
+            }
+
+            _logger.LogInformation("✅ [LoadCredentials] JSON反序列化成功，UserName: {UserName}", storage.Username);
+            return storage;
+        }
+
+        /// <summary>
+        /// 更新内存缓存
+        /// </summary>
+        private void UpdateCache(string username, string password, bool rememberPassword)
+        {
+            _cachedCredentials = new CredentialCache
+            {
+                Username = username,
+                Password = password,
+                RememberPassword = rememberPassword
+            };
+        }
+
+        /// <summary>
+        /// 保存凭据到文件
+        /// </summary>
+        private async Task SaveStorageToFileAsync(CredentialStorage storage)
+        {
+            var json = JsonSerializer.Serialize(storage, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+            await File.WriteAllTextAsync(_storageFilePath, json, Encoding.UTF8);
+        }
+
+        #endregion
 
         #region 数据结构
 
