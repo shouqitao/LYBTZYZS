@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -21,8 +22,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionApi _prescriptionApi;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1786: 使用DataManager替代直接Api/Repository访问
+        private readonly PrescriptionDataManager _dataManager;
         private readonly IFeatureToggleService _featureToggleService;
 
         #endregion
@@ -250,8 +251,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionManagementViewModel(
-            IPrescriptionApi prescriptionApi,
-            IMedicalCaseRepository medicalCaseRepository,
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IFeatureToggleService featureToggleService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -260,8 +260,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _featureToggleService = featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
 
             // 初始化命令（基于功能开关）
@@ -318,7 +318,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方列表...");
 
-                var response = await _prescriptionApi.GetPrescriptionsAsync(CurrentPage, PageSize, SearchText);
+                // Issue #1786: 使用DataManager包装Api方法
+                var response = await _dataManager.GetPrescriptionsAsync(CurrentPage, PageSize, SearchText);
                 var pagedData = response.Data ?? new PagedResult<PrescriptionDto> { Items = new List<PrescriptionDto>(), TotalCount = 0 };
                 Prescriptions.Clear();
                 foreach (var item in pagedData.Items)
@@ -384,7 +385,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在删除处方...");
 
-                await _medicalCaseRepository.DeletePrescriptionAsync(SelectedPrescription.Id);
+                // Issue #1786: 使用DataManager包装Repository方法
+                await _dataManager.DeletePrescriptionAsync(SelectedPrescription.Id);
                 var success = true;
                 if (success)
                 {

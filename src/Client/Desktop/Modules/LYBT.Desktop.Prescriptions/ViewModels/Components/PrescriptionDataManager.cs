@@ -394,6 +394,25 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
+        /// 删除处方（Repository方法）
+        /// Issue #1786: 为PrescriptionManagementViewModel提供删除处方功能
+        /// </summary>
+        public virtual async Task DeletePrescriptionAsync(Guid prescriptionId)
+        {
+            try
+            {
+                _logger.LogDebug("删除处方: PrescriptionId={PrescriptionId}", prescriptionId);
+                await _medicalCaseRepository.DeletePrescriptionAsync(prescriptionId);
+                _logger.LogInformation("处方删除成功: PrescriptionId={PrescriptionId}", prescriptionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除处方失败: PrescriptionId={PrescriptionId}", prescriptionId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 清空数据
         /// </summary>
         public void Clear()
