@@ -856,44 +856,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         try
         {
-            // 清理DispatcherTimer
-            if (_clockTimer != null)
-            {
-                _clockTimer.Stop();
-                _clockTimer.Tick -= OnClockTick;
-                _clockTimer = null!;
-                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
-            }
-
-            // 清理健康检查定时器
-            if (_healthCheckTimer != null)
-            {
-                _healthCheckTimer.Stop();
-                _healthCheckTimer = null!;
-                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
-            }
-
-            // 取消EventAggregator订阅
-            try
-            {
-                EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess);
-                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] LoginSuccessEvent订阅已取消");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
-            }
-
-            // Issue #877: 取消 Region 导航监控
-            try
-            {
-                _regionManager.Regions.CollectionChanged -= OnRegionsCollectionChanged;
-                System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] Region 导航监控已取消");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消Region监控失败: {ex.Message}");
-            }
+            CleanupClockTimer();
+            CleanupHealthCheckTimer();
+            UnsubscribeLoginEvent();
+            UnsubscribeRegionMonitoring();
 
             System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
         }
@@ -905,6 +871,70 @@ public class MainWindowViewModel : UnifiedViewModelBase
         {
             // 调用基类清理
             base.OnDisposing();
+        }
+    }
+
+    /// <summary>
+    /// 清理时钟定时器
+    /// Issue #1794: 提取定时器清理逻辑
+    /// </summary>
+    private void CleanupClockTimer()
+    {
+        if (_clockTimer != null)
+        {
+            _clockTimer.Stop();
+            _clockTimer.Tick -= OnClockTick;
+            _clockTimer = null!;
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
+        }
+    }
+
+    /// <summary>
+    /// 清理健康检查定时器
+    /// Issue #1794: 提取定时器清理逻辑
+    /// </summary>
+    private void CleanupHealthCheckTimer()
+    {
+        if (_healthCheckTimer != null)
+        {
+            _healthCheckTimer.Stop();
+            _healthCheckTimer = null!;
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
+        }
+    }
+
+    /// <summary>
+    /// 取消登录事件订阅
+    /// Issue #1794: 提取事件取消订阅逻辑
+    /// </summary>
+    private void UnsubscribeLoginEvent()
+    {
+        try
+        {
+            EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess);
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] LoginSuccessEvent订阅已取消");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 取消Region导航监控
+    /// Issue #1794: 提取Region监控取消逻辑
+    /// Issue #877: Region导航监控
+    /// </summary>
+    private void UnsubscribeRegionMonitoring()
+    {
+        try
+        {
+            _regionManager.Regions.CollectionChanged -= OnRegionsCollectionChanged;
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] Region 导航监控已取消");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消Region监控失败: {ex.Message}");
         }
     }
 
