@@ -1,4 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1783: 使用DataManager替代直接Repository访问
+        private readonly MedicalCaseDataManager _dataManager;
         private readonly ICommonDialogService? _dialogService; // Issue #1564: MVP阶段可为null
 
         #endregion
@@ -60,14 +62,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public CompletionViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             ICommonDialogService? dialogService = null) // Issue #1564: 改为可选参数，MVP阶段暂不实现
             : base(eventAggregator, loggerFactory, regionManager)
         {
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _dialogService = dialogService; // Issue #1564: 可为null，使用时需判断
 
@@ -194,7 +197,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 // 2. 更新医案状态为Closed（通过UpdateAsync方法）
                 // 注意：MedicalCaseStatus.Completed已合并到Closed状态
-                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
+                // Issue #1783: 使用DataManager获取医案
+                var medicalCase = await _dataManager.GetByIdSimpleAsync(MedicalCaseId);
                 if (medicalCase == null)
                 {
                     Logger.LogWarning("未找到医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
@@ -208,7 +212,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Status = MedicalCaseStatus.Completed.ToString()  // 设置状态为Completed - Epic #1612修正版
                 };
 
-                var updatedMedicalCase = await _medicalCaseRepository.UpdateAsync(updateDto);
+                // Issue #1783: 使用DataManager更新状态
+                var updatedMedicalCase = await _dataManager.UpdateSimpleAsync(updateDto);
+                if (updatedMedicalCase == null)
+                {
+                    Logger.LogWarning("更新医案状态失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    await ShowErrorMessageAsync("更新医案状态失败");
+                    return;
+                }
+
                 Logger.LogInformation("医案状态已更新为Closed，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
                 // 3. 获取医案编号
