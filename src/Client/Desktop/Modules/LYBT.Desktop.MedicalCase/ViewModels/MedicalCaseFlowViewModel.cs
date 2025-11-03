@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -25,7 +26,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private readonly IRegionManager _regionManager;
         private readonly IContainerProvider _containerProvider;
-        private readonly IMedicalCaseRepository _medicalCaseRepository; // Phase 2: 用于创建MedicalCase
+        // Issue #1783: 使用DataManager替代直接Repository访问
+        private readonly MedicalCaseDataManager _dataManager;
 
         #endregion
 
@@ -183,7 +185,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseFlowViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IRegionManager regionManager,
             IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
@@ -191,7 +193,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ISessionManager? sessionManager = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
@@ -521,8 +524,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("📝 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
                     createDto.PatientId, createDto.DoctorId, createDto.Status);
 
-                // Phase 2: 调用真实API创建MedicalCase
-                var createdDto = await _medicalCaseRepository.CreateAsync(createDto);
+                // Issue #1783: 使用DataManager创建MedicalCase
+                var createdDto = await _dataManager.CreateAsync(createDto);
+
+                if (createdDto == null)
+                {
+                    Logger.LogError("❌ DataManager返回null，创建失败");
+                    return Guid.Empty;
+                }
 
                 Logger.LogInformation("✅ MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
                 return createdDto.Id;
@@ -619,8 +628,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Status = newStatus.ToString()
                 };
 
-                // 调用API更新状态
-                await _medicalCaseRepository.UpdateAsync(updateDto);
+                // Issue #1783: 使用DataManager更新状态
+                var updated = await _dataManager.UpdateSimpleAsync(updateDto);
+
+                if (updated == null)
+                {
+                    throw new InvalidOperationException("DataManager返回null，状态更新失败");
+                }
 
                 Logger.LogInformation("MedicalCase状态更新成功，新状态: {NewStatus}", newStatus);
             }
@@ -702,8 +716,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                     Logger.LogInformation("检测到继续看诊场景，加载医案详情：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
 
-                    // 调用GetByIdWithDetailsAsync加载完整医案数据
-                    var medicalCaseDetail = await _medicalCaseRepository.GetByIdWithDetailsAsync(MedicalCaseId);
+                    // Issue #1783: 使用DataManager加载完整医案数据
+                    var medicalCaseDetail = await _dataManager.GetByIdWithDetailsAsync(MedicalCaseId);
+
+                    if (medicalCaseDetail == null)
+                    {
+                        Logger.LogWarning("未找到医案数据，MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                        await ShowErrorMessageAsync("未找到医案数据");
+                        return;
+                    }
 
                     if (medicalCaseDetail.Consultation != null)
                     {

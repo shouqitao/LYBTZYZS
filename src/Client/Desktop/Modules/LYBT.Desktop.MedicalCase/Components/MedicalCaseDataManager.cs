@@ -277,6 +277,49 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
+        /// <summary>
+        /// 创建新的医案（不使用聚合根模式）
+        /// 用于FlowViewModel创建新医案的场景
+        /// Issue #1783: 为FlowViewModel提供创建方法
+        /// </summary>
+        public virtual async Task<MedicalCaseDto?> CreateAsync(MedicalCaseCreateDto dto)
+        {
+            try
+            {
+                _logger.LogDebug("创建新医案: PatientId={PatientId}, DoctorId={DoctorId}", dto.PatientId, dto.DoctorId);
+                var created = await _repository.CreateAsync(dto);
+                _logger.LogInformation("医案创建成功: {MedicalCaseId}", created.Id);
+                return created;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建医案失败: PatientId={PatientId}", dto.PatientId);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 获取医案完整详情（包含Consultation和Prescription）
+        /// 用于FlowViewModel加载完整聚合根数据的场景
+        /// Issue #1783: 为FlowViewModel提供完整数据加载方法
+        /// </summary>
+        public virtual async Task<MedicalCaseDetailDto?> GetByIdWithDetailsAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogDebug("获取医案完整详情: {MedicalCaseId}", id);
+                var detail = await _repository.GetByIdWithDetailsAsync(id);
+                _logger.LogInformation("医案详情加载成功: {MedicalCaseId}, Consultation={HasConsultation}, Prescription={HasPrescription}",
+                    id, detail?.Consultation != null, detail?.Prescription != null);
+                return detail;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医案完整详情失败: {MedicalCaseId}", id);
+                return null;
+            }
+        }
+
         #endregion
 
         #region 聚合根专用方法
