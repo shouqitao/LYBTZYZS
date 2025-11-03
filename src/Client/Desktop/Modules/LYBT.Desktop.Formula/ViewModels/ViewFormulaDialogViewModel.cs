@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -20,7 +21,8 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
+        // Issue #1787: 使用CommandHandler替代直接Repository访问
+        private readonly FormulaCommandHandler _commandHandler;
 
         #endregion
 
@@ -65,7 +67,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public ViewFormulaDialogViewModel(
-            IFormulaRepository formulaRepository,
+            FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -73,7 +75,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            // Issue #1787: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化命令
             CloseCommand = new DelegateCommand(Close);
@@ -135,14 +138,15 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载验方详情...");
 
-                var formula = await _formulaRepository.GetByIdAsync(_formulaId);
-                if (formula == null)
+                // Issue #1787: 使用CommandHandler查询
+                var result = await _commandHandler.GetByIdAsync(_formulaId);
+                if (!result.success || result.formula == null)
                 {
-                    await ShowErrorMessageAsync("验方不存在");
+                    await ShowErrorMessageAsync(result.errorMessage ?? "验方不存在");
                     return;
                 }
 
-                Formula = formula;
+                Formula = result.formula;
                 HerbItems = new ObservableCollection<FormulaHerbItemDto>();
                 CalculateTotalCost();
                 StatusMessage = string.Empty;

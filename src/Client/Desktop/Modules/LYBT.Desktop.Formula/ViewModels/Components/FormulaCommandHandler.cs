@@ -145,6 +145,33 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         }
 
         /// <summary>
+        /// 根据ID获取配方（Issue #1787: 支持单个配方查询）
+        /// </summary>
+        public async Task<(bool success, FormulaDto? formula, string? errorMessage)> GetByIdAsync(Guid formulaId)
+        {
+            try
+            {
+                _logger.LogInformation("开始查询配方: FormulaId={FormulaId}", formulaId);
+
+                var formula = await _repository.GetByIdAsync(formulaId);
+
+                if (formula == null)
+                {
+                    _logger.LogWarning("配方不存在：FormulaId={FormulaId}", formulaId);
+                    return (false, null, "配方不存在");
+                }
+
+                _logger.LogInformation("查询配方成功：{FormulaName}", formula.Name);
+                return (true, formula, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询配方时发生异常：FormulaId={FormulaId}", formulaId);
+                return (false, null, "查询配方时发生系统错误");
+            }
+        }
+
+        /// <summary>
         /// 查看使用历史（占位实现）
         /// </summary>
         public Task<(bool success, string? errorMessage)> ViewUsageHistoryAsync(Guid formulaId)

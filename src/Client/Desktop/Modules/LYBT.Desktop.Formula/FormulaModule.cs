@@ -24,6 +24,12 @@ namespace LYBT.Desktop.Formula
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
+            // Issue #1787: 注册Formula模块组件化组件（Epic #1773 Component-Based架构）
+            containerRegistry.Register<ViewModels.Components.FormulaDataManager>();
+            containerRegistry.Register<ViewModels.Components.FormulaCommandHandler>();
+            containerRegistry.Register<ViewModels.Components.FormulaValidator>();
+            containerRegistry.Register<ViewModels.Components.FormulaCalculator>();
+
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.FormulaManagementViewModel>();
             containerRegistry.Register<ViewModels.FormulaDetailViewModel>();
