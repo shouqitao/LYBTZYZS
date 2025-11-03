@@ -1,4 +1,5 @@
 ﻿using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 
@@ -129,6 +130,24 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             }
         }
 
+        /// <summary>
+        /// 删除配方（简化版，Issue #1787: 兼容返回bool的调用）
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid formulaId)
+        {
+            try
+            {
+                _logger.LogInformation("删除配方: {FormulaId}", formulaId);
+                await _repository.DeleteAsync(formulaId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除配方时发生异常: {FormulaId}", formulaId);
+                return false;
+            }
+        }
+
         #endregion
 
         #region 基本CRUD操作
@@ -188,6 +207,29 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
 
             // TODO: 实现打印逻辑
             return Task.FromResult<(bool, string?)>((true, "打印功能开发中"));
+        }
+
+        /// <summary>
+        /// 分页查询配方（Issue #1787: 支持分页查询）
+        /// </summary>
+        public async Task<(bool success, PagedResult<FormulaDto>? data, string? errorMessage)> GetPagedAsync(
+            int page, int pageSize, string? searchText = null)
+        {
+            try
+            {
+                _logger.LogInformation("分页查询配方: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",
+                    page, pageSize, searchText);
+
+                var result = await _repository.GetPagedAsync(page, pageSize, searchText);
+
+                _logger.LogInformation("查询成功，共{TotalCount}条数据", result.TotalCount);
+                return (true, result, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页查询配方时发生异常");
+                return (false, null, "查询配方时发生系统错误");
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
@@ -19,14 +20,15 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
+        // Issue #1787: 使用CommandHandler替代直接Repository访问
+        private readonly FormulaCommandHandler _commandHandler;
 
         #endregion
 
         #region 构造函数
 
         public FormulaManagementViewModel(
-            IFormulaRepository formulaRepository,
+            FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -34,7 +36,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
+            // Issue #1787: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             PageTitle = "配方管理";
         }
@@ -50,16 +53,23 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var pagedData = await _formulaRepository.GetPagedAsync(page, pageSize, searchText);
+                // Issue #1787: 使用CommandHandler分页查询
+                var result = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
 
-                
+                if (!result.success || result.data == null)
+                {
+                    Logger.LogError("加载配方数据失败：{ErrorMessage}", result.errorMessage);
+                    throw new InvalidOperationException(result.errorMessage ?? "查询配方失败");
+                }
 
-                    // 更新分页信息
-                    TotalCount = pagedData.TotalCount;
-                    CurrentPage = pagedData.CurrentPage;
-                    PageSize = pagedData.PageSize;
+                var pagedData = result.data;
 
-                    return pagedData.Items;
+                // 更新分页信息
+                TotalCount = pagedData.TotalCount;
+                CurrentPage = pagedData.CurrentPage;
+                PageSize = pagedData.PageSize;
+
+                return pagedData.Items;
             }
             catch (Exception ex)
             {
@@ -88,7 +98,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             try
             {
-                var success = await _formulaRepository.DeleteAsync(item.Id);
+                // Issue #1787: 使用CommandHandler删除
+                var success = await _commandHandler.DeleteAsync(item.Id);
 
                 if (success)
                 {
@@ -123,7 +134,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     try
                     {
-                        var success = await _formulaRepository.DeleteAsync(id);
+                        // Issue #1787: 使用CommandHandler删除
+                        var success = await _commandHandler.DeleteAsync(id);
                         if (success)
                             successCount++;
                         else
