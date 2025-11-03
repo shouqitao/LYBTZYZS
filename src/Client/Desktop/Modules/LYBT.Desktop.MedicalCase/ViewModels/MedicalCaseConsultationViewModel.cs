@@ -230,6 +230,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 加载病案数据（支持继续看诊）
         /// Task 3.6 (#1663): 继续看诊功能
+        /// Issue #1794: 优化方法长度（54→39行），提取数据恢复逻辑
         /// </summary>
         public async Task LoadAsync(Guid medicalCaseId)
         {
@@ -239,7 +240,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始加载病案数据: {MedicalCaseId}", medicalCaseId);
 
                 // 1. 获取病案详情
-                // Issue #1783: 使用DataManager包装Repository方法（GetByIdWithDetailsAsync）
                 var medicalCase = await _dataManager.GetByIdWithDetailsAsync(medicalCaseId);
                 if (medicalCase == null)
                 {
@@ -247,35 +247,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // Task 3.5 (#1662): 保存PatientId和DoctorId用于暂存功能
+                // 2. 保存PatientId和DoctorId
                 _patientId = medicalCase.PatientId;
                 _doctorId = medicalCase.DoctorId;
 
-                // 2. 恢复辨证信息（完整四诊字段）
-                if (medicalCase.Consultation != null)
-                {
-                    ChiefComplaint = medicalCase.Consultation.ChiefComplaint;
-                    PresentIllness = medicalCase.Consultation.PresentIllness;
-                    Inspection = medicalCase.Consultation.Inspection;
-                    AuscultationOlfaction = medicalCase.Consultation.AuscultationOlfaction;
-                    Inquiry = medicalCase.Consultation.Inquiry;
-                    Palpation = medicalCase.Consultation.Palpation;
-                    TCMDiagnosis = medicalCase.Consultation.TCMDiagnosis;
-                    TreatmentPrinciple = medicalCase.Consultation.TreatmentPrinciple;
-                    MedicalAdvice = medicalCase.Consultation.MedicalAdvice;
-                    Remark = medicalCase.Consultation.Remark;
-                }
+                // 3. 恢复辨证信息
+                RestoreConsultationData(medicalCase.Consultation);
 
-                // 3. 恢复开处方标志
-                // Task 3.6 (#1663): 根据是否有处方来判断NeedsPrescription
-                // 说明：MedicalCaseDto没有NeedsPrescription字段，通过Prescription是否为null判断
-                bool hasPrescription = medicalCase.Prescription != null;
-                NeedsPrescription = hasPrescription;
-                ShowPrescriptionPanel = hasPrescription;
+                // 4. 恢复开处方标志
+                RestorePrescriptionFlags(medicalCase.Prescription != null);
 
-                // 4. 检查是否可编辑（根据病案状态）
-                // Phase 2: 将DTO业务逻辑移至ViewModel层
-                CanEdit = medicalCase.CaseStatus == MedicalCaseStatus.Active || medicalCase.CaseStatus == MedicalCaseStatus.Draft;
+                // 5. 检查是否可编辑
+                CanEdit = DetermineEditability(medicalCase.CaseStatus);
 
                 Logger.LogInformation("病案数据加载成功");
             }
@@ -284,6 +267,45 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogError(ex, "加载病案失败");
                 await ShowErrorMessageAsync($"加载病案失败: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 恢复辨证信息
+        /// Issue #1794: 从LoadAsync提取
+        /// </summary>
+        private void RestoreConsultationData(ConsultationDto? consultation)
+        {
+            if (consultation == null) return;
+
+            ChiefComplaint = consultation.ChiefComplaint;
+            PresentIllness = consultation.PresentIllness;
+            Inspection = consultation.Inspection;
+            AuscultationOlfaction = consultation.AuscultationOlfaction;
+            Inquiry = consultation.Inquiry;
+            Palpation = consultation.Palpation;
+            TCMDiagnosis = consultation.TCMDiagnosis;
+            TreatmentPrinciple = consultation.TreatmentPrinciple;
+            MedicalAdvice = consultation.MedicalAdvice;
+            Remark = consultation.Remark;
+        }
+
+        /// <summary>
+        /// 恢复开处方标志
+        /// Issue #1794: 从LoadAsync提取
+        /// </summary>
+        private void RestorePrescriptionFlags(bool hasPrescription)
+        {
+            NeedsPrescription = hasPrescription;
+            ShowPrescriptionPanel = hasPrescription;
+        }
+
+        /// <summary>
+        /// 判断是否可编辑
+        /// Issue #1794: 从LoadAsync提取
+        /// </summary>
+        private static bool DetermineEditability(MedicalCaseStatus caseStatus)
+        {
+            return caseStatus == MedicalCaseStatus.Active || caseStatus == MedicalCaseStatus.Draft;
         }
 
         /// <summary>
