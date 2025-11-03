@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using FluentAssertions;
 using LYBT.Module.Consultation.Mapping;
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Module.Consultation.Tests.Mapping

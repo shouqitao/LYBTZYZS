@@ -1,7 +1,7 @@
 ﻿using System.Windows;
+using LYBT.Desktop.Admin;    // Issue #1553: 管理员角色模块
 using LYBT.Desktop.Auth;
-using LYBT.Desktop.Shell.Services;
-using Microsoft.Extensions.Logging;
+using LYBT.Desktop.Clinical; // Issue #1553: 医生角色模块
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Herbs;
@@ -9,17 +9,17 @@ using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Prescriptions;
 using LYBT.Desktop.Shell.Extensions;
+using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.ViewModels;
 using LYBT.Desktop.Shell.Views;
 using LYBT.Desktop.Users;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
-using LYBT.Desktop.Clinical; // Issue #1553: 医生角色模块
-using LYBT.Desktop.Admin;    // Issue #1553: 管理员角色模块
 
 namespace LYBT.Desktop.Shell;
 
@@ -47,7 +47,7 @@ public partial class App : PrismApplication
         _splashScreen = new SplashScreenWindow();
         _splashScreen.Show();
         _splashScreen.UpdateStatus("正在初始化应用程序...");
-        
+
         // 2. ✅ 同步调用 base.OnStartup（触发 Prism 生命周期）
         // Prism 会依次调用：CreateShell → InitializeShell → OnInitialized
         base.OnStartup(e);

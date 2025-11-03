@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.Consultation.Mapping;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
 using LYBT.Shared.Validators.Consultation;

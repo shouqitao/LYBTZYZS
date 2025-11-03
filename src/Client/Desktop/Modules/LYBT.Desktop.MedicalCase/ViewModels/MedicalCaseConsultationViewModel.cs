@@ -1,5 +1,4 @@
-using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;

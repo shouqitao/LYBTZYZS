@@ -1,6 +1,6 @@
 ﻿using FluentValidation.TestHelper;
-using LYBT.Shared.Validators.Consultation;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Validators.Consultation;
 using Xunit;
 
 namespace LYBT.Module.Consultation.Tests.Validators;

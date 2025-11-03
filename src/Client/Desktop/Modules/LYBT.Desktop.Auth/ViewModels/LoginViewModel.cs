@@ -1,9 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Events;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

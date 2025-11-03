@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces.Components;
+﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Extensions;
@@ -252,7 +252,7 @@ namespace LYBT.Desktop.Consultation.Components
         {
             try
             {
-                _logger.LogInformation("完成Step1: MedicalCaseId={MedicalCaseId}, PrescriptionEnabled={PrescriptionEnabled}", 
+                _logger.LogInformation("完成Step1: MedicalCaseId={MedicalCaseId}, PrescriptionEnabled={PrescriptionEnabled}",
                     medicalCaseId, request.PrescriptionEnabled);
 
                 var stepDto = await _medicalCaseRepository.CompleteStep1Async(medicalCaseId, request);

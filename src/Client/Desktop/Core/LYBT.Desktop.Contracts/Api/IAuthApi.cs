@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using LYBT.Shared.Models.Contracts.Auth;
 namespace LYBT.Desktop.Contracts.Api
 {

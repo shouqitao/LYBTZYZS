@@ -1,4 +1,4 @@
-using LYBT.Desktop.Presentation.Components.PatientSelector;
+﻿using LYBT.Desktop.Presentation.Components.PatientSelector;
 using Prism.Ioc;
 
 namespace LYBT.Desktop.Presentation.DependencyInjection
@@ -18,7 +18,7 @@ namespace LYBT.Desktop.Presentation.DependencyInjection
         {
             // 注册PatientSelectorViewModel
             containerRegistry.Register<PatientSelectorViewModel>();
-            
+
             return containerRegistry;
         }
 
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Presentation.DependencyInjection
         {
             // 注册ViewModel
             containerRegistry.Register<PatientSelectorViewModel>();
-            
+
             return containerRegistry;
         }
     }

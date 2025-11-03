@@ -11,7 +11,7 @@ public class LybtOptions
     public const string SectionName = "Lybt";
 
     // =========== 认证与安全配置 ===========
-    
+
     /// <summary>
     /// JWT配置
     /// Issue #1761 Phase 3.1: 从Authentication.Jwt提升为顶层属性

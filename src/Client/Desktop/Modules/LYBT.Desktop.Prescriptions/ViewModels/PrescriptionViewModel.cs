@@ -1,8 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -713,7 +710,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         private async void OnFormulaImported()
         {
             Logger.LogInformation("验方导入成功，重新加载处方数据");
-            
+
             try
             {
                 SetIsBusy(true, "正在刷新处方数据...");

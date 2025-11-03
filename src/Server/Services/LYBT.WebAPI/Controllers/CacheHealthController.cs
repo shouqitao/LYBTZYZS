@@ -1,9 +1,9 @@
-﻿using LYBT.Infrastructure.Web;
+﻿using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
+using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 
 namespace LYBT.WebAPI.Controllers
 {

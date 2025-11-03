@@ -1,4 +1,4 @@
-namespace LYBT.Module.Prescriptions.Interfaces
+﻿namespace LYBT.Module.Prescriptions.Interfaces
 {
     /// <summary>
     /// 处方编号生成服务接口

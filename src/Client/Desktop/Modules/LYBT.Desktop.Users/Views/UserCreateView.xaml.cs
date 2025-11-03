@@ -1,6 +1,4 @@
-using System.Windows;
-using System.Windows.Controls;
-using LYBT.Desktop.Users.ViewModels;
+﻿using System.Windows.Controls;
 
 namespace LYBT.Desktop.Users.Views
 {

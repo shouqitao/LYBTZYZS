@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
@@ -11,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -40,7 +34,7 @@ namespace LYBT.Module.Patients.Tests.Services
                 _loggerMock.Object);
         }
 
-        
+
 
         #region GetPagedAsync 测试
 
@@ -305,7 +299,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var patientId = Guid.NewGuid();
             var existingPatient = CreateTestPatient(patientId);
-            
+
             var updateDto = new PatientInputDto
             {
                 Name = "更新的姓名",
@@ -526,8 +520,8 @@ namespace LYBT.Module.Patients.Tests.Services
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => 
-                        v.ToString()!.Contains("搜索患者时发生错误") && 
+                    It.Is<It.IsAnyType>((v, t) =>
+                        v.ToString()!.Contains("搜索患者时发生错误") &&
                         v.ToString()!.Contains(keyword)),
                     exception,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),

@@ -1,5 +1,5 @@
+﻿using System.Windows;
 using LYBT.Desktop.Patients.ViewModels;
-using System.Windows;
 
 namespace LYBT.Desktop.Patients.Views
 {

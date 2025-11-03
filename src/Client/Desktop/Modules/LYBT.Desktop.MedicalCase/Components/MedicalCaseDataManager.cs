@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.Api; // Issue #1783: 添加Api接口支持
+﻿using LYBT.Desktop.Contracts.Api; // Issue #1783: 添加Api接口支持
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common; // Issue #1783: 添加PagedResult支持
@@ -595,7 +595,7 @@ namespace LYBT.Desktop.MedicalCase.Components
             {
                 _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}", patientId);
                 var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId);
-                
+
                 if (unfinishedCase != null)
                 {
                     _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}", unfinishedCase.Id);
@@ -604,7 +604,7 @@ namespace LYBT.Desktop.MedicalCase.Components
                 {
                     _logger.LogInformation("患者无未完成病案: PatientId={PatientId}", patientId);
                 }
-                
+
                 return unfinishedCase;
             }
             catch (Exception ex)

@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Mapping;

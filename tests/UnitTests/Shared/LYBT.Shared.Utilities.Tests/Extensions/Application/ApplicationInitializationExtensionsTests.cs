@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Shared.Utilities.Extensions.Application;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

@@ -381,10 +381,10 @@ public class JwtServiceTests
         {
             Jwt = new JwtConfiguration
             {
-                    SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
-                    Issuer = "LYBT",
-                    Audience = "LYBTUsers"
-                }
+                SecretKey = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+                Issuer = "LYBT",
+                Audience = "LYBTUsers"
+            }
         });
 
         var config = new Mock<IConfiguration>();
@@ -406,10 +406,10 @@ public class JwtServiceTests
         {
             Jwt = new JwtConfiguration
             {
-                    SecretKey = "TooShortKey123",
-                    Issuer = "LYBT",
-                    Audience = "LYBTUsers"
-                }
+                SecretKey = "TooShortKey123",
+                Issuer = "LYBT",
+                Audience = "LYBTUsers"
+            }
         });
 
         var config = new Mock<IConfiguration>();
@@ -430,10 +430,10 @@ public class JwtServiceTests
         {
             Jwt = new JwtConfiguration
             {
-                    SecretKey = "12345678901234567890123456789012", // 正好 32 字符
-                    Issuer = "LYBT",
-                    Audience = "LYBTUsers"
-                }
+                SecretKey = "12345678901234567890123456789012", // 正好 32 字符
+                Issuer = "LYBT",
+                Audience = "LYBTUsers"
+            }
         });
 
         var config = new Mock<IConfiguration>();
@@ -455,10 +455,10 @@ public class JwtServiceTests
         {
             Jwt = new JwtConfiguration
             {
-                    SecretKey = "",
-                    Issuer = "LYBT",
-                    Audience = "LYBTUsers"
-                }
+                SecretKey = "",
+                Issuer = "LYBT",
+                Audience = "LYBTUsers"
+            }
         });
 
         var config = new Mock<IConfiguration>();

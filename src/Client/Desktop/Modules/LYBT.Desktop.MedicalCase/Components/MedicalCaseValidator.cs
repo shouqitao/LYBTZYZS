@@ -1,5 +1,4 @@
-using FluentValidation.Results;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Extensions;

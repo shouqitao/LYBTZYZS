@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Contracts.Models
+﻿namespace LYBT.Desktop.Contracts.Models
 {
     /// <summary>
     /// 导入验证结果

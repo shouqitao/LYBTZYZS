@@ -1,6 +1,5 @@
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
-using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -95,7 +94,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 Logger.LogInformation("用户选择继续看诊，导航到Step 1");
-                
+
                 // 导航到MedicalCaseFlowView，StartStep=1
                 _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView",
                     new NavigationParameters { { "StartStep", 1 } });

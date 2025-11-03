@@ -1,11 +1,10 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {

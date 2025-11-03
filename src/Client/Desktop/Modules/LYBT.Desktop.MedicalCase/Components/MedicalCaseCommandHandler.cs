@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces.Components;
+﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;

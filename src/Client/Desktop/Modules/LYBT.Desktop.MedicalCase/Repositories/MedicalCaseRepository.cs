@@ -1,6 +1,6 @@
-using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.Contracts.Api;
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Repositories;
+using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -222,7 +222,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入配方失败,MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}", 
+                _logger.LogError(ex, "导入配方失败,MedicalCaseId: {MedicalCaseId}, FormulaId: {FormulaId}",
                     medicalCaseId, formulaId);
                 throw;
             }
@@ -250,11 +250,11 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-    public async Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
-    {
-        var response = await _api.UpdatePrescriptionAsync(medicalCaseId, dto);
-        return response.Data ?? throw new InvalidOperationException("更新处方失败,服务器未返回数据");
-    }
+        public async Task<PrescriptionDto> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+        {
+            var response = await _api.UpdatePrescriptionAsync(medicalCaseId, dto);
+            return response.Data ?? throw new InvalidOperationException("更新处方失败,服务器未返回数据");
+        }
 
         /// <summary>
         /// 删除医案的处方(Issue #1608补充)

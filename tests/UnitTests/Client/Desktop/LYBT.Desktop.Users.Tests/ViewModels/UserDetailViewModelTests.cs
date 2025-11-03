@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.ViewModels.Components;
@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
 {
@@ -130,7 +129,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             // Arrange
             _viewModel.User = CreateSampleUserDto();
-            
+
             // 使用反射设置IsBusy为true
             var isBusyProperty = typeof(UserDetailViewModel).BaseType!
                 .GetProperty("IsBusy", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);

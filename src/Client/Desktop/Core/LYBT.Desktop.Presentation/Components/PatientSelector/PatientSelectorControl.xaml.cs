@@ -1,4 +1,4 @@
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using Prism.Events;
 
 namespace LYBT.Desktop.Presentation.Components.PatientSelector

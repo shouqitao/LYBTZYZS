@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-
-namespace LYBT.WebAPI.Extensions.ServiceCollection
+﻿namespace LYBT.WebAPI.Extensions.ServiceCollection
 {
     /// <summary>
     /// 授权策略相关的扩展方法

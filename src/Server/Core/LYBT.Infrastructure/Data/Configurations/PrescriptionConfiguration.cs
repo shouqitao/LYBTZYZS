@@ -1,5 +1,4 @@
-using LYBT.Entities.MedicalCase;
-using LYBT.Entities.Prescriptions;
+﻿using LYBT.Entities.Prescriptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

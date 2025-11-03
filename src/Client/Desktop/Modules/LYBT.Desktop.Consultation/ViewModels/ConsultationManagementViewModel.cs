@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

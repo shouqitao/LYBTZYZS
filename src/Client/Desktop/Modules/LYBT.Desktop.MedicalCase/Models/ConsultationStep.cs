@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.MedicalCase.Models
+﻿namespace LYBT.Desktop.MedicalCase.Models
 {
     /// <summary>
     /// 看病流程步骤枚举（重构自FlowStep，删除患者选择）

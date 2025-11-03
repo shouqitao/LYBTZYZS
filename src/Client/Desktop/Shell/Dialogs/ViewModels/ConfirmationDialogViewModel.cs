@@ -4,7 +4,6 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using System;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {

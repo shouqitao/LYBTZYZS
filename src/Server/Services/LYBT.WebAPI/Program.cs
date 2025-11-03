@@ -6,7 +6,6 @@
 /// </summary>
 using LYBT.WebAPI.Extensions;
 using Serilog;
-using System.Reflection;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
@@ -46,7 +45,7 @@ public class Program
         try
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             // 配置主机和服务
             builder.Host.ConfigureEnvironmentAwareHosting();
             builder.Host.UseSerilog();

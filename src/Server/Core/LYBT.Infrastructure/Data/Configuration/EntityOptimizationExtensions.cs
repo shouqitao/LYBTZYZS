@@ -1,7 +1,5 @@
 ﻿using LYBT.Entities.Common;
-using LYBT.Entities.MedicalCase;
 using LYBT.Entities.Patients;
-using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 

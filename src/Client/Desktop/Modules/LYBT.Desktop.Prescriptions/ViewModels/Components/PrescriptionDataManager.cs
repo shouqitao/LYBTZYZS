@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Formula.Interfaces; // Issue #1786: 为SelectFormulaDialogViewModel提供Formula查询功能
 using LYBT.Desktop.Herbs.Interfaces; // Issue #1786: 为HerbSelectionDialogViewModel提供Herb查询功能
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common; // Issue #1786: 为ApiResponse和PagedResult添加命名空间
 using LYBT.Shared.Models.Contracts.Formula; // Issue #1786: 为Formula查询添加DTO命名空间

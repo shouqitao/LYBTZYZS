@@ -378,7 +378,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 _logger.LogInformation("开始查询患者：PatientId={PatientId}", patientId);
 
                 var patient = await _patientRepository.GetByIdAsync(patientId);
-                
+
                 if (patient == null)
                 {
                     _logger.LogWarning("患者不存在：PatientId={PatientId}", patientId);

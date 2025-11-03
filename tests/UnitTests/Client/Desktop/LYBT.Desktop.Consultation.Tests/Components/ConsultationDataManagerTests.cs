@@ -1,12 +1,10 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Consultation.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace LYBT.Desktop.Consultation.Tests.Components
 {

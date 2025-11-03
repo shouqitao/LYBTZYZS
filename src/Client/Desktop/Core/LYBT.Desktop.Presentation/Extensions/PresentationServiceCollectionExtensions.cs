@@ -1,4 +1,4 @@
-using LYBT.Desktop.Presentation.Notifications;
+﻿using LYBT.Desktop.Presentation.Notifications;
 using LYBT.Desktop.Presentation.Theming;
 using LYBT.Desktop.Presentation.UserExperience;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,8 +1,7 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Module.Auth;
@@ -13,7 +12,6 @@ using LYBT.Module.MedicalCase;
 using LYBT.Module.Patients;
 using LYBT.Module.Prescriptions;
 using LYBT.Module.Users;
-using LYBT.WebAPI.Extensions.ServiceCollection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;

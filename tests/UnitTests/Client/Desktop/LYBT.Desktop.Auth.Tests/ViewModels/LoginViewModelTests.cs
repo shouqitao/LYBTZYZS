@@ -1,14 +1,11 @@
 ﻿using FluentAssertions;
 using LYBT.Desktop.Auth.ViewModels;
-using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Foundation.HealthCheck;
+using LYBT.Desktop.Foundation.Security;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
-using Xunit;
-using Microsoft.Extensions.Logging;
-using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Shared.Models.Contracts.Users;
 
 namespace LYBT.Desktop.Auth.Tests.ViewModels
 {
@@ -74,7 +71,7 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
             // _viewModel.HasMessage.Should().BeFalse();
             // _viewModel.ApiStatus.Should().Be(ApiHealthStatus.Checking);
             // _viewModel.ApiStatusMessage.Should().Be("正在检查连接...");
-            
+
             // 由于依赖注入复杂性，这里仅作为演示
             true.Should().BeTrue(); // 占位符断言
         }
@@ -91,11 +88,11 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
 
             // Act - 设置属性值
             // _viewModel.UserName = "testuser";
-            
+
             // Assert - 验证属性变更通知
             // propertyChanged.Should().BeTrue();
             // _viewModel.UserName.Should().Be("testuser");
-            
+
             // 演示模式
             true.Should().BeTrue();
         }
@@ -106,10 +103,10 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
             // Arrange - 设置有效输入
             // _viewModel.UserName = "testuser";
             // _viewModel.Password = "password123";
-            
+
             // Act & Assert - 验证命令可执行
             // _viewModel.LoginCommand.CanExecute(null).Should().BeTrue();
-            
+
             // 演示模式
             true.Should().BeTrue();
         }
@@ -120,10 +117,10 @@ namespace LYBT.Desktop.Auth.Tests.ViewModels
             // Arrange - 设置无效输入
             // _viewModel.UserName = string.Empty;
             // _viewModel.Password = "password123";
-            
+
             // Act & Assert - 验证命令不可执行
             // _viewModel.LoginCommand.CanExecute(null).Should().BeFalse();
-            
+
             // 演示模式
             true.Should().BeTrue();
         }

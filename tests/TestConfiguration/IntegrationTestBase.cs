@@ -1,17 +1,17 @@
+﻿using System;
+using System.Net.Http;
+using LYBT.Infrastructure.Data;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.WebAPI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Net.Http;
 using Xunit;
-using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Contracts.Common;
-using LYBT.WebAPI;
 
 namespace LYBT.Tests.Common
 {

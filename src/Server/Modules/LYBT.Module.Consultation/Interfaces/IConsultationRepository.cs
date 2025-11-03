@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 

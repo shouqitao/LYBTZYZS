@@ -1,7 +1,4 @@
-using System;
-using System.Globalization;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using LYBT.Desktop.Prescriptions.Models;

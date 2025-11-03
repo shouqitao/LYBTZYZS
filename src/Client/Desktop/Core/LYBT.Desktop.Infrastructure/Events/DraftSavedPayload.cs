@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Desktop.Infrastructure.Events
+﻿namespace LYBT.Desktop.Infrastructure.Events
 {
     /// <summary>
     /// 草稿保存事件载荷

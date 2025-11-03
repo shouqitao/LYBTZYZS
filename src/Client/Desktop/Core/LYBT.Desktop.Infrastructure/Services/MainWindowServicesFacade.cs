@@ -1,5 +1,5 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Foundation.Security;
+﻿using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Infrastructure.Services

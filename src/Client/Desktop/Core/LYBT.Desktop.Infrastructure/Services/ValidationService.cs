@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using Microsoft.Extensions.Logging;

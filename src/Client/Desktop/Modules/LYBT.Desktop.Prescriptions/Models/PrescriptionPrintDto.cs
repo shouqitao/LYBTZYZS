@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace LYBT.Desktop.Prescriptions.Models
+﻿namespace LYBT.Desktop.Prescriptions.Models
 {
     /// <summary>
     /// 处方打印数据模型

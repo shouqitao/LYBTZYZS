@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Interfaces.Components
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces.Components
 {
     /// <summary>
     /// 命令处理器接口 - 组件化MVVM架构核心接口

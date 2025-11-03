@@ -1,5 +1,5 @@
+﻿using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Infrastructure.Repositories
 {
@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
     /// <typeparam name="TCreateDto">创建DTO类型</typeparam>
     /// <typeparam name="TUpdateDto">更新DTO类型</typeparam>
     /// <typeparam name="TApi">Refit API接口类型</typeparam>
-    public abstract class RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi> 
+    public abstract class RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>
         where TApi : class
         where TDto : class
         where TCreateDto : class
@@ -247,7 +247,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         {
             if (page < 1)
                 throw new ArgumentException("页码必须大于0", nameof(page));
-            
+
             if (pageSize < 1 || pageSize > 1000)
                 throw new ArgumentException("每页大小必须在1-1000之间", nameof(pageSize));
         }
@@ -270,7 +270,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// <param name="entityId">实体ID</param>
         protected virtual void LogOperationSuccess(string operation, Guid entityId)
         {
-            _logger.LogInformation("{Operation}成功，ID: {Id}, 类型: {EntityType}", 
+            _logger.LogInformation("{Operation}成功，ID: {Id}, 类型: {EntityType}",
                 operation, entityId, typeof(TDto).Name);
         }
 
@@ -282,7 +282,7 @@ namespace LYBT.Desktop.Infrastructure.Repositories
         /// <param name="exception">异常信息</param>
         protected virtual void LogOperationFailure(string operation, Guid entityId, Exception exception)
         {
-            _logger.LogError(exception, "{Operation}失败，ID: {Id}, 类型: {EntityType}", 
+            _logger.LogError(exception, "{Operation}失败，ID: {Id}, 类型: {EntityType}",
                 operation, entityId, typeof(TDto).Name);
         }
 

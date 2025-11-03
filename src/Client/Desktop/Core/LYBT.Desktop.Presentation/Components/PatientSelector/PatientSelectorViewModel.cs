@@ -1,9 +1,5 @@
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using LYBT.Desktop.Infrastructure.Events;
 using Prism.Commands;
 using Prism.Events;
@@ -201,7 +197,7 @@ namespace LYBT.Desktop.Presentation.Components.PatientSelector
             {
                 // 300ms 防抖
                 await Task.Delay(300, _searchCancellationTokenSource.Token);
-                
+
                 if (!string.IsNullOrEmpty(SearchKeyword))
                 {
                     await SearchAsync();
@@ -226,7 +222,7 @@ namespace LYBT.Desktop.Presentation.Components.PatientSelector
                 // 临时模拟搜索结果
                 await Task.Delay(500); // 模拟网络延迟
                 SearchResults.Clear();
-                
+
                 // 模拟一些搜索结果
                 var mockResults = new[]
                 {
@@ -314,7 +310,7 @@ namespace LYBT.Desktop.Presentation.Components.PatientSelector
                 ErrorMessage = string.Empty;
 
                 // 验证手机号是否重复（简化验证）
-                var phoneExists = SearchResults.Any(p => 
+                var phoneExists = SearchResults.Any(p =>
                 {
                     var phoneProp = p.GetType().GetProperty("PhoneNumber")?.GetValue(p)?.ToString();
                     return phoneProp == NewPatientPhone;

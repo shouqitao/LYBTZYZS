@@ -2,8 +2,6 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
-using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.MedicalCase.Interfaces; // Epic #1600 Phase 5
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

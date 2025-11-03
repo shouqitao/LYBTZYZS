@@ -1,4 +1,4 @@
-using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 添加Component命名空间
+﻿using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Repositories;
 using Prism.Ioc;

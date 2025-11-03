@@ -1,9 +1,8 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.ViewModels.Components;
-using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
 {
@@ -154,7 +152,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Act - 直接调用GetItemsAsync，避免WPF Dispatcher
             var method = typeof(UserManagementViewModel).BaseType!
                 .GetMethod("GetItemsAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             var result = await (Task<IEnumerable<UserDto>>)method!.Invoke(_viewModel, new object[] { 1, 20, searchText })!;
 
             // Assert - 验证Repository被正确调用

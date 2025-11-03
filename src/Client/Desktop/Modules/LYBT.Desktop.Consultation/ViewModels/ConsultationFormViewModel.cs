@@ -1,5 +1,4 @@
-
-using LYBT.Desktop.Consultation.Components; // Issue #1784: 添加Component命名空间
+﻿using LYBT.Desktop.Consultation.Components; // Issue #1784: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces; // 保留用于IValidatable和ISaveable接口
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System.Windows; // Issue #1590: 用于Visibility枚举
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {

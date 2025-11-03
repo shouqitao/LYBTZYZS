@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;

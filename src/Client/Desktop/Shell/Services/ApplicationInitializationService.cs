@@ -1,5 +1,5 @@
-﻿using LYBT.Desktop.Presentation.Notifications;
-using LYBT.Desktop.Foundation.Performance;
+﻿using LYBT.Desktop.Foundation.Performance;
+using LYBT.Desktop.Presentation.Notifications;
 using Microsoft.Extensions.Logging;
 using Prism.Modularity;
 

@@ -2,7 +2,6 @@
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
 
 namespace LYBT.WebAPI.Middleware
 {

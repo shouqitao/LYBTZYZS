@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
+﻿namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
     /// 处方药材行显示模型

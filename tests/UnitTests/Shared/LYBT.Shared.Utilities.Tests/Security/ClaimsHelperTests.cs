@@ -1,7 +1,7 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using FluentAssertions;
 using LYBT.Shared.Utilities.Security;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Xunit;
 
 namespace LYBT.Shared.Utilities.Tests.Security

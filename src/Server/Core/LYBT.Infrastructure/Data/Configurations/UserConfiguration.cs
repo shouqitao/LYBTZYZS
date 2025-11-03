@@ -1,5 +1,4 @@
-using LYBT.Entities.Users;
-using LYBT.Shared.Models.Enums;
+﻿using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Shared.Utilities.Security;
 using Xunit;
 

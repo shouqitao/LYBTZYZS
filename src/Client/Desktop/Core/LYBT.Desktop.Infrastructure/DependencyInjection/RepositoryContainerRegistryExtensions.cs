@@ -1,5 +1,5 @@
+﻿using System.Reflection;
 using Prism.Ioc;
-using System.Reflection;
 
 namespace LYBT.Desktop.Infrastructure.DependencyInjection
 {

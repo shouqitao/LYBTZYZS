@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -76,7 +76,7 @@ namespace LYBT.WebAPI.Controllers
                 {
                     var username = User.Identity?.Name ?? "sysadmin";
                     var isSuperAdmin = User.FindFirst("IsSuperAdmin")?.Value == "true";
-                    
+
                     if (isSuperAdmin)
                     {
                         // 返回超级管理员的虚拟用户信息
@@ -149,7 +149,7 @@ namespace LYBT.WebAPI.Controllers
                         new { id = result.Data.Id, version = "1" },
                         ApiResponse<UserDto>.CreateSuccess(result.Data));
                 }
-                
+
                 return HandleServiceResult(result);
             }
             catch (Exception ex)
@@ -175,12 +175,12 @@ namespace LYBT.WebAPI.Controllers
                 if (modelValidationResult != null) return modelValidationResult;
 
                 var result = await _userService.UpdateAsync(id, dto);
-                
+
                 if (result.IsSuccess)
                 {
                     LogOperation("更新用户", dto, id);
                 }
-                
+
                 return HandleServiceResult(result);
             }
             catch (Exception ex)
@@ -244,8 +244,8 @@ namespace LYBT.WebAPI.Controllers
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    LogOperation("批量删除用户", 
-                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount }, 
+                    LogOperation("批量删除用户",
+                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                         null);
                 }
 

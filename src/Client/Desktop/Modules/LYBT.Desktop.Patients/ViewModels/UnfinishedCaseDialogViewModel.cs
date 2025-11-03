@@ -1,6 +1,6 @@
+﻿using System.Windows;
 using Prism.Commands;
 using Prism.Mvvm;
-using System.Windows;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {

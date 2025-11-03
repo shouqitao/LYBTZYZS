@@ -1,10 +1,10 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Entities.Users;
-using LYBT.Shared.Utilities.Helpers;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -293,7 +293,7 @@ namespace LYBT.Module.Users.Services
                         }
 
                         // 检查是否是超级管理员
-                        if (user.Role == UserRole.Admin || 
+                        if (user.Role == UserRole.Admin ||
                             string.Equals(user.UserName, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
                         {
                             result.FailureCount++;
@@ -349,7 +349,7 @@ namespace LYBT.Module.Users.Services
                     result.IsSuccess = false;
                 }
 
-                _logger.LogInformation("批量删除用户完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                _logger.LogInformation("批量删除用户完成: 总数{Total}, 成功{Success}, 失败{Failed}",
                     result.TotalCount, result.SuccessCount, result.FailureCount);
 
                 return ServiceResult<BatchOperationResultDto>.Success(result);

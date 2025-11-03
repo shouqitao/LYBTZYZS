@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Desktop.Infrastructure.Events
+﻿namespace LYBT.Desktop.Infrastructure.Events
 {
     /// <summary>
     /// 流程取消事件载荷

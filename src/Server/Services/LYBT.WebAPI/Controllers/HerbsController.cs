@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -198,8 +197,8 @@ namespace LYBT.WebAPI.Controllers
 
                 if (result.IsSuccess && result.Data != null)
                 {
-                    LogOperation("批量删除药材", 
-                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount }, 
+                    LogOperation("批量删除药材",
+                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                         null);
                 }
 

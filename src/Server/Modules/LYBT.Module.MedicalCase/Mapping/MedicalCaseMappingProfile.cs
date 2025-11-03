@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Module.MedicalCase.Mapping
 {

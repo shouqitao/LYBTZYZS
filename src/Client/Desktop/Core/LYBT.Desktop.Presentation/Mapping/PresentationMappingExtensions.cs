@@ -1,5 +1,4 @@
-using LYBT.Desktop.Presentation.Mapping;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace LYBT.Desktop.Presentation.Mapping
 {

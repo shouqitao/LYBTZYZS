@@ -1,4 +1,4 @@
-using LYBT.Desktop.Models.ViewModels.Base;
+﻿using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -208,11 +208,11 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 IsLoading = true;
-                var newStatus = User.Status == CommonStatus.Enabled 
-                    ? CommonStatus.Disabled 
+                var newStatus = User.Status == CommonStatus.Enabled
+                    ? CommonStatus.Disabled
                     : CommonStatus.Enabled;
 
-                Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}", 
+                Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}",
                     User.Id, User.Status, newStatus);
 
                 // 创建更新DTO

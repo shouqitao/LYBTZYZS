@@ -1,6 +1,5 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

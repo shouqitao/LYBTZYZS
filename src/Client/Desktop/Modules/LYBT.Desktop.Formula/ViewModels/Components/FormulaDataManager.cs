@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                 _logger.LogInformation("加载配方详情: {FormulaId}", formulaId);
 
                 var formula = await _repository.GetByIdAsync(formulaId);
-                
+
                 if (formula == null)
                 {
                     return (false, null, "未找到指定的配方");
@@ -157,7 +157,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             try
             {
                 var result = collection.Remove(item);
-                
+
                 if (result)
                 {
                     // 重新排序

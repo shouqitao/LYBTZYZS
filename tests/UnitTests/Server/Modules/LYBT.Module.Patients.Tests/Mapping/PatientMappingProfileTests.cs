@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Mapping;

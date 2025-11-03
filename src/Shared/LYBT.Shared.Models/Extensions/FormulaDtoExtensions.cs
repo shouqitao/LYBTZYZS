@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Formula;
+﻿using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Extensions

@@ -35,9 +35,9 @@ namespace LYBT.Module.Patients.Services
             {
                 // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
                 var pagedResult = await _repository.GetPagedAsync(
-                    string.IsNullOrWhiteSpace(keyword) ? null : 
-                        p => p.Name.Contains(keyword) || 
-                             (p.PinYinCode != null && p.PinYinCode.Contains(keyword)) || 
+                    string.IsNullOrWhiteSpace(keyword) ? null :
+                        p => p.Name.Contains(keyword) ||
+                             (p.PinYinCode != null && p.PinYinCode.Contains(keyword)) ||
                              (p.PhoneNumber != null && p.PhoneNumber.Contains(keyword)),
                     page,
                     pageSize,

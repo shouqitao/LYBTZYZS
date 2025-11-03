@@ -1,4 +1,4 @@
-using LYBT.Desktop.Models.ViewModels.Base;
+﻿using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;

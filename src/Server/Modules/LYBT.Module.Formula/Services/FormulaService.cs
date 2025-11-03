@@ -4,8 +4,8 @@ using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
-using Microsoft.Extensions.Logging;
 using LYBT.Shared.Models.Enums;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using FormulaEntity = LYBT.Entities.Formula.Formula;
 
@@ -39,19 +39,19 @@ namespace LYBT.Module.Formula.Services
             {
                 // 使用优化后的查询方法，包含Herbs集合
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
-                
+
                 // Issue #1164: 应用分类筛选（MVP阶段内存过滤，Formula实体有Category字段）
                 var filteredItems = pagedResult.Items.AsEnumerable();
-                
+
                 if (!string.IsNullOrWhiteSpace(category))
                 {
-                    filteredItems = filteredItems.Where(f => 
-                        !string.IsNullOrEmpty(f.Category) && 
+                    filteredItems = filteredItems.Where(f =>
+                        !string.IsNullOrEmpty(f.Category) &&
                         f.Category.Contains(category, StringComparison.OrdinalIgnoreCase));
                 }
-                
+
                 var filteredList = filteredItems.ToList();
-                
+
                 var dto = new PagedResult<FormulaDto>
                 {
                     Items = _mapper.Map<List<FormulaDto>>(filteredList),
@@ -224,7 +224,7 @@ namespace LYBT.Module.Formula.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证验方药材失败：formulaId={FormulaId}, herbItemId={HerbItemId}, selectedHerbId={SelectedHerbId}", 
+                _logger.LogError(ex, "验证验方药材失败：formulaId={FormulaId}, herbItemId={HerbItemId}, selectedHerbId={SelectedHerbId}",
                     formulaId, herbItemId, selectedHerbId);
                 return ServiceResult.Failure("验证验方药材失败");
             }
@@ -241,7 +241,7 @@ namespace LYBT.Module.Formula.Services
             {
                 // 查询所有Draft状态的验方（使用GetAllAsync预加载Herbs避免N+1查询）
                 var allFormulas = await _repository.GetAllAsync();
-                
+
                 // 过滤出Draft状态的验方
                 var pendingFormulas = allFormulas
                     .Where(f => f.ValidationStatus == FormulaValidationStatus.Draft)
@@ -347,7 +347,7 @@ namespace LYBT.Module.Formula.Services
                     result.IsSuccess = false;
                 }
 
-                _logger.LogInformation("批量删除验方完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                _logger.LogInformation("批量删除验方完成: 总数{Total}, 成功{Success}, 失败{Failed}",
                     result.TotalCount, result.SuccessCount, result.FailureCount);
 
                 return ServiceResult<BatchOperationResultDto>.Success(result);

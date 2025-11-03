@@ -1,5 +1,4 @@
-using FluentAssertions;
-using Xunit;
+﻿using FluentAssertions;
 
 namespace LYBT.Desktop.Shell.Tests
 {

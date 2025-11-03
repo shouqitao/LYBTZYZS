@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.Api;
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Users.Repositories
             {
                 // 由于IUserApi没有GetByUsernameAsync方法，使用搜索方式
                 var searchResult = await SearchAsync(username);
-                return searchResult.FirstOrDefault(u => u.UserName == username) 
+                return searchResult.FirstOrDefault(u => u.UserName == username)
                     ?? throw new InvalidOperationException($"用户 {username} 不存在");
             }
             catch (Exception ex)

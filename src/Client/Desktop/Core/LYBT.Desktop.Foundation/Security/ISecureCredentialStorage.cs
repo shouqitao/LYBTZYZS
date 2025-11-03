@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
-
-namespace LYBT.Desktop.Foundation.Security
+﻿namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
     /// 安全凭据存储服务接口 - Issue #1246

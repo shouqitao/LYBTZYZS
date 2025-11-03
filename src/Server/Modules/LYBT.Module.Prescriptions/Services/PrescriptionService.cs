@@ -1,16 +1,12 @@
-﻿using System.Text;
-using AutoMapper;
-using LYBT.Module.Prescriptions.Interfaces;
+﻿using AutoMapper;
+using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.Patients.Interfaces;
-using LYBT.Module.Consultation.Interfaces;
+using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Enums;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-using PrescriptionItemEntity = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Module.Prescriptions.Services
 {

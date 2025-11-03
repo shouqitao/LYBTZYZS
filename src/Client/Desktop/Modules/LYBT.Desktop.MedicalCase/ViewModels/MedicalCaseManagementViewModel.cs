@@ -1,8 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
-using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;

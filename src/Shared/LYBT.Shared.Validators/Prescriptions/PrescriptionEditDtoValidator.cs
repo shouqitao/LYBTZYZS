@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Shared.Validators.Prescriptions

@@ -1,8 +1,6 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

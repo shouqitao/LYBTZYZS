@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Shared.Validators.Formula

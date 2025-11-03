@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Interfaces
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
     /// 功能开关服务接口 - MVP阶段功能控制 (Issue #1477 #1479)

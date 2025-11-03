@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.MedicalCase.Interfaces
+﻿namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
     /// 可保存接口 - 流程状态机使用（Epic #1494 - Task #1501）

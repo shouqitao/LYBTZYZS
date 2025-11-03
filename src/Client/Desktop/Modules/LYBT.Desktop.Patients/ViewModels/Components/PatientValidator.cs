@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Validators.Patients;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Patients.ViewModels.Components

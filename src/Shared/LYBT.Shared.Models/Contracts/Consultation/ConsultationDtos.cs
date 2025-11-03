@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Constants;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Consultation
 {

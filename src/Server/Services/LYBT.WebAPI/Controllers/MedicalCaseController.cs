@@ -1,20 +1,17 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Web;
+using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescriptionFlagRequest (模块专用)
+using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
-using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
-using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescriptionFlagRequest (模块专用)
-using LYBT.Shared.Models.Contracts.Consultation;
-using LYBT.Shared.Models.Contracts.Prescriptions;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.WebAPI.Controllers
 {

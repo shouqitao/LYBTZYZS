@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Users.Components;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.Components
 {

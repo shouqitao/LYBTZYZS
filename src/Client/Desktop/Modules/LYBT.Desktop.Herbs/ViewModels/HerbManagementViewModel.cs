@@ -2,7 +2,6 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 // Epic #1773: 已移除LYBT.Desktop.Herbs.Interfaces using（不再需要IHerbRepository）
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

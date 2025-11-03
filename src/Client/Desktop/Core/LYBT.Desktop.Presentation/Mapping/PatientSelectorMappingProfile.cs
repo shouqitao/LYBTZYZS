@@ -1,5 +1,4 @@
-using AutoMapper;
-using LYBT.Desktop.Infrastructure.Events;
+﻿using AutoMapper;
 
 namespace LYBT.Desktop.Presentation.Mapping
 {

@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Entities.Prescriptions;
-using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Module.Prescriptions.Interfaces

@@ -1,14 +1,11 @@
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
-using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {

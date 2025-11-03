@@ -1,4 +1,4 @@
-using LYBT.Entities.Herbs;
+﻿using LYBT.Entities.Herbs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

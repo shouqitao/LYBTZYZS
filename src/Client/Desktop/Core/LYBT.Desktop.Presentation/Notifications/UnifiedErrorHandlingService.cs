@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
-using LYBT.Desktop.Presentation.Notifications;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;

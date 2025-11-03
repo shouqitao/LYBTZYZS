@@ -1,4 +1,4 @@
-using LYBT.Desktop.Infrastructure.Interfaces.Components;
+﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;

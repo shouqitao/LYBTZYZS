@@ -1,12 +1,10 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替代Repository
 // Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces（不再直接使用IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -101,7 +99,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 if (SetProperty(ref _searchKeyword, value))
                 {
                     SearchCommand.RaiseCanExecuteChanged();
-                    
+
                     // 实时搜索：300ms防抖
                     _searchDebounceTimer?.Dispose();
                     _searchDebounceTimer = new System.Threading.Timer(
@@ -180,7 +178,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     if (value != null)
                     {
                         Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
-                        
+
                         // 异步加载患者详悠信息并设置CurrentPatient
                         _ = LoadPatientForPendingCaseAsync(value.PatientId);
                     }
@@ -776,7 +774,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                     // 3. 刷新待看诊列表（移除已关闭的医案）
                     await LoadPendingCasesAsync();
-                    
+
                     Logger.LogInformation("待看诊列表已刷新");
                 }
                 else
@@ -966,23 +964,23 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 Logger.LogInformation("开始加载待看诊队列");
-                
+
                 var response = await _medicalCaseApi.GetPendingCasesAsync();
-                
+
                 if (response.Success && response.Data != null)
                 {
                     PendingQueue.Clear();
                     foreach (var item in response.Data)
                     {
                         PendingQueue.Add(item);
-                        
+
                         // MedicalCaseId可能为null，只有有值时才加入缓存
                         if (item.MedicalCaseId.HasValue)
                         {
                             _pendingCaseCache[item.PatientId] = item.MedicalCaseId.Value;
                         }
                     }
-                    
+
                     Logger.LogInformation("待看诊队列加载完成，共{Count}条记录", PendingQueue.Count);
                 }
                 else
@@ -1071,7 +1069,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                     // 无搜索关键字，加载第1页数据
                     _ = LoadInitialPatientsAsync();
                 }
-                
+
                 // Epic #1583 - Phase 5: 加载待看诊队列
                 _ = LoadPendingCasesAsync();
             }

@@ -1,7 +1,5 @@
-using System.Net.Http;
-using LYBT.Desktop.Foundation.Caching;
+﻿using LYBT.Desktop.Foundation.Caching;
 using LYBT.Desktop.Foundation.Configuration;
-using LYBT.Desktop.Foundation.Diagnostics;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;

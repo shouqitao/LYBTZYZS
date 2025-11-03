@@ -1,13 +1,9 @@
-using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Packaging;
-using System.Linq;
 using System.Printing;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Xps;
 using System.Windows.Xps.Packaging;
 using LYBT.Desktop.Prescriptions.Models;
 using LYBT.Desktop.Services.Print;

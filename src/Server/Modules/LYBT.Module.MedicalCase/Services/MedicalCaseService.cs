@@ -1,15 +1,14 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LYBT.Infrastructure.Utilities;
 using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Services

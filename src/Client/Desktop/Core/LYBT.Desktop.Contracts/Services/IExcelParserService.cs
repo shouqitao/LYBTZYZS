@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using LYBT.Desktop.Contracts.Models;
 
 namespace LYBT.Desktop.Contracts.Services

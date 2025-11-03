@@ -173,7 +173,7 @@ public class DesktopLayerArchTests
         // 如果有重复，显示详细信息
         if (duplicates.Any())
         {
-            var details = string.Join("\n", duplicates.Select(d => 
+            var details = string.Join("\n", duplicates.Select(d =>
                 $"{d.FullName}: {d.Count}次 ({string.Join(", ", d.Types.Select(t => t.Assembly.GetName().Name))})"));
             Assert.Fail($"发现重复的事件定义:\n{details}");
         }
@@ -415,7 +415,7 @@ public class DesktopLayerArchTests
 
             // 查找模块类
             var moduleType = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name.EndsWith("Module") && 
+                .FirstOrDefault(t => t.Name.EndsWith("Module") &&
                                    t.GetInterfaces().Any(i => i.Name == "IModule"));
 
             if (moduleType == null)

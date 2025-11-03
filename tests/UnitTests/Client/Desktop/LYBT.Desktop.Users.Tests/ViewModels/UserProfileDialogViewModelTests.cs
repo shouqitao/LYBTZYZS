@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
@@ -10,7 +10,6 @@ using Moq;
 using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
 {

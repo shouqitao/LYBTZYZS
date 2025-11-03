@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 
 namespace LYBT.Shared.Validators.MedicalCase

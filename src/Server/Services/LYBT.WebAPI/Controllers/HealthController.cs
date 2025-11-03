@@ -1,10 +1,9 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers;
 

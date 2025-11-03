@@ -1,8 +1,8 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace LYBT.Tests.Common.AssertionHelpers
@@ -188,7 +188,7 @@ namespace LYBT.Tests.Common.AssertionHelpers
             okResult!.Value.Should().BeAssignableTo<T>();
         }
 
-      
+
         /// <summary>
         /// 验证MVC操作结果为无内容响应
         /// </summary>

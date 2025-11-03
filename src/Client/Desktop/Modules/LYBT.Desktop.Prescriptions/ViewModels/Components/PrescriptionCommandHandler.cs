@@ -3,7 +3,6 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Services.Print;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;

@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace LYBT.WebAPI.Controllers
 {

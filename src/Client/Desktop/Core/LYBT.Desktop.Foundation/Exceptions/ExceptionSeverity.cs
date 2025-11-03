@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Foundation.Exceptions
+﻿namespace LYBT.Desktop.Foundation.Exceptions
 {
     /// <summary>
     /// 异常严重程度

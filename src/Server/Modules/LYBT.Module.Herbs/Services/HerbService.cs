@@ -35,16 +35,16 @@ namespace LYBT.Module.Herbs.Services
             {
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize);
                 var dtos = _mapper.Map<List<HerbDto>>(pagedResult.Items);
-                
+
                 // Issue #1164: 应用分类筛选（在DTO级别过滤）
                 if (!string.IsNullOrWhiteSpace(category))
                 {
-                    dtos = dtos.Where(h => 
-                        !string.IsNullOrEmpty(h.Category) && 
+                    dtos = dtos.Where(h =>
+                        !string.IsNullOrEmpty(h.Category) &&
                         h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
                     .ToList();
                 }
-                
+
                 var dto = new PagedResult<HerbDto>
                 {
                     Items = dtos,
@@ -216,7 +216,7 @@ namespace LYBT.Module.Herbs.Services
                     result.IsSuccess = false;
                 }
 
-                _logger.LogInformation("批量删除药材完成: 总数{Total}, 成功{Success}, 失败{Failed}", 
+                _logger.LogInformation("批量删除药材完成: 总数{Total}, 成功{Success}, 失败{Failed}",
                     result.TotalCount, result.SuccessCount, result.FailureCount);
 
                 return ServiceResult<BatchOperationResultDto>.Success(result);

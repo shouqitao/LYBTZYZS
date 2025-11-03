@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
@@ -11,7 +7,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -301,7 +296,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var userId = Guid.NewGuid();
             var existingUser = CreateTestUser(userId);
-            
+
             var updateDto = new UserInputDto
             {
                 RealName = "更新的名字",

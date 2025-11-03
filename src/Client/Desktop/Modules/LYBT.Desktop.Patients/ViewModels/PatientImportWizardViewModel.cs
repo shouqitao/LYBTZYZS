@@ -7,7 +7,6 @@ using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;

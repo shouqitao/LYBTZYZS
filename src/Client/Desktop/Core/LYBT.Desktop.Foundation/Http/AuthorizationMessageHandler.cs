@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using LYBT.Desktop.Foundation.Security;
 using Microsoft.Extensions.Logging;
 

@@ -1,9 +1,9 @@
+﻿using System.Linq.Expressions;
+using System.Net;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using FluentAssertions;
-using System.Net;
-using System.Linq.Expressions;
 
 namespace LYBT.Tests.Configuration
 {

@@ -1,4 +1,4 @@
-using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Shared.Models.Contracts.Common; // Epic #1773: PagedResult<T>
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -284,7 +284,7 @@ namespace LYBT.Desktop.Herbs.Components
         {
             try
             {
-                _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword={Keyword}", 
+                _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword={Keyword}",
                     pageNumber, pageSize, searchKeyword);
                 var result = await _herbRepository.GetPagedAsync(pageNumber, pageSize, searchKeyword);
                 _logger.LogInformation("药材列表获取成功: Count={Count}", result.TotalCount);

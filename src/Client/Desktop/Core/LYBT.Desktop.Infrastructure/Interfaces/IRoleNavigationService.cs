@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.Infrastructure.Interfaces
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
     /// 角色导航服务接口

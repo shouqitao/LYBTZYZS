@@ -1,10 +1,9 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Consultation.Components;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace LYBT.Desktop.Consultation.Tests.Components
 {

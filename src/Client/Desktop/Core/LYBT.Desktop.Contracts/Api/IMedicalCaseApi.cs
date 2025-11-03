@@ -1,4 +1,4 @@
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -101,7 +101,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/complete-step1")]
         Task<ApiResponse<ConsultationStepDto>> CompleteStep1Async(
-            Guid medicalCaseId, 
+            Guid medicalCaseId,
             [Refit.Body] CompleteStep1Request request);
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/medicalcases/{medicalCaseId}/prescription/import-formula/{formulaId}")]
         Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
-            Guid medicalCaseId, 
+            Guid medicalCaseId,
             Guid formulaId);
 
         /// <summary>

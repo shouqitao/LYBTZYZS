@@ -1,4 +1,4 @@
-using LYBT.Infrastructure.Configuration.Extensions;
+﻿using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Extensions;

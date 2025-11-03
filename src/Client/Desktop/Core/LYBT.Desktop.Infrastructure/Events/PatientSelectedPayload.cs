@@ -1,6 +1,4 @@
-using System;
-
-namespace LYBT.Desktop.Infrastructure.Events
+﻿namespace LYBT.Desktop.Infrastructure.Events
 {
     /// <summary>
     /// 患者选择事件负载
@@ -47,13 +45,13 @@ namespace LYBT.Desktop.Infrastructure.Events
         /// </summary>
         public required string AllergyHistory { get; set; }
 
-    /// <summary>
-    /// 医案流程ID（由流程协调器传入，用于跟踪完整的医案流程）
-    /// </summary>
-    public Guid MedicalCaseFlowId { get; set; }
+        /// <summary>
+        /// 医案流程ID（由流程协调器传入，用于跟踪完整的医案流程）
+        /// </summary>
+        public Guid MedicalCaseFlowId { get; set; }
 
-    /// <summary>
-    /// 选择时间
+        /// <summary>
+        /// 选择时间
         /// </summary>
         public DateTime SelectedAt { get; set; }
     }

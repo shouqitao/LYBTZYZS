@@ -1,12 +1,12 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using LYBT.Desktop.Foundation.HealthCheck;
+using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Foundation.HealthCheck;
-using LYBT.Desktop.Foundation.Modules;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

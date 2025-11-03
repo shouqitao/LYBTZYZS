@@ -3,7 +3,6 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 
 namespace LYBT.Module.Consultation.Services
 {

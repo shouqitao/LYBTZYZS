@@ -1,5 +1,4 @@
 ﻿using System.Net.Http;
-using LYBT.Desktop.Foundation.HealthCheck;
 using Microsoft.Extensions.Configuration;
 
 namespace LYBT.Desktop.Foundation.HealthCheck;

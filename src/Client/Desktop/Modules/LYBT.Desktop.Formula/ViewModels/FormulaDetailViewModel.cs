@@ -1,9 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -377,7 +376,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 SetIsBusy(true, "正在加载配方详情...");
 
                 var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
-                
+
                 if (success && formula != null)
                 {
                     Formula = formula;
@@ -481,7 +480,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (success && newFormula != null)
                 {
                     await ShowSuccessMessageAsync(message ?? "配方复制成功");
-                    
+
                     // 导航到新配方
                     FormulaId = newFormula.Id;
                     await LoadDataAsync();
@@ -540,7 +539,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (Formula == null) return;
 
             var (success, errorMessage) = await _commandHandler.PrintFormulaAsync(Formula);
-            
+
             if (success)
             {
                 await ShowSuccessMessageAsync(errorMessage ?? "打印功能开发中");
@@ -559,7 +558,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (FormulaId == Guid.Empty) return;
 
             var (success, errorMessage) = await _commandHandler.ViewUsageHistoryAsync(FormulaId);
-            
+
             if (success)
             {
                 await ShowSuccessMessageAsync(errorMessage ?? "查看使用历史功能开发中");

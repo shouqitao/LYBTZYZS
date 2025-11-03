@@ -1,4 +1,4 @@
-using LYBT.Entities.Auth;
+﻿using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;

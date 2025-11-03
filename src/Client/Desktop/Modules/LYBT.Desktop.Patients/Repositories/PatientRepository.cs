@@ -1,4 +1,4 @@
-using LYBT.Desktop.Contracts.Api;
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

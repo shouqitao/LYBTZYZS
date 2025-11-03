@@ -1,12 +1,11 @@
-using LYBT.Desktop.Infrastructure.Commands;
+﻿using System.Net.Http;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Commands;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
-using System.Net.Http;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -68,27 +67,27 @@ namespace LYBT.Desktop.Shell.Extensions
             // 注册 ILogger<T> - 为每个需要日志的服务单独注册
             // ViewModelBase 通过 ILoggerFactory.CreateLogger(GetType()) 创建自己的 Logger
             // 以下服务需要 ILogger<T> 构造函数注入：
-            
+
             // Infrastructure 层服务
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>());
 
             // Foundation 层服务
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.ApiService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.ApiService>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.AuthenticationService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Security.TokenStorageService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>());
 
@@ -102,14 +101,14 @@ namespace LYBT.Desktop.Shell.Extensions
 
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>());
 
             // Presentation 层服务
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.NotificationService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.NotificationService>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>());
 
@@ -118,7 +117,7 @@ namespace LYBT.Desktop.Shell.Extensions
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.App>());
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>());
-            
+
             containerRegistry.RegisterSingleton<ILogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>>(
                 resolver => resolver.Resolve<ILoggerFactory>().CreateLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>());
 
@@ -202,7 +201,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // 获取 API 配置
             var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
             var ignoreSslErrors = config.GetValue<bool>("Lybt:Client:Api:IgnoreSslErrors", false);
-            
+
             // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
 
@@ -235,25 +234,25 @@ namespace LYBT.Desktop.Shell.Extensions
             // 所有 Refit 客户端共享同一个 HttpClient 实例（包含 AuthorizationMessageHandler）
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IUserApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IUserApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver.Resolve<HttpClient>()));
-            
+
             containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver =>
                 Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver.Resolve<HttpClient>()));
         }
@@ -264,30 +263,30 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterFoundationServices(IContainerRegistry containerRegistry)
         {
             // 认证服务 - Foundation/Security
-        containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
+            containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
 
-        // Token 存储服务 - Foundation/Security
-        containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
+            // Token 存储服务 - Foundation/Security
+            containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
 
-        // Issue #1245 修复: 用户名存储服务 - Foundation/Security
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
-            LYBT.Desktop.Foundation.Security.UsernameStorageService>();
+            // Issue #1245 修复: 用户名存储服务 - Foundation/Security
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
+                LYBT.Desktop.Foundation.Security.UsernameStorageService>();
 
-        // Issue #1246 修复: 安全凭据存储服务（密码加密）- Foundation/Security
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.ISecureCredentialStorage,
-            LYBT.Desktop.Foundation.Security.SecureCredentialStorage>();
+            // Issue #1246 修复: 安全凭据存储服务（密码加密）- Foundation/Security
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.ISecureCredentialStorage,
+                LYBT.Desktop.Foundation.Security.SecureCredentialStorage>();
 
-        // API 健康检查服务 - Foundation/HealthCheck
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
-            LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();
+            // API 健康检查服务 - Foundation/HealthCheck
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
+                LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();
 
-        // Issue #1239 修复: 注册 API 服务基类 - Foundation/Http
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.IApiService,
-            LYBT.Desktop.Foundation.Http.ApiService>();
+            // Issue #1239 修复: 注册 API 服务基类 - Foundation/Http
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.IApiService,
+                LYBT.Desktop.Foundation.Http.ApiService>();
 
-        // Issue #1239 修复: 注册启动优化服务 - Foundation/Performance
-        containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Performance.IStartupOptimizationService,
-            LYBT.Desktop.Foundation.Performance.StartupOptimizationService>();
+            // Issue #1239 修复: 注册启动优化服务 - Foundation/Performance
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Performance.IStartupOptimizationService,
+                LYBT.Desktop.Foundation.Performance.StartupOptimizationService>();
         }
 
         /// <summary>

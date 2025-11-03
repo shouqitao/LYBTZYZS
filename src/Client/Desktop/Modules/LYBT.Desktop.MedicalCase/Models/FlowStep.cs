@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.MedicalCase.Models
+﻿namespace LYBT.Desktop.MedicalCase.Models
 {
     /// <summary>
     /// 医案流程步骤枚举（Epic #1494 - 4步流程）

@@ -1,9 +1,5 @@
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LYBT.WebAPI.HealthCheck;
 

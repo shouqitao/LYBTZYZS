@@ -6,10 +6,10 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PatientEntity = LYBT.Entities.Patients.Patient;
+using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Repositories
 {

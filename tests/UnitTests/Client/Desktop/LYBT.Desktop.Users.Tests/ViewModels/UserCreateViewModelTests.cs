@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
 {

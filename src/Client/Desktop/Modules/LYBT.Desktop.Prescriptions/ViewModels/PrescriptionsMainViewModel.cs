@@ -1,5 +1,4 @@
-﻿using LYBT.Desktop.Contracts.Api;
-using LYBT.Desktop.Infrastructure.Events;
+﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间

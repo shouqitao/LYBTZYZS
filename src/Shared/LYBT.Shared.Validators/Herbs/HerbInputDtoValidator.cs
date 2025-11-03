@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Shared.Validators.Herbs

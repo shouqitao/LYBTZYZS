@@ -1,6 +1,4 @@
-using FluentValidation.Results;
-
-namespace LYBT.Desktop.Infrastructure.Interfaces.Components
+﻿namespace LYBT.Desktop.Infrastructure.Interfaces.Components
 {
     /// <summary>
     /// 数据管理器接口 - 组件化MVVM架构核心接口

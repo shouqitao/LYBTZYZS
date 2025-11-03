@@ -1,4 +1,4 @@
-namespace LYBT.Desktop.MedicalCase.Interfaces
+﻿namespace LYBT.Desktop.MedicalCase.Interfaces
 {
     /// <summary>
     /// 可验证接口 - 流程状态机使用（Epic #1494 - Task #1501）

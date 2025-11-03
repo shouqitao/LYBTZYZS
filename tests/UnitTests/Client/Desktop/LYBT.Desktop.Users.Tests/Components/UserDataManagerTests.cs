@@ -1,11 +1,10 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using LYBT.Desktop.Users.Components;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace LYBT.Desktop.Users.Tests.Components
 {

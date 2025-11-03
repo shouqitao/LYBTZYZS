@@ -1,7 +1,7 @@
-﻿using LYBT.Desktop.Users.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.ViewModels;
-using LYBT.Desktop.Infrastructure.DependencyInjection;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -37,7 +37,7 @@ namespace LYBT.Desktop.Users
             // 注册实际存在的视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
-            
+
             // Issue #1248: 注册新增的 CRUD 视图
             containerRegistry.RegisterForNavigation<Views.UserCreateView>();
             containerRegistry.RegisterForNavigation<Views.UserEditView>();

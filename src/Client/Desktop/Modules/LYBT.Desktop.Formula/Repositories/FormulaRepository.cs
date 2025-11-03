@@ -1,5 +1,5 @@
+﻿using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Formula.Interfaces;
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Repositories;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
