@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -67,10 +68,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1783: 使用DataManager替代直接Repository和Api访问
+        private readonly MedicalCaseDataManager _dataManager;
         private readonly IPrescriptionEditorService _prescriptionEditorService;
         private readonly IDialogService _dialogService;
-        private readonly IMedicalCaseApi _medicalCaseApi; // Issue #1606 Phase 3: 改为MedicalCaseApi调用聚合根方法
 
         #endregion
 
@@ -547,8 +548,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始更新MedicalCase.PrescriptionId，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
                     MedicalCaseId, prescriptionId);
 
-                // 获取当前医案
-                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
+                // Issue #1783: 使用DataManager包装Repository方法（GetByIdSimpleAsync）
+                var medicalCase = await _dataManager.GetByIdSimpleAsync(MedicalCaseId);
                 if (medicalCase == null)
                 {
                     Logger.LogWarning("未找到医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
@@ -566,8 +567,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Remark = medicalCase.Remark
                 };
 
-                // 调用更新方法
-                await _medicalCaseRepository.UpdateAsync(updateDto);
+                // Issue #1783: 使用DataManager包装Repository方法（UpdateSimpleAsync）
+                await _dataManager.UpdateSimpleAsync(updateDto);
 
                 Logger.LogInformation("已更新MedicalCase.PrescriptionId: {PrescriptionId}", prescriptionId);
             }
@@ -871,14 +872,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始删除医案（包括处方），MedicalCaseId: {MedicalCaseId}, 删除方式: {DeleteType}",
                     MedicalCaseId, isSoftDelete ? "软删除" : "物理删除");
 
-                // Issue #1606 Phase 3: 调用MedicalCase聚合根的删除方法
+                // Issue #1783: 使用DataManager业务命令方法
                 if (isSoftDelete)
                 {
-                    await _medicalCaseApi.SoftDeleteMedicalCaseAsync(MedicalCaseId);
+                    await _dataManager.SoftDeleteMedicalCaseAsync(MedicalCaseId);
                 }
                 else
                 {
-                    await _medicalCaseApi.DeleteMedicalCaseAsync(MedicalCaseId);
+                    await _dataManager.DeleteMedicalCaseAsync(MedicalCaseId);
                 }
 
                 // 清空表单数据
@@ -967,10 +968,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public PrescriptionEditorViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IPrescriptionEditorService prescriptionEditorService,
             IDialogService dialogService,
-            IMedicalCaseApi medicalCaseApi, // Issue #1606 Phase 3: 改为MedicalCaseApi
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -978,10 +978,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _prescriptionEditorService = prescriptionEditorService ?? throw new ArgumentNullException(nameof(prescriptionEditorService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi)); // Issue #1606 Phase 3
 
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);

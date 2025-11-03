@@ -652,6 +652,48 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
+        /// <summary>
+        /// 删除医案（物理删除，聚合根方法）
+        /// Issue #1783: 为PrescriptionEditorViewModel提供删除业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("删除医案(物理删除): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.DeleteMedicalCaseAsync(medicalCaseId);
+                _logger.LogInformation("医案删除成功(物理删除): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除医案失败(物理删除): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 软删除医案（标记删除，聚合根方法）
+        /// Issue #1783: 为PrescriptionEditorViewModel提供软删除业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<ApiResponse>> SoftDeleteMedicalCaseAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("软删除医案: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.SoftDeleteMedicalCaseAsync(medicalCaseId);
+                _logger.LogInformation("医案软删除成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "软删除医案失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         #endregion
 
         #region 聚合根专用方法
