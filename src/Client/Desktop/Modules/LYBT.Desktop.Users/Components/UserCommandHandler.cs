@@ -22,7 +22,6 @@ namespace LYBT.Desktop.Users.Components
         private readonly UserValidator _validator;
         private readonly ILogger<UserCommandHandler> _logger;
         private readonly IRegionManager _regionManager;
-        private readonly IEventAggregator _eventAggregator;
         private readonly Dictionary<string, Func<object?, Task<bool>>> _commands;
         private readonly Dictionary<string, Func<bool>> _canExecuteHandlers;
 
@@ -34,14 +33,12 @@ namespace LYBT.Desktop.Users.Components
             UserDataManager dataManager,
             UserValidator validator,
             ILogger<UserCommandHandler> logger,
-            IRegionManager regionManager,
-            IEventAggregator eventAggregator)
+            IRegionManager regionManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
             _commands = new Dictionary<string, Func<object?, Task<bool>>>();
             _canExecuteHandlers = new Dictionary<string, Func<bool>>();

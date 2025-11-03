@@ -16,25 +16,13 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
     {
         private readonly IPatientRepository _patientRepository;
         private readonly ILogger<PatientDataManager> _logger;
-        private readonly IEventAggregator _eventAggregator;
-        private readonly IRegionManager _regionManager;
-        private readonly ISessionManager? _sessionManager;
-        private readonly IUserNotificationService? _userNotificationService;
 
         public PatientDataManager(
             IPatientRepository patientRepository,
-            ILogger<PatientDataManager> logger,
-            IEventAggregator eventAggregator,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
+            ILogger<PatientDataManager> logger)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _sessionManager = sessionManager;
-            _userNotificationService = userNotificationService;
         }
 
         #region 核心数据属性

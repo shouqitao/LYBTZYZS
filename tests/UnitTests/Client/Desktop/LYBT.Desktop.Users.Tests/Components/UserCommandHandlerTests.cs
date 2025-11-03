@@ -20,7 +20,6 @@ namespace LYBT.Desktop.Users.Tests.Components
         private readonly Mock<UserValidator> _mockValidator;
         private readonly Mock<ILogger<UserCommandHandler>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
-        private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly UserCommandHandler _commandHandler;
 
         public UserCommandHandlerTests()
@@ -36,14 +35,12 @@ namespace LYBT.Desktop.Users.Tests.Components
 
             _mockLogger = new Mock<ILogger<UserCommandHandler>>();
             _mockRegionManager = new Mock<IRegionManager>();
-            _mockEventAggregator = new Mock<IEventAggregator>();
 
             _commandHandler = new UserCommandHandler(
                 _mockDataManager.Object,
                 _mockValidator.Object,
                 _mockLogger.Object,
-                _mockRegionManager.Object,
-                _mockEventAggregator.Object);
+                _mockRegionManager.Object);
         }
 
         [Fact]

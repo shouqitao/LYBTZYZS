@@ -18,7 +18,6 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
     {
         private readonly IPatientRepository _patientRepository;
         private readonly ILogger<PatientCommandHandler> _logger;
-        private readonly ISessionManager _sessionManager;
         private readonly IRegionManager _regionManager;
 
         #region 事件定义
@@ -82,19 +81,16 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         #region 依赖字段
 
         private PatientDataManager? _dataManager;
-        private PatientValidator? _validator;
 
         #endregion
 
         public PatientCommandHandler(
             IPatientRepository patientRepository,
             ILogger<PatientCommandHandler> logger,
-            ISessionManager sessionManager,
             IRegionManager regionManager)
         {
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
             // 初始化命令
@@ -109,12 +105,9 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 设置依赖
         /// </summary>
-        public void SetDependencies(
-            PatientDataManager dataManager,
-            PatientValidator validator)
+        public void SetDependencies(PatientDataManager dataManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
         #region 患者CRUD操作

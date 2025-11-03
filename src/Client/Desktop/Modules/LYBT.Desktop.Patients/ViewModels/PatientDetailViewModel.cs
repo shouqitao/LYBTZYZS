@@ -105,7 +105,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
 
             // 设置组件依赖
-            _commandHandler.SetDependencies(_dataManager, _validator);
+            _commandHandler.SetDependencies(_dataManager);
 
             // 订阅组件事件
             _commandHandler.OnEditEnabled += HandleEditEnabled;

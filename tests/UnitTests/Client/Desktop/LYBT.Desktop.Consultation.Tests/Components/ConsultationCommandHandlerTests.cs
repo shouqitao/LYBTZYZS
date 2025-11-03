@@ -20,7 +20,6 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         private readonly Mock<IMedicalCaseRepository> _mockRepository;
         private readonly Mock<ILogger<ConsultationCommandHandler>> _mockLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
-        private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly ConsultationCommandHandler _commandHandler;
 
         public ConsultationCommandHandlerTests()
@@ -37,15 +36,13 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             _mockRepository = new Mock<IMedicalCaseRepository>();
             _mockLogger = new Mock<ILogger<ConsultationCommandHandler>>();
             _mockRegionManager = new Mock<IRegionManager>();
-            _mockEventAggregator = new Mock<IEventAggregator>();
 
             _commandHandler = new ConsultationCommandHandler(
                 _mockDataManager.Object,
                 _mockValidator.Object,
                 _mockRepository.Object,
                 _mockLogger.Object,
-                _mockRegionManager.Object,
-                _mockEventAggregator.Object);
+                _mockRegionManager.Object);
         }
 
         [Fact]
