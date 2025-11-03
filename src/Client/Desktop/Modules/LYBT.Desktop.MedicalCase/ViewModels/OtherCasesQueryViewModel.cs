@@ -1,3 +1,4 @@
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region 字段
 
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1783: 使用DataManager替代直接Repository访问
+        private readonly MedicalCaseDataManager _dataManager;
 
         #endregion
 
@@ -124,13 +126,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public OtherCasesQueryViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager)
             : base(eventAggregator, loggerFactory, regionManager)
         {
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             QueryCommand = new DelegateCommand(ExecuteQueryAsync, CanExecuteQuery);
@@ -182,11 +185,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始查询病案，条件：患者={PatientName}, 日期={StartDate}~{EndDate}, 诊断={DiagnosisKeyword}",
                     PatientName ?? "无", StartDate, EndDate, DiagnosisKeyword ?? "无");
 
-                var results = await _medicalCaseRepository.QueryAsync(
+                // Issue #1783: 使用DataManager查询
+                var results = await _dataManager.QueryAsync(
                     PatientName,
                     StartDate,
                     EndDate,
                     DiagnosisKeyword);
+
+                if (results == null)
+                {
+                    Logger.LogWarning("查询病案失败，返回null");
+                    ShowError("查询失败，请稍后重试");
+                    return;
+                }
 
                 QueryResults.Clear();
                 foreach (var item in results)

@@ -370,6 +370,32 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
+        /// <summary>
+        /// 多条件查询医案（不使用聚合根模式）
+        /// 用于OtherCasesQueryViewModel的场景
+        /// Issue #1783: 为OtherCasesQueryViewModel提供查询方法
+        /// </summary>
+        public virtual async Task<List<MedicalCaseDto>?> QueryAsync(
+            string? patientName = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string? diagnosisKeyword = null)
+        {
+            try
+            {
+                _logger.LogDebug("查询医案: PatientName={PatientName}, StartDate={StartDate}, EndDate={EndDate}, DiagnosisKeyword={DiagnosisKeyword}",
+                    patientName, startDate, endDate, diagnosisKeyword);
+                var result = await _repository.QueryAsync(patientName, startDate, endDate, diagnosisKeyword);
+                _logger.LogInformation("查询医案成功: Count={Count}", result?.Count ?? 0);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询医案失败");
+                return null;
+            }
+        }
+
         #endregion
 
         #region 聚合根专用方法
