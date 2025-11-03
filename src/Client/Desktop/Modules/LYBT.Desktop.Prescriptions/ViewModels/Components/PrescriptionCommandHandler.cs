@@ -97,9 +97,6 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         #region 依赖字段
 
         private PrescriptionDataManager? _dataManager;
-        private PrescriptionValidator? _validator;
-        private PrescriptionCalculator? _calculator;
-        private ISessionManager? _sessionManager;
 
         #endregion
 
@@ -108,14 +105,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             IMedicalCaseRepository medicalCaseRepository,
             IPrescriptionPrintService printService,
             ILogger<PrescriptionCommandHandler> logger,
-            ISessionManager sessionManager,
             IDialogService dialogService)
         {
             _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _printService = printService ?? throw new ArgumentNullException(nameof(printService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化命令
@@ -133,14 +128,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         /// <summary>
         /// 设置依赖
         /// </summary>
-        public void SetDependencies(
-            PrescriptionDataManager dataManager,
-            PrescriptionValidator validator,
-            PrescriptionCalculator calculator)
+        public void SetDependencies(PrescriptionDataManager dataManager)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
         }
 
         #region 处方CRUD操作

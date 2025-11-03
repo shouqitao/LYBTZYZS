@@ -451,7 +451,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             _eventCoordinator = eventCoordinator ?? throw new ArgumentNullException(nameof(eventCoordinator));
 
             // 设置命令处理器的依赖
-            _commandHandler.SetDependencies(_dataManager, _validator, _calculator);
+            _commandHandler.SetDependencies(_dataManager);
 
             // 初始化自有命令
             BackCommand = new DelegateCommand(Back);
