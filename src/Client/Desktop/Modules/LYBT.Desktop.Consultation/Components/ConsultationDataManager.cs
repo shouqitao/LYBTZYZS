@@ -241,6 +241,32 @@ namespace LYBT.Desktop.Consultation.Components
             }
         }
 
+        /// <summary>
+        /// 完成Step1（辩证）- 包装MedicalCase聚合根方法
+        /// Epic #1773: 移除ViewModel对Repository的直接依赖
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="request">完成Step1请求</param>
+        /// <returns>ConsultationStepDto</returns>
+        public virtual async Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request)
+        {
+            try
+            {
+                _logger.LogInformation("完成Step1: MedicalCaseId={MedicalCaseId}, PrescriptionEnabled={PrescriptionEnabled}", 
+                    medicalCaseId, request.PrescriptionEnabled);
+
+                var stepDto = await _medicalCaseRepository.CompleteStep1Async(medicalCaseId, request);
+
+                _logger.LogInformation("Step1完成成功: CompletedAt={CompletedAt}", stepDto.Step1CompletedAt);
+                return stepDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成Step1失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         #endregion
 
         #region 私有方法 - 变更检测

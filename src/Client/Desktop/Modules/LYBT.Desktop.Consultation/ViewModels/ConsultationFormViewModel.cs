@@ -1,7 +1,7 @@
 
 using LYBT.Desktop.Consultation.Components; // Issue #1784: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.MedicalCase.Interfaces;
+// Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces using（不再需要IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -30,7 +30,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         // Issue #1784: 使用Component替代Repository依赖
         private readonly ConsultationDataManager _dataManager;
         private readonly ConsultationCommandHandler _commandHandler;
-        private readonly IMedicalCaseRepository _medicalCaseRepository; // 保留用于CompleteStep1API调用
+        // Epic #1773: 已移除IMedicalCaseRepository依赖，使用DataManager替代
 
         #endregion
 
@@ -382,7 +382,6 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public ConsultationFormViewModel(
             ConsultationDataManager dataManager, // Issue #1784: 注入DataManager
             ConsultationCommandHandler commandHandler, // Issue #1784: 注入CommandHandler
-            IMedicalCaseRepository medicalCaseRepository, // 保留用于CompleteStep1API
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -393,7 +392,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // Issue #1784: 注入Component
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Epic #1773: 已移除IMedicalCaseRepository依赖
 
             // 初始化命令
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
@@ -461,12 +460,13 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 }
 
                 // 2. 调用API完成Step1（通过MedicalCase聚合根）
+                // Epic #1773: 使用DataManager包装Repository方法
                 var request = new CompleteStep1Request
                 {
                     PrescriptionEnabled = PrescriptionEnabled
                 };
 
-                var stepDto = await _medicalCaseRepository.CompleteStep1Async(MedicalCaseId, request);
+                var stepDto = await _dataManager.CompleteStep1Async(MedicalCaseId, request);
 
                 // 3. 更新本地状态
                 Step1CompletedAt = stepDto.Step1CompletedAt;
