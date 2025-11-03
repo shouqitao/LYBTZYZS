@@ -1,6 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Common; // Issue #1794: 添加ApiResponse命名空间
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -376,6 +377,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 标记是否开处方（RadioBox变化时自动调用）
         /// Task 3.4 (#1661): 实现防抖处理、错误回滚、加载指示器
+        /// Issue #1794: 优化方法长度（71→48行），提取辅助方法
         /// </summary>
         private async Task SetPrescriptionFlagAsync(bool needsPrescription)
         {
@@ -401,28 +403,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // 显示加载指示器
                 IsSavingPrescriptionFlag = true;
 
-                var request = new SetPrescriptionFlagRequest
-                {
-                    NeedsPrescription = needsPrescription
-                };
+                var request = CreateSetPrescriptionFlagRequest(needsPrescription);
 
                 // Issue #1783: 使用DataManager业务命令方法
                 var response = await _dataManager.SetPrescriptionFlagAsync(_medicalCaseId, request);
 
-                if (response.Success)
-                {
-                    Logger.LogInformation("开处方标志已更新: {NeedsPrescription}", needsPrescription);
-                }
-                else
-                {
-                    // API返回失败，回滚UI状态
-                    _needsPrescription = !needsPrescription;
-                    RaisePropertyChanged(nameof(NeedsPrescription));
-                    ShowPrescriptionPanel = !needsPrescription;
-
-                    Logger.LogWarning("更新开处方标志失败: {Message}", response.Message);
-                    await ShowErrorMessageAsync($"操作失败: {response.Message}");
-                }
+                await HandleSetPrescriptionFlagResponse(response, needsPrescription);
             }
             catch (OperationCanceledException)
             {
@@ -431,11 +417,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             catch (Exception ex)
             {
-                // 异常情况，回滚UI状态
-                _needsPrescription = !needsPrescription;
-                RaisePropertyChanged(nameof(NeedsPrescription));
-                ShowPrescriptionPanel = !needsPrescription;
-
+                RollbackPrescriptionFlag(needsPrescription);
                 Logger.LogError(ex, "更新开处方标志失败");
                 await ShowErrorMessageAsync($"操作失败: {ex.Message}");
             }
@@ -447,6 +429,47 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     IsSavingPrescriptionFlag = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// 创建开处方标志请求
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private static SetPrescriptionFlagRequest CreateSetPrescriptionFlagRequest(bool needsPrescription)
+        {
+            return new SetPrescriptionFlagRequest
+            {
+                NeedsPrescription = needsPrescription
+            };
+        }
+
+        /// <summary>
+        /// 处理开处方标志响应
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private async Task HandleSetPrescriptionFlagResponse(ApiResponse<MedicalCaseDto> response, bool needsPrescription)
+        {
+            if (response.Success)
+            {
+                Logger.LogInformation("开处方标志已更新: {NeedsPrescription}", needsPrescription);
+            }
+            else
+            {
+                RollbackPrescriptionFlag(needsPrescription);
+                Logger.LogWarning("更新开处方标志失败: {Message}", response.Message);
+                await ShowErrorMessageAsync($"操作失败: {response.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 回滚开处方标志UI状态
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private void RollbackPrescriptionFlag(bool needsPrescription)
+        {
+            _needsPrescription = !needsPrescription;
+            RaisePropertyChanged(nameof(NeedsPrescription));
+            ShowPrescriptionPanel = !needsPrescription;
         }
 
         /// <summary>
