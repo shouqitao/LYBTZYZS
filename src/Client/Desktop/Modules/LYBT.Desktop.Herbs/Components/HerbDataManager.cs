@@ -1,5 +1,6 @@
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Shared.Models.Contracts.Common; // Epic #1773: PagedResult<T>
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 
@@ -271,6 +272,47 @@ namespace LYBT.Desktop.Herbs.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新药材失败: HerbName={HerbName}", inputDto.Name);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 分页获取药材列表（Repository方法）
+        /// Epic #1773: 为HerbManagementViewModel提供分页查询功能
+        /// </summary>
+        public virtual async Task<PagedResult<HerbDto>> GetPagedAsync(int pageNumber, int pageSize, string? searchKeyword)
+        {
+            try
+            {
+                _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword={Keyword}", 
+                    pageNumber, pageSize, searchKeyword);
+                var result = await _herbRepository.GetPagedAsync(pageNumber, pageSize, searchKeyword);
+                _logger.LogInformation("药材列表获取成功: Count={Count}", result.TotalCount);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页获取药材失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 删除药材（Repository方法）
+        /// Epic #1773: 为HerbManagementViewModel提供删除功能
+        /// </summary>
+        public virtual async Task<bool> DeleteAsync(Guid herbId)
+        {
+            try
+            {
+                _logger.LogDebug("删除药材: HerbId={HerbId}", herbId);
+                var result = await _herbRepository.DeleteAsync(herbId);
+                _logger.LogInformation("药材删除成功: HerbId={HerbId}", herbId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除药材失败: HerbId={HerbId}", herbId);
                 throw;
             }
         }

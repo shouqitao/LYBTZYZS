@@ -1,6 +1,7 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Herbs.Interfaces;
+// Epic #1773: 已移除LYBT.Desktop.Herbs.Interfaces using（不再需要IHerbRepository）
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -19,14 +20,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbRepository _herbRepository;
+        // Epic #1773: 使用DataManager替代Repository依赖
+        private readonly HerbDataManager _dataManager;
 
         #endregion
 
         #region 构造函数
 
         public HerbManagementViewModel(
-            IHerbRepository herbRepository,
+            HerbDataManager dataManager, // Epic #1773: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -34,7 +36,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            // Epic #1773: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             PageTitle = "药材管理";
 
@@ -93,7 +96,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                var pagedData = await _herbRepository.GetPagedAsync(page, pageSize, searchText);
+                // Epic #1773: 使用DataManager包装Repository方法
+                var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
 
                 // 更新分页信息
                 TotalCount = pagedData.TotalCount;
@@ -129,7 +133,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
-                var success = await _herbRepository.DeleteAsync(item.Id);
+                // Epic #1773: 使用DataManager包装Repository方法
+                var success = await _dataManager.DeleteAsync(item.Id);
 
                 if (success)
                 {
@@ -164,7 +169,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 {
                     try
                     {
-                        var success = await _herbRepository.DeleteAsync(id);
+                        // Epic #1773: 使用DataManager包装Repository方法
+                        var success = await _dataManager.DeleteAsync(id);
                         if (success)
                             successCount++;
                         else
