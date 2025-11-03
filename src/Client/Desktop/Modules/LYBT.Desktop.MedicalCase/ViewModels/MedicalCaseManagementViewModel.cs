@@ -1,6 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -17,7 +18,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1783: 使用DataManager替代直接Repository访问（容器ViewModel暂不使用，但保持架构一致性）
+        private readonly MedicalCaseDataManager _dataManager;
 
         #endregion
 
@@ -124,7 +126,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseManagementViewModel(
-            IMedicalCaseRepository medicalCaseService,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -132,7 +134,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            // Issue #1783: 注入DataManager（容器ViewModel暂不使用数据操作，但保持架构一致性）
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             ShowListCommand = new DelegateCommand(ShowList);
