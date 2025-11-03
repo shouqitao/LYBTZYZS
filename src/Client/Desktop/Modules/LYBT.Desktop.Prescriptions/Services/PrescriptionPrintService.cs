@@ -29,6 +29,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         /// <summary>
         /// 打印处方
+        /// Issue #1794: 优化方法长度（39→20行），提取打印流程
         /// </summary>
         public async Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription)
         {
@@ -39,35 +40,47 @@ namespace LYBT.Desktop.Prescriptions.Services
             {
                 _logger.LogInformation("开始打印处方 ID: {PrescriptionId}", prescription.Id);
 
-                // 1. 构建打印数据模型
-                var printDto = await MapToPrintDtoAsync(prescription);
+                var document = await PreparePrintDocumentAsync(prescription);
+                var success = ExecutePrint(document, prescription.Id);
 
-                // 2. 使用Builder构建FlowDocument
-                var document = BuildFlowDocument(printDto);
+                _logger.LogInformation(success
+                    ? "处方打印成功 ID: {PrescriptionId}"
+                    : "用户取消打印 ID: {PrescriptionId}", prescription.Id);
 
-                // 3. 显示打印对话框
-                var printDialog = new PrintDialog();
-                SetupDefaultPrinter(printDialog);
-
-                // 4. 用户确认打印
-                if (printDialog.ShowDialog() == true)
-                {
-                    // 5. 执行打印
-                    var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-                    printDialog.PrintDocument(paginator, $"处方_{prescription.Id}");
-
-                    _logger.LogInformation("处方打印成功 ID: {PrescriptionId}", prescription.Id);
-                    return true;
-                }
-
-                _logger.LogInformation("用户取消打印 ID: {PrescriptionId}", prescription.Id);
-                return false;
+                return success;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "打印处方失败 ID: {PrescriptionId}", prescription.Id);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 准备打印文档
+        /// Issue #1794: 从PrintPrescriptionAsync提取
+        /// </summary>
+        private async Task<FlowDocument> PreparePrintDocumentAsync(PrescriptionDto prescription)
+        {
+            var printDto = await MapToPrintDtoAsync(prescription);
+            return BuildFlowDocument(printDto);
+        }
+
+        /// <summary>
+        /// 执行打印操作
+        /// Issue #1794: 从PrintPrescriptionAsync提取
+        /// </summary>
+        private bool ExecutePrint(FlowDocument document, Guid prescriptionId)
+        {
+            var printDialog = new PrintDialog();
+            SetupDefaultPrinter(printDialog);
+
+            if (printDialog.ShowDialog() != true)
+                return false;
+
+            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+            printDialog.PrintDocument(paginator, $"处方_{prescriptionId}");
+            return true;
         }
 
         /// <summary>
