@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Herbs.Interfaces;
+﻿using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Herbs.Repositories;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -23,6 +24,9 @@ namespace LYBT.Desktop.Herbs
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
+
+            // Epic #1773: 注册Component组件
+            containerRegistry.Register<HerbDataManager>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbManagementViewModel>();

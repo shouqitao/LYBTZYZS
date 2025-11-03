@@ -1,7 +1,7 @@
 
 using LYBT.Desktop.Consultation.Components; // Issue #1784: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
-// Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces using（不再需要IMedicalCaseRepository）
+using LYBT.Desktop.MedicalCase.Interfaces; // 保留用于IValidatable和ISaveable接口
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Patients;

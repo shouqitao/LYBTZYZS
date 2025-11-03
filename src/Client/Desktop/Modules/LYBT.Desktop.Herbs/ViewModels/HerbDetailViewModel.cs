@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Herbs.Interfaces;
+// Epic #1773: 已移除LYBT.Desktop.Herbs.Interfaces using（不再需要IHerbRepository）
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbRepository _herbRepository;
+        // Epic #1773: 使用DataManager替代Repository依赖
+        private readonly HerbDataManager _dataManager;
 
         #endregion
 
@@ -224,7 +226,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region 构造函数
 
         public HerbDetailViewModel(
-            IHerbRepository herbRepository,
+            HerbDataManager dataManager, // Epic #1773: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -232,7 +234,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            // Epic #1773: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化选项
             StatusOptions = Enum.GetValues<CommonStatus>();
@@ -281,7 +284,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Status = Status
                     };
 
-                    var createdHerb = await _herbRepository.CreateAsync(createDto);
+                    // Epic #1773: 使用DataManager包装Repository方法
+                    var createdHerb = await _dataManager.CreateAsync(createDto);
                     StatusMessage = "药材创建成功";
                     System.Windows.MessageBox.Show("药材创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     NavigateToHerbManagement();
@@ -304,7 +308,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                         Status = Status
                     };
 
-                    var updatedHerb = await _herbRepository.UpdateAsync(updateDto);
+                    // Epic #1773: 使用DataManager包装Repository方法
+                    var updatedHerb = await _dataManager.UpdateAsync(updateDto);
                     StatusMessage = "药材更新成功";
                     System.Windows.MessageBox.Show("药材更新成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     NavigateToHerbManagement();
@@ -423,7 +428,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 IsBusy = true;
                 StatusMessage = "正在加载药材信息...";
 
-                var herb = await _herbRepository.GetByIdAsync(herbId);
+                // Epic #1773: 使用DataManager包装Repository方法
+                var herb = await _dataManager.GetByIdAsync(herbId);
                 if (herb == null)
                 {
                     StatusMessage = "未找到药材信息";
