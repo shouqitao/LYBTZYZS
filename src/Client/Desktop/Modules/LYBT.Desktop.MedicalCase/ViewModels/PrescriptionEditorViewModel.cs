@@ -308,70 +308,92 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 验证处方数据
         /// Issue #1546: 增强药材库关联验证
+        /// Issue #1794: 优化方法长度（74→30行）
         /// </summary>
         public bool Validate()
         {
             var errors = new List<string>();
 
-            // 1. 验证基本信息
+            ValidateBasicInfo(errors);
+
+            var allItems = GetAllItems();
+            ValidateHerbItems(allItems, errors);
+
+            return HandleValidationResult(errors, allItems.Count);
+        }
+
+        /// <summary>
+        /// 验证基本信息（患者、医案ID）
+        /// Issue #1794: 从Validate提取，封装基本信息验证逻辑
+        /// </summary>
+        private void ValidateBasicInfo(List<string> errors)
+        {
             if (CurrentPatient == null)
-            {
                 errors.Add("请先选择患者");
-            }
 
             if (MedicalCaseId == Guid.Empty)
-            {
                 errors.Add("MedicalCaseId不能为空");
-            }
+        }
 
-            // 2. Issue #1546: 药材库关联验证
-            var allItems = GetAllItems();
-
+        /// <summary>
+        /// 验证药材项列表
+        /// Issue #1794: 从Validate提取，封装药材列表验证逻辑
+        /// </summary>
+        private void ValidateHerbItems(List<PrescriptionItemDto> allItems, List<string> errors)
+        {
             if (allItems.Count == 0)
             {
                 errors.Add("请至少添加一味药材");
+                return;
+            }
+
+            foreach (var item in allItems)
+            {
+                if (!string.IsNullOrWhiteSpace(item.HerbName))
+                {
+                    ValidateSingleHerbItem(item, errors);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证单个药材项
+        /// Issue #1794: 从ValidateHerbItems提取，封装单个药材验证逻辑
+        /// </summary>
+        private void ValidateSingleHerbItem(PrescriptionItemDto item, List<string> errors)
+        {
+            var matchedHerb = _allHerbs.FirstOrDefault(h =>
+                h.Name.Equals(item.HerbName, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedHerb == null)
+            {
+                errors.Add($"药材 '{item.HerbName}' 在药材库中不存在，请检查名称或添加新药材");
+            }
+            else if (!matchedHerb.IsEnabled)
+            {
+                errors.Add($"药材 '{item.HerbName}' 已停用，请选择其他药材");
             }
             else
             {
-                // 验证每个药材项
-                foreach (var item in allItems)
+                if (item.HerbId == Guid.Empty || item.HerbId != matchedHerb.Id)
                 {
-                    if (string.IsNullOrWhiteSpace(item.HerbName))
-                    {
-                        continue; // 跳过空药材名称（已在GetAllItems中过滤）
-                    }
+                    item.HerbId = matchedHerb.Id;
+                    Logger.LogInformation("自动设置药材ID：{HerbName} → {HerbId}", item.HerbName, matchedHerb.Id);
+                }
 
-                    // 在药材库中查找匹配的药材
-                    var matchedHerb = _allHerbs.FirstOrDefault(h =>
-                        h.Name.Equals(item.HerbName, StringComparison.OrdinalIgnoreCase));
-
-                    if (matchedHerb == null)
-                    {
-                        errors.Add($"药材 '{item.HerbName}' 在药材库中不存在，请检查名称或添加新药材");
-                    }
-                    else if (!matchedHerb.IsEnabled)
-                    {
-                        errors.Add($"药材 '{item.HerbName}' 已停用，请选择其他药材");
-                    }
-                    else
-                    {
-                        // 自动设置/修正HerbId（如果未设置或不匹配）
-                        if (item.HerbId == Guid.Empty || item.HerbId != matchedHerb.Id)
-                        {
-                            item.HerbId = matchedHerb.Id;
-                            Logger.LogInformation("自动设置药材ID：{HerbName} → {HerbId}", item.HerbName, matchedHerb.Id);
-                        }
-
-                        // 验证用量
-                        if (item.Dosage <= 0)
-                        {
-                            errors.Add($"药材 '{item.HerbName}' 的用量必须大于0");
-                        }
-                    }
+                if (item.Dosage <= 0)
+                {
+                    errors.Add($"药材 '{item.HerbName}' 的用量必须大于0");
                 }
             }
+        }
 
-            // 3. 汇总错误信息
+        /// <summary>
+        /// 处理验证结果
+        /// Issue #1794: 从Validate提取，封装结果处理逻辑
+        /// </summary>
+        private bool HandleValidationResult(List<string> errors, int itemCount)
+        {
             if (errors.Any())
             {
                 ValidationMessage = string.Join("；", errors);
@@ -380,7 +402,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
 
             ValidationMessage = string.Empty;
-            Logger.LogInformation("处方验证通过，共{ItemCount}味药材", allItems.Count);
+            Logger.LogInformation("处方验证通过，共{ItemCount}味药材", itemCount);
             return true;
         }
 
