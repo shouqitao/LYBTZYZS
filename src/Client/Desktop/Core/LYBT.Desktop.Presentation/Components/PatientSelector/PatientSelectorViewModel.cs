@@ -309,38 +309,13 @@ namespace LYBT.Desktop.Presentation.Components.PatientSelector
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                // 验证手机号是否重复（简化验证）
-                var phoneExists = SearchResults.Any(p =>
-                {
-                    var phoneProp = p.GetType().GetProperty("PhoneNumber")?.GetValue(p)?.ToString();
-                    return phoneProp == NewPatientPhone;
-                });
-
-                if (phoneExists)
-                {
-                    ErrorMessage = "该手机号已存在，请选择现有患者或使用其他手机号";
+                if (!ValidatePhoneNumber())
                     return;
-                }
 
-                // 模拟创建患者
                 await Task.Delay(300);
-                var newPatient = new
-                {
-                    Id = Guid.NewGuid(),
-                    Name = NewPatientName,
-                    Gender = NewPatientGender,
-                    Age = 25, // 默认年龄
-                    PhoneNumber = NewPatientPhone
-                };
+                var newPatient = CreateNewPatientObject();
 
-                // 清空创建表单
-                NewPatientName = string.Empty;
-                NewPatientGender = string.Empty;
-                NewPatientPhone = string.Empty;
-                ShowQuickCreate = false;
-
-                // 自动选择新创建的患者
-                SelectPatient(newPatient);
+                ResetQuickCreateFormAndSelectPatient(newPatient);
             }
             catch (Exception ex)
             {
@@ -350,6 +325,57 @@ namespace LYBT.Desktop.Presentation.Components.PatientSelector
             {
                 IsLoading = false;
             }
+        }
+
+        /// <summary>
+        /// 验证手机号是否已存在
+        /// Issue #1794: 从QuickCreateAsync提取
+        /// </summary>
+        private bool ValidatePhoneNumber()
+        {
+            var phoneExists = SearchResults.Any(p =>
+            {
+                var phoneProp = p.GetType().GetProperty("PhoneNumber")?.GetValue(p)?.ToString();
+                return phoneProp == NewPatientPhone;
+            });
+
+            if (phoneExists)
+            {
+                ErrorMessage = "该手机号已存在,请选择现有患者或使用其他手机号";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 创建新患者对象
+        /// Issue #1794: 从QuickCreateAsync提取
+        /// </summary>
+        private object CreateNewPatientObject()
+        {
+            return new
+            {
+                Id = Guid.NewGuid(),
+                Name = NewPatientName,
+                Gender = NewPatientGender,
+                Age = 25, // 默认年龄
+                PhoneNumber = NewPatientPhone
+            };
+        }
+
+        /// <summary>
+        /// 重置快速创建表单并选择患者
+        /// Issue #1794: 从QuickCreateAsync提取
+        /// </summary>
+        private void ResetQuickCreateFormAndSelectPatient(object newPatient)
+        {
+            NewPatientName = string.Empty;
+            NewPatientGender = string.Empty;
+            NewPatientPhone = string.Empty;
+            ShowQuickCreate = false;
+
+            SelectPatient(newPatient);
         }
 
         /// <summary>

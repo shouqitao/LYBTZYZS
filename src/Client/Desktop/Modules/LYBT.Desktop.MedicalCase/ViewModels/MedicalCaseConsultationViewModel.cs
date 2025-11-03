@@ -381,39 +381,65 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private async Task SetPrescriptionFlagAsync(bool needsPrescription)
         {
-            // 防抖处理：取消之前的请求
+            var cts = InitializeDebounce();
+
+            if (!await TryDebounceDelayAsync(cts))
+                return;
+
+            await ExecutePrescriptionFlagUpdateAsync(needsPrescription, cts);
+        }
+
+        /// <summary>
+        /// 初始化防抖处理的CancellationTokenSource
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private CancellationTokenSource InitializeDebounce()
+        {
             _setPrescriptionFlagCts?.Cancel();
             _setPrescriptionFlagCts?.Dispose();
             _setPrescriptionFlagCts = new CancellationTokenSource();
+            return _setPrescriptionFlagCts;
+        }
 
-            var cts = _setPrescriptionFlagCts;
-
+        /// <summary>
+        /// 尝试执行防抖延迟，如果被取消则返回false
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private async Task<bool> TryDebounceDelayAsync(CancellationTokenSource cts)
+        {
             try
             {
-                // 防抖延迟（500ms）
                 await Task.Delay(500, cts.Token);
 
-                // 如果延迟期间被取消，则直接返回
                 if (cts.Token.IsCancellationRequested)
                 {
                     Logger.LogDebug("开处方标志更新被取消（防抖）");
-                    return;
+                    return false;
                 }
 
-                // 显示加载指示器
-                IsSavingPrescriptionFlag = true;
-
-                var request = CreateSetPrescriptionFlagRequest(needsPrescription);
-
-                // Issue #1783: 使用DataManager业务命令方法
-                var response = await _dataManager.SetPrescriptionFlagAsync(_medicalCaseId, request);
-
-                await HandleSetPrescriptionFlagResponse(response, needsPrescription);
+                return true;
             }
             catch (OperationCanceledException)
             {
-                // 防抖取消，正常情况，不记录错误
                 Logger.LogDebug("开处方标志更新被取消（用户快速切换）");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 执行开处方标志更新的核心逻辑
+        /// Issue #1794: 从SetPrescriptionFlagAsync提取
+        /// </summary>
+        private async Task ExecutePrescriptionFlagUpdateAsync(bool needsPrescription, CancellationTokenSource cts)
+        {
+            try
+            {
+                IsSavingPrescriptionFlag = true;
+
+                var request = CreateSetPrescriptionFlagRequest(needsPrescription);
+                var response = await _dataManager.SetPrescriptionFlagAsync(_medicalCaseId, request);
+
+                await HandleSetPrescriptionFlagResponse(response, needsPrescription);
             }
             catch (Exception ex)
             {
@@ -423,7 +449,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             finally
             {
-                // 如果当前CTS未被替换，则隐藏加载指示器
                 if (_setPrescriptionFlagCts == cts)
                 {
                     IsSavingPrescriptionFlag = false;

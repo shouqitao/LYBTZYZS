@@ -192,64 +192,98 @@ namespace LYBT.Desktop.Users.ViewModels
                 IsBusy = true;
                 StatusMessage = "正在创建用户...";
 
-                // 创建用户数据传输对象
-                // Issue #1261: 移除 Password 字段，使用系统默认密码
-                var createDto = new UserInputDto
-                {
-                    UserName = UserName.Trim(),
-                    RealName = RealName.Trim(),
-                    PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
-                    Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
-                    Role = SelectedRole,
-                    Status = Status
-                };
-
-                // Issue #1785: 使用CommandHandler创建用户
+                var createDto = BuildUserInputDto();
                 var result = await _commandHandler.CreateAsync(createDto);
+
                 if (result.success && result.user != null)
-                {
-                    Logger.LogInformation("用户创建成功: {UserName} (ID: {UserId})", result.user.UserName, result.user.Id);
-
-                    // Issue #1262: 清理状态并导航
-                    IsBusy = false;
-                    StatusMessage = string.Empty;
-
-                    // 显示成功消息
-                    System.Windows.MessageBox.Show(
-                        $"用户 '{result.user.UserName}' 创建成功！\n真实姓名：{result.user.RealName}",
-                        "创建成功",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
-
-                    // 导航回用户管理页面
-                    NavigateToUserManagement();
-                }
+                    HandleCreateSuccess(result.user);
                 else
-                {
-                    IsBusy = false;
-                    ErrorMessage = result.errorMessage ?? "创建用户失败";
-                    Logger.LogError("创建用户失败：{ErrorMessage}", result.errorMessage);
-                    System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                }
+                    HandleCreateFailure(result.errorMessage);
             }
             catch (LYBT.Shared.Models.Exceptions.ApiException apiEx)
             {
-                // Issue #1262: 提取友好的业务错误消息
-                IsBusy = false;
-                var errorMessage = ExtractFriendlyErrorMessage(apiEx);
-                Logger.LogWarning(apiEx, "创建用户业务失败: {ErrorMessage}", errorMessage);
-
-                ErrorMessage = errorMessage;
-                System.Windows.MessageBox.Show(errorMessage, "提示",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                HandleApiException(apiEx);
             }
             catch (Exception ex)
             {
-                IsBusy = false;
-                Logger.LogError(ex, "创建用户时发生系统异常");
-                HandleError(ex, "创建用户");
+                HandleSystemException(ex);
             }
+        }
+
+        /// <summary>
+        /// 构建用户输入DTO
+        /// Issue #1794: 从CreateUserAsync提取
+        /// </summary>
+        private UserInputDto BuildUserInputDto()
+        {
+            return new UserInputDto
+            {
+                UserName = UserName.Trim(),
+                RealName = RealName.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(PhoneNumber) ? null : PhoneNumber.Trim(),
+                Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
+                Role = SelectedRole,
+                Status = Status
+            };
+        }
+
+        /// <summary>
+        /// 处理创建用户成功
+        /// Issue #1794: 从CreateUserAsync提取
+        /// </summary>
+        private void HandleCreateSuccess(UserDto user)
+        {
+            Logger.LogInformation("用户创建成功: {UserName} (ID: {UserId})", user.UserName, user.Id);
+
+            IsBusy = false;
+            StatusMessage = string.Empty;
+
+            System.Windows.MessageBox.Show(
+                $"用户 '{user.UserName}' 创建成功！\n真实姓名：{user.RealName}",
+                "创建成功",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+
+            NavigateToUserManagement();
+        }
+
+        /// <summary>
+        /// 处理创建用户失败
+        /// Issue #1794: 从CreateUserAsync提取
+        /// </summary>
+        private void HandleCreateFailure(string? errorMessage)
+        {
+            IsBusy = false;
+            ErrorMessage = errorMessage ?? "创建用户失败";
+            Logger.LogError("创建用户失败：{ErrorMessage}", errorMessage);
+            System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// 处理API业务异常
+        /// Issue #1794: 从CreateUserAsync提取
+        /// </summary>
+        private void HandleApiException(LYBT.Shared.Models.Exceptions.ApiException apiEx)
+        {
+            IsBusy = false;
+            var errorMessage = ExtractFriendlyErrorMessage(apiEx);
+            Logger.LogWarning(apiEx, "创建用户业务失败: {ErrorMessage}", errorMessage);
+
+            ErrorMessage = errorMessage;
+            System.Windows.MessageBox.Show(errorMessage, "提示",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Warning);
+        }
+
+        /// <summary>
+        /// 处理系统异常
+        /// Issue #1794: 从CreateUserAsync提取
+        /// </summary>
+        private void HandleSystemException(Exception ex)
+        {
+            IsBusy = false;
+            Logger.LogError(ex, "创建用户时发生系统异常");
+            HandleError(ex, "创建用户");
         }
 
         /// <summary>
