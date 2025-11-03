@@ -1,6 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -15,7 +16,8 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class ResetPasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
         private Guid _targetUserId;
 
         #region 属性
@@ -155,15 +157,16 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public ResetPasswordDialogViewModel(
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IUserRepository userRepository,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             GeneratePasswordCommand = new DelegateCommand(GenerateRandomPassword);
 
@@ -187,16 +190,16 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 SetIsBusy(true, "正在加载用户信息...");
 
-                // Repository 模式：直接返回 UserDto?
-                var user = await _userRepository.GetByIdAsync(userId);
-                if (user != null)
+                // Issue #1785: 使用CommandHandler查询
+                var result = await _commandHandler.GetByIdAsync(userId);
+                if (result.success && result.user != null)
                 {
-                    UserName = user.UserName; // 注意：UserDto 属性名是 UserName，不是 UserName
+                    UserName = result.user.UserName; // 注意：UserDto 属性名是 UserName
                 }
                 else
                 {
-                    SetError("无法加载用户信息");
-                    Logger.LogWarning("加载用户信息失败: Repository 返回 null");
+                    SetError(result.errorMessage ?? "无法加载用户信息");
+                    Logger.LogWarning("加载用户信息失败：{ErrorMessage}", result.errorMessage);
                 }
             }
             catch (Exception ex)
