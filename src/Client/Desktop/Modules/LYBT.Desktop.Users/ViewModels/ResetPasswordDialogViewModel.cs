@@ -19,6 +19,13 @@ namespace LYBT.Desktop.Users.ViewModels
         private readonly UserCommandHandler _commandHandler;
         private Guid _targetUserId;
 
+        // Issue #1794: 密码生成字符集常量
+        private const string LowerChars = "abcdefghijklmnopqrstuvwxyz";
+        private const string UpperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string DigitChars = "0123456789";
+        private const string SpecialChars = "!@#$%^&*()_+-=[]{}";
+        private const int PasswordLength = 12;
+
         #region 属性
 
         private string _username = string.Empty;
@@ -219,52 +226,53 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             try
             {
-                const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
-                const string upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                const string digitChars = "0123456789";
-                const string specialChars = "!@#$%^&*()_+-=[]{}";
-
-                var random = new Random();
-
-                // 生成 12 位随机密码，确保包含各种类型的字符
-                var password = new char[12];
-
-                // 至少包含 2 个小写字母
-                password[0] = lowerChars[random.Next(lowerChars.Length)];
-                password[1] = lowerChars[random.Next(lowerChars.Length)];
-
-                // 至少包含 2 个大写字母
-                password[2] = upperChars[random.Next(upperChars.Length)];
-                password[3] = upperChars[random.Next(upperChars.Length)];
-
-                // 至少包含 2 个数字
-                password[4] = digitChars[random.Next(digitChars.Length)];
-                password[5] = digitChars[random.Next(digitChars.Length)];
-
-                // 至少包含 2 个特殊字符
-                password[6] = specialChars[random.Next(specialChars.Length)];
-                password[7] = specialChars[random.Next(specialChars.Length)];
-
-                // 剩余 4 位从所有字符中随机选择
-                string allChars = lowerChars + upperChars + digitChars + specialChars;
-                for (int i = 8; i < 12; i++)
-                {
-                    password[i] = allChars[random.Next(allChars.Length)];
-                }
-
-                // 打乱顺序
-                var shuffled = password.OrderBy(x => random.Next()).ToArray();
-                string generatedPassword = new string(shuffled);
-
+                string generatedPassword = GeneratePasswordCore();
                 NewPassword = generatedPassword;
                 ConfirmPassword = generatedPassword;
-
                 Logger.LogInformation("已生成随机密码");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "生成随机密码时发生异常");
                 SetError("生成密码失败");
+            }
+        }
+
+        /// <summary>
+        /// 核心密码生成逻辑
+        /// Issue #1794: 提取密码生成逻辑
+        /// </summary>
+        private static string GeneratePasswordCore()
+        {
+            var random = new Random();
+            var password = new char[PasswordLength];
+
+            // 确保包含各种类型的字符（每种至少2个）
+            FillPasswordCharacters(password, random, LowerChars, 0, 2);
+            FillPasswordCharacters(password, random, UpperChars, 2, 2);
+            FillPasswordCharacters(password, random, DigitChars, 4, 2);
+            FillPasswordCharacters(password, random, SpecialChars, 6, 2);
+
+            // 剩余位置从所有字符中随机选择
+            string allChars = LowerChars + UpperChars + DigitChars + SpecialChars;
+            for (int i = 8; i < PasswordLength; i++)
+            {
+                password[i] = allChars[random.Next(allChars.Length)];
+            }
+
+            // 打乱顺序
+            return new string(password.OrderBy(x => random.Next()).ToArray());
+        }
+
+        /// <summary>
+        /// 填充密码字符
+        /// Issue #1794: 提取字符填充逻辑
+        /// </summary>
+        private static void FillPasswordCharacters(char[] password, Random random, string charSet, int startIndex, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                password[startIndex + i] = charSet[random.Next(charSet.Length)];
             }
         }
 
