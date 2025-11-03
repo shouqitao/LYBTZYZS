@@ -690,6 +690,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region INavigationAware
 
+        /// <summary>
+        /// 导航进入时处理
+        /// Issue #1794: 优化方法长度（115→28行），提取患者初始化和数据加载逻辑
+        /// </summary>
         public override async void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
@@ -701,7 +705,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             Logger.LogInformation("进入看病流程，MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}",
                 MedicalCaseId, CurrentPatient?.Name);
 
-            // 更新患者信息条
+            // 初始化患者信息和医案
+            var initializationFailed = await InitializePatientInfoAsync();
+            if (initializationFailed)
+            {
+                return;
+            }
+
+            // 加载继续看诊的医案数据
+            await LoadMedicalCaseDetailsAsync(navigationContext);
+
+            // 默认导航到Step 1（辨证）
+            Logger.LogInformation("执行默认导航到Step 1：辨证");
+            NavigateToStep(ConsultationStep.Consultation);
+        }
+
+        /// <summary>
+        /// 初始化患者信息和医案
+        /// Issue #1794: 从OnNavigatedTo提取
+        /// </summary>
+        private async Task<bool> InitializePatientInfoAsync()
+        {
             if (CurrentPatient != null)
             {
                 SelectedPatientName = CurrentPatient.Name;
@@ -722,7 +746,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         {
                             Logger.LogError("创建MedicalCase失败，无法继续");
                             await ShowErrorMessageAsync("创建医案失败，请重试");
-                            return;
+                            return true; // 失败，需要中止
                         }
 
                         Logger.LogInformation("✅ MedicalCase创建成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
@@ -731,7 +755,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     {
                         Logger.LogError(ex, "创建MedicalCase异常");
                         await ShowErrorMessageAsync($"创建医案失败：{ex.Message}");
-                        return;
+                        return true; // 失败，需要中止
                     }
                     finally
                     {
@@ -747,63 +771,70 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 NavigateToStep(CurrentStep);
             }
 
+            return false; // 成功
+        }
+
+        /// <summary>
+        /// 加载继续看诊的医案数据
+        /// Issue #1794: 从OnNavigatedTo提取
+        /// </summary>
+        private async Task LoadMedicalCaseDetailsAsync(NavigationContext navigationContext)
+        {
             // Epic #1583 Phase 3: 继续看诊时加载Consultation和Prescription数据
-            if (MedicalCaseId != Guid.Empty)
+            if (MedicalCaseId == Guid.Empty)
             {
-                try
-                {
-                    SetIsBusy(true, "正在加载医案数据...");
-
-                    Logger.LogInformation("检测到继续看诊场景，加载医案详情：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
-
-                    // Issue #1783: 使用DataManager加载完整医案数据
-                    var medicalCaseDetail = await _dataManager.GetByIdWithDetailsAsync(MedicalCaseId);
-
-                    if (medicalCaseDetail == null)
-                    {
-                        Logger.LogWarning("未找到医案数据，MedicalCaseId={MedicalCaseId}", MedicalCaseId);
-                        await ShowErrorMessageAsync("未找到医案数据");
-                        return;
-                    }
-
-                    if (medicalCaseDetail.Consultation != null)
-                    {
-                        Logger.LogInformation("加载到诊疗记录，ConsultationId={ConsultationId}", medicalCaseDetail.Consultation.Id);
-                    }
-                    else
-                    {
-                        Logger.LogInformation("无诊疗记录数据");
-                    }
-
-                    if (medicalCaseDetail.Prescription != null)
-                    {
-                        Logger.LogInformation("加载到处方信息，PrescriptionId={PrescriptionId}", medicalCaseDetail.Prescription.Id);
-                    }
-                    else
-                    {
-                        Logger.LogInformation("无处方数据");
-                    }
-
-                    // 将加载的数据保存到导航参数，供子步骤ViewModel使用
-                    navigationContext.Parameters.Add("LoadedConsultation", medicalCaseDetail.Consultation);
-                    navigationContext.Parameters.Add("LoadedPrescription", medicalCaseDetail.Prescription);
-
-                    Logger.LogInformation("医案数据加载完成");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "加载医案数据失败：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
-                    await ShowErrorMessageAsync($"加载医案数据失败：{ex.Message}");
-                }
-                finally
-                {
-                    SetIsBusy(false);
-                }
+                return;
             }
 
-            // 默认导航到Step 1（辨证）
-            Logger.LogInformation("执行默认导航到Step 1：辨证");
-            NavigateToStep(ConsultationStep.Consultation);
+            try
+            {
+                SetIsBusy(true, "正在加载医案数据...");
+
+                Logger.LogInformation("检测到继续看诊场景，加载医案详情：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+
+                // Issue #1783: 使用DataManager加载完整医案数据
+                var medicalCaseDetail = await _dataManager.GetByIdWithDetailsAsync(MedicalCaseId);
+
+                if (medicalCaseDetail == null)
+                {
+                    Logger.LogWarning("未找到医案数据，MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                    await ShowErrorMessageAsync("未找到医案数据");
+                    return;
+                }
+
+                if (medicalCaseDetail.Consultation != null)
+                {
+                    Logger.LogInformation("加载到诊疗记录，ConsultationId={ConsultationId}", medicalCaseDetail.Consultation.Id);
+                }
+                else
+                {
+                    Logger.LogInformation("无诊疗记录数据");
+                }
+
+                if (medicalCaseDetail.Prescription != null)
+                {
+                    Logger.LogInformation("加载到处方信息，PrescriptionId={PrescriptionId}", medicalCaseDetail.Prescription.Id);
+                }
+                else
+                {
+                    Logger.LogInformation("无处方数据");
+                }
+
+                // 将加载的数据保存到导航参数，供子步骤ViewModel使用
+                navigationContext.Parameters.Add("LoadedConsultation", medicalCaseDetail.Consultation);
+                navigationContext.Parameters.Add("LoadedPrescription", medicalCaseDetail.Prescription);
+
+                Logger.LogInformation("医案数据加载完成");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载医案数据失败：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                await ShowErrorMessageAsync($"加载医案数据失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)
