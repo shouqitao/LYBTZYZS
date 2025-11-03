@@ -375,6 +375,25 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
+        /// 导入验方到处方（Repository方法）
+        /// Issue #1786: 为FormulaTemplateDialogViewModel提供导入验方功能
+        /// </summary>
+        public virtual async Task ImportFormulaIntoPrescriptionAsync(Guid medicalCaseId, Guid formulaId)
+        {
+            try
+            {
+                _logger.LogDebug("导入验方到处方: MedicalCaseId={MedicalCaseId}, FormulaId={FormulaId}", medicalCaseId, formulaId);
+                await _medicalCaseRepository.ImportFormulaIntoPrescriptionAsync(medicalCaseId, formulaId);
+                _logger.LogInformation("验方导入成功: FormulaId={FormulaId}", formulaId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "导入验方失败: FormulaId={FormulaId}", formulaId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 清空数据
         /// </summary>
         public void Clear()

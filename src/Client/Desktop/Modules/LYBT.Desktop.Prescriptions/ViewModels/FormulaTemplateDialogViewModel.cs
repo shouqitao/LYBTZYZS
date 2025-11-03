@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces; // Epic #1600 Phase 5
 using LYBT.Shared.Models.Contracts.Formula;
@@ -21,9 +22,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
-        // Issue #1606 Phase 3: _prescriptionRepository已删除（未实际使用）
-        private readonly IMedicalCaseRepository _medicalCaseRepository; // Epic #1600 Phase 5
+        // Issue #1786: 使用DataManager替代直接Repository访问
+        private readonly PrescriptionDataManager _dataManager;
 
         #endregion
 
@@ -158,19 +158,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public FormulaTemplateDialogViewModel(
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaRepository formulaService,
-            // Issue #1606 Phase 3: prescriptionRepository已删除（未实际使用）
-            IMedicalCaseRepository medicalCaseRepository, // Epic #1600 Phase 5
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaService ?? throw new ArgumentNullException(nameof(formulaService));
-            // Issue #1606 Phase 3: _prescriptionRepository已删除
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository)); // Epic #1600 Phase 5
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -255,7 +252,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载验方模板...");
 
-                var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var pagedData = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
                 FormulaTemplates.Clear();
                 // Issue #1354: 只显示已验证的验方
                 foreach (var item in pagedData.Items.Where(f => f.ValidationStatus == FormulaValidationStatus.Validated))
@@ -285,7 +283,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var allFormulas = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
                 var filtered = allFormulas.Items.AsEnumerable();
 
                 // Issue #1354: 只显示已验证的验方
@@ -389,8 +388,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, $"正在导入验方\"{SelectedFormula.Name}\"...");
 
-                // Epic #1600 Phase 5: 通过MedicalCase聚合根调用
-                await _medicalCaseRepository.ImportFormulaIntoPrescriptionAsync(MedicalCaseId, SelectedFormula.Id);
+                // Issue #1786: 使用DataManager包装Repository方法
+                await _dataManager.ImportFormulaIntoPrescriptionAsync(MedicalCaseId, SelectedFormula.Id);
 
                 Logger.LogInformation("验方\"{FormulaName}\"导入成功", SelectedFormula.Name);
                 await ShowSuccessMessageAsync($"验方\"{SelectedFormula.Name}\"已成功导入到处方");
