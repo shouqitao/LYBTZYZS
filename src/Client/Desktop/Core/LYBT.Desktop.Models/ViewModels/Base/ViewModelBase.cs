@@ -245,48 +245,23 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 安全执行异步操作
+        /// Issue #1794: 优化方法长度（38→14行），提取公共逻辑
         /// </summary>
         protected async Task ExecuteSafelyAsync(
             Func<Task> operation,
             string? operationName = null,
             bool showProgress = true)
         {
-            try
+            await ExecuteSafelyAsync(async () =>
             {
-                IsBusy = true;
-                ClearError();
-
-                if (showProgress)
-                {
-                    StatusMessage = $"正在{operationName ?? "执行操作"}...";
-                }
-
                 await operation().ConfigureAwait(false);
-
-                if (showProgress)
-                {
-                    StatusMessage = $"{operationName ?? "操作"}完成";
-                    AutoClearStatusMessage(StatusMessage);
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                StatusMessage = $"{operationName ?? "操作"}已取消";
-                Logger.LogInformation("{Operation}已取消", operationName ?? "操作");
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"{operationName ?? "操作"}失败";
-                HandleError(ex, operationName);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+                return true;
+            }, operationName, false, showProgress);
         }
 
         /// <summary>
         /// 安全执行有返回值的异步操作
+        /// Issue #1794: 优化方法长度（43→28行），使用辅助方法
         /// </summary>
         protected async Task<T?> ExecuteSafelyAsync<T>(
             Func<Task<T>> operation,
@@ -296,40 +271,76 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             try
             {
-                IsBusy = true;
-                ClearError();
-
-                if (showProgress)
-                {
-                    StatusMessage = $"正在{operationName ?? "执行操作"}...";
-                }
+                SetupOperationStart(operationName, showProgress);
 
                 var result = await operation().ConfigureAwait(false);
 
-                if (showProgress)
-                {
-                    StatusMessage = $"{operationName ?? "操作"}完成";
-                    AutoClearStatusMessage(StatusMessage);
-                }
+                HandleOperationCompletion(operationName, showProgress);
 
                 return result;
             }
             catch (TaskCanceledException)
             {
-                StatusMessage = $"{operationName ?? "操作"}已取消";
-                Logger.LogInformation("{Operation}已取消", operationName ?? "操作");
+                HandleOperationCancellation(operationName);
                 return defaultValue;
             }
             catch (Exception ex)
             {
-                StatusMessage = $"{operationName ?? "操作"}失败";
-                HandleError(ex, operationName);
+                HandleOperationFailure(ex, operationName);
                 return defaultValue;
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>
+        /// 设置操作开始状态
+        /// Issue #1794: 从ExecuteSafelyAsync提取公共逻辑
+        /// </summary>
+        private void SetupOperationStart(string? operationName, bool showProgress)
+        {
+            IsBusy = true;
+            ClearError();
+
+            if (showProgress)
+            {
+                StatusMessage = $"正在{operationName ?? "执行操作"}...";
+            }
+        }
+
+        /// <summary>
+        /// 处理操作完成
+        /// Issue #1794: 从ExecuteSafelyAsync提取公共逻辑
+        /// </summary>
+        private void HandleOperationCompletion(string? operationName, bool showProgress)
+        {
+            if (showProgress)
+            {
+                StatusMessage = $"{operationName ?? "操作"}完成";
+                AutoClearStatusMessage(StatusMessage);
+            }
+        }
+
+        /// <summary>
+        /// 处理操作取消
+        /// Issue #1794: 从ExecuteSafelyAsync提取公共逻辑
+        /// </summary>
+        private void HandleOperationCancellation(string? operationName)
+        {
+            StatusMessage = $"{operationName ?? "操作"}已取消";
+            Logger.LogInformation("{Operation}已取消", operationName ?? "操作");
+        }
+
+        /// <summary>
+        /// 处理操作失败
+        /// Issue #1794: 从ExecuteSafelyAsync提取公共逻辑
+        /// </summary>
+        private void HandleOperationFailure(Exception ex, string? operationName)
+        {
+            StatusMessage = $"{operationName ?? "操作"}失败";
+            HandleError(ex, operationName);
         }
 
         /// <summary>
