@@ -142,41 +142,5 @@ namespace LYBT.Desktop.Infrastructure.Services
             }
         }
 
-        /// <summary>
-        /// 处理快捷键事件
-        /// </summary>
-        /// <param name="shortcut">快捷键组合</param>
-        /// <returns>是否处理了该快捷键</returns>
-        private bool HandleShortcut(string shortcut)
-        {
-            if (!_shortcutsEnabled || string.IsNullOrWhiteSpace(shortcut))
-                return false;
-
-            try
-            {
-                if (_registeredShortcuts.TryGetValue(shortcut, out var handler))
-                {
-                    switch (handler)
-                    {
-                        case ICommand command when command.CanExecute(null):
-                            command.Execute(null);
-                            _logger.LogDebug("执行快捷键命令: {Shortcut}", shortcut);
-                            return true;
-
-                        case Action action:
-                            action.Invoke();
-                            _logger.LogDebug("执行快捷键动作: {Shortcut}", shortcut);
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "处理快捷键失败: {Shortcut}", shortcut);
-                return false;
-            }
-        }
     }
 }

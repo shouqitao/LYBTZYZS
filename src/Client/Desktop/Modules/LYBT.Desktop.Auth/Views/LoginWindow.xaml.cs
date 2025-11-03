@@ -18,9 +18,6 @@ namespace LYBT.Desktop.Auth.Views
             // 这里保留是为了向后兼容
         }
 
-        private void PasswordChanged(PasswordBox passwordBox)
-        {
-            // 已弃用
-        }
+
     }
 }

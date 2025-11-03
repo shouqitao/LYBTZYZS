@@ -537,48 +537,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 更新MedicalCase的PrescriptionId
-        /// Issue #1545: 将保存成功的PrescriptionId关联到MedicalCase
-        /// </summary>
-        private async Task UpdateMedicalCasePrescriptionIdAsync(Guid prescriptionId)
-        {
-            try
-            {
-                Logger.LogInformation("开始更新MedicalCase.PrescriptionId，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
-                    MedicalCaseId, prescriptionId);
-
-                // Issue #1783: 使用DataManager包装Repository方法（GetByIdSimpleAsync）
-                var medicalCase = await _dataManager.GetByIdSimpleAsync(MedicalCaseId);
-                if (medicalCase == null)
-                {
-                    Logger.LogWarning("未找到医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-                    return;
-                }
-
-                // 构建更新DTO
-                var updateDto = new LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseUpdateDto
-                {
-                    Id = medicalCase.Id,
-                    PatientId = medicalCase.PatientId,
-                    DoctorId = medicalCase.DoctorId,
-                    ConsultationId = medicalCase.ConsultationId,
-                    PrescriptionId = prescriptionId,
-                    Remark = medicalCase.Remark
-                };
-
-                // Issue #1783: 使用DataManager包装Repository方法（UpdateSimpleAsync）
-                await _dataManager.UpdateSimpleAsync(updateDto);
-
-                Logger.LogInformation("已更新MedicalCase.PrescriptionId: {PrescriptionId}", prescriptionId);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "更新MedicalCase.PrescriptionId失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-                // 不抛出异常，允许Prescription保存成功（后续可通过数据修复）
-            }
-        }
-
-        /// <summary>
         /// 发布处方完成事件
         /// Issue #1557 Phase 4: 通知MedicalCaseFlowViewModel跳转到Step 4
         /// </summary>

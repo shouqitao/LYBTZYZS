@@ -794,42 +794,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>
-        /// Phase 2: 关闭旧医案（不创建新医案）
-        /// </summary>
-        private async Task CloseOldMedicalCaseAsync(Guid patientId, Guid medicalCaseId)
-        {
-            try
-            {
-                Logger.LogInformation("用户选择关闭旧医案：MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-                // 1. 调用API关闭医案
-                // Epic #1773: 使用MedicalCaseDataManager包装方法
-                var response = await _medicalCaseDataManager.CloseCaseAsync(medicalCaseId);
-                var closed = response.Success;
-
-                if (closed)
-                {
-                    // 2. 从缓存中移除
-                    _pendingCaseCache.Remove(patientId);
-                    Logger.LogInformation("医案已关闭，缓存已清理");
-
-                    // Phase 2临时方案：仅记录日志，Phase 5添加提示消息
-                    Logger.LogInformation("医案已成功关闭");
-                }
-                else
-                {
-                    Logger.LogWarning("关闭医案失败");
-                    await ShowErrorMessageAsync("关闭医案失败，请稍后重试");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "关闭医案失败");
-                await ShowErrorMessageAsync($"关闭医案失败：{ex.Message}");
-            }
-        }
-
         #endregion
 
         #region 事件发布辅助方法
