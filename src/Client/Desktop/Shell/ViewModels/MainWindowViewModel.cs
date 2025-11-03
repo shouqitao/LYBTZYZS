@@ -799,29 +799,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    /// <summary>
-    /// 更新所有键盘快捷键命令的可用状态
-    /// </summary>
-    private void UpdateKeyboardShortcutCommands()
-    {
-        QuickAddPatientCommand?.RaiseCanExecuteChanged();
-        QuickStartConsultationCommand?.RaiseCanExecuteChanged();
-        ShowSettingsCommand?.RaiseCanExecuteChanged();
-    }
-
     #endregion UltraThink Phase H: 键盘快捷键功能实现
 
-    #region 私有转换方法
 
-    /// <summary>
-    /// 转换用户数据
-    /// </summary>
-    private static UserDto ConvertToUserDto(UserDto userDto)
-    {
-        return userDto;
-    }
-
-    #endregion 私有转换方法
 
     #region Issue #877 Region 导航监控
 
