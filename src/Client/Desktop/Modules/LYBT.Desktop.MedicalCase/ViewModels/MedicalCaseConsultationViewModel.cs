@@ -310,6 +310,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 保存辨证信息
+        /// Issue #1794: 优化方法长度（51→38行），提取DTO创建逻辑
         /// </summary>
         private async Task SaveConsultationAsync()
         {
@@ -323,20 +324,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                var request = new ConsultationInputDto
-                {
-                    Id = _medicalCaseId,
-                    ChiefComplaint = ChiefComplaint,
-                    PresentIllness = PresentIllness,
-                    Inspection = Inspection,
-                    AuscultationOlfaction = AuscultationOlfaction,
-                    Inquiry = Inquiry,
-                    Palpation = Palpation,
-                    TCMDiagnosis = TCMDiagnosis,
-                    TreatmentPrinciple = TreatmentPrinciple,
-                    MedicalAdvice = MedicalAdvice,
-                    Remark = Remark
-                };
+                var request = CreateConsultationInputDto();
 
                 // Issue #1783: 使用DataManager业务命令方法
                 var response = await _dataManager.UpdateConsultationAsync(_medicalCaseId, request);
@@ -361,6 +349,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 IsSaving = false;
             }
+        }
+
+        /// <summary>
+        /// 创建辨证信息输入DTO
+        /// Issue #1794: 从SaveConsultationAsync提取
+        /// </summary>
+        private ConsultationInputDto CreateConsultationInputDto()
+        {
+            return new ConsultationInputDto
+            {
+                Id = _medicalCaseId,
+                ChiefComplaint = ChiefComplaint,
+                PresentIllness = PresentIllness,
+                Inspection = Inspection,
+                AuscultationOlfaction = AuscultationOlfaction,
+                Inquiry = Inquiry,
+                Palpation = Palpation,
+                TCMDiagnosis = TCMDiagnosis,
+                TreatmentPrinciple = TreatmentPrinciple,
+                MedicalAdvice = MedicalAdvice,
+                Remark = Remark
+            };
         }
 
         /// <summary>
