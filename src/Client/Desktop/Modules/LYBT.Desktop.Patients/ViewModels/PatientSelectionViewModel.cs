@@ -805,52 +805,59 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         /// <param name="patient">选中的患者</param>
         /// <param name="medicalCaseId">可选的医案ID（继续看诊时传递现有ID，新建时为null）</param>
+        
+        /// <summary>
+        /// 创建患者选中事件载荷
+        /// </summary>
+        private PatientSelectedPayload CreatePatientPayload(PatientDto patient)
+        {
+            return new PatientSelectedPayload
+            {
+                PatientId = patient.Id,
+                PatientName = patient.Name,
+                Gender = patient.Gender.ToString(),
+                Age = patient.Age ?? 0,
+                PhoneNumber = patient.PhoneNumber ?? string.Empty,
+                LastVisitDate = patient.LastVisitTime,
+                VisitCount = patient.VisitCount,
+                AllergyHistory = patient.AllergyHistory ?? string.Empty,
+                MedicalCaseFlowId = this.MedicalCaseFlowId,
+                SelectedAt = DateTime.Now
+            };
+        }
+
+        /// <summary>
+        /// 执行医案流程导航
+        /// </summary>
+        private void NavigateToMedicalCaseFlow(PatientDto patient, Guid? medicalCaseId)
+        {
+            var parameters = new NavigationParameters { { "CurrentPatient", patient } };
+
+            if (medicalCaseId.HasValue && medicalCaseId.Value != Guid.Empty)
+            {
+                parameters.Add("MedicalCaseId", medicalCaseId.Value);
+                Logger.LogInformation("导航到医案录入界面（继续看诊）：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                    patient.Id, medicalCaseId.Value);
+            }
+            else
+            {
+                Logger.LogInformation("导航到医案录入界面（新建医案）：PatientId={PatientId}, PatientName={PatientName}",
+                    patient.Id, patient.Name);
+            }
+
+            RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+        }
+
         private void PublishPatientSelectedEvent(PatientDto patient, Guid? medicalCaseId = null)
         {
             try
             {
-                var payload = new PatientSelectedPayload
-                {
-                    PatientId = patient.Id,
-                    PatientName = patient.Name,
-                    Gender = patient.Gender.ToString(),  // Gender枚举转换为string
-                    Age = patient.Age ?? 0,  // 处理可空int
-                    PhoneNumber = patient.PhoneNumber ?? string.Empty,
-                    LastVisitDate = patient.LastVisitTime,  // 属性名修正：LastVisitTime
-                    VisitCount = patient.VisitCount,
-                    AllergyHistory = patient.AllergyHistory ?? string.Empty,
-                    MedicalCaseFlowId = this.MedicalCaseFlowId,
-                    SelectedAt = DateTime.Now
-                };
-
-                EventAggregator.GetEvent<PatientSelectedEvent>()
-                    .Publish(payload);
-
+                var payload = CreatePatientPayload(patient);
+                EventAggregator.GetEvent<PatientSelectedEvent>().Publish(payload);
                 Logger.LogInformation("已发布PatientSelectedEvent，患者：{PatientName}，流程ID：{FlowId}",
                     patient.Name, MedicalCaseFlowId);
-
-                // Issue #1585 - 修复导航断裂：添加导航到MedicalCaseFlowView的逻辑
-                // Issue #1596 - 传递完整PatientDto对象，确保MedicalCaseFlowViewModel可以创建医案
-                // Issue #1597 - 继续看诊场景下传递现有MedicalCaseId
-                var parameters = new NavigationParameters
-                {
-                    { "CurrentPatient", patient }  // 传递完整PatientDto对象
-                };
-
-                // 继续看诊场景：传递现有MedicalCaseId
-                if (medicalCaseId.HasValue && medicalCaseId.Value != Guid.Empty)
-                {
-                    parameters.Add("MedicalCaseId", medicalCaseId.Value);
-                    Logger.LogInformation("导航到医案录入界面（继续看诊）：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
-                        patient.Id, medicalCaseId.Value);
-                }
-                else
-                {
-                    Logger.LogInformation("导航到医案录入界面（新建医案）：PatientId={PatientId}, PatientName={PatientName}",
-                        patient.Id, patient.Name);
-                }
-
-                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+                
+                NavigateToMedicalCaseFlow(patient, medicalCaseId);
             }
             catch (Exception ex)
             {
