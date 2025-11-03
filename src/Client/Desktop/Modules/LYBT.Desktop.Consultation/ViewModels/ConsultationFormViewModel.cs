@@ -458,33 +458,14 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 }
 
                 // 2. 调用API完成Step1（通过MedicalCase聚合根）
-                // Epic #1773: 使用DataManager包装Repository方法
-                var request = new CompleteStep1Request
-                {
-                    PrescriptionEnabled = PrescriptionEnabled
-                };
-
+                var request = CreateCompleteStep1Request();
                 var stepDto = await _dataManager.CompleteStep1Async(MedicalCaseId, request);
 
                 // 3. 更新本地状态
                 Step1CompletedAt = stepDto.Step1CompletedAt;
 
                 // 4. 导航到下一步（Step2或Step3）
-                if (PrescriptionEnabled)
-                {
-                    // 跳转到Step2（处方录入）- PrescriptionEditorView
-                    var parameters = new NavigationParameters
-                    {
-                        { "MedicalCaseId", MedicalCaseId },
-                        { "CurrentPatient", CurrentPatient }
-                    };
-                    RegionManager?.RequestNavigate("ContentRegion", "PrescriptionEditorView", parameters);
-                }
-                else
-                {
-                    // 跳转到Step3（汇总页）- 暂未实现，显示提示信息
-                    await ShowSuccessMessageAsync("Step1已完成！\n您选择了不开处方，后续将直接进入汇总页（暂未实现）。");
-                }
+                await NavigateToNextStepAsync();
 
                 Logger.LogInformation("Step1完成成功，导航到下一步");
             }
@@ -496,6 +477,41 @@ namespace LYBT.Desktop.Consultation.ViewModels
             finally
             {
                 SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 创建CompleteStep1Request
+        /// Issue #1794: 提取请求对象创建逻辑
+        /// </summary>
+        private CompleteStep1Request CreateCompleteStep1Request()
+        {
+            return new CompleteStep1Request
+            {
+                PrescriptionEnabled = PrescriptionEnabled
+            };
+        }
+
+        /// <summary>
+        /// 导航到下一步
+        /// Issue #1794: 提取导航逻辑
+        /// </summary>
+        private async Task NavigateToNextStepAsync()
+        {
+            if (PrescriptionEnabled)
+            {
+                // 跳转到Step2（处方录入）- PrescriptionEditorView
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseId", MedicalCaseId },
+                    { "CurrentPatient", CurrentPatient }
+                };
+                RegionManager?.RequestNavigate("ContentRegion", "PrescriptionEditorView", parameters);
+            }
+            else
+            {
+                // 跳转到Step3（汇总页）- 暂未实现，显示提示信息
+                await ShowSuccessMessageAsync("Step1已完成！\n您选择了不开处方，后续将直接进入汇总页（暂未实现）。");
             }
         }
 
