@@ -1,5 +1,6 @@
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Contracts.Common; // Issue #1783: 添加PagedResult支持
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -317,6 +318,55 @@ namespace LYBT.Desktop.MedicalCase.Components
             {
                 _logger.LogError(ex, "获取医案完整详情失败: {MedicalCaseId}", id);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 分页获取医案列表（不使用聚合根模式）
+        /// 用于ListViewModel显示医案列表的场景
+        /// Issue #1783: 为ListViewModel提供分页查询方法
+        /// </summary>
+        public virtual async Task<PagedResult<MedicalCaseDto>?> GetPagedAsync(int page, int pageSize, string? searchText = null)
+        {
+            try
+            {
+                _logger.LogDebug("分页获取医案列表: Page={Page}, PageSize={PageSize}, SearchText={SearchText}", page, pageSize, searchText);
+                var result = await _repository.GetPagedAsync(page, pageSize, searchText);
+                _logger.LogInformation("医案列表加载成功: TotalCount={TotalCount}, CurrentPage={Page}", result?.TotalCount, page);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页获取医案列表失败: Page={Page}", page);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 删除医案（不使用聚合根模式）
+        /// 用于ListViewModel删除医案的场景
+        /// Issue #1783: 为ListViewModel提供删除方法
+        /// </summary>
+        public virtual async Task<bool> DeleteAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogDebug("删除医案: {MedicalCaseId}", id);
+                var success = await _repository.DeleteAsync(id);
+                if (success)
+                {
+                    _logger.LogInformation("医案删除成功: {MedicalCaseId}", id);
+                }
+                else
+                {
+                    _logger.LogWarning("医案删除失败: {MedicalCaseId}", id);
+                }
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除医案失败: {MedicalCaseId}", id);
+                return false;
             }
         }
 

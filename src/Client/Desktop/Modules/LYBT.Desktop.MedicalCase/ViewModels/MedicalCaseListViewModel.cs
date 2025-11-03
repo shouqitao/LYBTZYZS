@@ -1,7 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1783: 使用DataManager替代直接Repository访问
+        private readonly MedicalCaseDataManager _dataManager;
 
         #endregion
 
@@ -155,7 +157,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseListViewModel(
-            IMedicalCaseRepository medicalCaseService,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -163,7 +165,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseRepository = medicalCaseService ?? throw new ArgumentNullException(nameof(medicalCaseService));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -210,7 +213,15 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在加载病历列表...");
 
-                var pagedData = await _medicalCaseRepository.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                // Issue #1783: 使用DataManager分页获取
+                var pagedData = await _dataManager.GetPagedAsync(CurrentPage, PageSize, SearchText);
+                if (pagedData == null)
+                {
+                    Logger.LogWarning("获取分页数据失败");
+                    await ShowErrorMessageAsync("加载病历列表失败");
+                    return;
+                }
+
                 MedicalCases.Clear();
                 foreach (var item in pagedData.Items)
                 {
@@ -275,7 +286,8 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在删除病历...");
 
-                var success = await _medicalCaseRepository.DeleteAsync(SelectedMedicalCase.Id);
+                // Issue #1783: 使用DataManager删除
+                var success = await _dataManager.DeleteAsync(SelectedMedicalCase.Id);
                 if (success)
                 {
                     await ShowSuccessMessageAsync("病历删除成功");
