@@ -391,6 +391,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 保存处方 - Epic #1540: 使用IPrescriptionEditorService构建草稿
         /// Issue #1477协调：此方法构建草稿，最终写入由MedicalCase聚合根控制
+        /// Issue #1794: 优化方法长度（86→35行）
         /// </summary>
         public async Task<bool> SaveAsync()
         {
@@ -398,71 +399,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存处方...");
 
-                // 1. 验证数据
                 if (!Validate())
                 {
                     Logger.LogWarning("处方验证失败：{Message}", ValidationMessage);
                     return false;
                 }
 
-                // 2. 构造PrescriptionCreateDto
-                var allItems = GetAllItems();
-
-                // Epic #1540: 从_allHerbs获取真实价格
-                var itemsWithPrice = allItems.Select(item =>
-                {
-                    var herb = _allHerbs.FirstOrDefault(h => h.Id == item.HerbId);
-                    return new PrescriptionItemInputDto
-                    {
-                        HerbId = item.HerbId,
-                        HerbName = item.HerbName,
-                        Quantity = item.Dosage,
-                        Unit = item.Unit,
-                        UnitPrice = herb?.Price ?? 0m, // 使用真实价格
-                        Subtotal = (herb?.Price ?? 0m) * item.Dosage
-                    };
-                }).ToList();
-
-                var createDto = new PrescriptionCreateDto
-                {
-                    PatientId = CurrentPatient!.Id,
-                    DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
-                    ConsultationId = MedicalCaseId, // 关联医案
-                    Quantity = DosageCount,
-                    Usage = Usage,
-                    Advice = MedicalAdvice,
-                    Notes = Remark,
-                    Items = itemsWithPrice
-                };
-
-                // 3. Epic #1540: 使用IPrescriptionEditorService构建草稿
+                var createDto = BuildPrescriptionCreateDto();
                 var draft = await _prescriptionEditorService.BuildPrescriptionDraftAsync(createDto);
 
-                // 4. 验证草稿
-                var isValid = await _prescriptionEditorService.ValidatePrescriptionAsync(draft);
-                if (!isValid)
-                {
-                    Logger.LogWarning("处方草稿验证失败");
-                    await ShowErrorMessageAsync("处方数据验证失败，请检查药材信息");
+                if (!await ValidateDraftAsync(draft))
                     return false;
-                }
 
-                // 5. 计算总金额（验证价格计算）
-                var totalAmount = await _prescriptionEditorService.CalculateTotalAmountAsync(draft.Items, DosageCount);
-                Logger.LogInformation("处方草稿已构建：{ItemCount}味药材，{DosageCount}剂，总价{TotalAmount:F2}元",
-                    draft.Items.Count, DosageCount, totalAmount);
+                var totalAmount = await CalculateAndLogTotalAmountAsync(draft);
 
-                // 6. Issue #1545: 保存处方到数据库并更新MedicalCase
-                var savedPrescription = await SavePrescriptionAndUpdateMedicalCaseAsync(createDto, draft.Id);
+                var savedPrescription = await SaveAndHandleResultAsync(createDto, draft.Id, totalAmount, draft.Items.Count);
                 if (savedPrescription == null)
-                {
-                    await ShowErrorMessageAsync("处方保存失败");
                     return false;
-                }
 
-                await ShowSuccessMessageAsync($"处方已保存（{draft.Items.Count}味药材，总价{totalAmount:F2}元）");
-
-                // Issue #1557 Phase 4: 发布PrescriptionCompletedEvent
                 PublishPrescriptionCompletedEvent(savedPrescription.Id, draft.Items.Count, totalAmount, isDraft: false);
 
                 return true;
@@ -477,6 +431,86 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(false);
             }
+        }
+
+        /// <summary>
+        /// 构建处方创建DTO
+        /// Issue #1794: 从SaveAsync提取，封装DTO构建逻辑
+        /// </summary>
+        private PrescriptionCreateDto BuildPrescriptionCreateDto()
+        {
+            var allItems = GetAllItems();
+
+            var itemsWithPrice = allItems.Select(item =>
+            {
+                var herb = _allHerbs.FirstOrDefault(h => h.Id == item.HerbId);
+                return new PrescriptionItemInputDto
+                {
+                    HerbId = item.HerbId,
+                    HerbName = item.HerbName,
+                    Quantity = item.Dosage,
+                    Unit = item.Unit,
+                    UnitPrice = herb?.Price ?? 0m,
+                    Subtotal = (herb?.Price ?? 0m) * item.Dosage
+                };
+            }).ToList();
+
+            return new PrescriptionCreateDto
+            {
+                PatientId = CurrentPatient!.Id,
+                DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                ConsultationId = MedicalCaseId,
+                Quantity = DosageCount,
+                Usage = Usage,
+                Advice = MedicalAdvice,
+                Notes = Remark,
+                Items = itemsWithPrice
+            };
+        }
+
+        /// <summary>
+        /// 验证处方草稿
+        /// Issue #1794: 从SaveAsync提取，封装草稿验证逻辑
+        /// </summary>
+        private async Task<bool> ValidateDraftAsync(PrescriptionDto draft)
+        {
+            var isValid = await _prescriptionEditorService.ValidatePrescriptionAsync(draft);
+            if (!isValid)
+            {
+                Logger.LogWarning("处方草稿验证失败");
+                await ShowErrorMessageAsync("处方数据验证失败，请检查药材信息");
+            }
+            return isValid;
+        }
+
+        /// <summary>
+        /// 计算总金额并记录日志
+        /// Issue #1794: 从SaveAsync提取，封装金额计算和日志记录
+        /// </summary>
+        private async Task<decimal> CalculateAndLogTotalAmountAsync(PrescriptionDto draft)
+        {
+            var totalAmount = await _prescriptionEditorService.CalculateTotalAmountAsync(draft.Items, DosageCount);
+            Logger.LogInformation("处方草稿已构建：{ItemCount}味药材，{DosageCount}剂，总价{TotalAmount:F2}元",
+                draft.Items.Count, DosageCount, totalAmount);
+            return totalAmount;
+        }
+
+        /// <summary>
+        /// 保存处方并处理结果
+        /// Issue #1794: 从SaveAsync提取，封装保存和结果处理逻辑
+        /// </summary>
+        private async Task<PrescriptionDto?> SaveAndHandleResultAsync(PrescriptionCreateDto createDto, Guid draftId, decimal totalAmount, int itemCount)
+        {
+            var savedPrescription = await SavePrescriptionAndUpdateMedicalCaseAsync(createDto, draftId);
+            if (savedPrescription != null)
+            {
+                await ShowSuccessMessageAsync($"处方已保存（{itemCount}味药材，总价{totalAmount:F2}元）");
+            }
+            else
+            {
+                await ShowErrorMessageAsync("处方保存失败");
+            }
+            return savedPrescription;
         }
 
         #endregion
