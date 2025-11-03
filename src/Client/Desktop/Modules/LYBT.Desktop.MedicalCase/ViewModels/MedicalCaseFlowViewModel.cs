@@ -25,7 +25,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 字段
 
         private readonly IRegionManager _regionManager;
-        private readonly IContainerProvider _containerProvider;
         // Issue #1783: 使用DataManager替代直接Repository访问
         private readonly MedicalCaseDataManager _dataManager;
 
@@ -187,7 +186,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public MedicalCaseFlowViewModel(
             MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IRegionManager regionManager,
-            IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             ISessionManager? sessionManager = null)
@@ -196,7 +194,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // Issue #1783: 注入DataManager
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);

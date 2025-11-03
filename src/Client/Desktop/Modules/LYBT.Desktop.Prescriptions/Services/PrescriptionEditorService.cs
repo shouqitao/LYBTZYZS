@@ -31,7 +31,6 @@ namespace LYBT.Desktop.Prescriptions.Services
         #region 依赖注入
 
         private readonly IPrescriptionApi _prescriptionApi; // Issue #1606 Phase 3: 改用IPrescriptionApi（只读）
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
         private readonly IHerbRepository _herbRepository;
         private readonly ILogger<PrescriptionEditorService> _logger;
 
@@ -44,12 +43,10 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         public PrescriptionEditorService(
             IPrescriptionApi prescriptionApi, // Issue #1606 Phase 3: 改用IPrescriptionApi
-            IMedicalCaseRepository medicalCaseRepository,
             IHerbRepository herbRepository,
             ILogger<PrescriptionEditorService> logger)
         {
             _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi)); // Issue #1606 Phase 3
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
