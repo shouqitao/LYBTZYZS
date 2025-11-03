@@ -551,6 +551,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
+        /// 执行Region导航
+        /// </summary>
+        private void NavigateToRegion(string stepName, string viewName, NavigationParameters parameters)
+        {
+            Logger.LogInformation("导航到{StepName}步骤（使用Region导航）", stepName);
+            _regionManager.RequestNavigate("WorkflowContentRegion", viewName, parameters);
+            Logger.LogInformation("Region导航到{ViewName}，MedicalCaseId: {MedicalCaseId}", viewName, MedicalCaseId);
+        }
+
+        /// <summary>
         /// 导航到指定步骤
         /// Issue #1567 - 删除SelectPatient分支，更新步骤枚举
         /// </summary>
@@ -561,44 +571,26 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             switch (step)
             {
                 case ConsultationStep.Consultation:
-                    Logger.LogInformation("导航到辨证步骤（使用Region导航）");
-
-                    // 使用Prism Region导航到辨证表单
-                    var consultationParameters = new NavigationParameters
+                    NavigateToRegion("辨证", "ConsultationFormView", new NavigationParameters
                     {
                         { "MedicalCaseId", MedicalCaseId },
                         { "CurrentPatient", CurrentPatient }
-                    };
-
-                    _regionManager.RequestNavigate("WorkflowContentRegion", "ConsultationFormView", consultationParameters);
-                    Logger.LogInformation("Region导航到ConsultationFormView，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    });
                     break;
 
                 case ConsultationStep.Prescription:
-                    Logger.LogInformation("导航到施治步骤（使用Region导航）");
-
-                    // 使用Prism Region导航到处方编辑器
-                    var prescriptionParameters = new NavigationParameters
+                    NavigateToRegion("施治", "PrescriptionEditorView", new NavigationParameters
                     {
                         { "MedicalCaseId", MedicalCaseId },
                         { "CurrentPatient", CurrentPatient }
-                    };
-
-                    _regionManager.RequestNavigate("WorkflowContentRegion", "PrescriptionEditorView", prescriptionParameters);
-                    Logger.LogInformation("Region导航到PrescriptionEditorView，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    });
                     break;
 
                 case ConsultationStep.Completion:
-                    Logger.LogInformation("导航到完成步骤（使用Region导航）");
-
-                    // Issue #1567: 使用Prism Region导航到完成视图
-                    var completionParameters = new NavigationParameters
+                    NavigateToRegion("完成", "CompletionView", new NavigationParameters
                     {
                         { "MedicalCaseId", MedicalCaseId }
-                    };
-
-                    _regionManager.RequestNavigate("WorkflowContentRegion", "CompletionView", completionParameters);
-                    Logger.LogInformation("Region导航到CompletionView，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                    });
                     break;
 
                 default:
