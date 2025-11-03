@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Modules;
@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Shell.Services;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,8 @@ namespace LYBT.Desktop.Shell.ViewModels;
 
 /// <summary>
 /// 主窗口视图模型 - WPF主界面核心控制器
+/// Issue #1790: 拆分为3个文件，提取NavigationManager(~150行)和MenuManager(~100行)
+/// 当前文件聚焦核心ViewModel逻辑（~350行）
 /// 采用Prism 8.x最佳实践，使用构造函数注入模式
 /// 提供用户登录状态管理、界面导航控制、键盘快捷键支持
 /// 集成主题切换、时钟显示、角色基础的工作台切换功能
@@ -27,107 +30,82 @@ public class MainWindowViewModel : UnifiedViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
     private readonly IRegionManager _regionManager;
-    private readonly IApplicationCommands _applicationCommands;
     private readonly IModuleLoadingService _moduleLoadingService;
     private readonly IApiHealthCheckService _apiHealthCheckService;
-    private readonly IRoleNavigationService _roleNavigationService; // Issue #1553: 角色导航服务
+    private readonly IRoleNavigationService _roleNavigationService;
+    private readonly NavigationManager _navigationManager;
+    private readonly MenuManager _menuManager;
 
     /// <summary>
-    /// 构造函数 - 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
+    /// 构造函数 - Issue #1790: 注入NavigationManager和MenuManager
     /// </summary>
-    /// <param name="regionManager">区域管理器，用于界面导航</param>
-    /// <param name="eventAggregator">事件聚合器，用于模块间通信</param>
-    /// <param name="servicesFacade">服务外观，统一访问各类服务</param>
-    /// <param name="userNotificationService">用户通知服务</param>
-    /// <exception cref="ArgumentNullException">当任何参数为 null 时抛出</exception>
     public MainWindowViewModel(
         IRegionManager regionManager,
         IEventAggregator eventAggregator,
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
         LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
-        IApplicationCommands applicationCommands,
         IModuleLoadingService moduleLoadingService,
         IApiHealthCheckService apiHealthCheckService,
-        IRoleNavigationService roleNavigationService) // Issue #1553: 注入角色导航服务
+        IRoleNavigationService roleNavigationService,
+        NavigationManager navigationManager,
+        MenuManager menuManager)
         : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-        _applicationCommands = applicationCommands ?? throw new ArgumentNullException(nameof(applicationCommands));
         _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
         _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
+        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
+        _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
 
-        // 按照Prism 8.x最佳实践，在构造函数中完成初始化
         InitializeViewModel();
     }
 
     // 私有字段
     private string _title = SystemConstants.SystemTitle;
-
     private UserDto? _currentUser;
     private bool _isLoggedIn = false;
     private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     private System.Windows.Threading.DispatcherTimer _clockTimer = null!;
-
-    // API 健康检查相关字段
     private System.Windows.Threading.DispatcherTimer _healthCheckTimer = null!;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
 
-    /// <summary>
-    /// 获取或设置窗口标题
-    /// 显示系统名称和当前用户信息
-    /// </summary>
-    /// <value>窗口标题字符串</value>
+    /// <summary>获取或设置窗口标题</summary>
     public string Title
     {
         get => _title;
         set => SetProperty(ref _title, value);
     }
 
-    /// <summary>
-    /// 获取或设置当前登录用户
-    /// 用于界面显示和权限控制
-    /// </summary>
-    /// <value>当前用户信息，未登录时为 null</value>
+    /// <summary>获取或设置当前登录用户</summary>
     public UserDto? CurrentUser
     {
         get => _currentUser;
         set => SetProperty(ref _currentUser, value);
     }
 
-    /// <summary>
-    /// 获取或设置用户登录状态
-    /// 控制界面元素的显示和可用性
-    /// </summary>
-    /// <value>如果用户已登录则为 true；否则为 false</value>
+    /// <summary>获取或设置用户登录状态</summary>
     public bool IsLoggedIn
     {
         get => _isLoggedIn;
         set
         {
-            System.Diagnostics.Debug.WriteLine($" MainWindow.IsLoggedIn设置为 {value} (之前: {_isLoggedIn})");
+            System.Diagnostics.Debug.WriteLine($"🔐 MainWindow.IsLoggedIn设置为 {value} (之前: {_isLoggedIn})");
             SetProperty(ref _isLoggedIn, value);
-            RaisePropertyChanged(nameof(IsNotLoggedIn)); // 确保通知界面更新
+            RaisePropertyChanged(nameof(IsNotLoggedIn));
         }
     }
 
-    /// <summary>
-    /// 获取或设置当前系统时间显示
-    /// 实时更新的时钟显示
-    /// </summary>
-    /// <value>格式化的时间字符串</value>
+    /// <summary>获取或设置当前系统时间显示</summary>
     public string CurrentTime
     {
         get => _currentTime;
         set => SetProperty(ref _currentTime, value);
     }
 
-    /// <summary>
-    /// 获取或设置 API 健康状态
-    /// 每 10 秒自动更新
-    /// </summary>
+    /// <summary>获取或设置 API 健康状态</summary>
     public ApiHealthStatus ApiStatus
     {
         get => _apiStatus;
@@ -137,7 +115,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>获取是否未登录状态，用于界面绑定</summary>
     public bool IsNotLoggedIn => !_isLoggedIn;
 
-    #region 命令属性
+    #region 命令属性 - Issue #1790: 委托给MenuManager
 
     /// <summary>退出登录命令</summary>
     public DelegateCommand LogoutCommand { get; set; } = null!;
@@ -145,89 +123,59 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>API测试命令</summary>
     public DelegateCommand TestApiCommand { get; set; } = null!;
 
-    /// <summary>显示控件示例命令</summary>
-    public DelegateCommand ShowControlExamplesCommand { get; set; } = null!;
-
-    /// <summary>快速添加患者命令(Ctrl+N)</summary>
-    public DelegateCommand QuickAddPatientCommand { get; set; } = null!;
-
-    /// <summary>快速开始诊疗命令(Ctrl+Shift+C)</summary>
-    public DelegateCommand QuickStartConsultationCommand { get; set; } = null!;
-
-    /// <summary>显示帮助命令 (F1)</summary>
-    public DelegateCommand ShowHelpCommand { get; set; } = null!;
-
-    /// <summary>显示设置命令 (Ctrl+,)</summary>
-    public DelegateCommand ShowSettingsCommand { get; set; } = null!;
-
-    /// <summary>主题切换命令</summary>
-    public DelegateCommand ToggleThemeCommand { get; set; } = null!;
-
     /// <summary>重试 API 健康检查命令</summary>
     public DelegateCommand RetryHealthCheckCommand { get; set; } = null!;
 
-    #endregion 命令属性
+    /// <summary>显示控件示例命令 - 委托给MenuManager</summary>
+    public DelegateCommand ShowControlExamplesCommand => _menuManager.ShowControlExamplesCommand;
 
-    #region 全局命令属性(Phase 3: CompositeCommand)
+    /// <summary>快速添加患者命令(Ctrl+N) - 委托给MenuManager</summary>
+    public DelegateCommand QuickAddPatientCommand => _menuManager.QuickAddPatientCommand;
 
-    /// <summary>全局保存命令 (Ctrl+S)</summary>
-    public ICommand SaveAllCommand => _applicationCommands.SaveAllCommand;
+    /// <summary>快速开始诊疗命令(Ctrl+Shift+C) - 委托给MenuManager</summary>
+    public DelegateCommand QuickStartConsultationCommand => _menuManager.QuickStartConsultationCommand;
 
-    /// <summary>全局刷新命令 (F5)</summary>
-    public ICommand RefreshAllCommand => _applicationCommands.RefreshAllCommand;
+    /// <summary>显示帮助命令 (F1) - 委托给MenuManager</summary>
+    public DelegateCommand ShowHelpCommand => _menuManager.ShowHelpCommand;
 
-    /// <summary>全局打印命令 (Ctrl+P)</summary>
-    public ICommand PrintCommand => _applicationCommands.PrintCommand;
+    /// <summary>显示设置命令 (Ctrl+,) - 委托给MenuManager</summary>
+    public DelegateCommand ShowSettingsCommand => _menuManager.ShowSettingsCommand;
 
-    /// <summary>全局导出命令</summary>
-    public ICommand ExportCommand => _applicationCommands.ExportCommand;
+    /// <summary>主题切换命令 - 委托给MenuManager</summary>
+    public DelegateCommand ToggleThemeCommand => _menuManager.ToggleThemeCommand;
 
-    /// <summary>全局撤销命令 (Ctrl+Z)</summary>
-    public ICommand UndoCommand => _applicationCommands.UndoCommand;
+    /// <summary>全局保存命令 (Ctrl+S) - 委托给MenuManager</summary>
+    public ICommand SaveAllCommand => _menuManager.SaveAllCommand;
 
-    /// <summary>全局重做命令 (Ctrl+Y)</summary>
-    public ICommand RedoCommand => _applicationCommands.RedoCommand;
+    /// <summary>全局刷新命令 (F5) - 委托给MenuManager</summary>
+    public ICommand RefreshAllCommand => _menuManager.RefreshAllCommand;
+
+    /// <summary>全局打印命令 (Ctrl+P) - 委托给MenuManager</summary>
+    public ICommand PrintCommand => _menuManager.PrintCommand;
+
+    /// <summary>全局导出命令 - 委托给MenuManager</summary>
+    public ICommand ExportCommand => _menuManager.ExportCommand;
+
+    /// <summary>全局撤销命令 (Ctrl+Z) - 委托给MenuManager</summary>
+    public ICommand UndoCommand => _menuManager.UndoCommand;
+
+    /// <summary>全局重做命令 (Ctrl+Y) - 委托给MenuManager</summary>
+    public ICommand RedoCommand => _menuManager.RedoCommand;
 
     #endregion
 
-    // 构造函数体 - 初始化时钟计时器和命令
     /// <summary>
-    /// 静态构造函数 - 初始化命令定义
-    /// 按照Prism 8.x最佳实践，在类级别定义命令
-    /// </summary>
-    static MainWindowViewModel()
-    {
-        // 注：具体命令实例在构造函数中初始化
-    }
-
-    /// <summary>
-    /// 初始化所有命令和事件订阅
-    /// 按照Prism 8.x最佳实践，在构造函数中完成所有初始化
+    /// 初始化核心命令（登录/登出/API测试）
+    /// Issue #1790: 其他命令已委托给MenuManager
     /// </summary>
     private new void InitializeCommands()
     {
-        // 初始化所有命令 - 使用响应式模式
         LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
         TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync().ConfigureAwait(false))
             .ObservesProperty(() => IsLoggedIn);
-        ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples)
-            .ObservesProperty(() => IsLoggedIn);
-
-        // 键盘快捷键命令
-        QuickAddPatientCommand = new DelegateCommand(async () => await ExecuteQuickAddPatientAsync().ConfigureAwait(false))
-            .ObservesProperty(() => IsLoggedIn);
-        QuickStartConsultationCommand = new DelegateCommand(async () => await ExecuteQuickStartConsultationAsync().ConfigureAwait(false))
-            .ObservesProperty(() => IsLoggedIn);
-        ShowHelpCommand = new DelegateCommand(ExecuteShowHelp);
-        ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings)
-            .ObservesProperty(() => IsLoggedIn);
-        ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
         RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
 
-        // Phase 3: 初始化全局命令键盘绑定
-        // 这些命令已在ApplicationCommands中初始化，这里只需要暴露给View使用
-        // 实际的命令执行逻辑由各个ViewModel注册到CompositeCommand
-        Logger.LogDebug("全局命令系统已初始化");
+        Logger.LogDebug("核心命令已初始化");
     }
 
     /// <summary>
@@ -245,7 +193,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 初始化 API 健康检查定时器
-    /// 每 10 秒自动检查一次 API 健康状态
     /// </summary>
     private void InitializeHealthCheck()
     {
@@ -256,7 +203,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _healthCheckTimer.Tick += async (s, e) => await OnHealthCheckTickAsync();
         _healthCheckTimer.Start();
 
-        // 立即执行第一次检查
         _ = Task.Run(async () => await OnHealthCheckTickAsync());
     }
 
@@ -285,7 +231,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 执行重试 API 健康检查
-    /// 由用户手动触发
     /// </summary>
     private async Task ExecuteRetryHealthCheckAsync()
     {
@@ -295,32 +240,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 初始化事件订阅
+    /// Issue #1790: Region监控委托给NavigationManager
     /// </summary>
     private void InitializeEvents()
     {
-        // 订阅登录成功事件
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
-
-        // UltraThink修复 Issue #856: 移除构造函数中的自动登录检查
-        // 原因：Task.Run在100ms延迟后执行可能早于MainWindow.Loaded，此时ContentRegion尚未注册
-        // 解决：改为在MainWindow.Loaded事件中触发CheckLoginStatusAsync，确保所有Region已就绪
-        // 详见：MainWindow.xaml.cs OnWindowLoaded事件处理器
-
-        // Issue #877 修复步骤4: 添加 Region 导航监控
-        _regionManager.Regions.CollectionChanged += OnRegionsCollectionChanged;
-
-        // 如果已有 Region，订阅导航事件
-        foreach (var region in _regionManager.Regions)
-        {
-            SubscribeToRegionNavigationEvents(region);
-        }
-
-        Logger.LogDebug("Region 导航监控已启用");
+        _navigationManager.SubscribeToRegionCollection();
     }
 
     /// <summary>
     /// 执行完整的ViewModel初始化
-    /// 按照Prism 8.x最佳实践，将初始化逻辑整合到构造函数调用链中
     /// </summary>
     private void InitializeViewModel()
     {
@@ -328,85 +257,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         InitializeHealthCheck();
         InitializeCommands();
         InitializeEvents();
-    }
-
-
-    /// <summary>
-    /// 简化主题切换功能
-    /// 提供基础的明暗主题切换，适配小型诊所需求
-    /// </summary>
-    private async Task ExecuteToggleThemeAsync()
-    {
-        try
-        {
-            // 简单的明暗主题切换
-            var isDark = Application.Current.Resources.Contains("IsDarkTheme") &&
-            (bool)Application.Current.Resources["IsDarkTheme"];
-
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                if (isDark)
-                {
-                    // 切换到浅色主题
-                    ApplyLightTheme();
-                    Application.Current.Resources["IsDarkTheme"] = false;
-                }
-                else
-                {
-                    // 切换到深色主题
-                    ApplyDarkTheme();
-                    Application.Current.Resources["IsDarkTheme"] = true;
-                }
-            });
-
-            await ShowSuccessMessageAsync("主题已切换");
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorMessageAsync($"主题切换失败:{ex.Message}");
-        }
-    }
-
-    private void ApplyLightTheme()
-    {
-        var resources = Application.Current.Resources;
-
-        // 浅色主题
-        UpdateThemeColor(resources, "BackgroundColor", "#FFF8F9FA");
-        UpdateThemeColor(resources, "SurfaceColor", "#FFFFFFFF");
-        UpdateThemeColor(resources, "TextPrimaryColor", "#FF1A1A1A");
-    }
-
-    private void ApplyDarkTheme()
-    {
-        var resources = Application.Current.Resources;
-
-        // 深色主题
-        UpdateThemeColor(resources, "BackgroundColor", "#FF1E1E1E");
-        UpdateThemeColor(resources, "SurfaceColor", "#FF2D2D2D");
-        UpdateThemeColor(resources, "TextPrimaryColor", "#FFFFFFFF");
-    }
-
-    private void UpdateThemeColor(ResourceDictionary resources, string colorKey, string colorValue)
-    {
-        try
-        {
-            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorValue);
-            var brushKey = colorKey.Replace("Color", "Brush");
-
-            if (resources.Contains(colorKey))
-            {
-                resources[colorKey] = color;
-            }
-
-            if (resources.Contains(brushKey))
-            {
-                resources[brushKey] = new System.Windows.Media.SolidColorBrush(color);
-            }
-        }
-        catch
-        { /* 忽略主题更新错误 */
-        }
     }
 
     /// <summary>时钟计时器事件</summary>
@@ -417,6 +267,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 退出登录命令执行
+    /// Issue #1790: 使用NavigationManager处理导航
     /// </summary>
     private async Task ExecuteLogoutAsync()
     {
@@ -425,35 +276,29 @@ public class MainWindowViewModel : UnifiedViewModelBase
         {
             try
             {
-                // 立即更新UI状态，给用户即时反馈
+                // 立即更新UI状态
                 CurrentUser = null;
                 IsLoggedIn = false;
                 Title = "凌隐宝堂中医诊所诊疗系统";
 
-                // 立即清理界面
-                // 清除内容区域
-                if (_regionManager.Regions.ContainsRegionWithName(RegionNames.ContentRegion))
-                {
-                    _regionManager.Regions[RegionNames.ContentRegion].RemoveAll();
-                }
+                // 清理界面并显示登录界面
+                _navigationManager.ClearContentRegion();
+                _navigationManager.ShowLoginDialog();
 
-                // 立即显示登录界面
-                ShowLoginDialog();
-
-                // 后台异步处理网络请求和事件，不阻塞UI
+                // 后台异步处理
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        // 网络登出请求
                         await _servicesFacade.AuthenticationService.LogoutAsync();
-
-                        // 发布登出事件以清除登录状态消息
-                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs { Reason = LogoutReason.SessionTimeout, Message = "Token已过期" });
+                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs
+                        {
+                            Reason = LogoutReason.SessionTimeout,
+                            Message = "Token已过期"
+                        });
                     }
                     catch (Exception ex)
                     {
-                        // 后台错误不影响用户界面，记录到调试输出
                         System.Diagnostics.Debug.WriteLine($"后台登出处理异常: {ex.Message}");
                     }
                 });
@@ -466,45 +311,37 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
-    /// 检查登录状态 - Issue #861 修复: 始终显示登录窗口
-    /// 原因: 安全性考虑，不再根据保存的 Token 自动登录
-    /// 用户必须手动输入密码才能进入系统
+    /// 检查登录状态 - Issue #861: 始终显示登录窗口
+    /// Issue #1790: 使用NavigationManager处理导航
     /// </summary>
     private async Task CheckLoginStatusAsync()
     {
-        System.Diagnostics.Debug.WriteLine(" CheckLoginStatusAsync 开始 - Issue #861: 始终显示登录窗口");
+        System.Diagnostics.Debug.WriteLine("📱 CheckLoginStatusAsync 开始 - Issue #861: 始终显示登录窗口");
         try
         {
-            // Issue #861 修复: 移除自动登录逻辑
-            // 即使有保存的 Token，也不自动登录，确保安全性
-            // 用户名会在 LoginViewModel 中自动填充（如果启用了"记住用户名"）
-            System.Diagnostics.Debug.WriteLine(" 显示登录界面，等待用户手动登录");
-            ShowLoginDialog();
+            System.Diagnostics.Debug.WriteLine("📱 显示登录界面，等待用户手动登录");
+            _navigationManager.ShowLoginDialog();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($" CheckLoginStatusAsync 异常: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ CheckLoginStatusAsync 异常: {ex.Message}");
             await ShowErrorMessageAsync($"初始化登录界面失败:{ex.Message}");
-            ShowLoginDialog();
+            _navigationManager.ShowLoginDialog();
         }
     }
 
     /// <summary>
-    /// 登录成功事件处理 - Issue #877 修复
-    /// 立即更新 UI 状态，确保 ContentRegion 可见后再进行导航
+    /// 登录成功事件处理 - Issue #877
     /// </summary>
     private void OnLoginSuccess(UserDto user)
     {
         System.Diagnostics.Debug.WriteLine($"📢 OnLoginSuccess 收到事件: {user.UserName}");
 
-        // Issue #877 修复步骤1: 立即更新登录状态
-        // 这会触发 MainWindow.xaml 中的 Visibility 绑定，使 ContentRegion 变为可见
         IsLoggedIn = true;
         CurrentUser = user;
 
-        System.Diagnostics.Debug.WriteLine($"✅ IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
+        System.Diagnostics.Debug.WriteLine("✅ IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
 
-        // 后台加载模块并切换界面
         _ = Task.Run(async () =>
         {
             await EnsureWorkstationModulesLoaded(user);
@@ -514,36 +351,15 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>
     /// 窗口加载完成回调 - UltraThink修复 Issue #856
-    /// 在MainWindow.Loaded事件中调用，确保所有Region已注册后再检查登录状态
     /// </summary>
     public async Task OnWindowLoadedAsync()
     {
-        // UltraThink修复：增加延迟确保 Prism Region 完全注册
-        // Loaded 事件后 Region 注册仍是异步的，需要额外等待时间
         await Task.Delay(500);
         await CheckLoginStatusAsync();
     }
 
     /// <summary>
-    /// 显示登录界面
-    /// </summary>
-    private void ShowLoginDialog()
-    {
-        // UltraThink修复 Issue #858: 确保在 UI 线程上执行导航
-        // 原因：此方法可能从后台线程（Task.Run）调用，需要 marshal 到 UI 线程
-        Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            if (_regionManager != null)
-            {
-                System.Diagnostics.Debug.WriteLine(" ShowLoginDialog: 导航到登录视图");
-                _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
-            }
-        });
-    }
-
-    /// <summary>
     /// 加载主界面内容 - Issue #1553 角色模块化重构
-    /// 使用 RoleNavigationService 根据用户角色导航到对应的主页
     /// </summary>
     private void LoadMainContent()
     {
@@ -552,85 +368,66 @@ public class MainWindowViewModel : UnifiedViewModelBase
             throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
         }
 
-        // Issue #1553: 根据用户角色确定导航目标
-        // Doctor → ClinicalHomeView, Admin → AdminHomeView
-        string roleName = CurrentUser.Role.ToString(); // Doctor, Admin, Receptionist, Pharmacist
-
-        // 角色判断用于标题显示
+        string roleName = CurrentUser.Role.ToString();
         bool isAdmin = CurrentUser.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
                        CurrentUser.Role == UserRole.Admin;
         string roleDisplay = isAdmin ? "管理员" : "医生";
 
-        // 更新标题和清理登录区域
         var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName;
         Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({roleDisplay})";
 
-        // 清除登录区域
-        if (_regionManager.Regions.ContainsRegionWithName(RegionNames.LoginRegion))
-        {
-            _regionManager.Regions[RegionNames.LoginRegion].RemoveAll();
-        }
+        _navigationManager.ClearLoginRegion();
 
-        // Issue #1553: 使用 RoleNavigationService 进行角色导航
-        // 延迟导航确保 ContentRegion 已可见
-        System.Diagnostics.Debug.WriteLine($" 准备根据角色 {roleName} 导航（延迟到下一帧）");
+        System.Diagnostics.Debug.WriteLine($"📱 准备根据角色 {roleName} 导航（延迟到下一帧）");
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($" UI更新完成，开始角色导航：{roleName}");
+                System.Diagnostics.Debug.WriteLine($"📱 UI更新完成，开始角色导航：{roleName}");
                 _roleNavigationService.NavigateToRoleHome(roleName);
             }
             catch (Exception ex)
             {
-                // 导航失败时显示错误信息
                 var errorMessage = ex.Message ?? "未知导航错误";
-                System.Diagnostics.Debug.WriteLine($" 角色导航失败：{errorMessage}");
+                System.Diagnostics.Debug.WriteLine($"❌ 角色导航失败：{errorMessage}");
                 Logger.LogError(ex, "角色导航失败");
 
-                // 导航失败时，清除登录状态并回退到登录界面
                 IsLoggedIn = false;
                 CurrentUser = null;
                 Title = "凌隐宝堂中医诊所诊疗系统";
 
-                // 异步显示错误对话框
                 _ = Task.Run(async () =>
                 {
                     await ShowErrorMessageAsync($"无法加载工作台：{errorMessage}");
-                    // 错误对话框关闭后，显示登录界面
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        ShowLoginDialog();
+                        _navigationManager.ShowLoginDialog();
                     });
                 });
             }
-        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle); // Issue #856: 使用 ApplicationIdle 确保所有初始化完成
+        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
     }
 
     /// <summary>
     /// 确保工作台模块已加载
     /// </summary>
-    private async Task EnsureWorkstationModulesLoaded(LYBT.Shared.Models.Contracts.Users.UserDto user)
+    private async Task EnsureWorkstationModulesLoaded(UserDto user)
     {
         try
         {
-            // Phase 3: 使用模块加载服务实现按需加载
             bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-            user.Role == UserRole.Admin;
+                           user.Role == UserRole.Admin;
 
-            // 基础模块加载（登录后立即需要）
             await LoadBasicModulesAsync();
 
             if (isAdmin)
             {
                 Logger.LogInformation("管理员登录，加载管理工作台模块");
-                // 管理员需要所有模块
                 await LoadAdminModulesAsync();
             }
             else if (user.Role == UserRole.Doctor)
             {
                 Logger.LogInformation("医生登录，加载诊疗模块");
-                // 医生角色模块已在启动时加载（ClinicalModule），此处可按需加载业务模块
                 await LoadBasicModulesAsync();
             }
 
@@ -639,7 +436,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         catch (Exception ex)
         {
             Logger.LogError(ex, "工作台模块加载失败");
-            // 模块加载失败不应阻塞界面显示
         }
     }
 
@@ -648,9 +444,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private async Task LoadBasicModulesAsync()
     {
-        await _moduleLoadingService.LoadModulesAsync(
-            new[] { "PatientsModule" }  // 患者管理是大多数功能的基础
-        );
+        await _moduleLoadingService.LoadModulesAsync(new[] { "PatientsModule" });
     }
 
     /// <summary>
@@ -658,10 +452,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private async Task LoadAdminModulesAsync()
     {
-        // 管理员需要所有模块
         await _moduleLoadingService.LoadModulesAsync(new[]
         {
-            "UsersModule",             // 管理员需要用户管理功能
+            "UsersModule",
             "HerbsModule",
             "FormulaModule",
             "ConsultationModule",
@@ -683,7 +476,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     public async Task LoadFormulaManagementAsync()
     {
-        // 会自动加载HerbsModule依赖
         await _moduleLoadingService.LoadModuleAsync("FormulaModule");
     }
 
@@ -702,155 +494,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    private void ExecuteShowControlExamples()
-    {
-        try
-        {
-            // 导航到控件示例页面
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "ControlExamplesView");
-        }
-        catch (Exception ex)
-        {
-            // 简化错误处理，记录到调试输出
-            System.Diagnostics.Debug.WriteLine($"打开控件示例页面失败: {ex.Message}");
-            throw new InvalidOperationException($"打开控件示例页面失败: {ex.Message}", ex);
-        }
-    }
-
-    #region UltraThink Phase H: 键盘快捷键功能实现
-
-    /// <summary>
-    /// 快速添加患者(Ctrl+N)
-    /// </summary>
-    private async Task ExecuteQuickAddPatientAsync()
-    {
-        try
-        {
-            // 导航到患者管理页面并触发新增患者对话框
-            var navigationParams = new NavigationParameters();
-            navigationParams.Add("Action", "AddNew");
-
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
-
-            // 显示成功提示
-            await ShowSuccessMessageAsync("已切换到患者管理页面，准备添加新患者");
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorMessageAsync($"快速添加患者失败:{ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// 快速开始诊疗(Ctrl+Shift+C)
-    /// Issue #1553: 更新为直接导航到医案流程视图
-    /// </summary>
-    private async Task ExecuteQuickStartConsultationAsync()
-    {
-        try
-        {
-            // 直接导航到医案流程视图（与ClinicalHomeView的"开始接诊"按钮一致）
-            _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseFlowView");
-
-            await ShowSuccessMessageAsync("已开始诊疗流程，请选择患者");
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorMessageAsync($"快速开始诊疗失败:{ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// 显示帮助信息 (F1)
-    /// </summary>
-    private void ExecuteShowHelp()
-    {
-        try
-        {
-            var helpMessage = "系统快捷键说明：\n\n" +
-            "• Ctrl+N - 快速添加患者\n" +
-            "• Ctrl+Shift+C - 快速开始诊疗\n" +
-            "• F1 - 显示帮助\n" +
-            "• Alt+F4 - 退出系统\n" +
-            "• Ctrl+, - 打开设置\n\n" +
-            "更多功能正在开发中...";
-
-            _ = ShowSuccessMessageAsync(helpMessage);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"显示帮助失败: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// 显示设置页面 (Ctrl+,)
-    /// </summary>
-    private void ExecuteShowSettings()
-    {
-        try
-        {
-            // 将来可以导航到设置页面
-            _ = ShowSuccessMessageAsync("用户设置功能将在未来版本中实现");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"显示设置失败: {ex.Message}");
-        }
-    }
-
-    #endregion UltraThink Phase H: 键盘快捷键功能实现
-
-
-
-    #region Issue #877 Region 导航监控
-
-    /// <summary>
-    /// Region 集合变化事件处理 - Issue #877
-    /// 当新 Region 添加时，自动订阅其导航事件
-    /// </summary>
-    private void OnRegionsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        if (e.NewItems != null)
-        {
-            foreach (IRegion region in e.NewItems)
-            {
-                SubscribeToRegionNavigationEvents(region);
-                System.Diagnostics.Debug.WriteLine($"🔔 新 Region 已注册并监控: {region.Name}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// 订阅 Region 导航事件 - Issue #877
-    /// 用于调试和诊断导航问题
-    /// </summary>
-    private void SubscribeToRegionNavigationEvents(IRegion region)
-    {
-        region.NavigationService.Navigating += (s, e) =>
-        {
-            System.Diagnostics.Debug.WriteLine($"🚀 导航中: Region={region.Name}, Target={e.Uri}");
-        };
-
-        region.NavigationService.Navigated += (s, e) =>
-        {
-            System.Diagnostics.Debug.WriteLine($"✅ 导航完成: Region={region.Name}, Uri={e.Uri}");
-        };
-
-        region.NavigationService.NavigationFailed += (s, e) =>
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ 导航失败: Region={region.Name}, Uri={e.Uri}, Error={e.Error?.Message}");
-            Logger.LogError(e.Error, "Region 导航失败: {RegionName} -> {Uri}", region.Name, e.Uri);
-        };
-    }
-
-    #endregion Issue #877 Region 导航监控
-
     #region IDisposable实现 - DT-013内存泄漏修复
 
     /// <summary>
     /// 重写OnDisposing方法，清理资源防止内存泄漏
-    /// DT-013: 修复ViewModel事件订阅泄漏 - 自动清理DispatcherTimer和EventAggregator订阅
+    /// Issue #1790: NavigationManager清理委托给NavigationManager
     /// </summary>
     protected override void OnDisposing()
     {
@@ -859,17 +507,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
             CleanupClockTimer();
             CleanupHealthCheckTimer();
             UnsubscribeLoginEvent();
-            UnsubscribeRegionMonitoring();
+            _navigationManager.UnsubscribeFromRegionCollection();
 
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
+            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 资源清理异常: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ [MainWindowViewModel] 资源清理异常: {ex.Message}");
         }
         finally
         {
-            // 调用基类清理
             base.OnDisposing();
         }
     }
@@ -885,7 +532,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _clockTimer.Stop();
             _clockTimer.Tick -= OnClockTick;
             _clockTimer = null!;
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
+            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] DispatcherTimer已清理");
         }
     }
 
@@ -899,7 +546,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         {
             _healthCheckTimer.Stop();
             _healthCheckTimer = null!;
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
+            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] 健康检查定时器已清理");
         }
     }
 
@@ -912,31 +559,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess);
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] LoginSuccessEvent订阅已取消");
+            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] LoginSuccessEvent订阅已取消");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
         }
     }
 
-    /// <summary>
-    /// 取消Region导航监控
-    /// Issue #1794: 提取Region监控取消逻辑
-    /// Issue #877: Region导航监控
-    /// </summary>
-    private void UnsubscribeRegionMonitoring()
-    {
-        try
-        {
-            _regionManager.Regions.CollectionChanged -= OnRegionsCollectionChanged;
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] Region 导航监控已取消");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($" [MainWindowViewModel] 取消Region监控失败: {ex.Message}");
-        }
-    }
-
-    #endregion IDisposable实现 - DT-013内存泄漏修复
+    #endregion
 }

@@ -287,6 +287,7 @@ namespace LYBT.Desktop.Shell.Extensions
 
         /// <summary>
         /// 注册 Presentation 层服务
+        /// Issue #1790: 添加NavigationManager和MenuManager注册
         /// </summary>
         private static void RegisterPresentationServices(IContainerRegistry containerRegistry)
         {
@@ -297,6 +298,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 错误处理服务 - Presentation/Notifications
             containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.IErrorHandlingService,
                 LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>();
+
+            // Issue #1790: 注册Shell层导航和菜单管理器
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.NavigationManager>();
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.MenuManager>();
 
             // 注意：PatientSelector组件使用反射进行手动映射,不需要AutoMapper配置
             // 原因：Presentation层不能引用Modules层(避免循环依赖)
