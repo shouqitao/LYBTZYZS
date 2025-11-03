@@ -6,6 +6,7 @@ using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替�
 // Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces（不再直接使用IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -262,13 +263,13 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 搜索患者
+        /// Issue #1794: 优化方法长度（54→31行），提取错误处理和列表更新逻辑
         /// </summary>
         private async Task ExecuteSearchAsync()
         {
             try
             {
                 SetIsBusy(true, "正在搜索患者...");
-
                 Logger.LogInformation("搜索患者，关键字：{Keyword}", SearchKeyword);
 
                 // 重置到第1页
@@ -279,33 +280,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 if (!commandResult.IsSuccess || commandResult.Data == null)
                 {
-                    Logger.LogError("搜索患者失败：{ErrorMessage}", commandResult.ErrorMessage);
-                    await ShowErrorMessageAsync($"搜索失败：{commandResult.ErrorMessage}");
+                    await HandleSearchErrorAsync(commandResult.ErrorMessage);
                     return;
                 }
 
-                var result = commandResult.Data;
-
-                // 清空选中状态（Bug修复：搜索后应重置选中项）
-                SelectedPatient = null;
-                CurrentPatient = null;
-
-                // 更新患者列表
-                Patients.Clear();
-                foreach (var patient in result.Items)
-                {
-                    Patients.Add(patient);
-                }
-
-                // 更新分页信息
-                TotalPages = result.TotalPages;
-                TotalCount = result.TotalCount;
-
-                Logger.LogInformation("搜索成功，找到{TotalCount}条记录，实际加载{ItemCount}条，当前显示第{CurrentPage}页", TotalCount, result.Items.Count, CurrentPage);
-
-                // 触发分页命令更新
-                PreviousPageCommand.RaiseCanExecuteChanged();
-                NextPageCommand.RaiseCanExecuteChanged();
+                UpdatePatientsAndPaging(commandResult.Data);
             }
             catch (Exception ex)
             {
@@ -316,6 +295,45 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(false);
             }
+        }
+
+        /// <summary>
+        /// 处理搜索失败
+        /// Issue #1794: 从ExecuteSearchAsync提取
+        /// </summary>
+        private async Task HandleSearchErrorAsync(string? errorMessage)
+        {
+            Logger.LogError("搜索患者失败：{ErrorMessage}", errorMessage);
+            await ShowErrorMessageAsync($"搜索失败：{errorMessage}");
+        }
+
+        /// <summary>
+        /// 更新患者列表和分页信息
+        /// Issue #1794: 从ExecuteSearchAsync提取
+        /// </summary>
+        private void UpdatePatientsAndPaging(PagedResult<PatientDto> result)
+        {
+            // 清空选中状态（Bug修复：搜索后应重置选中项）
+            SelectedPatient = null;
+            CurrentPatient = null;
+
+            // 更新患者列表
+            Patients.Clear();
+            foreach (var patient in result.Items)
+            {
+                Patients.Add(patient);
+            }
+
+            // 更新分页信息
+            TotalPages = result.TotalPages;
+            TotalCount = result.TotalCount;
+
+            Logger.LogInformation("搜索成功，找到{TotalCount}条记录，实际加载{ItemCount}条，当前显示第{CurrentPage}页",
+                TotalCount, result.Items.Count, CurrentPage);
+
+            // 触发分页命令更新
+            PreviousPageCommand.RaiseCanExecuteChanged();
+            NextPageCommand.RaiseCanExecuteChanged();
         }
 
         private bool CanExecuteSearch()
@@ -526,6 +544,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         /// <summary>
         /// Phase 2: 智能路由（检查未完成医案 + 三选一对话框）
+        /// Issue #1794: 优化方法长度（65→35行），提取未完成医案处理逻辑
         /// </summary>
         private async void ExecuteStartConsultation()
         {
@@ -543,43 +562,15 @@ namespace LYBT.Desktop.Patients.ViewModels
                     CurrentPatient.Name, CurrentPatient.Id);
 
                 // Phase 2: 智能路由逻辑
-                // 1. 检查是否有未完成医案
                 var unfinishedCase = await CheckUnfinishedMedicalCaseAsync(CurrentPatient.Id);
 
                 if (unfinishedCase != null)
                 {
-                    // 2. 有未完成医案，弹出三选一对话框
-                    SetIsBusy(false); // 对话框前关闭繁忙状态
-
-                    var choice = await ShowUnfinishedCaseDialogAsync(CurrentPatient.Name, unfinishedCase.Id);
-
-                    switch (choice)
-                    {
-                        case 1: // 继续看诊
-                            await ContinueConsultationAsync(CurrentPatient, unfinishedCase.Id);
-                            break;
-
-                        case 2: // 新建医案（先关闭旧的）
-                            SetIsBusy(true, "正在关闭旧医案...");
-                            await CreateNewCaseAfterClosingOldAsync(CurrentPatient, unfinishedCase.Id);
-                            break;
-
-                        case 3: // 仅关闭旧医案（不创建新医案）
-                            SetIsBusy(true, "正在关闭医案...");
-                            await CloseOldCaseOnlyAsync(CurrentPatient, unfinishedCase.Id);
-                            break;
-
-                        case 0: // 取消/关闭窗口
-                        default:
-                            Logger.LogInformation("用户取消操作");
-                            break;
-                    }
+                    await HandleUnfinishedCaseAsync(unfinishedCase.Id);
                 }
                 else
                 {
-                    // 3. 无未完成医案，直接发布患者选择事件
-                    Logger.LogInformation("患者无未完成医案，直接开始诊断");
-                    PublishPatientSelectedEvent(CurrentPatient);
+                    HandleNoUnfinishedCase();
                 }
             }
             catch (Exception ex)
@@ -591,6 +582,49 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(false);
             }
+        }
+
+        /// <summary>
+        /// 处理有未完成医案的情况
+        /// Issue #1794: 从ExecuteStartConsultation提取
+        /// </summary>
+        private async Task HandleUnfinishedCaseAsync(Guid unfinishedCaseId)
+        {
+            SetIsBusy(false); // 对话框前关闭繁忙状态
+
+            var choice = await ShowUnfinishedCaseDialogAsync(CurrentPatient!.Name, unfinishedCaseId);
+
+            switch (choice)
+            {
+                case 1: // 继续看诊
+                    await ContinueConsultationAsync(CurrentPatient, unfinishedCaseId);
+                    break;
+
+                case 2: // 新建医案（先关闭旧的）
+                    SetIsBusy(true, "正在关闭旧医案...");
+                    await CreateNewCaseAfterClosingOldAsync(CurrentPatient, unfinishedCaseId);
+                    break;
+
+                case 3: // 仅关闭旧医案（不创建新医案）
+                    SetIsBusy(true, "正在关闭医案...");
+                    await CloseOldCaseOnlyAsync(CurrentPatient, unfinishedCaseId);
+                    break;
+
+                case 0: // 取消/关闭窗口
+                default:
+                    Logger.LogInformation("用户取消操作");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 处理无未完成医案的情况
+        /// Issue #1794: 从ExecuteStartConsultation提取
+        /// </summary>
+        private void HandleNoUnfinishedCase()
+        {
+            Logger.LogInformation("患者无未完成医案，直接开始诊断");
+            PublishPatientSelectedEvent(CurrentPatient!);
         }
 
         private bool CanExecuteStartConsultation()

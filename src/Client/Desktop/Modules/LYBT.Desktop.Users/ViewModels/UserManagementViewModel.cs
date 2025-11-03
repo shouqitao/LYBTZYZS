@@ -208,6 +208,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 获取数据项
+        /// Issue #1794: 优化方法长度（52→32行），提取筛选逻辑和错误处理
         /// </summary>
         protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
@@ -220,35 +221,13 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (cmdResult.success && cmdResult.data != null)
                 {
-                    var result = cmdResult.data;
-
-                    // 应用筛选条件（在客户端进一步筛选，实际项目应该在服务端处理）
-                    var filteredItems = result.Items.AsEnumerable();
-
-                    if (SelectedRole.HasValue)
-                    {
-                        filteredItems = filteredItems.Where(u => u.Role == SelectedRole.Value);
-                    }
-
-                    if (SelectedStatus.HasValue)
-                    {
-                        filteredItems = filteredItems.Where(u => u.Status == SelectedStatus.Value);
-                    }
-
-                    if (!ShowInactiveUsers)
-                    {
-                        filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
-                    }
-
-                    // 更新总数
-                    TotalCount = result.TotalCount;
+                    var filteredItems = ApplyFilters(cmdResult.data.Items);
+                    TotalCount = cmdResult.data.TotalCount;
                     return filteredItems;
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户列表失败: {ErrorMessage}", cmdResult.errorMessage);
-                    TotalCount = 0;
-                    return new List<UserDto>();
+                    return HandleGetItemsError(cmdResult.errorMessage);
                 }
             }
             catch (Exception ex)
@@ -260,6 +239,44 @@ namespace LYBT.Desktop.Users.ViewModels
                 TotalCount = 0;
                 return new List<UserDto>();
             }
+        }
+
+        /// <summary>
+        /// 应用角色和状态筛选条件
+        /// Issue #1794: 从GetItemsAsync提取
+        /// </summary>
+        private IEnumerable<UserDto> ApplyFilters(IEnumerable<UserDto> items)
+        {
+            // 应用筛选条件(在客户端进一步筛选,实际项目应该在服务端处理)
+            var filteredItems = items.AsEnumerable();
+
+            if (SelectedRole.HasValue)
+            {
+                filteredItems = filteredItems.Where(u => u.Role == SelectedRole.Value);
+            }
+
+            if (SelectedStatus.HasValue)
+            {
+                filteredItems = filteredItems.Where(u => u.Status == SelectedStatus.Value);
+            }
+
+            if (!ShowInactiveUsers)
+            {
+                filteredItems = filteredItems.Where(u => u.Status == CommonStatus.Enabled);
+            }
+
+            return filteredItems;
+        }
+
+        /// <summary>
+        /// 处理加载用户列表失败
+        /// Issue #1794: 从GetItemsAsync提取
+        /// </summary>
+        private IEnumerable<UserDto> HandleGetItemsError(string? errorMessage)
+        {
+            Logger.LogWarning("加载用户列表失败: {ErrorMessage}", errorMessage);
+            TotalCount = 0;
+            return new List<UserDto>();
         }
 
         #endregion
