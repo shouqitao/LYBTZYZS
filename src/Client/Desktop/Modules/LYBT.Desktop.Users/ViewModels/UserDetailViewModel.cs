@@ -1,4 +1,5 @@
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,8 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserDetailViewModel : UnifiedViewModelBase
     {
-        private readonly LYBT.Desktop.Users.Interfaces.IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
         private Guid _userId;
         private UserDto? _user;
 
@@ -56,7 +58,7 @@ namespace LYBT.Desktop.Users.ViewModels
         public DelegateCommand ToggleStatusCommand { get; }
 
         public UserDetailViewModel(
-            LYBT.Desktop.Users.Interfaces.IUserRepository userRepository,
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -64,7 +66,8 @@ namespace LYBT.Desktop.Users.ViewModels
             LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
             EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
@@ -116,17 +119,20 @@ namespace LYBT.Desktop.Users.ViewModels
                 IsLoading = true;
 
                 Logger.LogInformation("开始加载用户详情: UserId={UserId}", UserId);
-                User = await _userRepository.GetByIdAsync(UserId);
 
-                if (User != null)
+                // Issue #1785: 使用CommandHandler查询
+                var result = await _commandHandler.GetByIdAsync(UserId);
+
+                if (result.success && result.user != null)
                 {
+                    User = result.user;
                     PageTitle = $"用户详情 - {User.RealName}";
                     Logger.LogInformation("用户详情加载成功: {UserName}", User.UserName);
                 }
                 else
                 {
-                    Logger.LogWarning("未找到用户: UserId={UserId}", UserId);
-                    ErrorMessage = "未找到该用户信息";
+                    Logger.LogWarning("未找到用户: UserId={UserId}, ErrorMessage={ErrorMessage}", UserId, result.errorMessage);
+                    ErrorMessage = result.errorMessage ?? "未找到该用户信息";
                 }
             }
             catch (Exception ex)
@@ -220,15 +226,23 @@ namespace LYBT.Desktop.Users.ViewModels
                     Email = User.Email
                 };
 
-                // 调用API更新
-                var updatedUser = await _userRepository.UpdateAsync(updateDto);
+                // Issue #1785: 使用CommandHandler更新
+                var result = await _commandHandler.UpdateAsync(updateDto);
 
-                // 更新本地数据
-                User = updatedUser;
+                if (result.success && result.user != null)
+                {
+                    // 更新本地数据
+                    User = result.user;
 
-                var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
-                StatusMessage = $"用户状态已切换为：{statusText}";
-                Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
+                    var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
+                    StatusMessage = $"用户状态已切换为：{statusText}";
+                    Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
+                }
+                else
+                {
+                    Logger.LogWarning("切换用户状态失败: {ErrorMessage}", result.errorMessage);
+                    ErrorMessage = result.errorMessage ?? "切换状态失败";
+                }
             }
             catch (Exception ex)
             {

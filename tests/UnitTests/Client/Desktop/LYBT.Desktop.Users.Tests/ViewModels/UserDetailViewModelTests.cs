@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
+using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,10 +18,12 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// </summary>
     public class UserDetailViewModelTests : IDisposable
     {
+        private readonly Mock<UserCommandHandler> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserDetailViewModel>> _mockLogger;
+        private readonly Mock<ILogger<UserCommandHandler>> _mockCommandLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly UserDetailViewModel _viewModel;
 
@@ -28,6 +31,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             // Arrange - Setup Mocks
             _mockUserRepository = new Mock<IUserRepository>();
+            _mockCommandLogger = new Mock<ILogger<UserCommandHandler>>();
+            _mockCommandHandler = new Mock<UserCommandHandler>(_mockUserRepository.Object, _mockCommandLogger.Object);
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserDetailViewModel>>();
@@ -40,7 +45,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             // Create ViewModel instance
             _viewModel = new UserDetailViewModel(
-                _mockUserRepository.Object,
+                _mockCommandHandler.Object,
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
                 _mockRegionManager.Object
