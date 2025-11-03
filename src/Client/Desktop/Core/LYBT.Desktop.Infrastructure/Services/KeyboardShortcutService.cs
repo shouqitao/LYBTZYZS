@@ -12,13 +12,11 @@ namespace LYBT.Desktop.Infrastructure.Services
     {
         private readonly ILogger<KeyboardShortcutService> _logger;
         private readonly ConcurrentDictionary<string, object> _registeredShortcuts;
-        private bool _shortcutsEnabled;
 
         public KeyboardShortcutService(ILogger<KeyboardShortcutService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _registeredShortcuts = new ConcurrentDictionary<string, object>();
-            _shortcutsEnabled = true;
         }
 
         /// <summary>
@@ -100,7 +98,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         {
             try
             {
-                _shortcutsEnabled = true;
                 _logger.LogInformation("启用快捷键管理");
             }
             catch (Exception ex)
@@ -116,7 +113,6 @@ namespace LYBT.Desktop.Infrastructure.Services
         {
             try
             {
-                _shortcutsEnabled = false;
                 _logger.LogInformation("禁用快捷键管理");
             }
             catch (Exception ex)
