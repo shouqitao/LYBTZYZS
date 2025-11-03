@@ -158,6 +158,28 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 命令实现
 
         /// <summary>
+        /// 创建FormulaInputDto
+        /// </summary>
+        private FormulaInputDto CreateFormulaInputDto(Guid? formulaId = null)
+        {
+            return new FormulaInputDto
+            {
+                Id = formulaId,
+                Name = FormulaName.Trim(),
+                Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
+            };
+        }
+
+        /// <summary>
+        /// 处理保存结果
+        /// </summary>
+        private void HandleSaveResult(FormulaDto formula)
+        {
+            var parameters = new DialogParameters { { "Formula", formula } };
+            RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+        }
+
+        /// <summary>
         /// 保存配方
         /// </summary>
         private async Task SaveFormulaAsync()
@@ -168,51 +190,26 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 if (FormulaId.HasValue)
                 {
-                    // 更新现有配方
-                    var updateDto = new FormulaInputDto
-                    {
-                        Id = FormulaId.Value,
-                        Name = FormulaName.Trim(),
-                        Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
-                    };
-
-                    // Issue #1787: 使用CommandHandler更新
-                    var result = await _commandHandler.UpdateAsync(updateDto);
+                    var result = await _commandHandler.UpdateAsync(CreateFormulaInputDto(FormulaId.Value));
                     if (!result.success || result.formula == null)
                     {
                         await ShowErrorMessageAsync(result.errorMessage ?? "更新配方失败");
                         return;
                     }
 
-                    var parameters = new DialogParameters
-                    {
-                        { "Formula", result.formula }
-                    };
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                    HandleSaveResult(result.formula);
                     Logger.LogInformation("配方更新成功: {FormulaId}", FormulaId);
                 }
                 else
                 {
-                    // 创建新配方
-                    var createDto = new FormulaInputDto
-                    {
-                        Name = FormulaName.Trim(),
-                        Remark = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim()
-                    };
-
-                    // Issue #1787: 使用CommandHandler创建
-                    var result = await _commandHandler.CreateAsync(createDto);
+                    var result = await _commandHandler.CreateAsync(CreateFormulaInputDto());
                     if (!result.success || result.formula == null)
                     {
                         await ShowErrorMessageAsync(result.errorMessage ?? "创建配方失败");
                         return;
                     }
 
-                    var parameters = new DialogParameters
-                    {
-                        { "Formula", result.formula }
-                    };
-                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                    HandleSaveResult(result.formula);
                     Logger.LogInformation("配方创建成功");
                 }
             }
