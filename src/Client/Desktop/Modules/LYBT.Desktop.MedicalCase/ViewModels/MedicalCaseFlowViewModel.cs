@@ -476,6 +476,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 创建MedicalCase（Task #1501 - Step 1 → Step 2 自动创建）
         /// Phase 2: 实现真实API调用
+        /// Issue #1794: 优化方法长度（70→48行），提取验证、DTO构建、错误处理逻辑
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <returns>创建成功返回MedicalCaseId，失败返回Guid.Empty</returns>
@@ -486,37 +487,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
 
                 // Phase 2: 验证SessionManager和CurrentUser
-                if (SessionManager == null)
+                if (!ValidateSessionAndUser())
                 {
-                    Logger.LogError("❌ SessionManager为null，无法创建MedicalCase");
-                    if (UserNotificationService != null)
-                    {
-                        _ = UserNotificationService.ShowErrorAsync("会话管理器未初始化，无法创建医案");
-                    }
-                    return Guid.Empty;
-                }
-
-                if (SessionManager.CurrentUser == null)
-                {
-                    Logger.LogError("❌ SessionManager.CurrentUser为null，无法创建MedicalCase");
-                    if (UserNotificationService != null)
-                    {
-                        _ = UserNotificationService.ShowErrorAsync("用户信息丢失，无法创建医案");
-                    }
                     return Guid.Empty;
                 }
 
                 Logger.LogInformation("✅ SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
-                    SessionManager.CurrentUser.UserName, SessionManager.CurrentUser.Id);
+                    SessionManager!.CurrentUser!.UserName, SessionManager.CurrentUser.Id);
 
                 // Phase 2: 构建MedicalCaseCreateDto
-                var createDto = new MedicalCaseCreateDto
-                {
-                    PatientId = patientId,
-                    DoctorId = SessionManager.CurrentUser.Id,
-                    Status = MedicalCaseStatus.Active,
-                    Remark = null // 初始创建无备注
-                };
+                var createDto = CreateMedicalCaseDto(patientId);
 
                 Logger.LogInformation("📝 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
                     createDto.PatientId, createDto.DoctorId, createDto.Status);
@@ -535,18 +515,71 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "❌ 创建MedicalCase失败，PatientId: {PatientId}，异常类型: {ExceptionType}，消息: {Message}",
-                    patientId, ex.GetType().Name, ex.Message);
+                HandleCreateMedicalCaseError(ex, patientId);
+                return Guid.Empty;
+            }
+        }
 
-                // 记录详细堆栈
-                Logger.LogError("堆栈跟踪：{StackTrace}", ex.StackTrace);
-
+        /// <summary>
+        /// 验证SessionManager和CurrentUser
+        /// Issue #1794: 从CreateMedicalCaseAsync提取
+        /// </summary>
+        private bool ValidateSessionAndUser()
+        {
+            if (SessionManager == null)
+            {
+                Logger.LogError("❌ SessionManager为null，无法创建MedicalCase");
                 if (UserNotificationService != null)
                 {
-                    var detailedMessage = $"创建医案失败：{ex.Message}\n\n异常类型：{ex.GetType().Name}";
-                    _ = UserNotificationService.ShowErrorAsync(detailedMessage);
+                    _ = UserNotificationService.ShowErrorAsync("会话管理器未初始化，无法创建医案");
                 }
-                return Guid.Empty;
+                return false;
+            }
+
+            if (SessionManager.CurrentUser == null)
+            {
+                Logger.LogError("❌ SessionManager.CurrentUser为null，无法创建MedicalCase");
+                if (UserNotificationService != null)
+                {
+                    _ = UserNotificationService.ShowErrorAsync("用户信息丢失，无法创建医案");
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 构建MedicalCase创建DTO
+        /// Issue #1794: 从CreateMedicalCaseAsync提取
+        /// </summary>
+        private MedicalCaseCreateDto CreateMedicalCaseDto(Guid patientId)
+        {
+            return new MedicalCaseCreateDto
+            {
+                PatientId = patientId,
+                DoctorId = SessionManager!.CurrentUser!.Id,
+                Status = MedicalCaseStatus.Active,
+                Remark = null // 初始创建无备注
+            };
+        }
+
+        /// <summary>
+        /// 处理MedicalCase创建失败
+        /// Issue #1794: 从CreateMedicalCaseAsync提取
+        /// </summary>
+        private void HandleCreateMedicalCaseError(Exception ex, Guid patientId)
+        {
+            Logger.LogError(ex, "❌ 创建MedicalCase失败，PatientId: {PatientId}，异常类型: {ExceptionType}，消息: {Message}",
+                patientId, ex.GetType().Name, ex.Message);
+
+            // 记录详细堆栈
+            Logger.LogError("堆栈跟踪：{StackTrace}", ex.StackTrace);
+
+            if (UserNotificationService != null)
+            {
+                var detailedMessage = $"创建医案失败：{ex.Message}\n\n异常类型：{ex.GetType().Name}";
+                _ = UserNotificationService.ShowErrorAsync(detailedMessage);
             }
         }
 
