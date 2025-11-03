@@ -282,6 +282,47 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         }
 
         /// <summary>
+        /// 根据ID获取处方详情（API查询方法）
+        /// Issue #1786: 为PrescriptionEditorDialogViewModel提供查询功能
+        /// </summary>
+        public virtual async Task<ApiResponse<PrescriptionDto>> GetPrescriptionByIdAsync(Guid prescriptionId)
+        {
+            try
+            {
+                _logger.LogDebug("获取处方详情: PrescriptionId={PrescriptionId}", prescriptionId);
+                var response = await _prescriptionApi.GetPrescriptionByIdAsync(prescriptionId);
+                _logger.LogInformation("处方详情加载成功: PrescriptionId={PrescriptionId}, Success={Success}",
+                    prescriptionId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取处方详情失败: PrescriptionId={PrescriptionId}", prescriptionId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 更新处方（Repository方法）
+        /// Issue #1786: 为PrescriptionEditorDialogViewModel提供更新功能
+        /// </summary>
+        public virtual async Task<PrescriptionDto?> UpdatePrescriptionAsync(Guid medicalCaseId, PrescriptionUpdateDto dto)
+        {
+            try
+            {
+                _logger.LogDebug("更新处方: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var result = await _medicalCaseRepository.UpdatePrescriptionAsync(medicalCaseId, dto);
+                _logger.LogInformation("处方更新成功: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新处方失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 清空数据
         /// </summary>
         public void Clear()

@@ -3,6 +3,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -20,8 +21,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionApi _prescriptionApi;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1786: 使用DataManager替代直接Api和Repository访问
+        private readonly PrescriptionDataManager _dataManager;
 
         #endregion
 
@@ -300,8 +301,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionEditorDialogViewModel(
-            IPrescriptionApi prescriptionApi,
-            IMedicalCaseRepository medicalCaseRepository,
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -309,8 +309,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -410,7 +410,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载处方信息...");
 
-                var response = await _prescriptionApi.GetPrescriptionByIdAsync(PrescriptionId);
+                // Issue #1786: 使用DataManager包装Api方法
+                var response = await _dataManager.GetPrescriptionByIdAsync(PrescriptionId);
                 var prescription = response.Data;
                 if (prescription == null)
                 {
@@ -514,7 +515,18 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     Discount = Discount
                 };
 
-                var updatedPrescription = await _medicalCaseRepository.UpdatePrescriptionAsync(PrescriptionId, updateDto);
+                // Issue #1786: 使用DataManager包装Repository方法，并修复bug - 使用MedicalCaseId
+                if (OriginalPrescription == null)
+                {
+                    await ShowErrorMessageAsync("无法保存：缺少医案信息");
+                    return;
+                }
+                var updatedPrescription = await _dataManager.UpdatePrescriptionAsync(OriginalPrescription.MedicalCaseId, updateDto);
+                if (updatedPrescription == null)
+                {
+                    await ShowErrorMessageAsync("保存处方失败");
+                    return;
+                }
                 await ShowSuccessMessageAsync("处方信息保存成功");
 
                 var parameters = new DialogParameters
