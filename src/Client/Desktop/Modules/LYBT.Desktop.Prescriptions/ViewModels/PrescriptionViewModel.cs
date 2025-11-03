@@ -24,9 +24,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionApi _prescriptionApi;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
-        private readonly IHerbRepository _herbRepository;
+        // Issue #1786: 已移除直接依赖，统一使用PrescriptionDataManager
 
         #endregion
 
@@ -436,24 +434,19 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionViewModel(
-            IPrescriptionApi prescriptionApi,
-            IMedicalCaseRepository medicalCaseRepository,
-            IHerbRepository herbRepository,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
-            PrescriptionDataManager dataManager,
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             PrescriptionCalculator calculator,
             PrescriptionValidator validator,
             PrescriptionCommandHandler commandHandler,
             PrescriptionEventCoordinator eventCoordinator,
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            // Issue #1786: 注入组件依赖
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -567,7 +560,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             try
             {
-                var medicalCase = await _medicalCaseRepository.GetByIdAsync(MedicalCaseId);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var medicalCase = await _dataManager.GetMedicalCaseByIdAsync(MedicalCaseId);
                 CurrentMedicalCase = medicalCase;
             }
             catch (Exception ex)
@@ -584,8 +578,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         {
             try
             {
-                // 使用SearchAsync获取所有药材（传入空字符串）
-                var herbs = await _herbRepository.SearchAsync(string.Empty);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var herbs = await _dataManager.SearchHerbsAsync(string.Empty);
                 AllHerbs = herbs ?? new List<HerbDto>();
                 Logger.LogInformation($"已加载 {AllHerbs.Count} 个药材");
             }
@@ -647,8 +641,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     return;
                 }
 
-                // Issue #1608: 使用IPrescriptionApi替代IPrescriptionRepository
-                var response = await _prescriptionApi.GetPatientRecentPrescriptionsAsync(
+                // Issue #1786: 使用DataManager包装Api方法
+                var response = await _dataManager.GetPatientRecentPrescriptionsAsync(
                     CurrentMedicalCase.PatientId,
                     count: 5);
                 var recentPrescriptions = response.Data ?? new List<PrescriptionSearchResultDto>();

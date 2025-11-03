@@ -7,6 +7,7 @@ using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common; // Issue #1786: 为ApiResponse和PagedResult添加命名空间
 using LYBT.Shared.Models.Contracts.Formula; // Issue #1786: 为Formula查询添加DTO命名空间
 using LYBT.Shared.Models.Contracts.Herbs; // Issue #1786: 为Herb查询添加DTO命名空间
+using LYBT.Shared.Models.Contracts.MedicalCase; // Issue #1786: 为PrescriptionViewModel提供MedicalCase DTO
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -408,6 +409,66 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除处方失败: PrescriptionId={PrescriptionId}", prescriptionId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取医案详情（Repository方法）
+        /// Issue #1786: 为PrescriptionViewModel提供获取医案详情功能
+        /// </summary>
+        public virtual async Task<MedicalCaseDto?> GetMedicalCaseByIdAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("获取医案详情: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var medicalCase = await _medicalCaseRepository.GetByIdAsync(medicalCaseId);
+                _logger.LogInformation("医案详情获取成功: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return medicalCase;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医案详情失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 搜索药材（Repository方法）
+        /// Issue #1786: 为PrescriptionViewModel提供搜索药材功能
+        /// </summary>
+        public virtual async Task<List<HerbDto>?> SearchHerbsAsync(string keyword)
+        {
+            try
+            {
+                _logger.LogDebug("搜索药材: Keyword={Keyword}", keyword);
+                var herbs = await _herbRepository.SearchAsync(keyword);
+                _logger.LogInformation("药材搜索成功，找到 {Count} 个结果", herbs?.Count ?? 0);
+                return herbs;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索药材失败: Keyword={Keyword}", keyword);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取患者最近处方（Api方法）
+        /// Issue #1786: 为PrescriptionViewModel提供获取患者最近处方功能
+        /// </summary>
+        public virtual async Task<ApiResponse<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(Guid patientId, int count)
+        {
+            try
+            {
+                _logger.LogDebug("获取患者最近处方: PatientId={PatientId}, Count={Count}", patientId, count);
+                var response = await _prescriptionApi.GetPatientRecentPrescriptionsAsync(patientId, count);
+                _logger.LogInformation("患者最近处方获取成功: PatientId={PatientId}, Count={Count}", patientId, response.Data?.Count ?? 0);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者最近处方失败: PatientId={PatientId}", patientId);
                 throw;
             }
         }
