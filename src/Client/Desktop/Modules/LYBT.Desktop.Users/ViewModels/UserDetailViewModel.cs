@@ -197,6 +197,10 @@ namespace LYBT.Desktop.Users.ViewModels
             return User != null && !IsLoading;
         }
 
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// Issue #1794: 优化方法长度（58→30行）
+        /// </summary>
         private async void ExecuteToggleStatus()
         {
             if (User == null)
@@ -208,41 +212,15 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 IsLoading = true;
-                var newStatus = User.Status == CommonStatus.Enabled
-                    ? CommonStatus.Disabled
-                    : CommonStatus.Enabled;
+                var newStatus = CalculateNewStatus();
+                var updateDto = CreateUserUpdateDto(newStatus);
 
-                Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}",
-                    User.Id, User.Status, newStatus);
-
-                // 创建更新DTO
-                var updateDto = new UserInputDto
-                {
-                    Id = User.Id,
-                    RealName = User.RealName,
-                    Role = User.Role,
-                    Status = newStatus,
-                    PhoneNumber = User.PhoneNumber,
-                    Email = User.Email
-                };
-
-                // Issue #1785: 使用CommandHandler更新
                 var result = await _commandHandler.UpdateAsync(updateDto);
 
                 if (result.success && result.user != null)
-                {
-                    // 更新本地数据
-                    User = result.user;
-
-                    var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
-                    StatusMessage = $"用户状态已切换为：{statusText}";
-                    Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
-                }
+                    HandleToggleSuccess(result.user, newStatus);
                 else
-                {
-                    Logger.LogWarning("切换用户状态失败: {ErrorMessage}", result.errorMessage);
-                    ErrorMessage = result.errorMessage ?? "切换状态失败";
-                }
+                    HandleToggleFailure(result.errorMessage);
             }
             catch (Exception ex)
             {
@@ -254,6 +232,61 @@ namespace LYBT.Desktop.Users.ViewModels
                 IsLoading = false;
                 RaiseCanExecuteChanged();
             }
+        }
+
+        /// <summary>
+        /// 计算新状态并记录日志
+        /// Issue #1794: 从ExecuteToggleStatus提取，封装状态计算逻辑
+        /// </summary>
+        private CommonStatus CalculateNewStatus()
+        {
+            var newStatus = User!.Status == CommonStatus.Enabled
+                ? CommonStatus.Disabled
+                : CommonStatus.Enabled;
+
+            Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}",
+                User.Id, User.Status, newStatus);
+
+            return newStatus;
+        }
+
+        /// <summary>
+        /// 创建用户更新DTO
+        /// Issue #1794: 从ExecuteToggleStatus提取，封装DTO创建逻辑
+        /// </summary>
+        private UserInputDto CreateUserUpdateDto(CommonStatus newStatus)
+        {
+            return new UserInputDto
+            {
+                Id = User!.Id,
+                RealName = User.RealName,
+                Role = User.Role,
+                Status = newStatus,
+                PhoneNumber = User.PhoneNumber,
+                Email = User.Email
+            };
+        }
+
+        /// <summary>
+        /// 处理切换成功结果
+        /// Issue #1794: 从ExecuteToggleStatus提取，封装成功处理逻辑
+        /// </summary>
+        private void HandleToggleSuccess(UserDto updatedUser, CommonStatus newStatus)
+        {
+            User = updatedUser;
+            var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
+            StatusMessage = $"用户状态已切换为：{statusText}";
+            Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
+        }
+
+        /// <summary>
+        /// 处理切换失败结果
+        /// Issue #1794: 从ExecuteToggleStatus提取，封装失败处理逻辑
+        /// </summary>
+        private void HandleToggleFailure(string? errorMessage)
+        {
+            Logger.LogWarning("切换用户状态失败: {ErrorMessage}", errorMessage);
+            ErrorMessage = errorMessage ?? "切换状态失败";
         }
 
         private bool CanExecuteToggleStatus()
