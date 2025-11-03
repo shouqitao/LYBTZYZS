@@ -286,55 +286,88 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         /// <summary>
         /// 将PrescriptionDto映射到PrescriptionPrintDto
+        /// Issue #1794: 优化方法长度（48→18行），提取逻辑块
         /// TODO: 需要依赖其他服务获取患者、医生、病例等信息
         /// </summary>
         private async Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription)
         {
+            var printDto = new PrescriptionPrintDto();
+
             // TODO: 在PRINT-4集成时，注入IPatientService、IUserService、IMedicalCaseService
-            // 获取完整的患者、医生、病例信息
-
-            var printDto = new PrescriptionPrintDto
-            {
-                // 诊所信息（TODO: 从配置或系统设置获取）
-                ClinicName = "中医门诊",
-                ClinicAddress = null,
-                ClinicPhone = null,
-
-                // 患者信息（TODO: 从IPatientService获取）
-                PatientName = "患者姓名", // TODO
-                Gender = "男", // TODO
-                Age = 0, // TODO
-                ConsultationDate = DateTime.Now,
-
-                // 四诊信息（TODO: 从IMedicalCaseService获取）
-                Inspection = null,
-                AuscultationOlfaction = null,
-                Inquiry = null,
-                Palpation = null,
-                TCMDiagnosis = prescription.Indication,
-                TreatmentPrinciple = null,
-
-                // 处方内容
-                Items = MapPrescriptionItems(prescription.Items),
-
-                DosageCount = prescription.DosageCount,
-                Usage = prescription.Usage ?? "水煎服，日一剂，分早晚服",
-
-                // 费用信息
-                SingleDosePrice = prescription.SingleDosePrice,
-                TotalPrice = prescription.TotalPrice,
-
-                // 医生信息（TODO: 从IUserService获取）
-                DoctorName = "医生姓名", // TODO
-                PrescriptionDate = DateTime.Now,
-
-                // 可选信息
-                PrescriptionNumber = prescription.Id.ToString("N").Substring(0, 8).ToUpper(),
-                Advice = prescription.Advice,
-                FormulaSource = prescription.FormulaSource
-            };
+            PopulateClinicInfo(printDto);
+            PopulatePatientInfo(printDto);
+            PopulateDiagnosisInfo(printDto, prescription);
+            PopulatePrescriptionDetails(printDto, prescription);
+            PopulateDoctorInfo(printDto, prescription);
 
             return await Task.FromResult(printDto);
+        }
+
+        /// <summary>
+        /// 填充诊所信息
+        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// </summary>
+        private static void PopulateClinicInfo(PrescriptionPrintDto printDto)
+        {
+            // TODO: 从配置或系统设置获取
+            printDto.ClinicName = "中医门诊";
+            printDto.ClinicAddress = null;
+            printDto.ClinicPhone = null;
+        }
+
+        /// <summary>
+        /// 填充患者信息
+        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// </summary>
+        private static void PopulatePatientInfo(PrescriptionPrintDto printDto)
+        {
+            // TODO: 从IPatientService获取
+            printDto.PatientName = "患者姓名";
+            printDto.Gender = "男";
+            printDto.Age = 0;
+            printDto.ConsultationDate = DateTime.Now;
+        }
+
+        /// <summary>
+        /// 填充四诊信息
+        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// </summary>
+        private static void PopulateDiagnosisInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        {
+            // TODO: 从IMedicalCaseService获取
+            printDto.Inspection = null;
+            printDto.AuscultationOlfaction = null;
+            printDto.Inquiry = null;
+            printDto.Palpation = null;
+            printDto.TCMDiagnosis = prescription.Indication;
+            printDto.TreatmentPrinciple = null;
+        }
+
+        /// <summary>
+        /// 填充处方详情
+        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// </summary>
+        private void PopulatePrescriptionDetails(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        {
+            printDto.Items = MapPrescriptionItems(prescription.Items);
+            printDto.DosageCount = prescription.DosageCount;
+            printDto.Usage = prescription.Usage ?? "水煎服，日一剂，分早晚服";
+            printDto.SingleDosePrice = prescription.SingleDosePrice;
+            printDto.TotalPrice = prescription.TotalPrice;
+        }
+
+        /// <summary>
+        /// 填充医生信息和可选信息
+        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// </summary>
+        private static void PopulateDoctorInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        {
+            // TODO: 从IUserService获取
+            printDto.DoctorName = "医生姓名";
+            printDto.PrescriptionDate = DateTime.Now;
+            printDto.PrescriptionNumber = prescription.Id.ToString("N").Substring(0, 8).ToUpper();
+            printDto.Advice = prescription.Advice;
+            printDto.FormulaSource = prescription.FormulaSource;
         }
 
         /// <summary>
