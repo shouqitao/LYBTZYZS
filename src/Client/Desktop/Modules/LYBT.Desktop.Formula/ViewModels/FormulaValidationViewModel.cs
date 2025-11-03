@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Formula.Interfaces;
+using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -22,8 +23,8 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖
 
-        private readonly IFormulaRepository _formulaRepository;
-        private readonly IHerbRepository _herbRepository;
+        // Issue #1787: 使用CommandHandler替代直接Repository访问
+        private readonly FormulaCommandHandler _commandHandler;
         private readonly IDialogService _dialogService;
 
         #endregion
@@ -116,8 +117,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public FormulaValidationViewModel(
-            IFormulaRepository formulaRepository,
-            IHerbRepository herbRepository,
+            FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
             IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -126,8 +126,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            // Issue #1787: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "验方校验管理";
@@ -181,7 +181,16 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载待校验验方...");
 
-                var draftFormulas = await _formulaRepository.GetPendingValidationFormulasAsync();
+                // Issue #1787: 使用CommandHandler查询待校验验方
+                var result = await _commandHandler.GetPendingValidationFormulasAsync();
+                if (!result.success || result.data == null)
+                {
+                    Logger.LogError("加载待校验验方失败：{ErrorMessage}", result.errorMessage);
+                    await ShowErrorMessageAsync(result.errorMessage ?? "加载待校验验方失败");
+                    return;
+                }
+
+                var draftFormulas = result.data;
 
                 PendingFormulas.Clear();
 
@@ -295,13 +304,13 @@ namespace LYBT.Desktop.Formula.ViewModels
                                 herbItem.OriginalHerbName ?? herbItem.HerbName,
                                 selectedHerbId);
 
-                            // 调用验证API (FORMULA-10)
-                            bool success = await _formulaRepository.ValidateFormulaHerbAsync(
+                            // Issue #1787: 使用CommandHandler验证配方药材
+                            var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
                                 SelectedFormula.Id,
                                 herbItem.Id,
                                 selectedHerbId);
 
-                            if (success)
+                            if (validateResult.success)
                             {
                                 await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
 

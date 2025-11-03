@@ -270,6 +270,59 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             return Task.FromResult<(bool, string?)>((true, "查看使用历史功能开发中"));
         }
 
+        /// <summary>
+        /// 获取待校验的验方列表（Issue #1787: 支持FormulaValidationViewModel）
+        /// </summary>
+        public async Task<(bool success, List<FormulaDto>? data, string? errorMessage)> GetPendingValidationFormulasAsync()
+        {
+            try
+            {
+                _logger.LogInformation("查询待校验验方列表");
+
+                var formulas = await _repository.GetPendingValidationFormulasAsync();
+
+                _logger.LogInformation("查询成功，共{Count}个待校验验方", formulas.Count);
+                return (true, formulas, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询待校验验方列表时发生异常");
+                return (false, null, "查询待校验验方列表时发生系统错误");
+            }
+        }
+
+        /// <summary>
+        /// 验证验方药材 - 手动绑定药材到系统药材库（Issue #1787: 支持FormulaValidationViewModel）
+        /// </summary>
+        public async Task<(bool success, string? errorMessage)> ValidateFormulaHerbAsync(
+            Guid formulaId, Guid herbItemId, Guid selectedHerbId)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "验证配方药材: FormulaId={FormulaId}, HerbItemId={HerbItemId}, SelectedHerbId={SelectedHerbId}",
+                    formulaId, herbItemId, selectedHerbId);
+
+                var result = await _repository.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
+
+                if (result)
+                {
+                    _logger.LogInformation("配方药材验证成功");
+                    return (true, null);
+                }
+                else
+                {
+                    _logger.LogWarning("配方药材验证失败");
+                    return (false, "配方药材验证失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "验证配方药材时发生异常");
+                return (false, "验证配方药材时发生系统错误");
+            }
+        }
+
         #endregion
     }
 }
