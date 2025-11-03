@@ -4,6 +4,7 @@ using System.Windows.Media.Imaging;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Prism.Commands;
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Users.ViewModels
     /// </summary>
     public class UserProfileDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
-        private readonly IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
         private readonly ISessionManager _sessionManager;
         private Guid _currentUserId;
         private string? _avatarFilePath;
@@ -190,15 +192,16 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserProfileDialogViewModel(
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IUserRepository userRepository,
             ISessionManager sessionManager,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
             SelectAvatarCommand = new DelegateCommand(SelectAvatar);
@@ -225,15 +228,15 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 SetIsBusy(true, "正在加载个人资料...");
 
-                // Repository 模式：直接返回 UserDto?
-                var user = await _userRepository.GetByIdAsync(_currentUserId);
+                // Issue #1785: 使用CommandHandler查询
+                var result = await _commandHandler.GetByIdAsync(_currentUserId);
 
-                if (user != null)
+                if (result.success && result.user != null)
                 {
-                    UserName = user.UserName; // 注意：UserDto 属性名是 UserName，不是 UserName
-                    RealName = user.RealName ?? string.Empty;
-                    Email = user.Email ?? string.Empty;
-                    PhoneNumber = user.PhoneNumber ?? string.Empty;
+                    UserName = result.user.UserName; // 注意：UserDto 属性名是 UserName
+                    RealName = result.user.RealName ?? string.Empty;
+                    Email = result.user.Email ?? string.Empty;
+                    PhoneNumber = result.user.PhoneNumber ?? string.Empty;
                     Department = string.Empty; // UserDto 中可能没有这些字段
                     Position = string.Empty;
 
@@ -245,8 +248,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    SetError("加载个人资料失败");
-                    Logger.LogWarning("加载用户资料失败: Repository 返回 null");
+                    SetError(result.errorMessage ?? "加载个人资料失败");
+                    Logger.LogWarning("加载用户资料失败：{ErrorMessage}", result.errorMessage);
                 }
             }
             catch (Exception ex)

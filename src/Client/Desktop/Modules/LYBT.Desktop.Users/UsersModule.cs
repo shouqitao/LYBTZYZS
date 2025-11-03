@@ -26,6 +26,9 @@ namespace LYBT.Desktop.Users
             // Issue #1128: 注册模块内 Repository（覆盖 Shell 层的旧 Repository）
             containerRegistry.RegisterRepository<IUserRepository, UserRepository>();
 
+            // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
+            containerRegistry.Register<ViewModels.Components.UserCommandHandler>();
+
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<UserManagementViewModel>();
             containerRegistry.Register<UserCreateViewModel>();
