@@ -305,30 +305,21 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// 保存诊断数据（创建Consultation实体）
         /// Issue #1784: 使用DataManager替代直接Repository访问
         /// </summary>
+        /// <summary>
+        /// 保存诊断数据
+        /// Issue #1784: 从ViewModel同步数据到DataManager并保存
+        /// Issue #1794: 优化方法长度（52→30行）
+        /// </summary>
         public async Task<bool> SaveAsync()
         {
             try
             {
                 Logger.LogInformation("开始保存诊断数据，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                if (MedicalCaseId == Guid.Empty)
+                var (isValid, errorMessage) = ValidatePrerequisites();
+                if (!isValid)
                 {
-                    Logger.LogError("MedicalCaseId为空，无法创建Consultation");
-                    ValidationMessage = "医案ID为空，无法保存诊断数据";
-                    return false;
-                }
-
-                if (CurrentPatient == null)
-                {
-                    Logger.LogError("CurrentPatient为空，无法创建Consultation");
-                    ValidationMessage = "患者信息丢失，无法保存诊断数据";
-                    return false;
-                }
-
-                if (SessionManager?.CurrentUser == null)
-                {
-                    Logger.LogError("SessionManager.CurrentUser为空，无法创建Consultation");
-                    ValidationMessage = "用户信息丢失，无法保存诊断数据";
+                    ValidationMessage = errorMessage;
                     return false;
                 }
 
@@ -338,22 +329,58 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 // Issue #1784: 使用DataManager保存
                 var success = await _dataManager.SaveAsync();
 
-                if (success)
-                {
-                    Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", MedicalCaseId);
-                    return true;
-                }
-                else
-                {
-                    Logger.LogError("DataManager保存失败");
-                    ValidationMessage = "保存失败，请检查数据有效性";
-                    return false;
-                }
+                return HandleSaveResult(success);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存诊断数据失败，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                 ValidationMessage = $"保存失败：{ex.Message}";
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 验证保存前置条件
+        /// Issue #1794: 从SaveAsync提取，封装前置验证逻辑
+        /// </summary>
+        private (bool isValid, string errorMessage) ValidatePrerequisites()
+        {
+            if (MedicalCaseId == Guid.Empty)
+            {
+                Logger.LogError("MedicalCaseId为空，无法创建Consultation");
+                return (false, "医案ID为空，无法保存诊断数据");
+            }
+
+            if (CurrentPatient == null)
+            {
+                Logger.LogError("CurrentPatient为空，无法创建Consultation");
+                return (false, "患者信息丢失，无法保存诊断数据");
+            }
+
+            if (SessionManager?.CurrentUser == null)
+            {
+                Logger.LogError("SessionManager.CurrentUser为空，无法创建Consultation");
+                return (false, "用户信息丢失，无法保存诊断数据");
+            }
+
+            return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// 处理保存结果
+        /// Issue #1794: 从SaveAsync提取，封装结果处理逻辑
+        /// </summary>
+        private bool HandleSaveResult(bool success)
+        {
+            if (success)
+            {
+                Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", MedicalCaseId);
+                return true;
+            }
+            else
+            {
+                Logger.LogError("DataManager保存失败");
+                ValidationMessage = "保存失败，请检查数据有效性";
                 return false;
             }
         }
