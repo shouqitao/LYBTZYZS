@@ -1,5 +1,6 @@
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Patients.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPatientRepository _patientRepository;
+        // Issue #1788: 使用CommandHandler替代直接Repository访问
+        private readonly PatientCommandHandler _commandHandler;
 
         #endregion
 
@@ -130,13 +132,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 构造函数
 
         public QuickCreatePatientDialogViewModel(
-            IPatientRepository patientRepository,
+            PatientCommandHandler commandHandler, // Issue #1788: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager)
             : base(eventAggregator, loggerFactory, regionManager)
         {
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            // Issue #1788: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
@@ -165,7 +168,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 保存患者信息
-        /// Issue #1487: 调用IPatientRepository创建患者
+        /// Issue #1788: 使用CommandHandler.CreatePatientAsync()
         /// </summary>
         private async Task SaveAsync()
         {
@@ -194,22 +197,30 @@ namespace LYBT.Desktop.Patients.ViewModels
                     Status = Shared.Models.Enums.CommonStatus.Enabled
                 };
 
-                // 调用Repository创建患者
-                var newPatient = await _patientRepository.CreateAsync(createDto);
+                // Issue #1788: 使用CommandHandler创建患者
+                var result = await _commandHandler.CreatePatientAsync(createDto);
 
-                Logger.LogInformation("快速创建患者成功: {PatientName} (ID: {PatientId})", newPatient.Name, newPatient.Id);
-
-                // 通过对话框参数返回新创建的患者
-                var parameters = new DialogParameters
+                if (result.IsSuccess && result.Data != null)
                 {
-                    { "NewPatient", newPatient }
-                };
+                    Logger.LogInformation("快速创建患者成功: {PatientName} (ID: {PatientId})", result.Data.Name, result.Data.Id);
 
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                    // 通过对话框参数返回新创建的患者
+                    var parameters = new DialogParameters
+                    {
+                        { "NewPatient", result.Data }
+                    };
+
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
+                }
+                else
+                {
+                    Logger.LogWarning("创建患者失败: {ErrorMessage}", result.ErrorMessage);
+                    await ShowErrorMessageAsync($"保存失败：{result.ErrorMessage}");
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "创建患者失败: {PatientName}", Name);
+                Logger.LogError(ex, "创建患者异常: {PatientName}", Name);
                 await ShowErrorMessageAsync("保存失败，请稍后重试");
             }
             finally
