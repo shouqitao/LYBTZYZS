@@ -8,6 +8,7 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Fields
 
-        private readonly IPatientRepository _patientRepository;
+        // Issue #1788: 使用CommandHandler替代直接Repository访问
+        private readonly PatientCommandHandler _commandHandler;
         private readonly IExcelParserService _excelParserService;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
 
@@ -218,14 +220,15 @@ namespace LYBT.Desktop.Patients.ViewModels
         // TODO #1708: 考虑迁移到 UnifiedViewModelBase（需处理 IDisposable 冲突，Epic #1676 Phase 4D）
         // 当前继承 BindableBase + IDisposable,使用 BackgroundWorker 实现长时间导入任务
         // 若迁移,需在 UnifiedViewModelBase 添加 IDisposable 支持或在子类保留 Dispose 实现
-        // Phase 2: 直接注入Repository
+        // Issue #1788: 注入CommandHandler替代Repository
         // Issue #1781 Task 8 Phase 1: 注入ExcelParserService
         public PatientImportWizardViewModel(
-            IPatientRepository patientRepository,
+            PatientCommandHandler commandHandler,
             IExcelParserService excelParserService,
             ILogger<PatientImportWizardViewModel> logger)
         {
-            _patientRepository = patientRepository;
+            // Issue #1788: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _excelParserService = excelParserService;
             _logger = logger;
 
@@ -678,9 +681,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                             AllergyHistory = row["过敏史"]?.ToString()?.Trim()
                         };
 
-                        // Phase 2: 直接调用Repository创建患者
-                        var createdPatient = await _patientRepository.CreateAsync(patientDto);
-                        if (createdPatient != null)
+                        // Issue #1788: 使用CommandHandler创建患者
+                        var result = await _commandHandler.CreatePatientAsync(patientDto);
+                        if (result.IsSuccess && result.Data != null)
                         {
                             successCount++;
                             _logger.LogInformation($"成功导入患者: {name} (第{i + 2}行)");
@@ -688,7 +691,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                         else
                         {
                             failCount++;
-                            var error = $"第{i + 2}行 ({name})：创建失败，服务器未返回数据";
+                            var error = $"第{i + 2}行 ({name})：创建失败 - {result.ErrorMessage}";
                             errors.Add(error);
                             _logger.LogWarning(error);
                         }
