@@ -18,8 +18,6 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
         private readonly IStartupOptimizationService _startupOptimizationService;
         private readonly IErrorHandlingService _errorHandlingService;
         private readonly IModuleManager _moduleManager;
-        private readonly IModuleCatalog _moduleCatalog;
-        private readonly IEventAggregator _eventAggregator;
         private readonly ILogger<ApplicationBootstrapper> _logger;
 
         public ApplicationBootstrapper(
@@ -27,16 +25,12 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             IStartupOptimizationService startupOptimizationService,
             IErrorHandlingService errorHandlingService,
             IModuleManager moduleManager,
-            IModuleCatalog moduleCatalog,
-            IEventAggregator eventAggregator,
             ILogger<ApplicationBootstrapper> logger)
         {
             _initializationService = initializationService ?? throw new ArgumentNullException(nameof(initializationService));
             _startupOptimizationService = startupOptimizationService ?? throw new ArgumentNullException(nameof(startupOptimizationService));
             _errorHandlingService = errorHandlingService ?? throw new ArgumentNullException(nameof(errorHandlingService));
             _moduleManager = moduleManager ?? throw new ArgumentNullException(nameof(moduleManager));
-            _moduleCatalog = moduleCatalog ?? throw new ArgumentNullException(nameof(moduleCatalog));
-            _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
