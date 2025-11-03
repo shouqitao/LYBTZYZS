@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Formula.ViewModels
     {
         #region 服务依赖与组件
 
-        private readonly IFormulaRepository _formulaRepository;
+        // Issue #1787: 使用Component组件（通过DI注入）
         private readonly FormulaDataManager _dataManager;
         private readonly FormulaCommandHandler _commandHandler;
         private readonly FormulaCalculator _calculator;
@@ -279,22 +279,23 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 构造函数
 
         public FormulaDetailViewModel(
+            // Issue #1787: 注入Component组件
+            FormulaDataManager dataManager,
+            FormulaCommandHandler commandHandler,
+            FormulaCalculator calculator,
+            FormulaValidator validator,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IFormulaRepository formulaRepository,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
-
-            // 初始化组件
-            var logger = loggerFactory.CreateLogger<FormulaDetailViewModel>();
-            _dataManager = new FormulaDataManager(formulaRepository, logger);
-            _commandHandler = new FormulaCommandHandler(formulaRepository, logger);
-            _calculator = new FormulaCalculator();
-            _validator = new FormulaValidator();
+            // Issue #1787: 通过DI注入组件
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
