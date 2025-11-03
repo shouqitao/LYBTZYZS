@@ -1,6 +1,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,8 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region 服务依赖
 
-        private readonly IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
 
         #endregion
 
@@ -127,7 +129,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserManagementViewModel(
-            IUserRepository userRepository,
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -135,7 +137,8 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -213,11 +216,13 @@ namespace LYBT.Desktop.Users.ViewModels
 
             try
             {
-                // 调用 Repository 获取分页数据（裸类型返回）
-                var result = await _userRepository.GetPagedAsync(page, pageSize, searchText);
+                // Issue #1785: 使用CommandHandler获取分页数据
+                var cmdResult = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
 
-                if (result != null && result.Items != null)
+                if (cmdResult.success && cmdResult.data != null)
                 {
+                    var result = cmdResult.data;
+
                     // 应用筛选条件（在客户端进一步筛选，实际项目应该在服务端处理）
                     var filteredItems = result.Items.AsEnumerable();
 
@@ -242,7 +247,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户列表失败: Repository 返回 null");
+                    Logger.LogWarning("加载用户列表失败: {ErrorMessage}", cmdResult.errorMessage);
                     TotalCount = 0;
                     return new List<UserDto>();
                 }
@@ -287,8 +292,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            // Repository 模式：直接调用，异常由 UnifiedViewModelBase 捕获
-            await _userRepository.DeleteAsync(user.Id);
+            // Issue #1785: 使用CommandHandler删除
+            var result = await _commandHandler.DeleteAsync(user.Id);
+            if (!result.success)
+            {
+                throw new InvalidOperationException(result.errorMessage ?? "删除用户失败");
+            }
 
             Logger.LogInformation("成功删除用户: {UserName}", user.UserName);
         }
@@ -306,8 +315,13 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 try
                 {
-                    // Repository 模式：直接调用，异常表示失败
-                    await _userRepository.DeleteAsync(user.Id);
+                    // Issue #1785: 使用CommandHandler删除
+                    var result = await _commandHandler.DeleteAsync(user.Id);
+                    if (!result.success)
+                    {
+                        Logger.LogError("删除用户失败: {UserName}, {ErrorMessage}", user.UserName, result.errorMessage);
+                        failedUsers.Add($"{user.UserName}: {result.errorMessage}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -406,12 +420,16 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = newStatus
                 };
 
-                // Repository 模式：直接调用，异常由 UnifiedViewModelBase 捕获
-                var updatedUser = await _userRepository.UpdateAsync(updateDto);
-                if (updatedUser != null)
+                // Issue #1785: 使用CommandHandler更新
+                var result = await _commandHandler.UpdateAsync(updateDto);
+                if (result.success && result.user != null)
                 {
                     Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
                     await LoadPageAsync(); // 刷新列表
+                }
+                else
+                {
+                    throw new InvalidOperationException(result.errorMessage ?? "切换用户状态失败");
                 }
 
             }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");
