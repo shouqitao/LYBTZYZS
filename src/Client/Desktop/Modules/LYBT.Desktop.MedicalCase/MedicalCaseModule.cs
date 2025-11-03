@@ -1,3 +1,4 @@
+using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Repositories;
 using Prism.Ioc;
@@ -25,6 +26,9 @@ namespace LYBT.Desktop.MedicalCase
             // - Infrastructure Service (Foundation/Infrastructure) 由 Shell 统一注册
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
+
+            // Epic #1773: 注册Component组件
+            containerRegistry.Register<MedicalCaseDataManager>();
 
             // Issue #1548: CreateMedicalCaseDialog已删除（由MedicalCaseFlowView的4步流程替代）
             // Phase 3.4: 启用 Prism Dialog 注册（已废弃）

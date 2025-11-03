@@ -586,6 +586,35 @@ namespace LYBT.Desktop.MedicalCase.Components
         }
 
         /// <summary>
+        /// 获取患者未完成的病案
+        /// Epic #1773: 为PatientSelectionViewModel提供跨模块访问
+        /// </summary>
+        public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        {
+            try
+            {
+                _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}", patientId);
+                var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId);
+                
+                if (unfinishedCase != null)
+                {
+                    _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}", unfinishedCase.Id);
+                }
+                else
+                {
+                    _logger.LogInformation("患者无未完成病案: PatientId={PatientId}", patientId);
+                }
+                
+                return unfinishedCase;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者未完成病案失败: PatientId={PatientId}", patientId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 创建处方（API版本，用于聚合根场景）
         /// Issue #1783: 为PrescriptionEditorViewModel提供业务命令
         /// </summary>

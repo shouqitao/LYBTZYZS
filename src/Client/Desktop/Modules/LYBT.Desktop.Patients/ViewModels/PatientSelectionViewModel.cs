@@ -3,7 +3,8 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替代Repository
+// Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces（不再直接使用IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
@@ -35,7 +36,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         // Issue #1788: 使用CommandHandler替代直接Repository访问
         private readonly PatientCommandHandler _commandHandler;
-        private readonly IMedicalCaseRepository _medicalCaseRepository; // 保留用于MedicalCase聚合根操作
+        // Epic #1773: 使用MedicalCaseDataManager替代IMedicalCaseRepository直接依赖
+        private readonly MedicalCaseDataManager _medicalCaseDataManager;
         private readonly IDialogService _dialogService;
         private readonly IMedicalCaseApi _medicalCaseApi;
         private System.Threading.Timer? _searchDebounceTimer;
@@ -224,7 +226,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientSelectionViewModel(
             PatientCommandHandler commandHandler, // Issue #1788: 注入CommandHandler
-            IMedicalCaseRepository medicalCaseRepository, // 保留用于MedicalCase聚合根操作
+            MedicalCaseDataManager medicalCaseDataManager, // Epic #1773: 注入MedicalCaseDataManager
             IDialogService dialogService,
             IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
@@ -236,7 +238,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             // Issue #1788: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            // Epic #1773: 注入MedicalCaseDataManager
+            _medicalCaseDataManager = medicalCaseDataManager ?? throw new ArgumentNullException(nameof(medicalCaseDataManager));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
@@ -623,7 +626,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 2. 缓存未命中，调用API查询
                 Logger.LogInformation("缓存未命中，调用API查询：PatientId={PatientId}", patientId);
 
-                var unfinishedCase = await _medicalCaseRepository.GetUnfinishedCaseByPatientIdAsync(patientId);
+                // Epic #1773: 使用MedicalCaseDataManager包装方法
+                var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId);
 
                 if (unfinishedCase != null)
                 {
@@ -722,7 +726,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     oldMedicalCaseId);
 
                 // 1. 关闭旧医案
-                var closed = await _medicalCaseRepository.CloseCaseAsync(oldMedicalCaseId);
+                // Epic #1773: 使用MedicalCaseDataManager包装方法
+                var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
+                var closed = response.Success;
 
                 if (closed)
                 {
@@ -758,7 +764,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                     oldMedicalCaseId);
 
                 // 1. 关闭旧医案
-                var closed = await _medicalCaseRepository.CloseCaseAsync(oldMedicalCaseId);
+                // Epic #1773: 使用MedicalCaseDataManager包装方法
+                var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
+                var closed = response.Success;
 
                 if (closed)
                 {
@@ -798,7 +806,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("用户选择关闭旧医案：MedicalCaseId={MedicalCaseId}", medicalCaseId);
 
                 // 1. 调用API关闭医案
-                var closed = await _medicalCaseRepository.CloseCaseAsync(medicalCaseId);
+                // Epic #1773: 使用MedicalCaseDataManager包装方法
+                var response = await _medicalCaseDataManager.CloseCaseAsync(medicalCaseId);
+                var closed = response.Success;
 
                 if (closed)
                 {
