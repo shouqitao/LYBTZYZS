@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Modules.Prescriptions.Services; // Issue #1790: 引入新的Manager服务
 using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -32,6 +33,9 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         private readonly PrescriptionValidator _validator;
         private readonly PrescriptionCommandHandler _commandHandler;
         private readonly PrescriptionEventCoordinator _eventCoordinator;
+        // Issue #1790: 添加药材过滤和历史处方管理器
+        private readonly PrescriptionHerbFilterManager _herbFilterManager;
+        private readonly PrescriptionHistoryManager _historyManager;
 
         #endregion
 
@@ -238,51 +242,39 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         #endregion
 
-        #region 药材过滤数据 (Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤)
-
-        private List<HerbDto> _allHerbs = new();
-        private ObservableCollection<HerbDto> _filteredHerbs = new();
+        #region 药材过滤数据 (Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤) - Issue #1790: 委托到Manager
 
         /// <summary>
         /// 所有药材列表（用于过滤）
+        /// Issue #1790: 委托到HerbFilterManager
         /// </summary>
-        public List<HerbDto> AllHerbs
-        {
-            get => _allHerbs;
-            set => SetProperty(ref _allHerbs, value);
-        }
+        public List<HerbDto> AllHerbs => _herbFilterManager.AllHerbs;
 
         /// <summary>
         /// 过滤后的药材列表（绑定到ComboBox）
+        /// Issue #1790: 委托到HerbFilterManager
         /// </summary>
-        public ObservableCollection<HerbDto> FilteredHerbs
-        {
-            get => _filteredHerbs;
-            set => SetProperty(ref _filteredHerbs, value);
-        }
-
-        private ObservableCollection<PrescriptionSearchResultDto> _recentPrescriptions = new();
+        public ObservableCollection<HerbDto> FilteredHerbs => _herbFilterManager.FilteredHerbs;
 
         /// <summary>
         /// 患者最近处方列表 (Issue #1374 ENTRY-16)
+        /// Issue #1790: 委托到HistoryManager
         /// </summary>
-        public ObservableCollection<PrescriptionSearchResultDto> RecentPrescriptions
-        {
-            get => _recentPrescriptions;
-            set => SetProperty(ref _recentPrescriptions, value);
-        }
-
-        private PrescriptionSearchResultDto? _selectedRecentPrescription;
+        public ObservableCollection<PrescriptionSearchResultDto> RecentPrescriptions => _historyManager.RecentPrescriptions;
 
         /// <summary>
         /// 选中的历史处方 (Issue #1374 ENTRY-16)
+        /// Issue #1790: 委托到HistoryManager
         /// </summary>
         public PrescriptionSearchResultDto? SelectedRecentPrescription
         {
-            get => _selectedRecentPrescription;
+            get => _historyManager.SelectedRecentPrescription;
             set
             {
-                if (SetProperty(ref _selectedRecentPrescription, value) && value != null)
+                _historyManager.SelectedRecentPrescription = value;
+                RaisePropertyChanged();
+
+                if (value != null)
                 {
                     // 选中后自动复制
                     CopyFromHistoryCommand?.Execute(value);
@@ -436,6 +428,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             PrescriptionValidator validator,
             PrescriptionCommandHandler commandHandler,
             PrescriptionEventCoordinator eventCoordinator,
+            PrescriptionHerbFilterManager herbFilterManager, // Issue #1790: 注入药材过滤管理器
+            PrescriptionHistoryManager historyManager, // Issue #1790: 注入历史处方管理器
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -449,9 +443,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _eventCoordinator = eventCoordinator ?? throw new ArgumentNullException(nameof(eventCoordinator));
+            // Issue #1790: 注入新的管理器
+            _herbFilterManager = herbFilterManager ?? throw new ArgumentNullException(nameof(herbFilterManager));
+            _historyManager = historyManager ?? throw new ArgumentNullException(nameof(historyManager));
 
             // 设置命令处理器的依赖
             _commandHandler.SetDependencies(_dataManager);
+
+            // 订阅历史处方复制事件
+            _historyManager.HistoryCopied += OnHistoryCopied;
 
             // 初始化自有命令
             BackCommand = new DelegateCommand(Back);
@@ -570,93 +570,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 加载所有药材数据
         /// Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤
+        /// Issue #1790: 委托到HerbFilterManager
         /// </summary>
         private async Task LoadAllHerbsAsync()
         {
-            try
-            {
-                // Issue #1786: 使用DataManager包装Repository方法
-                var herbs = await _dataManager.SearchHerbsAsync(string.Empty);
-                AllHerbs = herbs ?? new List<HerbDto>();
-                Logger.LogInformation($"已加载 {AllHerbs.Count} 个药材");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载药材数据失败");
-                AllHerbs = new List<HerbDto>();
-            }
+            await _herbFilterManager.LoadAllHerbsAsync();
         }
 
         /// <summary>
         /// 根据输入文本过滤药材
         /// Issue #1362: [ENTRY-4] 实现ComboBox拼音码过滤
+        /// Issue #1790: 委托到HerbFilterManager
         /// </summary>
         /// <param name="searchText">搜索文本（药材名称或拼音码）</param>
         public void FilterHerbs(string searchText)
         {
-            try
-            {
-                FilteredHerbs.Clear();
-
-                // 如果搜索文本为空，不显示任何结果
-                if (string.IsNullOrWhiteSpace(searchText))
-                {
-                    return;
-                }
-
-                // 过滤逻辑：匹配药材名称或拼音码（不区分大小写）
-                var filtered = AllHerbs
-                    .Where(h => h.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                               (h.PinYinCode?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
-                    .Take(5) // 限制最多5个结果
-                    .ToList();
-
-                // 添加到过滤结果集合
-                foreach (var herb in filtered)
-                {
-                    FilteredHerbs.Add(herb);
-                }
-
-                Logger.LogDebug($"过滤药材：输入='{searchText}'，结果数={filtered.Count}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "过滤药材时发生异常");
-            }
+            _herbFilterManager.FilterHerbs(searchText);
         }
 
         /// <summary>
         /// 加载患者最近处方列表 (Issue #1374 ENTRY-16)
+        /// Issue #1790: 委托到HistoryManager
         /// </summary>
         private async Task LoadRecentPrescriptionsAsync()
         {
-            try
-            {
-                if (CurrentMedicalCase?.PatientId == null || CurrentMedicalCase.PatientId == Guid.Empty)
-                {
-                    Logger.LogWarning("无法加载历史处方：患者ID无效");
-                    return;
-                }
-
-                // Issue #1786: 使用DataManager包装Api方法
-                var response = await _dataManager.GetPatientRecentPrescriptionsAsync(
-                    CurrentMedicalCase.PatientId,
-                    count: 5);
-                var recentPrescriptions = response.Data ?? new List<PrescriptionSearchResultDto>();
-
-                RecentPrescriptions.Clear();
-                foreach (var prescription in recentPrescriptions)
-                {
-                    RecentPrescriptions.Add(prescription);
-                }
-
-                Logger.LogInformation("已加载患者最近处方，共 {Count} 条", recentPrescriptions.Count);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载患者最近处方失败");
-                // 不抛出异常，避免影响主流程
-            }
+            await _historyManager.LoadRecentPrescriptionsAsync(CurrentMedicalCase);
         }
 
         #endregion
@@ -819,6 +757,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         /// <summary>
         /// 从历史处方复制 (Issue #1374 ENTRY-16)
+        /// Issue #1790: 委托到HistoryManager，后续处理在OnHistoryCopied事件中
         /// </summary>
         private void ExecuteCopyFromHistory(PrescriptionSearchResultDto prescription)
         {
@@ -826,49 +765,31 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
             try
             {
-                Logger.LogInformation("从历史处方复制，处方ID: {PrescriptionId}, 患者: {PatientName}",
-                    prescription.Id, prescription.PatientName);
-
-                // 清空当前处方项
-                _dataManager.Clear();
-
-                // 复制处方项
-                foreach (var item in prescription.Items)
-                {
-                    var newItem = new PrescriptionItemViewModel(
-                        EventAggregator,
-                        LoggerFactory,
-                        RegionManager,
-                        SessionManager,
-                        UserNotificationService)
-                    {
-                        HerbId = item.HerbId,
-                        HerbName = item.HerbName,
-                        Dosage = item.Dosage,
-                        Unit = item.Unit,
-                        UnitPrice = item.UnitPrice,
-                        Remark = item.Remark
-                    };
-                    _dataManager.PrescriptionItems.Add(newItem);
-                }
-
-                // 重新计算价格
-                RecalculatePrice();
-
-                // 刷新ItemRows
-                RefreshItemRows();
-
-                // 清空选择（避免重复触发）
-                SelectedRecentPrescription = null;
-
-                ShowInfoMessage($"已从历史处方复制 {prescription.Items.Count} 味药材");
-                Logger.LogInformation("历史处方复制完成，共 {Count} 味药材", prescription.Items.Count);
+                _historyManager.CopyFromHistory(prescription);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "从历史处方复制时发生异常");
                 ShowErrorMessage("复制历史处方失败");
             }
+        }
+
+        /// <summary>
+        /// 历史处方复制完成事件处理
+        /// Issue #1790: 从HistoryManager接收复制完成通知，执行UI相关后续操作
+        /// </summary>
+        private void OnHistoryCopied(object? sender, Services.HistoryCopiedEventArgs e)
+        {
+            // 重新计算价格
+            RecalculatePrice();
+
+            // 刷新ItemRows
+            RefreshItemRows();
+
+            // 清空选择（避免重复触发）
+            SelectedRecentPrescription = null;
+
+            ShowInfoMessage($"已从历史处方复制 {e.ItemCount} 味药材");
         }
 
         #endregion
