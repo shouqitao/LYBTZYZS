@@ -6,6 +6,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Interfaces;
+using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -32,8 +33,9 @@ namespace LYBT.Desktop.Patients.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPatientRepository _patientRepository;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1788: 使用CommandHandler替代直接Repository访问
+        private readonly PatientCommandHandler _commandHandler;
+        private readonly IMedicalCaseRepository _medicalCaseRepository; // 保留用于MedicalCase聚合根操作
         private readonly IDialogService _dialogService;
         private readonly IMedicalCaseApi _medicalCaseApi;
         private System.Threading.Timer? _searchDebounceTimer;
@@ -221,8 +223,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 构造函数
 
         public PatientSelectionViewModel(
-            IPatientRepository patientRepository,
-            IMedicalCaseRepository medicalCaseRepository,
+            PatientCommandHandler commandHandler, // Issue #1788: 注入CommandHandler
+            IMedicalCaseRepository medicalCaseRepository, // 保留用于MedicalCase聚合根操作
             IDialogService dialogService,
             IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
@@ -232,7 +234,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            // Issue #1788: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
@@ -270,8 +273,17 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 重置到第1页
                 CurrentPage = 1;
 
-                // 调用分页API（传入搜索关键字）
-                var result = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchKeyword);
+                // Issue #1788: 使用CommandHandler分页查询
+                var commandResult = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, SearchKeyword);
+
+                if (!commandResult.IsSuccess || commandResult.Data == null)
+                {
+                    Logger.LogError("搜索患者失败：{ErrorMessage}", commandResult.ErrorMessage);
+                    await ShowErrorMessageAsync($"搜索失败：{commandResult.ErrorMessage}");
+                    return;
+                }
+
+                var result = commandResult.Data;
 
                 // 清空选中状态（Bug修复：搜索后应重置选中项）
                 SelectedPatient = null;
@@ -885,7 +897,16 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             Logger.LogInformation("加载第{CurrentPage}页患者数据", CurrentPage);
 
-            var result = await _patientRepository.GetPagedAsync(CurrentPage, PageSize, SearchKeyword);
+            // Issue #1788: 使用CommandHandler分页查询
+            var commandResult = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, SearchKeyword);
+
+            if (!commandResult.IsSuccess || commandResult.Data == null)
+            {
+                Logger.LogError("加载患者列表失败：{ErrorMessage}", commandResult.ErrorMessage);
+                throw new InvalidOperationException($"加载患者列表失败：{commandResult.ErrorMessage}");
+            }
+
+            var result = commandResult.Data;
 
             Patients.Clear();
             foreach (var patient in result.Items)
@@ -984,16 +1005,17 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return;
                 }
 
-                // 列表中没有，通过Repository加载
-                var patient = await _patientRepository.GetByIdAsync(patientId);
-                if (patient != null)
+                // Issue #1788: 列表中没有，通过CommandHandler加载
+                var result = await _commandHandler.GetByIdAsync(patientId);
+                if (result.IsSuccess && result.Data != null)
                 {
-                    Logger.LogInformation("从API加载患者成功：{PatientName}", patient.Name);
-                    CurrentPatient = patient;
+                    Logger.LogInformation("从API加载患者成功：{PatientName}", result.Data.Name);
+                    CurrentPatient = result.Data;
                 }
                 else
                 {
-                    Logger.LogWarning("加载患者失败：患者不存在，PatientId={PatientId}", patientId);
+                    Logger.LogWarning("加载患者失败：PatientId={PatientId}, ErrorMessage={ErrorMessage}",
+                        patientId, result.ErrorMessage);
                 }
             }
             catch (Exception ex)

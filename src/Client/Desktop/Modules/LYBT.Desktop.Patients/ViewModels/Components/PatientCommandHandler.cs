@@ -368,6 +368,33 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
             }
         }
 
+        /// <summary>
+        /// 根据ID获取患者（Issue #1788: 支持单个患者查询）
+        /// </summary>
+        public async Task<CommandResult<PatientDto>> GetByIdAsync(Guid patientId)
+        {
+            try
+            {
+                _logger.LogInformation("开始查询患者：PatientId={PatientId}", patientId);
+
+                var patient = await _patientRepository.GetByIdAsync(patientId);
+                
+                if (patient == null)
+                {
+                    _logger.LogWarning("患者不存在：PatientId={PatientId}", patientId);
+                    return CommandResult<PatientDto>.Failure("患者不存在");
+                }
+
+                _logger.LogInformation("查询患者成功：{PatientName}", patient.Name);
+                return CommandResult<PatientDto>.Success(patient);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询患者时发生异常：PatientId={PatientId}", patientId);
+                return CommandResult<PatientDto>.Failure("查询患者时发生系统错误");
+            }
+        }
+
         #endregion
     }
 
