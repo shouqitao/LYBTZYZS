@@ -271,91 +271,109 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 下一步
         /// Issue #1567 - 删除MedicalCase创建逻辑（移至PatientSelectionViewModel）
+        /// Issue #1794: 优化方法长度（98→46行），提取验证保存、完成、下一步逻辑
         /// </summary>
         private async Task ExecuteNextStepAsync()
         {
             if (CurrentStep >= ConsultationStep.Completion)
             {
-                // Step 3: 完成病案，返回患者选择界面
-                Logger.LogInformation("完成病案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-
-                try
-                {
-                    SetIsBusy(true, "正在完成病案...");
-
-                    // 1. 验证并保存当前步骤数据
-                    if (CurrentStepViewModel is IValidatable validatable)
-                    {
-                        if (!validatable.Validate())
-                        {
-                            await ShowErrorMessageAsync(validatable.ValidationMessage);
-                            return;
-                        }
-                    }
-
-                    if (CurrentStepViewModel is ISaveable saveable)
-                    {
-                        var success = await saveable.SaveAsync();
-                        if (!success)
-                        {
-                            await ShowErrorMessageAsync("保存失败，请检查数据");
-                            return;
-                        }
-                    }
-
-                    // 2. 更新MedicalCase状态为Completed - Epic #1612修正版
-                    // Issue #1567 Phase 3 - Task 3.3
-                    await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Completed);
-
-                    Logger.LogInformation("病案已完成");
-                    await ShowSuccessMessageAsync("病案已完成");
-
-                    // 3. 返回患者选择界面
-                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "完成病案失败");
-                    await ShowErrorMessageAsync($"完成失败：{ex.Message}");
-                }
-                finally
-                {
-                    SetIsBusy(false);
-                }
-
+                await CompleteConsultationAsync();
                 return;
             }
 
+            await ProcessNormalNextStepAsync();
+        }
+
+        /// <summary>
+        /// 验证并保存当前步骤
+        /// Issue #1794: 从ExecuteNextStepAsync提取重复验证保存逻辑
+        /// </summary>
+        private async Task<bool> ValidateAndSaveCurrentStepAsync()
+        {
+            // 1. 验证当前步骤
+            if (CurrentStepViewModel is IValidatable validatable)
+            {
+                Logger.LogInformation("验证Step {CurrentStep}数据", CurrentStep);
+                if (!validatable.Validate())
+                {
+                    Logger.LogWarning("Step {CurrentStep}验证失败：{Message}", CurrentStep, validatable.ValidationMessage);
+                    await ShowErrorMessageAsync(validatable.ValidationMessage);
+                    return false;
+                }
+            }
+
+            // 2. 保存当前步骤
+            if (CurrentStepViewModel is ISaveable saveable)
+            {
+                Logger.LogInformation("保存Step {CurrentStep}数据", CurrentStep);
+                var saveResult = await saveable.SaveAsync();
+                if (!saveResult)
+                {
+                    Logger.LogWarning("Step {CurrentStep}保存失败", CurrentStep);
+                    await ShowErrorMessageAsync("保存失败，请检查数据后重试");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 完成病案流程
+        /// Issue #1794: 从ExecuteNextStepAsync提取
+        /// </summary>
+        private async Task CompleteConsultationAsync()
+        {
+            Logger.LogInformation("完成病案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+            try
+            {
+                SetIsBusy(true, "正在完成病案...");
+
+                // 1. 验证并保存当前步骤数据
+                if (!await ValidateAndSaveCurrentStepAsync())
+                {
+                    return;
+                }
+
+                // 2. 更新MedicalCase状态为Completed - Epic #1612修正版
+                // Issue #1567 Phase 3 - Task 3.3
+                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Completed);
+
+                Logger.LogInformation("病案已完成");
+                await ShowSuccessMessageAsync("病案已完成");
+
+                // 3. 返回患者选择界面
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "完成病案失败");
+                await ShowErrorMessageAsync($"完成失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 处理普通下一步流程
+        /// Issue #1794: 从ExecuteNextStepAsync提取
+        /// </summary>
+        private async Task ProcessNormalNextStepAsync()
+        {
             try
             {
                 SetIsBusy(true, "正在处理...");
 
-                // 1. 验证当前步骤
-                if (CurrentStepViewModel is IValidatable validatable)
+                // 1. 验证并保存当前步骤
+                if (!await ValidateAndSaveCurrentStepAsync())
                 {
-                    Logger.LogInformation("验证Step {CurrentStep}数据", CurrentStep);
-                    if (!validatable.Validate())
-                    {
-                        Logger.LogWarning("Step {CurrentStep}验证失败：{Message}", CurrentStep, validatable.ValidationMessage);
-                        await ShowErrorMessageAsync(validatable.ValidationMessage);
-                        return;
-                    }
+                    return;
                 }
 
-                // 2. 保存当前步骤
-                if (CurrentStepViewModel is ISaveable saveable)
-                {
-                    Logger.LogInformation("保存Step {CurrentStep}数据", CurrentStep);
-                    var saveResult = await saveable.SaveAsync();
-                    if (!saveResult)
-                    {
-                        Logger.LogWarning("Step {CurrentStep}保存失败", CurrentStep);
-                        await ShowErrorMessageAsync("保存失败，请检查数据后重试");
-                        return;
-                    }
-                }
-
-                // 3. 跳转到下一步
+                // 2. 跳转到下一步
                 var nextStep = (ConsultationStep)((int)CurrentStep + 1);
                 Logger.LogInformation("从 {CurrentStep} 前进到 {NextStep}", CurrentStep, nextStep);
                 NavigateToStep(nextStep);
