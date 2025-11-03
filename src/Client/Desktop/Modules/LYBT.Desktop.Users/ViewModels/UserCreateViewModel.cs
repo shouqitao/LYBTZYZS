@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region 服务依赖
 
-        private readonly IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
 
         #endregion
 
@@ -152,7 +154,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserCreateViewModel(
-            IUserRepository userRepository,
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -160,7 +162,8 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -202,11 +205,11 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = Status
                 };
 
-                // 调用 Repository 创建用户
-                var createdUser = await _userRepository.CreateAsync(createDto);
-                if (createdUser != null)
+                // Issue #1785: 使用CommandHandler创建用户
+                var result = await _commandHandler.CreateAsync(createDto);
+                if (result.success && result.user != null)
                 {
-                    Logger.LogInformation("用户创建成功: {UserName} (ID: {UserId})", createdUser.UserName, createdUser.Id);
+                    Logger.LogInformation("用户创建成功: {UserName} (ID: {UserId})", result.user.UserName, result.user.Id);
 
                     // Issue #1262: 清理状态并导航
                     IsBusy = false;
@@ -214,7 +217,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                     // 显示成功消息
                     System.Windows.MessageBox.Show(
-                        $"用户 '{createdUser.UserName}' 创建成功！\n真实姓名：{createdUser.RealName}",
+                        $"用户 '{result.user.UserName}' 创建成功！\n真实姓名：{result.user.RealName}",
                         "创建成功",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
@@ -225,8 +228,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 else
                 {
                     IsBusy = false;
-                    ErrorMessage = "创建用户失败: Repository 返回 null";
-                    Logger.LogError("创建用户失败: Repository 返回 null");
+                    ErrorMessage = result.errorMessage ?? "创建用户失败";
+                    Logger.LogError("创建用户失败：{ErrorMessage}", result.errorMessage);
                     System.Windows.MessageBox.Show(ErrorMessage, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
