@@ -1,8 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Herbs.Interfaces; // Issue #1786: 为HerbSelectionDialogViewModel提供Herb查询功能
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common; // Issue #1786: 为ApiResponse和PagedResult添加命名空间
+using LYBT.Shared.Models.Contracts.Herbs; // Issue #1786: 为Herb查询添加DTO命名空间
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -21,6 +23,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
     {
         private readonly IPrescriptionApi _prescriptionApi;
         private readonly IMedicalCaseRepository _medicalCaseRepository;
+        private readonly IHerbRepository _herbRepository; // Issue #1786: 为HerbSelectionDialogViewModel提供Herb查询功能
         private readonly ILogger<PrescriptionDataManager> _logger;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILoggerFactory _loggerFactory;
@@ -31,6 +34,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         public PrescriptionDataManager(
             IPrescriptionApi prescriptionApi,
             IMedicalCaseRepository medicalCaseRepository,
+            IHerbRepository herbRepository, // Issue #1786: 为HerbSelectionDialogViewModel提供Herb查询功能
             ILogger<PrescriptionDataManager> logger,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -40,6 +44,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
         {
             _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
+            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository)); // Issue #1786
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -319,6 +324,27 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             {
                 _logger.LogError(ex, "更新处方失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// 分页获取药材列表（Repository方法）
+        /// Issue #1786: 为HerbSelectionDialogViewModel提供Herb查询功能
+        /// </summary>
+        public virtual async Task<PagedResult<HerbDto>> GetHerbsPagedAsync(int page = 1, int pageSize = 100)
+        {
+            try
+            {
+                _logger.LogDebug("分页获取药材列表: Page={Page}, PageSize={PageSize}", page, pageSize);
+                var result = await _herbRepository.GetPagedAsync(page, pageSize);
+                _logger.LogInformation("药材列表加载成功: TotalCount={TotalCount}, CurrentPage={Page}",
+                    result.TotalCount, page);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页获取药材列表失败: Page={Page}", page);
+                throw;
             }
         }
 

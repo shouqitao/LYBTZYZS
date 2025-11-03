@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +19,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IHerbRepository _herbRepository;
+        // Issue #1786: 使用DataManager替代直接Repository访问
+        private readonly PrescriptionDataManager _dataManager;
 
         #endregion
 
@@ -161,15 +162,16 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public HerbSelectionDialogViewModel(
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IHerbRepository herbService,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _herbRepository = herbService ?? throw new ArgumentNullException(nameof(herbService));
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -259,7 +261,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载药材列表...");
 
-                var pagedData = await _herbRepository.GetPagedAsync(1, 1000);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var pagedData = await _dataManager.GetHerbsPagedAsync(1, 1000);
                 AvailableHerbs.Clear();
                 foreach (var item in pagedData.Items)
                 {
@@ -288,7 +291,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                var allHerbs = await _herbRepository.GetPagedAsync(1, 1000);
+                // Issue #1786: 使用DataManager包装Repository方法
+                var allHerbs = await _dataManager.GetHerbsPagedAsync(1, 1000);
                 var filtered = allHerbs.Items.AsEnumerable();
 
                 // 按关键字筛选
