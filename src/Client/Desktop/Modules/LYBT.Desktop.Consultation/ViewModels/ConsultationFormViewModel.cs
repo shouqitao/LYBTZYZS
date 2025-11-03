@@ -1,4 +1,5 @@
 
+using LYBT.Desktop.Consultation.Components; // Issue #1784: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -26,8 +27,10 @@ namespace LYBT.Desktop.Consultation.ViewModels
     {
         #region 服务依赖
 
-        // Issue #1563: 删除IConsultationRepository依赖，使用聚合根Repository
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
+        // Issue #1784: 使用Component替代Repository依赖
+        private readonly ConsultationDataManager _dataManager;
+        private readonly ConsultationCommandHandler _commandHandler;
+        private readonly IMedicalCaseRepository _medicalCaseRepository; // 保留用于CompleteStep1API调用
 
         #endregion
 
@@ -302,6 +305,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         /// <summary>
         /// 保存诊断数据（创建Consultation实体）
+        /// Issue #1784: 使用DataManager替代直接Repository访问
         /// </summary>
         public async Task<bool> SaveAsync()
         {
@@ -330,31 +334,23 @@ namespace LYBT.Desktop.Consultation.ViewModels
                     return false;
                 }
 
-                // Issue #1563: 构建ConsultationInputDto（使用聚合根方法）
-                // ConsultationInputDto只包含诊断信息字段，不需要PatientId/UserId等关联字段
-                // 这些信息已经在MedicalCase聚合根中，Server端通过MedicalCaseId获取
-                var updateDto = new ConsultationInputDto
+                // Issue #1784: 从ViewModel同步数据到DataManager
+                SyncToDataManager();
+
+                // Issue #1784: 使用DataManager保存
+                var success = await _dataManager.SaveAsync();
+
+                if (success)
                 {
-                    Id = MedicalCaseId, // Consultation使用与MedicalCase相同的ID（共享主键）
-                    ChiefComplaint = ChiefComplaint.Trim(),
-                    PresentIllness = string.IsNullOrWhiteSpace(PresentIllness) ? null : PresentIllness.Trim(),
-                    Inspection = string.IsNullOrWhiteSpace(Inspection) ? null : Inspection.Trim(),
-                    AuscultationOlfaction = string.IsNullOrWhiteSpace(AuscultationOlfaction) ? null : AuscultationOlfaction.Trim(),
-                    Inquiry = string.IsNullOrWhiteSpace(Inquiry) ? null : Inquiry.Trim(),
-                    Palpation = string.IsNullOrWhiteSpace(Palpation) ? null : Palpation.Trim(),
-                    TCMDiagnosis = TCMDiagnosis.Trim(),
-                    TreatmentPrinciple = string.IsNullOrWhiteSpace(TreatmentPrinciple) ? null : TreatmentPrinciple.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim()
-                };
-
-                // Issue #1563: 使用聚合根Repository方法更新Consultation
-                var updatedDto = await _medicalCaseRepository.UpdateConsultationAsync(MedicalCaseId, updateDto);
-
-                Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", updatedDto.Id);
-
-                // Issue #1562 Phase 1: 已删除工作流事件发布调用
-
-                return true;
+                    Logger.LogInformation("诊断数据保存成功，ConsultationId: {ConsultationId}", MedicalCaseId);
+                    return true;
+                }
+                else
+                {
+                    Logger.LogError("DataManager保存失败");
+                    ValidationMessage = "保存失败，请检查数据有效性";
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -384,7 +380,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         #region 构造函数
 
         public ConsultationFormViewModel(
-            IMedicalCaseRepository medicalCaseRepository,
+            ConsultationDataManager dataManager, // Issue #1784: 注入DataManager
+            ConsultationCommandHandler commandHandler, // Issue #1784: 注入CommandHandler
+            IMedicalCaseRepository medicalCaseRepository, // 保留用于CompleteStep1API
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -392,7 +390,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1563 + Issue #1607: 只注入聚合根Repository
+            // Issue #1784: 注入Component
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
 
             // 初始化命令
@@ -416,6 +416,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         /// <summary>
         /// 清空表单
+        /// Issue #1784: 使用CommandHandler替代手动清空字段
         /// </summary>
         private void ExecuteClearForm()
         {
@@ -423,16 +424,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 Logger.LogInformation("执行清空表单");
 
-                // 清空所有字段
-                ChiefComplaint = string.Empty;
-                PresentIllness = string.Empty;
-                Inspection = string.Empty;
-                AuscultationOlfaction = string.Empty;
-                Inquiry = string.Empty;
-                Palpation = string.Empty;
-                TCMDiagnosis = string.Empty;
-                TreatmentPrinciple = string.Empty;
-                Remark = string.Empty;
+                // Issue #1784: 使用CommandHandler清空表单
+                _commandHandler.ClearForm();
+
+                // 从DataManager同步清空后的数据到ViewModel
+                SyncFromDataManager();
 
                 ValidationMessage = string.Empty;
 
@@ -575,8 +571,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// <summary>
         /// 导航到当前视图时调用
         /// Issue #1557 Phase 3: 接收MedicalCaseFlowViewModel传来的MedicalCaseId和CurrentPatient
+        /// Issue #1784: 初始化DataManager
         /// </summary>
-        public override void OnNavigatedTo(NavigationContext navigationContext)
+        public override async void OnNavigatedTo(NavigationContext navigationContext)
         {
             base.OnNavigatedTo(navigationContext);
 
@@ -588,6 +585,16 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 {
                     Logger.LogInformation("接收到MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     MedicalCaseId = medicalCaseId;
+
+                    // Issue #1784: 初始化DataManager
+                    _dataManager.MedicalCaseId = medicalCaseId;
+                    await _dataManager.InitializeAsync(medicalCaseId);
+
+                    // 从DataManager同步数据到ViewModel属性
+                    if (_dataManager.Current != null)
+                    {
+                        SyncFromDataManager();
+                    }
                 }
 
                 // 接收CurrentPatient参数
@@ -602,6 +609,41 @@ namespace LYBT.Desktop.Consultation.ViewModels
             {
                 Logger.LogError(ex, "导航到ConsultationFormView时发生异常");
             }
+        }
+
+        /// <summary>
+        /// Issue #1784: 从DataManager同步数据到ViewModel
+        /// </summary>
+        private void SyncFromDataManager()
+        {
+            if (_dataManager.Current == null) return;
+
+            var consultation = _dataManager.Current;
+            ChiefComplaint = consultation.ChiefComplaint ?? string.Empty;
+            PresentIllness = consultation.PresentIllness ?? string.Empty;
+            Inspection = consultation.Inspection ?? string.Empty;
+            AuscultationOlfaction = consultation.AuscultationOlfaction ?? string.Empty;
+            Inquiry = consultation.Inquiry ?? string.Empty;
+            Palpation = consultation.Palpation ?? string.Empty;
+            TCMDiagnosis = consultation.TCMDiagnosis ?? string.Empty;
+            TreatmentPrinciple = consultation.TreatmentPrinciple ?? string.Empty;
+            Remark = consultation.Remark ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Issue #1784: 从ViewModel同步数据到DataManager
+        /// </summary>
+        private void SyncToDataManager()
+        {
+            _dataManager.UpdateField(nameof(ConsultationDto.ChiefComplaint), ChiefComplaint);
+            _dataManager.UpdateField(nameof(ConsultationDto.PresentIllness), PresentIllness);
+            _dataManager.UpdateField(nameof(ConsultationDto.Inspection), Inspection);
+            _dataManager.UpdateField(nameof(ConsultationDto.AuscultationOlfaction), AuscultationOlfaction);
+            _dataManager.UpdateField(nameof(ConsultationDto.Inquiry), Inquiry);
+            _dataManager.UpdateField(nameof(ConsultationDto.Palpation), Palpation);
+            _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), TCMDiagnosis);
+            _dataManager.UpdateField(nameof(ConsultationDto.TreatmentPrinciple), TreatmentPrinciple);
+            _dataManager.UpdateField(nameof(ConsultationDto.Remark), Remark);
         }
 
         #endregion

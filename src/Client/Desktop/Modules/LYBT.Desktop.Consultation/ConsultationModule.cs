@@ -23,9 +23,14 @@ namespace LYBT.Desktop.Consultation
             // 所有Write操作通过MedicalCaseRepository聚合根
             // Read操作使用IConsultationApi
 
+            // Issue #1784: 注册Components（Epic #1773 Component-Based架构）
+            containerRegistry.Register<Components.ConsultationDataManager>();
+            containerRegistry.Register<Components.ConsultationCommandHandler>();
+            containerRegistry.Register<Components.ConsultationValidator>();
+
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.ConsultationManagementViewModel>();  // Issue #1607: 已重构
-            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607: 已重构 (Issue #1557: 看诊流程Step 2)
+            containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607, #1784: 已重构使用Components (Issue #1557: 看诊流程Step 2)
             // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
