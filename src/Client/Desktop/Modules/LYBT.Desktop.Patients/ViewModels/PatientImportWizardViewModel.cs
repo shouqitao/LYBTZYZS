@@ -1,4 +1,3 @@
-﻿using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -7,9 +6,7 @@ using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
 using LYBT.Desktop.Patients.Models;
-using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
-using LYBT.Shared.Models.Contracts.Patients;
-using LYBT.Shared.Models.Enums;
+using LYBT.Desktop.Patients.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Prism.Commands;
@@ -21,14 +18,15 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// <summary>
     /// 患者Excel导入向导视图模型 - Phase 2模块化架构
     /// Issue #1114 - 直接使用Repository，去除Service层
+    /// Issue #1790 - 拆分为ViewModel+Executor+DataMapper三层架构
     /// </summary>
     public class PatientImportWizardViewModel : BindableBase, IDisposable
     {
 
         #region Fields
 
-        // Issue #1788: 使用CommandHandler替代直接Repository访问
-        private readonly PatientCommandHandler _commandHandler;
+        // Issue #1790: 注入Executor处理导入逻辑
+        private readonly PatientImportExecutor _importExecutor;
         private readonly IExcelParserService _excelParserService;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
 
@@ -36,7 +34,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         private string _selectedFilePath = string.Empty;
         private DataTable? _previewData;
         private ImportValidationResult? _validationResult;
-        private BackgroundWorker? _importWorker;
         private ImportProgressInfo _progressInfo = new();
         private bool _isImporting = false;
         private bool _isLoading = false;
@@ -216,17 +213,21 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Constructor
 
-        // Issue #1788: 注入CommandHandler替代Repository
+        // Issue #1790: 注入PatientImportExecutor替代BackgroundWorker
         // Issue #1781 Task 8 Phase 1: 注入ExcelParserService
         public PatientImportWizardViewModel(
-            PatientCommandHandler commandHandler,
+            PatientImportExecutor importExecutor,
             IExcelParserService excelParserService,
             ILogger<PatientImportWizardViewModel> logger)
         {
-            // Issue #1788: 注入CommandHandler
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            // Issue #1790: 注入Executor
+            _importExecutor = importExecutor ?? throw new ArgumentNullException(nameof(importExecutor));
             _excelParserService = excelParserService;
             _logger = logger;
+
+            // 订阅Executor事件
+            _importExecutor.ProgressChanged += OnImportProgressChanged;
+            _importExecutor.ImportCompleted += OnImportCompleted;
 
             // 初始化命令
             NextCommand = new DelegateCommand(ExecuteNext, CanExecuteNext);
@@ -236,9 +237,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             SelectFileCommand = new DelegateCommand(ExecuteSelectFile);
             StartImportCommand = new DelegateCommand(ExecuteStartImport, CanExecuteStartImport);
             CancelImportCommand = new DelegateCommand(ExecuteCancelImport, CanExecuteCancelImport);
-
-            // 初始化BackgroundWorker
-            InitializeImportWorker();
 
             // 更新初始状态
             UpdateStepStyles();
@@ -310,7 +308,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (IsImporting)
             {
-                _importWorker?.CancelAsync();
+                _importExecutor.CancelImport();
             }
 
             // 触发取消事件，让父窗口处理关闭逻辑
@@ -366,10 +364,10 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void ExecuteStartImport()
         {
-            if (ValidationResult != null && ValidationResult.IsValid && _importWorker != null)
+            if (ValidationResult != null && ValidationResult.IsValid)
             {
                 IsImporting = true;
-                _importWorker.RunWorkerAsync(PreviewData);
+                _importExecutor.StartImport(PreviewData);
                 UpdateButtonStates();
             }
         }
@@ -381,7 +379,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private void ExecuteCancelImport()
         {
-            _importWorker?.CancelAsync();
+            _importExecutor.CancelImport();
         }
 
         private bool CanExecuteCancelImport()
@@ -392,19 +390,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #endregion Command Implementations
 
         #region Private Methods
-
-        private void InitializeImportWorker()
-        {
-            _importWorker = new BackgroundWorker
-            {
-                WorkerReportsProgress = true,
-                WorkerSupportsCancellation = true
-            };
-
-            _importWorker.DoWork += ImportWorker_DoWork;
-            _importWorker.ProgressChanged += ImportWorker_ProgressChanged;
-            _importWorker.RunWorkerCompleted += ImportWorker_RunWorkerCompleted;
-        }
 
         private void UpdateStepStyles()
         {
@@ -523,8 +508,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        // Issue #1781 Task 8 Phase 1: ValidateImportData方法已迁移到ExcelParserService
-
 #pragma warning disable CS1998 // Async method lacks 'await' operators
         private async Task DownloadTemplateAsync(string filePath)
 #pragma warning restore CS1998
@@ -593,374 +576,59 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #endregion Step Content Creation
 
-        #region BackgroundWorker Events
-
-        private async void ImportWorker_DoWork(object? sender, DoWorkEventArgs e)
-        {
-            if (e.Argument is not DataTable dataTable || _importWorker == null)
-            {
-                return;
-            }
-
-            var worker = _importWorker;
-            var successCount = 0;
-            var failCount = 0;
-            var skipCount = 0;
-            var totalCount = dataTable.Rows.Count;
-            var errors = new List<string>();
-
-            try
-            {
-                for (int i = 0; i < dataTable.Rows.Count; i++)
-                {
-                    if (worker.CancellationPending)
-                    {
-                        e.Cancel = true;
-                        return;
-                    }
-
-                    var row = dataTable.Rows[i];
-                    var currentName = row["姓名"]?.ToString()?.Trim() ?? $"第{i + 2}行";
-
-                    var rowResult = await ProcessSingleImportRow(row, i, dataTable.Columns);
-                    
-                    successCount += rowResult.Success ? 1 : 0;
-                    failCount += rowResult.Failed ? 1 : 0;
-                    skipCount += rowResult.Skipped ? 1 : 0;
-                    
-                    if (rowResult.Error != null)
-                        errors.Add(rowResult.Error);
-
-                    ReportImportProgress(worker, i, totalCount, currentName);
-                    await Task.Delay(50);
-                }
-
-                e.Result = CreateImportResult(successCount, failCount, skipCount, errors);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导入过程中发生严重错误");
-                e.Result = CreateImportResult(successCount, failCount, skipCount, errors, ex.Message);
-            }
-        }
+        #region Event Handlers
 
         /// <summary>
-        /// 处理单行导入数据
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装单行处理逻辑
+        /// 处理导入进度变化
+        /// Issue #1790: 从Executor接收进度更新
         /// </summary>
-        private async Task<ImportRowResult> ProcessSingleImportRow(DataRow row, int rowIndex, DataColumnCollection columns)
+        private void OnImportProgressChanged(object? sender, ImportProgressInfo progress)
         {
-            var currentName = row["姓名"]?.ToString()?.Trim() ?? $"第{rowIndex + 2}行";
-
-            try
-            {
-                if (IsImportRowEmpty(row, columns))
-                {
-                    _logger.LogInformation($"跳过空行: 第{rowIndex + 2}行");
-                    return ImportRowResult.CreateSkip();
-                }
-
-                var validationError = ValidateImportRequiredFields(row, rowIndex);
-                if (validationError != null)
-                {
-                    _logger.LogWarning(validationError);
-                    return ImportRowResult.CreateFail(validationError);
-                }
-
-                var patientDto = CreatePatientDtoFromRow(row);
-                var result = await _commandHandler.CreatePatientAsync(patientDto);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    _logger.LogInformation($"成功导入患者: {currentName} (第{rowIndex + 2}行)");
-                    return ImportRowResult.CreateSuccess();
-                }
-                else
-                {
-                    var error = $"第{rowIndex + 2}行 ({currentName})：创建失败 - {result.ErrorMessage}";
-                    _logger.LogWarning(error);
-                    return ImportRowResult.CreateFail(error);
-                }
-            }
-            catch (Exception ex)
-            {
-                var error = $"第{rowIndex + 2}行 ({currentName})：处理数据时发生异常 - {ex.Message}";
-                _logger.LogError(ex, $"处理第{rowIndex + 2}行数据时发生错误: {currentName}");
-                return ImportRowResult.CreateFail(error);
-            }
-        }
-
-        /// <summary>
-        /// 检查导入行是否为空
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装空行检查逻辑
-        /// </summary>
-        private static bool IsImportRowEmpty(DataRow row, DataColumnCollection columns)
-        {
-            foreach (DataColumn col in columns)
-            {
-                if (!string.IsNullOrWhiteSpace(row[col]?.ToString()))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 验证导入行的必需字段
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装必需字段验证逻辑
-        /// </summary>
-        private static string? ValidateImportRequiredFields(DataRow row, int rowIndex)
-        {
-            var name = row["姓名"]?.ToString()?.Trim();
-            var gender = row["性别"]?.ToString()?.Trim();
-
-            if (string.IsNullOrEmpty(name))
-            {
-                return $"第{rowIndex + 2}行：姓名不能为空";
-            }
-
-            if (string.IsNullOrEmpty(gender) || (gender != "男" && gender != "女" && gender != "未知"))
-            {
-                return $"第{rowIndex + 2}行 ({name})：性别格式错误，应为'男'、'女'或'未知'";
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 从DataRow创建PatientInputDto
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装DTO创建逻辑
-        /// </summary>
-        private PatientInputDto CreatePatientDtoFromRow(DataRow row)
-        {
-            var name = row["姓名"]?.ToString()?.Trim() ?? string.Empty;
-            var gender = row["性别"]?.ToString()?.Trim() ?? string.Empty;
-            var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
-
-            return new PatientInputDto
-            {
-                Name = name,
-                Gender = ParseGender(gender),
-                BirthDate = age > 0 ? DateTime.Today.AddYears(-age) : null,
-                PhoneNumber = row["电话"]?.ToString()?.Trim(),
-                IdNumber = row["证件号"]?.ToString()?.Trim(),
-                Address = row["地址"]?.ToString()?.Trim(),
-                AllergyHistory = row["过敏史"]?.ToString()?.Trim()
-            };
-        }
-
-        /// <summary>
-        /// 报告导入进度
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装进度报告逻辑
-        /// </summary>
-        private static void ReportImportProgress(BackgroundWorker worker, int currentIndex, int totalCount, string currentName)
-        {
-            var progress = new ImportProgressInfo
-            {
-                PercentComplete = (int)((double)(currentIndex + 1) / totalCount * 100),
-                ProcessedCount = currentIndex + 1,
-                TotalCount = totalCount,
-                CurrentItem = currentName,
-                Message = $"正在导入患者数据... ({currentIndex + 1}/{totalCount})"
-            };
-
-            worker.ReportProgress(progress.PercentComplete, progress);
-        }
-
-        /// <summary>
-        /// 创建导入结果对象
-        /// Issue #1789: 从ImportWorker_DoWork提取，封装结果创建逻辑
-        /// </summary>
-        private static object CreateImportResult(int successCount, int failCount, int skipCount, List<string> errors, string? errorMessage = null)
-        {
-            var result = new
-            {
-                SuccessCount = successCount,
-                FailCount = failCount,
-                SkipCount = skipCount,
-                Errors = errors,
-                TotalProcessed = successCount + failCount + skipCount
-            };
-
-            if (errorMessage != null)
-            {
-                return new
-                {
-                    result.SuccessCount,
-                    result.FailCount,
-                    result.SkipCount,
-                    Error = errorMessage,
-                    result.Errors,
-                    result.TotalProcessed
-                };
-            }
-
-            return result;
-        }
-
-
-        /// <summary>
-        /// 导入行处理结果
-        /// Issue #1789: ProcessSingleImportRow的返回类型
-        /// </summary>
-        private readonly struct ImportRowResult
-        {
-            public bool Success { get; }
-            public bool Failed { get; }
-            public bool Skipped { get; }
-            public string? Error { get; }
-
-            private ImportRowResult(bool success, bool failed, bool skipped, string? error)
-            {
-                Success = success;
-                Failed = failed;
-                Skipped = skipped;
-                Error = error;
-            }
-
-            public static ImportRowResult CreateSuccess() => new(true, false, false, null);
-            public static ImportRowResult CreateFail(string error) => new(false, true, false, error);
-            public static ImportRowResult CreateSkip() => new(false, false, true, null);
-        }
-
-        private void ImportWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
-        {
-            if (e.UserState is ImportProgressInfo progress)
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 ProgressInfo = progress;
-            }
+            });
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators
-        private async void ImportWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
-#pragma warning restore CS1998
+        /// <summary>
+        /// 处理导入完成
+        /// Issue #1790: 从Executor接收完成通知
+        /// </summary>
+        private void OnImportCompleted(object? sender, ImportCompletedEventArgs e)
         {
-            IsImporting = false;
-            UpdateButtonStates();
-
-            if (e.Cancelled)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("导入操作已取消\n已处理的数据未被保存。", "导入取消", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else if (e.Error != null)
-            {
-                MessageBox.Show($"导入过程中发生严重错误:\n{e.Error.Message}\n\n请检查Excel文件格式是否正确，或联系技术支持。", "导入错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            else if (e.Result is { } result)
-            {
-                var successCount = (int)(result.GetType().GetProperty("SuccessCount")?.GetValue(result) ?? 0);
-                var failCount = (int)(result.GetType().GetProperty("FailCount")?.GetValue(result) ?? 0);
-                var skipCount = (int)(result.GetType().GetProperty("SkipCount")?.GetValue(result) ?? 0);
-                var totalProcessed = (int)(result.GetType().GetProperty("TotalProcessed")?.GetValue(result) ?? 0);
-                var errors = result.GetType().GetProperty("Errors")?.GetValue(result) as List<string> ?? new List<string>();
-                var generalError = result.GetType().GetProperty("Error")?.GetValue(result) as string;
+                IsImporting = false;
+                UpdateButtonStates();
 
-                // 构建详细的结果消息
-                var messageBuilder = new System.Text.StringBuilder();
-                messageBuilder.AppendLine("患者数据导入完成！");
-                messageBuilder.AppendLine();
-                messageBuilder.AppendLine($"总计处理：{totalProcessed} 条");
-                messageBuilder.AppendLine($"成功导入：{successCount} 条");
-                if (failCount > 0)
-                    messageBuilder.AppendLine($"导入失败：{failCount} 条");
-                if (skipCount > 0)
-                    messageBuilder.AppendLine($"跳过空行：{skipCount} 条");
-
-                // 如果有具体错误，显示前几个错误详情
-                if (errors.Count > 0)
-                {
-                    messageBuilder.AppendLine();
-                    messageBuilder.AppendLine("失败详情：");
-                    var errorCount = Math.Min(5, errors.Count); // 最多显示5个错误
-                    for (int i = 0; i < errorCount; i++)
-                    {
-                        messageBuilder.AppendLine($"• {errors[i]}");
-                    }
-
-                    if (errors.Count > 5)
-                    {
-                        messageBuilder.AppendLine($"• ...还有{errors.Count - 5}个错误，请查看日志获取详细信息");
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(generalError))
-                {
-                    messageBuilder.AppendLine();
-                    messageBuilder.AppendLine($"其他错误：{generalError}");
-                }
-
-                var message = messageBuilder.ToString();
-
-                // 根据结果选择对话框类型
-                if (successCount > 0 && failCount == 0)
-                {
-                    // 完全成功
-                    MessageBox.Show(message, "导入成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else if (successCount > 0 && failCount > 0)
-                {
-                    // 部分成功
-                    MessageBox.Show(message, "导入部分成功", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else if (successCount == 0 && failCount > 0)
-                {
-                    // 完全失败
-                    MessageBox.Show(message, "导入失败", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                else
-                {
-                    // 异常情况
-                    MessageBox.Show(message, "导入结果", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                MessageBox.Show(e.Message, e.Title, MessageBoxButton.OK, e.MessageType);
 
                 // 只有在有成功导入的情况下才触发刷新事件
-                if (successCount > 0)
+                if (e.SuccessCount > 0)
                 {
                     ImportCompleted?.Invoke(this, EventArgs.Empty);
                 }
-            }
+            });
         }
 
-        #endregion BackgroundWorker Events
+        #endregion Event Handlers
 
-        #region Helper Methods
-
-        private Gender ParseGender(string? genderText)
-        {
-            return genderText?.Trim() switch
-            {
-                "男" => Gender.Male,
-                "女" => Gender.Female,
-                "未知" => Gender.Unknown,
-                _ => Gender.Unknown
-            };
-        }
-
-        private int? ParseAge(string? ageText)
-        {
-            if (int.TryParse(ageText, out var age) && age > 0 && age <= 150)
-            {
-                return age;
-            }
-
-            return null;
-        }
+        #region Dispose
 
         public void Dispose()
         {
-            // 清理 BackgroundWorker
-            if (_importWorker != null)
-            {
-                _importWorker.Dispose();
-                _importWorker = null;
-            }
+            // 取消订阅事件
+            _importExecutor.ProgressChanged -= OnImportProgressChanged;
+            _importExecutor.ImportCompleted -= OnImportCompleted;
+
+            // 清理 Executor
+            _importExecutor?.Dispose();
 
             // 清理 DataTable
             _previewData?.Dispose();
             _previewData = null;
         }
 
-        #endregion Helper Methods
+        #endregion Dispose
     }
 }

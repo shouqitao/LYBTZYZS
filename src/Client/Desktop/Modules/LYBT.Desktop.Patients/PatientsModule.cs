@@ -29,6 +29,10 @@ namespace LYBT.Desktop.Patients
             // Issue #1781 Task 8 Phase 1: 注册Excel解析服务（Singleton生命周期）
             containerRegistry.RegisterSingleton<IExcelParserService, ExcelParserService>();
 
+            // Issue #1790: 注册患者导入服务
+            containerRegistry.RegisterSingleton<Services.PatientImportDataMapper>();
+            containerRegistry.Register<Services.PatientImportExecutor>();
+
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<ViewModels.Components.PatientDataManager>();
             containerRegistry.Register<ViewModels.Components.PatientCommandHandler>();
