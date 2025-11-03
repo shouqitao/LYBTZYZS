@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
     {
         #region 服务依赖
 
-        private readonly IPrescriptionApi _prescriptionApi;
+        // Issue #1786: 使用DataManager替代直接Api访问
+        private readonly PrescriptionDataManager _dataManager;
 
         #endregion
 
@@ -120,7 +122,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public PrescriptionsMainViewModel(
-            IPrescriptionApi prescriptionApi,
+            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -128,7 +130,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _prescriptionApi = prescriptionApi ?? throw new ArgumentNullException(nameof(prescriptionApi));
+            // Issue #1786: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             ShowManagementCommand = new DelegateCommand(ShowManagement);
@@ -273,13 +276,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 Logger.LogInformation("开始加载处方统计数据");
 
-                // 加载总处方数 (Issue #1608: 使用IPrescriptionApi替代IPrescriptionRepository)
-                var totalResponse = await _prescriptionApi.GetPrescriptionsAsync(1, 1, null);
+                // Issue #1786: 使用DataManager包装Api方法
+                // 加载总处方数
+                var totalResponse = await _dataManager.GetPrescriptionsAsync(1, 1, null);
                 TotalPrescriptionsCount = totalResponse.Data?.TotalCount ?? 0;
 
                 // 加载今日处方数据
                 var today = DateTime.Today;
-                var todayResponse = await _prescriptionApi.GetPrescriptionsAsync(1, int.MaxValue, null);
+                var todayResponse = await _dataManager.GetPrescriptionsAsync(1, int.MaxValue, null);
                 var todayPrescriptions = todayResponse.Data?.Items
                     .Where(p => p.CreatedAt.Date == today)
                     .ToList() ?? new List<PrescriptionDto>();

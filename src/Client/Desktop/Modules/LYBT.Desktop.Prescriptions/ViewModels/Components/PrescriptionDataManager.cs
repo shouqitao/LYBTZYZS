@@ -2,6 +2,7 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Shared.Models.Contracts.Common; // Issue #1786: 为ApiResponse和PagedResult添加命名空间
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -253,6 +254,30 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// 分页获取处方列表（支持关键字查询）
+        /// Issue #1786: 为PrescriptionsMainViewModel提供统计查询功能
+        /// </summary>
+        public virtual async Task<ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null)
+        {
+            try
+            {
+                _logger.LogDebug("分页获取处方列表: Page={Page}, PageSize={PageSize}, Keyword={Keyword}", page, pageSize, keyword);
+                var response = await _prescriptionApi.GetPrescriptionsAsync(page, pageSize, keyword);
+                _logger.LogInformation("处方列表加载成功: TotalCount={TotalCount}, CurrentPage={Page}",
+                    response.Data?.TotalCount, page);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页获取处方列表失败: Page={Page}", page);
+                throw;
             }
         }
 
