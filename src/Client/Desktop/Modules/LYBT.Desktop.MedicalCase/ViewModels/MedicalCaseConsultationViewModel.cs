@@ -1,5 +1,6 @@
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     {
         #region 服务依赖
 
-        private readonly IMedicalCaseApi _medicalCaseApi;
+        // Issue #1783: 使用DataManager替代直接Api访问
+        private readonly MedicalCaseDataManager _dataManager;
 
         #endregion
 
@@ -60,7 +62,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 构造函数
 
         public MedicalCaseConsultationViewModel(
-            IMedicalCaseApi medicalCaseApi,
+            MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -68,7 +70,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
+            // Issue #1783: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
             SaveConsultationCommand = new DelegateCommand(
@@ -237,14 +240,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogInformation("开始加载病案数据: {MedicalCaseId}", medicalCaseId);
 
                 // 1. 获取病案详情
-                var response = await _medicalCaseApi.GetMedicalCaseByIdWithDetailsAsync(medicalCaseId);
-                if (!response.Success || response.Data == null)
+                // Issue #1783: 使用DataManager包装Repository方法（GetByIdWithDetailsAsync）
+                var medicalCase = await _dataManager.GetByIdWithDetailsAsync(medicalCaseId);
+                if (medicalCase == null)
                 {
-                    await ShowErrorMessageAsync($"加载病案失败: {response.Message}");
+                    await ShowErrorMessageAsync("加载病案失败：未找到病案数据");
                     return;
                 }
-
-                var medicalCase = response.Data;
 
                 // Task 3.5 (#1662): 保存PatientId和DoctorId用于暂存功能
                 _patientId = medicalCase.PatientId;
@@ -324,7 +326,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Remark = Remark
                 };
 
-                var response = await _medicalCaseApi.UpdateConsultationAsync(_medicalCaseId, request);
+                // Issue #1783: 使用DataManager业务命令方法
+                var response = await _dataManager.UpdateConsultationAsync(_medicalCaseId, request);
 
                 if (response.Success)
                 {
@@ -386,7 +389,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     NeedsPrescription = needsPrescription
                 };
 
-                var response = await _medicalCaseApi.SetPrescriptionFlagAsync(_medicalCaseId, request);
+                // Issue #1783: 使用DataManager业务命令方法
+                var response = await _dataManager.SetPrescriptionFlagAsync(_medicalCaseId, request);
 
                 if (response.Success)
                 {
@@ -452,7 +456,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     Status = "Draft" // 暂存状态
                 };
 
-                var response = await _medicalCaseApi.SaveAsDraftAsync(_medicalCaseId, request);
+                // Issue #1783: 使用DataManager业务命令方法
+                var response = await _dataManager.SaveAsDraftAsync(_medicalCaseId, request);
 
                 if (response.Success)
                 {

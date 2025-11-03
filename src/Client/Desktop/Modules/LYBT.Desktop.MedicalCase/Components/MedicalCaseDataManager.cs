@@ -1,3 +1,4 @@
+using LYBT.Desktop.Contracts.Api; // Issue #1783: 添加Api接口支持
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Common; // Issue #1783: 添加PagedResult支持
@@ -22,6 +23,7 @@ namespace LYBT.Desktop.MedicalCase.Components
         #region 字段
 
         private readonly IMedicalCaseRepository _repository;
+        private readonly IMedicalCaseApi _api; // Issue #1783: 添加Api依赖支持业务命令
         private readonly ILogger<MedicalCaseDataManager> _logger;
 
         // 聚合根数据
@@ -76,9 +78,11 @@ namespace LYBT.Desktop.MedicalCase.Components
 
         public MedicalCaseDataManager(
             IMedicalCaseRepository repository,
+            IMedicalCaseApi api, // Issue #1783: 注入Api支持业务命令
             ILogger<MedicalCaseDataManager> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _api = api ?? throw new ArgumentNullException(nameof(api));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -393,6 +397,258 @@ namespace LYBT.Desktop.MedicalCase.Components
             {
                 _logger.LogError(ex, "查询医案失败");
                 return null;
+            }
+        }
+
+        #endregion
+
+        #region 业务命令方法（API-based，聚合根边界）
+
+        /// <summary>
+        /// 更新诊疗信息（聚合根方法）
+        /// Issue #1783: 为ConsultationViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto request)
+        {
+            try
+            {
+                _logger.LogDebug("更新诊疗信息: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.UpdateConsultationAsync(medicalCaseId, request);
+                _logger.LogInformation("诊疗信息更新成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新诊疗信息失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 设置是否开处方标志（RadioBox变化时自动保存）
+        /// Issue #1783: 为ConsultationViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<MedicalCaseDto>> SetPrescriptionFlagAsync(
+            Guid medicalCaseId,
+            SetPrescriptionFlagRequest request)
+        {
+            try
+            {
+                _logger.LogDebug("设置处方标志: MedicalCaseId={MedicalCaseId}, NeedsPrescription={NeedsPrescription}",
+                    medicalCaseId, request.NeedsPrescription);
+                var response = await _api.SetPrescriptionFlagAsync(medicalCaseId, request);
+                _logger.LogInformation("处方标志设置成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "设置处方标志失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 暂存病案（保存当前状态为草稿）
+        /// Issue #1783: 为ConsultationViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
+            Guid medicalCaseId,
+            MedicalCaseUpdateDto request)
+        {
+            try
+            {
+                _logger.LogDebug("暂存病案: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.SaveAsDraftAsync(medicalCaseId, request);
+                _logger.LogInformation("病案暂存成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "暂存病案失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 完成辨证步骤（Step 1）
+        /// Issue #1783: 为工作流提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<ConsultationStepDto>> CompleteStep1Async(
+            Guid medicalCaseId,
+            CompleteStep1Request request)
+        {
+            try
+            {
+                _logger.LogDebug("完成辨证步骤: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.CompleteStep1Async(medicalCaseId, request);
+                _logger.LogInformation("辨证步骤完成: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成辨证步骤失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 重置诊疗步骤
+        /// Issue #1783: 为工作流提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse> ResetConsultationStepsAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("重置诊疗步骤: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.ResetConsultationStepsAsync(medicalCaseId);
+                _logger.LogInformation("诊疗步骤重置成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "重置诊疗步骤失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 清空处方内容（保留处方框架）
+        /// Issue #1783: 为工作流提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse> ClearPrescriptionAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("清空处方内容: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.ClearPrescriptionAsync(medicalCaseId);
+                _logger.LogInformation("处方清空成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清空处方失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 从配方导入处方
+        /// Issue #1783: 为工作流提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<PrescriptionDto>> ImportFormulaIntoPrescriptionAsync(
+            Guid medicalCaseId,
+            Guid formulaId)
+        {
+            try
+            {
+                _logger.LogDebug("从配方导入处方: MedicalCaseId={MedicalCaseId}, FormulaId={FormulaId}",
+                    medicalCaseId, formulaId);
+                var response = await _api.ImportFormulaIntoPrescriptionAsync(medicalCaseId, formulaId);
+                _logger.LogInformation("配方导入成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "配方导入失败: MedicalCaseId={MedicalCaseId}, FormulaId={FormulaId}",
+                    medicalCaseId, formulaId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 关闭病案（直接标记为Completed）
+        /// Issue #1783: 为工作流提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse> CloseCaseAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("关闭病案: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.CloseCaseAsync(medicalCaseId);
+                _logger.LogInformation("病案关闭成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "关闭病案失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 创建处方（API版本，用于聚合根场景）
+        /// Issue #1783: 为PrescriptionEditorViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<PrescriptionDto>> CreatePrescriptionViaApiAsync(
+            Guid medicalCaseId,
+            PrescriptionCreateDto request)
+        {
+            try
+            {
+                _logger.LogDebug("创建处方(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.CreatePrescriptionAsync(medicalCaseId, request);
+                _logger.LogInformation("处方创建成功(API): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建处方失败(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 更新处方（API版本，用于聚合根场景）
+        /// Issue #1783: 为PrescriptionEditorViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse<PrescriptionDto>> UpdatePrescriptionViaApiAsync(
+            Guid medicalCaseId,
+            PrescriptionUpdateDto request)
+        {
+            try
+            {
+                _logger.LogDebug("更新处方(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.UpdatePrescriptionAsync(medicalCaseId, request);
+                _logger.LogInformation("处方更新成功(API): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新处方失败(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 删除处方（API版本，用于聚合根场景）
+        /// Issue #1783: 为PrescriptionEditorViewModel提供业务命令
+        /// </summary>
+        public virtual async Task<ApiResponse> DeletePrescriptionViaApiAsync(Guid medicalCaseId)
+        {
+            try
+            {
+                _logger.LogDebug("删除处方(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.DeletePrescriptionAsync(medicalCaseId);
+                _logger.LogInformation("处方删除成功(API): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "删除处方失败(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
             }
         }
 
