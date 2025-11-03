@@ -47,23 +47,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
                 // 3. 显示打印对话框
                 var printDialog = new PrintDialog();
-
-                // 设置默认打印机
-                if (!string.IsNullOrEmpty(_defaultPrinterName))
-                {
-                    try
-                    {
-                        var printQueue = FindPrintQueue(_defaultPrinterName);
-                        if (printQueue != null)
-                        {
-                            printDialog.PrintQueue = printQueue;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "设置默认打印机失败: {PrinterName}", _defaultPrinterName);
-                    }
-                }
+                SetupDefaultPrinter(printDialog);
 
                 // 4. 用户确认打印
                 if (printDialog.ShowDialog() == true)
@@ -265,6 +249,42 @@ namespace LYBT.Desktop.Prescriptions.Services
         // ===== 私有辅助方法 =====
 
         /// <summary>
+        /// 映射处方药品项到打印模型
+        /// </summary>
+        private List<PrescriptionItemPrintDto> MapPrescriptionItems(IList<PrescriptionItemDto> items)
+        {
+            return items.Select((item, index) => new PrescriptionItemPrintDto
+            {
+                SequenceNumber = index + 1,
+                HerbName = item.HerbName,
+                Quantity = item.Quantity,
+                Unit = item.Unit
+            }).ToList();
+        }
+
+        /// <summary>
+        /// 设置默认打印机
+        /// </summary>
+        private void SetupDefaultPrinter(PrintDialog printDialog)
+        {
+            if (string.IsNullOrEmpty(_defaultPrinterName))
+                return;
+
+            try
+            {
+                var printQueue = FindPrintQueue(_defaultPrinterName);
+                if (printQueue != null)
+                {
+                    printDialog.PrintQueue = printQueue;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "设置默认打印机失败: {PrinterName}", _defaultPrinterName);
+            }
+        }
+
+        /// <summary>
         /// 将PrescriptionDto映射到PrescriptionPrintDto
         /// TODO: 需要依赖其他服务获取患者、医生、病例等信息
         /// </summary>
@@ -295,13 +315,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 TreatmentPrinciple = null,
 
                 // 处方内容
-                Items = prescription.Items.Select((item, index) => new PrescriptionItemPrintDto
-                {
-                    SequenceNumber = index + 1,
-                    HerbName = item.HerbName,
-                    Quantity = item.Quantity,
-                    Unit = item.Unit
-                }).ToList(),
+                Items = MapPrescriptionItems(prescription.Items),
 
                 DosageCount = prescription.DosageCount,
                 Usage = prescription.Usage ?? "水煎服，日一剂，分早晚服",
