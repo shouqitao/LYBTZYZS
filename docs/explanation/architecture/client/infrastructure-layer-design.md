@@ -718,6 +718,543 @@ public class DashboardViewModel
 
 ---
 
+### 2.6 组件化接口（Epic #1773）
+
+> **核心价值**：为组件化MVVM架构提供标准接口，统一ViewModel与组件的交互模式
+
+#### 2.6.1 设计理念
+
+Epic #1773引入**组件化MVVM架构模式**，将ViewModel的核心职责拆分为三个标准组件：
+
+| 组件接口 | 职责 | 生命周期 | 典型实现代码量 |
+|---------|------|---------|---------------|
+| **IDataManager<TDto>** | 数据CRUD、状态管理、变更检测 | Scoped | 150-350行 |
+| **ICommandHandler** | 命令处理、业务逻辑、事件发布 | Scoped | 120-400行 |
+| **IValidationService** | 集成FluentValidation、验证规则 | Singleton | - |
+
+**组件化覆盖率**：**75%** (6/8模块已完成组件化改造)
+
+**接口位置**：`src/Client/Desktop/Core/LYBT.Desktop.Infrastructure/Interfaces/Components/`
+
+---
+
+#### 2.6.2 IDataManager<TDto> - 数据管理器接口
+
+> **定位**：封装实体数据的CRUD操作和状态管理，实现数据逻辑与UI逻辑分离
+
+**接口定义**：
+
+```csharp
+/// <summary>
+/// 数据管理器接口 - 组件化MVVM架构核心接口
+/// Issue #1776 Task 3: 组件化基础设施搭建
+///
+/// 职责：
+/// 1. 实体数据的CRUD操作
+/// 2. 数据状态管理（变更检测）
+/// 3. 数据加载和保存逻辑封装
+///
+/// 设计原则：
+/// - 单一职责：仅负责数据管理，不涉及UI逻辑
+/// - 泛型设计：支持任意DTO类型
+/// - 异步优先：所有I/O操作使用async/await
+/// </summary>
+/// <typeparam name="TDto">实体DTO类型</typeparam>
+public interface IDataManager<TDto> where TDto : class
+{
+    /// <summary>当前实体数据</summary>
+    TDto? Current { get; }
+
+    /// <summary>是否有未保存的变更</summary>
+    bool HasChanges { get; }
+
+    /// <summary>初始化数据（加载现有数据或创建新数据）</summary>
+    /// <param name="entityId">实体ID（Guid.Empty表示创建新实体）</param>
+    Task InitializeAsync(Guid entityId);
+
+    /// <summary>保存数据（创建或更新）</summary>
+    /// <returns>保存是否成功</returns>
+    Task<bool> SaveAsync();
+
+    /// <summary>删除数据</summary>
+    /// <returns>删除是否成功</returns>
+    Task<bool> DeleteAsync();
+
+    /// <summary>重新加载数据</summary>
+    Task ReloadAsync();
+}
+```
+
+**典型实现示例**（PatientDataManager.cs，322行）：
+
+```csharp
+public class PatientDataManager
+{
+    private readonly IPatientRepository _patientRepository;
+    private readonly ILogger<PatientDataManager> _logger;
+
+    // 核心数据属性
+    public Guid PatientId { get; private set; }
+    public PatientDto? CurrentPatient { get; private set; }
+    private PatientDto? _originalPatient;
+    public bool IsNewPatient { get; private set; } = true;
+    public bool IsLoading { get; private set; }
+    public bool HasChanges { get; private set; }
+
+    // 数据初始化
+    public async Task InitializeAsync(Guid patientId)
+    {
+        IsLoading = true;
+        PatientId = patientId;
+
+        if (patientId == Guid.Empty)
+        {
+            IsNewPatient = true;
+            CurrentPatient = null;
+        }
+        else
+        {
+            await LoadExistingPatientAsync();
+        }
+
+        HasChanges = false;
+        IsLoading = false;
+    }
+
+    // 保存数据
+    public async Task<bool> SaveAsync()
+    {
+        var inputDto = ConvertToInputDto(CurrentPatient);
+
+        PatientDto? savedPatient;
+        if (IsNewPatient)
+        {
+            savedPatient = await _patientRepository.CreateAsync(inputDto);
+        }
+        else
+        {
+            savedPatient = await _patientRepository.UpdateAsync(inputDto);
+        }
+
+        if (savedPatient != null)
+        {
+            CurrentPatient = savedPatient;
+            _originalPatient = ClonePatient(savedPatient);
+            IsNewPatient = false;
+            HasChanges = false;
+            return true;
+        }
+
+        return false;
+    }
+}
+```
+
+**使用模式**（ViewModel集成）：
+
+```csharp
+public class PatientDetailViewModel : UnifiedViewModelBase
+{
+    private readonly PatientDataManager _dataManager;
+
+    // 属性委托给DataManager
+    public PatientDto? Patient => _dataManager.CurrentPatient;
+    public bool HasChanges => _dataManager.HasChanges;
+
+    // 导航时初始化
+    protected override async Task InitializeAsync(NavigationParameters parameters)
+    {
+        var patientId = parameters.GetValue<Guid>("PatientId");
+        await _dataManager.InitializeAsync(patientId);
+        RefreshProperties();
+    }
+}
+```
+
+**关键设计要点**：
+- ✅ **单一职责**：仅负责数据管理，不涉及UI状态或命令逻辑
+- ✅ **泛型设计**：通过IDataManager<TDto>支持任意实体类型
+- ✅ **变更检测**：通过_originalData副本检测HasChanges
+- ✅ **异步优先**：所有I/O操作使用async/await
+- ✅ **生命周期**：Scoped（每次导航创建新实例）
+
+---
+
+#### 2.6.3 ICommandHandler - 命令处理器接口
+
+> **定位**：封装业务命令执行逻辑，实现命令模式与业务规则解耦
+
+**接口定义**：
+
+```csharp
+/// <summary>
+/// 命令处理器接口 - 组件化MVVM架构核心接口
+/// Issue #1776 Task 3: 组件化基础设施搭建
+///
+/// 职责：
+/// 1. 处理业务命令（Save、Delete、Navigate等）
+/// 2. 封装业务规则和权限检查
+/// 3. 协调ViewModel的命令执行
+///
+/// 设计原则：
+/// - 命令模式：统一的命令执行接口
+/// - 业务封装：将业务逻辑从ViewModel抽离
+/// - 可扩展：支持自定义命令
+/// </summary>
+public interface ICommandHandler
+{
+    /// <summary>执行命令</summary>
+    /// <param name="commandName">命令名称（如："Save", "Delete", "Navigate"）</param>
+    /// <param name="parameter">命令参数（可选）</param>
+    /// <returns>命令执行是否成功</returns>
+    Task<bool> ExecuteAsync(string commandName, object? parameter = null);
+
+    /// <summary>检查命令是否可执行</summary>
+    /// <param name="commandName">命令名称</param>
+    /// <returns>命令是否可执行</returns>
+    bool CanExecute(string commandName);
+}
+```
+
+**典型实现示例**（PatientCommandHandler.cs，389行）：
+
+```csharp
+public class PatientCommandHandler
+{
+    private PatientDataManager _dataManager;
+    private PatientValidator _validator;
+
+    // 事件发布（跨组件通信）
+    public event Action? OnEditEnabled;
+    public event Action? OnEditCancelled;
+    public event Action? OnPatientSaved;
+    public event Action? OnPatientDeleted;
+
+    // 命令定义（Prism DelegateCommand）
+    public ICommand SaveCommand { get; }
+    public ICommand EditCommand { get; }
+    public ICommand DeleteCommand { get; }
+    public ICommand CancelEditCommand { get; }
+
+    public PatientCommandHandler(/* DI注入依赖 */)
+    {
+        // 初始化命令
+        SaveCommand = new DelegateCommand(
+            async () => await SavePatientAsync(),
+            () => CanSavePatient()
+        ).ObservesProperty(() => _dataManager.HasChanges);
+
+        EditCommand = new DelegateCommand(
+            () => EnableEdit(),
+            () => CanEdit()
+        );
+    }
+
+    // 设置依赖关系（从ViewModel注入）
+    public void SetDependencies(
+        PatientDataManager dataManager,
+        PatientValidator validator)
+    {
+        _dataManager = dataManager;
+        _validator = validator;
+    }
+
+    // 命令执行逻辑
+    private async Task SavePatientAsync()
+    {
+        try
+        {
+            // 1. 验证数据
+            var inputDto = ConvertToInputDto(_dataManager.CurrentPatient);
+            var validationResult = await _validator.ValidatePatientInputAsync(inputDto);
+
+            if (!_validator.IsValid(validationResult, out string errorMessage))
+            {
+                await ShowErrorMessageAsync($"数据验证失败: {errorMessage}");
+                return;
+            }
+
+            // 2. 保存数据
+            var success = await _dataManager.SaveAsync();
+
+            // 3. 发布事件
+            if (success)
+            {
+                OnPatientSaved?.Invoke();
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"保存失败: {ex.Message}");
+        }
+    }
+}
+```
+
+**使用模式**（ViewModel集成）：
+
+```csharp
+public class PatientDetailViewModel : UnifiedViewModelBase
+{
+    private readonly PatientCommandHandler _commandHandler;
+
+    // 命令委托给CommandHandler
+    public ICommand SaveCommand => _commandHandler.SaveCommand;
+    public ICommand EditCommand => _commandHandler.EditCommand;
+
+    public PatientDetailViewModel(
+        PatientDataManager dataManager,
+        PatientCommandHandler commandHandler,
+        /* ... */)
+    {
+        _commandHandler = commandHandler;
+
+        // 设置组件依赖
+        _commandHandler.SetDependencies(dataManager, _validator);
+
+        // 订阅组件事件
+        _commandHandler.OnPatientSaved += HandlePatientSaved;
+        _commandHandler.OnPatientDeleted += HandlePatientDeleted;
+    }
+
+    private async void HandlePatientSaved()
+    {
+        await ShowSuccessMessageAsync("患者信息保存成功");
+        RefreshProperties();
+    }
+}
+```
+
+**关键设计要点**：
+- ✅ **命令模式**：统一的命令执行接口（ExecuteAsync/CanExecute）
+- ✅ **业务封装**：业务规则和权限检查从ViewModel抽离
+- ✅ **事件驱动**：通过事件实现组件间通信（OnSaved, OnDeleted）
+- ✅ **依赖注入**：通过SetDependencies()设置DataManager和Validator
+- ✅ **生命周期**：Scoped（每次导航创建新实例）
+
+---
+
+#### 2.6.4 IValidationService - 验证服务接口
+
+> **定位**：统一的FluentValidation集成接口，支持泛型DTO验证
+
+**接口定义**：
+
+```csharp
+/// <summary>
+/// 验证服务接口 - 组件化MVVM架构核心接口
+/// Issue #1776 Task 3: 组件化基础设施搭建
+///
+/// 职责：
+/// 1. 提供统一的验证入口
+/// 2. 集成FluentValidation验证器
+/// 3. 支持泛型DTO验证
+///
+/// 设计原则：
+/// - 泛型设计：支持任意DTO类型验证
+/// - 异步优先：支持异步验证规则
+/// - 依赖注入：通过DI容器获取对应的Validator
+/// </summary>
+public interface IValidationService
+{
+    /// <summary>异步验证DTO对象</summary>
+    /// <typeparam name="T">DTO类型</typeparam>
+    /// <param name="dto">待验证的DTO对象</param>
+    /// <returns>FluentValidation验证结果</returns>
+    Task<ValidationResult> ValidateAsync<T>(T dto) where T : class;
+
+    /// <summary>同步验证DTO对象</summary>
+    /// <typeparam name="T">DTO类型</typeparam>
+    /// <param name="dto">待验证的DTO对象</param>
+    /// <returns>FluentValidation验证结果</returns>
+    ValidationResult Validate<T>(T dto) where T : class;
+
+    /// <summary>快速验证DTO对象（简化版本）</summary>
+    /// <typeparam name="T">DTO类型</typeparam>
+    /// <param name="dto">待验证的DTO对象</param>
+    /// <param name="errorMessage">验证失败时的错误信息</param>
+    /// <returns>验证是否通过</returns>
+    bool IsValid<T>(T dto, out string errorMessage) where T : class;
+}
+```
+
+**ValidationService实现类**（154行）：
+
+```csharp
+/// <summary>
+/// 验证服务实现 - 集成FluentValidation
+/// Issue #1776 Task 3: 组件化基础设施搭建
+///
+/// 职责：
+/// 1. 通过DI容器获取对应的Validator
+/// 2. 执行FluentValidation验证
+/// 3. 返回统一的ValidationResult
+///
+/// 设计原则：
+/// - 泛型设计：支持任意DTO类型
+/// - 依赖注入：通过IServiceProvider获取Validator
+/// - 容错处理：Validator不存在时返回成功（可选验证）
+/// </summary>
+public class ValidationService : IValidationService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ValidationService> _logger;
+
+    /// <summary>异步验证DTO对象</summary>
+    public async Task<ValidationResult> ValidateAsync<T>(T dto) where T : class
+    {
+        if (dto == null)
+        {
+            return new ValidationResult(new[]
+            {
+                new ValidationFailure(typeof(T).Name, "验证对象不能为空")
+            });
+        }
+
+        try
+        {
+            // 从DI容器获取对应的Validator
+            var validator = _serviceProvider.GetService(typeof(IValidator<T>)) as IValidator<T>;
+
+            if (validator == null)
+            {
+                // Validator不存在时，记录日志但返回成功（可选验证）
+                _logger.LogDebug("未找到类型 {TypeName} 的Validator，跳过验证", typeof(T).Name);
+                return new ValidationResult();
+            }
+
+            // 执行FluentValidation验证
+            var result = await validator.ValidateAsync(dto);
+            _logger.LogDebug("验证 {TypeName}: {IsValid}, 错误数: {ErrorCount}",
+                typeof(T).Name, result.IsValid, result.Errors.Count);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "验证 {TypeName} 时发生错误", typeof(T).Name);
+            return new ValidationResult(new[]
+            {
+                new ValidationFailure(typeof(T).Name, $"验证过程发生错误: {ex.Message}")
+            });
+        }
+    }
+
+    /// <summary>快速验证DTO对象（简化版本）</summary>
+    public bool IsValid<T>(T dto, out string errorMessage) where T : class
+    {
+        errorMessage = string.Empty;
+
+        if (dto == null)
+        {
+            errorMessage = "验证对象不能为空";
+            return false;
+        }
+
+        try
+        {
+            var result = Validate(dto);
+
+            if (result.IsValid)
+            {
+                return true;
+            }
+
+            // 组合所有错误信息
+            errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "快速验证 {TypeName} 时发生错误", typeof(T).Name);
+            errorMessage = $"验证过程发生错误: {ex.Message}";
+            return false;
+        }
+    }
+}
+```
+
+**依赖注入注册**：
+
+```csharp
+public class InfrastructureModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // 注册ValidationService（Singleton）
+        containerRegistry.RegisterSingleton<IValidationService, ValidationService>();
+
+        // 注册FluentValidation Validators（从Shared.Validators项目）
+        containerRegistry.RegisterValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
+    }
+}
+```
+
+**使用示例**（Component验证集成）：
+
+```csharp
+public class PatientValidator
+{
+    private readonly IValidationService _validationService;
+
+    public PatientValidator(IValidationService validationService)
+    {
+        _validationService = validationService;
+    }
+
+    public async Task<ValidationResult> ValidatePatientInputAsync(PatientInputDto inputDto)
+    {
+        // 使用ValidationService验证
+        return await _validationService.ValidateAsync(inputDto);
+    }
+
+    public bool IsValid(ValidationResult result, out string errorMessage)
+    {
+        if (result.IsValid)
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        // 组合所有错误信息
+        errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+        return false;
+    }
+}
+```
+
+**关键设计要点**：
+- ✅ **泛型设计**：通过ValidateAsync<T>支持任意DTO类型
+- ✅ **依赖注入**：通过IServiceProvider动态获取IValidator<T>
+- ✅ **容错处理**：Validator不存在时返回成功（可选验证）
+- ✅ **异步优先**：支持异步验证规则（如数据库唯一性检查）
+- ✅ **生命周期**：Singleton（全局单例）
+
+---
+
+#### 2.6.5 组件化接口总结
+
+**与Shared.Validators的关系**：
+
+| 层级 | 组件 | 职责 | 位置 |
+|-----|------|------|------|
+| **Infrastructure层** | IValidationService | 提供统一验证入口 | LYBT.Desktop.Infrastructure/Services |
+| **Shared层** | PatientInputDtoValidator | 定义验证规则（FluentValidation） | LYBT.Shared.Validators/Patients |
+| **Component层** | PatientValidator | 集成ValidationService和Shared Validator | LYBT.Desktop.Patients/ViewModels/Components |
+
+**架构约束**：
+- ✅ Infrastructure层：仅定义接口和通用实现，不包含业务验证规则
+- ✅ Shared层：定义验证规则（数据格式验证），不包含业务规则验证
+- ✅ Component层：集成ValidationService，调用Shared层的Validators
+- ✅ ViewModel层：通过Component访问验证功能，不直接依赖FluentValidation
+
+**性能优化**：
+- **ValidationService单例**：全局唯一实例，减少开销
+- **Validator缓存**：IServiceProvider内部缓存Validator实例
+- **可选验证**：Validator不存在时跳过验证（避免异常）
+
+---
+
 ## 3. 自定义控件库
 
 Infrastructure层提供**7个自定义WPF控件**，涵盖认证、错误处理、虚拟化性能优化等场景。

@@ -1,7 +1,7 @@
 # Client端架构指南
 
-**版本**：v5.1 Phase 4优化版
-**更新时间**：2025-10-28
+**版本**：v5.2 组件化版（Epic #1773）
+**更新时间**：2025-11-03
 **对应代码层**：LYBT.Desktop  
 
 ## 🏗️ Client端WPF架构设计
@@ -334,7 +334,638 @@ public class TokenService : ITokenService
 }
 ```
 
-### 5. Modules层 - 业务模块
+### 5. 组件化设计模式（Epic #1773）
+
+> **✨ 架构优化**（2025-11-01）：引入组件化架构模式，降低ViewModel复杂度，提高代码可维护性和可测试性。
+
+**设计理念**：
+
+为了解决传统ViewModel"上帝类"问题（单个类承担过多职责），将ViewModel的核心职责拆分为**三个标准组件**：
+
+| 组件 | 职责 | 代码量 | 生命周期 | 依赖关系 |
+|-----|------|-------|---------|---------|
+| **DataManager** | 数据CRUD、状态管理、变更检测 | 150-350行 | Scoped | → Repository |
+| **CommandHandler** | 命令处理、业务逻辑、事件发布 | 120-400行 | Scoped | → DataManager, Validator |
+| **Validator** | 集成FluentValidation、验证规则 | 80-180行 | Scoped | → Shared.Validators |
+
+**架构优势**：
+- ✅ **职责清晰**：数据管理、命令处理、验证分离（单一职责原则）
+- ✅ **代码精简**：ViewModel代码量平均减少10-15%
+- ✅ **易于测试**：组件可独立单元测试
+- ✅ **可复用性**：组件可在多个ViewModel间复用
+
+#### 5.1 标准组件接口
+
+**IDataManager<TDto>**：
+
+```csharp
+public interface IDataManager<TDto>
+{
+    // 核心数据属性
+    TDto? CurrentData { get; }
+    bool IsLoading { get; }
+    bool HasChanges { get; }
+    bool IsReadOnly { get; set; }
+
+    // 生命周期方法
+    Task InitializeAsync(Guid id);
+    Task<bool> SaveAsync();
+    Task<bool> DeleteAsync();
+    Task ReloadAsync();
+
+    // 状态管理
+    void MarkAsChanged();
+}
+```
+
+**ICommandHandler**：
+
+```csharp
+public interface ICommandHandler
+{
+    // 标准命令
+    ICommand SaveCommand { get; }
+    ICommand EditCommand { get; }
+    ICommand DeleteCommand { get; }
+    ICommand CancelEditCommand { get; }
+    ICommand BackCommand { get; }
+
+    // 事件通知
+    event Action? OnSaved;
+    event Action? OnEditEnabled;
+    event Action? OnEditCancelled;
+    event Action? OnDeleted;
+
+    // 依赖注入
+    void SetDependencies(IDataManager dataManager, IValidator validator);
+}
+```
+
+**IValidator<TInputDto>**：
+
+```csharp
+public interface IValidator<TInputDto>
+{
+    // 验证方法
+    Task<ValidationResult> ValidateAsync(TInputDto inputDto);
+
+    // 基础验证
+    ValidationResult ValidateBasicInfo(...);
+    ValidationResult ValidateIdNumber(string? idNumber);
+
+    // 结果判断
+    bool IsValid(ValidationResult result, out string errorMessage);
+
+    // DTO转换
+    TInputDto ConvertToInputDto(TDto dto);
+}
+```
+
+#### 5.2 组件化覆盖情况
+
+**当前覆盖率**：**75%** (6/8模块)
+
+| 模块 | 状态 | 组件 | 说明 |
+|-----|------|------|------|
+| **Prescription** | ✅ | 3组件 | PrescriptionDataManager, PrescriptionCommandHandler, PrescriptionValidator |
+| **Formula** | ✅ | 3组件 | FormulaDataManager, FormulaCommandHandler, FormulaValidator |
+| **Patients** | ✅ | 3组件 | PatientDataManager, PatientCommandHandler, PatientValidator |
+| **MedicalCase** | ✅ | 3组件 | MedicalCaseDataManager, MedicalCaseCommandHandler, MedicalCaseValidator |
+| **Consultation** | ✅ | 3组件 | ConsultationDataManager, ConsultationCommandHandler, ConsultationValidator |
+| **Users** | ✅ | 3组件 | UserDataManager, UserCommandHandler, UserValidator |
+| **Herbs** | ⏳ | 未组件化 | 业务相对简单（药材数据管理），暂未实施组件化 |
+| **Auth** | ⏳ | 未组件化 | 业务功能单一（登录认证），暂未实施组件化 |
+
+#### 5.3 ViewModel集成模式
+
+**标准集成模式**（以PatientDetailViewModel为例）：
+
+```csharp
+/// <summary>
+/// 患者详情视图模型 - 组件化架构
+/// Epic #1773 Task 4: 使用PatientDataManager、PatientCommandHandler、PatientValidator三个组件
+/// </summary>
+public class PatientDetailViewModel : UnifiedViewModelBase
+{
+    #region 私有字段（组件注入）
+
+    private readonly PatientDataManager _dataManager;
+    private readonly PatientCommandHandler _commandHandler;
+    private readonly PatientValidator _validator;
+
+    #endregion
+
+    #region 属性（委托给DataManager）
+
+    public Guid PatientId => _dataManager.PatientId;
+    public PatientDto? Patient => _dataManager.CurrentPatient;
+    public bool IsLoading => _dataManager.IsLoading;
+    public bool HasChanges => _dataManager.HasChanges;
+
+    public bool IsReadOnly
+    {
+        get => _dataManager.IsReadOnly;
+        set
+        {
+            if (_dataManager.IsReadOnly != value)
+            {
+                _dataManager.IsReadOnly = value;
+                RaisePropertyChanged();
+                RefreshCommands();
+            }
+        }
+    }
+
+    #endregion
+
+    #region 命令（委托给CommandHandler）
+
+    public ICommand SaveCommand => _commandHandler.SaveCommand;
+    public ICommand EditCommand => _commandHandler.EditCommand;
+    public ICommand DeleteCommand => _commandHandler.DeleteCommand;
+    public ICommand CancelEditCommand => _commandHandler.CancelEditCommand;
+    public ICommand BackCommand => _commandHandler.BackCommand;
+
+    #endregion
+
+    #region 构造函数（DI注入）
+
+    public PatientDetailViewModel(
+        PatientDataManager dataManager,
+        PatientCommandHandler commandHandler,
+        PatientValidator validator,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+    {
+        _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+        _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+        _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+
+        // ⭐ 设置组件依赖关系
+        _commandHandler.SetDependencies(_dataManager, _validator);
+
+        // ⭐ 订阅组件事件
+        _commandHandler.OnEditEnabled += HandleEditEnabled;
+        _commandHandler.OnEditCancelled += HandleEditCancelled;
+        _commandHandler.OnPatientSaved += HandlePatientSaved;
+        _commandHandler.OnPatientDeleted += HandlePatientDeleted;
+    }
+
+    #endregion
+
+    #region 导航生命周期
+
+    protected override async Task InitializeAsync(NavigationParameters parameters)
+    {
+        await base.InitializeAsync(parameters);
+
+        if (parameters.ContainsKey("PatientId"))
+        {
+            var patientId = parameters.GetValue<Guid>("PatientId");
+            await LoadDataAsync(patientId);
+        }
+    }
+
+    private async Task LoadDataAsync(Guid patientId)
+    {
+        try
+        {
+            await _dataManager.InitializeAsync(patientId);
+            RefreshProperties();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"加载患者详情失败: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region 事件处理（组件事件订阅）
+
+    private void HandleEditEnabled()
+    {
+        IsReadOnly = false;
+    }
+
+    private async void HandleEditCancelled()
+    {
+        IsReadOnly = true;
+        await _dataManager.ReloadAsync();
+        RefreshProperties();
+    }
+
+    private async void HandlePatientSaved()
+    {
+        try
+        {
+            // ⭐ 验证数据（委托给Validator）
+            if (Patient != null)
+            {
+                var inputDto = _validator.ConvertToInputDto(Patient);
+                var validationResult = await _validator.ValidatePatientInputAsync(inputDto);
+
+                if (!_validator.IsValid(validationResult, out string errorMessage))
+                {
+                    await ShowErrorMessageAsync($"数据验证失败: {errorMessage}");
+                    return;
+                }
+            }
+
+            // ⭐ 保存数据（委托给DataManager）
+            var success = await _dataManager.SaveAsync();
+
+            if (success)
+            {
+                IsReadOnly = true;
+                RefreshProperties();
+                await ShowSuccessMessageAsync("患者信息保存成功");
+            }
+            else
+            {
+                await ShowErrorMessageAsync("保存失败：服务器未返回数据");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"保存失败: {ex.Message}");
+        }
+    }
+
+    private async void HandlePatientDeleted()
+    {
+        try
+        {
+            var success = await _dataManager.DeleteAsync();
+
+            if (success)
+            {
+                await ShowSuccessMessageAsync("患者删除成功");
+                RegionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+            }
+            else
+            {
+                await ShowErrorMessageAsync("删除失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"删除失败: {ex.Message}");
+        }
+    }
+
+    #endregion
+}
+```
+
+#### 5.4 DI注册（Prism模块）
+
+**PatientsModule.cs示例**：
+
+```csharp
+public class PatientsModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // ⭐ Repository（Singleton生命周期）
+        containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+        // ⭐ 组件（Scoped生命周期 - Register）
+        containerRegistry.Register<PatientDataManager>();
+        containerRegistry.Register<PatientCommandHandler>();
+        containerRegistry.Register<PatientValidator>();
+
+        // ⭐ ViewModel（Scoped生命周期 - Register）
+        containerRegistry.Register<PatientDetailViewModel>();
+
+        // ⭐ View（注册导航）
+        containerRegistry.RegisterForNavigation<PatientDetailView>();
+    }
+}
+```
+
+**生命周期说明**：
+- **Singleton**：Repository（全局单例，减少HTTP客户端创建开销）
+- **Scoped**：Component和ViewModel（每次导航创建新实例，避免状态污染）
+
+#### 5.5 组件实现示例
+
+**PatientDataManager.cs**（数据管理组件）：
+
+```csharp
+public class PatientDataManager
+{
+    private readonly IPatientRepository _patientRepository;
+    private readonly ILogger<PatientDataManager> _logger;
+
+    // 核心数据属性
+    public Guid PatientId { get; private set; }
+    public PatientDto? CurrentPatient { get; private set; }
+    public bool IsNewPatient { get; private set; } = true;
+    public bool IsLoading { get; private set; }
+    public bool HasChanges { get; private set; }
+    public bool IsReadOnly { get; set; } = true;
+
+    // 原始数据副本（用于变更检测）
+    private PatientDto? _originalPatient;
+
+    public async Task InitializeAsync(Guid patientId)
+    {
+        try
+        {
+            IsLoading = true;
+            PatientId = patientId;
+
+            if (patientId == Guid.Empty)
+            {
+                // 新建患者模式
+                IsNewPatient = true;
+                CurrentPatient = null;
+                _originalPatient = null;
+                IsReadOnly = false;
+            }
+            else
+            {
+                // 加载现有患者
+                CurrentPatient = await _patientRepository.GetByIdAsync(patientId);
+                if (CurrentPatient != null)
+                {
+                    _originalPatient = ClonePatient(CurrentPatient);
+                    IsNewPatient = false;
+                }
+            }
+
+            HasChanges = false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "初始化患者数据失败");
+            throw;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public async Task<bool> SaveAsync()
+    {
+        try
+        {
+            if (CurrentPatient == null)
+                return false;
+
+            IsLoading = true;
+
+            var inputDto = ConvertToInputDto(CurrentPatient);
+
+            PatientDto? savedPatient;
+            if (IsNewPatient)
+            {
+                savedPatient = await _patientRepository.CreateAsync(inputDto);
+            }
+            else
+            {
+                savedPatient = await _patientRepository.UpdateAsync(inputDto);
+            }
+
+            if (savedPatient != null)
+            {
+                CurrentPatient = savedPatient;
+                _originalPatient = ClonePatient(savedPatient);
+                PatientId = savedPatient.Id;
+                IsNewPatient = false;
+                HasChanges = false;
+                return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存患者数据失败");
+            return false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    public void MarkAsChanged()
+    {
+        HasChanges = true;
+    }
+
+    private PatientInputDto ConvertToInputDto(PatientDto patient)
+    {
+        return new PatientInputDto
+        {
+            Id = IsNewPatient ? null : patient.Id,
+            Name = patient.Name,
+            Gender = patient.Gender,
+            BirthDate = patient.BirthDate,
+            Age = patient.Age,
+            PhoneNumber = patient.PhoneNumber,
+            // ... 其他属性
+        };
+    }
+
+    private PatientDto ClonePatient(PatientDto patient)
+    {
+        // 深拷贝患者对象（用于变更检测）
+        return new PatientDto
+        {
+            Id = patient.Id,
+            Name = patient.Name,
+            Gender = patient.Gender,
+            // ... 其他属性
+        };
+    }
+}
+```
+
+**PatientCommandHandler.cs**（命令处理组件）：
+
+```csharp
+public class PatientCommandHandler
+{
+    private readonly ILogger<PatientCommandHandler> _logger;
+    private readonly IRegionManager _regionManager;
+
+    // 组件依赖（通过SetDependencies注入）
+    private PatientDataManager? _dataManager;
+    private PatientValidator? _validator;
+
+    // 事件通知
+    public event Action? OnPatientSaved;
+    public event Action? OnEditEnabled;
+    public event Action? OnEditCancelled;
+    public event Action? OnPatientDeleted;
+
+    // 命令定义
+    public ICommand SaveCommand { get; private set; }
+    public ICommand EditCommand { get; private set; }
+    public ICommand CancelEditCommand { get; private set; }
+    public ICommand DeleteCommand { get; private set; }
+    public ICommand BackCommand { get; private set; }
+
+    public PatientCommandHandler(
+        ILogger<PatientCommandHandler> logger,
+        IRegionManager regionManager)
+    {
+        _logger = logger;
+        _regionManager = regionManager;
+
+        // 初始化命令
+        SaveCommand = new DelegateCommand(ExecuteSaveCommand, CanExecuteSaveCommand);
+        EditCommand = new DelegateCommand(ExecuteEditCommand, CanExecuteEditCommand);
+        CancelEditCommand = new DelegateCommand(ExecuteCancelEditCommand, CanExecuteCancelEditCommand);
+        DeleteCommand = new DelegateCommand(ExecuteDeleteCommand, CanExecuteDeleteCommand);
+        BackCommand = new DelegateCommand(ExecuteBackCommand);
+    }
+
+    public void SetDependencies(PatientDataManager dataManager, PatientValidator validator)
+    {
+        _dataManager = dataManager;
+        _validator = validator;
+    }
+
+    private void ExecuteSaveCommand()
+    {
+        OnPatientSaved?.Invoke();
+    }
+
+    private bool CanExecuteSaveCommand()
+    {
+        return _dataManager != null && _dataManager.HasChanges && !_dataManager.IsLoading;
+    }
+
+    private void ExecuteEditCommand()
+    {
+        OnEditEnabled?.Invoke();
+    }
+
+    private bool CanExecuteEditCommand()
+    {
+        return _dataManager != null && !_dataManager.IsNewPatient && _dataManager.IsReadOnly && !_dataManager.IsLoading;
+    }
+
+    private void ExecuteCancelEditCommand()
+    {
+        OnEditCancelled?.Invoke();
+    }
+
+    private bool CanExecuteCancelEditCommand()
+    {
+        return _dataManager != null && !_dataManager.IsReadOnly && !_dataManager.IsLoading;
+    }
+
+    private void ExecuteDeleteCommand()
+    {
+        OnPatientDeleted?.Invoke();
+    }
+
+    private bool CanExecuteDeleteCommand()
+    {
+        return _dataManager != null && !_dataManager.IsNewPatient && !_dataManager.IsLoading;
+    }
+
+    private void ExecuteBackCommand()
+    {
+        _regionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+    }
+}
+```
+
+**PatientValidator.cs**（验证组件）：
+
+```csharp
+public class PatientValidator
+{
+    private readonly IValidator<PatientInputDto> _patientInputValidator;  // ⭐ 来自Shared.Validators
+    private readonly ILogger<PatientValidator> _logger;
+
+    public PatientValidator(
+        IValidator<PatientInputDto> patientInputValidator,
+        ILogger<PatientValidator> logger)
+    {
+        _patientInputValidator = patientInputValidator;
+        _logger = logger;
+    }
+
+    public async Task<ValidationResult> ValidatePatientInputAsync(PatientInputDto inputDto)
+    {
+        if (inputDto == null)
+        {
+            return new ValidationResult(new[] { new ValidationFailure("Patient", "患者数据为空") });
+        }
+
+        _logger.LogDebug("开始验证患者输入: {PatientName}", inputDto.Name);
+        var result = await _patientInputValidator.ValidateAsync(inputDto);
+
+        if (!result.IsValid)
+        {
+            _logger.LogWarning("患者输入验证失败，错误数量: {ErrorCount}", result.Errors.Count);
+        }
+
+        return result;
+    }
+
+    public bool IsValid(ValidationResult result, out string errorMessage)
+    {
+        if (result.IsValid)
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+        return false;
+    }
+
+    public PatientInputDto ConvertToInputDto(PatientDto patient)
+    {
+        return new PatientInputDto
+        {
+            Id = patient.Id,
+            Name = patient.Name,
+            Gender = patient.Gender,
+            // ... 其他属性
+        };
+    }
+}
+```
+
+#### 5.6 优势总结
+
+**代码质量提升**：
+- ✅ **代码精简**：ViewModel代码量平均减少10-15%（如PatientDetailViewModel从383行减至341行）
+- ✅ **职责清晰**：数据管理、命令处理、验证三个维度明确分离
+- ✅ **易于理解**：新开发者可快速定位代码职责
+
+**可测试性提升**：
+- ✅ **单元测试**：组件可独立测试，无需Mock整个ViewModel
+- ✅ **测试覆盖**：每个组件有独立的单元测试（DataManagerTests, CommandHandlerTests, ValidatorTests）
+- ✅ **Mock简化**：只需Mock Repository和FluentValidation，测试更简洁
+
+**可维护性提升**：
+- ✅ **变更隔离**：数据逻辑变更只影响DataManager，不影响命令处理
+- ✅ **复用性**：组件可在多个ViewModel间复用（如批量操作场景）
+- ✅ **扩展性**：新增命令只需修改CommandHandler，不影响其他组件
+
+**架构一致性**：
+- ✅ **标准模式**：6个核心模块遵循统一的组件化模式
+- ✅ **代码风格**：组件接口、事件命名、DI注册保持一致
+- ✅ **文档支持**：完整的设计文档和代码示例
+
+---
+
+### 6. Modules层 - 业务模块
 **职责**：UI界面、业务逻辑、模块化组件
 
 **模块结构**（Phase 2/4 - Repository模式）：

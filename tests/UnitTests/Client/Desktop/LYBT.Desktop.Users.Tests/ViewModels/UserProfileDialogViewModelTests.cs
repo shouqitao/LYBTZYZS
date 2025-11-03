@@ -2,6 +2,7 @@ using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
+using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,10 +20,12 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// </summary>
     public class UserProfileDialogViewModelTests : IDisposable
     {
+        private readonly Mock<UserCommandHandler> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserProfileDialogViewModel>> _mockLogger;
+        private readonly Mock<ILogger<UserCommandHandler>> _mockCommandLogger;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly Mock<ISessionManager> _mockSessionManager;
         private readonly Mock<IUserNotificationService> _mockNotificationService;
@@ -32,6 +35,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             // Arrange - Setup Mocks
             _mockUserRepository = new Mock<IUserRepository>();
+            _mockCommandLogger = new Mock<ILogger<UserCommandHandler>>();
+            _mockCommandHandler = new Mock<UserCommandHandler>(_mockUserRepository.Object, _mockCommandLogger.Object);
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserProfileDialogViewModel>>();
@@ -46,10 +51,10 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             // Create ViewModel instance
             _viewModel = new UserProfileDialogViewModel(
+                _mockCommandHandler.Object,
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
                 _mockRegionManager.Object,
-                _mockUserRepository.Object,
                 _mockSessionManager.Object,
                 _mockNotificationService.Object
             );
@@ -92,9 +97,9 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .Setup(x => x.CurrentUser)
                 .Returns(currentUser);
 
-            _mockUserRepository
+            _mockCommandHandler
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(currentUser);
+                .ReturnsAsync((true, currentUser, (string?)null));
 
             var parameters = new DialogParameters();
 
@@ -104,8 +109,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Wait a moment for async loading
             Thread.Sleep(100);
 
-            // Assert - 验证Repository被调用
-            _mockUserRepository.Verify(x => x.GetByIdAsync(userId), Times.AtLeastOnce);
+            // Assert - 验证CommandHandler被调用
+            _mockCommandHandler.Verify(x => x.GetByIdAsync(userId), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -138,9 +143,9 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             var userId = Guid.NewGuid();
             var testUser = CreateSampleUserDto(userId);
 
-            _mockUserRepository
+            _mockCommandHandler
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(testUser);
+                .ReturnsAsync((true, testUser, (string?)null));
 
             // 使用反射设置 _currentUserId
             var currentUserIdField = typeof(UserProfileDialogViewModel)
@@ -165,9 +170,9 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockUserRepository
+            _mockCommandHandler
                 .Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((UserDto)null!);
+                .ReturnsAsync((false, (UserDto?)null, "用户不存在"));
 
             var currentUserIdField = typeof(UserProfileDialogViewModel)
                 .GetField("_currentUserId", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

@@ -1,7 +1,7 @@
 # 共享架构指南
 
-**版本**：v5.0 对齐架构版  
-**更新时间**：2025-10-15  
+**版本**：v5.1 Validators迁移版（Epic #1773）
+**更新时间**：2025-11-03
 **对应代码层**：LYBT.Shared  
 
 ## 🏗️ 共享架构设计
@@ -11,6 +11,7 @@
 ```
 LYBT.Shared (共享层)
 ├── Models/             # 数据模型和实体
+├── Validators/         # ✨ FluentValidation验证规则（Epic #1773新增）
 ├── Infrastructure/     # 基础设施组件
 ├── Utilities/          # 工具类和扩展
 ├── Constants/          # 常量定义
@@ -129,7 +130,429 @@ public enum Gender
 - ✅ **实际实现**：Contracts/{Module}/（按业务模块组织）+ Common/（通用）+ Constants/（常量）+ Enums/（枚举）
 - **原因**：实际架构更符合MVP原则（够用即好），避免过度分层
 
-### 2. Interfaces - 接口定义层（已移除）
+---
+
+### 2. Validators - 验证规则层（Epic #1773新增）
+
+> **✨ 新增项目**（2025-11-01）：统一前后端验证规则，实现**一次定义、两端共享**，消除验证规则不一致问题。
+
+**职责**：
+- 定义FluentValidation验证规则
+- 为InputDto提供验证器实现
+- 前后端共享验证逻辑
+- 数据格式验证（不包含业务规则验证）
+
+**实际目录结构**（src/Shared/LYBT.Shared.Validators/）：
+
+```
+LYBT.Shared.Validators/
+├── Auth/
+│   ├── LoginRequestValidator.cs
+│   ├── ChangePasswordRequestValidator.cs
+│   └── SuperAdminLoginRequestValidator.cs
+├── Consultation/
+│   └── ConsultationInputDtoValidator.cs
+├── Formula/
+│   └── FormulaInputDtoValidator.cs
+├── Herbs/
+│   └── HerbInputDtoValidator.cs
+├── MedicalCase/
+│   ├── MedicalCaseCreateDtoValidator.cs
+│   └── MedicalCaseUpdateDtoValidator.cs
+├── Patients/
+│   └── PatientInputDtoValidator.cs
+├── Prescriptions/
+│   ├── PrescriptionCreateDtoValidator.cs
+│   └── PrescriptionEditDtoValidator.cs
+└── Users/
+    └── UserInputDtoValidator.cs
+```
+
+**设计原则**：
+
+1. **一次定义、两端共享**
+   - 验证规则在Shared.Validators定义
+   - Server端和Client端同时使用
+   - 保证前后端验证规则100%一致
+
+2. **按模块组织**
+   - 与Models/Contracts保持一致的目录结构
+   - 易于定位和维护
+
+3. **InputDto专属**
+   - 只为InputDto（用于Create/Update操作）提供验证器
+   - Dto（用于Read操作）不需要验证
+
+4. **业务规则分离**
+   - 只包含数据格式验证（字符串长度、必填项、格式等）
+   - 不包含业务规则验证（如"患者是否存在"）
+   - 业务规则由Service层或Domain层处理
+
+#### 2.1 Validator示例
+
+**PatientInputDtoValidator.cs**（患者输入验证器）：
+
+```csharp
+using FluentValidation;
+using LYBT.Shared.Models.Contracts.Patients;
+
+namespace LYBT.Shared.Validators.Patients
+{
+    /// <summary>
+    /// 患者输入DTO验证器
+    /// Epic #1773: 前后端共享验证规则
+    /// </summary>
+    public class PatientInputDtoValidator : AbstractValidator<PatientInputDto>
+    {
+        public PatientInputDtoValidator()
+        {
+            // 姓名验证
+            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("患者姓名不能为空")
+                .MaximumLength(50).WithMessage("患者姓名长度不能超过50个字符");
+
+            // 性别验证
+            RuleFor(x => x.Gender)
+                .IsInEnum().WithMessage("性别值无效");
+
+            // 手机号验证（可选）
+            RuleFor(x => x.PhoneNumber)
+                .Matches(@"^1[3-9]\d{9}$").WithMessage("手机号格式不正确")
+                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+
+            // 身份证号验证（可选）
+            RuleFor(x => x.IdNumber)
+                .Length(18).WithMessage("身份证号必须为18位")
+                .Matches(@"^\d{17}[\dXx]$").WithMessage("身份证号格式不正确")
+                .When(x => !string.IsNullOrEmpty(x.IdNumber));
+
+            // 年龄验证（可选）
+            RuleFor(x => x.Age)
+                .InclusiveBetween(0, 150).WithMessage("年龄必须在0-150之间")
+                .When(x => x.Age.HasValue);
+
+            // 紧急联系人电话验证（如果提供了姓名则必须提供电话）
+            RuleFor(x => x.EmergencyContactPhone)
+                .NotEmpty().WithMessage("请提供紧急联系人电话")
+                .Matches(@"^1[3-9]\d{9}$").WithMessage("紧急联系人电话格式不正确")
+                .When(x => !string.IsNullOrEmpty(x.EmergencyContactName));
+        }
+    }
+}
+```
+
+**特点说明**：
+- ✅ **声明式**：使用FluentValidation的Fluent API定义验证规则
+- ✅ **可读性**：规则清晰明了，易于理解和维护
+- ✅ **条件验证**：使用`When()`实现条件验证（仅当字段有值时验证）
+- ✅ **多语言支持**：中文错误消息，便于用户理解
+
+#### 2.2 Server端集成（ASP.NET Core Pipeline）
+
+**Module注册**（PatientsModule.cs）：
+
+```csharp
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using LYBT.Shared.Validators.Patients;
+
+public class PatientsModule : IModule
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // ⭐ 注册FluentValidation
+        services.AddFluentValidationAutoValidation();          // 自动验证
+        services.AddFluentValidationClientsideAdapters();      // 客户端适配器
+
+        // ⭐ 注册Shared.Validators的Validators
+        services.AddValidatorsFromAssemblyContaining<PatientInputDtoValidator>();
+
+        // 其他服务注册...
+    }
+}
+```
+
+**Controller自动验证**：
+
+```csharp
+[ApiController]
+[Route("api/patients")]
+public class PatientsController : BaseApiController
+{
+    private readonly IPatientService _patientService;
+
+    [HttpPost]
+    public async Task<ActionResult<PatientDto>> CreatePatient(
+        [FromBody] PatientInputDto inputDto)  // ⭐ 自动验证
+    {
+        // ⭐ inputDto已通过PatientInputDtoValidator验证
+        // 如验证失败，ASP.NET Core自动返回400 Bad Request + 错误详情
+        var patient = await _patientService.CreatePatientAsync(inputDto);
+        return Ok(patient);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<PatientDto>> UpdatePatient(
+        Guid id,
+        [FromBody] PatientInputDto inputDto)  // ⭐ 自动验证
+    {
+        // ⭐ inputDto已通过验证
+        var patient = await _patientService.UpdatePatientAsync(inputDto);
+        return Ok(patient);
+    }
+}
+```
+
+**验证失败响应示例**：
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Name": [
+      "患者姓名不能为空"
+    ],
+    "PhoneNumber": [
+      "手机号格式不正确"
+    ]
+  }
+}
+```
+
+#### 2.3 Client端集成（Component验证）
+
+**PatientValidator.cs**（Client端验证组件）：
+
+```csharp
+using FluentValidation;
+using FluentValidation.Results;
+using LYBT.Shared.Validators.Patients;
+
+namespace LYBT.Desktop.Patients.ViewModels.Components
+{
+    /// <summary>
+    /// 患者验证器 - 组件化架构
+    /// 集成FluentValidation Validators提供组件级验证接口
+    /// Epic #1773 Task 4: Patients模块组件化改造
+    /// </summary>
+    public class PatientValidator
+    {
+        private readonly IValidator<PatientInputDto> _patientInputValidator;  // ⭐ 来自Shared.Validators
+        private readonly ILogger<PatientValidator> _logger;
+
+        public PatientValidator(
+            IValidator<PatientInputDto> patientInputValidator,
+            ILogger<PatientValidator> logger)
+        {
+            _patientInputValidator = patientInputValidator;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// 验证患者输入DTO
+        /// </summary>
+        public async Task<ValidationResult> ValidatePatientInputAsync(PatientInputDto inputDto)
+        {
+            if (inputDto == null)
+            {
+                return new ValidationResult(new[] { new ValidationFailure("Patient", "患者数据为空") });
+            }
+
+            _logger.LogDebug("开始验证患者输入: {PatientName}", inputDto.Name);
+            var result = await _patientInputValidator.ValidateAsync(inputDto);
+
+            if (!result.IsValid)
+            {
+                _logger.LogWarning("患者输入验证失败，错误数量: {ErrorCount}", result.Errors.Count);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 检查验证结果是否有效
+        /// </summary>
+        public bool IsValid(ValidationResult result, out string errorMessage)
+        {
+            if (result.IsValid)
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+
+            errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+            return false;
+        }
+    }
+}
+```
+
+**ViewModel使用示例**：
+
+```csharp
+private async void HandlePatientSaved()
+{
+    try
+    {
+        // ⭐ 验证数据（委托给Validator组件）
+        if (Patient != null)
+        {
+            var inputDto = _validator.ConvertToInputDto(Patient);
+            var validationResult = await _validator.ValidatePatientInputAsync(inputDto);
+
+            if (!_validator.IsValid(validationResult, out string errorMessage))
+            {
+                await ShowErrorMessageAsync($"数据验证失败: {errorMessage}");
+                return;  // ⭐ 验证失败，终止保存
+            }
+        }
+
+        // ⭐ 验证通过，保存数据
+        var success = await _dataManager.SaveAsync();
+        if (success)
+        {
+            await ShowSuccessMessageAsync("患者信息保存成功");
+        }
+    }
+    catch (Exception ex)
+    {
+        await ShowErrorMessageAsync($"保存失败: {ex.Message}");
+    }
+}
+```
+
+**DI注册**（PatientsModule.cs）：
+
+```csharp
+public void RegisterTypes(IContainerRegistry containerRegistry)
+{
+    // ⭐ 注册Shared.Validators的Validator
+    containerRegistry.RegisterSingleton<IValidator<PatientInputDto>, PatientInputDtoValidator>();
+
+    // ⭐ 注册Component（使用Shared.Validators）
+    containerRegistry.Register<PatientValidator>();
+
+    // 其他注册...
+}
+```
+
+#### 2.4 迁移历史
+
+**迁移前**（Phase 1 - 2025-10-31之前）：
+
+```
+Server端：
+  src/Server/Modules/LYBT.Module.Patients/
+    └── Validators/
+        └── PatientInputDtoValidator.cs  ⚠️ Server端专属
+
+Client端：
+  - 无统一验证
+  - 部分使用DataAnnotations
+  - 验证规则分散在ViewModel
+```
+
+**迁移后**（Phase 2 - Epic #1773，2025-11-01）：
+
+```
+Shared层：
+  src/Shared/LYBT.Shared.Validators/
+    └── Patients/
+        └── PatientInputDtoValidator.cs  ✅ 前后端共享
+
+Server端：
+  src/Server/Modules/LYBT.Module.Patients/
+    ├── Validators/ （❌ 已移除）
+    └── PatientsModule.cs（添加Shared.Validators引用）
+
+Client端：
+  src/Client/Desktop/Modules/LYBT.Desktop.Patients/
+    ├── ViewModels/Components/
+    │   └── PatientValidator.cs（集成Shared.Validators）
+    └── PatientsModule.cs（添加Shared.Validators引用）
+```
+
+**迁移收益**：
+- ✅ **验证规则一致性**：前后端使用相同的Validator，验证规则100%一致
+- ✅ **减少重复代码**：验证规则只需定义一次
+- ✅ **维护成本降低**：验证规则修改只需一处变更
+- ✅ **测试简化**：Validator可独立测试，测试用例可前后端复用
+
+#### 2.5 架构约束
+
+**只验证数据格式，不验证业务规则**：
+
+```csharp
+// ✅ 正确示例（数据格式验证）
+RuleFor(x => x.Name)
+    .NotEmpty().WithMessage("患者姓名不能为空")
+    .MaximumLength(50).WithMessage("患者姓名长度不能超过50个字符");
+
+RuleFor(x => x.PhoneNumber)
+    .Matches(@"^1[3-9]\d{9}$").WithMessage("手机号格式不正确");
+
+// ❌ 错误示例（业务规则验证 - 不应在Validator中）
+RuleFor(x => x.PatientId)
+    .MustAsync(async (id, _) => await PatientExists(id))  // ❌ 业务规则
+    .WithMessage("患者不存在");
+
+RuleFor(x => x.PhoneNumber)
+    .MustAsync(async (phone, _) => !await PhoneNumberExists(phone))  // ❌ 业务规则
+    .WithMessage("手机号已被使用");
+```
+
+**业务规则验证应在Service层处理**：
+
+```csharp
+// ✅ 正确做法：业务规则在Service层验证
+public async Task<PatientDto> CreatePatientAsync(PatientInputDto inputDto)
+{
+    // 1. FluentValidation自动完成数据格式验证（ASP.NET Core Pipeline）
+
+    // 2. 业务规则验证（Service层）
+    if (await _patientRepository.PhoneNumberExistsAsync(inputDto.PhoneNumber))
+    {
+        throw new BusinessException("手机号已被使用");
+    }
+
+    // 3. 创建患者
+    var patient = await _patientRepository.CreateAsync(inputDto);
+    return patient;
+}
+```
+
+**架构原因**：
+- Shared.Validators不应依赖Repository或Service（避免循环依赖）
+- 业务规则可能需要访问数据库或外部服务
+- 业务规则可能随业务变化而变化，应与数据格式验证分离
+
+#### 2.6 优势总结
+
+**验证规则一致性**：
+- ✅ 前后端使用相同的Validator
+- ✅ 验证规则100%一致
+- ✅ 避免"前端验证通过，后端验证失败"的问题
+
+**开发效率提升**：
+- ✅ 验证规则只需定义一次
+- ✅ 减少50%的验证代码
+- ✅ 新增字段只需修改一处
+
+**可维护性提升**：
+- ✅ 验证规则集中管理
+- ✅ 修改验证规则只需一处变更
+- ✅ 易于定位和修复验证问题
+
+**测试简化**：
+- ✅ Validator可独立测试
+- ✅ 测试用例可前后端复用
+- ✅ 减少重复测试代码
+
+---
+
+### 3. Interfaces - 接口定义层（已移除）
 
 > **⚠️ 项目状态**：Shared.Interfaces项目已于2025-10-31被彻底移除（Issue #1728）。
 > 该决策基于**MVP架构原则**：Server和Client端分别定义各自的接口，避免过早抽象。

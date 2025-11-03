@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
+using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,8 @@ namespace LYBT.Desktop.Users.ViewModels
     {
         #region 依赖服务
 
-        private readonly IUserRepository _userRepository;
+        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        private readonly UserCommandHandler _commandHandler;
 
         #endregion
 
@@ -195,7 +197,7 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 构造函数
 
         public UserEditViewModel(
-            IUserRepository userRepository,
+            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -203,7 +205,8 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            // Issue #1785: 注入CommandHandler
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -278,12 +281,12 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogDebug("开始加载用户数据: {UserId}", UserId);
 
-                // Repository 模式：直接返回 UserDto?
-                var user = await _userRepository.GetByIdAsync(UserId);
+                // Issue #1785: 使用CommandHandler查询
+                var result = await _commandHandler.GetByIdAsync(UserId);
 
-                if (user != null)
+                if (result.success && result.user != null)
                 {
-                    _originalUser = user;
+                    _originalUser = result.user;
                     LoadUserData(_originalUser);
                     IsUserLoaded = true;
 
@@ -293,8 +296,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("加载用户数据失败: Repository 返回 null");
-                    throw new InvalidOperationException("加载用户数据失败: 用户不存在");
+                    Logger.LogWarning("加载用户数据失败: {ErrorMessage}", result.errorMessage);
+                    throw new InvalidOperationException(result.errorMessage ?? "加载用户数据失败: 用户不存在");
                 }
 
             }, "加载用户数据");
@@ -347,12 +350,12 @@ namespace LYBT.Desktop.Users.ViewModels
                     Status = Status
                 };
 
-                // Repository 模式：直接返回 UserDto?
-                var updatedUser = await _userRepository.UpdateAsync(updateDto);
+                // Issue #1785: 使用CommandHandler更新
+                var result = await _commandHandler.UpdateAsync(updateDto);
 
-                if (updatedUser != null)
+                if (result.success && result.user != null)
                 {
-                    _originalUser = updatedUser;
+                    _originalUser = result.user;
                     LoadUserData(_originalUser);
 
                     Logger.LogInformation("成功更新用户: {UserName} - {RealName}", UserName, RealName);
@@ -365,8 +368,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 }
                 else
                 {
-                    Logger.LogWarning("更新用户失败: Repository 返回 null");
-                    throw new InvalidOperationException("更新用户失败");
+                    Logger.LogWarning("更新用户失败: {ErrorMessage}", result.errorMessage);
+                    throw new InvalidOperationException(result.errorMessage ?? "更新用户失败");
                 }
 
             }, "更新用户");
