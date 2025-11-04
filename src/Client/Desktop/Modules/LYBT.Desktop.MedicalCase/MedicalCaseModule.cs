@@ -58,8 +58,7 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
             // Issue #1799: 删除OtherCasesQueryViewModel（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListViewModel（功能与ManagementView重复）
-            // TODO: 修复编译错误后再启用
-            // containerRegistry.Register<MedicalCaseManagementViewModel>();
+            containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
 
             // 注册视图用于导航 - 需要对应视图文件存在
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
@@ -70,8 +69,7 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterForNavigation<Views.CompletionView>();        // Epic #1494 - Task #1500: Step 4 完成医案视图
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
-            // TODO: 修复编译错误后再启用
-            // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();  // Issue #1799: 保留作为唯一医案管理入口
         }
     }
 }

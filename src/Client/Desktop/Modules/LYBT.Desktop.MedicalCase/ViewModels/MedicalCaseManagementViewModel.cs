@@ -7,7 +7,7 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
+namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
     /// 病历管理主视图模型 - UltraThink精简架构
