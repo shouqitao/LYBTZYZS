@@ -121,6 +121,39 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
+        /// 验证Token并返回详细信息 - Issue #1824
+        /// </summary>
+        public async Task<ServiceResult<ValidateTokenResponse>> ValidateTokenAsync(string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return ServiceResult<ValidateTokenResponse>.Failure("Token不能为空");
+                }
+
+                var request = new ValidateTokenRequest { Token = token };
+                var apiResponse = await _authApi.ValidateTokenAsync(request);
+
+                if (apiResponse.Success && apiResponse.Data != null)
+                {
+                    _logger.LogInformation("Token验证成功: {Username}", apiResponse.Data.Username);
+                    return ServiceResult<ValidateTokenResponse>.Success(apiResponse.Data, apiResponse.Message);
+                }
+                else
+                {
+                    _logger.LogWarning("Token验证失败: {Message}", apiResponse.Message);
+                    return ServiceResult<ValidateTokenResponse>.Failure(apiResponse.Message ?? "Token验证失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Token验证发生异常");
+                return ServiceResult<ValidateTokenResponse>.Failure($"Token验证失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 清除认证信息
         /// </summary>
         public void ClearAuthInfo()

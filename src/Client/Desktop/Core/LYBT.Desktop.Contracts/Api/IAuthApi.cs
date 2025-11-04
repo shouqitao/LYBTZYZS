@@ -79,8 +79,17 @@ namespace LYBT.Desktop.Contracts.Api
         /// <para>功能: 验证指定的Token是否有效</para>
         /// <para>用途: 用于无法使用Header的场景</para>
         /// </remarks>
+        /// <summary>
+        /// 验证Token并返回详细信息 (POST方法) - Issue #1824
+        /// </summary>
+        /// <param name="request">Token验证请求</param>
+        /// <returns>详细的验证结果</returns>
+        /// <remarks>
+        /// <para>功能: 验证指定的Token并返回用户信息和过期时间</para>
+        /// <para>用途: Desktop客户端启动时的Token自动验证</para>
+        /// </remarks>
         [Refit.Post("/api/v1/auth/validate")]
-        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<bool>> ValidateTokenAsync([Refit.Body] string token);
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<ValidateTokenResponse>> ValidateTokenAsync([Refit.Body] ValidateTokenRequest request);
 
         /// <summary>
         /// API服务健康状态检查

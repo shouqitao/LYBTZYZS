@@ -218,6 +218,43 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 验证Token（POST方式，从请求体接收）- Issue #1824
+        /// 用于Desktop客户端启动时的Token验证
+        /// </summary>
+        /// <summary>
+        /// 验证Token（POST方式，从请求体接收）- Issue #1824
+        /// 用于Desktop客户端启动时的Token验证
+        /// </summary>
+        [HttpPost("validate")]
+        [AllowAnonymous]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<ValidateTokenResponse>>> ValidateTokenFromBodyAsync(
+            [FromBody] ValidateTokenRequest request)
+        {
+            try
+            {
+                // 参数验证
+                var validation = ValidateModel<ValidateTokenResponse>();
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                if (request == null || string.IsNullOrWhiteSpace(request.Token))
+                {
+                    return ValidationFail<ValidateTokenResponse>("Token不能为空");
+                }
+
+                // 调用认证服务验证Token
+                var result = await _authService.ValidateTokenWithDetailsAsync(request.Token);
+                return HandleServiceResult(result, "Token验证完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<ValidateTokenResponse>(ex, "验证Token", request);
+            }
+        }
+
+        /// <summary>
         /// Auth基础端点 - 返回405 Method Not Allowed
         /// 用于冒烟测试验证路由存在
         /// </summary>

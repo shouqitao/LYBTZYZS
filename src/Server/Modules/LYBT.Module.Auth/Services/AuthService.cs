@@ -280,6 +280,85 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
+        /// 验证令牌并返回详细信息 - Issue #1824
+        /// 用于客户端启动时的 Token 验证
+        /// </summary>
+        public async Task<ServiceResult<ValidateTokenResponse>> ValidateTokenWithDetailsAsync(string token)
+        {
+            await Task.CompletedTask;
+
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+                    {
+                        IsValid = false,
+                        ErrorMessage = "Token不能为空"
+                    });
+                }
+
+                // 验证 Token
+                var principal = _jwtService.ValidateToken(token);
+                if (principal == null)
+                {
+                    return ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+                    {
+                        IsValid = false,
+                        ErrorMessage = "Token无效或已过期"
+                    });
+                }
+
+                // 提取用户信息
+                var userIdClaim = principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var usernameClaim = principal.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                var roleClaim = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || string.IsNullOrEmpty(usernameClaim))
+                {
+                    return ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+                    {
+                        IsValid = false,
+                        ErrorMessage = "Token缺少必要的用户信息"
+                    });
+                }
+
+                // 解析 JWT 获取过期时间
+                DateTime? expiresAt = null;
+                try
+                {
+                    var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = tokenHandler.ReadJwtToken(token);
+                    expiresAt = jwtToken.ValidTo;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "解析JWT过期时间失败");
+                }
+
+                // 返回验证成功结果
+                return ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+                {
+                    IsValid = true,
+                    UserId = int.TryParse(userIdClaim, out var userId) ? userId : null,
+                    Username = usernameClaim,
+                    Role = roleClaim,
+                    ExpiresAt = expiresAt,
+                    ErrorMessage = null
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "验证Token时发生错误");
+                return ServiceResult<ValidateTokenResponse>.Success(new ValidateTokenResponse
+                {
+                    IsValid = false,
+                    ErrorMessage = $"验证失败: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// 获取会话信息
         /// </summary>
         public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)

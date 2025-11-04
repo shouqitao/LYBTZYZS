@@ -37,6 +37,11 @@ namespace LYBT.Desktop.Foundation.Security
         string? GetToken();
 
         /// <summary>
+        /// 验证Token并返回详细信息 - Issue #1824
+        /// </summary>
+        Task<ServiceResult<ValidateTokenResponse>> ValidateTokenAsync(string token);
+
+        /// <summary>
         /// 清除认证信息
         /// </summary>
         void ClearAuthInfo();
