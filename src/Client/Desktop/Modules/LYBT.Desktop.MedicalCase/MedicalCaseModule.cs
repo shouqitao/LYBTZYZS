@@ -31,6 +31,11 @@ namespace LYBT.Desktop.MedicalCase
             // Epic #1773: 注册Component组件
             containerRegistry.Register<MedicalCaseDataManager>();
 
+            // Issue #1806: 注册MedicalCaseFlowViewModel组件化服务（Epic #1805 Phase 2）
+            containerRegistry.RegisterScoped<MedicalCaseFlowManager>();
+            containerRegistry.RegisterScoped<MedicalCaseLifecycleHandler>();
+            containerRegistry.RegisterScoped<MedicalCaseDataLoader>();
+
             // Issue #1790: 注册PrescriptionEditorViewModel组件化服务
             containerRegistry.Register<PrescriptionEditorHerbFilterManager>();
             containerRegistry.Register<PrescriptionEditorValidator>();

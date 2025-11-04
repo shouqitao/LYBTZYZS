@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
+using LYBT.Desktop.MedicalCase.Services; // Issue #1806: 引入组件EventArgs类型
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -28,6 +29,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         // Issue #1783: 使用DataManager替代直接Repository访问
         private readonly MedicalCaseDataManager _dataManager;
 
+        // Issue #1806: 注入组件化服务（Epic #1805 Phase 2）
+        private readonly MedicalCaseFlowManager _flowManager;
+        private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
+        private readonly MedicalCaseDataLoader _dataLoader;
+
         #endregion
 
         #region 属性
@@ -50,8 +56,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     RaisePropertyChanged(nameof(NextButtonText));
                     RaisePropertyChanged(nameof(PreviousButtonText));
 
-                    // 更新步骤名称文本
-                    UpdateCurrentStepText();
+                    // Issue #1806: UpdateCurrentStepText已删除,由FlowManager的StepChanged事件处理
 
                     PreviousStepCommand.RaiseCanExecuteChanged();
                     NextStepCommand.RaiseCanExecuteChanged();
@@ -111,15 +116,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 是否可以返回上一步
-        /// Issue #1567 - 修改判断条件（删除SelectPatient）
+        /// Issue #1806: 委托给FlowManager
         /// </summary>
-        public bool CanGoBack => CurrentStep > ConsultationStep.Consultation;
+        public bool CanGoBack => _flowManager?.CanGoBack ?? false;
 
         /// <summary>
         /// 是否可以前进下一步
-        /// Issue #1567 - 修改判断条件（删除CompleteMedicalCase改为Completion）
+        /// Issue #1806: 委托给FlowManager
         /// </summary>
-        public bool CanGoNext => CurrentStep < ConsultationStep.Completion;
+        public bool CanGoNext => _flowManager?.CanGoNext ?? false;
 
         /// <summary>
         /// 患者信息条是否可见
@@ -129,15 +134,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 下一步按钮文字
-        /// Issue #1567 - Step 3显示"完成病案"
+        /// Issue #1806: 委托给FlowManager
         /// </summary>
-        public string NextButtonText => CurrentStep == ConsultationStep.Completion ? "完成病案" : "下一步";
+        public string NextButtonText => _flowManager?.NextButtonText ?? "下一步";
 
         /// <summary>
         /// 上一步按钮文字
-        /// Issue #1567 - 所有步骤都显示"上一步"
+        /// Issue #1806: 委托给FlowManager
         /// </summary>
-        public string PreviousButtonText => "上一步";
+        public string PreviousButtonText => _flowManager?.PreviousButtonText ?? "上一步";
 
 
         /// <summary>
@@ -154,24 +159,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 命令
 
-        #region 私有方法
-
-        /// <summary>
-        /// 更新当前步骤名称文本
-        /// Issue #1567 - 修改步骤文本（辨证/施治/完成）
-        /// </summary>
-        private void UpdateCurrentStepText()
-        {
-            CurrentStepText = CurrentStep switch
-            {
-                ConsultationStep.Consultation => "辨证",
-                ConsultationStep.Prescription => "施治",
-                ConsultationStep.Completion => "完成",
-                _ => string.Empty
-            };
-        }
-
-        #endregion
+        // Issue #1806: UpdateCurrentStepText已删除,由FlowManager的StepChanged事件处理步骤文本更新
 
         public DelegateCommand BackToHomeCommand { get; }
         public DelegateCommand PreviousStepCommand { get; }
@@ -185,6 +173,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseFlowViewModel(
             MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
+            MedicalCaseFlowManager flowManager, // Issue #1806: 注入FlowManager
+            MedicalCaseLifecycleHandler lifecycleHandler, // Issue #1806: 注入LifecycleHandler
+            MedicalCaseDataLoader dataLoader, // Issue #1806: 注入DataLoader
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -194,6 +185,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // Issue #1783: 注入DataManager
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+
+            // Issue #1806: 注入组件化服务并订阅事件
+            _flowManager = flowManager ?? throw new ArgumentNullException(nameof(flowManager));
+            _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
+            _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
+
+            // 订阅组件事件
+            _flowManager.StepChanged += OnStepChanged;
+            _lifecycleHandler.ActionCompleted += OnLifecycleActionCompleted;
+            _dataLoader.DataLoaded += OnDataLoaded;
 
             // 初始化命令
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
@@ -214,8 +215,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             Logger.LogInformation("MedicalCaseFlowViewModel已初始化，当前步骤：{CurrentStep}", CurrentStep);
 
-            // 初始化步骤名称文本
-            UpdateCurrentStepText();
+            // Issue #1806: 步骤名称文本由FlowManager自动管理,无需手动初始化
         }
 
         #endregion
@@ -241,21 +241,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 上一步
-        /// Issue #1567 - 修改判断条件（删除SelectPatient）
+        /// Issue #1806: 委托给FlowManager处理步骤切换
         /// </summary>
         private void ExecutePreviousStep()
         {
-            if (CurrentStep <= ConsultationStep.Consultation)
-            {
-                Logger.LogWarning("已是第一步，无法返回");
-                return;
-            }
-
             try
             {
-                var previousStep = (ConsultationStep)((int)CurrentStep - 1);
-                Logger.LogInformation("从 {CurrentStep} 返回到 {PreviousStep}", CurrentStep, previousStep);
-                NavigateToStep(previousStep);
+                // 委托给FlowManager处理步骤回退
+                if (_flowManager.MoveToPreviousStep())
+                {
+                    // FlowManager已更新CurrentStep并触发StepChanged事件
+                    // OnStepChanged会自动同步ViewModel状态和导航到新步骤
+                    NavigateToStep(_flowManager.CurrentStep);
+                }
             }
             catch (Exception ex)
             {
@@ -320,12 +318,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 完成病案流程
-        /// Issue #1794: 从ExecuteNextStepAsync提取
+        /// Issue #1806: 委托给LifecycleHandler处理完成
         /// </summary>
         private async Task CompleteConsultationAsync()
         {
-            Logger.LogInformation("完成病案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-
             try
             {
                 SetIsBusy(true, "正在完成病案...");
@@ -336,15 +332,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 2. 更新MedicalCase状态为Completed - Epic #1612修正版
-                // Issue #1567 Phase 3 - Task 3.3
-                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Completed);
+                // 2. 委托给LifecycleHandler更新MedicalCase状态为Completed
+                var result = await _lifecycleHandler.CompleteAsync(MedicalCaseId);
 
-                Logger.LogInformation("病案已完成");
-                await ShowSuccessMessageAsync("病案已完成");
+                if (result.success)
+                {
+                    // 成功消息已在OnLifecycleActionCompleted事件处理中显示
+                    Logger.LogInformation("病案已完成");
 
-                // 3. 返回患者选择界面
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                    // 3. 返回患者选择界面
+                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(result.errorMessage ?? "完成失败");
+                }
             }
             catch (Exception ex)
             {
@@ -359,7 +361,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 处理普通下一步流程
-        /// Issue #1794: 从ExecuteNextStepAsync提取
+        /// Issue #1806: 委托给FlowManager处理步骤前进
         /// </summary>
         private async Task ProcessNormalNextStepAsync()
         {
@@ -373,10 +375,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 2. 跳转到下一步
-                var nextStep = (ConsultationStep)((int)CurrentStep + 1);
-                Logger.LogInformation("从 {CurrentStep} 前进到 {NextStep}", CurrentStep, nextStep);
-                NavigateToStep(nextStep);
+                // 2. 委托给FlowManager跳转到下一步
+                if (_flowManager.MoveToNextStep())
+                {
+                    // FlowManager已更新CurrentStep并触发StepChanged事件
+                    // OnStepChanged会自动同步ViewModel状态和导航到新步骤
+                    NavigateToStep(_flowManager.CurrentStep);
+                }
             }
             catch (Exception ex)
             {
@@ -391,32 +396,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private bool CanExecuteNextStep()
         {
-            // 如果正在处理中，禁用下一步按钮
-            if (IsBusy)
-            {
-                return false;
-            }
-
-            // Issue #1567 - 所有步骤都允许前进（数据验证在ExecuteNextStepAsync中处理）
-            return CurrentStep switch
-            {
-                ConsultationStep.Consultation => true, // Step 1: 辨证（可选，允许前进）
-                ConsultationStep.Prescription => true, // Step 2: 施治（可选，允许前进）
-                ConsultationStep.Completion => true,   // Step 3: 完成确认
-                _ => false
-            };
+            // Issue #1806: 委托给FlowManager验证是否可以执行下一步
+            return _flowManager?.ValidateCanExecuteNext(IsBusy) ?? false;
         }
 
         /// <summary>
-        /// 暂存医案（保存数据 + 更新状态 + 返回患者选择）
-        /// Issue #1567 Phase 3 - Task 3.1
+        /// 暂存医案（保存数据 + 更新状态）
+        /// Issue #1806: 委托给LifecycleHandler处理暂存
         /// </summary>
         private async void ExecuteSaveDraft()
         {
             try
             {
-                Logger.LogInformation("暂存医案，当前步骤：{CurrentStep}, MedicalCaseId: {MedicalCaseId}", CurrentStep, MedicalCaseId);
-
                 SetIsBusy(true, "正在保存...");
 
                 // 1. 调用当前Step的ISaveable接口保存数据
@@ -431,11 +422,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     }
                 }
 
-                // 2. 更新MedicalCase状态为Active
-                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Active);
+                // 2. 委托给LifecycleHandler更新MedicalCase状态为Active
+                var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
 
-                Logger.LogInformation("医案暂存成功");
-                await ShowSuccessMessageAsync("医案已暂存");
+                if (result.success)
+                {
+                    // 成功消息已在OnLifecycleActionCompleted事件处理中显示
+                    Logger.LogInformation("医案暂存成功");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(result.errorMessage ?? "暂存失败");
+                }
 
                 // Epic #1583 Phase 4: 移除自动导航，暂存后停留在当前界面（修复Issue #1569）
                 // 用户可以通过"返回主页"按钮手动返回
@@ -453,14 +451,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 取消医案（确认对话框 + 更新状态 + 返回患者选择）
-        /// Issue #1567 Phase 3 - Task 3.2
+        /// Issue #1806: 委托给LifecycleHandler处理取消
         /// </summary>
         private async void ExecuteCancel()
         {
             try
             {
-                Logger.LogInformation("取消医案，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-
                 // 1. 显示确认对话框
                 var confirmed = await ShowConfirmationAsync(
                     "确定要取消本次医案吗？未保存的数据将丢失！",
@@ -472,13 +468,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 2. 更新MedicalCase状态为Cancelled - Epic #1612修正版
-                await UpdateMedicalCaseStatusAsync(MedicalCaseStatus.Cancelled);
+                // 2. 委托给LifecycleHandler更新MedicalCase状态为Cancelled
+                var result = await _lifecycleHandler.CancelAsync(MedicalCaseId);
 
-                Logger.LogInformation("医案已取消");
+                if (result.success)
+                {
+                    // 成功消息已在OnLifecycleActionCompleted事件处理中显示
+                    Logger.LogInformation("医案已取消");
 
-                // 3. 返回患者选择界面
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                    // 3. 返回患者选择界面
+                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(result.errorMessage ?? "取消失败");
+                }
             }
             catch (Exception ex)
             {
@@ -492,113 +496,23 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 辅助方法
 
         /// <summary>
-        /// 创建MedicalCase（Task #1501 - Step 1 → Step 2 自动创建）
-        /// Phase 2: 实现真实API调用
-        /// Issue #1794: 优化方法长度（70→48行），提取验证、DTO构建、错误处理逻辑
+        /// 创建MedicalCase
+        /// Issue #1806: 委托给LifecycleHandler处理创建
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <returns>创建成功返回MedicalCaseId，失败返回Guid.Empty</returns>
         private async Task<Guid> CreateMedicalCaseAsync(Guid patientId)
         {
-            try
+            // 委托给LifecycleHandler创建MedicalCase
+            var result = await _lifecycleHandler.CreateMedicalCaseAsync(patientId);
+
+            if (!result.success)
             {
-                Logger.LogInformation("开始创建MedicalCase，PatientId: {PatientId}", patientId);
-
-                // Phase 2: 验证SessionManager和CurrentUser
-                if (!ValidateSessionAndUser())
-                {
-                    return Guid.Empty;
-                }
-
-                Logger.LogInformation("✅ SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
-                    SessionManager!.CurrentUser!.UserName, SessionManager.CurrentUser.Id);
-
-                // Phase 2: 构建MedicalCaseCreateDto
-                var createDto = CreateMedicalCaseDto(patientId);
-
-                Logger.LogInformation("📝 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, Status: {Status}",
-                    createDto.PatientId, createDto.DoctorId, createDto.Status);
-
-                // Issue #1783: 使用DataManager创建MedicalCase
-                var createdDto = await _dataManager.CreateAsync(createDto);
-
-                if (createdDto == null)
-                {
-                    Logger.LogError("❌ DataManager返回null，创建失败");
-                    return Guid.Empty;
-                }
-
-                Logger.LogInformation("✅ MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
-                return createdDto.Id;
-            }
-            catch (Exception ex)
-            {
-                HandleCreateMedicalCaseError(ex, patientId);
-                return Guid.Empty;
-            }
-        }
-
-        /// <summary>
-        /// 验证SessionManager和CurrentUser
-        /// Issue #1794: 从CreateMedicalCaseAsync提取
-        /// </summary>
-        private bool ValidateSessionAndUser()
-        {
-            if (SessionManager == null)
-            {
-                Logger.LogError("❌ SessionManager为null，无法创建MedicalCase");
-                if (UserNotificationService != null)
-                {
-                    _ = UserNotificationService.ShowErrorAsync("会话管理器未初始化，无法创建医案");
-                }
-                return false;
+                // 错误消息已在OnLifecycleActionCompleted事件处理中显示
+                Logger.LogError("创建MedicalCase失败：{ErrorMessage}", result.errorMessage);
             }
 
-            if (SessionManager.CurrentUser == null)
-            {
-                Logger.LogError("❌ SessionManager.CurrentUser为null，无法创建MedicalCase");
-                if (UserNotificationService != null)
-                {
-                    _ = UserNotificationService.ShowErrorAsync("用户信息丢失，无法创建医案");
-                }
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// 构建MedicalCase创建DTO
-        /// Issue #1794: 从CreateMedicalCaseAsync提取
-        /// </summary>
-        private MedicalCaseCreateDto CreateMedicalCaseDto(Guid patientId)
-        {
-            return new MedicalCaseCreateDto
-            {
-                PatientId = patientId,
-                DoctorId = SessionManager!.CurrentUser!.Id,
-                Status = MedicalCaseStatus.Active,
-                Remark = null // 初始创建无备注
-            };
-        }
-
-        /// <summary>
-        /// 处理MedicalCase创建失败
-        /// Issue #1794: 从CreateMedicalCaseAsync提取
-        /// </summary>
-        private void HandleCreateMedicalCaseError(Exception ex, Guid patientId)
-        {
-            Logger.LogError(ex, "❌ 创建MedicalCase失败，PatientId: {PatientId}，异常类型: {ExceptionType}，消息: {Message}",
-                patientId, ex.GetType().Name, ex.Message);
-
-            // 记录详细堆栈
-            Logger.LogError("堆栈跟踪：{StackTrace}", ex.StackTrace);
-
-            if (UserNotificationService != null)
-            {
-                var detailedMessage = $"创建医案失败：{ex.Message}\n\n异常类型：{ex.GetType().Name}";
-                _ = UserNotificationService.ShowErrorAsync(detailedMessage);
-            }
+            return result.medicalCaseId;
         }
 
         /// <summary>
@@ -650,41 +564,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 更新MedicalCase状态
-        /// Issue #1567 Phase 3 - 支持暂存/取消/完成状态更新
-        /// </summary>
-        private async Task UpdateMedicalCaseStatusAsync(MedicalCaseStatus newStatus)
-        {
-            try
-            {
-                Logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
-                    MedicalCaseId, newStatus);
-
-                // 构建更新DTO
-                var updateDto = new MedicalCaseUpdateDto
-                {
-                    Id = MedicalCaseId,
-                    Status = newStatus.ToString()
-                };
-
-                // Issue #1783: 使用DataManager更新状态
-                var updated = await _dataManager.UpdateSimpleAsync(updateDto);
-
-                if (updated == null)
-                {
-                    throw new InvalidOperationException("DataManager返回null，状态更新失败");
-                }
-
-                Logger.LogInformation("MedicalCase状态更新成功，新状态: {NewStatus}", newStatus);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "更新MedicalCase状态失败，MedicalCaseId: {MedicalCaseId}, 目标状态: {NewStatus}",
-                    MedicalCaseId, newStatus);
-                throw; // 重新抛出异常，让调用方处理
-            }
-        }
+        // Issue #1806: UpdateMedicalCaseStatusAsync已删除,由LifecycleHandler处理所有状态更新
 
         #endregion
 
@@ -722,14 +602,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 初始化患者信息和医案
-        /// Issue #1794: 从OnNavigatedTo提取
+        /// Issue #1806: 委托给DataLoader格式化患者信息
         /// </summary>
         private async Task<bool> InitializePatientInfoAsync()
         {
             if (CurrentPatient != null)
             {
-                SelectedPatientName = CurrentPatient.Name;
-                SelectedPatientInfo = $"{CurrentPatient.Gender} | {CurrentPatient.Age}岁 | {CurrentPatient.PhoneNumber}";
+                // Issue #1806: 委托给DataLoader格式化患者信息
+                var (patientName, patientInfo) = _dataLoader.FormatPatientInfo(CurrentPatient);
+                SelectedPatientName = patientName;
+                SelectedPatientInfo = patientInfo;
 
                 // Issue #1596 - 新建医案场景：有患者但无MedicalCaseId
                 if (MedicalCaseId == Guid.Empty)
@@ -737,9 +619,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     try
                     {
                         SetIsBusy(true, "正在创建医案...");
-                        Logger.LogInformation("新建医案场景，开始创建MedicalCase，PatientId: {PatientId}", CurrentPatient.Id);
 
-                        // 调用CreateMedicalCaseAsync创建医案
+                        // Issue #1806: 委托给LifecycleHandler创建医案
                         MedicalCaseId = await CreateMedicalCaseAsync(CurrentPatient.Id);
 
                         if (MedicalCaseId == Guid.Empty)
@@ -765,8 +646,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             else
             {
-                // 默认情况：导航到当前步骤（初始化时为 SelectPatient）
-                // 修复 Issue #1564 Bug：构造函数只设置 CurrentStep，但没有触发 Region 导航
+                // 默认情况：导航到当前步骤
                 Logger.LogInformation("执行默认导航到当前步骤：{CurrentStep}", CurrentStep);
                 NavigateToStep(CurrentStep);
             }
@@ -776,7 +656,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 加载继续看诊的医案数据
-        /// Issue #1794: 从OnNavigatedTo提取
+        /// Issue #1806: 委托给DataLoader处理数据加载
         /// </summary>
         private async Task LoadMedicalCaseDetailsAsync(NavigationContext navigationContext)
         {
@@ -790,39 +670,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在加载医案数据...");
 
-                Logger.LogInformation("检测到继续看诊场景，加载医案详情：MedicalCaseId={MedicalCaseId}", MedicalCaseId);
+                // Issue #1806: 委托给DataLoader加载医案数据
+                var result = await _dataLoader.LoadMedicalCaseDetailsAsync(MedicalCaseId);
 
-                // Issue #1783: 使用DataManager加载完整医案数据
-                var medicalCaseDetail = await _dataManager.GetByIdWithDetailsAsync(MedicalCaseId);
-
-                if (medicalCaseDetail == null)
+                if (!result.success)
                 {
-                    Logger.LogWarning("未找到医案数据，MedicalCaseId={MedicalCaseId}", MedicalCaseId);
-                    await ShowErrorMessageAsync("未找到医案数据");
+                    // 错误消息已在OnDataLoaded事件处理中显示
+                    Logger.LogWarning("加载医案数据失败：{ErrorMessage}", result.errorMessage);
                     return;
                 }
 
-                if (medicalCaseDetail.Consultation != null)
-                {
-                    Logger.LogInformation("加载到诊疗记录，ConsultationId={ConsultationId}", medicalCaseDetail.Consultation.Id);
-                }
-                else
-                {
-                    Logger.LogInformation("无诊疗记录数据");
-                }
-
-                if (medicalCaseDetail.Prescription != null)
-                {
-                    Logger.LogInformation("加载到处方信息，PrescriptionId={PrescriptionId}", medicalCaseDetail.Prescription.Id);
-                }
-                else
-                {
-                    Logger.LogInformation("无处方数据");
-                }
-
                 // 将加载的数据保存到导航参数，供子步骤ViewModel使用
-                navigationContext.Parameters.Add("LoadedConsultation", medicalCaseDetail.Consultation);
-                navigationContext.Parameters.Add("LoadedPrescription", medicalCaseDetail.Prescription);
+                navigationContext.Parameters.Add("LoadedConsultation", _dataLoader.CachedConsultation);
+                navigationContext.Parameters.Add("LoadedPrescription", _dataLoader.CachedPrescription);
 
                 Logger.LogInformation("医案数据加载完成");
             }
@@ -879,6 +739,104 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 Logger.LogError(ex, "处理PrescriptionCompletedEvent失败");
                 await ShowErrorMessageAsync($"处理处方完成失败：{ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 流程步骤变更事件处理
+        /// Issue #1806: 响应MedicalCaseFlowManager的StepChanged事件
+        /// </summary>
+        private void OnStepChanged(object? sender, StepChangedEventArgs e)
+        {
+            Logger.LogInformation("流程步骤已变更：{PreviousStep} → {CurrentStep}", e.PreviousStep, e.CurrentStep);
+
+            // 同步CurrentStep属性（触发UI更新）
+            CurrentStep = e.CurrentStep;
+
+            // 更新步骤文本
+            CurrentStepText = e.StepText;
+
+            // 刷新命令状态
+            PreviousStepCommand.RaiseCanExecuteChanged();
+            NextStepCommand.RaiseCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 生命周期操作完成事件处理
+        /// Issue #1806: 响应MedicalCaseLifecycleHandler的ActionCompleted事件
+        /// </summary>
+        private async void OnLifecycleActionCompleted(object? sender, LifecycleActionCompletedEventArgs e)
+        {
+            Logger.LogInformation("生命周期操作完成：{Action}, 成功: {Success}", e.Action, e.Success);
+
+            if (e.Success)
+            {
+                var message = e.Action switch
+                {
+                    LifecycleAction.Create => $"医案创建成功，ID: {e.MedicalCaseId}",
+                    LifecycleAction.SaveDraft => "医案已暂存",
+                    LifecycleAction.Cancel => "医案已取消",
+                    LifecycleAction.Complete => "医案已完成",
+                    _ => "操作已完成"
+                };
+
+                await ShowSuccessMessageAsync(message);
+            }
+            else
+            {
+                await ShowErrorMessageAsync(e.ErrorMessage ?? "操作失败");
+            }
+        }
+
+        /// <summary>
+        /// 数据加载完成事件处理
+        /// Issue #1806: 响应MedicalCaseDataLoader的DataLoaded事件
+        /// </summary>
+        private async void OnDataLoaded(object? sender, DataLoadedEventArgs e)
+        {
+            Logger.LogInformation("数据加载完成：MedicalCaseId: {MedicalCaseId}, 成功: {Success}, 包含诊疗: {HasConsultation}, 包含处方: {HasPrescription}",
+                e.MedicalCaseId, e.Success, e.HasConsultation, e.HasPrescription);
+
+            if (!e.Success)
+            {
+                await ShowErrorMessageAsync(e.ErrorMessage ?? "数据加载失败");
+            }
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        /// <summary>
+        /// 释放资源，取消订阅组件事件
+        /// Issue #1806: 实现Dispose模式
+        /// </summary>
+        /// <summary>
+        /// Issue #1806: 释放组件事件订阅
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // 取消订阅组件事件
+                if (_flowManager != null)
+                {
+                    _flowManager.StepChanged -= OnStepChanged;
+                }
+
+                if (_lifecycleHandler != null)
+                {
+                    _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
+                }
+
+                if (_dataLoader != null)
+                {
+                    _dataLoader.DataLoaded -= OnDataLoaded;
+                }
+
+                Logger.LogInformation("MedicalCaseFlowViewModel已释放资源");
+            }
+
+            base.Dispose(disposing);
         }
 
         #endregion
