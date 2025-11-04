@@ -256,8 +256,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (updatedCase != null)
                 {
                     await ShowSuccessMessageAsync("医疗案例保存成功");
-                    // 修复NavigateBack调用 - 提供区域名称
-                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
+                    // Issue #1799: 更新导航目标为MedicalCaseManagementView
+                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
                 }
                 else
                 {
@@ -301,7 +301,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void ExecuteBack()
         {
-            NavigateTo("MainRegion", "MedicalCaseListView");
+            // Issue #1799: 更新导航目标为MedicalCaseManagementView
+            NavigateTo("MainRegion", "MedicalCaseManagementView");
         }
 
         /// <summary>

@@ -46,10 +46,10 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();   // Epic #1494 - Task #1496: 医案流程主视图模型
             containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
             containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
-            containerRegistry.Register<ViewModels.OtherCasesQueryViewModel>();   // Issue #1592 - Phase 3: 其他病案查询
+            // Issue #1799: 删除OtherCasesQueryViewModel（违反AR-001聚合根约束）
+            // Issue #1799: 删除MedicalCaseListViewModel（功能与ManagementView重复）
             // TODO: 修复编译错误后再启用
             // containerRegistry.Register<MedicalCaseManagementViewModel>();
-            // containerRegistry.Register<MedicalCaseListViewModel>();
 
             // 注册视图用于导航 - 需要对应视图文件存在
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
@@ -58,9 +58,10 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图
             containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();  // Task #1499: 处方编辑器视图
             containerRegistry.RegisterForNavigation<Views.CompletionView>();        // Epic #1494 - Task #1500: Step 4 完成医案视图
-            containerRegistry.RegisterForNavigation<Views.OtherCasesQueryView>();   // Issue #1592 - Phase 3: 其他病案查询视图
+            // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
+            // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
+            // TODO: 修复编译错误后再启用
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();
-            // containerRegistry.RegisterForNavigation<Views.MedicalCaseListView>();
         }
     }
 }

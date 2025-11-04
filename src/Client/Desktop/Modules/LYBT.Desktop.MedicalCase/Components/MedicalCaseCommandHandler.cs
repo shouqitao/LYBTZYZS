@@ -393,7 +393,8 @@ namespace LYBT.Desktop.MedicalCase.Components
                     { "PatientId", patientId }
                 };
 
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseListView", parameters);
+                // Issue #1799: 更新导航目标为MedicalCaseManagementView
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView", parameters);
                 await Task.CompletedTask;
                 return true;
             }
@@ -413,7 +414,8 @@ namespace LYBT.Desktop.MedicalCase.Components
             try
             {
                 _logger.LogInformation("导航到病案列表");
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseListView");
+                // Issue #1799: 更新导航目标为MedicalCaseManagementView
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
                 await Task.CompletedTask;
                 return true;
             }

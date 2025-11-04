@@ -31,21 +31,18 @@ namespace LYBT.Desktop.Users
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<UserManagementViewModel>();
-            containerRegistry.Register<UserCreateViewModel>();
-            containerRegistry.Register<UserEditViewModel>();
 
             // 注册实际存在的视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
-            // Issue #1248: 注册新增的 CRUD 视图
-            containerRegistry.RegisterForNavigation<Views.UserCreateView>();
-            containerRegistry.RegisterForNavigation<Views.UserEditView>();
-
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();
             containerRegistry.RegisterDialog<Views.ResetPasswordDialog, ViewModels.ResetPasswordDialogViewModel>();
             containerRegistry.RegisterDialog<Views.UserProfileDialog, ViewModels.UserProfileDialogViewModel>();
+
+            // Issue #1798: 用户表单对话框（合并创建和编辑功能）
+            containerRegistry.RegisterDialog<Views.UserFormDialog, ViewModels.UserFormDialogViewModel>();
         }
     }
 }

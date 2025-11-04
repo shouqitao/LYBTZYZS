@@ -22,27 +22,11 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
 
         #endregion
 
-        #region 导航属性
-
-        private string _activeView = "MedicalCaseListView";
-
-        /// <summary>
-        /// 当前激活的视图
-        /// </summary>
-        public string ActiveView
-        {
-            get => _activeView;
-            set => SetProperty(ref _activeView, value);
-        }
-
-        #endregion
+        // Issue #1803: 删除ActiveView属性（MedicalCaseListView已删除，不再需要子视图导航）
 
         #region 命令
 
-        /// <summary>
-        /// 显示病历列表命令
-        /// </summary>
-        public DelegateCommand ShowListCommand { get; }
+        // Issue #1803: 删除ShowListCommand（MedicalCaseListView已删除）
 
         /// <summary>
         /// 创建新病历命令
@@ -137,7 +121,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // 初始化命令
-            ShowListCommand = new DelegateCommand(ShowList);
+            // Issue #1803: 删除ShowListCommand初始化（MedicalCaseListView已删除）
             CreateNewCommand = new DelegateCommand(CreateNew);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
             BackToHomeCommand = new DelegateCommand(BackToHome);
@@ -172,30 +156,14 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
         {
             await base.InitializeAsync(parameters);
 
-            // 默认显示病历列表
-            ShowList();
+            // Issue #1803: 删除ShowList()调用（MedicalCaseListView已删除）
         }
 
         #endregion
 
         #region 命令实现
 
-        /// <summary>
-        /// 显示病历列表
-        /// </summary>
-        private void ShowList()
-        {
-            try
-            {
-                NavigateTo("MedicalCaseContentRegion", "MedicalCaseListView");
-                ActiveView = "MedicalCaseListView";
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到病历列表时发生异常");
-                ShowErrorMessage("加载病历列表失败，请稍后重试");
-            }
-        }
+        // Issue #1803: 删除ShowList()方法（MedicalCaseListView已删除，不再需要子视图导航）
 
         /// <summary>
         /// 创建新病历
@@ -205,7 +173,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             try
             {
                 NavigateTo("MedicalCaseContentRegion", "CreateMedicalCaseView");
-                ActiveView = "CreateMedicalCaseView";
+                // Issue #1803: 删除ActiveView赋值（属性已删除）
             }
             catch (Exception ex)
             {
@@ -370,7 +338,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
                 };
 
                 NavigateTo("MedicalCaseContentRegion", "MedicalCaseDetailView", parameters);
-                ActiveView = "MedicalCaseDetailView";
+                // Issue #1803: 删除ActiveView赋值（属性已删除）
             }
             catch (Exception ex)
             {
@@ -379,13 +347,7 @@ namespace LYBT.Desktop.Modules.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 导航回列表视图
-        /// </summary>
-        public void NavigateBackToList()
-        {
-            ShowList();
-        }
+        // Issue #1803: 删除NavigateBackToList()方法（MedicalCaseListView已删除）
 
         #endregion
     }

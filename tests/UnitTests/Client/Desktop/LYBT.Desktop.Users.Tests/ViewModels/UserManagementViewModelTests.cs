@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Users.Tests.ViewModels
 {
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     {
         private readonly Mock<UserCommandHandler> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly Mock<IDialogService> _mockDialogService;
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserManagementViewModel>> _mockLogger;
@@ -42,6 +44,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _mockUserRepository = new Mock<IUserRepository>();
             _mockCommandLogger = new Mock<ILogger<UserCommandHandler>>();
             _mockCommandHandler = new Mock<UserCommandHandler>(_mockUserRepository.Object, _mockCommandLogger.Object);
+            _mockDialogService = new Mock<IDialogService>();
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserManagementViewModel>>();
@@ -54,9 +57,10 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_mockLogger.Object);
 
-            // Create ViewModel instance
+            // Create ViewModel instance (Issue #1798: 添加IDialogService参数)
             _viewModel = new UserManagementViewModel(
                 _mockCommandHandler.Object,
+                _mockDialogService.Object,
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
                 _mockRegionManager.Object,

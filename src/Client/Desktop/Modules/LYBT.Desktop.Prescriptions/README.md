@@ -38,7 +38,6 @@ LYBT.Desktop.Prescriptions/
 │   ├── PrescriptionItemRow.cs                     # 处方条目行(DataGrid绑定)
 │   ├── PrescriptionItemViewModel.cs               # 处方条目ViewModel(单个药材条目)
 │   ├── PrescriptionManagementViewModel.cs         # 处方管理ViewModel(25个属性+20个命令+20个方法)
-│   ├── PrescriptionsMainViewModel.cs              # 处方主界面ViewModel(容器)
 │   ├── PrescriptionViewModel.cs                   # 处方ViewModel(单个处方详情)
 │   └── SelectFormulaDialogViewModel.cs            # 选择验方对话框ViewModel(验方列表选择)
 ├── Views/                                          # WPF视图层(12个文件:6个XAML+6个CodeBehind)
@@ -50,8 +49,6 @@ LYBT.Desktop.Prescriptions/
 │   ├── PrescriptionEditorDialog.xaml.cs           # 处方编辑对话框CodeBehind
 │   ├── PrescriptionManagementView.xaml            # 处方管理视图
 │   ├── PrescriptionManagementView.xaml.cs         # 处方管理CodeBehind
-│   ├── PrescriptionsMainView.xaml                 # 处方主界面视图
-│   ├── PrescriptionsMainView.xaml.cs              # 处方主界面CodeBehind
 │   ├── PrescriptionView.xaml                      # 处方详情视图
 │   ├── PrescriptionView.xaml.cs                   # 处方详情CodeBehind
 │   ├── SelectFormulaDialog.xaml                   # 选择验方对话框视图
@@ -1853,7 +1850,7 @@ public class PrescriptionsModule : IModule
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // 注册ViewModels(单例模式)
-        containerRegistry.RegisterSingleton<PrescriptionsMainViewModel>();
+        // Issue #1801: PrescriptionsMainViewModel已删除（功能与PrescriptionManagementView重复）
         containerRegistry.RegisterSingleton<PrescriptionManagementViewModel>();
         containerRegistry.Register<PrescriptionEditorDialogViewModel>();
         containerRegistry.Register<HerbSelectionDialogViewModel>();
@@ -1862,7 +1859,7 @@ public class PrescriptionsModule : IModule
         containerRegistry.Register<PrescriptionViewModel>();
 
         // 注册Views(用于区域导航)
-        containerRegistry.RegisterForNavigation<PrescriptionsMainView, PrescriptionsMainViewModel>();
+        // Issue #1801: PrescriptionsMainView已删除（功能与PrescriptionManagementView重复）
         containerRegistry.RegisterForNavigation<PrescriptionManagementView, PrescriptionManagementViewModel>();
         containerRegistry.RegisterForNavigation<PrescriptionView, PrescriptionViewModel>();
 

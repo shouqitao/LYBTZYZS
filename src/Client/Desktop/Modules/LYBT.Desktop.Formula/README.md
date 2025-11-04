@@ -20,7 +20,6 @@ LYBT.Desktop.Formula/
 │   ├── FormulaManagementViewModel.cs        # 验方列表管理ViewModel (458行: 20 Commands + 20 Methods)
 │   ├── FormulaDetailViewModel.cs            # 验方详情编辑ViewModel (675行: 25 Properties + 11 Commands + 22 Methods)
 │   ├── EditFormulaDialogViewModel.cs        # 编辑对话框ViewModel
-│   ├── ViewFormulaDialogViewModel.cs        # 查看对话框ViewModel
 │   ├── FormulaValidationViewModel.cs        # 验方验证ViewModel (待验证列表管理)
 │   ├── FormulaHerbItemViewModel.cs          # 药材条目ViewModel (单个药材管理)
 │   └── Components/                          # 组件式辅助类 (4个Helper)
@@ -28,15 +27,13 @@ LYBT.Desktop.Formula/
 │       ├── FormulaCommandHandler.cs         # 命令处理器 (封装命令逻辑)
 │       ├── FormulaDataManager.cs            # 数据管理器 (封装数据加载逻辑)
 │       └── FormulaValidator.cs              # 验证器 (封装验证逻辑)
-├── Views/                                   # 视图层 (5个View: 10个文件.xaml+.xaml.cs)
+├── Views/                                   # 视图层 (4个View: 8个文件.xaml+.xaml.cs)
 │   ├── FormulaManagementView.xaml           # 验方列表管理界面
 │   ├── FormulaManagementView.xaml.cs
 │   ├── FormulaDetailView.xaml               # 验方详情编辑界面
 │   ├── FormulaDetailView.xaml.cs
 │   ├── EditFormulaDialog.xaml               # 编辑对话框 (快速编辑)
 │   ├── EditFormulaDialog.xaml.cs
-│   ├── ViewFormulaDialog.xaml               # 查看对话框 (只读查看)
-│   ├── ViewFormulaDialog.xaml.cs
 │   ├── FormulaValidationView.xaml           # 验方验证界面 (待验证列表)
 │   └── FormulaValidationView.xaml.cs
 ├── FormulaModule.cs                         # Prism模块定义 (2方法: OnInitialized + RegisterTypes)
@@ -135,7 +132,6 @@ public class FormulaModule : IModule
         containerRegistry.Register<FormulaManagementViewModel>();
         containerRegistry.Register<FormulaDetailViewModel>();
         containerRegistry.Register<EditFormulaDialogViewModel>();
-        containerRegistry.Register<ViewFormulaDialogViewModel>();
         containerRegistry.Register<FormulaValidationViewModel>();
         containerRegistry.Register<FormulaHerbItemViewModel>();
 
@@ -145,11 +141,11 @@ public class FormulaModule : IModule
         containerRegistry.Register<FormulaDataManager>();
         containerRegistry.Register<FormulaValidator>();
 
-        // 注册Views (5个)
+        // 注册Views (4个)
         containerRegistry.RegisterForNavigation<FormulaManagementView>();
         containerRegistry.RegisterForNavigation<FormulaDetailView>();
         containerRegistry.RegisterDialog<EditFormulaDialog>();
-        containerRegistry.RegisterDialog<ViewFormulaDialog>();
+        // Issue #1802: ViewFormulaDialog已删除（改用FormulaDetailView进行只读查看）
         containerRegistry.RegisterForNavigation<FormulaValidationView>();
 
         // 注册Repository
@@ -1190,7 +1186,6 @@ public class FormulaModule : IModule
         containerRegistry.Register<FormulaManagementViewModel>();
         containerRegistry.Register<FormulaDetailViewModel>();
         containerRegistry.Register<EditFormulaDialogViewModel>();
-        containerRegistry.Register<ViewFormulaDialogViewModel>();
         containerRegistry.Register<FormulaValidationViewModel>();
         containerRegistry.Register<FormulaHerbItemViewModel>();
 
@@ -1200,11 +1195,11 @@ public class FormulaModule : IModule
         containerRegistry.Register<FormulaDataManager>();
         containerRegistry.Register<FormulaValidator>();
 
-        // 注册Views (5个)
+        // 注册Views (4个)
         containerRegistry.RegisterForNavigation<FormulaManagementView>();
         containerRegistry.RegisterForNavigation<FormulaDetailView>();
         containerRegistry.RegisterDialog<EditFormulaDialog>();         // 对话框
-        containerRegistry.RegisterDialog<ViewFormulaDialog>();         // 对话框
+        // Issue #1802: ViewFormulaDialog已删除（改用FormulaDetailView进行只读查看）
         containerRegistry.RegisterForNavigation<FormulaValidationView>();
 
         // 注册Repository

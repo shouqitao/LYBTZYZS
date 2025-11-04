@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Formula
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.ViewFormulaDialog, ViewModels.ViewFormulaDialogViewModel>();
+            // Issue #1802: ViewFormulaDialog已删除（改用FormulaDetailView进行只读查看）
         }
     }
 }

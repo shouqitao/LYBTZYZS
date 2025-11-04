@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs; // Issue #1798: 添加Dialog服务
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -20,6 +21,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         // Issue #1785: 使用CommandHandler替代直接Repository访问
         private readonly UserCommandHandler _commandHandler;
+
+        // Issue #1798: Dialog服务用于打开用户表单对话框
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -129,6 +133,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         public UserManagementViewModel(
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
+            IDialogService dialogService, // Issue #1798: 注入DialogService
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -138,6 +143,9 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+
+            // Issue #1798: 注入DialogService
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -285,15 +293,25 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 添加新用户
+        /// Issue #1798: 使用Dialog替代Region导航
         /// </summary>
         protected override Task OnExecuteAddAsync()
         {
             Logger.LogDebug("执行添加新用户");
 
-            // 导航到用户创建页面
-            NavigateTo("AdminContentRegion", "UserCreateView", new Prism.Regions.NavigationParameters
+            // Issue #1798: 使用UserFormDialog
+            var parameters = new DialogParameters
             {
-                { "title", "创建用户" }
+                { "mode", "create" }
+            };
+
+            _dialogService.ShowDialog("UserFormDialog", parameters, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    Logger.LogInformation("用户创建成功，刷新列表");
+                    _ = SearchAsync(); // 刷新列表
+                }
             });
 
             return Task.CompletedTask;
@@ -362,6 +380,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 编辑用户
+        /// Issue #1798: 使用Dialog替代Region导航
         /// </summary>
         private void ExecuteEditUser(UserDto user)
         {
@@ -369,10 +388,20 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            NavigateTo("AdminContentRegion", "UserEditView", new Prism.Regions.NavigationParameters
+            // Issue #1798: 使用UserFormDialog
+            var parameters = new DialogParameters
             {
-                { "UserId", user.Id },
-                { "title", $"编辑用户 - {user.RealName}" }
+                { "mode", "edit" },
+                { "userId", user.Id }
+            };
+
+            _dialogService.ShowDialog("UserFormDialog", parameters, result =>
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    Logger.LogInformation("用户编辑成功，刷新列表");
+                    _ = SearchAsync(); // 刷新列表
+                }
             });
         }
 

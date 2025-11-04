@@ -270,7 +270,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
 
         /// <summary>
         /// 分页获取处方列表（支持关键字查询）
-        /// Issue #1786: 为PrescriptionsMainViewModel提供统计查询功能
+        /// Issue #1786: 为处方管理提供统计查询功能
+        /// Issue #1801: PrescriptionsMainViewModel已删除，方法保留供其他视图使用
         /// </summary>
         public virtual async Task<ApiResponse<PagedResult<PrescriptionDto>>> GetPrescriptionsAsync(
             int page = 1,
