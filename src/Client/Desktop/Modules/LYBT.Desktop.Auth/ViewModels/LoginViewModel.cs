@@ -99,6 +99,106 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
         }
 
+        #region INavigationAware - Token 自动验证（Issue #1824）
+
+        /// <summary>
+        /// 导航到登录页面时触发 - Issue #1824 Token 自动验证
+        /// </summary>
+        public override void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            base.OnNavigatedTo(navigationContext);
+
+            // 异步执行 Token 验证，避免阻塞 UI 线程
+            _ = Task.Run(async () =>
+            {
+                await TryAutoLoginWithTokenAsync();
+            });
+        }
+
+        /// <summary>
+        /// 尝试使用保存的 Token 自动登录 - Issue #1824
+        /// </summary>
+        private async Task TryAutoLoginWithTokenAsync()
+        {
+            try
+            {
+                // 步骤 1：获取保存的 Token
+                var token = await _tokenStorage.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    Logger.LogInformation("未找到保存的 Token，显示登录表单");
+                    return; // 无 Token，显示登录表单
+                }
+
+                Logger.LogInformation("发现保存的 Token，开始验证...");
+
+                // 步骤 2：验证 Token
+                var validationResult = await _authService.ValidateTokenAsync(token);
+
+                if (!validationResult.IsSuccess || validationResult.Data == null)
+                {
+                    // API 调用失败（可能 API 不可用）
+                    Logger.LogWarning("Token 验证 API 调用失败: {Message}，降级到密码登录", validationResult.Message);
+                    await ClearInvalidTokenAsync();
+                    return;
+                }
+
+                var validation = validationResult.Data;
+
+                // 步骤 3：检查 Token 是否有效
+                if (!validation.IsValid)
+                {
+                    // Token 无效或过期
+                    Logger.LogWarning("Token 无效或已过期: {Message}，降级到密码登录", validation.ErrorMessage);
+                    await ClearInvalidTokenAsync();
+                    return;
+                }
+
+                // 步骤 4：Token 有效，执行自动登录
+                Logger.LogInformation("Token 验证成功，用户 {Username} 自动登录", validation.Username);
+
+                // 获取完整的用户信息
+                var loginResponse = await _tokenStorage.GetLoginResponseAsync();
+                if (loginResponse?.User == null)
+                {
+                    Logger.LogWarning("无法获取完整的用户信息，降级到密码登录");
+                    await ClearInvalidTokenAsync();
+                    return;
+                }
+
+                // 触发登录成功事件（与密码登录相同的流程）
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    Logger.LogInformation("📢 Token 自动登录成功，发布 LoginSuccessEvent");
+                    EventAggregator.GetEvent<LoginSuccessEvent>().Publish(loginResponse.User);
+                });
+            }
+            catch (Exception ex)
+            {
+                // 捕获所有异常（包括 API 不可用）
+                Logger.LogError(ex, "Token 自动验证失败，降级到密码登录");
+                await ClearInvalidTokenAsync();
+            }
+        }
+
+        /// <summary>
+        /// 清除无效的 Token
+        /// </summary>
+        private async Task ClearInvalidTokenAsync()
+        {
+            try
+            {
+                await _tokenStorage.ClearAuthenticationAsync();
+                Logger.LogInformation("已清除无效的 Token");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "清除无效 Token 时发生错误");
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 加载保存的凭据 - Issue #861 & #1246
         /// 优先加载"记住密码"的凭据（含用户名+密码），否则仅加载用户名
