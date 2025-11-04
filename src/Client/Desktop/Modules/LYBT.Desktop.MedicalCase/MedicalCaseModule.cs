@@ -40,6 +40,11 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<PrescriptionEditorHerbFilterManager>();
             containerRegistry.Register<PrescriptionEditorValidator>();
 
+            // Issue #1807: 注册PrescriptionEditorViewModel组件化服务 Phase 2
+            containerRegistry.Register<PrescriptionCalculator>();
+            containerRegistry.Register<FormulaImportHandler>();
+            containerRegistry.Register<HerbSelectionManager>();
+
             // Issue #1548: CreateMedicalCaseDialog已删除（由MedicalCaseFlowView的4步流程替代）
             // Phase 3.4: 启用 Prism Dialog 注册（已废弃）
             // containerRegistry.RegisterDialog<Views.CreateMedicalCaseDialog, ViewModels.CreateMedicalCaseDialogViewModel>();

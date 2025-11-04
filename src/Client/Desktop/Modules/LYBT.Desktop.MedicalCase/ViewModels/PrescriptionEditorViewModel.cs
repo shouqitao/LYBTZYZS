@@ -19,41 +19,6 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 8列DataGrid行模型（简化版）
-    /// 每行包含4个药材（药材+用量）
-    /// </summary>
-    public class SimpleItemRow : BindableBase
-    {
-        private PrescriptionItemDto _item1 = new();
-        private PrescriptionItemDto _item2 = new();
-        private PrescriptionItemDto _item3 = new();
-        private PrescriptionItemDto _item4 = new();
-
-        public PrescriptionItemDto Item1
-        {
-            get => _item1;
-            set => SetProperty(ref _item1, value);
-        }
-
-        public PrescriptionItemDto Item2
-        {
-            get => _item2;
-            set => SetProperty(ref _item2, value);
-        }
-
-        public PrescriptionItemDto Item3
-        {
-            get => _item3;
-            set => SetProperty(ref _item3, value);
-        }
-
-        public PrescriptionItemDto Item4
-        {
-            get => _item4;
-            set => SetProperty(ref _item4, value);
-        }
-    }
-    /// <summary>
     /// 处方编辑器ViewModel - Epic #1540 方案B重构版
     /// 通过IPrescriptionEditorService接口解除循环依赖 Prescriptions ↔ MedicalCase
     /// Epic #1494: 医案流程UI重构
@@ -76,6 +41,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         // Issue #1790: 组件化服务 - 药材过滤和验证逻辑
         private readonly PrescriptionEditorHerbFilterManager _herbFilterManager;
         private readonly PrescriptionEditorValidator _validator;
+
+        // Issue #1807: 组件化服务 Phase 2 - 价格计算、验方导入、药材选择
+        private readonly PrescriptionCalculator _calculator;
+        private readonly FormulaImportHandler _formulaImportHandler;
+        private readonly HerbSelectionManager _herbSelectionManager;
 
         #endregion
 
@@ -104,8 +74,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 处方项行集合（8列DataGrid绑定）
+        /// Issue #1807: 委托给HerbSelectionManager
         /// </summary>
-        public ObservableCollection<SimpleItemRow> ItemRows { get; } = new();
+        public ObservableCollection<SimpleItemRow> ItemRows => _herbSelectionManager.ItemRows;
 
         private int _dosageCount = 7;
         /// <summary>
@@ -155,37 +126,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 单剂价格（自动计算）- Epic #1540: 使用真实药材价格
-        /// Issue #1790: 使用委托后的AllHerbs
+        /// Issue #1807: 委托给PrescriptionCalculator
         /// </summary>
         public decimal SingleDosagePrice
         {
             get
             {
                 var allItems = GetAllItems();
-                return allItems.Sum(item =>
-                {
-                    var herb = AllHerbs.FirstOrDefault(h => h.Id == item.HerbId);
-                    return (herb?.Price ?? 0m) * item.Dosage;
-                });
+                return _calculator?.CalculateSingleDosagePrice(allItems, AllHerbs) ?? 0m;
             }
         }
 
         /// <summary>
         /// 总价格（单剂价格 × 剂数）
+        /// Issue #1807: 委托给PrescriptionCalculator
         /// </summary>
-        public decimal TotalPrice => SingleDosagePrice * DosageCount;
+        public decimal TotalPrice => _calculator?.CalculateTotalPrice(SingleDosagePrice, DosageCount) ?? 0m;
 
         /// <summary>
         /// 药材总数
+        /// Issue #1807: 委托给HerbSelectionManager
         /// </summary>
-        public int ItemCount
-        {
-            get
-            {
-                var allItems = GetAllItems();
-                return allItems.Count;
-            }
-        }
+        public int ItemCount => _herbSelectionManager?.ItemCount ?? 0;
 
         /// <summary>
         /// 所有药材数据（Issue #1790: 委托给HerbFilterManager）
@@ -386,19 +348,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             var allItems = GetAllItems();
 
-            var itemsWithPrice = allItems.Select(item =>
-            {
-                var herb = AllHerbs.FirstOrDefault(h => h.Id == item.HerbId);
-                return new PrescriptionItemInputDto
-                {
-                    HerbId = item.HerbId,
-                    HerbName = item.HerbName,
-                    Quantity = item.Dosage,
-                    Unit = item.Unit,
-                    UnitPrice = herb?.Price ?? 0m,
-                    Subtotal = (herb?.Price ?? 0m) * item.Dosage
-                };
-            }).ToList();
+            // Issue #1807: 委托给 PrescriptionCalculator 计算价格
+            var itemsWithPrice = _calculator.BuildItemsWithPrice(allItems, AllHerbs);
 
             return new PrescriptionCreateDto
             {
@@ -430,13 +381,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 计算总金额并记录日志
         /// Issue #1794: 从SaveAsync提取，封装金额计算和日志记录
+        /// Issue #1807: 委托给 PrescriptionCalculator 计算
         /// </summary>
         private async Task<decimal> CalculateAndLogTotalAmountAsync(PrescriptionDto draft)
         {
-            var totalAmount = await _prescriptionEditorService.CalculateTotalAmountAsync(draft.Items, DosageCount);
-            Logger.LogInformation("处方草稿已构建：{ItemCount}味药材，{DosageCount}剂，总价{TotalAmount:F2}元",
-                draft.Items.Count, DosageCount, totalAmount);
-            return totalAmount;
+            // Issue #1807: 委托给 calculator 组件计算总金额
+            var totalAmount = _calculator.CalculateAndLogTotalAmount(draft.Items, DosageCount);
+            return await Task.FromResult(totalAmount);
         }
 
         /// <summary>
@@ -591,44 +542,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 添加8列行（包含4个药材空位）
+        /// Issue #1807: 委托给HerbSelectionManager
         /// </summary>
         private void ExecuteAddRow()
         {
-            ItemRows.Add(new SimpleItemRow
-            {
-                Item1 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item2 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item3 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" },
-                Item4 = new PrescriptionItemDto { HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g" }
-            });
+            _herbSelectionManager.AddRow();
 
-            RaisePropertyChanged(nameof(ItemCount));
-            RaisePropertyChanged(nameof(SingleDosagePrice));
-            RaisePropertyChanged(nameof(TotalPrice));
+            // 由于ItemsChanged事件会触发,不需要手动RaisePropertyChanged
         }
 
         /// <summary>
         /// 从ItemRows提取所有非空药材
-        /// Issue #1343: 阶段1修改 - 支持手工输入药材名称（不依赖HerbId）
+        /// Issue #1807: 委托给HerbSelectionManager
         /// </summary>
         private List<PrescriptionItemDto> GetAllItems()
         {
-            var result = new List<PrescriptionItemDto>();
-
-            foreach (var row in ItemRows)
-            {
-                // 阶段1：检查药材名称而非HerbId，支持手工输入
-                if (!string.IsNullOrWhiteSpace(row.Item1.HerbName))
-                    result.Add(row.Item1);
-                if (!string.IsNullOrWhiteSpace(row.Item2.HerbName))
-                    result.Add(row.Item2);
-                if (!string.IsNullOrWhiteSpace(row.Item3.HerbName))
-                    result.Add(row.Item3);
-                if (!string.IsNullOrWhiteSpace(row.Item4.HerbName))
-                    result.Add(row.Item4);
-            }
-
-            return result;
+            return _herbSelectionManager.GetAllValidItems();
         }
 
         /// <summary>
@@ -684,19 +613,25 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 显示其他病案查询浮动菜单
-        /// Issue #1591: REQ-002 - 辅助功能
+        /// 显示验方库对话框
+        /// Issue #1807: 委托给FormulaImportHandler
         /// </summary>
         private async void ExecuteShowOtherCasesQuery()
         {
             try
             {
-                Logger.LogInformation("显示其他病案查询菜单（功能暂未实现）");
-                await ShowWarningMessageAsync("其他病案查询功能即将推出，敬请期待！");
+                Logger.LogInformation("显示验方库对话框");
+                var (success, errorMessage) = await _formulaImportHandler.ShowFormulaLibraryAsync();
+
+                if (!success)
+                {
+                    await ShowWarningMessageAsync(errorMessage ?? "验方库功能暂未实现");
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "显示其他病案查询菜单失败");
+                Logger.LogError(ex, "显示验方库对话框失败");
+                await ShowErrorMessageAsync($"显示验方库失败：{ex.Message}");
             }
         }
 
@@ -801,7 +736,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 清空表单数据
-                ItemRows.Clear();
+                // Issue #1807: 委托给 HerbSelectionManager 清空和初始化
+                _herbSelectionManager.ClearAll();
                 DosageCount = 7;
                 Usage = "水煎服，日一剂，早晚分服";
                 MedicalAdvice = string.Empty;
@@ -812,10 +748,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 DuplicateHerbsWarningText = string.Empty;
 
                 // 重新添加初始行
-                for (int i = 0; i < 5; i++)
-                {
-                    ExecuteAddRow();
-                }
+                // Issue #1807: 委托给 HerbSelectionManager 初始化5行
+                _herbSelectionManager.InitializeRows(5);
 
                 await ShowSuccessMessageAsync(
                     isSoftDelete ? "医案（包括处方）已标记为删除！" : "医案（包括处方）已永久删除！\n注意：此操作不可恢复。");
@@ -878,6 +812,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IDialogService dialogService,
             PrescriptionEditorHerbFilterManager herbFilterManager, // Issue #1790
             PrescriptionEditorValidator validator, // Issue #1790
+            PrescriptionCalculator calculator, // Issue #1807
+            FormulaImportHandler formulaImportHandler, // Issue #1807
+            HerbSelectionManager herbSelectionManager, // Issue #1807
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -894,9 +831,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _herbFilterManager = herbFilterManager ?? throw new ArgumentNullException(nameof(herbFilterManager));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
 
+            // Issue #1807: 注入组件化服务 Phase 2
+            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+            _formulaImportHandler = formulaImportHandler ?? throw new ArgumentNullException(nameof(formulaImportHandler));
+            _herbSelectionManager = herbSelectionManager ?? throw new ArgumentNullException(nameof(herbSelectionManager));
+
             // Issue #1790: 订阅Manager事件
             _herbFilterManager.HerbsLoaded += OnHerbsLoaded;
             _validator.ValidationCompleted += OnValidationCompleted;
+
+            // Issue #1807: 订阅组件事件
+            _calculator.PriceCalculated += OnPriceCalculated;
+            _formulaImportHandler.FormulaImported += OnFormulaImported;
+            _herbSelectionManager.ItemsChanged += OnItemsChanged;
 
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
@@ -935,12 +882,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 await LoadHerbsAsync();
 
                 // 添加初始行（5行 = 20个药材空位）
+                // Issue #1807: 委托给 HerbSelectionManager 初始化
                 if (ItemRows.Count == 0)
                 {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        ExecuteAddRow();
-                    }
+                    _herbSelectionManager.InitializeRows(5);
                 }
             }
             catch (Exception ex)
@@ -952,6 +897,95 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public override bool IsNavigationTarget(NavigationContext navigationContext) => true;
 
         public override void OnNavigatedFrom(NavigationContext navigationContext) { }
+
+        #endregion
+
+        #region Issue #1807: 组件事件处理器
+
+        /// <summary>
+        /// 处理价格计算完成事件
+        /// </summary>
+        private void OnPriceCalculated(object? sender, PriceCalculatedEventArgs e)
+        {
+            Logger.LogInformation("价格计算完成事件：单剂{SinglePrice:F2}元 × {DosageCount}剂 = 总价{TotalPrice:F2}元",
+                e.SingleDosagePrice, e.DosageCount, e.TotalPrice);
+
+            // 通知UI更新价格显示
+            RaisePropertyChanged(nameof(SingleDosagePrice));
+            RaisePropertyChanged(nameof(TotalPrice));
+        }
+
+        /// <summary>
+        /// 处理验方导入完成事件
+        /// </summary>
+        private void OnFormulaImported(object? sender, FormulaImportedEventArgs e)
+        {
+            if (e.Success && e.ImportedItems != null && e.ImportedItems.Count > 0)
+            {
+                Logger.LogInformation("验方导入成功：{ItemCount}味药材", e.ItemCount);
+
+                // 应用导入的验方数据
+                _herbSelectionManager.SetItems(e.ImportedItems);
+
+                // 通知UI更新
+                RaisePropertyChanged(nameof(ItemRows));
+                RaisePropertyChanged(nameof(ItemCount));
+                RaisePropertyChanged(nameof(SingleDosagePrice));
+                RaisePropertyChanged(nameof(TotalPrice));
+            }
+            else
+            {
+                Logger.LogWarning("验方导入失败或取消：{ErrorMessage}", e.ErrorMessage);
+            }
+        }
+
+        /// <summary>
+        /// 处理药材列表变更事件
+        /// </summary>
+        private void OnItemsChanged(object? sender, ItemsChangedEventArgs e)
+        {
+            Logger.LogInformation("药材列表变更：{ChangeType}，当前{ItemCount}味药材",
+                e.ChangeType, e.ItemCount);
+
+            // 通知UI更新相关属性
+            RaisePropertyChanged(nameof(ItemCount));
+            RaisePropertyChanged(nameof(SingleDosagePrice));
+            RaisePropertyChanged(nameof(TotalPrice));
+        }
+
+        #endregion
+
+        #region IDisposable Support
+
+        /// <summary>
+        /// 释放资源，取消事件订阅
+        /// Issue #1807: 取消组件事件订阅，防止内存泄漏
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // 取消组件事件订阅
+                if (_calculator != null)
+                {
+                    _calculator.PriceCalculated -= OnPriceCalculated;
+                }
+
+                if (_formulaImportHandler != null)
+                {
+                    _formulaImportHandler.FormulaImported -= OnFormulaImported;
+                }
+
+                if (_herbSelectionManager != null)
+                {
+                    _herbSelectionManager.ItemsChanged -= OnItemsChanged;
+                }
+
+                Logger.LogInformation("PrescriptionEditorViewModel 已释放资源");
+            }
+
+            base.Dispose(disposing);
+        }
 
         #endregion
     }
