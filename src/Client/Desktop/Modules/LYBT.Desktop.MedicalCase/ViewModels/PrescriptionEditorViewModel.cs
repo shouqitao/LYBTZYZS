@@ -4,6 +4,7 @@ using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.Services; // Issue #1790: 引入Manager服务
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -71,6 +72,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly MedicalCaseDataManager _dataManager;
         private readonly IPrescriptionEditorService _prescriptionEditorService;
         private readonly IDialogService _dialogService;
+
+        // Issue #1790: 组件化服务 - 药材过滤和验证逻辑
+        private readonly PrescriptionEditorHerbFilterManager _herbFilterManager;
+        private readonly PrescriptionEditorValidator _validator;
 
         #endregion
 
@@ -150,6 +155,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 单剂价格（自动计算）- Epic #1540: 使用真实药材价格
+        /// Issue #1790: 使用委托后的AllHerbs
         /// </summary>
         public decimal SingleDosagePrice
         {
@@ -158,7 +164,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var allItems = GetAllItems();
                 return allItems.Sum(item =>
                 {
-                    var herb = _allHerbs.FirstOrDefault(h => h.Id == item.HerbId);
+                    var herb = AllHerbs.FirstOrDefault(h => h.Id == item.HerbId);
                     return (herb?.Price ?? 0m) * item.Dosage;
                 });
             }
@@ -182,14 +188,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 所有药材数据（从IPrescriptionEditorService加载）
+        /// 所有药材数据（Issue #1790: 委托给HerbFilterManager）
         /// </summary>
-        private List<HerbDto> _allHerbs = new();
+        private List<HerbDto> AllHerbs => _herbFilterManager.AllHerbs;
 
         /// <summary>
         /// 过滤后的药材列表（ComboBox绑定）
+        /// Issue #1790: 委托给HerbFilterManager
         /// </summary>
-        public ObservableCollection<HerbDto> FilteredHerbs { get; } = new();
+        public ObservableCollection<HerbDto> FilteredHerbs => _herbFilterManager.FilteredHerbs;
 
         private string _treatmentMethod = string.Empty;
         /// <summary>
@@ -308,103 +315,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 验证处方数据
         /// Issue #1546: 增强药材库关联验证
-        /// Issue #1794: 优化方法长度（74→30行）
+        /// Issue #1790: 委托给PrescriptionEditorValidator
         /// </summary>
         public bool Validate()
         {
-            var errors = new List<string>();
-
-            ValidateBasicInfo(errors);
-
             var allItems = GetAllItems();
-            ValidateHerbItems(allItems, errors);
+            var result = _validator.Validate(CurrentPatient, MedicalCaseId, allItems, AllHerbs);
 
-            return HandleValidationResult(errors, allItems.Count);
+            ValidationMessage = result.ValidationMessage;
+            return result.IsValid;
         }
 
-        /// <summary>
-        /// 验证基本信息（患者、医案ID）
-        /// Issue #1794: 从Validate提取，封装基本信息验证逻辑
-        /// </summary>
-        private void ValidateBasicInfo(List<string> errors)
-        {
-            if (CurrentPatient == null)
-                errors.Add("请先选择患者");
-
-            if (MedicalCaseId == Guid.Empty)
-                errors.Add("MedicalCaseId不能为空");
-        }
-
-        /// <summary>
-        /// 验证药材项列表
-        /// Issue #1794: 从Validate提取，封装药材列表验证逻辑
-        /// </summary>
-        private void ValidateHerbItems(List<PrescriptionItemDto> allItems, List<string> errors)
-        {
-            if (allItems.Count == 0)
-            {
-                errors.Add("请至少添加一味药材");
-                return;
-            }
-
-            foreach (var item in allItems)
-            {
-                if (!string.IsNullOrWhiteSpace(item.HerbName))
-                {
-                    ValidateSingleHerbItem(item, errors);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 验证单个药材项
-        /// Issue #1794: 从ValidateHerbItems提取，封装单个药材验证逻辑
-        /// </summary>
-        private void ValidateSingleHerbItem(PrescriptionItemDto item, List<string> errors)
-        {
-            var matchedHerb = _allHerbs.FirstOrDefault(h =>
-                h.Name.Equals(item.HerbName, StringComparison.OrdinalIgnoreCase));
-
-            if (matchedHerb == null)
-            {
-                errors.Add($"药材 '{item.HerbName}' 在药材库中不存在，请检查名称或添加新药材");
-            }
-            else if (!matchedHerb.IsEnabled)
-            {
-                errors.Add($"药材 '{item.HerbName}' 已停用，请选择其他药材");
-            }
-            else
-            {
-                if (item.HerbId == Guid.Empty || item.HerbId != matchedHerb.Id)
-                {
-                    item.HerbId = matchedHerb.Id;
-                    Logger.LogInformation("自动设置药材ID：{HerbName} → {HerbId}", item.HerbName, matchedHerb.Id);
-                }
-
-                if (item.Dosage <= 0)
-                {
-                    errors.Add($"药材 '{item.HerbName}' 的用量必须大于0");
-                }
-            }
-        }
-
-        /// <summary>
-        /// 处理验证结果
-        /// Issue #1794: 从Validate提取，封装结果处理逻辑
-        /// </summary>
-        private bool HandleValidationResult(List<string> errors, int itemCount)
-        {
-            if (errors.Any())
-            {
-                ValidationMessage = string.Join("；", errors);
-                Logger.LogWarning("处方验证失败：{ValidationMessage}", ValidationMessage);
-                return false;
-            }
-
-            ValidationMessage = string.Empty;
-            Logger.LogInformation("处方验证通过，共{ItemCount}味药材", itemCount);
-            return true;
-        }
+        // Issue #1790: ValidateBasicInfo, ValidateHerbItems, ValidateSingleHerbItem, HandleValidationResult
+        // 已移至PrescriptionEditorValidator
 
         #endregion
 
@@ -465,7 +388,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             var itemsWithPrice = allItems.Select(item =>
             {
-                var herb = _allHerbs.FirstOrDefault(h => h.Id == item.HerbId);
+                var herb = AllHerbs.FirstOrDefault(h => h.Id == item.HerbId);
                 return new PrescriptionItemInputDto
                 {
                     HerbId = item.HerbId,
@@ -491,15 +414,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 验证处方草稿
-        /// Issue #1794: 从SaveAsync提取，封装草稿验证逻辑
+        /// 验证处方草稿（调用Service层验证）
+        /// Issue #1790: 委托给PrescriptionEditorValidator
         /// </summary>
         private async Task<bool> ValidateDraftAsync(PrescriptionDto draft)
         {
-            var isValid = await _prescriptionEditorService.ValidatePrescriptionAsync(draft);
+            var isValid = await _validator.ValidateDraftAsync(draft);
             if (!isValid)
             {
-                Logger.LogWarning("处方草稿验证失败");
                 await ShowErrorMessageAsync("处方数据验证失败，请检查药材信息");
             }
             return isValid;
@@ -626,25 +548,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 加载所有药材数据（通过IPrescriptionEditorService）
+        /// 加载所有药材数据
+        /// Issue #1790: 委托给PrescriptionEditorHerbFilterManager
         /// </summary>
         private async Task LoadHerbsAsync()
         {
             try
             {
                 SetIsBusy(true, "正在加载药材数据...");
-
-                var herbs = await _prescriptionEditorService.LoadAllHerbsAsync();
-                _allHerbs = herbs.ToList();
-
-                // 初始化FilteredHerbs（显示所有药材）
-                FilteredHerbs.Clear();
-                foreach (var herb in _allHerbs)
-                {
-                    FilteredHerbs.Add(herb);
-                }
-
-                Logger.LogInformation("成功加载{Count}味药材", _allHerbs.Count);
+                await _herbFilterManager.LoadHerbsAsync();
             }
             catch (Exception ex)
             {
@@ -659,20 +571,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 过滤药材（支持拼音码模糊匹配）
+        /// Issue #1790: 委托给PrescriptionEditorHerbFilterManager
         /// </summary>
         public void FilterHerbs(string searchText)
         {
             try
             {
-                var filtered = _prescriptionEditorService.FilterHerbs(searchText);
-
-                FilteredHerbs.Clear();
-                foreach (var herb in filtered)
-                {
-                    FilteredHerbs.Add(herb);
-                }
-
-                Logger.LogDebug("过滤药材：搜索'{SearchText}'，匹配{Count}味", searchText, FilteredHerbs.Count);
+                _herbFilterManager.FilterHerbs(searchText);
             }
             catch (Exception ex)
             {
@@ -930,49 +835,36 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 检测重复药材
-        /// Issue #1591: REQ-002 - 重复药材检测逻辑
+        /// Issue #1790: 委托给PrescriptionEditorValidator
         /// </summary>
         private void CheckDuplicateHerbs()
         {
-            try
+            var allItems = GetAllItems();
+            DuplicateHerbsWarningText = _validator.CheckDuplicateHerbs(allItems);
+        }
+
+        /// <summary>
+        /// 药材加载完成事件处理
+        /// Issue #1790: 响应HerbFilterManager事件
+        /// </summary>
+        private void OnHerbsLoaded(object? sender, HerbsLoadedEventArgs e)
+        {
+            Logger.LogInformation("药材加载完成事件触发，共{Count}味", e.HerbCount);
+        }
+
+        /// <summary>
+        /// 验证完成事件处理
+        /// Issue #1790: 响应Validator事件
+        /// </summary>
+        private void OnValidationCompleted(object? sender, ValidationResultEventArgs e)
+        {
+            if (!e.Result.IsValid)
             {
-                var allItems = GetAllItems();
-                if (allItems.Count == 0)
-                {
-                    DuplicateHerbsWarningText = string.Empty;
-                    return;
-                }
-
-                // 按 HerbId 分组，找出重复的药材
-                var duplicates = allItems
-                    .Where(item => item.HerbId != Guid.Empty) // 只检查已关联药材库的药材
-                    .GroupBy(item => item.HerbId)
-                    .Where(group => group.Count() > 1)
-                    .Select(group => new
-                    {
-                        HerbName = group.First().HerbName,
-                        Count = group.Count(),
-                        TotalDosage = group.Sum(item => item.Dosage)
-                    })
-                    .ToList();
-
-                if (duplicates.Any())
-                {
-                    var warningLines = duplicates.Select(d =>
-                        $"• {d.HerbName}：重复{d.Count}次，累计用量{d.TotalDosage}g");
-                    DuplicateHerbsWarningText = string.Join("\n", warningLines);
-
-                    Logger.LogWarning("检测到{Count}种重复药材", duplicates.Count);
-                }
-                else
-                {
-                    DuplicateHerbsWarningText = string.Empty;
-                }
+                Logger.LogWarning("验证完成事件触发，验证失败：{Message}", e.Result.ValidationMessage);
             }
-            catch (Exception ex)
+            else
             {
-                Logger.LogError(ex, "检测重复药材失败");
-                DuplicateHerbsWarningText = string.Empty;
+                Logger.LogInformation("验证完成事件触发，验证成功，共{ItemCount}味药材", e.Result.ItemCount);
             }
         }
 
@@ -984,6 +876,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IPrescriptionEditorService prescriptionEditorService,
             IDialogService dialogService,
+            PrescriptionEditorHerbFilterManager herbFilterManager, // Issue #1790
+            PrescriptionEditorValidator validator, // Issue #1790
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -996,6 +890,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _prescriptionEditorService = prescriptionEditorService ?? throw new ArgumentNullException(nameof(prescriptionEditorService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
+            // Issue #1790: 注入Manager服务
+            _herbFilterManager = herbFilterManager ?? throw new ArgumentNullException(nameof(herbFilterManager));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+
+            // Issue #1790: 订阅Manager事件
+            _herbFilterManager.HerbsLoaded += OnHerbsLoaded;
+            _validator.ValidationCompleted += OnValidationCompleted;
+
             // 初始化命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
             CompleteStep2Command = new DelegateCommand(async () => await ExecuteCompleteStep2()); // Issue #1591
@@ -1003,7 +905,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             SaveDraftCommand = new DelegateCommand(async () => await ExecuteSaveDraft()); // Issue #1594
             DeletePrescriptionCommand = new DelegateCommand(async () => await ExecuteDeletePrescription()); // Issue #1593 - Phase 4
 
-            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强 + Issue #1594暂存功能 + Issue #1593删除功能）");
+            Logger.LogInformation("PrescriptionEditorViewModel已初始化（Epic #1540方案B + Issue #1591增强 + Issue #1594暂存功能 + Issue #1593删除功能 + Issue #1790组件化）");
         }
 
         #endregion
