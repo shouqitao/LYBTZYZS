@@ -121,53 +121,5 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         }
 
         #endregion
-
-        #region 配方安全性验证
-
-        /// <summary>
-        /// 验证配方安全性（简化版配伍禁忌检查）
-        /// </summary>
-        public ValidationResult ValidateFormulaSafety(IEnumerable<FormulaHerbItemViewModel> items)
-        {
-            var result = new ValidationResult();
-
-            if (items == null || !items.Any())
-            {
-                return result;
-            }
-
-            var herbNames = items.Select(i => i.HerbName).ToList();
-
-            // 检查已知的配伍禁忌（简化示例）
-            var contraindications = GetKnownContraindications();
-            foreach (var (herb1, herb2, warning) in contraindications)
-            {
-                if (herbNames.Contains(herb1) && herbNames.Contains(herb2))
-                {
-                    result.AddWarning($"配伍提醒：{herb1} 与 {herb2} {warning}");
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 获取已知的配伍禁忌规则
-        /// </summary>
-        private List<(string herb1, string herb2, string warning)> GetKnownContraindications()
-        {
-            return new List<(string, string, string)>
-            {
-                ("甘草", "甘遂", "存在十八反，不宜同用"),
-                ("甘草", "大戟", "存在十八反，不宜同用"),
-                ("甘草", "芫花", "存在十八反，不宜同用"),
-                ("乌头", "半夏", "存在十八反，不宜同用"),
-                ("乌头", "瓜蒌", "存在十八反，不宜同用"),
-                ("藜芦", "人参", "存在十八反，不宜同用"),
-                ("藜芦", "沙参", "存在十八反，不宜同用")
-            };
-        }
-
-        #endregion
     }
 }
