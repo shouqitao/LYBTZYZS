@@ -4,6 +4,7 @@ using LYBT.Desktop.Auth;
 using LYBT.Desktop.Clinical; // Issue #1553: 医生角色模块
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;
+using LYBT.Desktop.Foundation.Application; // Issue #1823: IApplicationStateService
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
@@ -185,7 +186,7 @@ public partial class App : PrismApplication
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("错误处理初始化");
         _splashScreen?.UpdateStatus("正在初始化错误处理...");
-        _bootstrapper.InitializeErrorHandlingService();
+        _bootstrapper!.InitializeErrorHandlingService();
     }
 
     /// <summary>
@@ -196,7 +197,7 @@ public partial class App : PrismApplication
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("模块协调器初始化");
         _splashScreen?.UpdateStatus("正在初始化模块协调器...");
-        _bootstrapper.InitializeSimplifiedModuleCoordinator();
+        _bootstrapper!.InitializeSimplifiedModuleCoordinator();
     }
 
     /// <summary>
@@ -207,7 +208,12 @@ public partial class App : PrismApplication
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("核心服务初始化");
         _splashScreen?.UpdateStatus("正在初始化核心服务...");
-        await _bootstrapper.InitializeCoreServicesAsync();
+        await _bootstrapper!.InitializeCoreServicesAsync();
+
+        // Issue #1823: API健康检查前置 - 在Phase 3执行，避免登录界面延迟
+        _splashScreen?.UpdateStatus("正在检查API连接...");
+        var appStateService = Container.Resolve<IApplicationStateService>();
+        await appStateService.CheckApiHealthAsync(timeoutSeconds: 10);
     }
 
     /// <summary>
@@ -218,7 +224,7 @@ public partial class App : PrismApplication
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("应用预热");
         _splashScreen?.UpdateStatus("正在预热应用程序...");
-        await _bootstrapper.InitializeApplicationWarmupAsync();
+        await _bootstrapper!.InitializeApplicationWarmupAsync();
     }
 
     /// <summary>

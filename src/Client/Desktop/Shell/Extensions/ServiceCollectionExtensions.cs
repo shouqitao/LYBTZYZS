@@ -130,6 +130,9 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<LYBT.Desktop.Shell.App>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Application.ApplicationStateService>(containerRegistry); // Issue #1823: API健康检查前置
+            RegisterLogger<LYBT.Desktop.Shell.Services.NavigationManager>(containerRegistry); // Issue #1823: NavigationManager需要Logger
+            RegisterLogger<LYBT.Desktop.Shell.Services.MenuManager>(containerRegistry); // Issue #1823: MenuManager需要Logger
         }
 
         /// <summary>
@@ -371,6 +374,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // 应用程序启动引导服务
             containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.Bootstrap.IApplicationBootstrapper,
                 LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>();
+
+            // 应用程序状态服务 - Issue #1823: API健康检查前置优化
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Application.IApplicationStateService,
+                LYBT.Desktop.Foundation.Application.ApplicationStateService>();
         }
     }
 }

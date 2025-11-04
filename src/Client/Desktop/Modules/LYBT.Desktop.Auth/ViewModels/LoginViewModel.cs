@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using LYBT.Desktop.Foundation.Application; // Issue #1823: IApplicationStateService
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Events;
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Auth.ViewModels
     {
         private readonly IAuthenticationService _authService;
         private readonly ITokenStorageService _tokenStorage;
-        private readonly IApiHealthCheckService? _apiHealthCheckService;
+        private readonly IApplicationStateService _applicationStateService; // Issue #1823: API健康检查前置
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ISecureCredentialStorage? _credentialStorage; // Issue #1246: 密码加密存储
 
@@ -40,14 +41,14 @@ namespace LYBT.Desktop.Auth.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            IApiHealthCheckService? apiHealthCheckService = null,
+            IApplicationStateService applicationStateService, // Issue #1823: API健康检查前置
             IUsernameStorageService? usernameStorage = null,
             ISecureCredentialStorage? credentialStorage = null) // Issue #1246: 密码加密存储服务
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
-            _authService = authService;
-            _tokenStorage = tokenStorage;
-            _apiHealthCheckService = apiHealthCheckService;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
+            _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService)); // Issue #1823
             _usernameStorage = usernameStorage;
             _credentialStorage = credentialStorage; // Issue #1246
 
@@ -58,26 +59,42 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 await Task.Delay(100); // 短暂延迟,让 UI 先完成初始化
                 await LoadSavedCredentialsAsync();
-                await CheckApiHealthAsyncSafe();
+                // Issue #1823: API健康检查已前置到应用启动Phase 3，这里直接从IApplicationStateService读取状态
+                await LoadApiStatusFromStateServiceAsync();
             });
         }
 
         /// <summary>
-        /// 安全启动健康检查(fire-and-forget)
+        /// 从IApplicationStateService加载API状态
+        /// Issue #1823: API健康检查已前置到应用启动Phase 3
         /// </summary>
-        private async Task CheckApiHealthAsyncSafe()
+        private async Task LoadApiStatusFromStateServiceAsync()
         {
             try
             {
-                await CheckApiHealthAsync();
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (_applicationStateService.IsApiHealthy)
+                    {
+                        ApiStatus = ApiHealthStatus.Healthy;
+                        ApiStatusMessage = "WebAPI 已连接";
+                        Logger.LogInformation("从IApplicationStateService读取API状态：健康");
+                    }
+                    else
+                    {
+                        ApiStatus = ApiHealthStatus.Unhealthy;
+                        ApiStatusMessage = $"WebAPI 连接失败: {_applicationStateService.ConnectionStatus}";
+                        Logger.LogWarning("从IApplicationStateService读取API状态：不健康 - {Status}", _applicationStateService.ConnectionStatus);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "健康检查过程中发生错误");
+                Logger.LogError(ex, "加载API状态时发生错误");
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     ApiStatus = ApiHealthStatus.Unhealthy;
-                    ApiStatusMessage = $"健康检查失败: {ex.Message}";
+                    ApiStatusMessage = $"加载API状态失败: {ex.Message}";
                 });
             }
         }
@@ -192,7 +209,13 @@ namespace LYBT.Desktop.Auth.ViewModels
         public ApiHealthStatus ApiStatus
         {
             get => _apiStatus;
-            set => SetProperty(ref _apiStatus, value);
+            set
+            {
+                if (SetProperty(ref _apiStatus, value))
+                {
+                    RaisePropertyChanged(nameof(IsApiUnhealthy));
+                }
+            }
         }
 
         public string ApiStatusMessage
@@ -200,6 +223,12 @@ namespace LYBT.Desktop.Auth.ViewModels
             get => _apiStatusMessage;
             set => SetProperty(ref _apiStatusMessage, value);
         }
+
+        /// <summary>
+        /// API 是否不健康（用于显示警告横幅）
+        /// Issue #1823: API 不可用警告横幅
+        /// </summary>
+        public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
         #endregion
 
@@ -211,43 +240,6 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #region Methods
 
-        private async Task CheckApiHealthAsync()
-        {
-            if (_apiHealthCheckService == null)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    ApiStatus = ApiHealthStatus.Unhealthy;
-                    ApiStatusMessage = "健康检查服务未配置";
-                });
-                return;
-            }
-
-            try
-            {
-                var status = await _apiHealthCheckService.CheckHealthAsync();
-
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    ApiStatus = status;
-                    ApiStatusMessage = status switch
-                    {
-                        ApiHealthStatus.Healthy => "WebAPI 已连接",
-                        ApiHealthStatus.Unhealthy => $"WebAPI 连接失败: {_apiHealthCheckService.LastErrorMessage}",
-                        _ => "正在检查连接..."
-                    };
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "健康检查失败");
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    ApiStatus = ApiHealthStatus.Unhealthy;
-                    ApiStatusMessage = $"健康检查异常: {ex.Message}";
-                });
-            }
-        }
 
         private bool CanExecuteLogin()
         {

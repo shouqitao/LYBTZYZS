@@ -16,11 +16,12 @@
             <RowDefinition Height="Auto" />   <!-- 6: 记住用户名 -->
             <RowDefinition Height="10" />     <!-- 7: 间距 -->
             <RowDefinition Height="Auto" />   <!-- 8: 记住密码 -->
-            <RowDefinition Height="24" />     <!-- 9: 间距（加大） -->
-            <RowDefinition Height="Auto" />   <!-- 10: 登录按钮 -->
-            <RowDefinition Height="16" />     <!-- 11: 间距 -->
-            <RowDefinition Height="Auto" />   <!-- 12: 状态消息 -->
-            <RowDefinition Height="*" />      <!-- 13: 剩余空间 -->
+            <RowDefinition Height="Auto" />   <!-- 9: API 警告横幅（Issue #1823） -->
+            <RowDefinition Height="24" />     <!-- 10: 间距（加大） -->
+            <RowDefinition Height="Auto" />   <!-- 11: 登录按钮 -->
+            <RowDefinition Height="16" />     <!-- 12: 间距 -->
+            <RowDefinition Height="Auto" />   <!-- 13: 状态消息 -->
+            <RowDefinition Height="*" />      <!-- 14: 剩余空间 -->
         </Grid.RowDefinitions>
 
         <!-- 标题Logo -->
@@ -171,8 +172,38 @@
                        Margin="6,0,0,0" />
         </StackPanel>
 
+        <!-- API 不可用警告横幅 (Issue #1823) -->
+        <Border Grid.Row="9"
+                Background="#FEF2F2"
+                BorderBrush="#FCA5A5"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,10"
+                Margin="0,16,0,0"
+                Visibility="{Binding IsApiUnhealthy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel>
+                <TextBlock FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="#DC2626"
+                           TextWrapping="Wrap">
+                    <Run Text="⚠️ WebAPI 连接失败" />
+                </TextBlock>
+                <TextBlock Text="{Binding ApiStatusMessage}"
+                           FontSize="12"
+                           Foreground="#991B1B"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0" />
+                <TextBlock Text="请检查 WebAPI 服务是否启动（http://localhost:5001）"
+                           FontSize="11"
+                           Foreground="#7F1D1D"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"
+                           FontStyle="Italic" />
+            </StackPanel>
+        </Border>
+
         <!-- 登录按钮 -->
-        <Button Grid.Row="10"
+        <Button Grid.Row="11"
                 Content="登录"
                 Height="48"
                 FontSize="16"
@@ -211,7 +242,7 @@
         </Button>
 
         <!-- 状态和错误消息区域 -->
-        <Border Grid.Row="12"
+        <Border Grid.Row="13"
                 Background="#F8FAFC"
                 CornerRadius="8"
                 Padding="16,12"
@@ -239,7 +270,7 @@
         </Border>
 
         <!-- 加载遮罩 -->
-        <Grid Grid.RowSpan="14"
+        <Grid Grid.RowSpan="15"
               Background="#90000000"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Border Background="White"
