@@ -260,6 +260,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         /// <summary>
         /// 选择药材（打开药材选择对话框）
+        /// Issue #1795：优化复杂方法，从77行拆分为40+4个辅助方法
         /// </summary>
         private async Task SelectHerbAsync(FormulaHerbItemDto? herbItem)
         {
@@ -279,53 +280,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
 
-                // 打开药材选择对话框 (Issue #1353 - FORMULA-13)
-                var parameters = new DialogParameters
-                {
-                    { "AllowMultipleSelection", false },  // 单选模式
-                    { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
-                };
+                // Issue #1795: 提取对话框参数创建
+                var parameters = CreateHerbSelectionDialogParameters(herbItem);
 
+                // Issue #1795: 提取对话框回调处理
                 _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
                 {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
-                        if (selectedHerbs != null && selectedHerbs.Any())
-                        {
-                            var selectedHerbId = selectedHerbs.First().Id;
-
-                            Logger.LogInformation(
-                                "用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}",
-                                SelectedFormula.Name,
-                                herbItem.OriginalHerbName ?? herbItem.HerbName,
-                                selectedHerbId);
-
-                            // Issue #1787: 使用CommandHandler验证配方药材
-                            var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
-                                SelectedFormula.Id,
-                                herbItem.Id,
-                                selectedHerbId);
-
-                            if (validateResult.success)
-                            {
-                                await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
-
-                                // 刷新待校验列表
-                                await LoadPendingFormulasAsync();
-                            }
-                            else
-                            {
-                                await ShowErrorMessageAsync("药材映射失败，请重试");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInformation("用户取消了药材选择");
-                    }
-
-                    SetIsBusy(false);
+                    await HandleHerbSelectionResultAsync(result, herbItem);
                 });
             }
             catch (Exception ex)
@@ -336,6 +297,80 @@ namespace LYBT.Desktop.Formula.ViewModels
             finally
             {
                 SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 创建药材选择对话框参数（Issue #1795：提取方法）
+        /// </summary>
+        private DialogParameters CreateHerbSelectionDialogParameters(FormulaHerbItemDto herbItem)
+        {
+            return new DialogParameters
+            {
+                { "AllowMultipleSelection", false },  // 单选模式
+                { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+            };
+        }
+
+        /// <summary>
+        /// 处理药材选择对话框结果（Issue #1795：提取方法）
+        /// </summary>
+        private async Task HandleHerbSelectionResultAsync(IDialogResult result, FormulaHerbItemDto herbItem)
+        {
+            try
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+                    if (selectedHerbs != null && selectedHerbs.Any())
+                    {
+                        await ProcessSelectedHerbAsync(selectedHerbs.First(), herbItem);
+                    }
+                }
+                else
+                {
+                    Logger.LogInformation("用户取消了药材选择");
+                }
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 处理选中的药材（Issue #1795：提取方法）
+        /// </summary>
+        private async Task ProcessSelectedHerbAsync(HerbDto selectedHerb, FormulaHerbItemDto herbItem)
+        {
+            Logger.LogInformation(
+                "用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}",
+                SelectedFormula!.Name,
+                herbItem.OriginalHerbName ?? herbItem.HerbName,
+                selectedHerb.Id);
+
+            await ValidateAndMapHerbAsync(selectedHerb.Id, herbItem);
+        }
+
+        /// <summary>
+        /// 验证并映射药材到系统药材库（Issue #1795：提取方法）
+        /// </summary>
+        private async Task ValidateAndMapHerbAsync(Guid selectedHerbId, FormulaHerbItemDto herbItem)
+        {
+            // Issue #1787: 使用CommandHandler验证配方药材
+            var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
+                SelectedFormula!.Id,
+                herbItem.Id,
+                selectedHerbId);
+
+            if (validateResult.success)
+            {
+                await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
+                await LoadPendingFormulasAsync();
+            }
+            else
+            {
+                await ShowErrorMessageAsync("药材映射失败，请重试");
             }
         }
 
