@@ -152,6 +152,7 @@ public partial class App : PrismApplication
     /// <summary>
     /// 异步初始化应用程序
     /// Issue #1239: 实现 Fail-Fast 错误处理
+    /// Issue #1795: 优化复杂方法，从84行拆分为25+6个辅助方法
     /// </summary>
     private async Task InitializeApplicationAsync()
     {
@@ -160,81 +161,140 @@ public partial class App : PrismApplication
             // 解析启动引导服务
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
 
-            // Phase 1: 错误处理初始化
-            _performanceMonitor?.EndStage();
-            _performanceMonitor?.StartStage("错误处理初始化");
-            _splashScreen?.UpdateStatus("正在初始化错误处理...");
-            _bootstrapper.InitializeErrorHandlingService();
+            // Issue #1795: 提取初始化阶段方法
+            InitializePhase1_ErrorHandling();
+            InitializePhase2_ModuleCoordinator();
+            await InitializePhase3_CoreServicesAsync();
+            await InitializePhase4_ApplicationWarmupAsync();
 
-            // Phase 2: 模块协调器初始化
-            _performanceMonitor?.EndStage();
-            _performanceMonitor?.StartStage("模块协调器初始化");
-            _splashScreen?.UpdateStatus("正在初始化模块协调器...");
-            _bootstrapper.InitializeSimplifiedModuleCoordinator();
-
-            // Phase 3: 核心服务初始化（必须成功）
-            _performanceMonitor?.EndStage();
-            _performanceMonitor?.StartStage("核心服务初始化");
-            _splashScreen?.UpdateStatus("正在初始化核心服务...");
-            await _bootstrapper.InitializeCoreServicesAsync();
-
-            // Phase 4: 应用预热
-            _performanceMonitor?.EndStage();
-            _performanceMonitor?.StartStage("应用预热");
-            _splashScreen?.UpdateStatus("正在预热应用程序...");
-            await _bootstrapper.InitializeApplicationWarmupAsync();
-
-            // Phase 5: 完成启动，显示主窗口
-            await Dispatcher.InvokeAsync(() =>
-            {
-                _performanceMonitor?.EndStage();
-                _performanceMonitor?.Finish();
-
-                _splashScreen?.Close();
-                _splashScreen = null;
-
-                MainWindow?.Show();
-            });
+            // Issue #1795: 提取显示主窗口方法
+            await ShowMainWindowAfterInitializationAsync();
         }
         catch (Exception ex)
         {
-            // ✅ Fail-Fast: 显示错误对话框，终止应用
-            await Dispatcher.InvokeAsync(() =>
+            // Issue #1795: 提取异常处理方法
+            await HandleInitializationFailureAsync(ex);
+        }
+    }
+
+    /// <summary>
+    /// Phase 1: 错误处理初始化（Issue #1795：提取方法）
+    /// </summary>
+    private void InitializePhase1_ErrorHandling()
+    {
+        _performanceMonitor?.EndStage();
+        _performanceMonitor?.StartStage("错误处理初始化");
+        _splashScreen?.UpdateStatus("正在初始化错误处理...");
+        _bootstrapper.InitializeErrorHandlingService();
+    }
+
+    /// <summary>
+    /// Phase 2: 模块协调器初始化（Issue #1795：提取方法）
+    /// </summary>
+    private void InitializePhase2_ModuleCoordinator()
+    {
+        _performanceMonitor?.EndStage();
+        _performanceMonitor?.StartStage("模块协调器初始化");
+        _splashScreen?.UpdateStatus("正在初始化模块协调器...");
+        _bootstrapper.InitializeSimplifiedModuleCoordinator();
+    }
+
+    /// <summary>
+    /// Phase 3: 核心服务初始化（Issue #1795：提取方法）
+    /// </summary>
+    private async Task InitializePhase3_CoreServicesAsync()
+    {
+        _performanceMonitor?.EndStage();
+        _performanceMonitor?.StartStage("核心服务初始化");
+        _splashScreen?.UpdateStatus("正在初始化核心服务...");
+        await _bootstrapper.InitializeCoreServicesAsync();
+    }
+
+    /// <summary>
+    /// Phase 4: 应用预热（Issue #1795：提取方法）
+    /// </summary>
+    private async Task InitializePhase4_ApplicationWarmupAsync()
+    {
+        _performanceMonitor?.EndStage();
+        _performanceMonitor?.StartStage("应用预热");
+        _splashScreen?.UpdateStatus("正在预热应用程序...");
+        await _bootstrapper.InitializeApplicationWarmupAsync();
+    }
+
+    /// <summary>
+    /// 完成启动，显示主窗口（Issue #1795：提取方法）
+    /// </summary>
+    private async Task ShowMainWindowAfterInitializationAsync()
+    {
+        await Dispatcher.InvokeAsync(() =>
+        {
+            _performanceMonitor?.EndStage();
+            _performanceMonitor?.Finish();
+
+            _splashScreen?.Close();
+            _splashScreen = null;
+
+            MainWindow?.Show();
+        });
+    }
+
+    /// <summary>
+    /// 处理初始化失败（Issue #1795：提取方法）
+    /// </summary>
+    private async Task HandleInitializationFailureAsync(Exception ex)
+    {
+        await Dispatcher.InvokeAsync(() =>
+        {
+            _performanceMonitor?.Finish();
+            _splashScreen?.Close();
+
+            var logger = Container.Resolve<ILogger<App>>();
+            logger.LogCritical(ex, "应用初始化失败");
+
+            var errorMessage = BuildInitializationErrorMessage(ex);
+            var result = System.Windows.MessageBox.Show(
+                errorMessage,
+                "凌隐宝堂 - 初始化失败",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Error);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
             {
-                _performanceMonitor?.Finish();
-                _splashScreen?.Close();
+                TryOpenLogFolder();
+            }
 
-                var logger = Container.Resolve<ILogger<App>>();
-                logger.LogCritical(ex, "应用初始化失败");
+            Application.Current.Shutdown(1);
+        });
+    }
 
-                var result = System.Windows.MessageBox.Show(
-                    "应用初始化失败，无法继续运行。\n\n" +
-                    $"错误类型：{ex.GetType().Name}\n" +
-                    $"错误信息：{ex.Message}\n\n" +
-                    "可能原因：\n" +
-                    "1. WebAPI服务未启动（检查 http://localhost:5001）\n" +
-                    "2. 数据库连接失败\n" +
-                    "3. 配置文件错误\n\n" +
-                    "是否查看详细日志？",
-                    "凌隐宝堂 - 初始化失败",
-                    System.Windows.MessageBoxButton.YesNo,
-                    System.Windows.MessageBoxImage.Error);
+    /// <summary>
+    /// 构建初始化错误消息（Issue #1795：提取方法）
+    /// </summary>
+    private string BuildInitializationErrorMessage(Exception ex)
+    {
+        return "应用初始化失败，无法继续运行。\n\n" +
+               $"错误类型：{ex.GetType().Name}\n" +
+               $"错误信息：{ex.Message}\n\n" +
+               "可能原因：\n" +
+               "1. WebAPI服务未启动（检查 http://localhost:5001）\n" +
+               "2. 数据库连接失败\n" +
+               "3. 配置文件错误\n\n" +
+               "是否查看详细日志？";
+    }
 
-                if (result == System.Windows.MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "logs");
-                        System.Diagnostics.Process.Start("explorer.exe", logPath);
-                    }
-                    catch
-                    {
-                        // 忽略打开日志文件夹的错误
-                    }
-                }
-
-                Application.Current.Shutdown(1);
-            });
+    /// <summary>
+    /// 尝试打开日志文件夹（Issue #1795：提取方法）
+    /// </summary>
+    private void TryOpenLogFolder()
+    {
+        try
+        {
+            var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "logs");
+            System.Diagnostics.Process.Start("explorer.exe", logPath);
+        }
+        catch
+        {
+            // 忽略打开日志文件夹的错误
         }
     }
 
