@@ -6,6 +6,7 @@ using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替�
 // Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces（不再直接使用IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
+using LYBT.Desktop.Patients.Services; // Issue #1790: 引入Manager服务
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -41,6 +42,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IMedicalCaseApi _medicalCaseApi;
         private System.Threading.Timer? _searchDebounceTimer;
 
+        // Issue #1790: 组件化服务 - 搜索、未完成医案、待诊队列逻辑
+        private readonly PatientSearchManager _searchManager;
+        private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
+        private readonly PendingQueueManager _pendingQueueManager;
+
         #endregion
 
         #region 流程上下文属性
@@ -61,8 +67,9 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 患者列表（搜索结果或分页数据）
+        /// Issue #1790: 委托给SearchManager
         /// </summary>
-        public ObservableCollection<PatientDto> Patients { get; } = new();
+        public ObservableCollection<PatientDto> Patients => _searchManager.Patients;
 
         private PatientDto? _selectedPatient;
         /// <summary>
@@ -155,18 +162,16 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 待看诊队列（未完成医案的患者列表）
+        /// Issue #1790: 委托给PendingQueueManager
         /// </summary>
-        public ObservableCollection<PendingMedicalCaseDto> PendingQueue { get; } = new();
+        public ObservableCollection<PendingMedicalCaseDto> PendingQueue => _pendingQueueManager.PendingQueue;
 
-        /// <summary>
-        /// Phase 2: 本地缓存（PatientId -> MedicalCaseId）
-        /// 用于快速查询患者是否有未完成医案
-        /// </summary>
-        private readonly Dictionary<Guid, Guid> _pendingCaseCache = new();
+        // Issue #1790: _pendingCaseCache已移至UnfinishedCaseHandler
 
         private PendingMedicalCaseDto? _selectedPendingPatient;
         /// <summary>
         /// 待看诊队列中选中的患者
+        /// Issue #1790: 委托给PendingQueueManager加载患者详情
         /// </summary>
         public PendingMedicalCaseDto? SelectedPendingPatient
         {
@@ -180,8 +185,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                     {
                         Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
 
-                        // 异步加载患者详悠信息并设置CurrentPatient
-                        _ = LoadPatientForPendingCaseAsync(value.PatientId);
+                        // Issue #1790: 异步加载患者详情并设置CurrentPatient（通过事件处理）
+                        _ = _pendingQueueManager.LoadPatientForPendingCaseAsync(value.PatientId, Patients);
                     }
                 }
             }
@@ -226,6 +231,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         public PatientSelectionViewModel(
             PatientCommandHandler commandHandler, // Issue #1788: 注入CommandHandler
             MedicalCaseDataManager medicalCaseDataManager, // Epic #1773: 注入MedicalCaseDataManager
+            PatientSearchManager searchManager, // Issue #1790: 注入搜索管理器
+            UnfinishedCaseHandler unfinishedCaseHandler, // Issue #1790: 注入未完成医案处理器
+            PendingQueueManager pendingQueueManager, // Issue #1790: 注入待诊队列管理器
             IDialogService dialogService,
             IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
@@ -239,6 +247,10 @@ namespace LYBT.Desktop.Patients.ViewModels
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             // Epic #1773: 注入MedicalCaseDataManager
             _medicalCaseDataManager = medicalCaseDataManager ?? throw new ArgumentNullException(nameof(medicalCaseDataManager));
+            // Issue #1790: 注入三个管理器
+            _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
+            _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
+            _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
@@ -254,6 +266,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation, CanExecuteStartConsultation);
 
+            // Issue #1790: 订阅管理器事件
+            _searchManager.SearchCompleted += OnSearchCompleted;
+            _unfinishedCaseHandler.CaseCheckCompleted += OnCaseCheckCompleted;
+            _unfinishedCaseHandler.CaseClosed += OnCaseClosed;
+            _pendingQueueManager.PendingQueueLoaded += OnPendingQueueLoaded;
+            _pendingQueueManager.PatientLoaded += OnPatientLoaded;
+
             Logger.LogInformation("PatientSelectionViewModel已初始化");
         }
 
@@ -264,27 +283,31 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 搜索患者
         /// Issue #1794: 优化方法长度（54→31行），提取错误处理和列表更新逻辑
+        /// Issue #1790: 委托给SearchManager
         /// </summary>
         private async Task ExecuteSearchAsync()
         {
             try
             {
                 SetIsBusy(true, "正在搜索患者...");
-                Logger.LogInformation("搜索患者，关键字：{Keyword}", SearchKeyword);
 
-                // 重置到第1页
-                CurrentPage = 1;
+                // Issue #1790: 委托给SearchManager执行搜索
+                var success = await _searchManager.ExecuteSearchAsync(SearchKeyword);
 
-                // Issue #1788: 使用CommandHandler分页查询
-                var commandResult = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, SearchKeyword);
-
-                if (!commandResult.IsSuccess || commandResult.Data == null)
+                if (!success)
                 {
-                    await HandleSearchErrorAsync(commandResult.ErrorMessage);
+                    await ShowErrorMessageAsync("搜索失败");
                     return;
                 }
 
-                UpdatePatientsAndPaging(commandResult.Data);
+                // 同步分页属性
+                CurrentPage = _searchManager.CurrentPage;
+                TotalPages = _searchManager.TotalPages;
+                TotalCount = _searchManager.TotalCount;
+
+                // 更新命令状态
+                PreviousPageCommand.RaiseCanExecuteChanged();
+                NextPageCommand.RaiseCanExecuteChanged();
             }
             catch (Exception ex)
             {
@@ -311,31 +334,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// 更新患者列表和分页信息
         /// Issue #1794: 从ExecuteSearchAsync提取
         /// </summary>
-        private void UpdatePatientsAndPaging(PagedResult<PatientDto> result)
-        {
-            // 清空选中状态（Bug修复：搜索后应重置选中项）
-            SelectedPatient = null;
-            CurrentPatient = null;
-
-            // 更新患者列表
-            Patients.Clear();
-            foreach (var patient in result.Items)
-            {
-                Patients.Add(patient);
-            }
-
-            // 更新分页信息
-            TotalPages = result.TotalPages;
-            TotalCount = result.TotalCount;
-
-            Logger.LogInformation("搜索成功，找到{TotalCount}条记录，实际加载{ItemCount}条，当前显示第{CurrentPage}页",
-                TotalCount, result.Items.Count, CurrentPage);
-
-            // 触发分页命令更新
-            PreviousPageCommand.RaiseCanExecuteChanged();
-            NextPageCommand.RaiseCanExecuteChanged();
-        }
-
         private bool CanExecuteSearch()
         {
             // UX优化：实时搜索，包括空关键字（显示所有患者）
@@ -446,6 +444,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 上一页
         /// </summary>
+        /// <summary>
+        /// Issue #1790: 委托给SearchManager处理
+        /// </summary>
         private async Task ExecutePreviousPageAsync()
         {
             if (!CanExecutePreviousPage())
@@ -455,8 +456,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(true, "正在加载上一页...");
 
-                CurrentPage--;
-                await LoadCurrentPageAsync();
+                // Issue #1790: 委托给SearchManager处理分页
+                await _searchManager.PreviousPageAsync(SearchKeyword);
+
+                // 同步分页属性
+                CurrentPage = _searchManager.CurrentPage;
+                TotalPages = _searchManager.TotalPages;
+                TotalCount = _searchManager.TotalCount;
 
                 PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
@@ -474,11 +480,12 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private bool CanExecutePreviousPage()
         {
-            return CurrentPage > 1;
+            return _searchManager.CanPreviousPage();
         }
 
         /// <summary>
         /// 下一页
+        /// Issue #1790: 委托给SearchManager处理
         /// </summary>
         private async Task ExecuteNextPageAsync()
         {
@@ -489,8 +496,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(true, "正在加载下一页...");
 
-                CurrentPage++;
-                await LoadCurrentPageAsync();
+                // Issue #1790: 委托给SearchManager处理分页
+                await _searchManager.NextPageAsync(SearchKeyword);
+
+                // 同步分页属性
+                CurrentPage = _searchManager.CurrentPage;
+                TotalPages = _searchManager.TotalPages;
+                TotalCount = _searchManager.TotalCount;
 
                 PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
@@ -508,7 +520,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         private bool CanExecuteNextPage()
         {
-            return CurrentPage < TotalPages;
+            return _searchManager.CanNextPage();
         }
 
         /// <summary>
@@ -638,48 +650,14 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// Phase 2: 检查患者是否有未完成医案（缓存优先策略）
+        /// Issue #1790: 委托给UnfinishedCaseHandler
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <returns>未完成的医案，如果没有则返回null</returns>
         private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
         {
-            try
-            {
-                // 1. 先查本地缓存
-                if (_pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
-                {
-                    Logger.LogInformation("缓存命中：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
-                        patientId, cachedMedicalCaseId);
-
-                    // 缓存命中，返回一个包含ID的MedicalCaseDto
-                    return new MedicalCaseDto { Id = cachedMedicalCaseId };
-                }
-
-                // 2. 缓存未命中，调用API查询
-                Logger.LogInformation("缓存未命中，调用API查询：PatientId={PatientId}", patientId);
-
-                // Epic #1773: 使用MedicalCaseDataManager包装方法
-                var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId);
-
-                if (unfinishedCase != null)
-                {
-                    // 3. 找到未完成医案，更新缓存
-                    _pendingCaseCache[patientId] = unfinishedCase.Id;
-                    Logger.LogInformation("找到未完成医案，已更新缓存：MedicalCaseId={MedicalCaseId}",
-                        unfinishedCase.Id);
-                }
-                else
-                {
-                    Logger.LogInformation("患者无未完成医案");
-                }
-
-                return unfinishedCase;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "检查未完成医案失败：PatientId={PatientId}", patientId);
-                return null;
-            }
+            // Issue #1790: 委托给UnfinishedCaseHandler处理
+            return await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId);
         }
 
         /// <summary>
@@ -757,15 +735,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("用户选择新建医案，先关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}",
                     oldMedicalCaseId);
 
-                // 1. 关闭旧医案
-                // Epic #1773: 使用MedicalCaseDataManager包装方法
-                var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
-                var closed = response.Success;
+                // Issue #1790: 委托给UnfinishedCaseHandler处理关闭逻辑
+                var closed = await _unfinishedCaseHandler.CloseAndCreateNewCaseAsync(patient.Id, oldMedicalCaseId);
 
                 if (closed)
                 {
-                    // 2. 从缓存中移除
-                    _pendingCaseCache.Remove(patient.Id);
                     Logger.LogInformation("旧医案已关闭，缓存已清理");
 
                     // 3. 发布患者选择事件（MedicalCaseFlowViewModel将创建新医案）
@@ -795,18 +769,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("用户选择仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}",
                     oldMedicalCaseId);
 
-                // 1. 关闭旧医案
-                // Epic #1773: 使用MedicalCaseDataManager包装方法
-                var response = await _medicalCaseDataManager.CloseCaseAsync(oldMedicalCaseId);
-                var closed = response.Success;
+                // Issue #1790: 委托给UnfinishedCaseHandler处理关闭逻辑
+                var closed = await _unfinishedCaseHandler.CloseOnlyAsync(patient.Id, oldMedicalCaseId);
 
                 if (closed)
                 {
-                    // 2. 从缓存中移除
-                    _pendingCaseCache.Remove(patient.Id);
                     Logger.LogInformation("旧医案已关闭，缓存已清理");
 
-                    // 3. 刷新待看诊列表（移除已关闭的医案）
+                    // 刷新待看诊列表（移除已关闭的医案）
                     await LoadPendingCasesAsync();
 
                     Logger.LogInformation("待看诊列表已刷新");
@@ -906,35 +876,22 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 加载当前页数据
         /// </summary>
+        /// <summary>
+        /// Issue #1790: 委托给SearchManager处理
+        /// </summary>
         private async Task LoadCurrentPageAsync()
         {
-            Logger.LogInformation("加载第{CurrentPage}页患者数据", CurrentPage);
+            await _searchManager.LoadCurrentPageAsync(SearchKeyword);
 
-            // Issue #1788: 使用CommandHandler分页查询
-            var commandResult = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, SearchKeyword);
-
-            if (!commandResult.IsSuccess || commandResult.Data == null)
-            {
-                Logger.LogError("加载患者列表失败：{ErrorMessage}", commandResult.ErrorMessage);
-                throw new InvalidOperationException($"加载患者列表失败：{commandResult.ErrorMessage}");
-            }
-
-            var result = commandResult.Data;
-
-            Patients.Clear();
-            foreach (var patient in result.Items)
-            {
-                Patients.Add(patient);
-            }
-
-            TotalPages = result.TotalPages;
-            TotalCount = result.TotalCount;
-
-            Logger.LogInformation("加载成功，当前第{CurrentPage}/{TotalPages}页，共{TotalCount}条记录", CurrentPage, TotalPages, TotalCount);
+            // 同步分页属性
+            CurrentPage = _searchManager.CurrentPage;
+            TotalPages = _searchManager.TotalPages;
+            TotalCount = _searchManager.TotalCount;
         }
 
         /// <summary>
         /// 加载初始患者列表（第1页）
+        /// Issue #1790: 委托给SearchManager处理
         /// </summary>
         private async Task LoadInitialPatientsAsync()
         {
@@ -942,10 +899,13 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(true, "正在加载患者列表...");
 
-                Logger.LogInformation("加载初始患者列表（第1页）");
+                // Issue #1790: 委托给SearchManager加载初始数据
+                await _searchManager.LoadInitialPatientsAsync();
 
-                CurrentPage = 1;
-                await LoadCurrentPageAsync();
+                // 同步分页属性
+                CurrentPage = _searchManager.CurrentPage;
+                TotalPages = _searchManager.TotalPages;
+                TotalCount = _searchManager.TotalCount;
 
                 PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
@@ -963,78 +923,23 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 加载待看诊队列（Epic #1583 - Phase 5）
+        /// Issue #1790: 委托给PendingQueueManager处理
         /// </summary>
         private async Task LoadPendingCasesAsync()
         {
-            try
-            {
-                Logger.LogInformation("开始加载待看诊队列");
-
-                var response = await _medicalCaseApi.GetPendingCasesAsync();
-
-                if (response.Success && response.Data != null)
-                {
-                    PendingQueue.Clear();
-                    foreach (var item in response.Data)
-                    {
-                        PendingQueue.Add(item);
-
-                        // MedicalCaseId可能为null，只有有值时才加入缓存
-                        if (item.MedicalCaseId.HasValue)
-                        {
-                            _pendingCaseCache[item.PatientId] = item.MedicalCaseId.Value;
-                        }
-                    }
-
-                    Logger.LogInformation("待看诊队列加载完成，共{Count}条记录", PendingQueue.Count);
-                }
-                else
-                {
-                    Logger.LogWarning("加载待看诊队列失败：{Message}", response.Message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载待看诊队列异常");
-            }
+            // Issue #1790: 完全委托给PendingQueueManager
+            await _pendingQueueManager.LoadPendingCasesAsync();
         }
 
         /// <summary>
         /// 为待看诊队列选中的患者加载完整信息
-        /// 修复双击功能：确保CurrentPatient被正确设置
+        /// Issue #1790: 委托给PendingQueueManager处理（通过事件设置CurrentPatient）
         /// </summary>
         private async Task LoadPatientForPendingCaseAsync(Guid patientId)
         {
-            try
-            {
-                Logger.LogInformation("加载患者详情：PatientId={PatientId}", patientId);
-
-                // 先从Patients列表中查找
-                var patientInList = Patients.FirstOrDefault(p => p.Id == patientId);
-                if (patientInList != null)
-                {
-                    Logger.LogInformation("从当前列表中找到患者，直接设置CurrentPatient");
-                    CurrentPatient = patientInList;
-                    return;
-                }
-
-                // Issue #1788: 列表中没有，通过CommandHandler加载
-                var result = await _commandHandler.GetByIdAsync(patientId);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    Logger.LogInformation("从API加载患者成功：{PatientName}", result.Data.Name);
-                    CurrentPatient = result.Data;
-                }
-                else
-                {
-                    Logger.LogWarning("加载患者失败：PatientId={PatientId}, ErrorMessage={ErrorMessage}",
-                        patientId, result.ErrorMessage);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载患者详情失败：PatientId={PatientId}", patientId);
-            }
+            // Issue #1790: 委托给PendingQueueManager，它会触发PatientLoaded事件
+            // 事件处理程序OnPatientLoaded会设置CurrentPatient
+            await _pendingQueueManager.LoadPatientForPendingCaseAsync(patientId, Patients);
         }
 
         #endregion
@@ -1095,6 +1000,41 @@ namespace LYBT.Desktop.Patients.ViewModels
             base.OnNavigatedFrom(navigationContext);
             Logger.LogInformation("离开患者选择视图，当前选择：{PatientName}，流程ID：{FlowId}",
                 SelectedPatient?.Name ?? "未选择", MedicalCaseFlowId);
+        }
+
+        #endregion
+
+        #region Issue #1790: 管理器事件处理器
+
+        private void OnSearchCompleted(object? sender, SearchCompletedEventArgs e)
+        {
+            Logger.LogInformation("搜索完成事件：关键字={Keyword}，结果数={Count}，当前页={Page}",
+                e.Keyword, e.ResultCount, e.CurrentPage);
+        }
+
+        private void OnCaseCheckCompleted(object? sender, CaseCheckCompletedEventArgs e)
+        {
+            Logger.LogInformation("医案检查完成事件：PatientId={PatientId}，UnfinishedCase={HasCase}",
+                e.PatientId, e.UnfinishedCase != null);
+        }
+
+        private void OnCaseClosed(object? sender, CaseClosedEventArgs e)
+        {
+            Logger.LogInformation("医案关闭事件：PatientId={PatientId}，MedicalCaseId={CaseId}，CreateNew={CreateNew}",
+                e.PatientId, e.MedicalCaseId, e.CreateNew);
+        }
+
+        private void OnPendingQueueLoaded(object? sender, PendingQueueLoadedEventArgs e)
+        {
+            Logger.LogInformation("待诊队列加载完成事件：共{Count}条记录", e.QueueCount);
+        }
+
+        private void OnPatientLoaded(object? sender, PatientLoadedEventArgs e)
+        {
+            // 设置CurrentPatient
+            CurrentPatient = e.Patient;
+            Logger.LogInformation("患者加载完成事件：{PatientName}，来源={Source}",
+                e.Patient.Name, e.Source);
         }
 
         #endregion

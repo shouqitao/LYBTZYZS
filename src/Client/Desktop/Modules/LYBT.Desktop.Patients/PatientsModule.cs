@@ -2,6 +2,7 @@
 using LYBT.Desktop.Patients.Components;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Repositories;
+using LYBT.Desktop.Patients.Services; // Issue #1790: 引入Manager服务
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -32,6 +33,11 @@ namespace LYBT.Desktop.Patients
             // Issue #1790: 注册患者导入服务
             containerRegistry.RegisterSingleton<Services.PatientImportDataMapper>();
             containerRegistry.Register<Services.PatientImportExecutor>();
+
+            // Issue #1790: 注册PatientSelectionViewModel组件化服务
+            containerRegistry.Register<PatientSearchManager>();
+            containerRegistry.Register<UnfinishedCaseHandler>();
+            containerRegistry.Register<PendingQueueManager>();
 
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<ViewModels.Components.PatientDataManager>();
