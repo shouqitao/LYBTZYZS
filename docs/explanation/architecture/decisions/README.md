@@ -52,6 +52,8 @@ Architecture Decision Record（ADR）是一种轻量级的文档格式，用于�
 | [ADR-005](./ADR-005-aggregate-root-long-term-architecture.md) | 聚合根长期架构演进策略 ⭐⭐⭐ | ✅ Accepted | 2025-10-27 | Server端（核心架构） |
 | [ADR-006](./ADR-006-medicalcase-consultation-prescription-refactoring.md) | MedicalCase/Consultation/Prescription架构重构 | ✅ Accepted | 2025-10-28 | Server端（医案/诊疗/处方） |
 | [ADR-007](./ADR-007-repository-service-simplification.md) | Repository和Service层简化重构 ⭐ | ✅ Accepted | 2025-10-30 | Server端（Epic #1725） |
+| [ADR-008](./ADR-008-desktop-consultation-prescription-no-independent-repository.md) | Desktop端Consultation/Prescription不独立实现Repository | ✅ Accepted | 2025-10-31 | Desktop端（诊疗/处方） |
+| [ADR-009](./ADR-009-desktop-component-pattern.md) | Desktop端组件化模式（Manager/Handler/Validator）⭐⭐ | ✅ Accepted | 2025-11-04 | Desktop端（全模块） |
 
 ### 已弃用ADR（Deprecated）
 

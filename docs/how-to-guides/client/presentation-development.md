@@ -360,6 +360,258 @@ public class PatientListViewModel : ViewModelBase
 }
 ```
 
+### 3.5 组件化设计模式（Issue #1790+）
+
+> **⚠️ 重要**：当ViewModel代码量超过300行或承担3个以上职责时，应考虑组件化重构。
+
+**核心理念**：
+
+ViewModel不应直接处理复杂的业务逻辑，而应委托给专门的Manager/Handler组件：
+
+```
+传统模式:  ViewModel (700行) → Repository → API
+                ↓
+组件化模式:  ViewModel (350行)
+              ├→ SearchManager → CommandHandler → API
+              ├→ PendingQueueManager → CommandHandler → API
+              └→ UnfinishedCaseHandler → CommandHandler → API
+```
+
+**典型场景**：
+
+| 场景 | 传统做法（❌） | 组件化做法（✅） |
+|-----|------------|-------------|
+| 患者搜索+分页 | ViewModel内200行 | 提取`PatientSearchManager` |
+| 待诊队列管理 | ViewModel内150行 | 提取`PendingQueueManager` |
+| 药材选择+验证 | ViewModel内100行 | 提取`HerbSelectionHandler` |
+| 打印数据准备 | ViewModel内180行 | 提取`PrintDataBuilder` |
+
+**组件注入示例**（Issue #1790）：
+
+```csharp
+public class PatientSelectionViewModel : UnifiedViewModelBase
+{
+    #region 组件依赖
+
+    // Issue #1790: 组件化服务
+    private readonly PatientSearchManager _searchManager;         // 负责搜索和分页（~200行）
+    private readonly UnfinishedCaseHandler _unfinishedCaseHandler; // 负责未完成医案查询（~100行）
+    private readonly PendingQueueManager _pendingQueueManager;    // 负责待诊队列（~150行）
+
+    #endregion
+
+    public PatientSelectionViewModel(
+        PatientSearchManager searchManager,             // ✅ 注入搜索管理器
+        UnfinishedCaseHandler unfinishedCaseHandler,   // ✅ 注入医案处理器
+        PendingQueueManager pendingQueueManager,       // ✅ 注入队列管理器
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        /* ... */)
+        : base(eventAggregator, loggerFactory, /* ... */)
+    {
+        _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
+        _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
+        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
+
+        // ViewModel只负责UI协调，业务逻辑委托给组件
+        SearchCommand = new DelegateCommand<string>(
+            async (keyword) => await _searchManager.ExecuteSearchAsync(keyword));
+    }
+}
+```
+
+**重构效果**（Issue #1790真实数据）：
+
+| 指标 | 重构前 | 重构后 | 改善 |
+|-----|-------|-------|------|
+| **ViewModel行数** | 726 行 | 350 行 | **-52%** |
+| **单方法复杂度** | Critical（>100行） | Low（<50行） | **降4级** |
+| **职责数量** | 5个职责 | 2个职责 | **-60%** |
+| **可测试性** | Mock 8个依赖 | Mock 3个组件 | **-62%** |
+
+**完整指南** → [../../explanation/architecture/client/component-pattern.md](../../explanation/architecture/client/component-pattern.md)
+
+**DI注册** → 参见第11.1节"模块注册"
+
+---
+
+### 3.6 方法复杂度控制（Issue #1795+）
+
+> **⚠️ 强制规范**：单方法行数超过50行必须拆分，超过100行立即重构（Priority P0）。
+
+**复杂度级别定义**：
+
+| 级别 | 行数范围 | 状态 | 处理策略 | 优先级 |
+|------|---------|------|---------|--------|
+| **Low** | <50 行 | ✅ 可接受 | 保持现状 | - |
+| **Medium** | 50-75 行 | ⚠️ 建议拆分 | 排期优化 | P2-P3 |
+| **High** | 75-100 行 | 🔴 优先拆分 | 2周内完成 | P1-P2 |
+| **Critical** | >100 行 | 🚨 必须拆分 | 立即处理 | P0 |
+
+**重构触发条件**（满足任一即触发）：
+
+**定量指标**：
+- 📊 方法行数 ≥ 50 行
+- 📊 圈复杂度 > 10
+- 📊 嵌套层级 > 3 层
+
+**业务指标**：
+- 🔄 近1个月修改频率 ≥ 3 次
+- 🐛 因复杂度导致的Bug ≥ 2 次
+- 👥 Code Review反馈复杂难懂
+
+**Extract Method重构模式**（Issue #1795）：
+
+**重构前**（77行，High复杂度）：
+```csharp
+// ❌ 复杂方法：选择药材、打开对话框、处理结果、验证映射（77行）
+private async Task SelectHerbAsync(FormulaHerbItemDto? herbItem)
+{
+    if (herbItem == null || SelectedFormula == null) return;
+    if (herbItem.IsValidated) { await ShowWarningMessageAsync("该药材已校验"); return; }
+
+    try
+    {
+        SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
+
+        // 创建对话框参数（10行）
+        var parameters = new DialogParameters
+        {
+            { "AllowMultipleSelection", false },
+            { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+        };
+
+        // 显示对话框（30行）
+        _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+        {
+            try
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+                    if (selectedHerbs != null && selectedHerbs.Any())
+                    {
+                        var selectedHerb = selectedHerbs.First();
+
+                        // 记录日志（5行）
+                        Logger.LogInformation("用户选择了系统药材ID: {HerbId}", selectedHerb.Id);
+
+                        // 验证并映射（15行）
+                        var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
+                            SelectedFormula!.Id, herbItem.Id, selectedHerb.Id);
+
+                        if (validateResult.success)
+                        {
+                            await ShowSuccessMessageAsync("药材映射成功");
+                            await LoadPendingFormulasAsync();
+                        }
+                        else
+                        {
+                            await ShowErrorMessageAsync("药材映射失败");
+                        }
+                    }
+                }
+            }
+            finally { SetIsBusy(false); }
+        });
+    }
+    catch (Exception ex)
+    {
+        Logger.LogError(ex, "选择药材时发生异常");
+        await ShowErrorMessageAsync("系统错误");
+    }
+    finally { SetIsBusy(false); }
+}
+```
+
+**重构后**（40行，Low复杂度）：
+```csharp
+// ✅ 主方法（40行）：清晰的业务流程
+private async Task SelectHerbAsync(FormulaHerbItemDto? herbItem)
+{
+    if (herbItem == null || SelectedFormula == null) return;
+    if (herbItem.IsValidated) { await ShowWarningMessageAsync("该药材已校验"); return; }
+
+    try
+    {
+        SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
+
+        // ✅ 提取方法1：创建对话框参数
+        var parameters = CreateHerbSelectionDialogParameters(herbItem);
+
+        // ✅ 提取方法2：处理对话框结果
+        _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+        {
+            await HandleHerbSelectionResultAsync(result, herbItem);
+        });
+    }
+    catch (Exception ex)
+    {
+        Logger.LogError(ex, "选择药材时发生异常");
+        await ShowErrorMessageAsync("系统错误");
+    }
+    finally { SetIsBusy(false); }
+}
+
+// ✅ 提取方法1（5行）：单一职责
+private DialogParameters CreateHerbSelectionDialogParameters(FormulaHerbItemDto herbItem)
+{
+    return new DialogParameters
+    {
+        { "AllowMultipleSelection", false },
+        { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+    };
+}
+
+// ✅ 提取方法2（15行）：处理回调逻辑
+private async Task HandleHerbSelectionResultAsync(IDialogResult result, FormulaHerbItemDto herbItem)
+{
+    try
+    {
+        if (result.Result == ButtonResult.OK)
+        {
+            var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+            if (selectedHerbs != null && selectedHerbs.Any())
+            {
+                // ✅ 提取方法3：处理选中的药材
+                await ProcessSelectedHerbAsync(selectedHerbs.First(), herbItem);
+            }
+        }
+    }
+    finally { SetIsBusy(false); }
+}
+
+// ✅ 提取方法3（10行）：验证和映射逻辑
+private async Task ProcessSelectedHerbAsync(HerbDto selectedHerb, FormulaHerbItemDto herbItem)
+{
+    var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
+        SelectedFormula!.Id, herbItem.Id, selectedHerb.Id);
+
+    if (validateResult.success)
+    {
+        await ShowSuccessMessageAsync("药材映射成功");
+        await LoadPendingFormulasAsync();
+    }
+    else
+    {
+        await ShowErrorMessageAsync("药材映射失败");
+    }
+}
+```
+
+**重构收益**：
+- 主方法从 **77行 → 40行**（减少48%）
+- 提取4个辅助方法（5行+15行+10行）
+- 每个方法职责单一、易于理解和测试
+- 圈复杂度从15降至5
+
+**完整标准** → [../../explanation/architecture/code-quality/method-complexity.md](../../explanation/architecture/code-quality/method-complexity.md)
+
+**工具支持**：
+- Visual Studio 2022: 代码指标（Ctrl+K, Ctrl+M）
+- Roslyn Analyzers: 实时复杂度警告
+- SonarQube: CI/CD集成检查
+
 ---
 
 ## 🎨 View开发

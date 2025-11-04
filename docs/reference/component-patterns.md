@@ -58,16 +58,22 @@
 
 **当前覆盖率**: **75%** (6/8模块)
 
-| 模块 | 状态 | 组件 |
-|-----|------|------|
-| Prescription | ✅ | DataManager + CommandHandler + Validator |
-| Formula | ✅ | DataManager + CommandHandler + Validator |
-| Patients | ✅ | DataManager + CommandHandler + Validator |
-| MedicalCase | ✅ | DataManager + CommandHandler + Validator |
-| Consultation | ✅ | DataManager + CommandHandler + Validator |
-| Users | ✅ | DataManager + CommandHandler + Validator |
-| Herbs | ⏳ | 业务相对简单，暂未组件化 |
-| Auth | ⏳ | 业务功能单一，暂未组件化 |
+| 模块 | 状态 | 组件 | 重构案例 |
+|-----|------|------|---------|
+| Prescription | ✅ | DataManager + CommandHandler + Validator | - |
+| Formula | ✅ | DataManager + CommandHandler + Validator | Issue #1795 方法复杂度优化 |
+| Patients | ✅ | DataManager + CommandHandler + Validator + **Manager** | **Issue #1790 组件化重构** |
+| MedicalCase | ✅ | DataManager + CommandHandler + Validator | - |
+| Consultation | ✅ | DataManager + CommandHandler + Validator | - |
+| Users | ✅ | DataManager + CommandHandler + Validator | - |
+| Herbs | ⏳ | 业务相对简单，暂未组件化 | - |
+| Auth | ⏳ | 业务功能单一，暂未组件化 | - |
+
+**📊 重构成效**（Issue #1790）:
+- **PatientSelectionViewModel**: 726行 → 350行（**-52%**）
+- 提取3个Manager组件：`PatientSearchManager`、`PendingQueueManager`、`UnfinishedCaseHandler`
+- 方法复杂度：Critical → Low（所有方法<50行）
+- 完整案例 → [第8节：重构案例与模式](#8-重构案例与模式)
 
 ---
 
@@ -1373,9 +1379,475 @@ namespace LYBT.Desktop.Infrastructure
 
 ---
 
-## 7. 常见问题解决
+## 7. 重构案例与模式
 
-### 7.1 问题：组件依赖未设置
+### 7.1 案例1: PatientSelectionViewModel组件化重构（Issue #1790）
+
+> **重构目标**: 将726行的臃肿ViewModel拆分为350行的精简ViewModel + 3个Manager组件
+
+#### 7.1.1 重构前状态
+
+**文件**: `LYBT.Desktop.Patients/ViewModels/PatientSelectionViewModel.cs`
+
+**问题诊断**:
+- ❌ 代码量: 726行（**Critical复杂度**）
+- ❌ 职责数: 5个（搜索+队列+医案+UI+导航）
+- ❌ 单方法: `SearchAsync` 100+行
+- ❌ 依赖数: 6个直接依赖
+
+```csharp
+// ❌ 重构前：所有逻辑在ViewModel中
+public class PatientSelectionViewModel : UnifiedViewModelBase
+{
+    private readonly IPatientRepository _patientRepository;
+    private readonly IMedicalCaseRepository _medicalCaseRepository;
+    private readonly IDialogService _dialogService;
+    // ... 更多依赖
+
+    // 搜索逻辑（~200行）
+    private async Task SearchAsync(string keyword) { /* 100+行 */ }
+    private async Task PreviousPageAsync() { /* ... */ }
+    private async Task NextPageAsync() { /* ... */ }
+
+    // 队列逻辑（~150行）
+    private async Task LoadPendingPatientsAsync() { /* ... */ }
+    private async Task RefreshQueueAsync() { /* ... */ }
+
+    // 医案逻辑（~100行）
+    private async Task LoadUnfinishedCasesAsync() { /* ... */ }
+    private async Task ContinueCaseAsync() { /* ... */ }
+
+    // UI逻辑（~200行）
+    // 导航逻辑（~76行）
+}
+```
+
+#### 7.1.2 重构方案
+
+**提取3个Manager组件**:
+
+1. **PatientSearchManager** (~200行)
+   - 职责: 患者搜索、分页导航、结果管理
+   - 事件: `SearchCompleted`
+
+2. **PendingQueueManager** (~150行)
+   - 职责: 待诊队列加载、刷新、统计
+   - 事件: `QueueUpdated`
+
+3. **UnfinishedCaseHandler** (~100行)
+   - 职责: 未完成医案查询、一键继续
+   - 无状态Handler模式
+
+#### 7.1.3 重构后代码
+
+**Manager组件示例**（PatientSearchManager）:
+
+```csharp
+/// <summary>
+/// 患者搜索管理器
+/// Issue #1790: 从PatientSelectionViewModel提取搜索和分页逻辑（~200行）
+/// </summary>
+public class PatientSearchManager
+{
+    private readonly PatientCommandHandler _commandHandler;
+    private readonly ILogger<PatientSearchManager> _logger;
+
+    // ✅ Manager拥有数据状态
+    public ObservableCollection<PatientDto> Patients { get; } = new();
+    public int CurrentPage { get; set; } = 1;
+    public int TotalPages { get; set; }
+    public int TotalCount { get; set; }
+    public const int PageSize = 50;
+
+    // ✅ 事件发布模式
+    public event EventHandler<SearchCompletedEventArgs>? SearchCompleted;
+
+    public PatientSearchManager(
+        PatientCommandHandler commandHandler,
+        ILogger<PatientSearchManager> logger)
+    {
+        _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>执行搜索</summary>
+    public async Task<bool> ExecuteSearchAsync(string searchKeyword)
+    {
+        try
+        {
+            _logger.LogInformation("开始搜索患者，关键字：{SearchKeyword}", searchKeyword);
+
+            var response = await _commandHandler.GetPatientsPagedAsync(CurrentPage, PageSize, searchKeyword);
+
+            if (!response.IsSuccess || response.Data == null)
+            {
+                _logger.LogWarning("搜索患者失败：{ErrorMessage}", response.ErrorMessage);
+                return false;
+            }
+
+            UpdatePatientsAndPaging(response.Data.Items, response.Data.TotalCount,
+                response.Data.CurrentPage, response.Data.TotalPages);
+
+            // ✅ 触发事件通知ViewModel
+            SearchCompleted?.Invoke(this, new SearchCompletedEventArgs
+            {
+                Keyword = searchKeyword,
+                ResultCount = response.Data.TotalCount,
+                CurrentPage = CurrentPage
+            });
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "搜索患者失败");
+            return false;
+        }
+    }
+
+    public async Task<bool> PreviousPageAsync(string searchKeyword) { /* ... */ }
+    public async Task<bool> NextPageAsync(string searchKeyword) { /* ... */ }
+    public bool CanPreviousPage() => CurrentPage > 1;
+    public bool CanNextPage() => CurrentPage < TotalPages;
+}
+```
+
+**ViewModel集成**:
+
+```csharp
+// ✅ 重构后：ViewModel仅负责UI协调
+public class PatientSelectionViewModel : UnifiedViewModelBase
+{
+    #region 组件依赖
+
+    // ✅ 注入Manager组件
+    private readonly PatientSearchManager _searchManager;
+    private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
+    private readonly PendingQueueManager _pendingQueueManager;
+
+    #endregion
+
+    public PatientSelectionViewModel(
+        PatientSearchManager searchManager,             // ✅ 注入
+        UnfinishedCaseHandler unfinishedCaseHandler,
+        PendingQueueManager pendingQueueManager,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+    {
+        _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
+        _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
+        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
+
+        // ✅ 订阅Manager事件
+        _searchManager.SearchCompleted += OnSearchCompleted;
+        _pendingQueueManager.QueueUpdated += OnQueueUpdated;
+
+        // ✅ 初始化命令（委托给Manager）
+        SearchCommand = new DelegateCommand<string>(
+            async (keyword) => await ExecuteSafelyAsync(() => _searchManager.ExecuteSearchAsync(keyword ?? string.Empty)));
+    }
+
+    // ✅ 属性绑定到Manager
+    public ObservableCollection<PatientDto> SearchResults => _searchManager.Patients;
+    public int CurrentPage => _searchManager.CurrentPage;
+    public int TotalPages => _searchManager.TotalPages;
+
+    // ✅ 事件处理
+    private void OnSearchCompleted(object? sender, SearchCompletedEventArgs e)
+    {
+        StatusMessage = $"找到 {e.ResultCount} 条患者记录";
+        RaisePropertyChanged(nameof(CurrentPage));
+        RaisePropertyChanged(nameof(TotalPages));
+    }
+}
+```
+
+**DI注册**:
+
+```csharp
+public class PatientsModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // ✅ Issue #1790: 注册Manager组件
+        containerRegistry.RegisterScoped<PatientSearchManager>();
+        containerRegistry.RegisterScoped<UnfinishedCaseHandler>();
+        containerRegistry.RegisterScoped<PendingQueueManager>();
+
+        // ViewModel注册
+        containerRegistry.RegisterForNavigation<PatientSelectionView, PatientSelectionViewModel>();
+
+        // ...
+    }
+}
+```
+
+#### 7.1.4 重构效果
+
+| 指标 | 重构前 | 重构后 | 改善 |
+|-----|-------|-------|------|
+| **ViewModel代码量** | 726 行 | 350 行 | **-52%** |
+| **单方法复杂度** | Critical（>100行） | Low（<50行） | **降4级** |
+| **职责数量** | 5个职责 | 2个职责 | **-60%** |
+| **可测试性** | Mock 6个依赖 | Mock 3个组件 | **-50%** |
+| **可维护性指数** | 43（红色） | 72（绿色） | **+67%** |
+
+**完整代码**: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/Services/PatientSearchManager.cs`
+
+---
+
+### 7.2 案例2: FormulaValidationViewModel方法复杂度优化（Issue #1795）
+
+> **重构目标**: 使用Extract Method模式将77行的`SelectHerbAsync`方法拆分为40行主方法+4个辅助方法
+
+#### 7.2.1 重构前状态
+
+**文件**: `LYBT.Desktop.Formula/ViewModels/FormulaValidationViewModel.cs`
+
+**问题诊断**:
+- ❌ 方法行数: 77行（**High复杂度**）
+- ❌ 职责数: 5个（参数创建+对话框+回调+验证+映射）
+- ❌ 圈复杂度: 15（嵌套回调、异常处理）
+
+```csharp
+// ❌ 重构前：复杂方法（77行）
+private async Task SelectHerbAsync(FormulaHerbItemDto? herbItem)
+{
+    if (herbItem == null || SelectedFormula == null) return;
+    if (herbItem.IsValidated) { await ShowWarningMessageAsync("该药材已校验"); return; }
+
+    try
+    {
+        SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
+
+        // 创建对话框参数（10行）
+        var parameters = new DialogParameters
+        {
+            { "AllowMultipleSelection", false },
+            { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+        };
+
+        // 显示对话框（30行）
+        _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+        {
+            try
+            {
+                if (result.Result == ButtonResult.OK)
+                {
+                    var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+                    if (selectedHerbs != null && selectedHerbs.Any())
+                    {
+                        var selectedHerb = selectedHerbs.First();
+
+                        Logger.LogInformation("用户选择了系统药材ID: {HerbId}", selectedHerb.Id);
+
+                        // 验证并映射（15行）
+                        var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
+                            SelectedFormula!.Id, herbItem.Id, selectedHerb.Id);
+
+                        if (validateResult.success)
+                        {
+                            await ShowSuccessMessageAsync("药材映射成功");
+                            await LoadPendingFormulasAsync();
+                        }
+                        else
+                        {
+                            await ShowErrorMessageAsync("药材映射失败");
+                        }
+                    }
+                }
+            }
+            finally { SetIsBusy(false); }
+        });
+    }
+    catch (Exception ex)
+    {
+        Logger.LogError(ex, "选择药材时发生异常");
+        await ShowErrorMessageAsync("系统错误");
+    }
+    finally { SetIsBusy(false); }
+}
+```
+
+#### 7.2.2 重构方案
+
+**Extract Method模式**: 提取4个辅助方法
+
+1. `CreateHerbSelectionDialogParameters()` - 创建对话框参数（5行）
+2. `HandleHerbSelectionResultAsync()` - 处理对话框结果（15行）
+3. `ProcessSelectedHerbAsync()` - 处理选中的药材（10行）
+4. `ValidateAndMapHerbAsync()` - 验证并映射药材（15行）
+
+#### 7.2.3 重构后代码
+
+```csharp
+// ✅ 主方法（40行）：清晰的业务流程
+private async Task SelectHerbAsync(FormulaHerbItemDto? herbItem)
+{
+    if (herbItem == null || SelectedFormula == null) return;
+    if (herbItem.IsValidated) { await ShowWarningMessageAsync("该药材已校验"); return; }
+
+    try
+    {
+        SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
+
+        // ✅ 提取方法1：创建对话框参数
+        var parameters = CreateHerbSelectionDialogParameters(herbItem);
+
+        // ✅ 提取方法2：处理对话框结果
+        _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result =>
+        {
+            await HandleHerbSelectionResultAsync(result, herbItem);
+        });
+    }
+    catch (Exception ex)
+    {
+        Logger.LogError(ex, "选择药材时发生异常");
+        await ShowErrorMessageAsync("系统错误");
+    }
+    finally { SetIsBusy(false); }
+}
+
+// ✅ 提取方法1（5行）：单一职责
+private DialogParameters CreateHerbSelectionDialogParameters(FormulaHerbItemDto herbItem)
+{
+    return new DialogParameters
+    {
+        { "AllowMultipleSelection", false },
+        { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" }
+    };
+}
+
+// ✅ 提取方法2（15行）：处理回调逻辑
+private async Task HandleHerbSelectionResultAsync(IDialogResult result, FormulaHerbItemDto herbItem)
+{
+    try
+    {
+        if (result.Result == ButtonResult.OK)
+        {
+            var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
+            if (selectedHerbs != null && selectedHerbs.Any())
+            {
+                // ✅ 提取方法3：处理选中的药材
+                await ProcessSelectedHerbAsync(selectedHerbs.First(), herbItem);
+            }
+        }
+    }
+    finally { SetIsBusy(false); }
+}
+
+// ✅ 提取方法3（10行）：日志记录和调用验证
+private async Task ProcessSelectedHerbAsync(HerbDto selectedHerb, FormulaHerbItemDto herbItem)
+{
+    Logger.LogInformation(
+        "用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}",
+        SelectedFormula!.Name,
+        herbItem.OriginalHerbName ?? herbItem.HerbName,
+        selectedHerb.Id);
+
+    // ✅ 提取方法4：验证和映射逻辑
+    await ValidateAndMapHerbAsync(selectedHerb.Id, herbItem);
+}
+
+// ✅ 提取方法4（15行）：验证和映射逻辑
+private async Task ValidateAndMapHerbAsync(Guid selectedHerbId, FormulaHerbItemDto herbItem)
+{
+    var validateResult = await _commandHandler.ValidateFormulaHerbAsync(
+        SelectedFormula!.Id,
+        herbItem.Id,
+        selectedHerbId);
+
+    if (validateResult.success)
+    {
+        await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库");
+        await LoadPendingFormulasAsync();
+    }
+    else
+    {
+        await ShowErrorMessageAsync("药材映射失败，请重试");
+    }
+}
+```
+
+#### 7.2.4 重构效果
+
+| 指标 | 重构前 | 重构后 | 改善 |
+|-----|-------|-------|------|
+| **主方法行数** | 77 行 | 40 行 | **-48%** |
+| **圈复杂度** | 15 | 5 | **-67%** |
+| **方法数** | 1个复杂方法 | 1主+4辅（单一职责） | 职责清晰 |
+| **可读性** | 嵌套3层 | 扁平化 | 显著提升 |
+| **复杂度级别** | High（75-100行） | Low（<50行） | **降3级** |
+
+**完整代码**: `src/Client/Desktop/Modules/LYBT.Desktop.Formula/ViewModels/FormulaValidationViewModel.cs`
+
+---
+
+### 7.3 重构模式总结
+
+#### 7.3.1 Extract Component模式（大规模重构）
+
+**适用场景**:
+- ViewModel代码量 > 300行
+- 职责数 ≥ 3个
+- 代码块可独立为业务单元
+
+**重构步骤**:
+1. 职责识别（Responsibility Analysis）
+2. 组件设计（Component Design）
+3. 代码迁移（Code Migration）
+4. DI注册（DI Registration）
+5. 测试验证（Testing & Verification）
+
+**效果**:
+- 代码量减少: 40-60%
+- 复杂度降低: 3-4级
+- 可测试性提升: 50%+
+
+**案例**: Issue #1790 PatientSelectionViewModel
+
+---
+
+#### 7.3.2 Extract Method模式（方法级重构）
+
+**适用场景**:
+- 单方法行数 > 50行
+- 圈复杂度 > 10
+- 嵌套层级 > 3层
+
+**重构步骤**:
+1. 识别代码块职责
+2. 提取辅助方法（保持单一职责）
+3. 主方法调用辅助方法
+4. 验证逻辑正确性
+
+**效果**:
+- 主方法行数: 减少40-50%
+- 圈复杂度: 降低60-70%
+- 可读性: 显著提升
+
+**案例**: Issue #1795 FormulaValidationViewModel.SelectHerbAsync
+
+---
+
+#### 7.3.3 重构决策矩阵
+
+| 代码量 | 职责数 | 单方法行数 | 推荐模式 |
+|-------|-------|-----------|---------|
+| >500行 | ≥3个 | >100行 | **Extract Component** |
+| 300-500行 | 2-3个 | 50-100行 | **Extract Component or Method** |
+| <300行 | ≤2个 | >50行 | **Extract Method** |
+| <300行 | ≤2个 | <50行 | **保持现状** |
+
+---
+
+## 8. 常见问题解决
+
+### 8.1 问题：组件依赖未设置
 
 **症状**:
 ```

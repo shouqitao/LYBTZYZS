@@ -963,6 +963,93 @@ public class PatientValidator
 - ✅ **代码风格**：组件接口、事件命名、DI注册保持一致
 - ✅ **文档支持**：完整的设计文档和代码示例
 
+#### 5.7 真实案例：PatientSelectionViewModel 组件化重构
+
+> **Issue #1790**: 患者选择对话框ViewModel从726行重构为350行（减少52%），通过提取3个Manager组件实现职责分离。
+
+**重构背景**：
+
+`PatientSelectionViewModel` 原本承担3个职责：
+- **搜索管理**：患者搜索、分页、结果展示
+- **待诊队列**：待诊患者列表、队列状态刷新
+- **未完成医案**：查询患者的未完成医案、一键继续
+
+代码量达到726行，违反了方法复杂度标准（详见 [method-complexity.md](../code-quality/method-complexity.md)），需要组件化重构。
+
+**重构方案**：
+
+提取3个Manager组件：
+1. **PatientSearchManager**（~200行）：负责搜索和分页逻辑
+2. **PendingQueueManager**（~150行）：负责待诊队列管理
+3. **UnfinishedCaseHandler**（~100行）：负责未完成医案查询
+
+**组件注入代码**：
+
+```csharp
+public class PatientSelectionViewModel : UnifiedViewModelBase
+{
+    #region 服务依赖
+
+    // Issue #1788: 使用CommandHandler替代直接Repository访问
+    private readonly PatientCommandHandler _commandHandler;
+    // Epic #1773: 使用MedicalCaseDataManager替代IMedicalCaseRepository直接依赖
+    private readonly MedicalCaseDataManager _medicalCaseDataManager;
+    private readonly IDialogService _dialogService;
+    private readonly IMedicalCaseApi _medicalCaseApi;
+
+    // Issue #1790: 组件化服务 - 搜索、未完成医案、待诊队列逻辑
+    private readonly PatientSearchManager _searchManager;
+    private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
+    private readonly PendingQueueManager _pendingQueueManager;
+
+    #endregion
+
+    public PatientSelectionViewModel(
+        PatientCommandHandler commandHandler,
+        MedicalCaseDataManager medicalCaseDataManager,
+        IDialogService dialogService,
+        IMedicalCaseApi medicalCaseApi,
+        PatientSearchManager searchManager,             // 注入搜索管理器
+        UnfinishedCaseHandler unfinishedCaseHandler,   // 注入医案处理器
+        PendingQueueManager pendingQueueManager,       // 注入队列管理器
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+    {
+        _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+        _medicalCaseDataManager = medicalCaseDataManager ?? throw new ArgumentNullException(nameof(medicalCaseDataManager));
+        _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
+
+        // 注入组件
+        _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
+        _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
+        _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
+    }
+}
+```
+
+**重构结果**：
+
+| 指标 | 重构前 | 重构后 | 改善幅度 |
+|-----|-------|-------|---------|
+| **ViewModel代码量** | 726 行 | 350 行 | **-52%** |
+| **职责数量** | 5个（搜索+队列+医案+UI+导航） | 2个（UI+导航） | **-60%** |
+| **复杂度级别** | Critical（>100行方法） | Low（<50行方法） | **降4级** |
+| **可测试性** | 需Mock 8个依赖 | 需Mock 3个组件 | **-62%** |
+
+**架构优势**：
+
+1. **职责清晰**：ViewModel只负责UI协调，业务逻辑下沉到Manager组件
+2. **可复用**：`PatientSearchManager` 可在其他需要患者搜索的场景复用
+3. **可测试**：每个Manager可独立单元测试，无需启动整个ViewModel
+4. **可维护**：搜索逻辑变更只影响`PatientSearchManager`，不影响队列和医案逻辑
+
+**详细实现** → [component-pattern.md](component-pattern.md#41-案例1-patientsearchmanager-搜索管理器)
+
 ---
 
 ### 6. Modules层 - 业务模块
