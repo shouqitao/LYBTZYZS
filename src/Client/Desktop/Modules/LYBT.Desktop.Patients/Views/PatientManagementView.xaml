@@ -104,7 +104,7 @@
                                         Width="100" />
 
                     <!-- 操作 -->
-                    <DataGridTemplateColumn Header="操作" Width="280">
+                    <DataGridTemplateColumn Header="操作" Width="120">
                         <DataGridTemplateColumn.CellStyle>
                             <Style TargetType="DataGridCell">
                                 <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -113,15 +113,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
-                                    <Button Content="查看"
-                                            Style="{StaticResource SecondaryButton}"                                            Margin="4,0"
-                                            Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}" />
-                                    <Button Content="编辑"
-                                            Style="{StaticResource SecondaryButton}"
-                                            Background="#10B981"                                            Margin="4,0"
-                                            Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}" />
+                                    <!-- Phase 2: 仅保留删除按钮，查看/编辑功能待后续实现 -->
                                     <Button Content="删除"
                                             Style="{StaticResource DangerButton}"
                                             Margin="4,0"
@@ -155,10 +147,7 @@
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
-                    <Button Content="首页"
-                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
-                            Command="{Binding FirstPageCommand}" />
-
+                    <!-- Phase 2: UnifiedListViewModelBase只提供上一页/下一页，暂不实现首页/末页 -->
                     <Button Content="上一页"
                             Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding PreviousPageCommand}" />
@@ -184,10 +173,6 @@
                     <Button Content="下一页"
                             Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding NextPageCommand}" />
-
-                    <Button Content="末页"
-                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
-                            Command="{Binding LastPageCommand}" />
                 </StackPanel>
             </Grid>
         </Border>

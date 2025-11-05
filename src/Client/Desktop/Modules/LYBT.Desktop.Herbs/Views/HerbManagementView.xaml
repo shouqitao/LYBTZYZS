@@ -7,6 +7,9 @@
         <!-- UltraThink UI/UX优化 Phase 1: 使用统一设计系统样式 -->
         <!-- 所有样式现在从UnifiedDesignSystem.xaml继承，只保留页面特定配置 -->
 
+        <!-- 枚举描述转换器 -->
+        <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
+
         <!-- 中药材管理专用DataGrid样式（带特殊要求的列宽度和输出按钮） -->
         <Style x:Key="HerbManagementDataGrid" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGrid}">
             <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}" />
@@ -125,13 +128,14 @@
                 <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border Background="{Binding StatusColor}"
-                                    CornerRadius="3"
-                                    Padding="8,4"
+                            <Border Background="#10B981"
+                                    CornerRadius="{StaticResource CornerRadiusSmall}"
+                                    Padding="12,6"
                                     HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding StatusMessage}"
+                                <TextBlock Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
                                            Foreground="White"
-                                           FontSize="12" />
+                                           FontSize="{StaticResource FontSizeNormal}"
+                                           FontWeight="SemiBold"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

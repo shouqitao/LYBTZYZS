@@ -12,6 +12,10 @@
     <UserControl.Resources>
         <!-- Phase 1: 迁移到UnifiedDesignSystem - 删除所有内联样式 -->
         <!-- 所有样式现在从UnifiedDesignSystem.xaml (应用级资源) 继承 -->
+
+        <!-- 枚举描述转换器 -->
+        <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter"
+            xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
     </UserControl.Resources>
 
     <Grid>
@@ -114,13 +118,14 @@
                 <DataGridTemplateColumn Header="状态" Width="80">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border Background="{Binding StatusColor}"
-                                    CornerRadius="3"
-                                    Padding="8,4"
+                            <Border Background="#10B981"
+                                    CornerRadius="{StaticResource CornerRadiusSmall}"
+                                    Padding="12,6"
                                     HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding StatusMessage}"
+                                <TextBlock Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
                                            Foreground="White"
-                                           FontSize="12" />
+                                           FontSize="{StaticResource FontSizeNormal}"
+                                           FontWeight="SemiBold"/>
                             </Border>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
