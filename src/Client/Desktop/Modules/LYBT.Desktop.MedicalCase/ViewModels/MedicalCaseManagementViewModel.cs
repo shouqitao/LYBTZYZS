@@ -2,6 +2,7 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.MedicalCase; // Epic #1832: 添加MedicalCaseDto引用
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -10,10 +11,10 @@ using Prism.Regions;
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
     /// <summary>
-    /// 病历管理主视图模型 - UltraThink精简架构
-    /// 作为病历模块的主导航和管理容器
+    /// 病历管理主视图模型 - Epic #1832 Phase 4: 迁移到UnifiedListViewModelBase
+    /// 基于UnifiedListViewModelBase实现病历列表管理功能
     /// </summary>
-    public class MedicalCaseManagementViewModel : UnifiedViewModelBase
+    public class MedicalCaseManagementViewModel : UnifiedListViewModelBase<MedicalCaseDto>
     {
         #region 服务依赖
 
@@ -26,28 +27,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 命令
 
-        // Issue #1803: 删除ShowListCommand（MedicalCaseListView已删除）
-
-        /// <summary>
-        /// 创建新病历命令
-        /// </summary>
-        public DelegateCommand CreateNewCommand { get; }
-
-        /// <summary>
-        /// 刷新数据命令
-        /// </summary>
-        public DelegateCommand RefreshCommand { get; }
-
-
-        /// <summary>
-        /// 搜索命令
-        /// </summary>
-        public DelegateCommand SearchCommand { get; }
-
-        /// <summary>
-        /// 添加命令
-        /// </summary>
-        public DelegateCommand AddCommand { get; }
+        // Epic #1832 Phase 4: 删除重复的标准命令定义（SearchCommand, AddCommand, RefreshCommand已由基类提供）
+        // Epic #1832 Phase 4: 删除CreateNewCommand（与AddCommand功能重复，统一使用基类AddCommand）
 
         /// <summary>
         /// 查看详情命令（DataGrid 行命令）
@@ -74,30 +55,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand<object> PrintCommand { get; }
 
-        /// <summary>
-        /// 删除命令（DataGrid 行命令）
-        /// </summary>
-        public DelegateCommand<object> DeleteCommand { get; }
-
-        /// <summary>
-        /// 首页命令
-        /// </summary>
-        public DelegateCommand FirstPageCommand { get; }
-
-        /// <summary>
-        /// 上一页命令
-        /// </summary>
-        public DelegateCommand PreviousPageCommand { get; }
-
-        /// <summary>
-        /// 下一页命令
-        /// </summary>
-        public DelegateCommand NextPageCommand { get; }
-
-        /// <summary>
-        /// 末页命令
-        /// </summary>
-        public DelegateCommand LastPageCommand { get; }
+        // Epic #1832 Phase 4: DeleteCommand, FirstPageCommand, PreviousPageCommand, NextPageCommand, LastPageCommand已由基类提供
 
         #endregion
 
@@ -115,110 +73,115 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // Issue #1783: 注入DataManager（容器ViewModel暂不使用数据操作，但保持架构一致性）
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
-            // 初始化命令
-            // Issue #1803: 删除ShowListCommand初始化（MedicalCaseListView已删除）
-            CreateNewCommand = new DelegateCommand(CreateNew);
-            RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-
-            // 列表管理命令
-            SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
-            AddCommand = new DelegateCommand(CreateNew); // 重用 CreateNew
-
-            // DataGrid 行命令
+            // Epic #1832 Phase 4: 删除重复的标准命令初始化（SearchCommand, AddCommand, RefreshCommand, DeleteCommand, 分页命令已由基类提供）
+            
+            // 仅初始化领域特定命令
             ViewDetailsCommand = new DelegateCommand<object>(ExecuteViewDetails);
             EditCommand = new DelegateCommand<object>(ExecuteEdit);
             ViewConsultationCommand = new DelegateCommand<object>(ExecuteViewConsultation);
             CreatePrescriptionCommand = new DelegateCommand<object>(ExecuteCreatePrescription);
             PrintCommand = new DelegateCommand<object>(ExecutePrint);
-            DeleteCommand = new DelegateCommand<object>(async item => await ExecuteDeleteAsync(item));
-
-            // 分页命令
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
-            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
-            NextPageCommand = new DelegateCommand(ExecuteNextPage);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage);
+            
+            // Epic #1832 Phase 4: DeleteCommand和分页命令已由基类提供，无需初始化
         }
 
         #endregion
+        
+        // Epic #1832 Phase 4: 旧的生命周期region已移至上方并更新
 
+        #region 实现基类抽象方法
+        
+        /// <summary>
+        /// 获取数据项（实现基类抽象方法）
+        /// </summary>
+        protected override async Task<IEnumerable<MedicalCaseDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        {
+            try
+            {
+                // Epic #1832 Phase 4: 使用DataManager包装Repository方法
+                var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
+                
+                // 更新分页信息
+                TotalCount = pagedData.TotalCount;
+                CurrentPage = pagedData.CurrentPage;
+                PageSize = pagedData.PageSize;
+                
+                return pagedData.Items;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载病历数据时发生异常");
+                throw; // 重新抛出异常，让ExecuteSafelyAsync统一处理
+            }
+        }
+        
+        #endregion
+        
+        #region 重写虚方法
+        
+        /// <summary>
+        /// 执行添加操作
+        /// </summary>
+        protected override async Task OnExecuteAddAsync()
+        {
+            try
+            {
+                NavigateTo("MedicalCaseContentRegion", "CreateMedicalCaseView");
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到创建病历页面时发生异常");
+                await ShowErrorMessageAsync("打开创建病历页面失败，请稍后重试");
+            }
+        }
+        
+        /// <summary>
+        /// 执行删除操作
+        /// </summary>
+        protected override async Task OnExecuteDeleteAsync(MedicalCaseDto item)
+        {
+            try
+            {
+                // Epic #1832 Phase 4: 使用DataManager包装Repository方法
+                var success = await _dataManager.DeleteAsync(item.Id);
+                
+                if (success)
+                {
+                    await ShowSuccessMessageAsync($"病历 '{item.CaseNumber}' 删除成功");
+                    await LoadPageAsync(); // 重新加载数据
+                }
+                else
+                {
+                    await ShowErrorMessageAsync($"删除病历 {item.CaseNumber} 失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除病历时发生异常：{MedicalCaseId}", item.Id);
+                await ShowErrorMessageAsync($"删除病历 {item.CaseNumber} 时发生系统错误");
+            }
+        }
+        
+        #endregion
+        
         #region 生命周期
-
+        
         /// <summary>
         /// 页面加载时调用
         /// </summary>
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
             await base.InitializeAsync(parameters);
-
-            // Issue #1803: 删除ShowList()调用（MedicalCaseListView已删除）
+            await LoadPageAsync(); // Epic #1832 Phase 4: 加载初始数据
         }
-
+        
         #endregion
+        
+        #region 领域特定命令实现
 
-        #region 命令实现
-
-        // Issue #1803: 删除ShowList()方法（MedicalCaseListView已删除，不再需要子视图导航）
-
-        /// <summary>
-        /// 创建新病历
-        /// </summary>
-        private void CreateNew()
-        {
-            try
-            {
-                NavigateTo("MedicalCaseContentRegion", "CreateMedicalCaseView");
-                // Issue #1803: 删除ActiveView赋值（属性已删除）
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到创建病历页面时发生异常");
-                ShowErrorMessage("打开创建病历页面失败，请稍后重试");
-            }
-        }
-
-        /// <summary>
-        /// 刷新数据
-        /// </summary>
-        private async Task RefreshAsync()
-        {
-            try
-            {
-                SetIsBusy(true, "正在刷新数据...");
-
-                // 发送刷新事件通知子视图
-                EventAggregator.GetEvent<DataRefreshEvent>().Publish("MedicalCase");
-
-                await ShowSuccessMessageAsync("数据刷新成功");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "刷新病历数据时发生异常");
-                await ShowErrorMessageAsync("刷新数据失败，请稍后重试");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
-
-        #endregion
-
-        #region 导航方法
-
-        /// <summary>
-        /// 导航到病历详情
-        /// </summary>
-        /// <param name="medicalCaseId">病历ID</param>
-        /// <param name="isReadOnly">是否只读模式</param>
-        /// <summary>
-        /// 执行搜索
-        /// </summary>
-        private async Task ExecuteSearchAsync()
-        {
-            // TODO: 实现搜索逻辑或转发到子视图
-            await ShowSuccessMessageAsync("搜索功能由子视图处理");
-        }
-
+        // Epic #1832 Phase 4: ExecuteSearchAsync由基类SearchCommand处理
+        
         /// <summary>
         /// 查看详情
         /// </summary>
@@ -264,46 +227,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ShowInfoMessage("打印功能开发中");
         }
 
-        /// <summary>
-        /// 删除病历
-        /// </summary>
-        private async Task ExecuteDeleteAsync(object item)
-        {
-            Logger.LogInformation("删除病历功能开发中");
-            await ShowSuccessMessageAsync("删除功能开发中");
-        }
-
-        /// <summary>
-        /// 首页
-        /// </summary>
-        private void ExecuteFirstPage()
-        {
-            Logger.LogDebug("首页命令由子视图处理");
-        }
-
-        /// <summary>
-        /// 上一页
-        /// </summary>
-        private void ExecutePreviousPage()
-        {
-            Logger.LogDebug("上一页命令由子视图处理");
-        }
-
-        /// <summary>
-        /// 下一页
-        /// </summary>
-        private void ExecuteNextPage()
-        {
-            Logger.LogDebug("下一页命令由子视图处理");
-        }
-
-        /// <summary>
-        /// 末页
-        /// </summary>
-        private void ExecuteLastPage()
-        {
-            Logger.LogDebug("末页命令由子视图处理");
-        }
+        // Epic #1832 Phase 4: ExecuteDeleteAsync、分页方法已由基类提供，删除空占位符
 
         public void NavigateToDetail(Guid medicalCaseId, bool isReadOnly = false)
         {
