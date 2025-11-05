@@ -4,15 +4,12 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- Issue #1827: 医生工作台主页 - 卡片式布局重构 -->
     <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!-- 中心内容区 -->
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel MaxWidth="800" Margin="40">
-                <!-- Logo区域 -->
+
+                <!-- 标题区域 -->
                 <TextBlock Text="凌隐宝堂中医诊所"
                           FontSize="32"
                           FontWeight="Bold"
@@ -25,33 +22,305 @@
                           HorizontalAlignment="Center"
                           Margin="0,0,0,40" />
 
-                <!-- 开始接诊按钮 (Issue #1486: 150x50px, PrimaryButton) -->
-                <Button Command="{Binding StartConsultationCommand}"
-                       Style="{StaticResource PrimaryButton}"
-                       Content="开始接诊"
-                       Width="150"
-                       Height="50"
-                       FontSize="16"
-                       Margin="0,0,0,30" />
+                <!-- 上层：主卡片 + 统计卡片 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="500" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="240" />
+                    </Grid.ColumnDefinitions>
 
-                <!-- 统计功能占位卡片 (Issue #1553: MVP阶段暂不实现统计功能) -->
-                <Border Background="White"
-                       BorderBrush="{StaticResource BorderBrush}"
-                       BorderThickness="1"
-                       CornerRadius="5"
-                       Margin="0,0,0,20">
-                    <StackPanel Margin="20" HorizontalAlignment="Center">
-                        <TextBlock Text="📊 统计功能"
-                                  Style="{StaticResource H2TextBlock}"
-                                  HorizontalAlignment="Center"
-                                  Margin="0,0,0,10" />
-                        <TextBlock Text="统计功能开发中（MVP后期实现）"
-                                  Style="{StaticResource CaptionTextBlock}"
-                                  Foreground="#999"
-                                  HorizontalAlignment="Center"
-                                  Margin="0,5,0,0" />
-                    </StackPanel>
-                </Border>
+                    <!-- 主卡片：开始接诊 (500x220px) -->
+                    <Border Grid.Column="0"
+                            CornerRadius="12"
+                            Height="220"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                    To="1.05" Duration="0:0:0.3"/>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                    To="1.05" Duration="0:0:0.3"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                    To="1.0" Duration="0:0:0.3"/>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                    To="1.0" Duration="0:0:0.3"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <!-- 渐变背景 -->
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#4A90E2" Offset="0"/>
+                                <GradientStop Color="#357ABD" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Button Command="{Binding StartConsultationCommand}"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Padding="0"
+                               Cursor="Hand">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <!-- 图标 (80x80px) -->
+                                <TextBlock Text="🧑‍⚕️"
+                                          FontSize="60"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,16"/>
+
+                                <!-- 大字标题 -->
+                                <TextBlock Text="开始接诊"
+                                          FontSize="36"
+                                          FontWeight="Bold"
+                                          Foreground="White"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,8"/>
+
+                                <!-- 副标题 -->
+                                <TextBlock Text="点击进入患者选择"
+                                          FontSize="16"
+                                          Foreground="White"
+                                          Opacity="0.8"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 统计卡片 (240x220px) -->
+                    <Border Grid.Column="2"
+                            Background="#F5F5F5"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Height="220"
+                            Padding="20">
+                        <StackPanel VerticalAlignment="Center">
+                            <!-- 标题 -->
+                            <TextBlock Text="今日统计"
+                                      FontSize="18"
+                                      FontWeight="Bold"
+                                      Foreground="#333"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,24"/>
+
+                            <!-- 今日接诊数 -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                <TextBlock Text="{Binding TodayConsultationCount}"
+                                          FontSize="32"
+                                          FontWeight="Bold"
+                                          Foreground="#4A90E2"
+                                          VerticalAlignment="Center"/>
+                                <TextBlock Text=" 人"
+                                          FontSize="16"
+                                          Foreground="#666"
+                                          VerticalAlignment="Center"
+                                          Margin="4,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- 待完成病历 -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="待完成病历: "
+                                          FontSize="14"
+                                          Foreground="#666"
+                                          VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding PendingCaseCount}"
+                                          FontSize="24"
+                                          FontWeight="SemiBold"
+                                          Foreground="#FF6B6B"
+                                          VerticalAlignment="Center"/>
+                                <TextBlock Text=" 份"
+                                          FontSize="14"
+                                          Foreground="#666"
+                                          VerticalAlignment="Center"
+                                          Margin="4,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- 下层：4个辅助卡片 -->
+                <Grid Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="160" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 辅助卡片1：患者管理 -->
+                    <Border Grid.Column="0"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Height="160"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Button Command="{Binding NavigateToPatientManagementCommand}"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Padding="0"
+                               Cursor="Hand">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="👤"
+                                          FontSize="48"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,12"/>
+                                <TextBlock Text="患者管理"
+                                          FontSize="16"
+                                          Foreground="#333"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 辅助卡片2：病历查询 -->
+                    <Border Grid.Column="2"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Height="160"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Button Command="{Binding NavigateToMedicalCaseQueryCommand}"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Padding="0"
+                               Cursor="Hand">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="📋"
+                                          FontSize="48"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,12"/>
+                                <TextBlock Text="病历查询"
+                                          FontSize="16"
+                                          Foreground="#333"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 辅助卡片3：药材库 -->
+                    <Border Grid.Column="4"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Height="160"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Button Command="{Binding NavigateToHerbLibraryCommand}"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Padding="0"
+                               Cursor="Hand">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="🌿"
+                                          FontSize="48"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,12"/>
+                                <TextBlock Text="药材库"
+                                          FontSize="16"
+                                          Foreground="#333"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                    <!-- 辅助卡片4：验方库 -->
+                    <Border Grid.Column="6"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Height="160"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+
+                        <Button Command="{Binding NavigateToFormulaLibraryCommand}"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Padding="0"
+                               Cursor="Hand">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="📖"
+                                          FontSize="48"
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,12"/>
+                                <TextBlock Text="验方库"
+                                          FontSize="16"
+                                          Foreground="#333"
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                </Grid>
 
                 <!-- 底部提示 -->
                 <TextBlock Text="提示：点击【开始接诊】选择患者后进入就诊流程"
@@ -59,7 +328,7 @@
                           HorizontalAlignment="Center"
                           TextWrapping="Wrap"
                           TextAlignment="Center"
-                          Margin="0,20,0,0" />
+                          Margin="0,32,0,0" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

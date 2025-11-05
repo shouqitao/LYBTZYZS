@@ -51,6 +51,26 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// </summary>
         public DelegateCommand StartConsultationCommand { get; }
 
+        /// <summary>
+        /// 导航到患者管理命令 - Issue #1827
+        /// </summary>
+        public DelegateCommand NavigateToPatientManagementCommand { get; }
+
+        /// <summary>
+        /// 导航到病历查询命令 - Issue #1827
+        /// </summary>
+        public DelegateCommand NavigateToMedicalCaseQueryCommand { get; }
+
+        /// <summary>
+        /// 导航到药材库命令 - Issue #1827
+        /// </summary>
+        public DelegateCommand NavigateToHerbLibraryCommand { get; }
+
+        /// <summary>
+        /// 导航到验方库命令 - Issue #1827
+        /// </summary>
+        public DelegateCommand NavigateToFormulaLibraryCommand { get; }
+
         #endregion 命令
 
         #region 构造函数
@@ -65,6 +85,12 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
             // 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
+
+            // Issue #1827: 初始化4个辅助导航命令
+            NavigateToPatientManagementCommand = new DelegateCommand(ExecuteNavigateToPatientManagement);
+            NavigateToMedicalCaseQueryCommand = new DelegateCommand(ExecuteNavigateToMedicalCaseQuery);
+            NavigateToHerbLibraryCommand = new DelegateCommand(ExecuteNavigateToHerbLibrary);
+            NavigateToFormulaLibraryCommand = new DelegateCommand(ExecuteNavigateToFormulaLibrary);
 
             // 加载今日统计数据
             LoadTodayStatistics();
@@ -106,6 +132,70 @@ namespace LYBT.Desktop.Clinical.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "开始看诊时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 导航到患者管理 - Issue #1827
+        /// </summary>
+        private void ExecuteNavigateToPatientManagement()
+        {
+            try
+            {
+                Logger.LogInformation("导航到患者管理视图");
+                _regionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到患者管理时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 导航到病历查询 - Issue #1827
+        /// </summary>
+        private void ExecuteNavigateToMedicalCaseQuery()
+        {
+            try
+            {
+                Logger.LogInformation("导航到病历查询视图");
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseQueryView");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到病历查询时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 导航到药材库 - Issue #1827
+        /// </summary>
+        private void ExecuteNavigateToHerbLibrary()
+        {
+            try
+            {
+                Logger.LogInformation("导航到药材库视图");
+                _regionManager.RequestNavigate("ContentRegion", "HerbManagementView");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到药材库时发生异常");
+            }
+        }
+
+        /// <summary>
+        /// 导航到验方库 - Issue #1827
+        /// </summary>
+        private void ExecuteNavigateToFormulaLibrary()
+        {
+            try
+            {
+                Logger.LogInformation("导航到验方库视图");
+                _regionManager.RequestNavigate("ContentRegion", "FormulaManagementView");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航到验方库时发生异常");
             }
         }
 
