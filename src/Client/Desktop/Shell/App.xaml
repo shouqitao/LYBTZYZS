@@ -11,6 +11,9 @@
         <ResourceDictionary>
             <!--  合并全局样式系统资源 (Issue #1484)  -->
             <ResourceDictionary.MergedDictionaries>
+                <!--  统一设计系统 (Issue #1831: 修复管理界面XAML资源引用)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/UnifiedDesignSystem.xaml" />
+
                 <!--  全局样式系统 (新)  -->
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
