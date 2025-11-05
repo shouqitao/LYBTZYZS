@@ -101,6 +101,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // Epic #1832 Phase 4: 使用DataManager包装Repository方法
                 var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
                 
+                // 检查返回结果是否为null
+                if (pagedData == null)
+                {
+                    Logger.LogError("加载病历数据失败：GetPagedAsync返回null");
+                    throw new InvalidOperationException("查询病历失败");
+                }
+                
                 // 更新分页信息
                 TotalCount = pagedData.TotalCount;
                 CurrentPage = pagedData.CurrentPage;
