@@ -5,12 +5,13 @@
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- Phase 1: 迁移到UnifiedDesignSystem - 删除所有Modern样式 -->
-        <!-- 保留必要的转换器 -->
+        <!-- Epic #1832 Phase 1: 已完全迁移到UnifiedDesignSystem -->
+
+        <!-- 所有样式从UnifiedDesignSystem.xaml (应用级资源) 继承 -->
         <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     </UserControl.Resources>
 
-    <Grid Background="#F8FAFC">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -19,8 +20,8 @@
 
         <!-- 顶部工具栏 -->
         <Border Grid.Row="0"
-                Background="White"
-                Padding="40,24"
+                Background="{StaticResource SurfaceBrush}"
+                Padding="{StaticResource ToolBarPadding}"
                 Margin="0,0,0,2">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -66,7 +67,7 @@
 
         <!-- 数据表格区域 -->
         <Border Grid.Row="1"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 Margin="0,0,0,2">
             <DataGrid ItemsSource="{Binding Items}"
                       SelectedItem="{Binding SelectedItem}"
@@ -77,40 +78,24 @@
                     <!-- 用户名 -->
                     <DataGridTextColumn Header="用户名"
                                         Binding="{Binding UserName}"
-                                        Width="150">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Foreground" Value="#1E293B"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Margin" Value="20,0,0,0"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                                        Width="150" />
 
                     <!-- 真实姓名 -->
                     <DataGridTextColumn Header="真实姓名"
                                         Binding="{Binding RealName}"
-                                        Width="150">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#475569"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                                        Width="150" />
 
                     <!-- 角色 -->
                     <DataGridTemplateColumn Header="角色" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="#DBEAFE"
-                                        CornerRadius="8"
+                                <Border Background="{StaticResource InfoBackgroundBrush}"
+                                        CornerRadius="{StaticResource CornerRadiusSmall}"
                                         Padding="12,6"
                                         HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
-                                               Foreground="#1E40AF"
-                                               FontSize="14"
+                                               Foreground="{StaticResource InfoForegroundBrush}"
+                                               FontSize="{StaticResource FontSizeNormal}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                             </DataTemplate>
@@ -120,26 +105,12 @@
                     <!-- 手机号 -->
                     <DataGridTextColumn Header="手机号"
                                         Binding="{Binding PhoneNumber}"
-                                        Width="130">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#475569"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                                        Width="130" />
 
                     <!-- 邮箱 -->
                     <DataGridTextColumn Header="邮箱"
                                         Binding="{Binding Email}"
-                                        Width="220">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#475569"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                                        Width="220" />
 
                     <!-- 操作 -->
                     <DataGridTemplateColumn Header="操作" Width="280">
@@ -152,17 +123,12 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
                                     <Button Content="查看"
-                                            Style="{StaticResource SecondaryButton}"
-                                            Background="#3B82F6"
-                                            Foreground="White"
-                                            Margin="4,0"
+                                            Style="{StaticResource SecondaryButton}"                                            Margin="4,0"
                                             Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="编辑"
                                             Style="{StaticResource SecondaryButton}"
-                                            Background="#10B981"
-                                            Foreground="White"
-                                            Margin="4,0"
+                                            Background="#10B981"                                            Margin="4,0"
                                             Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="删除"
@@ -180,8 +146,8 @@
 
         <!-- 底部状态栏和分页 -->
         <Border Grid.Row="2"
-                Background="White"
-                Padding="40,20">
+                Background="{StaticResource SurfaceBrush}"
+                Padding="{StaticResource ToolBarPadding}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -190,11 +156,11 @@
 
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#EFF6FF"
-                            CornerRadius="8"
-                            Padding="16,8">
-                        <TextBlock FontSize="14"
-                                   Foreground="#1E40AF"
+                    <Border Background="{StaticResource InfoBackgroundBrush}"
+                            CornerRadius="{StaticResource CornerRadiusSmall}"
+                            Padding="{StaticResource SpacingMedium}">
+                        <TextBlock FontSize="{StaticResource FontSizeNormal}"
+                                   Foreground="{StaticResource InfoForegroundBrush}"
                                    FontWeight="Medium"
                                    Text="{Binding StatusMessage}" />
                     </Border>
@@ -205,28 +171,21 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <Button Content="首页"
-                            Style="{StaticResource SecondaryButton}"
-                            Background="#F3F4F6"
-                            Foreground="#374151"
-                            Margin="4,0"
+                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding FirstPageCommand}" />
 
                     <Button Content="上一页"
-                            Style="{StaticResource SecondaryButton}"
-                            Background="#F3F4F6"
-                            Foreground="#374151"
-                            Margin="4,0"
+                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding PreviousPageCommand}" />
 
-                    <Border Background="#3B82F6"
-                            CornerRadius="8"
+                    <Border
+
+                            CornerRadius="{StaticResource CornerRadiusSmall}"
                             Padding="20,8"
                             Margin="8,0"
                             MinWidth="100">
                         <TextBlock HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Foreground="White"
-                                   FontSize="15"
+                                   VerticalAlignment="Center"                                   FontSize="{StaticResource FontSizeNormal}"
                                    FontWeight="SemiBold">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0} / {1}">
@@ -238,17 +197,11 @@
                     </Border>
 
                     <Button Content="下一页"
-                            Style="{StaticResource SecondaryButton}"
-                            Background="#F3F4F6"
-                            Foreground="#374151"
-                            Margin="4,0"
+                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding NextPageCommand}" />
 
                     <Button Content="末页"
-                            Style="{StaticResource SecondaryButton}"
-                            Background="#F3F4F6"
-                            Foreground="#374151"
-                            Margin="4,0"
+                            Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding LastPageCommand}" />
                 </StackPanel>
             </Grid>
