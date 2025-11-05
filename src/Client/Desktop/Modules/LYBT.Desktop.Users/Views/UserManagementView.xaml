@@ -46,7 +46,7 @@
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Margin="0,0,12,0"
-                            Style="{StaticResource ModernSuccessButton}"
+                            Style="{StaticResource SuccessButton}"
                             Command="{Binding AddCommand}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0"/>
@@ -166,7 +166,7 @@
                                             Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="删除"
-                                            Style="{StaticResource ModernDangerButton}"
+                                            Style="{StaticResource DangerButton}"
                                             Margin="4,0"
                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
