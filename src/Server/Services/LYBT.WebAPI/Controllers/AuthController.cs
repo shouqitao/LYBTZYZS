@@ -157,8 +157,53 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        // 移除刷新Token和撤销Token端点
-        // 简化版本不支持刷新令牌机制，遵循适度设计原则
+        /// <summary>
+        /// 刷新访问令牌 - Issue #1838
+        /// 使用RefreshToken获取新的AccessToken和RefreshToken对
+        /// </summary>
+        /// <param name="request">刷新令牌请求</param>
+        /// <returns>新的令牌对</returns>
+        [HttpPost("refresh")]
+        [AllowAnonymous]  // 刷新端点允许匿名访问（通过RefreshToken验证）
+        [ProducesResponseType(typeof(LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>), 401)]
+        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>>> RefreshTokenAsync(
+            [FromBody] RefreshTokenRequest request)
+        {
+            try
+            {
+                // 参数验证
+                var validation = ValidateModel<LoginResponse>();
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                if (request == null)
+                {
+                    return ValidationFail<LoginResponse>("刷新令牌请求不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                {
+                    return ValidationFail<LoginResponse>("RefreshToken不能为空");
+                }
+
+                // 调用认证服务刷新Token
+                var result = await _authService.RefreshTokenAsync(request.RefreshToken);
+
+                if (!result.IsSuccess)
+                {
+                    return Unauthorized(LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>.CreateFail(result.ErrorMessage ?? "RefreshToken无效"));
+                }
+
+                return Success(result.Data!, "Token刷新成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<LoginResponse>(ex, "刷新Token", request);
+            }
+        }
 
         /// <summary>
         /// 验证Token (GET方法)

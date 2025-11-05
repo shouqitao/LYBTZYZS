@@ -43,6 +43,19 @@ namespace LYBT.Desktop.Contracts.Api
         [Refit.Headers("Authorization: Bearer")]
         Task<LYBT.Shared.Models.Contracts.Common.ApiResponse> LogoutAsync([Refit.Body] LogoutRequest logoutRequest);
 
+        /// <summary>
+        /// 刷新访问令牌 - Issue #1838
+        /// </summary>
+        /// <param name="request">刷新令牌请求</param>
+        /// <returns>新的令牌对（包含新的AccessToken和RefreshToken）</returns>
+        /// <remarks>
+        /// <para>功能: 使用RefreshToken获取新的AccessToken和RefreshToken</para>
+        /// <para>安全: Token轮换机制，旧RefreshToken被撤销，新RefreshToken生成</para>
+        /// <para>过期: AccessToken 15分钟，RefreshToken 7天</para>
+        /// </remarks>
+        [Refit.Post("/api/v1/auth/refresh")]
+        Task<LYBT.Shared.Models.Contracts.Common.ApiResponse<LoginResponse>> RefreshTokenAsync([Refit.Body] RefreshTokenRequest request);
+
 
         /// <summary>
         /// 修改系统管理员密码

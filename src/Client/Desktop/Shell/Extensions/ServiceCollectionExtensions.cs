@@ -112,6 +112,7 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             RegisterLogger<LYBT.Desktop.Foundation.Http.ApiService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>(containerRegistry); // Issue #1838: Token自动刷新
             RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>(containerRegistry);
@@ -223,8 +224,12 @@ namespace LYBT.Desktop.Shell.Extensions
             // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
 
-            // Issue #1239 修复: 手动创建带有 AuthorizationMessageHandler 的 HttpClient
-            // 不使用 ServiceCollection，因为 AuthorizationMessageHandler 依赖 Prism 容器中的服务
+            // Issue #1838: 注册 TokenRefreshHandler
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>();
+
+            // Issue #1239 修复 + Issue #1838: 手动创建带有 TokenRefreshHandler 和 AuthorizationMessageHandler 的 HttpClient
+            // 不使用 ServiceCollection，因为 Handler 依赖 Prism 容器中的服务
+            // Handler 链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → HttpClient
             containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
                 // 1. 创建基础 HttpClientHandler
@@ -234,11 +239,15 @@ namespace LYBT.Desktop.Shell.Extensions
                     httpHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
                 }
 
-                // 2. 从 Prism 容器解析 AuthorizationMessageHandler
-                var authHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
-                authHandler.InnerHandler = httpHandler;
+                // 2. 从 Prism 容器解析 TokenRefreshHandler（先检查Token过期并刷新）
+                var tokenRefreshHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>();
+                tokenRefreshHandler.InnerHandler = httpHandler;
 
-                // 3. 使用 authHandler 创建 HttpClient（自动添加 Bearer Token）
+                // 3. 从 Prism 容器解析 AuthorizationMessageHandler（添加Bearer Token到请求头）
+                var authHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
+                authHandler.InnerHandler = tokenRefreshHandler;
+
+                // 4. 使用 authHandler 创建 HttpClient（自动刷新Token + 自动添加 Bearer Token）
                 var httpClient = new HttpClient(authHandler)
                 {
                     BaseAddress = new Uri(apiBaseUrl),

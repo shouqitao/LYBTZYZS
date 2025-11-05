@@ -87,9 +87,11 @@ public class JwtService : IJwtService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // 设置合理的过期时间（8小时，符合适度设计原则）
-        var expirationHours = 8; // 简化配置，无需15分钟强制过期
-        var expires = DateTime.UtcNow.AddHours(expirationHours);
+        // Issue #1838: 从配置读取Token过期时间（支持RefreshToken机制）
+        var expireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes")
+                           ?? _configuration.GetValue<int?>("Lybt:Jwt:AccessTokenExpirationMinutes")
+                           ?? 15; // 默认15分钟
+        var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -149,9 +151,11 @@ public class JwtService : IJwtService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // 设置合理的过期时间（8小时，符合适度设计原则）
-        var expirationHours = 8; // 简化配置，无需15分钟强制过期
-        var expires = DateTime.UtcNow.AddHours(expirationHours);
+        // Issue #1838: 从配置读取Token过期时间（支持RefreshToken机制）
+        var expireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes")
+                           ?? _configuration.GetValue<int?>("Lybt:Jwt:AccessTokenExpirationMinutes")
+                           ?? 15; // 默认15分钟
+        var expires = DateTime.UtcNow.AddMinutes(expireMinutes);
 
         // 创建Token
         var tokenDescriptor = new SecurityTokenDescriptor

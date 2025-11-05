@@ -190,6 +190,23 @@ namespace LYBT.Module.Auth.Services
                             { "AuthSource", "AdminSecrets" }
                         });
 
+                    // Issue #1838: 超级管理员也生成RefreshToken
+                    var sysAdminRefreshToken = GenerateRefreshToken();
+                    var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
+                    var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
+
+                    // 存储RefreshToken（超级管理员使用特殊的UserId=Guid.Empty）
+                    var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
+                    {
+                        Token = sysAdminRefreshToken,
+                        UserId = Guid.Empty, // 超级管理员特殊ID
+                        Jti = Guid.NewGuid().ToString(),
+                        ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                        FamilyId = Guid.NewGuid().ToString() // 新家族ID
+                    };
+                    _dbContext.RefreshTokens.Add(refreshTokenRecord);
+                    await _dbContext.SaveChangesAsync();
+
                     response = new LoginResponse
                     {
                         Token = token,
@@ -201,8 +218,8 @@ namespace LYBT.Module.Auth.Services
                             Role = UserRole.Admin,
                             Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com"
                         },
-                        RefreshToken = "", // 简化版本不使用RefreshToken
-                        ExpiresAt = DateTime.UtcNow.AddHours(8)
+                        RefreshToken = sysAdminRefreshToken, // Issue #1838: 返回RefreshToken
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
                     };
 
                     _logger.LogInformation("超级管理员登录成功（用户名已隐藏）");
@@ -222,12 +239,28 @@ namespace LYBT.Module.Auth.Services
                         userDto.UserName,
                         userDto.Role);
 
+                    // Issue #1838: 生成并存储RefreshToken
+                    var refreshToken = GenerateRefreshToken();
+                    var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
+                    var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
+
+                    var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
+                    {
+                        Token = refreshToken,
+                        UserId = userDto.Id,
+                        Jti = Guid.NewGuid().ToString(),
+                        ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                        FamilyId = Guid.NewGuid().ToString() // 新家族ID
+                    };
+                    _dbContext.RefreshTokens.Add(refreshTokenRecord);
+                    await _dbContext.SaveChangesAsync();
+
                     response = new LoginResponse
                     {
                         Token = token,
                         User = userDto,
-                        RefreshToken = "", // 简化版本不使用RefreshToken
-                        ExpiresAt = DateTime.UtcNow.AddHours(8) // 简化：固定8小时过期
+                        RefreshToken = refreshToken, // Issue #1838: 返回RefreshToken
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
                     };
 
                     _logger.LogInformation("用户登录成功 [用户名: {UserName}] [时间: {Timestamp}]",
@@ -254,12 +287,105 @@ namespace LYBT.Module.Auth.Services
         }
 
         /// <summary>
-        /// 刷新令牌（简化版本不支持）
+        /// 刷新令牌 - Issue #1838: 实现Token自动刷新机制
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
         {
-            await Task.CompletedTask;
-            return ServiceResult<LoginResponse>.Failure("简化版本不支持令牌刷新，请重新登录");
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return ServiceResult<LoginResponse>.Failure("RefreshToken不能为空");
+
+            try
+            {
+                // 1. 查询RefreshToken记录
+                var tokenRecord = await _dbContext.RefreshTokens
+                    .FirstOrDefaultAsync(t => t.Token == refreshToken);
+
+                if (tokenRecord == null)
+                    return ServiceResult<LoginResponse>.Failure("RefreshToken不存在");
+
+                // 2. 验证Token是否有效
+                if (!tokenRecord.IsValid())
+                {
+                    var reason = tokenRecord.IsRevoked ? "已撤销" :
+                                tokenRecord.IsDeleted ? "已删除" :
+                                "已过期";
+                    _logger.LogWarning("RefreshToken验证失败：{Reason}", reason);
+                    return ServiceResult<LoginResponse>.Failure($"RefreshToken{reason}，请重新登录");
+                }
+
+                // 3. 记录使用并检查异常使用
+                tokenRecord.RecordUsage();
+                if (tokenRecord.UsageCount > 100)
+                {
+                    _logger.LogWarning("RefreshToken使用次数异常：{Count}", tokenRecord.UsageCount);
+                }
+
+                // 4. 获取用户信息
+                var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+                if (userEntity == null)
+                    return ServiceResult<LoginResponse>.Failure("用户不存在");
+
+                var userDto = _mapper.Map<UserDto>(userEntity);
+
+                // 5. 生成新的Access Token
+                var newAccessToken = _jwtService.GenerateToken(
+                    userDto.Id.ToString(),
+                    userDto.UserName,
+                    userDto.Role);
+
+                // 6. 生成新的Refresh Token并撤销旧Token（Token轮换）
+                var newRefreshToken = GenerateRefreshToken();
+                var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
+
+                // 撤销旧Token
+                tokenRecord.Revoke("已被新Token替换", $"User:{userDto.Id}");
+                tokenRecord.ReplacedByToken = newRefreshToken;
+
+                // 创建新Token记录
+                var newTokenRecord = new LYBT.Entities.Auth.RefreshToken
+                {
+                    Token = newRefreshToken,
+                    UserId = userDto.Id,
+                    Jti = Guid.NewGuid().ToString(),
+                    ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                    FamilyId = tokenRecord.FamilyId // 继承家族ID
+                };
+
+                _dbContext.RefreshTokens.Add(newTokenRecord);
+                await _dbContext.SaveChangesAsync();
+
+                // 7. 返回新Token对
+                var response = new LoginResponse
+                {
+                    Token = newAccessToken,
+                    User = userDto,
+                    RefreshToken = newRefreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(
+                        _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15)
+                };
+
+                _logger.LogInformation("Token刷新成功 [用户: {UserName}] [时间: {Timestamp}]",
+                    userDto.UserName, DateTime.UtcNow);
+
+                return ServiceResult<LoginResponse>.Success(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刷新Token时发生错误");
+                return ServiceResult<LoginResponse>.Failure("刷新Token失败");
+            }
+        }
+
+        /// <summary>
+        /// 生成安全的RefreshToken字符串
+        /// Issue #1838: 使用加密安全的随机数生成器
+        /// </summary>
+        private static string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
 
         /// <summary>
