@@ -19,9 +19,11 @@ namespace LYBT.Desktop.Admin
         {
             // 注册视图模型
             containerRegistry.Register<ViewModels.AdminHomeViewModel>();
+            containerRegistry.Register<ViewModels.SystemSettingsViewModel>();
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.AdminHomeView>();
+            containerRegistry.RegisterForNavigation<Views.SystemSettingsView>();
         }
     }
 }

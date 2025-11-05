@@ -48,11 +48,13 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();
             containerRegistry.Register<ViewModels.PatientImportWizardViewModel>();
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
+            containerRegistry.Register<ViewModels.PatientManagementViewModel>();  // 患者管理视图模型
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
             containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
+            containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
 
             // Issue #1547: PatientSelectionDialog已删除（由MedicalCaseFlowView的Step 1替代）
             // containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();
