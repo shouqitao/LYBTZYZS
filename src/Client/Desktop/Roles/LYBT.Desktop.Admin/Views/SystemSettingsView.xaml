@@ -207,10 +207,14 @@
                     <Button Content="保存设置"
                             Style="{StaticResource PrimaryButton}"
                             Margin="0,0,12,0"
-                            Command="{Binding SaveCommand}"/>
-                    <Button Content="重置"
+                            Command="{Binding SaveCommand}"/>                    <Button Content="重置"
                             Style="{StaticResource SecondaryButton}"
-                            Command="{Binding ResetCommand}"/>
+                            Command="{Binding ResetCommand}"
+                            Margin="0,0,12,0"/>
+                    <Button Content="🏠 返回主页"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding NavigateToHomeCommand}"
+                            ToolTip="返回管理员主页" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

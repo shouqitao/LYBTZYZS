@@ -226,10 +226,14 @@
                             <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0"/>
                             <TextBlock Text="新增用户"/>
                         </StackPanel>
-                    </Button>
-                    <Button Content="刷新"
+                    </Button>                    <Button Content="刷新"
                             Style="{StaticResource ModernSecondaryButton}"
-                            Command="{Binding RefreshCommand}" />
+                            Command="{Binding RefreshCommand}"
+                            Margin="0,0,12,0" />
+                    <Button Content="🏠 返回主页"
+                            Style="{StaticResource ModernPrimaryButton}"
+                            Command="{Binding NavigateToHomeCommand}"
+                            ToolTip="返回管理员主页" />
                 </StackPanel>
             </Grid>
         </Border>

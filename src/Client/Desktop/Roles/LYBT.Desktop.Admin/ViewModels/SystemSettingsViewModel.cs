@@ -62,6 +62,11 @@ namespace LYBT.Desktop.Admin.ViewModels
         public DelegateCommand SaveCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
         public DelegateCommand BrowseBackupPathCommand { get; private set; }
+        
+        /// <summary>
+        /// 返回主页命令 (Issue #1831)
+        /// </summary>
+        public DelegateCommand NavigateToHomeCommand { get; private set; }
 
         #endregion
 
@@ -75,6 +80,9 @@ namespace LYBT.Desktop.Admin.ViewModels
             SaveCommand = new DelegateCommand(ExecuteSave);
             ResetCommand = new DelegateCommand(ExecuteReset);
             BrowseBackupPathCommand = new DelegateCommand(ExecuteBrowseBackupPath);
+            
+            // Issue #1831: 初始化返回主页命令
+            NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
         }
 
         #endregion
@@ -99,6 +107,21 @@ namespace LYBT.Desktop.Admin.ViewModels
         private void ExecuteBrowseBackupPath()
         {
             StatusMessage = "浏览备份路径（功能开发中）";
+        }
+
+        /// <summary>
+        /// 返回主页 (Issue #1831)
+        /// </summary>
+        private void ExecuteNavigateToHome()
+        {
+            try
+            {
+                _regionManager.RequestNavigate("ContentRegion", "AdminHomeView");
+            }
+            catch
+            {
+                StatusMessage = "返回主页失败";
+            }
         }
 
         #endregion

@@ -70,6 +70,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand PreviousPageCommand { get; }
         public DelegateCommand NextPageCommand { get; }
         public DelegateCommand LastPageCommand { get; }
+        
+        /// <summary>
+        /// 返回主页命令 (Issue #1831)
+        /// </summary>
+        public DelegateCommand NavigateToHomeCommand { get; }
 
         #endregion
 
@@ -90,6 +95,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
             NextPageCommand = new DelegateCommand(ExecuteNextPage);
             LastPageCommand = new DelegateCommand(ExecuteLastPage);
+            
+            // Issue #1831: 初始化返回主页命令
+            NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
 
             // 加载占位数据
             LoadPlaceholderData();
@@ -161,6 +169,21 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             CurrentPage = TotalPages;
             StatusMessage = $"第 {TotalPages} 页";
+        }
+
+        /// <summary>
+        /// 返回主页 (Issue #1831)
+        /// </summary>
+        private void ExecuteNavigateToHome()
+        {
+            try
+            {
+                _regionManager.RequestNavigate("ContentRegion", "AdminHomeView");
+            }
+            catch
+            {
+                StatusMessage = "返回主页失败";
+            }
         }
 
         #endregion

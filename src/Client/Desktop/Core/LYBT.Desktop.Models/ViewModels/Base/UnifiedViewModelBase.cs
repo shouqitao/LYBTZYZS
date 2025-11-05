@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
@@ -10,6 +11,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// 统一ViewModel基类 - UltraThink架构重构版本
     /// 提供统一的导航、错误处理、会话管理功能
     /// Issue #1240: 添加自定义 InitializeAsync 支持，优化异步导航模式
+    /// Issue #1831: 添加返回主页统一命令
     /// </summary>
     public abstract class UnifiedViewModelBase : ViewModelBase, INavigationAware, IRegionMemberLifetime
     {
@@ -36,6 +38,15 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         #endregion
 
+        #region 导航命令 (Issue #1831)
+
+        /// <summary>
+        /// 返回主页命令
+        /// </summary>
+        public DelegateCommand NavigateToHomeCommand { get; private set; }
+
+        #endregion
+
         #region 构造函数
 
         protected UnifiedViewModelBase(
@@ -49,6 +60,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             SessionManager = sessionManager;
             UserNotificationService = userNotificationService;
+
+            // Issue #1831: 初始化返回主页命令
+            NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
         }
 
         #endregion
@@ -154,6 +168,33 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 返回主页 (Issue #1831)
+        /// </summary>
+        protected virtual void ExecuteNavigateToHome()
+        {
+            try
+            {
+                var homeViewName = GetHomeViewName();
+                Logger.LogDebug("返回主页: {HomeViewName}", homeViewName);
+                NavigateTo("ContentRegion", homeViewName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "返回主页失败");
+                HandleError(ex, "返回主页");
+            }
+        }
+
+        /// <summary>
+        /// 获取主页视图名称（子类可重写以指定不同的主页）
+        /// 默认返回 AdminHomeView (Issue #1831)
+        /// </summary>
+        protected virtual string GetHomeViewName()
+        {
+            return "AdminHomeView";
         }
 
         #endregion

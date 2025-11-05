@@ -38,11 +38,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand RefreshCommand { get; }
 
-        /// <summary>
-        /// 返回主页命令
-        /// </summary>
-        public DelegateCommand BackToHomeCommand { get; }
-
 
         /// <summary>
         /// 搜索命令
@@ -124,7 +119,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // Issue #1803: 删除ShowListCommand初始化（MedicalCaseListView已删除）
             CreateNewCommand = new DelegateCommand(CreateNew);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            BackToHomeCommand = new DelegateCommand(BackToHome);
 
             // 列表管理命令
             SearchCommand = new DelegateCommand(async () => await ExecuteSearchAsync());
@@ -204,22 +198,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             finally
             {
                 SetIsBusy(false);
-            }
-        }
-
-        /// <summary>
-        /// 返回主页
-        /// </summary>
-        private void BackToHome()
-        {
-            try
-            {
-                NavigateTo("MainRegion", "HomeView");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到主页时发生异常");
-                ShowErrorMessage("返回主页失败，请稍后重试");
             }
         }
 

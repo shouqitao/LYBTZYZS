@@ -67,8 +67,13 @@
                             Style="{StaticResource SuccessButton}"
                             Command="{Binding AddCommand}" />
                     <Button Content="刷新"
+                            Margin="0,0,10,0"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}" />
+                    <Button Content="🏠 返回主页"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding NavigateToHomeCommand}"
+                            ToolTip="返回管理员主页" />
                 </StackPanel>
             </Grid>
         </Border>
