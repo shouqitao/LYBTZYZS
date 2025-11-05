@@ -89,12 +89,12 @@
                     <DataGridTemplateColumn Header="角色" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource InfoBackgroundBrush}"
+                                <Border Background="#E3F2FD"
                                         CornerRadius="{StaticResource CornerRadiusSmall}"
                                         Padding="12,6"
                                         HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"
-                                               Foreground="{StaticResource InfoForegroundBrush}"
+                                               Foreground="{StaticResource InfoBrush}"
                                                FontSize="{StaticResource FontSizeNormal}"
                                                FontWeight="SemiBold"/>
                                 </Border>
@@ -156,14 +156,8 @@
 
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{StaticResource InfoBackgroundBrush}"
-                            CornerRadius="{StaticResource CornerRadiusSmall}"
-                            Padding="{StaticResource SpacingMedium}">
-                        <TextBlock FontSize="{StaticResource FontSizeNormal}"
-                                   Foreground="{StaticResource InfoForegroundBrush}"
-                                   FontWeight="Medium"
-                                   Text="{Binding StatusMessage}" />
-                    </Border>
+                    <TextBlock Style="{StaticResource StatusLabel}"
+                               Text="{Binding StatusMessage}" />
                 </StackPanel>
 
                 <!-- 分页控件 -->

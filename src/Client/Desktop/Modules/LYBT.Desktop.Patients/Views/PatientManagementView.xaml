@@ -4,7 +4,8 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- Epic #1832 Phase 1: 已完全迁移到UnifiedDesignSystem -->
+        <!-- Epic #1832 Phase 1: 已完全迁移到UnifiedDesignSystem -->
+
         <!-- 所有样式从UnifiedDesignSystem.xaml (应用级资源) 继承 -->
     </UserControl.Resources>
 
@@ -146,14 +147,8 @@
 
                 <!-- 统计信息 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="{StaticResource InfoBackgroundBrush}"
-                            CornerRadius="{StaticResource CornerRadiusSmall}"
-                            Padding="16,8">
-                        <TextBlock FontSize="{StaticResource FontSizeNormal}"
-                                   Foreground="{StaticResource InfoForegroundBrush}"
-                                   FontWeight="Medium"
-                                   Text="{Binding StatusMessage}" />
-                    </Border>
+                    <TextBlock Style="{StaticResource StatusLabel}"
+                               Text="{Binding StatusMessage}" />
                 </StackPanel>
 
                 <!-- 分页控件 -->
@@ -168,7 +163,8 @@
                             Style="{StaticResource SecondaryButton}"                            Margin="4,0"
                             Command="{Binding PreviousPageCommand}" />
 
-                    <Border
+                    <Border
+
                             CornerRadius="{StaticResource CornerRadiusSmall}"
                             Padding="20,8"
                             Margin="8,0"
