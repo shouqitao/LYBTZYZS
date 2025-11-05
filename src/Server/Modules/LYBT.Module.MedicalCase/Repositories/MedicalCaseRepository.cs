@@ -66,7 +66,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         {
             return (await GetDetailQuery()
                 .Where(m => m.Id == id)
-                .FirstOrDefaultAsync())!;
+                .SingleOrDefaultAsync())!;
         }
 
         /// <summary>

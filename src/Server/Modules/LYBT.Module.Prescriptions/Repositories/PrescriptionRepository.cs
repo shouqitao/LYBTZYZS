@@ -32,7 +32,7 @@ namespace LYBT.Module.Prescriptions.Repositories
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.Id == id && !p.IsDeleted)
-                .FirstOrDefaultAsync();
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>

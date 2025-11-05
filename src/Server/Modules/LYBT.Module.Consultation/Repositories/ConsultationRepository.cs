@@ -77,7 +77,7 @@ namespace LYBT.Module.Consultation.Repositories
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == id && !c.IsDeleted)
-                .FirstOrDefaultAsync())!;
+                .SingleOrDefaultAsync())!;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace LYBT.Module.Consultation.Repositories
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == medicalCaseId && !c.IsDeleted)  // c.Id == MedicalCase.Id（共享主键）
-                .FirstOrDefaultAsync())!;
+                .SingleOrDefaultAsync())!;
         }
 
         // ========== 显式接口实现（Issue #1600 Phase 1）==========

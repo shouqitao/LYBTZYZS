@@ -49,7 +49,7 @@ namespace LYBT.Module.Formula.Repositories
         {
             return (await GetBaseQuery()
                 .Where(f => f.Id == id)
-                .FirstOrDefaultAsync())!;
+                .SingleOrDefaultAsync())!;
         }
 
         /// <summary>

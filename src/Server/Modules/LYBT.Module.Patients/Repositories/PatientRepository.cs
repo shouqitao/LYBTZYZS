@@ -38,7 +38,7 @@ namespace LYBT.Module.Patients.Repositories
                 // .Include(p => p.Visits)  // Patient实体未定义Visits导航属性
                 //     .ThenInclude(v => v.Prescriptions)
                 .Where(p => p.Id == patientId && !p.IsDeleted)
-                .FirstOrDefaultAsync();
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>

@@ -41,7 +41,7 @@ namespace LYBT.Infrastructure.Repositories
         {
             return await _dbSet
                 .Where(e => e.Id == id && !e.IsDeleted)
-                .FirstOrDefaultAsync();
+                .SingleOrDefaultAsync();
         }
 
         // Issue #1766: 删除GetByIdAsync(Guid, params string[]) - 未被使用，MVP阶段Repository子类都实现自己的WithDetails方法
@@ -242,7 +242,7 @@ namespace LYBT.Infrastructure.Repositories
             return await _dbSet
                 .Where(e => !e.IsDeleted)
                 .Where(predicate)
-                .FirstOrDefaultAsync();
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>
