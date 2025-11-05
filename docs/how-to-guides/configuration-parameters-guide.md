@@ -211,11 +211,13 @@
 
 ## 🔧 系统管理员配置详解
 
-### 管理员配置 (`Lybt:Business:SystemAdmin`)
+### 管理员配置 (`Lybt:SystemAdmin`) ⭐ **Issue #1761 Phase 3.1 路径调整**
+
+⚠️ **重要变更**: Issue #1761 Phase 3.1配置扁平化后，路径从 `Lybt:Business:SystemAdmin` 调整为 `Lybt:SystemAdmin`，同时字段名从 `Username` 统一为 `UserName`（PascalCase）。
 
 | 参数名 | 类型 | 默认值 | 取值范围 | 说明 |
 |--------|------|--------|----------|------|
-| **Username** | string | sysadmin/clinic_admin | 3-50字符 | 系统管理员用户名 |
+| **UserName** ⭐ | string | sysadmin/clinic_admin | 3-50字符 | 系统管理员用户名（⚠️ v1.0.7+统一为PascalCase） |
 | **Email** | string | admin@lybt.com | 有效邮箱格式 | 管理员邮箱 |
 | **DisplayName** | string | 系统管理员 | 2-100字符 | 显示名称 |
 | **AutoCreateOnStartup** | bool | true/false | true/false | 启动时自动创建 |
@@ -223,11 +225,41 @@
 
 ### 环境配置差异
 
-| 环境 | Username | AutoCreateOnStartup | SessionTimeoutMinutes |
+| 环境 | UserName | AutoCreateOnStartup | SessionTimeoutMinutes |
 |------|----------|-------------------|----------------------|
 | 开发环境 | sysadmin | true | 240分钟（4小时） |
 | 生产环境 | clinic_admin | false | 120分钟（2小时） |
 | 小诊所环境 | sysadmin | true | 240分钟（4小时） |
+
+### 版本兼容性
+
+| 版本 | 配置路径 | 字段名 | 状态 |
+|------|---------|--------|------|
+| v1.0.6及以下 | `Lybt:Business:SystemAdmin:Username` | Username | ❌ 已废弃 |
+| v1.0.7+ | `Lybt:SystemAdmin:UserName` | UserName | ✅ 当前版本 |
+
+**迁移示例**:
+```json
+// ❌ 旧配置（v1.0.6及以下）
+{
+  "Lybt": {
+    "Business": {
+      "SystemAdmin": {
+        "Username": "sysadmin"
+      }
+    }
+  }
+}
+
+// ✅ 新配置（v1.0.7+，Issue #1761 Phase 3.1）
+{
+  "Lybt": {
+    "SystemAdmin": {
+      "UserName": "sysadmin"
+    }
+  }
+}
+```
 
 ---
 
