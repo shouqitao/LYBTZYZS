@@ -181,7 +181,7 @@ namespace LYBT.Module.Auth.Services
 
                     // 生成超级管理员专用的JWT令牌
                     var token = _jwtService.GenerateToken(
-                        "00000000-0000-0000-0000-000000000000", // 特殊ID表示超级管理员
+                        "00000000-0000-0000-0000-000000000001", // 超级管理员特殊ID（对应AdminSecrets表）
                         sysAdminUsername,
                         UserRole.Admin, // 使用Admin角色，但通过特殊ID区分
                         new Dictionary<string, string>
@@ -199,7 +199,7 @@ namespace LYBT.Module.Auth.Services
                     var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
                     {
                         Token = sysAdminRefreshToken,
-                        UserId = Guid.Empty, // 超级管理员特殊ID
+                        UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"), // 超级管理员固定ID
                         Jti = Guid.NewGuid().ToString(),
                         ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
                         FamilyId = Guid.NewGuid().ToString() // 新家族ID
@@ -212,7 +212,7 @@ namespace LYBT.Module.Auth.Services
                         Token = token,
                         User = new UserDto
                         {
-                            Id = Guid.Empty, // 特殊ID
+                            Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), // 超级管理员固定ID
                             UserName = sysAdminUsername,
                             RealName = "系统超级管理员",
                             Role = UserRole.Admin,
