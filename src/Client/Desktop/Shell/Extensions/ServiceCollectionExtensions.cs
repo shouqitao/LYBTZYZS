@@ -66,6 +66,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterModuleLoggers(containerRegistry);
             RegisterRepositoryLoggers(containerRegistry);
             RegisterServiceLoggers(containerRegistry);
+            RegisterComponentLoggers(containerRegistry);
         }
 
 
@@ -173,6 +174,19 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>(containerRegistry);
+        }
+
+        /// <summary>
+        /// 注册Component层Logger（CommandHandler等）
+        /// 修复管理界面DI错误
+        /// </summary>
+        private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
+        {
+            // 只注册确实存在且使用ViewModels.Components命名空间的CommandHandler
+            // 注意：部分模块使用DataManager而非CommandHandler，不需要注册
+            RegisterLogger<LYBT.Desktop.Users.ViewModels.Components.UserCommandHandler>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Formula.ViewModels.Components.FormulaCommandHandler>(containerRegistry);
+            // Patients和Prescriptions模块的CommandHandler暂时不注册（可能使用不同命名空间或不存在）
         }
 
         /// <summary>

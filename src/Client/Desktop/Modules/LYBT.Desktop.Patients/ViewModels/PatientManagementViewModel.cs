@@ -1,288 +1,243 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Patients.ViewModels.Components;
-using LYBT.Shared.Models.Contracts.Patients;
-using Microsoft.Extensions.Logging;
+using Prism.Mvvm;
 using Prism.Commands;
-using Prism.Events;
 using Prism.Regions;
+using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型
-    /// 基于UnifiedListViewModelBase实现完整患者管理功能
+    /// 患者管理视图模型 - 占位实现
     /// </summary>
-    public class PatientManagementViewModel : UnifiedListViewModelBase<PatientDto>
+    public class PatientManagementViewModel : BindableBase, INavigationAware
     {
-        #region 服务依赖
+        private readonly IRegionManager _regionManager;
 
-        private readonly PatientCommandHandler _commandHandler;
+        #region 属性
+
+        private ObservableCollection<PatientItemPlaceholder> _items = new();
+        public ObservableCollection<PatientItemPlaceholder> Items
+        {
+            get => _items;
+            set => SetProperty(ref _items, value);
+        }
+
+        private PatientItemPlaceholder? _selectedItem;
+        public PatientItemPlaceholder? SelectedItem
+        {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
+        }
+
+        private string _searchText = string.Empty;
+        public string SearchText
+        {
+            get => _searchText;
+            set => SetProperty(ref _searchText, value);
+        }
+
+        private string _statusMessage = "共 0 条记录";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set => SetProperty(ref _statusMessage, value);
+        }
+
+        private int _currentPage = 1;
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
+        }
+
+        private int _totalPages = 1;
+        public int TotalPages
+        {
+            get => _totalPages;
+            set => SetProperty(ref _totalPages, value);
+        }
 
         #endregion
 
-        #region 患者特定命令
+        #region 命令
 
-        /// <summary>
-        /// 编辑患者命令
-        /// </summary>
-        public DelegateCommand<PatientDto> EditCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 查看详情命令
-        /// </summary>
-        public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 首页命令
-        /// </summary>
-        public DelegateCommand FirstPageCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 末页命令
-        /// </summary>
-        public DelegateCommand LastPageCommand { get; private set; } = null!;
+        public DelegateCommand SearchCommand { get; }
+        public DelegateCommand RefreshCommand { get; }
+        public DelegateCommand AddCommand { get; }
+        public DelegateCommand<PatientItemPlaceholder> EditCommand { get; }
+        public DelegateCommand<PatientItemPlaceholder> DeleteCommand { get; }
+        public DelegateCommand<PatientItemPlaceholder> ViewDetailsCommand { get; }
+        public DelegateCommand FirstPageCommand { get; }
+        public DelegateCommand PreviousPageCommand { get; }
+        public DelegateCommand NextPageCommand { get; }
+        public DelegateCommand LastPageCommand { get; }
 
         #endregion
 
         #region 构造函数
 
-        public PatientManagementViewModel(
-            PatientCommandHandler commandHandler,
-            IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory,
-            IRegionManager regionManager,
-            ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+        public PatientManagementViewModel(IRegionManager regionManager)
         {
-            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
 
-            // 初始化页面标题
-            PageTitle = "患者管理";
-            PageSize = 20;
+            // 初始化命令
+            SearchCommand = new DelegateCommand(ExecuteSearch);
+            RefreshCommand = new DelegateCommand(ExecuteRefresh);
+            AddCommand = new DelegateCommand(ExecuteAdd);
+            EditCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteEdit);
+            DeleteCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteDelete);
+            ViewDetailsCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteViewDetails);
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
+            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
+            NextPageCommand = new DelegateCommand(ExecuteNextPage);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage);
 
-            // 初始化患者特定命令
-            InitializePatientCommands();
-
-            Logger.LogDebug("患者管理ViewModel已初始化");
+            // 加载占位数据
+            LoadPlaceholderData();
         }
 
         #endregion
 
-        #region 命令初始化
+        #region 命令实现
 
-        private void InitializePatientCommands()
+        private void ExecuteSearch()
         {
-            EditCommand = new DelegateCommand<PatientDto>(ExecuteEditPatient, CanExecuteEditPatient);
-            ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, patient => patient != null);
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
+            StatusMessage = $"搜索: {SearchText}（功能开发中）";
         }
 
-        #endregion
+        private void ExecuteRefresh()
+        {
+            LoadPlaceholderData();
+            StatusMessage = "已刷新";
+        }
 
-        #region 暴露基类命令
+        private void ExecuteAdd()
+        {
+            StatusMessage = "添加患者（功能开发中）";
+        }
 
-        /// <summary>
-        /// 搜索命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand SearchCommand => base.SearchCommand;
+        private void ExecuteEdit(PatientItemPlaceholder? patient)
+        {
+            if (patient != null)
+                StatusMessage = $"编辑患者: {patient.Name}（功能开发中）";
+        }
 
-        /// <summary>
-        /// 刷新命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand RefreshCommand => base.RefreshCommand;
+        private void ExecuteDelete(PatientItemPlaceholder? patient)
+        {
+            if (patient != null)
+                StatusMessage = $"删除患者: {patient.Name}（功能开发中）";
+        }
 
-        /// <summary>
-        /// 添加命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand AddCommand => base.AddCommand;
+        private void ExecuteViewDetails(PatientItemPlaceholder? patient)
+        {
+            if (patient != null)
+                StatusMessage = $"查看患者: {patient.Name}（功能开发中）";
+        }
 
-        /// <summary>
-        /// 删除命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand<PatientDto> DeleteCommand => base.DeleteCommand;
+        private void ExecuteFirstPage()
+        {
+            CurrentPage = 1;
+            StatusMessage = "第 1 页";
+        }
 
-        /// <summary>
-        /// 上一页命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand PreviousPageCommand => base.PreviousPageCommand;
+        private void ExecutePreviousPage()
+        {
+            if (CurrentPage > 1)
+            {
+                CurrentPage--;
+                StatusMessage = $"第 {CurrentPage} 页";
+            }
+        }
 
-        /// <summary>
-        /// 下一页命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand NextPageCommand => base.NextPageCommand;
+        private void ExecuteNextPage()
+        {
+            if (CurrentPage < TotalPages)
+            {
+                CurrentPage++;
+                StatusMessage = $"第 {CurrentPage} 页";
+            }
+        }
+
+        private void ExecuteLastPage()
+        {
+            CurrentPage = TotalPages;
+            StatusMessage = $"第 {TotalPages} 页";
+        }
 
         #endregion
 
         #region 数据加载
 
-        /// <summary>
-        /// 获取数据项
-        /// </summary>
-        protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        private void LoadPlaceholderData()
         {
-            Logger.LogDebug("加载患者列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", page, pageSize, searchText);
+            Items.Clear();
 
-            try
+            // 占位数据
+            Items.Add(new PatientItemPlaceholder
             {
-                var cmdResult = await _commandHandler.GetPatientsPagedAsync(page, pageSize, searchText);
-
-                if (cmdResult.IsSuccess && cmdResult.Data != null)
-                {
-                    TotalCount = cmdResult.Data.TotalCount;
-                    return cmdResult.Data.Items;
-                }
-                else
-                {
-                    Logger.LogWarning("加载患者列表失败: {ErrorMessage}", cmdResult.ErrorMessage);
-                    TotalCount = 0;
-                    return new List<PatientDto>();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载患者列表时发生异常");
-                var contextMessage = $"加载患者列表 - 模块:{nameof(PatientManagementViewModel)}";
-                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
-
-                TotalCount = 0;
-                return new List<PatientDto>();
-            }
-        }
-
-        #endregion
-
-        #region 患者操作实现
-
-        /// <summary>
-        /// 添加新患者
-        /// </summary>
-        protected override Task OnExecuteAddAsync()
-        {
-            Logger.LogDebug("执行添加新患者");
-
-            // TODO: 导航到患者详情页（新增模式）
-            NavigateTo("ContentRegion", "PatientDetailView", new Prism.Regions.NavigationParameters
-            {
-                { "mode", "create" }
+                Name = "张三",
+                Gender = "男",
+                Age = "45",
+                PhoneNumber = "138****1234",
+                IdNumber = "3101********1234",
+                VisitCount = "5"
             });
 
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 删除患者
-        /// </summary>
-        protected override async Task OnExecuteDeleteAsync(PatientDto patient)
-        {
-            if (patient == null) return;
-
-            Logger.LogDebug("删除患者: {PatientId} - {PatientName}", patient.Id, patient.Name);
-
-            var result = await _commandHandler.DeletePatientAsync(patient.Id);
-            if (!result.IsSuccess)
+            Items.Add(new PatientItemPlaceholder
             {
-                throw new InvalidOperationException(result.ErrorMessage ?? "删除患者失败");
-            }
-
-            Logger.LogInformation("成功删除患者: {PatientName}", patient.Name);
-        }
-
-        /// <summary>
-        /// 批量删除患者
-        /// </summary>
-        protected override async Task OnExecuteBatchDeleteAsync(List<PatientDto> patients)
-        {
-            Logger.LogDebug("批量删除{Count}个患者", patients.Count);
-
-            var patientIds = patients.Select(p => p.Id).ToList();
-            var result = await _commandHandler.BatchDeletePatientsAsync(patientIds);
-
-            if (!result.IsSuccess)
-            {
-                throw new InvalidOperationException(result.ErrorMessage ?? "批量删除患者失败");
-            }
-
-            Logger.LogInformation("成功批量删除{Count}个患者", patients.Count);
-        }
-
-        #endregion
-
-        #region 患者特定命令实现
-
-        /// <summary>
-        /// 编辑患者
-        /// </summary>
-        private void ExecuteEditPatient(PatientDto patient)
-        {
-            if (patient == null) return;
-
-            Logger.LogDebug("编辑患者: {PatientId} - {PatientName}", patient.Id, patient.Name);
-
-            // 导航到患者详情页（编辑模式）
-            NavigateTo("ContentRegion", "PatientDetailView", new Prism.Regions.NavigationParameters
-            {
-                { "mode", "edit" },
-                { "PatientId", patient.Id }
+                Name = "李四",
+                Gender = "女",
+                Age = "32",
+                PhoneNumber = "139****5678",
+                IdNumber = "3102********5678",
+                VisitCount = "3"
             });
-        }
 
-        /// <summary>
-        /// 是否可以编辑患者
-        /// </summary>
-        private bool CanExecuteEditPatient(PatientDto patient)
-        {
-            return patient != null && !IsLoading;
-        }
-
-        /// <summary>
-        /// 查看详情
-        /// </summary>
-        private void ExecuteViewDetails(PatientDto patient)
-        {
-            if (patient == null) return;
-
-            Logger.LogDebug("查看患者详情: {PatientId} - {PatientName}", patient.Id, patient.Name);
-
-            NavigateTo("ContentRegion", "PatientDetailView", new Prism.Regions.NavigationParameters
+            Items.Add(new PatientItemPlaceholder
             {
-                { "PatientId", patient.Id },
-                { "title", $"患者详情 - {patient.Name}" }
+                Name = "王五",
+                Gender = "男",
+                Age = "58",
+                PhoneNumber = "136****9012",
+                IdNumber = "3103********9012",
+                VisitCount = "12"
             });
-        }
 
-        /// <summary>
-        /// 跳转首页
-        /// </summary>
-        private void ExecuteFirstPage()
-        {
+            StatusMessage = $"共 {Items.Count} 条记录";
+            TotalPages = 1;
             CurrentPage = 1;
         }
 
-        /// <summary>
-        /// 跳转末页
-        /// </summary>
-        private void ExecuteLastPage()
+        #endregion
+
+        #region INavigationAware
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            CurrentPage = TotalPages;
+            LoadPlaceholderData();
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
         }
 
         #endregion
+    }
 
-        #region 命令刷新
-
-        protected override void RefreshCanExecuteChanged()
-        {
-            base.RefreshCanExecuteChanged();
-
-            EditCommand?.RaiseCanExecuteChanged();
-            ViewDetailsCommand?.RaiseCanExecuteChanged();
-            FirstPageCommand?.RaiseCanExecuteChanged();
-            LastPageCommand?.RaiseCanExecuteChanged();
-        }
-
-        #endregion
+    /// <summary>
+    /// 患者列表项占位模型
+    /// </summary>
+    public class PatientItemPlaceholder
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public string Age { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string IdNumber { get; set; } = string.Empty;
+        public string VisitCount { get; set; } = string.Empty;
     }
 }
