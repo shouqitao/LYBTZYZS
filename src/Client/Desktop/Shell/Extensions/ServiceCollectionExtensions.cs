@@ -182,11 +182,13 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
         {
-            // 只注册确实存在且使用ViewModels.Components命名空间的CommandHandler
-            // 注意：部分模块使用DataManager而非CommandHandler，不需要注册
+            // CommandHandler Loggers
             RegisterLogger<LYBT.Desktop.Users.ViewModels.Components.UserCommandHandler>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Formula.ViewModels.Components.FormulaCommandHandler>(containerRegistry);
-            // Patients和Prescriptions模块的CommandHandler暂时不注册（可能使用不同命名空间或不存在）
+            
+            // DataManager Loggers（Issue #1831: 修复管理界面导航问题）
+            RegisterLogger<LYBT.Desktop.Herbs.Components.HerbDataManager>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.MedicalCase.Components.MedicalCaseDataManager>(containerRegistry);
         }
 
         /// <summary>
