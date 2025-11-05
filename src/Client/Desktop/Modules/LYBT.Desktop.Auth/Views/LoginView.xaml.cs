@@ -15,6 +15,9 @@ namespace LYBT.Desktop.Auth.Views
             // Issue #1246 修复: 监听 DataContext 变化，设置双向绑定
             DataContextChanged += OnDataContextChanged;
 
+            // Issue #1826: 响应式适配 - 监听窗口大小变化（主要适配1080P）
+            SizeChanged += OnSizeChanged;
+
             // Issue #1246 关键修复: Prism 可能在 InitializeComponent 时就设置了 DataContext
             // 此时 DataContextChanged 事件不会触发，需要手动处理当前的 DataContext
             if (DataContext is INotifyPropertyChanged currentViewModel)
@@ -26,6 +29,48 @@ namespace LYBT.Desktop.Auth.Views
                     && !string.IsNullOrEmpty(viewModel.Password))
                 {
                     PasswordBox.Password = viewModel.Password;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Issue #1826: 响应式布局调整
+        /// 主要分辨率1080P（1920x1080），当窗口宽度小于800px时调整布局
+        /// </summary>
+        private void OnSizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
+        {
+            // Issue #1826 修复: 只在UserControl已加载且宽度有效时才执行响应式逻辑
+            if (!IsLoaded || e.NewSize.Width <= 0)
+            {
+                return;
+            }
+
+            // 当前设计已针对1080P优化（左侧品牌区 + 右侧登录框480px）
+            // 当窗口宽度小于800px时，隐藏左侧品牌区，登录框居中显示
+            // 断点设为800px以确保1080P全屏下始终显示左右分栏布局
+            if (e.NewSize.Width < 800)
+            {
+                // 隐藏左侧品牌区
+                if (LeftBrandPanel != null)
+                {
+                    LeftBrandPanel.Visibility = System.Windows.Visibility.Collapsed;
+                }
+                // 登录框调整为居中
+                if (RightLoginBox != null)
+                {
+                    RightLoginBox.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
+                }
+            }
+            else
+            {
+                // 恢复左右分栏布局
+                if (LeftBrandPanel != null)
+                {
+                    LeftBrandPanel.Visibility = System.Windows.Visibility.Visible;
+                }
+                if (RightLoginBox != null)
+                {
+                    RightLoginBox.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
                 }
             }
         }

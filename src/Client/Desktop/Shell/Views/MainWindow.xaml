@@ -35,23 +35,10 @@
         </Grid.RowDefinitions>
 
         <!-- Grid.Row="0" 主内容区 -->
-        <!-- 登录界面 -->
-        <Grid Grid.Row="0" Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}"
-              Background="{StaticResource BackgroundBrush}">
-            <Border Background="White"
-                    CornerRadius="8"
-                    Margin="0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="420"
-                    Height="580">
-                <Border.Effect>
-                    <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="5" Opacity="0.3" BlurRadius="10" />
-                </Border.Effect>
-
-                <!-- 登录内容区域 -->
-                <ContentControl prism:RegionManager.RegionName="LoginRegion" Margin="0" />
-            </Border>
+        <!-- 登录界面 - Issue #1826: 移除宽度限制以支持全屏背景 -->
+        <Grid Grid.Row="0" Visibility="{Binding IsNotLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <!-- Issue #1826: LoginView 自带全屏背景，不需要额外容器 -->
+            <ContentControl prism:RegionManager.RegionName="LoginRegion" />
         </Grid>
 
         <!-- 登录后的主界面 -->
