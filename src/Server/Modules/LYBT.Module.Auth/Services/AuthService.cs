@@ -54,15 +54,16 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 // 从配置获取超级管理员用户名
-                var configUsername = _configuration["Lybt:Business:SystemAdmin:UserName"];
-                if (string.IsNullOrEmpty(configUsername))
+                // Issue #1761 Phase 3.1: 配置扁平化后路径调整
+                var configUserName = _configuration["Lybt:SystemAdmin:UserName"];
+                if (string.IsNullOrEmpty(configUserName))
                 {
                     _logger.LogWarning("配置中未找到超级管理员用户名");
                     return false;
                 }
 
                 // 验证用户名是否匹配
-                if (!string.Equals(username, configUsername, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(username, configUserName, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -198,7 +199,7 @@ namespace LYBT.Module.Auth.Services
                             UserName = sysAdminUsername,
                             RealName = "系统超级管理员",
                             Role = UserRole.Admin,
-                            Email = _configuration["Lybt:Business:SystemAdmin:Email"] ?? "admin@lybt.com"
+                            Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com"
                         },
                         RefreshToken = "", // 简化版本不使用RefreshToken
                         ExpiresAt = DateTime.UtcNow.AddHours(8)
