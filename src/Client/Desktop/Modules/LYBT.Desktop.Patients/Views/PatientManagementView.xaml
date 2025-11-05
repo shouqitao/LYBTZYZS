@@ -19,8 +19,7 @@
         <Border Grid.Row="0"
                 Background="White"
                 Padding="40,24"
-                Margin="0,0,0,2"
-                Effect="{StaticResource CardShadow}">
+                Margin="0,0,0,2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -29,7 +28,7 @@
 
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBox Style="{StaticResource $1}"
+                    <TextBox Style="{StaticResource SearchTextBox}"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              ToolTip="搜索患者姓名、手机号或身份证号">
                         <TextBox.InputBindings>
@@ -38,25 +37,25 @@
                     </TextBox>
                     <Button Content="搜索"
                             Margin="12,0,0,0"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource PrimaryButton}"
                             Command="{Binding SearchCommand}" />
                 </StackPanel>
 
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Margin="0,0,12,0"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource ModernSuccessButton}"
                             Command="{Binding AddCommand}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0"/>
                             <TextBlock Text="新增患者"/>
                         </StackPanel>
                     </Button>                    <Button Content="刷新"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}"
                             Margin="0,0,12,0" />
                     <Button Content="🏠 返回主页"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource PrimaryButton}"
                             Command="{Binding NavigateToHomeCommand}"
                             ToolTip="返回管理员主页" />
                 </StackPanel>
@@ -66,13 +65,12 @@
         <!-- 数据表格区域 -->
         <Border Grid.Row="1"
                 Background="White"
-                Margin="0,0,0,2"
-                Effect="{StaticResource CardShadow}">
+                Margin="0,0,0,2">
             <DataGrid ItemsSource="{Binding Items}"
                       SelectedItem="{Binding SelectedItem}"
-                      Style="{StaticResource $1}"
-                      RowStyle="{StaticResource $1}"
-                      ColumnHeaderStyle="{StaticResource $1}">
+                      Style="{StaticResource BaseDataGrid}"
+                      RowStyle="{StaticResource BaseDataGridRow}"
+                      ColumnHeaderStyle="{StaticResource BaseDataGridColumnHeader}">
                 <DataGrid.Columns>
                     <!-- 姓名 -->
                     <DataGridTextColumn Header="姓名"
@@ -159,21 +157,21 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
                                     <Button Content="查看"
-                                            Style="{StaticResource $1}"
+                                            Style="{StaticResource SecondaryButton}"
                                             Background="#3B82F6"
                                             Foreground="White"
                                             Margin="4,0"
                                             Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="编辑"
-                                            Style="{StaticResource $1}"
+                                            Style="{StaticResource SecondaryButton}"
                                             Background="#10B981"
                                             Foreground="White"
                                             Margin="4,0"
                                             Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="删除"
-                                            Style="{StaticResource $1}"
+                                            Style="{StaticResource ModernDangerButton}"
                                             Margin="4,0"
                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
@@ -188,8 +186,7 @@
         <!-- 底部状态栏和分页 -->
         <Border Grid.Row="2"
                 Background="White"
-                Padding="40,20"
-                Effect="{StaticResource CardShadow}">
+                Padding="40,20">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -213,14 +210,14 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <Button Content="首页"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource SecondaryButton}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
                             Command="{Binding FirstPageCommand}" />
 
                     <Button Content="上一页"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource SecondaryButton}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
@@ -246,14 +243,14 @@
                     </Border>
 
                     <Button Content="下一页"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource SecondaryButton}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
                             Command="{Binding NextPageCommand}" />
 
                     <Button Content="末页"
-                            Style="{StaticResource $1}"
+                            Style="{StaticResource SecondaryButton}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
