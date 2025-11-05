@@ -185,6 +185,7 @@ namespace LYBT.Desktop.Shell.Extensions
             // CommandHandler Loggers
             RegisterLogger<LYBT.Desktop.Users.ViewModels.Components.UserCommandHandler>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Formula.ViewModels.Components.FormulaCommandHandler>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Patients.ViewModels.Components.PatientCommandHandler>(containerRegistry); // Issue #1834: 添加PatientCommandHandler Logger
 
             // DataManager Loggers（Issue #1831: 修复管理界面导航问题 + Logger类型统一）
             RegisterLogger<LYBT.Desktop.Herbs.Components.HerbDataManager>(containerRegistry);

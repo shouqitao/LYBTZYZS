@@ -1,266 +1,96 @@
-using Prism.Mvvm;
-using Prism.Commands;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Patients.ViewModels.Components;
+using LYBT.Shared.Models.Contracts.Patients;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
 using Prism.Regions;
-using System.Collections.ObjectModel;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型 - 占位实现
+    /// 患者管理视图模型 - 基于UnifiedListViewModelBase实现
+    /// Issue #1834 Phase 2 - 完成占位实现,实现真实列表查询
     /// </summary>
-    public class PatientManagementViewModel : BindableBase, INavigationAware
+    public class PatientManagementViewModel : UnifiedListViewModelBase<PatientDto>
     {
-        private readonly IRegionManager _regionManager;
+        #region 服务依赖
 
-        #region 属性
-
-        private ObservableCollection<PatientItemPlaceholder> _items = new();
-        public ObservableCollection<PatientItemPlaceholder> Items
-        {
-            get => _items;
-            set => SetProperty(ref _items, value);
-        }
-
-        private PatientItemPlaceholder? _selectedItem;
-        public PatientItemPlaceholder? SelectedItem
-        {
-            get => _selectedItem;
-            set => SetProperty(ref _selectedItem, value);
-        }
-
-        private string _searchText = string.Empty;
-        public string SearchText
-        {
-            get => _searchText;
-            set => SetProperty(ref _searchText, value);
-        }
-
-        private string _statusMessage = "共 0 条记录";
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
-        private int _currentPage = 1;
-        public int CurrentPage
-        {
-            get => _currentPage;
-            set => SetProperty(ref _currentPage, value);
-        }
-
-        private int _totalPages = 1;
-        public int TotalPages
-        {
-            get => _totalPages;
-            set => SetProperty(ref _totalPages, value);
-        }
-
-        #endregion
-
-        #region 命令
-
-        public DelegateCommand SearchCommand { get; }
-        public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand AddCommand { get; }
-        public DelegateCommand<PatientItemPlaceholder> EditCommand { get; }
-        public DelegateCommand<PatientItemPlaceholder> DeleteCommand { get; }
-        public DelegateCommand<PatientItemPlaceholder> ViewDetailsCommand { get; }
-        public DelegateCommand FirstPageCommand { get; }
-        public DelegateCommand PreviousPageCommand { get; }
-        public DelegateCommand NextPageCommand { get; }
-        public DelegateCommand LastPageCommand { get; }
-        
-        /// <summary>
-        /// 返回主页命令 (Issue #1831)
-        /// </summary>
-        public DelegateCommand NavigateToHomeCommand { get; }
+        private readonly PatientCommandHandler _commandHandler;
 
         #endregion
 
         #region 构造函数
 
-        public PatientManagementViewModel(IRegionManager regionManager)
+        public PatientManagementViewModel(
+            PatientCommandHandler commandHandler,
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null,
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
-            // 初始化命令
-            SearchCommand = new DelegateCommand(ExecuteSearch);
-            RefreshCommand = new DelegateCommand(ExecuteRefresh);
-            AddCommand = new DelegateCommand(ExecuteAdd);
-            EditCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteEdit);
-            DeleteCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteDelete);
-            ViewDetailsCommand = new DelegateCommand<PatientItemPlaceholder>(ExecuteViewDetails);
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
-            PreviousPageCommand = new DelegateCommand(ExecutePreviousPage);
-            NextPageCommand = new DelegateCommand(ExecuteNextPage);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage);
-            
-            // Issue #1831: 初始化返回主页命令
-            NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
-
-            // 加载占位数据
-            LoadPlaceholderData();
+            PageTitle = "患者管理";
         }
 
         #endregion
 
-        #region 命令实现
-
-        private void ExecuteSearch()
-        {
-            StatusMessage = $"搜索: {SearchText}（功能开发中）";
-        }
-
-        private void ExecuteRefresh()
-        {
-            LoadPlaceholderData();
-            StatusMessage = "已刷新";
-        }
-
-        private void ExecuteAdd()
-        {
-            StatusMessage = "添加患者（功能开发中）";
-        }
-
-        private void ExecuteEdit(PatientItemPlaceholder? patient)
-        {
-            if (patient != null)
-                StatusMessage = $"编辑患者: {patient.Name}（功能开发中）";
-        }
-
-        private void ExecuteDelete(PatientItemPlaceholder? patient)
-        {
-            if (patient != null)
-                StatusMessage = $"删除患者: {patient.Name}（功能开发中）";
-        }
-
-        private void ExecuteViewDetails(PatientItemPlaceholder? patient)
-        {
-            if (patient != null)
-                StatusMessage = $"查看患者: {patient.Name}（功能开发中）";
-        }
-
-        private void ExecuteFirstPage()
-        {
-            CurrentPage = 1;
-            StatusMessage = "第 1 页";
-        }
-
-        private void ExecutePreviousPage()
-        {
-            if (CurrentPage > 1)
-            {
-                CurrentPage--;
-                StatusMessage = $"第 {CurrentPage} 页";
-            }
-        }
-
-        private void ExecuteNextPage()
-        {
-            if (CurrentPage < TotalPages)
-            {
-                CurrentPage++;
-                StatusMessage = $"第 {CurrentPage} 页";
-            }
-        }
-
-        private void ExecuteLastPage()
-        {
-            CurrentPage = TotalPages;
-            StatusMessage = $"第 {TotalPages} 页";
-        }
+        #region 实现基类抽象方法
 
         /// <summary>
-        /// 返回主页 (Issue #1831)
+        /// 获取数据项（实现基类抽象方法）
         /// </summary>
-        private void ExecuteNavigateToHome()
+        protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
             try
             {
-                _regionManager.RequestNavigate("ContentRegion", "AdminHomeView");
+                var result = await _commandHandler.GetPatientsPagedAsync(page, pageSize, searchText);
+
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    Logger.LogError("加载患者数据失败：{ErrorMessage}", result.ErrorMessage);
+                    throw new InvalidOperationException(result.ErrorMessage ?? "查询患者失败");
+                }
+
+                var pagedData = result.Data;
+
+                // 更新分页信息
+                TotalCount = pagedData.TotalCount;
+                CurrentPage = pagedData.CurrentPage;
+                PageSize = pagedData.PageSize;
+
+                return pagedData.Items;
             }
-            catch
+            catch (Exception ex)
             {
-                StatusMessage = "返回主页失败";
+                Logger.LogError(ex, "加载患者数据时发生异常");
+                throw;  // 重新抛出异常，让ExecuteSafelyAsync统一处理
             }
         }
 
         #endregion
 
-        #region 数据加载
+        #region 重写虚方法 (Phase 2仅列表功能,其他功能待后续实现)
 
-        private void LoadPlaceholderData()
+        /// <summary>
+        /// 执行添加操作 (Phase 2暂不实现)
+        /// </summary>
+        protected override async Task OnExecuteAddAsync()
         {
-            Items.Clear();
+            await ShowSuccessMessageAsync("添加患者功能开发中");
+        }
 
-            // 占位数据
-            Items.Add(new PatientItemPlaceholder
-            {
-                Name = "张三",
-                Gender = "男",
-                Age = "45",
-                PhoneNumber = "138****1234",
-                IdNumber = "3101********1234",
-                VisitCount = "5"
-            });
-
-            Items.Add(new PatientItemPlaceholder
-            {
-                Name = "李四",
-                Gender = "女",
-                Age = "32",
-                PhoneNumber = "139****5678",
-                IdNumber = "3102********5678",
-                VisitCount = "3"
-            });
-
-            Items.Add(new PatientItemPlaceholder
-            {
-                Name = "王五",
-                Gender = "男",
-                Age = "58",
-                PhoneNumber = "136****9012",
-                IdNumber = "3103********9012",
-                VisitCount = "12"
-            });
-
-            StatusMessage = $"共 {Items.Count} 条记录";
-            TotalPages = 1;
-            CurrentPage = 1;
+        /// <summary>
+        /// 执行删除操作 (Phase 2暂不实现)
+        /// </summary>
+        protected override async Task OnExecuteDeleteAsync(PatientDto item)
+        {
+            await ShowSuccessMessageAsync($"删除患者功能开发中：{item.Name}");
         }
 
         #endregion
-
-        #region INavigationAware
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            LoadPlaceholderData();
-        }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
-
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// 患者列表项占位模型
-    /// </summary>
-    public class PatientItemPlaceholder
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Gender { get; set; } = string.Empty;
-        public string Age { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-        public string IdNumber { get; set; } = string.Empty;
-        public string VisitCount { get; set; } = string.Empty;
     }
 }
