@@ -174,6 +174,7 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
         {
             RegisterLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Admin.Services.SystemSettingsService>(containerRegistry); // Epic #1832 Phase 2: SystemSettings服务Logger
         }
 
         /// <summary>
@@ -296,6 +297,10 @@ namespace LYBT.Desktop.Shell.Extensions
             // Issue #1825: 连接设置服务（远程/本地模式切换）- Auth/Services
             containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.IConnectionSettingsService,
                 LYBT.Desktop.Auth.Services.ConnectionSettingsService>();
+
+            // Epic #1832 Phase 2: 系统设置服务 - Admin/Services
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Services.ISystemSettingsService,
+                LYBT.Desktop.Admin.Services.SystemSettingsService>();
 
             // API 健康检查服务 - Foundation/HealthCheck
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,

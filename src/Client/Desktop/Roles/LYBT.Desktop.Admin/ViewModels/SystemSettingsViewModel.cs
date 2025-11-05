@@ -1,15 +1,25 @@
-﻿using Prism.Commands;
-using Prism.Mvvm;
+using LYBT.Desktop.Admin.Services;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Models.ViewModels.Base;
+using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Events;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Admin.ViewModels
 {
     /// <summary>
-    /// 系统设置视图模型 - 占位实现
+    /// 系统设置视图模型
+    /// Issue #1831 UI统一化 - 接入UnifiedViewModelBase
+    /// Epic #1832 Phase 2 - 完成真实功能实现
     /// </summary>
-    public class SystemSettingsViewModel : BindableBase, INavigationAware
+    public class SystemSettingsViewModel : UnifiedViewModelBase
     {
-        private readonly IRegionManager _regionManager;
+        #region 服务依赖
+
+        private readonly ISystemSettingsService _settingsService;
+
+        #endregion
 
         #region 属性
 
@@ -48,13 +58,6 @@ namespace LYBT.Desktop.Admin.ViewModels
             set => SetProperty(ref _backupPath, value);
         }
 
-        private string _statusMessage = "系统设置（功能开发中）";
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
         #endregion
 
         #region 命令
@@ -62,84 +65,164 @@ namespace LYBT.Desktop.Admin.ViewModels
         public DelegateCommand SaveCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
         public DelegateCommand BrowseBackupPathCommand { get; private set; }
-        
-        /// <summary>
-        /// 返回主页命令 (Issue #1831)
-        /// </summary>
-        public DelegateCommand NavigateToHomeCommand { get; private set; }
 
         #endregion
 
         #region 构造函数
 
-        public SystemSettingsViewModel(IRegionManager regionManager)
+        public SystemSettingsViewModel(
+            ISystemSettingsService settingsService,
+            IEventAggregator eventAggregator,
+            ILoggerFactory loggerFactory,
+            IRegionManager regionManager,
+            ISessionManager? sessionManager = null,
+            IUserNotificationService? userNotificationService = null)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+
+            PageTitle = "系统设置";
 
             // 初始化命令
-            SaveCommand = new DelegateCommand(ExecuteSave);
-            ResetCommand = new DelegateCommand(ExecuteReset);
+            SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
+            ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
             BrowseBackupPathCommand = new DelegateCommand(ExecuteBrowseBackupPath);
-            
-            // Issue #1831: 初始化返回主页命令
-            NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
+        }
+
+        #endregion
+
+        #region 初始化
+
+        /// <summary>
+        /// 异步初始化 - 加载系统设置
+        /// </summary>
+        protected override Task InitializeAsync(NavigationParameters parameters)
+        {
+            Logger.LogInformation("加载系统设置");
+
+            try
+            {
+                // 从服务加载设置
+                SystemName = _settingsService.SystemName;
+                HospitalName = _settingsService.HospitalName;
+                ContactPhone = _settingsService.ContactPhone;
+                AutoBackupEnabled = _settingsService.AutoBackupEnabled;
+                BackupPath = _settingsService.BackupPath;
+
+                Logger.LogInformation("系统设置加载成功: {SystemName}", SystemName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载系统设置失败");
+                HandleError(ex, "加载系统设置");
+            }
+
+            return Task.CompletedTask;
         }
 
         #endregion
 
         #region 命令实现
 
-        private void ExecuteSave()
-        {
-            StatusMessage = "保存系统设置（功能开发中）";
-        }
-
-        private void ExecuteReset()
-        {
-            SystemName = "中医诊疗系统";
-            HospitalName = string.Empty;
-            ContactPhone = string.Empty;
-            AutoBackupEnabled = false;
-            BackupPath = string.Empty;
-            StatusMessage = "设置已重置";
-        }
-
-        private void ExecuteBrowseBackupPath()
-        {
-            StatusMessage = "浏览备份路径（功能开发中）";
-        }
-
         /// <summary>
-        /// 返回主页 (Issue #1831)
+        /// 执行保存
         /// </summary>
-        private void ExecuteNavigateToHome()
+        private async Task ExecuteSaveAsync()
         {
             try
             {
-                _regionManager.RequestNavigate("ContentRegion", "AdminHomeView");
+                Logger.LogInformation("保存系统设置");
+                SetIsBusy(true, "正在保存系统设置...");
+
+                // 保存到服务
+                _settingsService.SystemName = SystemName;
+                _settingsService.HospitalName = HospitalName;
+                _settingsService.ContactPhone = ContactPhone;
+                _settingsService.AutoBackupEnabled = AutoBackupEnabled;
+                _settingsService.BackupPath = BackupPath;
+
+                _settingsService.Save();
+
+                Logger.LogInformation("系统设置保存成功");
+                await ShowSuccessMessageAsync("系统设置保存成功");
             }
-            catch
+            catch (Exception ex)
             {
-                StatusMessage = "返回主页失败";
+                Logger.LogError(ex, "保存系统设置失败");
+                await ShowErrorMessageAsync($"保存系统设置失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
-        #endregion
-
-        #region INavigationAware
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        /// <summary>
+        /// 执行重置
+        /// </summary>
+        private async Task ExecuteResetAsync()
         {
-            StatusMessage = "系统设置（功能开发中）";
+            try
+            {
+                var confirmed = await ShowConfirmationAsync("确定要重置为默认设置吗？所有自定义配置将丢失。", "确认重置");
+                if (!confirmed)
+                {
+                    return;
+                }
+
+                Logger.LogInformation("重置系统设置为默认值");
+                SetIsBusy(true, "正在重置系统设置...");
+
+                // 重置服务
+                _settingsService.ResetToDefaults();
+
+                // 重新加载到界面
+                SystemName = _settingsService.SystemName;
+                HospitalName = _settingsService.HospitalName;
+                ContactPhone = _settingsService.ContactPhone;
+                AutoBackupEnabled = _settingsService.AutoBackupEnabled;
+                BackupPath = _settingsService.BackupPath;
+
+                Logger.LogInformation("系统设置已重置");
+                await ShowSuccessMessageAsync("系统设置已重置为默认值");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "重置系统设置失败");
+                await ShowErrorMessageAsync($"重置系统设置失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
         }
 
-        public bool IsNavigationTarget(NavigationContext navigationContext)
+        /// <summary>
+        /// 浏览备份路径
+        /// </summary>
+        private void ExecuteBrowseBackupPath()
         {
-            return true;
-        }
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "选择备份路径",
+                    Filter = "所有文件 (*.*)|*.*",
+                    CheckFileExists = false,
+                    CheckPathExists = true
+                };
 
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
+                if (dialog.ShowDialog() == true)
+                {
+                    BackupPath = System.IO.Path.GetDirectoryName(dialog.FileName) ?? string.Empty;
+                    Logger.LogDebug("备份路径已设置为: {BackupPath}", BackupPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "选择备份路径失败");
+                ShowErrorMessage($"选择备份路径失败：{ex.Message}");
+            }
         }
 
         #endregion
