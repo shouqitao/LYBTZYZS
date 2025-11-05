@@ -12,7 +12,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
     public class UserCommandHandler
     {
         private readonly IUserRepository _repository;
-        private readonly ILogger _logger;
+        private readonly ILogger<UserCommandHandler> _logger;
 
         public UserCommandHandler(IUserRepository repository, ILogger<UserCommandHandler> logger)
         {

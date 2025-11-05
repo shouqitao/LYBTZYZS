@@ -12,9 +12,9 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
     public class FormulaCommandHandler
     {
         private readonly IFormulaRepository _repository;
-        private readonly ILogger _logger;
+        private readonly ILogger<FormulaCommandHandler> _logger;
 
-        public FormulaCommandHandler(IFormulaRepository repository, ILogger logger)
+        public FormulaCommandHandler(IFormulaRepository repository, ILogger<FormulaCommandHandler> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
