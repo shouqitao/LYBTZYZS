@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase; // Epic #1832: 添加MedicalCaseDto引用
+using LYBT.Shared.Models.Enums; // Issue #1839: 添加枚举命名空间
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -24,6 +25,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         // Issue #1803: 删除ActiveView属性（MedicalCaseListView已删除，不再需要子视图导航）
+
+        #region 筛选属性
+
+        /// <summary>
+        /// 状态筛选（暂未实现）
+        /// Issue #1839: 添加UI绑定属性，避免WPF绑定警告
+        /// </summary>
+        public MedicalCaseStatus? FilterStatus { get; set; }
+
+        /// <summary>
+        /// 开始日期筛选（暂未实现）
+        /// Issue #1839: 添加UI绑定属性，避免WPF绑定警告
+        /// </summary>
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// 结束日期筛选（暂未实现）
+        /// Issue #1839: 添加UI绑定属性，避免WPF绑定警告
+        /// </summary>
+        public DateTime? EndDate { get; set; }
+
+        #endregion
 
         #region 命令
 
@@ -55,7 +78,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand<object> PrintCommand { get; }
 
-        // Epic #1832 Phase 4: DeleteCommand, FirstPageCommand, PreviousPageCommand, NextPageCommand, LastPageCommand已由基类提供
+        /// <summary>
+        /// 首页命令（Issue #1839: 添加UI绑定命令，避免WPF绑定警告）
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; }
+
+        /// <summary>
+        /// 末页命令（Issue #1839: 添加UI绑定命令，避免WPF绑定警告）
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; }
+
+        // Epic #1832 Phase 4: DeleteCommand, PreviousPageCommand, NextPageCommand已由基类提供
 
         #endregion
 
@@ -81,8 +114,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ViewConsultationCommand = new DelegateCommand<object>(ExecuteViewConsultation);
             CreatePrescriptionCommand = new DelegateCommand<object>(ExecuteCreatePrescription);
             PrintCommand = new DelegateCommand<object>(ExecutePrint);
-            
-            // Epic #1832 Phase 4: DeleteCommand和分页命令已由基类提供，无需初始化
+
+            // Issue #1839: 初始化分页命令（暂为stub实现，避免UI绑定警告）
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage);
+
+            // Epic #1832 Phase 4: DeleteCommand和其他分页命令已由基类提供，无需初始化
         }
 
         #endregion
@@ -257,6 +294,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         // Issue #1803: 删除NavigateBackToList()方法（MedicalCaseListView已删除）
+
+        /// <summary>
+        /// 跳转到首页（Issue #1839: Stub实现，暂不提供功能）
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            // TODO: 待实现 - 调用基类或DataManager的首页跳转功能
+            Logger.LogInformation("首页命令被调用（暂未实现）");
+        }
+
+        /// <summary>
+        /// 跳转到末页（Issue #1839: Stub实现，暂不提供功能）
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            // TODO: 待实现 - 调用基类或DataManager的末页跳转功能
+            Logger.LogInformation("末页命令被调用（暂未实现）");
+        }
 
         #endregion
     }

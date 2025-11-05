@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseDto = LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto;
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
@@ -393,8 +394,8 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 支持按状态、患者ID过滤
         /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseEntity>>), 200)]
-        public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseEntity>>>> GetList(
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseDto>>>> GetList(
             [FromQuery] MedicalCaseStatus? status = null,
             [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
@@ -404,17 +405,41 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return BadRequest(ApiResponse<PagedResult<MedicalCaseEntity>>.CreateFail(
+                    return BadRequest(ApiResponse<PagedResult<MedicalCaseDto>>.CreateFail(
                         "页码和页大小参数无效（页码>0，页大小1-100）"));
                 }
 
-                var result = await _medicalCaseService.GetListAsync(status, patientId, page, pageSize);
+                var entityResult = await _medicalCaseService.GetListAsync(status, patientId, page, pageSize);
 
-                return Ok(ApiResponse<PagedResult<MedicalCaseEntity>>.CreateSuccess(result, "查询成功"));
+                // Entity → DTO映射
+                var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDto
+                {
+                    Id = entity.Id,
+                    PatientId = entity.PatientId,
+                    PatientName = entity.PatientName,
+                    DoctorId = entity.DoctorId,
+                    DoctorName = entity.DoctorName,
+                    ConsultationDate = entity.ConsultationDate,
+                    CaseStatus = entity.Status,
+                    Remark = entity.Remark,
+                    Diagnosis = entity.Consultation?.TCMDiagnosis, // 关联查询诊断信息
+                    Status = (CommonStatus)(int)entity.Status, // 通用状态映射
+                    CreatedAt = entity.CreatedAt
+                }).ToList();
+
+                var dtoResult = new PagedResult<MedicalCaseDto>
+                {
+                    Items = dtoItems,
+                    TotalCount = entityResult.TotalCount,
+                    CurrentPage = entityResult.CurrentPage,
+                    PageSize = entityResult.PageSize
+                };
+
+                return Ok(ApiResponse<PagedResult<MedicalCaseDto>>.CreateSuccess(dtoResult, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<MedicalCaseEntity>>(ex, "获取病案列表",
+                return HandleException<PagedResult<MedicalCaseDto>>(ex, "获取病案列表",
                     new { status, patientId, page, pageSize });
             }
         }

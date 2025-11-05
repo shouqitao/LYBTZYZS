@@ -57,6 +57,11 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }
+
+        /// <summary>中医诊断信息</summary>
+        [DisplayName("诊断")]
+        [StringLength(500, ErrorMessage = "诊断信息长度不能超过500个字符")]
+        public string? Diagnosis { get; set; }
     }
 
     /// <summary>
