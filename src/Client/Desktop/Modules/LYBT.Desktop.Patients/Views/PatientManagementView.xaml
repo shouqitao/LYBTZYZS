@@ -4,178 +4,8 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- 现代化搜索文本框样式 -->
-        <Style x:Key="ModernSearchTextBox" TargetType="TextBox">
-            <Setter Property="Height" Value="46" />
-            <Setter Property="MinWidth" Value="280" />
-            <Setter Property="Padding" Value="16,0" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="BorderBrush" Value="#D1D5DB" />
-            <Setter Property="BorderThickness" Value="1.5" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                SnapsToDevicePixels="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ScrollViewer x:Name="PART_ContentHost"
-                                              Grid.Column="0"
-                                              Margin="{TemplateBinding Padding}"
-                                              VerticalAlignment="Center"
-                                              Focusable="false"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"/>
-                                <TextBlock Grid.Column="1"
-                                           Text="🔍"
-                                           FontSize="16"
-                                           Foreground="#9CA3AF"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,16,0"/>
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
-                            </Trigger>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
-                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 现代化按钮基础样式 -->
-        <Style x:Key="ModernButtonBase" TargetType="Button">
-            <Setter Property="Height" Value="46" />
-            <Setter Property="MinWidth" Value="120" />
-            <Setter Property="Padding" Value="24,0" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 主要按钮（蓝色） -->
-        <Style x:Key="ModernPrimaryButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#3B82F6" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <!-- 成功按钮（绿色） -->
-        <Style x:Key="ModernSuccessButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#10B981" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <!-- 次要按钮（灰色） -->
-        <Style x:Key="ModernSecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#6B7280" />
-            <Setter Property="Foreground" Value="White" />
-        </Style>
-
-        <!-- 操作按钮样式（小尺寸） -->
-        <Style x:Key="ModernActionButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Height" Value="36" />
-            <Setter Property="MinWidth" Value="80" />
-            <Setter Property="Padding" Value="16,0" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
-
-        <!-- 危险按钮（红色） -->
-        <Style x:Key="ModernDangerButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#EF4444" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Height" Value="36" />
-            <Setter Property="MinWidth" Value="80" />
-            <Setter Property="Padding" Value="16,0" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
-
-        <!-- 卡片阴影 -->
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="16"
-                          ShadowDepth="2"
-                          Opacity="0.05"
-                          Color="#000000"/>
-
-        <!-- DataGrid样式 -->
-        <Style x:Key="ModernDataGrid" TargetType="DataGrid">
-            <Setter Property="AutoGenerateColumns" Value="False" />
-            <Setter Property="CanUserAddRows" Value="False" />
-            <Setter Property="CanUserDeleteRows" Value="False" />
-            <Setter Property="CanUserReorderColumns" Value="False" />
-            <Setter Property="CanUserSortColumns" Value="True" />
-            <Setter Property="SelectionMode" Value="Single" />
-            <Setter Property="GridLinesVisibility" Value="None" />
-            <Setter Property="HeadersVisibility" Value="Column" />
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="RowBackground" Value="White" />
-            <Setter Property="AlternatingRowBackground" Value="#F9FAFB" />
-            <Setter Property="FontSize" Value="15" />
-        </Style>
-
-        <!-- DataGrid行样式 -->
-        <Style x:Key="ModernDataGridRow" TargetType="DataGridRow">
-            <Setter Property="Height" Value="56" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#EFF6FF" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#DBEAFE" />
-                    <Setter Property="Foreground" Value="#1E40AF" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- DataGrid列标题样式 -->
-        <Style x:Key="ModernDataGridColumnHeader" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F9FAFB" />
-            <Setter Property="Foreground" Value="#111827" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Height" Value="48" />
-            <Setter Property="Padding" Value="20,0" />
-            <Setter Property="BorderBrush" Value="#E5E7EB" />
-            <Setter Property="BorderThickness" Value="0,0,0,2" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-        </Style>
+        <!-- Phase 1: 迁移到UnifiedDesignSystem - 删除所有Modern样式 -->
+        <!-- 所有样式现在从UnifiedDesignSystem.xaml (应用级资源) 继承 -->
     </UserControl.Resources>
 
     <Grid Background="#F8FAFC">
@@ -199,7 +29,7 @@
 
                 <!-- 搜索区域 -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBox Style="{StaticResource ModernSearchTextBox}"
+                    <TextBox Style="{StaticResource $1}"
                              Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              ToolTip="搜索患者姓名、手机号或身份证号">
                         <TextBox.InputBindings>
@@ -208,25 +38,25 @@
                     </TextBox>
                     <Button Content="搜索"
                             Margin="12,0,0,0"
-                            Style="{StaticResource ModernPrimaryButton}"
+                            Style="{StaticResource $1}"
                             Command="{Binding SearchCommand}" />
                 </StackPanel>
 
                 <!-- 操作按钮区域 -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Margin="0,0,12,0"
-                            Style="{StaticResource ModernSuccessButton}"
+                            Style="{StaticResource $1}"
                             Command="{Binding AddCommand}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0"/>
                             <TextBlock Text="新增患者"/>
                         </StackPanel>
                     </Button>                    <Button Content="刷新"
-                            Style="{StaticResource ModernSecondaryButton}"
+                            Style="{StaticResource $1}"
                             Command="{Binding RefreshCommand}"
                             Margin="0,0,12,0" />
                     <Button Content="🏠 返回主页"
-                            Style="{StaticResource ModernPrimaryButton}"
+                            Style="{StaticResource $1}"
                             Command="{Binding NavigateToHomeCommand}"
                             ToolTip="返回管理员主页" />
                 </StackPanel>
@@ -240,9 +70,9 @@
                 Effect="{StaticResource CardShadow}">
             <DataGrid ItemsSource="{Binding Items}"
                       SelectedItem="{Binding SelectedItem}"
-                      Style="{StaticResource ModernDataGrid}"
-                      RowStyle="{StaticResource ModernDataGridRow}"
-                      ColumnHeaderStyle="{StaticResource ModernDataGridColumnHeader}">
+                      Style="{StaticResource $1}"
+                      RowStyle="{StaticResource $1}"
+                      ColumnHeaderStyle="{StaticResource $1}">
                 <DataGrid.Columns>
                     <!-- 姓名 -->
                     <DataGridTextColumn Header="姓名"
@@ -329,21 +159,21 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
                                     <Button Content="查看"
-                                            Style="{StaticResource ModernActionButton}"
+                                            Style="{StaticResource $1}"
                                             Background="#3B82F6"
                                             Foreground="White"
                                             Margin="4,0"
                                             Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="编辑"
-                                            Style="{StaticResource ModernActionButton}"
+                                            Style="{StaticResource $1}"
                                             Background="#10B981"
                                             Foreground="White"
                                             Margin="4,0"
                                             Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
                                     <Button Content="删除"
-                                            Style="{StaticResource ModernDangerButton}"
+                                            Style="{StaticResource $1}"
                                             Margin="4,0"
                                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}" />
@@ -383,14 +213,14 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <Button Content="首页"
-                            Style="{StaticResource ModernActionButton}"
+                            Style="{StaticResource $1}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
                             Command="{Binding FirstPageCommand}" />
 
                     <Button Content="上一页"
-                            Style="{StaticResource ModernActionButton}"
+                            Style="{StaticResource $1}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
@@ -416,14 +246,14 @@
                     </Border>
 
                     <Button Content="下一页"
-                            Style="{StaticResource ModernActionButton}"
+                            Style="{StaticResource $1}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"
                             Command="{Binding NextPageCommand}" />
 
                     <Button Content="末页"
-                            Style="{StaticResource ModernActionButton}"
+                            Style="{StaticResource $1}"
                             Background="#F3F4F6"
                             Foreground="#374151"
                             Margin="4,0"

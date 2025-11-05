@@ -4,73 +4,8 @@
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- 卡片阴影 -->
-        <DropShadowEffect x:Key="CardShadow"
-                          BlurRadius="16"
-                          ShadowDepth="2"
-                          Opacity="0.05"
-                          Color="#000000"/>
-
-        <!-- 标题样式 -->
-        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-        </Style>
-
-        <!-- 设置项标签样式 -->
-        <Style x:Key="SettingLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Foreground" Value="#475569"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,16,0"/>
-            <Setter Property="MinWidth" Value="120"/>
-        </Style>
-
-        <!-- 按钮基础样式 -->
-        <Style x:Key="ModernButtonBase" TargetType="Button">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="MinWidth" Value="100" />
-            <Setter Property="Padding" Value="20,0" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- 主要按钮样式 -->
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#3B82F6"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-
-        <!-- 次要按钮样式 -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButtonBase}">
-            <Setter Property="Background" Value="#6B7280"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
+        <!-- Phase 1: 迁移到UnifiedDesignSystem - 删除所有内联样式 -->
+        <!-- 所有样式现在从UnifiedDesignSystem.xaml (应用级资源) 继承 -->
     </UserControl.Resources>
 
     <Grid Background="#F8FAFC">
@@ -83,8 +18,7 @@
         <Border Grid.Row="0"
                 Background="White"
                 Padding="40,24"
-                Margin="0,0,0,2"
-                Effect="{StaticResource CardShadow}">
+                Margin="0,0,0,2">
             <TextBlock Text="系统设置"
                        FontSize="24"
                        FontWeight="Bold"
@@ -100,10 +34,9 @@
                 <Border Background="White"
                         Padding="32"
                         Margin="0,0,0,16"
-                        CornerRadius="12"
-                        Effect="{StaticResource CardShadow}">
+                        CornerRadius="12">
                     <StackPanel>
-                        <TextBlock Text="基本设置" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Text="基本设置"/>
 
                         <!-- 系统名称 -->
                         <Grid Margin="0,0,0,20">
@@ -111,7 +44,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="系统名称：" Style="{StaticResource SettingLabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="系统名称："/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding SystemName, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40"
@@ -127,7 +60,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="医院名称：" Style="{StaticResource SettingLabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="医院名称："/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding HospitalName, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40"
@@ -143,7 +76,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="联系电话：" Style="{StaticResource SettingLabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="联系电话："/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding ContactPhone, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40"
@@ -159,10 +92,9 @@
                 <Border Background="White"
                         Padding="32"
                         Margin="0,0,0,16"
-                        CornerRadius="12"
-                        Effect="{StaticResource CardShadow}">
+                        CornerRadius="12">
                     <StackPanel>
-                        <TextBlock Text="数据库设置" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Text="数据库设置"/>
 
                         <!-- 数据库备份 -->
                         <Grid Margin="0,0,0,20">
@@ -170,7 +102,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="自动备份：" Style="{StaticResource SettingLabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="自动备份："/>
                             <CheckBox Grid.Column="1"
                                       IsChecked="{Binding AutoBackupEnabled}"
                                       Content="启用数据库自动备份"
@@ -185,7 +117,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="备份路径：" Style="{StaticResource SettingLabelStyle}"/>
+                            <TextBlock Grid.Column="0" Text="备份路径："/>
                             <TextBox Grid.Column="1"
                                      Text="{Binding BackupPath, UpdateSourceTrigger=PropertyChanged}"
                                      Height="40"
