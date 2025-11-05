@@ -16,8 +16,10 @@
             <RowDefinition Height="Auto" />   <!-- 6: 记住用户名 -->
             <RowDefinition Height="10" />     <!-- 7: 间距 -->
             <RowDefinition Height="Auto" />   <!-- 8: 记住密码 -->
-            <RowDefinition Height="Auto" />   <!-- 9: API 警告横幅（Issue #1823） -->
-            <RowDefinition Height="24" />     <!-- 10: 间距（加大） -->
+            <RowDefinition Height="16" />     <!-- 9: 间距 -->
+            <RowDefinition Height="Auto" />   <!-- 10: 连接模式选择（Issue #1825） -->
+            <RowDefinition Height="Auto" />   <!-- 11: API 警告横幅（Issue #1823） -->
+            <RowDefinition Height="24" />     <!-- 12: 间距（加大） -->
             <RowDefinition Height="Auto" />   <!-- 11: 登录按钮 -->
             <RowDefinition Height="16" />     <!-- 12: 间距 -->
             <RowDefinition Height="Auto" />   <!-- 13: 状态消息 -->
@@ -172,8 +174,40 @@
                        Margin="6,0,0,0" />
         </StackPanel>
 
+        <!-- 连接模式选择 (Issue #1825) -->
+        <Border Grid.Row="10"
+                Background="#F8FAFC"
+                BorderBrush="#E2E8F0"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,10">
+            <StackPanel>
+                <TextBlock Text="连接模式"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="#475569"
+                           Margin="0,0,0,8" />
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton Content="远程模式"
+                                 IsChecked="{Binding IsRemoteModeSelected}"
+                                 FontSize="13"
+                                 Foreground="#64748B"
+                                 Margin="0,0,16,0" />
+                    <RadioButton Content="本地模式（v2.0）"
+                                 IsChecked="{Binding IsLocalModeSelected}"
+                                 FontSize="13"
+                                 Foreground="#64748B" />
+                </StackPanel>
+                <TextBlock Text="{Binding ConnectionModeDisplay}"
+                           FontSize="11"
+                           Foreground="#94A3B8"
+                           Margin="0,6,0,0"
+                           FontStyle="Italic" />
+            </StackPanel>
+        </Border>
+
         <!-- API 不可用警告横幅 (Issue #1823) -->
-        <Border Grid.Row="9"
+        <Border Grid.Row="11"
                 Background="#FEF2F2"
                 BorderBrush="#FCA5A5"
                 BorderThickness="1"
@@ -203,7 +237,7 @@
         </Border>
 
         <!-- 登录按钮 -->
-        <Button Grid.Row="11"
+        <Button Grid.Row="13"
                 Content="登录"
                 Height="48"
                 FontSize="16"
@@ -242,7 +276,7 @@
         </Button>
 
         <!-- 状态和错误消息区域 -->
-        <Border Grid.Row="13"
+        <Border Grid.Row="15"
                 Background="#F8FAFC"
                 CornerRadius="8"
                 Padding="16,12"
@@ -270,7 +304,7 @@
         </Border>
 
         <!-- 加载遮罩 -->
-        <Grid Grid.RowSpan="15"
+        <Grid Grid.RowSpan="17"
               Background="#90000000"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Border Background="White"

@@ -275,6 +275,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.ISecureCredentialStorage,
                 LYBT.Desktop.Foundation.Security.SecureCredentialStorage>();
 
+            // Issue #1825: 连接设置服务（远程/本地模式切换）- Auth/Services
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.IConnectionSettingsService,
+                LYBT.Desktop.Auth.Services.ConnectionSettingsService>();
+
             // API 健康检查服务 - Foundation/HealthCheck
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
                 LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();

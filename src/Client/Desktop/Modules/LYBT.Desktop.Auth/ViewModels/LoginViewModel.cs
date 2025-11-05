@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
+using LYBT.Desktop.Auth.Models; // Issue #1825: ConnectionMode
+using LYBT.Desktop.Auth.Services; // Issue #1825: IConnectionSettingsService
 using LYBT.Desktop.Foundation.Application; // Issue #1823: IApplicationStateService
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
@@ -26,6 +28,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IApplicationStateService _applicationStateService; // Issue #1823: API健康检查前置
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ISecureCredentialStorage? _credentialStorage; // Issue #1246: 密码加密存储
+        private readonly IConnectionSettingsService? _connectionSettingsService; // Issue #1825: 连接模式设置
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -34,6 +37,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private bool _hasSavedPassword;
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
+        private ConnectionMode _connectionMode; // Issue #1825: 连接模式
 
         public LoginViewModel(
             IAuthenticationService authService,
@@ -43,7 +47,8 @@ namespace LYBT.Desktop.Auth.ViewModels
             IRegionManager regionManager,
             IApplicationStateService applicationStateService, // Issue #1823: API健康检查前置
             IUsernameStorageService? usernameStorage = null,
-            ISecureCredentialStorage? credentialStorage = null) // Issue #1246: 密码加密存储服务
+            ISecureCredentialStorage? credentialStorage = null, // Issue #1246: 密码加密存储服务
+            IConnectionSettingsService? connectionSettingsService = null) // Issue #1825: 连接模式设置
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
@@ -51,8 +56,12 @@ namespace LYBT.Desktop.Auth.ViewModels
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService)); // Issue #1823
             _usernameStorage = usernameStorage;
             _credentialStorage = credentialStorage; // Issue #1246
+            _connectionSettingsService = connectionSettingsService; // Issue #1825
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), CanExecuteLogin);
+
+            // Issue #1825: 初始化连接模式（默认Remote）
+            _connectionMode = _connectionSettingsService?.GetConnectionMode() ?? ConnectionMode.Remote;
 
             // Issue #861 & #1246: 在后台线程加载保存的凭据（用户名 + 密码）
             _ = Task.Run(async () =>
@@ -330,6 +339,77 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
+        /// <summary>
+        /// 连接模式 - Issue #1825
+        /// </summary>
+        public ConnectionMode ConnectionMode
+        {
+            get => _connectionMode;
+            set
+            {
+                if (SetProperty(ref _connectionMode, value))
+                {
+                    // 更新UI相关属性
+                    RaisePropertyChanged(nameof(IsRemoteModeSelected));
+                    RaisePropertyChanged(nameof(IsLocalModeSelected));
+                    RaisePropertyChanged(nameof(ConnectionModeDisplay));
+
+                    // 保存连接模式
+                    _connectionSettingsService?.SaveConnectionMode(value);
+                    Logger.LogInformation("连接模式已切换: {Mode}", value);
+
+                    // 更新API状态显示
+                    UpdateConnectionStatus();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否选择远程模式（用于RadioButton双向绑定）- Issue #1825
+        /// </summary>
+        public bool IsRemoteModeSelected
+        {
+            get => ConnectionMode == ConnectionMode.Remote;
+            set
+            {
+                if (value && ConnectionMode != ConnectionMode.Remote)
+                {
+                    ConnectionMode = ConnectionMode.Remote;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否选择本地模式（用于RadioButton双向绑定）- Issue #1825
+        /// </summary>
+        public bool IsLocalModeSelected
+        {
+            get => ConnectionMode == ConnectionMode.Local;
+            set
+            {
+                if (value && ConnectionMode != ConnectionMode.Local)
+                {
+                    ConnectionMode = ConnectionMode.Local;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 连接模式显示文本（用于状态栏）- Issue #1825
+        /// </summary>
+        public string ConnectionModeDisplay
+        {
+            get
+            {
+                return ConnectionMode switch
+                {
+                    ConnectionMode.Remote => "远程模式 - 连接到WebAPI服务",
+                    ConnectionMode.Local => "本地模式 - 使用本地数据库（v2.0）",
+                    _ => "未知模式"
+                };
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -340,6 +420,27 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         #region Methods
 
+        /// <summary>
+        /// 更新连接状态显示 - Issue #1825
+        /// </summary>
+        private void UpdateConnectionStatus()
+        {
+            if (ConnectionMode == ConnectionMode.Local)
+            {
+                ApiStatusMessage = "本地模式 - 无需连接API（v2.0功能）";
+                ApiStatus = ApiHealthStatus.Healthy;
+                Logger.LogInformation("切换到本地模式，API状态已设置为Healthy");
+            }
+            else
+            {
+                // 远程模式：保持当前API状态或重新检查
+                if (ApiStatus == ApiHealthStatus.Checking)
+                {
+                    ApiStatusMessage = "正在检查远程API连接...";
+                }
+                Logger.LogInformation("切换到远程模式，保持当前API状态");
+            }
+        }
 
         private bool CanExecuteLogin()
         {
@@ -356,6 +457,14 @@ namespace LYBT.Desktop.Auth.ViewModels
                 ErrorMessage = string.Empty;
                 StatusMessage = "正在登录...";
 
+                // Issue #1825: 检查连接模式
+                if (ConnectionMode == ConnectionMode.Local)
+                {
+                    ErrorMessage = "本地模式暂未实现，该功能计划在 v2.0 版本中提供。\n请切换到\"远程模式\"以使用 WebAPI 服务。";
+                    Logger.LogWarning("用户尝试使用本地模式登录，但该功能尚未实现");
+                    return;
+                }
+
                 // 构造登录请求
                 var loginRequest = new LoginRequest
                 {
@@ -364,7 +473,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                     RememberMe = RememberMe
                 };
 
-                // 调用认证服务
+                // 调用认证服务（远程模式）
                 var response = await _authService.LoginAsync(loginRequest);
 
                 if (response.IsSuccess && response.Data != null)
