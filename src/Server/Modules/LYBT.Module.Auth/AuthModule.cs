@@ -23,6 +23,9 @@ namespace LYBT.Module.Auth
             services.AddSingleton<IJwtService, JwtService>(); // 优化：JWT服务无状态，使用Singleton
             services.AddScoped<IAuthService, AuthService>();
 
+            // Issue #1870: Token撤销服务
+            services.AddScoped<ITokenRevocationService, TokenRevocationService>();
+
             // Epic #1731: 注册Auth模块Validators
             services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
