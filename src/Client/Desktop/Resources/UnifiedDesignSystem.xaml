@@ -25,6 +25,8 @@
     <!-- 中性色调 -->
     <Color x:Key="NeutralColor">#95A5A6</Color>
     <!-- 银色 -->
+    <Color x:Key="NeutralLightColor">#BDC3C7</Color>
+    <!-- 浅银色 -->
     <Color x:Key="NeutralHoverColor">#7F8C8D</Color>
     <!-- 暗银色 -->
 
@@ -45,6 +47,12 @@
     <!-- 白色表面 -->
     <Color x:Key="BorderColor">#E9ECEF</Color>
     <!-- 边框色 -->
+    <Color x:Key="OverlayColor">#40FFFFFF</Color>
+    <!-- 半透明白色覆盖层 -->
+    <Color x:Key="StatusBarColor">#F5F5F5</Color>
+    <!-- 状态栏浅灰色 -->
+    <Color x:Key="AlternateBorderColor">#DEE2E6</Color>
+    <!-- 备用边框色 -->
 
     <!-- 文本色调 -->
     <Color x:Key="TextPrimaryColor">#212529</Color>
@@ -64,6 +72,7 @@
     <SolidColorBrush x:Key="SecondaryHoverBrush" Color="{StaticResource SecondaryHoverColor}" />
 
     <SolidColorBrush x:Key="NeutralBrush" Color="{StaticResource NeutralColor}" />
+    <SolidColorBrush x:Key="NeutralLightBrush" Color="{StaticResource NeutralLightColor}" />
     <SolidColorBrush x:Key="NeutralHoverBrush" Color="{StaticResource NeutralHoverColor}" />
 
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
@@ -74,6 +83,9 @@
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="OverlayBrush" Color="{StaticResource OverlayColor}" />
+    <SolidColorBrush x:Key="StatusBarBrush" Color="{StaticResource StatusBarColor}" />
+    <SolidColorBrush x:Key="AlternateBorderBrush" Color="{StaticResource AlternateBorderColor}" />
 
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
@@ -84,9 +96,11 @@
     <!-- 字体大小 -->
     <System:Double x:Key="FontSizeSmall" xmlns:System="clr-namespace:System;assembly=mscorlib">12</System:Double>
     <System:Double x:Key="FontSizeNormal" xmlns:System="clr-namespace:System;assembly=mscorlib">14</System:Double>
+    <System:Double x:Key="FontSizeBody" xmlns:System="clr-namespace:System;assembly=mscorlib">14</System:Double>
     <System:Double x:Key="FontSizeLarge" xmlns:System="clr-namespace:System;assembly=mscorlib">16</System:Double>
     <System:Double x:Key="FontSizeTitle" xmlns:System="clr-namespace:System;assembly=mscorlib">18</System:Double>
     <System:Double x:Key="FontSizeHeader" xmlns:System="clr-namespace:System;assembly=mscorlib">20</System:Double>
+    <System:Double x:Key="FontSizeDisplay" xmlns:System="clr-namespace:System;assembly=mscorlib">32</System:Double>
 
     <!-- ===================== 间距系统 ===================== -->
 
@@ -378,6 +392,14 @@
         <Setter Property="RowBackground" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="AlternatingRowBackground" Value="{StaticResource BackgroundBrush}" />
         <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+    </Style>
+
+    <!-- 基础DataGrid样式（带虚拟化） - Issue #1843 -->
+    <Style x:Key="BaseDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGrid}">
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="EnableRowVirtualization" Value="True" />
+        <Setter Property="RowHeight" Value="40" />
     </Style>
 
     <!-- 基础DataGrid行样式 -->
