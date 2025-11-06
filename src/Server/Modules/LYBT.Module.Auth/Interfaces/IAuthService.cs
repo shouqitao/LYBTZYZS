@@ -42,11 +42,6 @@ namespace LYBT.Module.Auth.Interfaces
         Task<ServiceResult<bool>> ValidateTokenAsync(string token);
 
         /// <summary>
-        /// 验证Token并返回详细信息 - Issue #1824
-        /// </summary>
-        Task<ServiceResult<ValidateTokenResponse>> ValidateTokenWithDetailsAsync(string token);
-
-        /// <summary>
         /// 获取用户会话信息
         /// </summary>
         Task<ServiceResult<object>> GetSessionInfoAsync(string token);
