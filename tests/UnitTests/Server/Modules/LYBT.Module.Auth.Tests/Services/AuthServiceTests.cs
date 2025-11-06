@@ -29,6 +29,8 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<ILogger<AuthService>> _mockLogger;
     private readonly AppDbContext _dbContext;
     private readonly IConfiguration _configuration;
+    private readonly Mock<ITokenRevocationService> _mockRevocationService;
+    private readonly Mock<ISecurityAuditService> _mockAuditService;
     private readonly AuthService _sut;
 
     public AuthServiceTests()
@@ -37,6 +39,12 @@ public class AuthServiceTests : IDisposable
         _mockUserRepository = new Mock<IUserRepository>();
         _mockMapper = new Mock<IMapper>();
         _mockLogger = new Mock<ILogger<AuthService>>();
+        _mockRevocationService = new Mock<ITokenRevocationService>();
+        _mockAuditService = new Mock<ISecurityAuditService>();
+
+        // Issue #1872: Setup audit service mock to return completed task
+        _mockAuditService.Setup(x => x.LogAsync(It.IsAny<LYBT.Module.Auth.Models.SecurityAuditEvent>()))
+            .Returns(Task.CompletedTask);
 
         // 使用 InMemory SQLite 创建真实 DbContext
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -54,17 +62,21 @@ public class AuthServiceTests : IDisposable
             _mockMapper.Object,
             _mockLogger.Object,
             _dbContext,
-            _configuration
+            _configuration,
+            _mockRevocationService.Object,
+            _mockAuditService.Object
         );
     }
 
     private static IConfiguration CreateMockConfiguration()
     {
         var config = new Mock<IConfiguration>();
-        config.Setup(c => c["Lybt:Business:SystemAdmin:UserName"]).Returns("sysadmin");
-        config.Setup(c => c["Lybt:Business:SystemAdmin:Email"]).Returns("admin@lybt.com");
-        config.Setup(c => c["Jwt:AccessTokenExpirationMinutes"]).Returns("30");
-        config.Setup(c => c["Jwt:RefreshTokenExpirationDays"]).Returns("7");
+        // Issue #1872: 修正配置键以匹配AuthService实际使用的键
+        config.Setup(c => c["Lybt:SystemAdmin:UserName"]).Returns("sysadmin");
+        config.Setup(c => c["Lybt:SystemAdmin:Email"]).Returns("admin@lybt.com");
+        config.Setup(c => c["Lybt:SystemAdmin:Username"]).Returns("admin"); // RefreshTokenAsync使用
+        config.Setup(c => c.GetSection("Lybt:Jwt:ExpireMinutes").Value).Returns("15");
+        config.Setup(c => c.GetSection("Lybt:Jwt:RefreshTokenExpirationDays").Value).Returns("7");
         return config.Object;
     }
 
@@ -203,6 +215,10 @@ public class AuthServiceTests : IDisposable
             Email = "test@example.com"
         };
 
+        // Issue #1872: 先将用户保存到数据库，因为RefreshToken有外键约束
+        await _dbContext.Users.AddAsync(testUser);
+        await _dbContext.SaveChangesAsync();
+
         var testUserDto = new UserDto
         {
             Id = userId,
@@ -237,10 +253,12 @@ public class AuthServiceTests : IDisposable
         var result = await _sut.LoginAsync(request);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
+        // Issue #1872: 添加失败消息输出以便诊断
+        result.IsSuccess.Should().BeTrue($"Login should succeed, but failed with: {result.Message}");
         result.Data.Should().NotBeNull();
         result.Data!.Token.Should().Be(expectedToken);
         result.Data.User.Should().BeEquivalentTo(testUserDto);
+        result.Data.RefreshToken.Should().NotBeNullOrEmpty(); // Issue #1872: 验证RefreshToken
     }
 
     [Fact]
@@ -309,17 +327,18 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RefreshTokenAsync_ReturnsNotSupported()
+    public async Task RefreshTokenAsync_WithNonExistentToken_ReturnsFailure()
     {
         // Arrange
-        var refreshToken = "refresh.token.here";
+        var refreshToken = "nonexistent.refresh.token";
 
         // Act
         var result = await _sut.RefreshTokenAsync(refreshToken);
 
         // Assert
+        // Issue #1872: RefreshTokenAsync现在实际实现了功能，不存在的token应返回失败
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("不支持");
+        result.Message.Should().Contain("RefreshToken不存在");
     }
 
     [Fact]

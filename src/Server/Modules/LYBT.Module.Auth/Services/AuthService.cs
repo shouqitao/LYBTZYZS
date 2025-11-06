@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
+using LYBT.Module.Auth.Models;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -25,6 +26,8 @@ namespace LYBT.Module.Auth.Services
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly ITokenRevocationService _revocationService; // Issue #1872
+        private readonly ISecurityAuditService _auditService; // Issue #1872
 
         public AuthService(
             IJwtService jwtService,
@@ -32,7 +35,9 @@ namespace LYBT.Module.Auth.Services
             IMapper mapper,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ITokenRevocationService revocationService, // Issue #1872
+            ISecurityAuditService auditService) // Issue #1872
         {
             _jwtService = jwtService;
             _userRepository = userRepository;
@@ -40,6 +45,8 @@ namespace LYBT.Module.Auth.Services
             _logger = logger;
             _dbContext = dbContext;
             _configuration = configuration;
+            _revocationService = revocationService; // Issue #1872
+            _auditService = auditService; // Issue #1872
         }
 
         #region 超级管理员认证
@@ -169,7 +176,17 @@ namespace LYBT.Module.Auth.Services
                 // 验证凭据
                 var credentialsResult = await VerifyCredentialsAsync(request, cancellationToken);
                 if (!credentialsResult.IsSuccess)
+                {
+                    // Issue #1872: 记录登录失败审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "LoginFailed",
+                        UserName = request.UserName,
+                        Success = false,
+                        ErrorMessage = credentialsResult.Message ?? "凭据验证失败"
+                    });
                     return ServiceResult<LoginResponse>.Failure(credentialsResult.Message ?? "凭据验证失败");
+                }
 
                 LoginResponse response;
 
@@ -224,6 +241,16 @@ namespace LYBT.Module.Auth.Services
                         ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
                     };
 
+                    // Issue #1872: 记录超级管理员登录成功审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "Login",
+                        UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        UserType = "superadmin",
+                        UserName = sysAdminUsername,
+                        Success = true
+                    });
+
                     _logger.LogInformation("超级管理员登录成功（用户名已隐藏）");
                 }
                 else
@@ -267,6 +294,16 @@ namespace LYBT.Module.Auth.Services
                         ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
                     };
 
+                    // Issue #1872: 记录普通用户登录成功审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "Login",
+                        UserId = userDto.Id,
+                        UserType = "user",
+                        UserName = userDto.UserName,
+                        Success = true
+                    });
+
                     _logger.LogInformation("用户登录成功 [用户名: {UserName}] [时间: {Timestamp}]",
                     request.UserName, DateTime.UtcNow);
                 }
@@ -282,12 +319,39 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 用户登出
+        /// Issue #1872: 集成Token撤销和审计日志
         /// </summary>
         public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
         {
-            // 简化实现：无状态JWT，登出仅在客户端清除令牌
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Success(true, "登出成功");
+            try
+            {
+                // Issue #1872: 查找并撤销RefreshToken
+                var tokenRecord = await _dbContext.RefreshTokens
+                    .FirstOrDefaultAsync(t => t.Token == request.RefreshToken);
+
+                if (tokenRecord != null && !tokenRecord.IsRevoked && !string.IsNullOrEmpty(request.RefreshToken))
+                {
+                    await _revocationService.RevokeTokenAsync(request.RefreshToken, "用户主动登出");
+                }
+
+                // Issue #1872: 记录登出审计日志
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "Logout",
+                    UserId = tokenRecord?.UserId,
+                    UserType = tokenRecord?.UserType,
+                    UserName = request.Username, // 修正：属性名为Username
+                    Success = true
+                });
+
+                return ServiceResult<bool>.Success(true, "登出成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "用户登出时发生错误");
+                // 即使撤销失败，也返回成功，因为客户端已经清除了Token
+                return ServiceResult<bool>.Success(true, "登出成功");
+            }
         }
 
         /// <summary>
@@ -305,7 +369,16 @@ namespace LYBT.Module.Auth.Services
                     .FirstOrDefaultAsync(t => t.Token == refreshToken);
 
                 if (tokenRecord == null)
+                {
+                    // Issue #1872: 记录Token不存在审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "RefreshTokenRejected",
+                        Success = false,
+                        ErrorMessage = "Token不存在"
+                    });
                     return ServiceResult<LoginResponse>.Failure("RefreshToken不存在");
+                }
 
                 // 2. 验证Token是否有效
                 if (!tokenRecord.IsValid())
@@ -313,6 +386,17 @@ namespace LYBT.Module.Auth.Services
                     var reason = tokenRecord.IsRevoked ? "已撤销" :
                                 tokenRecord.IsDeleted ? "已删除" :
                                 "已过期";
+
+                    // Issue #1872: 记录Token无效审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "RefreshTokenRejected",
+                        UserId = tokenRecord.UserId,
+                        UserType = tokenRecord.UserType,
+                        Success = false,
+                        ErrorMessage = $"Token{reason}"
+                    });
+
                     _logger.LogWarning("RefreshToken验证失败：{Reason}", reason);
                     return ServiceResult<LoginResponse>.Failure($"RefreshToken{reason}，请重新登录");
                 }
@@ -394,6 +478,16 @@ namespace LYBT.Module.Auth.Services
                     ExpiresAt = DateTime.UtcNow.AddMinutes(
                         _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15)
                 };
+
+                // Issue #1872: 记录Token刷新成功审计日志
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "RefreshToken",
+                    UserId = userDto.Id,
+                    UserType = userType,
+                    UserName = userDto.UserName,
+                    Success = true
+                });
 
                 _logger.LogInformation("Token刷新成功 [用户: {UserName}] [时间: {Timestamp}]",
                     userDto.UserName, DateTime.UtcNow);
