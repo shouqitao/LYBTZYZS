@@ -26,6 +26,10 @@ namespace LYBT.Module.Auth
             // Issue #1870: Token撤销服务
             services.AddScoped<ITokenRevocationService, TokenRevocationService>();
 
+            // Issue #1871: 安全审计服务（需要HttpContextAccessor）
+            services.AddHttpContextAccessor();
+            services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+
             // Epic #1731: 注册Auth模块Validators
             services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
