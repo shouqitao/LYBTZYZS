@@ -111,7 +111,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public int PageSize
         {
             get => _pageSize;
-            protected set => SetProperty(ref _pageSize, value);
+            set => SetProperty(ref _pageSize, value);
         }
 
         /// <summary>
