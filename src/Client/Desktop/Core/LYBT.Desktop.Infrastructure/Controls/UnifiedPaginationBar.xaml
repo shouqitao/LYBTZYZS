@@ -1,0 +1,82 @@
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.UnifiedPaginationBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d"
+             d:DesignHeight="40" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <!-- 页大小选项 -->
+        <x:Array x:Key="PageSizeOptions" Type="sys:Int32">
+            <sys:Int32>10</sys:Int32>
+            <sys:Int32>20</sys:Int32>
+            <sys:Int32>50</sys:Int32>
+            <sys:Int32>100</sys:Int32>
+        </x:Array>
+    </UserControl.Resources>
+
+    <Border Background="White" Padding="{StaticResource SpacingMedium}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />  <!-- 页大小选择 -->
+                <ColumnDefinition Width="*" />      <!-- 占位 -->
+                <ColumnDefinition Width="Auto" />  <!-- 总记录数 -->
+                <ColumnDefinition Width="Auto" />  <!-- 分页控制 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：页大小选择 -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="每页显示"
+                           VerticalAlignment="Center"
+                           Margin="{StaticResource SpacingSmall}" />
+                <ComboBox ItemsSource="{StaticResource PageSizeOptions}"
+                          SelectedItem="{Binding PageSize, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+                          Style="{StaticResource FilterComboBox}"
+                          Width="80"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="条"
+                           VerticalAlignment="Center"
+                           Margin="{StaticResource SpacingSmall}" />
+            </StackPanel>
+
+            <!-- 中间：总记录数 -->
+            <TextBlock Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Margin="{StaticResource SpacingMedium}">
+                <Run Text="共" />
+                <Run Text="{Binding TotalCount, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}" FontWeight="Medium" />
+                <Run Text="条记录" />
+            </TextBlock>
+
+            <!-- 右侧:分页控制 -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- 上一页 -->
+                <Button Content="&lt; 上一页"
+                        Command="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Style="{StaticResource PaginationControlButton}"
+                        Margin="{StaticResource SpacingSmall}" />
+
+                <!-- 当前页/总页数 -->
+                <Border Style="{StaticResource PaginationCurrentPage}"
+                        Margin="{StaticResource SpacingSmall}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   Style="{StaticResource PaginationPageNumber}" />
+                        <TextBlock Text=" / "
+                                   Style="{StaticResource PaginationPageNumber}" />
+                        <TextBlock Text="{Binding TotalPages, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   Style="{StaticResource PaginationPageNumber}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- 下一页 -->
+                <Button Content="下一页 &gt;"
+                        Command="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Style="{StaticResource PaginationControlButton}"
+                        Margin="{StaticResource SpacingSmall}" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

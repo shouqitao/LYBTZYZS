@@ -14,6 +14,9 @@
                 <!--  统一设计系统 (Issue #1831: 修复管理界面XAML资源引用)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Shell;component/Resources/UnifiedDesignSystem.xaml" />
 
+                <!--  UI统一化组件样式 (Issue #1840: Desktop端管理界面UI统一化)  -->
+                <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
+
                 <!--  全局样式系统 (新)  -->
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
@@ -29,6 +32,10 @@
             <converters:BoolToBrushConverter x:Key="BoolToBrushConverter" />
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <converters:FirstCharacterConverter x:Key="FirstCharacterConverter" />
+            <!--  UI统一化转换器 (Issue #1840)  -->
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
+            <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
 
 
             <!--  应用级全局样式覆盖  -->
