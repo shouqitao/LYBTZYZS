@@ -10,20 +10,25 @@ namespace LYBT.Desktop.Foundation.Security
     /// 认证服务实现 - ADR-002合规版本
     /// Desktop端Infrastructure Service，直接调用HTTP API（IAuthApi）
     /// 不依赖Server端Service接口，符合架构决策
+    ///
+    /// Issue #1864: Token认证安全重构 - 集成客户端JWT自验证
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IAuthApi _authApi;
         private readonly ITokenStorageService _tokenStorage;
+        private readonly ITokenValidator _tokenValidator;
         private readonly ILogger<AuthenticationService> _logger;
 
         public AuthenticationService(
             IAuthApi authApi,
             ITokenStorageService tokenStorage,
+            ITokenValidator tokenValidator,
             ILogger<AuthenticationService> logger)
         {
             _authApi = authApi;
             _tokenStorage = tokenStorage;
+            _tokenValidator = tokenValidator;
             _logger = logger;
         }
 
@@ -121,7 +126,8 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
-        /// 验证Token并返回详细信息 - Issue #1824
+        /// 验证Token并返回详细信息
+        /// Issue #1864: 使用客户端JWT自验证，移除Server API依赖
         /// </summary>
         public async Task<ServiceResult<ValidateTokenResponse>> ValidateTokenAsync(string token)
         {
@@ -132,18 +138,31 @@ namespace LYBT.Desktop.Foundation.Security
                     return ServiceResult<ValidateTokenResponse>.Failure("Token不能为空");
                 }
 
-                var request = new ValidateTokenRequest { Token = token };
-                var apiResponse = await _authApi.ValidateTokenAsync(request);
+                // Issue #1864: 使用本地Token验证器，移除Server API依赖
+                var validationResult = await _tokenValidator.ValidateTokenAsync(token);
 
-                if (apiResponse.Success && apiResponse.Data != null)
+                if (validationResult.IsValid && validationResult.UserInfo != null)
                 {
-                    _logger.LogInformation("Token验证成功: {Username}", apiResponse.Data.Username);
-                    return ServiceResult<ValidateTokenResponse>.Success(apiResponse.Data, apiResponse.Message);
+                    var userInfo = validationResult.UserInfo;
+                    var response = new ValidateTokenResponse
+                    {
+                        IsValid = true,
+                        UserId = null, // Issue #1864: UserId在Token中是Guid，但DTO定义为int?，暂设为null
+                        Username = userInfo.UserName,
+                        Role = userInfo.Role,
+                        ExpiresAt = ExtractTokenExpiration(token), // 提取Token过期时间
+                        ErrorMessage = null
+                    };
+
+                    _logger.LogInformation("Token本地验证成功: {Username} (UserType: {UserType})",
+                        userInfo.UserName, userInfo.UserType);
+                    return ServiceResult<ValidateTokenResponse>.Success(response, "Token验证成功");
                 }
                 else
                 {
-                    _logger.LogWarning("Token验证失败: {Message}", apiResponse.Message);
-                    return ServiceResult<ValidateTokenResponse>.Failure(apiResponse.Message ?? "Token验证失败");
+                    _logger.LogWarning("Token本地验证失败: {ErrorMessage}", validationResult.ErrorMessage);
+                    return ServiceResult<ValidateTokenResponse>.Failure(
+                        validationResult.ErrorMessage ?? "Token验证失败");
                 }
             }
             catch (Exception ex)
@@ -215,6 +234,25 @@ namespace LYBT.Desktop.Foundation.Security
             {
                 _logger.LogError(ex, "修改密码时发生异常");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 从JWT Token中提取过期时间
+        /// Issue #1864: 辅助方法，用于本地Token验证
+        /// </summary>
+        private DateTime? ExtractTokenExpiration(string token)
+        {
+            try
+            {
+                var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                return jwtToken.ValidTo;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "提取Token过期时间失败");
+                return null;
             }
         }
     }

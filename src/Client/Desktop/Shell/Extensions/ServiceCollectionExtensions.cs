@@ -295,6 +295,12 @@ namespace LYBT.Desktop.Shell.Extensions
             // Token 存储服务 - Foundation/Security
             containerRegistry.RegisterSingleton<ITokenStorageService, TokenStorageService>();
 
+            // Issue #1862-1864: Token认证安全重构 - 新增服务
+            // 加密Token存储（使用DPAPI）
+            containerRegistry.RegisterSingleton<ITokenStorage, SecureTokenStorage>();
+            // 客户端JWT验证器
+            containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
+
             // Issue #1245 修复: 用户名存储服务 - Foundation/Security
             containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
                 LYBT.Desktop.Foundation.Security.UsernameStorageService>();

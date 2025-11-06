@@ -5,6 +5,7 @@ using LYBT.Desktop.Clinical; // Issue #1553: 医生角色模块
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Foundation.Application; // Issue #1823: IApplicationStateService
+using LYBT.Desktop.Foundation.Security;   // Issue #1865: Token清理逻辑
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
@@ -163,10 +164,10 @@ public partial class App : PrismApplication
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
 
             // Issue #1795: 提取初始化阶段方法
-            InitializePhase1_ErrorHandling();
-            InitializePhase2_ModuleCoordinator();
-            await InitializePhase3_CoreServicesAsync();
-            await InitializePhase4_ApplicationWarmupAsync();
+            InitializeErrorHandling();
+            InitializeModuleCoordinator();
+            await InitializeCoreServicesAsync();
+            await InitializeApplicationWarmupAsync();
 
             // Issue #1795: 提取显示主窗口方法
             await ShowMainWindowAfterInitializationAsync();
@@ -179,9 +180,9 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
-    /// Phase 1: 错误处理初始化（Issue #1795：提取方法）
+    /// 错误处理初始化（Issue #1795：提取方法）
     /// </summary>
-    private void InitializePhase1_ErrorHandling()
+    private void InitializeErrorHandling()
     {
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("错误处理初始化");
@@ -190,9 +191,9 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
-    /// Phase 2: 模块协调器初始化（Issue #1795：提取方法）
+    /// 模块协调器初始化（Issue #1795：提取方法）
     /// </summary>
-    private void InitializePhase2_ModuleCoordinator()
+    private void InitializeModuleCoordinator()
     {
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("模块协调器初始化");
@@ -201,30 +202,72 @@ public partial class App : PrismApplication
     }
 
     /// <summary>
-    /// Phase 3: 核心服务初始化（Issue #1795：提取方法）
+    /// 核心服务初始化（Issue #1795：提取方法）
     /// </summary>
-    private async Task InitializePhase3_CoreServicesAsync()
+    private async Task InitializeCoreServicesAsync()
     {
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("核心服务初始化");
         _splashScreen?.UpdateStatus("正在初始化核心服务...");
         await _bootstrapper!.InitializeCoreServicesAsync();
 
-        // Issue #1823: API健康检查前置 - 在Phase 3执行，避免登录界面延迟
+        // Issue #1865: Token清理逻辑 - 启动时清除过期Token
+        _splashScreen?.UpdateStatus("正在验证本地认证信息...");
+        await CleanupExpiredTokensAsync();
+
+        // Issue #1823: API健康检查前置 - 避免登录界面延迟
         _splashScreen?.UpdateStatus("正在检查API连接...");
         var appStateService = Container.Resolve<IApplicationStateService>();
         await appStateService.CheckApiHealthAsync(timeoutSeconds: 10);
     }
 
     /// <summary>
-    /// Phase 4: 应用预热（Issue #1795：提取方法）
+    /// 应用预热（Issue #1795：提取方法）
     /// </summary>
-    private async Task InitializePhase4_ApplicationWarmupAsync()
+    private async Task InitializeApplicationWarmupAsync()
     {
         _performanceMonitor?.EndStage();
         _performanceMonitor?.StartStage("应用预热");
         _splashScreen?.UpdateStatus("正在预热应用程序...");
         await _bootstrapper!.InitializeApplicationWarmupAsync();
+    }
+
+    /// <summary>
+    /// 清理过期的本地Token
+    /// Issue #1865: Token认证安全重构 - 启动时清理过期Token
+    /// </summary>
+    private async Task CleanupExpiredTokensAsync()
+    {
+        try
+        {
+            var tokenStorage = Container.Resolve<ITokenStorageService>();
+            var tokenValidator = Container.Resolve<ITokenValidator>();
+            var logger = Container.Resolve<ILogger<App>>();
+
+            var token = await tokenStorage.GetTokenAsync();
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var validationResult = await tokenValidator.ValidateTokenAsync(token);
+
+                if (!validationResult.IsValid)
+                {
+                    logger.LogInformation("检测到过期或无效的本地Token，正在清除: {ErrorMessage}",
+                        validationResult.ErrorMessage);
+                    await tokenStorage.ClearAuthenticationAsync();
+                }
+                else
+                {
+                    logger.LogDebug("本地Token验证通过");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = Container.Resolve<ILogger<App>>();
+            logger.LogWarning(ex, "Token清理过程发生错误");
+            // 不中断启动流程
+        }
     }
 
     /// <summary>
