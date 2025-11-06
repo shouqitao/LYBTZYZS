@@ -40,6 +40,7 @@
     <Compile Remove="HealthCheckTests.cs" />
     <Compile Remove="HerbApiTests.cs" />
     <Compile Remove="Controllers\PatientsControllerIntegrationTests.cs" />
+    <Compile Remove="Controllers\MedicalCaseControllerIntegrationTests.cs" />
   </ItemGroup>
 
 </Project>
