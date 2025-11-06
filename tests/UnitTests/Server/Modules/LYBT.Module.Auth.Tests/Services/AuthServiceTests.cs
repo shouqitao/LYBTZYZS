@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentAssertions;
+using LYBT.Entities.Auth;
 using LYBT.Entities.Users;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
@@ -339,6 +340,180 @@ public class AuthServiceTests : IDisposable
         // Issue #1872: RefreshTokenAsync现在实际实现了功能，不存在的token应返回失败
         result.IsSuccess.Should().BeFalse();
         result.Message.Should().Contain("RefreshToken不存在");
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_RevokedToken_ShouldReturnFailure()
+    {
+        // Arrange - 创建已撤销的RefreshToken
+        var userId = Guid.NewGuid();
+        var testUser = new User
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            Role = UserRole.Doctor
+        };
+
+        await _dbContext.Users.AddAsync(testUser);
+
+        var revokedToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = "revoked-refresh-token",
+            UserId = userId,
+            UserType = "user",
+            Jti = Guid.NewGuid().ToString(),
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IsRevoked = true,
+            RevokedAt = DateTime.UtcNow.AddHours(-1),
+            RevokedReason = "Security issue",
+            CreatedAt = DateTime.UtcNow.AddDays(-1)
+        };
+
+        await _dbContext.RefreshTokens.AddAsync(revokedToken);
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _sut.RefreshTokenAsync(revokedToken.Token);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Message.Should().Contain("已撤销");
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_Success_ShouldRevokeOldTokenAndGenerateNewToken()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var testUser = new User
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            Role = UserRole.Doctor,
+            Email = "test@example.com"
+        };
+
+        await _dbContext.Users.AddAsync(testUser);
+
+        var oldRefreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = "old-refresh-token",
+            UserId = userId,
+            UserType = "user",
+            Jti = Guid.NewGuid().ToString(),
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IsRevoked = false,
+            CreatedAt = DateTime.UtcNow.AddDays(-1)
+        };
+
+        await _dbContext.RefreshTokens.AddAsync(oldRefreshToken);
+        await _dbContext.SaveChangesAsync();
+
+        var testUserDto = new UserDto
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            Role = UserRole.Doctor,
+            Email = "test@example.com"
+        };
+
+        _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
+            .ReturnsAsync(testUser);
+
+        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+            .Returns(testUserDto);
+
+        _mockJwtService.Setup(x => x.GenerateToken(
+            testUserDto.Id.ToString(),
+            testUserDto.UserName,
+            testUserDto.Role,
+            It.IsAny<string>()))
+            .Returns("new.jwt.token");
+
+        // Act
+        var result = await _sut.RefreshTokenAsync(oldRefreshToken.Token);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+
+        // 验证旧Token已被撤销
+        var oldToken = await _dbContext.RefreshTokens
+            .FirstAsync(t => t.Token == oldRefreshToken.Token);
+        oldToken.IsRevoked.Should().BeTrue();
+        oldToken.RevokedReason.Should().Contain("已被新Token替换");
+
+        // 验证返回新Token
+        result.Data.Should().NotBeNull();
+        result.Data!.RefreshToken.Should().NotBe(oldRefreshToken.Token);
+    }
+
+    [Fact]
+    public async Task LoginAsync_Success_ShouldRecordAuditLog()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var testUser = new User
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+            Role = UserRole.Doctor,
+            Email = "test@example.com"
+        };
+
+        await _dbContext.Users.AddAsync(testUser);
+        await _dbContext.SaveChangesAsync();
+
+        var testUserDto = new UserDto
+        {
+            Id = userId,
+            UserName = "testuser",
+            RealName = "测试用户",
+            Role = UserRole.Doctor,
+            Email = "test@example.com"
+        };
+
+        var request = new LoginRequest
+        {
+            UserName = "testuser",
+            Password = "Password123!"
+        };
+
+        _mockUserRepository.Setup(x => x.GetByUsernameAsync(request.UserName))
+            .ReturnsAsync(testUser);
+
+        _mockMapper.Setup(x => x.Map<UserDto>(testUser))
+            .Returns(testUserDto);
+
+        _mockJwtService.Setup(x => x.GenerateToken(
+            testUserDto.Id.ToString(),
+            testUserDto.UserName,
+            testUserDto.Role,
+            It.IsAny<string>()))
+            .Returns("test.jwt.token");
+
+        // Act
+        var result = await _sut.LoginAsync(request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+
+        // 验证审计服务被调用记录登录成功
+        _mockAuditService.Verify(x => x.LogAsync(
+            It.Is<LYBT.Module.Auth.Models.SecurityAuditEvent>(e =>
+                e.EventType == "Login" &&
+                e.UserId == userId &&
+                e.UserName == "testuser" &&
+                e.Success == true
+            )), Times.Once);
     }
 
     [Fact]
