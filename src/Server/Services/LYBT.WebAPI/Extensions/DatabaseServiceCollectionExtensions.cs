@@ -161,6 +161,9 @@ public static class DatabaseServiceCollectionExtensions
             .AddCheck<LYBT.WebAPI.HealthCheck.SqlServerHealthCheck>("database");
         services.AddHostedService<LYBT.WebAPI.HealthCheck.DatabaseStartupDiagnostics>();
 
+        // Issue #1873: 安全审计日志清理后台服务
+        services.AddHostedService<LYBT.WebAPI.BackgroundServices.SecurityAuditCleanupService>();
+
         return services;
     }
 }
