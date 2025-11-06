@@ -85,5 +85,15 @@ namespace LYBT.Desktop.Infrastructure.Controls
                 new PropertyMetadata("暂无数据"));
 
         #endregion
+
+        #region 公共属性
+
+        /// <summary>
+        /// 获取DataGrid的列集合
+        /// 允许在XAML中定义DataGrid列
+        /// </summary>
+        public System.Collections.ObjectModel.ObservableCollection<DataGridColumn> Columns => DataGrid.Columns;
+
+        #endregion
     }
 }

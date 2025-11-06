@@ -134,6 +134,38 @@ namespace LYBT.Desktop.Infrastructure.Controls
                 typeof(UnifiedPaginationBar),
                 new PropertyMetadata(null));
 
+        /// <summary>
+        /// 首页命令
+        /// </summary>
+        public ICommand FirstPageCommand
+        {
+            get => (ICommand)GetValue(FirstPageCommandProperty);
+            set => SetValue(FirstPageCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty FirstPageCommandProperty =
+            DependencyProperty.Register(
+                nameof(FirstPageCommand),
+                typeof(ICommand),
+                typeof(UnifiedPaginationBar),
+                new PropertyMetadata(null));
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public ICommand LastPageCommand
+        {
+            get => (ICommand)GetValue(LastPageCommandProperty);
+            set => SetValue(LastPageCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty LastPageCommandProperty =
+            DependencyProperty.Register(
+                nameof(LastPageCommand),
+                typeof(ICommand),
+                typeof(UnifiedPaginationBar),
+                new PropertyMetadata(null));
+
         #endregion
     }
 }

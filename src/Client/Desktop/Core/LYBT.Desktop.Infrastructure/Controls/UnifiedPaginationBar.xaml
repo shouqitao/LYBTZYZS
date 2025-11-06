@@ -52,6 +52,13 @@
 
             <!-- 右侧:分页控制 -->
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- 首页 -->
+                <Button Content="首页"
+                        Command="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Style="{StaticResource PaginationControlButton}"
+                        Margin="{StaticResource SpacingSmall}"
+                        Visibility="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
+
                 <!-- 上一页 -->
                 <Button Content="&lt; 上一页"
                         Command="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -76,6 +83,13 @@
                         Command="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource PaginationControlButton}"
                         Margin="{StaticResource SpacingSmall}" />
+
+                <!-- 末页 -->
+                <Button Content="末页"
+                        Command="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Style="{StaticResource PaginationControlButton}"
+                        Margin="{StaticResource SpacingSmall}"
+                        Visibility="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
             </StackPanel>
         </Grid>
     </Border>

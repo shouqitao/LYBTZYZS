@@ -1,5 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Events;
-using LYBT.Desktop.Infrastructure.Interfaces;
+﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase; // Epic #1832: 添加MedicalCaseDto引用
@@ -107,7 +106,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             // Epic #1832 Phase 4: 删除重复的标准命令初始化（SearchCommand, AddCommand, RefreshCommand, DeleteCommand, 分页命令已由基类提供）
-            
+
             // 仅初始化领域特定命令
             ViewDetailsCommand = new DelegateCommand<object>(ExecuteViewDetails);
             EditCommand = new DelegateCommand<object>(ExecuteEdit);
@@ -123,11 +122,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         #endregion
-        
+
         // Epic #1832 Phase 4: 旧的生命周期region已移至上方并更新
 
         #region 实现基类抽象方法
-        
+
         /// <summary>
         /// 获取数据项（实现基类抽象方法）
         /// </summary>
@@ -137,19 +136,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 // Epic #1832 Phase 4: 使用DataManager包装Repository方法
                 var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
-                
+
                 // 检查返回结果是否为null
                 if (pagedData == null)
                 {
                     Logger.LogError("加载病历数据失败：GetPagedAsync返回null");
                     throw new InvalidOperationException("查询病历失败");
                 }
-                
+
                 // 更新分页信息
                 TotalCount = pagedData.TotalCount;
                 CurrentPage = pagedData.CurrentPage;
                 PageSize = pagedData.PageSize;
-                
+
                 return pagedData.Items;
             }
             catch (Exception ex)
@@ -158,11 +157,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 throw; // 重新抛出异常，让ExecuteSafelyAsync统一处理
             }
         }
-        
+
         #endregion
-        
+
         #region 重写虚方法
-        
+
         /// <summary>
         /// 执行添加操作
         /// </summary>
@@ -179,7 +178,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 await ShowErrorMessageAsync("打开创建病历页面失败，请稍后重试");
             }
         }
-        
+
         /// <summary>
         /// 执行删除操作
         /// </summary>
@@ -189,7 +188,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 // Epic #1832 Phase 4: 使用DataManager包装Repository方法
                 var success = await _dataManager.DeleteAsync(item.Id);
-                
+
                 if (success)
                 {
                     await ShowSuccessMessageAsync($"病历 '{item.CaseNumber}' 删除成功");
@@ -206,11 +205,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 await ShowErrorMessageAsync($"删除病历 {item.CaseNumber} 时发生系统错误");
             }
         }
-        
+
         #endregion
-        
+
         #region 生命周期
-        
+
         /// <summary>
         /// 页面加载时调用
         /// </summary>
@@ -219,13 +218,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             await base.InitializeAsync(parameters);
             await LoadPageAsync(); // Epic #1832 Phase 4: 加载初始数据
         }
-        
+
         #endregion
-        
+
         #region 领域特定命令实现
 
         // Epic #1832 Phase 4: ExecuteSearchAsync由基类SearchCommand处理
-        
+
         /// <summary>
         /// 查看详情
         /// </summary>
