@@ -43,8 +43,8 @@ namespace LYBT.Infrastructure.Data
         public DbSet<AuthSession> AuthSessions { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-        // UltraThink简化：LoginAttempts、SecurityLogs 已移除
-        // 安全审计 - UltraThink重构安全架构 (已移除过度设计的SecurityAuditLog)
+        // 安全审计 - Issue #1869: Token认证安全重构，记录认证相关安全事件
+        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
 
         // JWT令牌存储 - UltraThink安全优化 P8-01B (已移除过度设计的令牌实体存储)
 
