@@ -435,6 +435,21 @@
         <Setter Property="HorizontalContentAlignment" Value="Left" />
     </Style>
 
+    <!-- ===================== ComboBox样式 ===================== -->
+
+    <!-- 筛选下拉框样式 -->
+    <Style x:Key="FilterComboBox" TargetType="ComboBox">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
     <!-- ===================== 响应式分页样式 ===================== -->
 
     <!-- 分页控制按钮 -->
