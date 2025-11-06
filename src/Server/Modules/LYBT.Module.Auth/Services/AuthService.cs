@@ -188,18 +188,20 @@ namespace LYBT.Module.Auth.Services
                         {
                             { "IsSuperAdmin", "true" },
                             { "AuthSource", "AdminSecrets" }
-                        });
+                        },
+                        "superadmin"); // Issue #1861: 标记为超级管理员类型
 
                     // Issue #1838: 超级管理员也生成RefreshToken
                     var sysAdminRefreshToken = GenerateRefreshToken();
                     var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
                     var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
 
-                    // 存储RefreshToken（超级管理员使用特殊的UserId=Guid.Empty）
+                    // 存储RefreshToken（超级管理员使用特殊的UserId）
                     var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
                     {
                         Token = sysAdminRefreshToken,
                         UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"), // 超级管理员固定ID
+                        UserType = "superadmin", // Issue #1861: 标记为超级管理员
                         Jti = Guid.NewGuid().ToString(),
                         ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
                         FamilyId = Guid.NewGuid().ToString() // 新家族ID
@@ -237,7 +239,8 @@ namespace LYBT.Module.Auth.Services
                     var token = _jwtService.GenerateToken(
                         userDto.Id.ToString(),
                         userDto.UserName,
-                        userDto.Role);
+                        userDto.Role,
+                        "user"); // Issue #1861: 明确标记为普通用户类型
 
                     // Issue #1838: 生成并存储RefreshToken
                     var refreshToken = GenerateRefreshToken();
@@ -248,6 +251,7 @@ namespace LYBT.Module.Auth.Services
                     {
                         Token = refreshToken,
                         UserId = userDto.Id,
+                        UserType = "user", // Issue #1861: 标记为普通用户
                         Jti = Guid.NewGuid().ToString(),
                         ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
                         FamilyId = Guid.NewGuid().ToString() // 新家族ID
@@ -320,18 +324,44 @@ namespace LYBT.Module.Auth.Services
                     _logger.LogWarning("RefreshToken使用次数异常：{Count}", tokenRecord.UsageCount);
                 }
 
-                // 4. 获取用户信息
-                var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
-                if (userEntity == null)
-                    return ServiceResult<LoginResponse>.Failure("用户不存在");
+                // 4. 根据用户类型路由验证逻辑 (Issue #1861: ADR-010)
+                UserDto userDto;
+                string userType;
 
-                var userDto = _mapper.Map<UserDto>(userEntity);
+                if (tokenRecord.UserType == "superadmin")
+                {
+                    // SuperAdmin路由：不查User表，直接构造SuperAdmin信息
+                    _logger.LogInformation("Token刷新：SuperAdmin [UserId: {UserId}]", tokenRecord.UserId);
+                    
+                    userDto = new UserDto
+                    {
+                        Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        UserName = _configuration["Lybt:SystemAdmin:Username"] ?? "admin",
+                        RealName = "系统超级管理员",
+                        Role = UserRole.Admin,
+                        Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com"
+                    };
+                    userType = "superadmin";
+                }
+                else
+                {
+                    // User路由：查User表获取用户信息
+                    var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+                    if (userEntity == null)
+                        return ServiceResult<LoginResponse>.Failure("用户不存在");
+
+                    userDto = _mapper.Map<UserDto>(userEntity);
+                    userType = "user";
+                    
+                    _logger.LogInformation("Token刷新：User [UserName: {UserName}]", userDto.UserName);
+                }
 
                 // 5. 生成新的Access Token
                 var newAccessToken = _jwtService.GenerateToken(
                     userDto.Id.ToString(),
                     userDto.UserName,
-                    userDto.Role);
+                    userDto.Role,
+                    userType); // 传入userType以设置正确的user_type claim
 
                 // 6. 生成新的Refresh Token并撤销旧Token（Token轮换）
                 var newRefreshToken = GenerateRefreshToken();
@@ -346,6 +376,7 @@ namespace LYBT.Module.Auth.Services
                 {
                     Token = newRefreshToken,
                     UserId = userDto.Id,
+                    UserType = userType, // Issue #1861: 继承用户类型
                     Jti = Guid.NewGuid().ToString(),
                     ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
                     FamilyId = tokenRecord.FamilyId // 继承家族ID

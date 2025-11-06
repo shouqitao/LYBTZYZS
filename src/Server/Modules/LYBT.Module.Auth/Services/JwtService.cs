@@ -55,7 +55,7 @@ public class JwtService : IJwtService
     /// <summary>
     /// 生成JWT访问令牌
     /// </summary>
-    public string GenerateToken(string userId, string userName, UserRole role)
+    public string GenerateToken(string userId, string userName, UserRole role, string userType = "user")
     {
         if (string.IsNullOrEmpty(userId))
             throw new ArgumentException("用户ID不能为空", nameof(userId));
@@ -79,6 +79,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim(ClaimTypes.Name, userName),
             new Claim(ClaimTypes.Role, role.ToString()),
+            new Claim("user_type", userType), // Issue #1861: 用户类型区分SuperAdmin和User
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };
@@ -110,7 +111,7 @@ public class JwtService : IJwtService
     /// <summary>
     /// 生成JWT访问令牌（支持额外声明）
     /// </summary>
-    public string GenerateToken(string userId, string userName, UserRole role, Dictionary<string, string> additionalClaims)
+    public string GenerateToken(string userId, string userName, UserRole role, Dictionary<string, string> additionalClaims, string userType = "user")
     {
         if (string.IsNullOrEmpty(userId))
             throw new ArgumentException("用户ID不能为空", nameof(userId));
@@ -134,6 +135,7 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim(ClaimTypes.Name, userName),
             new Claim(ClaimTypes.Role, role.ToString()),
+            new Claim("user_type", userType), // Issue #1861: 用户类型区分SuperAdmin和User
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };

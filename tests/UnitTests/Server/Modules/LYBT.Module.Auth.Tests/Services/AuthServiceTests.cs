@@ -229,7 +229,8 @@ public class AuthServiceTests : IDisposable
         _mockJwtService.Setup(x => x.GenerateToken(
             testUserDto.Id.ToString(),
             testUserDto.UserName,
-            testUserDto.Role))
+            testUserDto.Role,
+            It.IsAny<string>())) // Issue #1861: userType参数
             .Returns(expectedToken);
 
         // Act

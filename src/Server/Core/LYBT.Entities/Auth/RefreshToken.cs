@@ -23,6 +23,15 @@ namespace LYBT.Entities.Auth
         [Required]
         public Guid UserId { get; set; }
 
+        /// &lt;summary&gt;
+        /// 用户类型 (Issue #1861)
+        /// "superadmin" - 超级管理员（Auth模块）
+        /// "user" - 普通用户（User模块）
+        /// &lt;/summary&gt;
+        [Required]
+        [StringLength(50)]
+        public string UserType { get; set; } = "user";
+
         /// <summary>
         /// JTI (JWT ID) - 关联的AccessToken唯一标识
         /// </summary>
