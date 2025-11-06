@@ -335,6 +335,12 @@
         <Setter Property="Margin" Value="0,0,0,16" />
     </Style>
 
+    <!-- 小标题文本 -->
+    <Style x:Key="CaptionTextBlock" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    </Style>
+
     <!-- ===================== 统一容器样式 ===================== -->
 
     <!-- 工具栏边框 -->
