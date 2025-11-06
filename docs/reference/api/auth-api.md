@@ -3,7 +3,8 @@
 **版本**: v1
 **基础路径**: `/api/v1/auth`
 **认证方式**: Bearer Token (JWT) / AllowAnonymous
-**Issue来源**: #1824 - Desktop客户端启动时Token验证
+**最后更新**: 2025-11-07（Token认证安全重构）
+**Issue来源**: #1861 - Token认证安全重构
 
 ---
 
@@ -12,10 +13,12 @@
 - [概述](#概述)
 - [API端点](#api端点)
   - [POST /api/v1/auth/login](#1-post-apiv1authlogin---用户登录)
-  - [POST /api/v1/auth/validate](#2-post-apiv1authvalidate---验证token从请求体)
-  - [GET /api/v1/auth/validate](#3-get-apiv1authvalidate---验证token从header)
+  - [POST /api/v1/auth/refresh](#2-post-apiv1authrefresh---刷新token)
+  - [POST /api/v1/auth/logout](#3-post-apiv1authlogout---用户登出)
+  - [GET /api/v1/auth/validate](#4-get-apiv1authvalidate---验证token从header)
 - [通用响应格式](#通用响应格式)
 - [错误码说明](#错误码说明)
+- [安全特性](#安全特性)
 
 ---
 
@@ -23,16 +26,19 @@
 
 ### 功能说明
 
-Auth API提供用户认证和Token验证功能，支持：
+Auth API提供完整的用户认证和Token管理功能，支持：
 - 用户登录认证（普通用户 + 超级管理员）
-- Token有效性验证（支持从请求体和Header两种方式）
-- 用户会话信息获取
+- RefreshToken轮换机制（安全刷新AccessToken）
+- Token主动撤销（登出和安全事件响应）
+- Token验证（Server状态检查场景）
+- 完整安全审计日志
 
 ### 核心业务规则
 
-- **Auth-001**: 超级管理员认证独立于普通用户（配置文件+AdminSecrets表）
-- **Auth-002**: Token验证支持两种方式（POST请求体 / GET Header）
-- **Auth-003**: Token验证失败返回200状态码 + IsValid=false（而非401）
+- **Auth-001**: 超级管理员和普通用户使用统一Token策略（15分钟AccessToken，7天RefreshToken）
+- **Auth-002**: Client端使用JWT自验证，无需调用Server API验证（性能提升10-20倍）
+- **Auth-003**: 支持RefreshToken主动撤销，撤销后立即生效（< 1秒）
+- **Auth-004**: 所有认证事件记录安全审计日志（30天保留）
 
 ---
 
@@ -127,21 +133,21 @@ Auth API提供用户认证和Token验证功能，支持：
 
 ---
 
-### 2. POST /api/v1/auth/validate - 验证Token（从请求体）
+### 2. POST /api/v1/auth/refresh - 刷新Token
 
-**描述**: 验证JWT Token有效性并返回详细信息（Issue #1824 - Desktop客户端启动时验证）
+**描述**: 使用RefreshToken获取新的AccessToken和RefreshToken对（Token轮换机制）
 
-**路由**: `POST /api/v1/auth/validate`
+**路由**: `POST /api/v1/auth/refresh`
 
-**认证**: AllowAnonymous
+**认证**: AllowAnonymous（通过RefreshToken验证）
 
-**使用场景**: Desktop客户端启动时验证本地存储的Token
+**使用场景**: AccessToken过期时自动刷新
 
 #### 请求体
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "refreshToken": "abc123...xyz"
 }
 ```
 
@@ -149,75 +155,112 @@ Auth API提供用户认证和Token验证功能，支持：
 
 | 字段 | 类型 | 必填 | 说明 |
 |-----|------|------|------|
-| token | string | ✅ | 要验证的JWT Token（完整Token字符串） |
+| refreshToken | string | ✅ | 有效的RefreshToken |
 
-#### 成功响应 - Token有效 (200 OK)
+#### 成功响应 (200 OK)
 
 ```json
 {
-  "isSuccess": true,
+  "success": true,
   "data": {
-    "isValid": true,
-    "userId": 123,
-    "username": "doctor",
-    "role": "Doctor",
-    "expiresAt": "2025-11-05T20:00:00Z",
-    "errorMessage": null
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "new_refresh_token_xyz",
+    "user": {
+      "id": "12345678-1234-1234-1234-123456789abc",
+      "userName": "doctor",
+      "realName": "张医生",
+      "role": "Doctor",
+      "email": "doctor@example.com"
+    },
+    "expiresAt": "2025-11-07T15:30:00Z"
   },
-  "message": "Token验证完成"
+  "message": "Token刷新成功"
 }
 ```
 
-#### 成功响应 - Token无效 (200 OK)
-
-⚠️ **注意**: Token无效时仍返回200状态码，通过`isValid`字段区分
+#### 失败响应 - RefreshToken已撤销 (401 Unauthorized)
 
 ```json
 {
-  "isSuccess": true,
-  "data": {
-    "isValid": false,
-    "userId": null,
-    "username": null,
-    "role": null,
-    "expiresAt": null,
-    "errorMessage": "Token无效或已过期"
-  },
-  "message": "Token验证完成"
+  "success": false,
+  "message": "RefreshToken已撤销，请重新登录"
 }
 ```
 
-#### 失败响应 (400 Bad Request)
+#### 失败响应 - RefreshToken过期 (401 Unauthorized)
 
 ```json
 {
-  "isSuccess": false,
-  "data": null,
-  "message": "Token不能为空"
+  "success": false,
+  "message": "RefreshToken已过期，请重新登录"
 }
 ```
 
 #### 实现细节
 
-- **控制器**: `AuthController.ValidateTokenFromBodyAsync` (Line 220-255)
-- **服务**: `IAuthService.ValidateTokenWithDetailsAsync`
-- **验证流程**:
-  1. 参数验证（ModelState + Token非空）
-  2. 调用`IJwtService.ValidateToken`解析JWT
-  3. 提取Claims（UserId, Username, Role）
-  4. 解析过期时间（jwtToken.ValidTo）
-  5. 返回统一结构（无论有效/无效）
+- **控制器**: `AuthController.RefreshTokenAsync`
+- **服务**: `IAuthService.RefreshTokenAsync`
+- **刷新流程**:
+  1. 验证RefreshToken格式和存在性
+  2. 检查数据库中Token状态（是否撤销、是否过期）
+  3. 撤销旧RefreshToken（设置IsRevoked=true, RevokedReason="已被新Token替换"）
+  4. 生成新的AccessToken（15分钟）和RefreshToken（7天）
+  5. 记录审计日志（EventType: RefreshToken）
+  6. 返回新Token对
 
-**关键特性**:
-- ✅ 验证失败不抛异常，返回结构化错误信息
-- ✅ 客户端可根据`isValid`字段判断是否需要重新登录
-- ✅ 适用于Desktop客户端启动时的本地Token验证
+**安全特性**:
+- ✅ **Token轮换**: 每次刷新撤销旧RefreshToken
+- ✅ **撤销检查**: 立即生效，< 1秒响应
+- ✅ **审计日志**: 完整记录刷新事件
+- ✅ **链式撤销**: 如果检测到旧Token被重用，撤销整个Token家族
 
 ---
 
-### 3. GET /api/v1/auth/validate - 验证Token（从Header）
+### 3. POST /api/v1/auth/logout - 用户登出
 
-**描述**: 从Authorization Header验证Token（早期实现，推荐使用POST方式）
+**描述**: 用户登出并撤销RefreshToken
+
+**路由**: `POST /api/v1/auth/logout`
+
+**认证**: 需要Bearer Token
+
+#### 请求体
+
+```json
+{
+  "username": "doctor"
+}
+```
+
+**字段说明**:
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| username | string | ✅ | 用户名 |
+
+#### 成功响应 (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "登出成功"
+}
+```
+
+#### 实现细节
+
+- **控制器**: `AuthController.LogoutAsync`
+- **服务**: `IAuthService.LogoutAsync`
+- **登出流程**:
+  1. 撤销用户所有有效的RefreshToken
+  2. 记录审计日志（EventType: Logout）
+  3. Client端需清除本地Token
+
+---
+
+### 4. GET /api/v1/auth/validate - 验证Token（从Header）
+
+**描述**: 从Authorization Header验证Token（用于需要Server状态检查的场景）
 
 **路由**: `GET /api/v1/auth/validate`
 
@@ -261,8 +304,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   3. 提取Token并调用验证服务
   4. 返回会话信息
 
-⚠️ **推荐使用POST /api/v1/auth/validate**: 功能更完整，错误处理更规范
-
 ---
 
 ## 通用响应格式
@@ -272,7 +313,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```csharp
 public class ApiResponse<T>
 {
-    public bool IsSuccess { get; set; }
+    public bool Success { get; set; }
     public T? Data { get; set; }
     public string? Message { get; set; }
 }
@@ -286,9 +327,9 @@ public class ApiResponse<T>
 
 | 状态码 | 说明 | 场景 |
 |-------|------|------|
-| 200 OK | 请求成功 | Token验证完成（无论有效/无效） |
-| 400 Bad Request | 请求参数错误 | 用户名/密码为空，Token格式错误 |
-| 401 Unauthorized | 未授权 | Token验证失败（GET方式） |
+| 200 OK | 请求成功 | 登录成功、刷新成功、登出成功 |
+| 400 Bad Request | 请求参数错误 | 用户名/密码为空，RefreshToken格式错误 |
+| 401 Unauthorized | 未授权 | RefreshToken已撤销或过期 |
 | 429 Too Many Requests | 限流 | 超过登录频率限制（5次/分钟） |
 | 500 Internal Server Error | 服务器错误 | 认证服务异常 |
 
@@ -297,9 +338,39 @@ public class ApiResponse<T>
 | 消息 | 场景 | 解决方案 |
 |-----|------|---------|
 | "用户名或密码错误" | 登录凭据无效 | 检查用户名和密码 |
-| "Token不能为空" | 请求体缺少Token字段 | 提供有效Token |
-| "Token无效或已过期" | JWT验证失败 | 重新登录获取新Token |
-| "Missing Authorization header" | Header验证缺少Authorization | 添加Bearer Token Header |
+| "RefreshToken已撤销，请重新登录" | Token已被撤销 | 重新登录 |
+| "RefreshToken已过期，请重新登录" | Token过期（7天） | 重新登录 |
+| "Token无效或已过期" | AccessToken验证失败 | 使用RefreshToken刷新 |
+
+---
+
+## 安全特性
+
+### 1. Token加密存储（Client端）
+- 使用Windows DPAPI加密本地Token
+- 文件路径：`%LOCALAPPDATA%\LYBTZYZS\tokens.dat`
+- 只有当前Windows用户可以解密
+
+### 2. JWT本地验证（Client端）
+- Client端直接验证JWT签名和Claims
+- 无需每次调用Server API
+- 性能提升10-20倍（~50-100ms → ~5ms）
+
+### 3. RefreshToken撤销机制（Server端）
+- 支持单个Token撤销或用户所有Token撤销
+- 撤销后立即生效（< 1秒）
+- Token轮换：每次刷新撤销旧Token
+
+### 4. 安全审计日志（Server端）
+- 记录所有认证事件（Login, Logout, RefreshToken, TokenRevoked）
+- IP地址脱敏（192.168.1.100 → 192.168.1.*）
+- UserAgent截断（最大500字符）
+- 日志保留30天自动清理
+
+### 5. 统一Token策略
+- AccessToken: 15分钟有效期
+- RefreshToken: 7天有效期
+- 超级管理员和普通用户使用相同策略
 
 ---
 
@@ -312,16 +383,24 @@ public class ApiResponse<T>
 - `src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs`
 - `src/Server/Modules/LYBT.Module.Auth/Services/JwtService.cs`
 
+### Entities
+- `src/Server/Entities/LYBT.Entities/Auth/RefreshToken.cs` - RefreshToken实体
+- `src/Server/Entities/LYBT.Entities/Auth/SecurityAuditLog.cs` - 安全审计日志实体
+
 ### DTO
 - `src/Shared/LYBT.Shared.Models/Contracts/Auth/LoginRequest.cs`
 - `src/Shared/LYBT.Shared.Models/Contracts/Auth/LoginResponse.cs`
-- `src/Shared/LYBT.Shared.Models/Contracts/Auth/ValidateTokenRequest.cs` ⭐ **Issue #1824新增**
-- `src/Shared/LYBT.Shared.Models/Contracts/Auth/ValidateTokenResponse.cs` ⭐ **Issue #1824新增**
+- `src/Shared/LYBT.Shared.Models/Contracts/Auth/RefreshTokenRequest.cs`
+- `src/Shared/LYBT.Shared.Models/Contracts/Auth/LogoutRequest.cs`
+
+### Client端
+- `src/Client/Desktop/Foundation/LYBT.Desktop.Foundation.Auth/Services/SecureTokenStorage.cs` - DPAPI加密存储
+- `src/Client/Desktop/Foundation/LYBT.Desktop.Foundation.Auth/Validators/LocalTokenValidator.cs` - JWT本地验证
 
 ### 配置
 - `src/Server/Services/LYBT.WebAPI/appsettings.json`
-  - `Lybt:Jwt:*` - JWT配置
-  - `Lybt:SystemAdmin:UserName` - 超级管理员用户名（⚠️ Phase 3.1统一为PascalCase）
+  - `Lybt:Jwt:*` - JWT配置（Secret, Issuer, Audience, AccessTokenExpireMinutes, RefreshTokenExpireDays）
+  - `Lybt:SystemAdmin:UserName` - 超级管理员用户名
   - `Lybt:Security:RateLimiting:LoginLimit` - 登录限流配置
 
 ---
@@ -332,32 +411,32 @@ public class ApiResponse<T>
 
 ```csharp
 [Fact]
-public async Task ValidateTokenFromBody_ValidToken_ReturnsSuccess()
+public async Task RefreshToken_ValidToken_ReturnsNewTokenPair()
 {
     // Arrange
-    var request = new ValidateTokenRequest { Token = "valid_jwt_token" };
+    var request = new RefreshTokenRequest { RefreshToken = "valid_refresh_token" };
 
     // Act
-    var result = await _controller.ValidateTokenFromBodyAsync(request);
+    var result = await _controller.RefreshTokenAsync(request);
 
     // Assert
-    var okResult = Assert.IsType<ActionResult<ApiResponse<ValidateTokenResponse>>>(result);
-    Assert.True(okResult.Value.Data.IsValid);
+    var okResult = Assert.IsType<ActionResult<ApiResponse<LoginResponse>>>(result);
+    Assert.True(okResult.Value.Success);
+    Assert.NotNull(okResult.Value.Data.Token);
+    Assert.NotNull(okResult.Value.Data.RefreshToken);
 }
 
 [Fact]
-public async Task ValidateTokenFromBody_InvalidToken_ReturnsIsValidFalse()
+public async Task RefreshToken_RevokedToken_Returns401()
 {
     // Arrange
-    var request = new ValidateTokenRequest { Token = "invalid_token" };
+    var request = new RefreshTokenRequest { RefreshToken = "revoked_token" };
 
     // Act
-    var result = await _controller.ValidateTokenFromBodyAsync(request);
+    var result = await _controller.RefreshTokenAsync(request);
 
     // Assert
-    var okResult = Assert.IsType<ActionResult<ApiResponse<ValidateTokenResponse>>>(result);
-    Assert.False(okResult.Value.Data.IsValid);
-    Assert.NotNull(okResult.Value.Data.ErrorMessage);
+    var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
 }
 ```
 
@@ -369,17 +448,23 @@ curl -X POST http://localhost:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"userName":"doctor","password":"Lybt2025@TempPass!"}'
 
-# 验证Token（推荐方式）
-curl -X POST http://localhost:5000/api/v1/auth/validate \
+# 刷新Token
+curl -X POST http://localhost:5000/api/v1/auth/refresh \
   -H "Content-Type: application/json" \
-  -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}'
+  -d '{"refreshToken":"abc123..."}'
 
-# 验证Token（Header方式）
+# 登出
+curl -X POST http://localhost:5000/api/v1/auth/logout \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{"username":"doctor"}'
+
+# 验证Token（从Header）
 curl -X GET http://localhost:5000/api/v1/auth/validate \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 ---
 
-**最后更新**: 2025-11-05（Issue #1829 - 文档同步）
-**相关Issue**: #1824 (Desktop Token验证), #1761 (配置扁平化)
+**最后更新**: 2025-11-07（Issue #1861 - Token认证安全重构）
+**相关Issue**: #1861 (Token认证安全重构), #1838 (JWT Token自动刷新)
