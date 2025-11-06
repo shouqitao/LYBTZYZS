@@ -150,6 +150,9 @@ nul
 !.claude/modes/
 !.claude/skills/
 !.claude/docs/
+!.claude/reference/
+!.claude/explanation/
+!.claude/guides/
 .serena/
 .ai/*
 !.ai/rules.json
