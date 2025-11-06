@@ -433,21 +433,8 @@
         </Setter>
     </Style>
 
-    <Style x:Key="PaginationCurrentPage" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="8,0"/>
-    </Style>
-
-    <Style x:Key="PaginationPageNumber" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-    </Style>
+    <!-- 注意: PaginationCurrentPage 和 PaginationPageNumber 样式已移至 UnifiedDesignSystem.xaml -->
+    <!-- 避免样式冲突，这里不再重复定义 -->
 
     <!-- ====================================================================
          Status Badge Styles - 状态徽章样式
