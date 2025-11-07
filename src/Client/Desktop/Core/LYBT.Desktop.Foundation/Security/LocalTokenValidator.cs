@@ -37,15 +37,18 @@ namespace LYBT.Desktop.Foundation.Security
         /// <summary>
         /// 验证JWT Token
         /// </summary>
-        public async Task<TokenValidationResult> ValidateTokenAsync(string token)
+        /// <summary>
+        /// 验证JWT Token
+        /// </summary>
+        public Task<TokenValidationResult> ValidateTokenAsync(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                return new TokenValidationResult
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
                     ErrorMessage = "Token不能为空"
-                };
+                });
             }
 
             try
@@ -59,11 +62,11 @@ namespace LYBT.Desktop.Foundation.Security
                 if (string.IsNullOrEmpty(secretKey))
                 {
                     _logger.LogError("JWT SecretKey配置未找到或为空");
-                    return new TokenValidationResult
+                    return Task.FromResult(new TokenValidationResult
                     {
                         IsValid = false,
                         ErrorMessage = "JWT配置错误：SecretKey未配置"
-                    };
+                    });
                 }
 
                 if (secretKey.Length < 32)
@@ -95,75 +98,66 @@ namespace LYBT.Desktop.Foundation.Security
                 if (userInfo == null)
                 {
                     _logger.LogWarning("Token验证成功但无法提取用户信息");
-                    return new TokenValidationResult
+                    return Task.FromResult(new TokenValidationResult
                     {
                         IsValid = false,
                         ErrorMessage = "Token中缺少必需的用户信息"
-                    };
+                    });
                 }
 
                 _logger.LogDebug("Token验证成功，用户: {UserName}, 类型: {UserType}",
                     userInfo.UserName, userInfo.UserType);
 
-                return new TokenValidationResult
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = true,
                     UserInfo = userInfo
-                };
+                });
             }
             catch (SecurityTokenExpiredException ex)
             {
                 _logger.LogWarning(ex, "Token已过期");
-                return new TokenValidationResult
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
                     ErrorMessage = "Token已过期"
-                };
+                });
             }
             catch (SecurityTokenInvalidSignatureException ex)
             {
                 _logger.LogError(ex, "Token签名无效");
-                return new TokenValidationResult
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
                     ErrorMessage = "Token签名无效"
-                };
+                });
             }
             catch (SecurityTokenInvalidIssuerException ex)
             {
-                _logger.LogError(ex, "Token发行者无效");
-                return new TokenValidationResult
+                _logger.LogError(ex, "Token Issuer无效");
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Token发行者无效"
-                };
+                    ErrorMessage = "Token Issuer无效"
+                });
             }
             catch (SecurityTokenInvalidAudienceException ex)
             {
-                _logger.LogError(ex, "Token接收者无效");
-                return new TokenValidationResult
+                _logger.LogError(ex, "Token Audience无效");
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Token接收者无效"
-                };
-            }
-            catch (SecurityTokenException ex)
-            {
-                _logger.LogError(ex, "Token验证失败");
-                return new TokenValidationResult
-                {
-                    IsValid = false,
-                    ErrorMessage = $"Token验证失败: {ex.Message}"
-                };
+                    ErrorMessage = "Token Audience无效"
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Token验证过程发生未知错误");
-                return new TokenValidationResult
+                _logger.LogError(ex, "Token验证失败");
+                return Task.FromResult(new TokenValidationResult
                 {
                     IsValid = false,
-                    ErrorMessage = $"验证过程发生错误: {ex.Message}"
-                };
+                    ErrorMessage = $"Token验证失败: {ex.Message}"
+                });
             }
         }
 

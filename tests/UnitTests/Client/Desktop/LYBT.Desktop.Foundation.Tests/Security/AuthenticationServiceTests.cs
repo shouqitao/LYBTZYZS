@@ -367,7 +367,7 @@ public class AuthenticationServiceTests
     {
         // Arrange
         _tokenStorage.GetTokenAsync()
-            .Returns(Task.FromResult("valid_token"));
+            .Returns(Task.FromResult<string?>("valid_token"));
 
         // Act
         var result = await _authService.IsLoggedInAsync();
