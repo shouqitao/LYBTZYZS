@@ -117,6 +117,9 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>(containerRegistry);
+            // Issue #1862-1864: Token认证安全重构 - 新增Logger
+            RegisterLogger<LYBT.Desktop.Foundation.Security.SecureTokenStorage>(containerRegistry);
+            RegisterLogger<LYBT.Desktop.Foundation.Security.LocalTokenValidator>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>(containerRegistry);
             RegisterLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>(containerRegistry);
         }
