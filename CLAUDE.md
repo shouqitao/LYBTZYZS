@@ -97,14 +97,26 @@ repo = "LYBTZYZS"
 > 💡 **示例**: 三步诊疗流程（辨证→开方标记→处方）由 Client 端 ViewModel 编排，Server 端提供原子化的数据操作接口
 
 
-### 1.2 Issue驱动工作流
-
-**完整指南** → [.claude/guides/issue-workflow.md](.claude/guides/issue-workflow.md)
+### 1.2 双轨工作流（小需求 vs 大需求）
 
 **核心规则**:
 - ✅ **所有改动必须有GitHub Issue** - 无Issue禁止任何代码变更
-- ✅ **小Issue → 直接Master**（90%）: <5文件, <200行, <2小时
-- ✅ **Epic → 创建PR**（10%）: 跨模块, >200行, >2小时, ⚠️1-3天内合并
+- ✅ **小需求 → 直接修改**（90%）: <5文件, <200行, <2小时，直接编码实现
+- ✅ **大需求 → 自动化流程**（10%）: 跨模块, >200行, >2小时，启用自动化工作流系统
+
+#### 小需求：直接修改模式
+
+**适用场景**:
+- Bug修复（<5文件修改）
+- 简单功能调整（<200行代码）
+- 文档更新
+- 配置调整
+
+**执行流程**:
+1. 创建GitHub Issue描述问题
+2. 直接修改代码（使用serena/filesystem等MCP工具）
+3. 验证（编译 + 测试 + 运行）
+4. 提交代码到master分支
 
 **标准提交格式**:
 ```bash
@@ -121,25 +133,30 @@ Fixes #1234
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-### 1.3 Spec-Driven工作流
+#### 大需求：自动化工作流模式
 
-**完整指南** → [.claude/guides/spec-workflow.md](.claude/guides/spec-workflow.md)
+**适用场景**:
+- 新功能开发（跨多个模块）
+- 架构重构（>200行代码）
+- Epic级任务（需拆分为多个子Issue）
 
-**核心流程**: Constitution检查 → 需求讨论 → 需求文档 → 设计文档 → Issue创建 → 实施
+**执行流程**:
+```bash
+用户提需求
+  → 调用 lybtzyzs-workflow-orchestrator skill
+  → 14状态自动化流程（需求→设计→任务→实施→质量→归档）
+  → 5个人工确认点（需求确认、设计审查、任务审查、质量把关、反思审查）
+  → 完成
+```
 
-**强制机制**:
-- **Constitution**: `.spec-workflow/steering/constitution.md` - 所有任务前必查
-- **Quality Checklists**: `.spec-workflow/templates/checklists/` - 通过率≥90%
+**自动化工作流系统**:
+- **Orchestrator**: lybtzyzs-workflow-orchestrator（14状态编排引擎）
+- **自动化率**: 85%（仅5个必要人工确认点）
+- **预期提效**: 需求→Issue耗时从4-6小时降至30分钟
+- **完整文档**: [AUTOMATION-SYSTEM-SUMMARY.md](.claude/skills/AUTOMATION-SYSTEM-SUMMARY.md)
 
-**三阶段文档化**:
-1. **需求讨论** → `docs/explanation/architecture/{client|server|shared}/*-discussion.md` (❌禁止代码)
-2. **需求文档** → `docs/explanation/requirements/*-requirements.md` (⚠️必须等待用户确认)
-3. **设计文档** → `docs/explanation/design/*-design.md` (包含架构、API、代码、Phase拆分)
-
-**文档读取规则**:
-- ⚠️ 需求分析前: 必读 docs/index.md, business-rules.md, 架构指南
-- ⚠️ 设计文档前: 必读对应架构指南
-- ⚠️ 架构调整前: 必须创建ADR并更新架构文档
+**触发方式**:
+用户明确说明是"复杂需求"、"新功能开发"、"Epic任务"时，自动调用 lybtzyzs-workflow-orchestrator skill
 
 ---
 
@@ -260,33 +277,47 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 | 📝 Documentation | `/update-docs` | 文档同步与更新 |
 | 🧠 Research | `/deep-research` | 深度技术研究 |
 
-### 4.2 Claude Skills（12个）
+### 4.2 Claude Skills（13个）
 
 **完整指南** → [.claude/guides/skills-usage.md](.claude/guides/skills-usage.md)
 
-**需求生成**:
-- **lybtzyzs-requirements-generator**: 需求文档生成（用户需求→需求讨论文档）⭐v1.4
+#### ⭐ 核心编排引擎
+
+**lybtzyzs-workflow-orchestrator** - 自动化工作流编排引擎 🔴 核心
+- **功能**: 14状态自动化流程（需求→设计→任务→实施→质量→归档）
+- **触发**: 大需求开发（用户明确说明"复杂需求"、"新功能"、"Epic任务"）
+- **自动化率**: 85%（仅5个人工确认点）
+- **人工确认点**: 需求确认、设计审查、任务审查、质量把关、反思审查
+- **配置**: `.claude/config/workflow-orchestrator.json`（4种场景配置）
+- **完整文档**: [AUTOMATION-SYSTEM-SUMMARY.md](.claude/skills/AUTOMATION-SYSTEM-SUMMARY.md)
+
+#### 业务Skills（11个）
+
+**需求与设计**:
+- **lybtzyzs-requirements-generator**: 需求文档生成（用户需求→需求讨论文档）
+- **lybtzyzs-design-generator**: 设计文档生成（需求→设计）
+- **lybtzyzs-design-arch-validator**: 设计架构验证
 
 **合规与质量**:
 - **lybtzyzs-mvp-compliance**: MVP合规检查（技术黑名单、过度设计）
 - **lybtzyzs-arch-compliance**: 架构合规检查（三层架构、依赖方向）
 - **lybtzyzs-doc-sync**: 文档同步检查（强制读取规则、变更检测）
-- **lybtzyzs-quality-reporter**: 质量报告生成（PR质量评分、自动合并决策）⭐v1.4
+- **lybtzyzs-quality-reporter**: 质量报告生成（PR质量评分、自动合并决策）
 
 **任务管理**:
 - **lybtzyzs-task-breakdown**: 任务分解（设计文档→task清单）
 - **lybtzyzs-issue-template**: Issue批量生成（task文档→GitHub Issues）
-- **lybtzyzs-task-executor**: 任务自动执行（Issue→代码→验证→提交）⭐v1.3
-- **lybtzyzs-task-tracker**: 任务状态追踪（GitHub双向同步、Epic进度）⭐v1.3
-- **lybtzyzs-task-reflector**: 任务反思改进（技术债务、知识归档）⭐v1.3
+- **lybtzyzs-task-executor**: 任务自动执行（Issue→代码→验证→提交）
+- **lybtzyzs-task-tracker**: 任务状态追踪（GitHub双向同步、Epic进度）
+- **lybtzyzs-task-reflector**: 任务反思改进（技术债务、知识归档）
 
-**辅助工具**:
-- **lybtzyzs-research-assistant**: 技术研究（文档查询、方案对比）⭐v1.3
-- **lybtzyzs-context-builder**: 上下文聚合（需求、代码、历史决策）⭐v1.3
-- **lybtzyzs-dependency-analyzer**: 依赖分析（依赖图、影响范围）⭐v1.3
-- **lybtzyzs-workload-estimator**: 工作量估算（历史数据、复杂度分析）⭐v1.3
+#### 使用指南
 
-**触发方式**: 自动（关键词）或手动（明确指定）
+**小需求（90%）**: 无需调用Skills，直接使用serena/filesystem等MCP工具修改代码
+
+**大需求（10%）**: 自动调用 **lybtzyzs-workflow-orchestrator**，启动完整自动化流程
+
+**触发关键词**: "复杂需求"、"新功能开发"、"Epic任务"、"跨模块重构"
 
 ---
 
