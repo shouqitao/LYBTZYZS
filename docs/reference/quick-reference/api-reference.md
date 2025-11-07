@@ -57,6 +57,17 @@ Content-Type: application/json
   "password": "admin_password"
 }
 
+# 刷新Token（Token轮换机制）
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token_here"
+}
+# 响应：
+#   - 成功：返回新的AccessToken和RefreshToken
+#   - 失败：Token已撤销或过期
+
 # 用户登出
 POST /api/v1/auth/logout
 Authorization: Bearer {token}
@@ -71,12 +82,7 @@ Authorization: Bearer {token}
 # GET方式验证Token（从Header获取）
 GET /api/v1/auth/validate
 Authorization: Bearer {token}
-
-# POST方式验证Token（直接传递）
-POST /api/v1/auth/validate
-Content-Type: application/json
-
-"your_jwt_token_here"
+# 注意：POST /api/v1/auth/validate 已删除，改用Client端本地验证
 ```
 
 ### 管理员操作

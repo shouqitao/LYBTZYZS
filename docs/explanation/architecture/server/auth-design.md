@@ -100,10 +100,26 @@ LYBT.Module.Auth/                    # 认证模块（Server端）
 │   │   ├── GetSessionInfoAsync()            # 查询会话信息
 │   │   └── ChangeSysAdminPasswordAsync()    # 修改SuperAdmin密码
 │   │
-│   └── JwtService.cs                # JWT令牌服务（3个方法）
-│       ├── GenerateToken()                  # 生成JWT（2个重载）
-│       ├── ValidateToken()                  # 验证JWT签名和过期
-│       └── ValidateSecretKeyStrength()      # 验证密钥强度（≥256位）
+│   ├── JwtService.cs                # JWT令牌服务（3个方法）
+│   │   ├── GenerateToken()                  # 生成JWT（2个重载）
+│   │   ├── ValidateToken()                  # 验证JWT签名和过期
+│   │   └── ValidateSecretKeyStrength()      # 验证密钥强度（≥256位）
+│   │
+│   ├── TokenRevocationService.cs    # Token撤销服务（Issue #1870）
+│   │   ├── RevokeTokenAsync()               # 撤销单个RefreshToken
+│   │   ├── RevokeAllUserTokensAsync()       # 撤销用户所有Token
+│   │   ├── IsTokenRevokedAsync()            # 检查Token撤销状态
+│   │   └── CleanupExpiredTokensAsync()      # 清理过期Token
+│   │
+│   ├── SecurityAuditService.cs      # 安全审计服务（Issue #1871）
+│   │   ├── LogLoginAsync()                  # 记录登录事件
+│   │   ├── LogLogoutAsync()                 # 记录登出事件
+│   │   ├── LogRefreshTokenAsync()           # 记录Token刷新事件
+│   │   ├── LogTokenRevokedAsync()           # 记录Token撤销事件
+│   │   └── GetAuditLogsAsync()              # 查询审计日志
+│   │
+│   └── SecurityAuditCleanupService.cs # 审计日志清理（Issue #1873）
+│       └── CleanupOldLogsAsync()            # 清理30天前的日志（后台Job）
 │
 ├── Repositories/
 │   └── (由Infrastructure提供BaseRepository)
@@ -893,6 +909,535 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     app.UseAuthentication();
     app.UseAuthorization();
 }
+```
+
+### 6.4 Security Services（Token认证安全重构 - Epic #1861）
+
+#### 6.4.1 TokenRevocationService - Token撤销服务
+
+**职责说明**：
+
+TokenRevocationService负责管理RefreshToken的撤销状态，提供细粒度的Token撤销控制能力。通过RefreshTokens表记录Token状态，支持主动登出、安全应急响应、Token轮换等场景。
+
+**关键特性**：
+- ✅ **细粒度撤销**：支持撤销单个Token或用户所有Token
+- ✅ **实时生效**：撤销后立即生效（< 1秒）
+- ✅ **Token轮换**：每次刷新撤销旧Token，防重放攻击
+- ✅ **自动清理**：定期清理过期Token记录（减少数据库负载）
+
+**实现代码**：
+
+```csharp
+// TokenRevocationService.cs（Issue #1870）
+public class TokenRevocationService : ITokenRevocationService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly ILogger<TokenRevocationService> _logger;
+
+    public TokenRevocationService(
+        AppDbContext dbContext,
+        ILogger<TokenRevocationService> logger)
+    {
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// 撤销单个RefreshToken
+    /// </summary>
+    /// <param name="refreshToken">要撤销的RefreshToken</param>
+    public async Task RevokeTokenAsync(string refreshToken)
+    {
+        var tokenRecord = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+
+        if (tokenRecord == null)
+        {
+            _logger.LogWarning("尝试撤销不存在的Token: {Token}", refreshToken);
+            return;
+        }
+
+        tokenRecord.IsRevoked = true;
+        tokenRecord.RevokedAt = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("RefreshToken已撤销: TokenId={TokenId}, UserId={UserId}",
+            tokenRecord.Id, tokenRecord.UserId);
+    }
+
+    /// <summary>
+    /// 撤销用户所有RefreshToken（密码修改、安全应急）
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    public async Task RevokeAllUserTokensAsync(Guid userId)
+    {
+        var tokens = await _dbContext.RefreshTokens
+            .Where(t => t.UserId == userId && !t.IsRevoked)
+            .ToListAsync();
+
+        foreach (var token in tokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = DateTime.UtcNow;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogWarning("用户所有Token已撤销: UserId={UserId}, Count={Count}",
+            userId, tokens.Count);
+    }
+
+    /// <summary>
+    /// 检查Token撤销状态（刷新Token前验证）
+    /// </summary>
+    /// <param name="refreshToken">要检查的RefreshToken</param>
+    /// <returns>true=已撤销, false=有效</returns>
+    public async Task<bool> IsTokenRevokedAsync(string refreshToken)
+    {
+        var tokenRecord = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(t => t.Token == refreshToken);
+
+        return tokenRecord?.IsRevoked ?? false;
+    }
+
+    /// <summary>
+    /// 清理过期Token记录（定期后台任务）
+    /// </summary>
+    /// <remarks>
+    /// 清理策略：过期时间 + 30天后删除记录
+    /// 执行频率：每日凌晨2点
+    /// </remarks>
+    public async Task CleanupExpiredTokensAsync()
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-30);
+
+        var expiredTokens = await _dbContext.RefreshTokens
+            .Where(t => t.ExpiresAt < cutoffDate)
+            .ToListAsync();
+
+        _dbContext.RefreshTokens.RemoveRange(expiredTokens);
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("已清理过期Token记录: Count={Count}", expiredTokens.Count);
+    }
+}
+```
+
+**应用场景**：
+
+| 场景 | 方法 | 说明 |
+|-----|------|------|
+| 用户主动登出 | RevokeTokenAsync() | 撤销当前设备RefreshToken |
+| 密码修改 | RevokeAllUserTokensAsync() | 撤销所有Token，强制重新登录 |
+| Token泄露应急 | RevokeAllUserTokensAsync() | 快速响应安全事件（< 1秒） |
+| Token轮换 | RevokeTokenAsync() + 生成新Token | 每次刷新撤销旧Token |
+| 定期清理 | CleanupExpiredTokensAsync() | 每日清理过期Token（减少数据库负载） |
+
+**数据库表结构**：
+
+```sql
+-- RefreshTokens表（Issue #1870新增）
+CREATE TABLE RefreshTokens (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    UserId UNIQUEIDENTIFIER NOT NULL,           -- 用户ID（外键）
+    Token NVARCHAR(500) NOT NULL UNIQUE,        -- RefreshToken值
+    ExpiresAt DATETIME2 NOT NULL,               -- 过期时间（7天）
+    IsRevoked BIT NOT NULL DEFAULT 0,           -- 撤销状态
+    RevokedAt DATETIME2 NULL,                   -- 撤销时间
+    CreatedAt DATETIME2 NOT NULL,               -- 创建时间
+    DeviceInfo NVARCHAR(500) NULL,              -- 设备信息（可选）
+    IpAddress NVARCHAR(50) NULL,                -- IP地址（可选）
+
+    -- 索引优化
+    INDEX IX_RefreshTokens_UserId (UserId),
+    INDEX IX_RefreshTokens_Token (Token),
+    INDEX IX_RefreshTokens_ExpiresAt (ExpiresAt)
+);
+```
+
+#### 6.4.2 SecurityAuditService - 安全审计服务
+
+**职责说明**：
+
+SecurityAuditService负责记录所有认证相关的安全事件，提供完整的审计追踪能力。通过SecurityAuditLogs表存储事件记录，支持安全分析、异常检测、合规审计等场景。
+
+**关键特性**：
+- ✅ **全事件记录**：Login、Logout、RefreshToken、TokenRevoked等
+- ✅ **数据脱敏**：IP地址脱敏（192.168.1.100 → 192.168.1.*）
+- ✅ **UserAgent截断**：最大500字符（防止恶意长字符串）
+- ✅ **30天保留**：自动清理30天前的日志（平衡存储与审计需求）
+
+**实现代码**：
+
+```csharp
+// SecurityAuditService.cs（Issue #1871）
+public class SecurityAuditService : ISecurityAuditService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly ILogger<SecurityAuditService> _logger;
+
+    public SecurityAuditService(
+        AppDbContext dbContext,
+        ILogger<SecurityAuditService> logger)
+    {
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// 记录登录事件
+    /// </summary>
+    public async Task LogLoginAsync(
+        string userName,
+        bool success,
+        string ipAddress,
+        string userAgent,
+        string? errorMessage = null)
+    {
+        var log = new SecurityAuditLog
+        {
+            Id = Guid.NewGuid(),
+            EventType = "Login",
+            UserName = userName,
+            Success = success,
+            IpAddress = MaskIpAddress(ipAddress),          // IP脱敏
+            UserAgent = TruncateUserAgent(userAgent),      // UserAgent截断
+            ErrorMessage = errorMessage,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.SecurityAuditLogs.AddAsync(log);
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("审计日志记录: EventType={EventType}, UserName={UserName}, Success={Success}",
+            log.EventType, log.UserName, log.Success);
+    }
+
+    /// <summary>
+    /// 记录登出事件
+    /// </summary>
+    public async Task LogLogoutAsync(string userName, string ipAddress, string userAgent)
+    {
+        var log = new SecurityAuditLog
+        {
+            Id = Guid.NewGuid(),
+            EventType = "Logout",
+            UserName = userName,
+            Success = true,
+            IpAddress = MaskIpAddress(ipAddress),
+            UserAgent = TruncateUserAgent(userAgent),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.SecurityAuditLogs.AddAsync(log);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 记录Token刷新事件
+    /// </summary>
+    public async Task LogRefreshTokenAsync(string userName, string ipAddress, string userAgent)
+    {
+        var log = new SecurityAuditLog
+        {
+            Id = Guid.NewGuid(),
+            EventType = "RefreshToken",
+            UserName = userName,
+            Success = true,
+            IpAddress = MaskIpAddress(ipAddress),
+            UserAgent = TruncateUserAgent(userAgent),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.SecurityAuditLogs.AddAsync(log);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 记录Token撤销事件
+    /// </summary>
+    public async Task LogTokenRevokedAsync(
+        string userName,
+        string reason,
+        string ipAddress,
+        string userAgent)
+    {
+        var log = new SecurityAuditLog
+        {
+            Id = Guid.NewGuid(),
+            EventType = "TokenRevoked",
+            UserName = userName,
+            Success = true,
+            IpAddress = MaskIpAddress(ipAddress),
+            UserAgent = TruncateUserAgent(userAgent),
+            ErrorMessage = reason,  // 撤销原因
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.SecurityAuditLogs.AddAsync(log);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 查询审计日志（支持分页和筛选）
+    /// </summary>
+    public async Task<List<SecurityAuditLog>> GetAuditLogsAsync(
+        string? userName = null,
+        string? eventType = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int page = 1,
+        int pageSize = 100)
+    {
+        var query = _dbContext.SecurityAuditLogs.AsQueryable();
+
+        if (!string.IsNullOrEmpty(userName))
+        {
+            query = query.Where(l => l.UserName == userName);
+        }
+
+        if (!string.IsNullOrEmpty(eventType))
+        {
+            query = query.Where(l => l.EventType == eventType);
+        }
+
+        if (startDate.HasValue)
+        {
+            query = query.Where(l => l.CreatedAt >= startDate.Value);
+        }
+
+        if (endDate.HasValue)
+        {
+            query = query.Where(l => l.CreatedAt <= endDate.Value);
+        }
+
+        return await query
+            .OrderByDescending(l => l.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// IP地址脱敏（192.168.1.100 → 192.168.1.*）
+    /// </summary>
+    private string MaskIpAddress(string ipAddress)
+    {
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            return "Unknown";
+        }
+
+        var parts = ipAddress.Split('.');
+        if (parts.Length == 4)
+        {
+            return $"{parts[0]}.{parts[1]}.{parts[2]}.*";
+        }
+
+        return ipAddress;  // IPv6或其他格式保持原样
+    }
+
+    /// <summary>
+    /// UserAgent截断（最大500字符）
+    /// </summary>
+    private string TruncateUserAgent(string userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent))
+        {
+            return "Unknown";
+        }
+
+        return userAgent.Length > 500
+            ? userAgent.Substring(0, 500)
+            : userAgent;
+    }
+}
+```
+
+**审计事件类型**：
+
+| EventType | 说明 | Success字段 | ErrorMessage用途 |
+|-----------|------|-------------|-----------------|
+| Login | 登录尝试 | true/false | 失败原因（密码错误、账户锁定等） |
+| Logout | 用户登出 | true | - |
+| RefreshToken | Token刷新 | true/false | 失败原因（Token过期、已撤销等） |
+| TokenRevoked | Token撤销 | true | 撤销原因（主动登出、密码修改、安全应急） |
+
+**数据脱敏策略**：
+
+```csharp
+// 脱敏前：192.168.1.100
+// 脱敏后：192.168.1.*
+
+// UserAgent截断前（1024字符）：
+// Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...（很长）
+// UserAgent截断后（500字符）：
+// Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...（截断）
+```
+
+**数据库表结构**：
+
+```sql
+-- SecurityAuditLogs表（Issue #1871新增）
+CREATE TABLE SecurityAuditLogs (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    EventType NVARCHAR(50) NOT NULL,            -- 事件类型
+    UserName NVARCHAR(256) NOT NULL,            -- 用户名
+    Success BIT NOT NULL,                       -- 是否成功
+    IpAddress NVARCHAR(50) NULL,                -- IP地址（脱敏）
+    UserAgent NVARCHAR(500) NULL,               -- UserAgent（截断）
+    ErrorMessage NVARCHAR(500) NULL,            -- 错误信息或原因
+    CreatedAt DATETIME2 NOT NULL,               -- 创建时间
+
+    -- 索引优化
+    INDEX IX_SecurityAuditLogs_UserName (UserName),
+    INDEX IX_SecurityAuditLogs_EventType (EventType),
+    INDEX IX_SecurityAuditLogs_CreatedAt (CreatedAt)
+);
+```
+
+#### 6.4.3 SecurityAuditCleanupService - 审计日志清理服务
+
+**职责说明**：
+
+SecurityAuditCleanupService负责定期清理过期的审计日志，平衡数据库存储空间与审计需求。通过后台Job定期执行清理任务，保持审计日志在合理的数据量范围。
+
+**关键特性**：
+- ✅ **30天保留策略**：保留近30天的审计日志
+- ✅ **批量删除**：每次删除最多10000条记录（避免长事务）
+- ✅ **后台执行**：每日凌晨3点自动执行（低峰期）
+- ✅ **日志记录**：记录清理数量和执行时间
+
+**实现代码**：
+
+```csharp
+// SecurityAuditCleanupService.cs（Issue #1873）
+public class SecurityAuditCleanupService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<SecurityAuditCleanupService> _logger;
+    private readonly TimeSpan _executionInterval = TimeSpan.FromDays(1);  // 每日执行
+    private readonly int _retentionDays = 30;                              // 保留30天
+    private readonly int _batchSize = 10000;                               // 批量删除大小
+
+    public SecurityAuditCleanupService(
+        IServiceProvider serviceProvider,
+        ILogger<SecurityAuditCleanupService> logger)
+    {
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("SecurityAuditCleanupService已启动");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                // 计算下次执行时间（每日凌晨3点）
+                var now = DateTime.UtcNow;
+                var nextRun = now.Date.AddDays(1).AddHours(3);  // 明天凌晨3点
+                var delay = nextRun - now;
+
+                _logger.LogInformation("下次清理时间: {NextRun}, 延迟: {Delay}",
+                    nextRun, delay);
+
+                await Task.Delay(delay, stoppingToken);
+
+                // 执行清理
+                await CleanupOldLogsAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("SecurityAuditCleanupService正在停止");
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SecurityAuditCleanupService执行异常");
+                // 出错后等待1小时再重试
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            }
+        }
+
+        _logger.LogInformation("SecurityAuditCleanupService已停止");
+    }
+
+    /// <summary>
+    /// 清理30天前的审计日志
+    /// </summary>
+    public async Task CleanupOldLogsAsync()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var cutoffDate = DateTime.UtcNow.AddDays(-_retentionDays);
+        var totalDeleted = 0;
+
+        _logger.LogInformation("开始清理审计日志: 截止日期={CutoffDate}", cutoffDate);
+
+        while (true)
+        {
+            // 批量删除（避免长事务）
+            var logsToDelete = await dbContext.SecurityAuditLogs
+                .Where(l => l.CreatedAt < cutoffDate)
+                .OrderBy(l => l.CreatedAt)
+                .Take(_batchSize)
+                .ToListAsync();
+
+            if (!logsToDelete.Any())
+            {
+                break;  // 没有更多记录需要删除
+            }
+
+            dbContext.SecurityAuditLogs.RemoveRange(logsToDelete);
+            await dbContext.SaveChangesAsync();
+
+            totalDeleted += logsToDelete.Count;
+
+            _logger.LogInformation("已删除 {Count} 条审计日志，累计: {TotalDeleted}",
+                logsToDelete.Count, totalDeleted);
+
+            // 短暂延迟，避免数据库压力过大
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+        _logger.LogInformation("审计日志清理完成: 总删除数={TotalDeleted}", totalDeleted);
+    }
+}
+```
+
+**执行策略**：
+
+| 参数 | 值 | 说明 |
+|-----|-----|------|
+| 保留天数 | 30天 | 保留近30天的审计日志 |
+| 执行时间 | 每日凌晨3点 | 系统低峰期执行 |
+| 批量大小 | 10000条/批 | 避免长事务锁表 |
+| 批次间隔 | 1秒 | 减少数据库压力 |
+
+**注册后台服务**：
+
+```csharp
+// Startup.cs / Program.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    // 注册后台服务
+    services.AddHostedService<SecurityAuditCleanupService>();
+}
+```
+
+**性能优化**：
+
+```csharp
+// 索引优化（CreatedAt字段）
+CREATE INDEX IX_SecurityAuditLogs_CreatedAt ON SecurityAuditLogs(CreatedAt);
+
+// 批量删除优化（每批10000条）
+DELETE TOP (10000) FROM SecurityAuditLogs
+WHERE CreatedAt < '2025-10-07 00:00:00';
 ```
 
 ---
