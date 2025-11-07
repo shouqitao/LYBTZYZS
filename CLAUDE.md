@@ -260,15 +260,31 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 | 📝 Documentation | `/update-docs` | 文档同步与更新 |
 | 🧠 Research | `/deep-research` | 深度技术研究 |
 
-### 4.2 Claude Skills（5个）
+### 4.2 Claude Skills（12个）
 
 **完整指南** → [.claude/guides/skills-usage.md](.claude/guides/skills-usage.md)
 
+**需求生成**:
+- **lybtzyzs-requirements-generator**: 需求文档生成（用户需求→需求讨论文档）⭐v1.4
+
+**合规与质量**:
 - **lybtzyzs-mvp-compliance**: MVP合规检查（技术黑名单、过度设计）
 - **lybtzyzs-arch-compliance**: 架构合规检查（三层架构、依赖方向）
 - **lybtzyzs-doc-sync**: 文档同步检查（强制读取规则、变更检测）
+- **lybtzyzs-quality-reporter**: 质量报告生成（PR质量评分、自动合并决策）⭐v1.4
+
+**任务管理**:
 - **lybtzyzs-task-breakdown**: 任务分解（设计文档→task清单）
 - **lybtzyzs-issue-template**: Issue批量生成（task文档→GitHub Issues）
+- **lybtzyzs-task-executor**: 任务自动执行（Issue→代码→验证→提交）⭐v1.3
+- **lybtzyzs-task-tracker**: 任务状态追踪（GitHub双向同步、Epic进度）⭐v1.3
+- **lybtzyzs-task-reflector**: 任务反思改进（技术债务、知识归档）⭐v1.3
+
+**辅助工具**:
+- **lybtzyzs-research-assistant**: 技术研究（文档查询、方案对比）⭐v1.3
+- **lybtzyzs-context-builder**: 上下文聚合（需求、代码、历史决策）⭐v1.3
+- **lybtzyzs-dependency-analyzer**: 依赖分析（依赖图、影响范围）⭐v1.3
+- **lybtzyzs-workload-estimator**: 工作量估算（历史数据、复杂度分析）⭐v1.3
 
 **触发方式**: 自动（关键词）或手动（明确指定）
 
