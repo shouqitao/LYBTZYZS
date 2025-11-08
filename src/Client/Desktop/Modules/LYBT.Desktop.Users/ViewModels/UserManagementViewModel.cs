@@ -295,6 +295,9 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 添加新用户
         /// Issue #1798: 使用Dialog替代Region导航
         /// </summary>
+        /// <summary>
+        /// 执行添加新用户 (Issue #1911修复: 异步调用导致UI卡死)
+        /// </summary>
         protected override Task OnExecuteAddAsync()
         {
             Logger.LogDebug("执行添加新用户");
@@ -310,7 +313,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (result.Result == ButtonResult.OK)
                 {
                     Logger.LogInformation("用户创建成功，刷新列表");
-                    _ = SearchAsync(); // 刷新列表
+                    // 修复：使用Dispatcher避免UI线程死锁
+                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () =>
+                    {
+                        await SearchAsync();
+                    });
                 }
             });
 
@@ -382,6 +389,9 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 编辑用户
         /// Issue #1798: 使用Dialog替代Region导航
         /// </summary>
+        /// <summary>
+        /// 编辑用户 (Issue #1911修复: 异步调用导致UI卡死)
+        /// </summary>
         private void ExecuteEditUser(UserDto user)
         {
             if (user == null) return;
@@ -400,7 +410,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (result.Result == ButtonResult.OK)
                 {
                     Logger.LogInformation("用户编辑成功，刷新列表");
-                    _ = SearchAsync(); // 刷新列表
+                    // 修复：使用Dispatcher避免UI线程死锁
+                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () =>
+                    {
+                        await SearchAsync();
+                    });
                 }
             });
         }
@@ -420,7 +434,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            await ExecuteSafelyAsync(async () =>
+            await ExecuteSafelyAsync(() =>
             {
                 Logger.LogDebug("打开重置密码对话框, UserId: {UserId}, UserName: {UserName}", 
                     user.Id, user.UserName);
@@ -447,6 +461,7 @@ namespace LYBT.Desktop.Users.ViewModels
                             Logger.LogDebug("重置密码对话框关闭（取消）, UserId: {UserId}", user.Id);
                         }
                     });
+                return Task.CompletedTask;
             }, "重置密码");
         }
 
@@ -504,13 +519,17 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 查看详情
         /// </summary>
+        /// <summary>
+        /// 查看用户详情 (Issue #1911修复: Region名称错误)
+        /// </summary>
         private void ExecuteViewDetails(UserDto user)
         {
             if (user == null) return;
 
             Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
 
-            NavigateTo("AdminContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
+            // 修复：使用正确的Region名称 ContentRegion
+            NavigateTo("ContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
             {
                 { "UserId", user.Id },
                 { "title", $"用户详情 - {user.RealName}" }
