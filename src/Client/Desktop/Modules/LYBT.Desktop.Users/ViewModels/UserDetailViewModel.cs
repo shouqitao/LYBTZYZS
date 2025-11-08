@@ -72,7 +72,8 @@ namespace LYBT.Desktop.Users.ViewModels
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
             EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
             ResetPasswordCommand = new DelegateCommand(ExecuteResetPassword, CanExecuteResetPassword);
-            ToggleStatusCommand = new DelegateCommand(ExecuteToggleStatus, CanExecuteToggleStatus);
+            // 异步命令包装（DelegateCommand不直接支持async Task）
+            ToggleStatusCommand = new DelegateCommand(async () => await ExecuteToggleStatusAsync(), CanExecuteToggleStatus);
         }
 
         /// <summary>
@@ -205,7 +206,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 切换用户状态（启用/禁用）
         /// Issue #1794: 优化方法长度（58→30行）
         /// </summary>
-        private async void ExecuteToggleStatus()
+        private async Task ExecuteToggleStatusAsync()
         {
             if (User == null)
             {

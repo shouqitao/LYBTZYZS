@@ -264,7 +264,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 _userId = parameters.GetValue<Guid?>("userId");
                 if (_userId.HasValue && _userId.Value != Guid.Empty)
                 {
-                    InitializeEditMode(_userId.Value);
+                    // Fire-and-forget异步调用（OnDialogOpened是同步接口方法）
+                    _ = InitializeEditModeAsync(_userId.Value);
                 }
                 else
                 {
@@ -306,7 +307,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 初始化编辑模式
         /// </summary>
-        private async void InitializeEditMode(Guid userId)
+        private async Task InitializeEditModeAsync(Guid userId)
         {
             _dialogTitle = "编辑用户";
             SubmitButtonText = "保存";
