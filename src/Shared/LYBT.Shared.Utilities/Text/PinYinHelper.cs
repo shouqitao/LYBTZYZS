@@ -41,8 +41,12 @@ namespace LYBT.Shared.Utilities.Text
                     firstLetterOnly: true,
                     multiFirstLetter: false);
 
-                // 去除空格，例如："Z S H " → "ZSH"
-                return initials.Replace(" ", string.Empty);
+                // 去除方括号和空格，例如："[l][w][m]" → "LWM"
+                return initials
+                    .Replace("[", string.Empty)
+                    .Replace("]", string.Empty)
+                    .Replace(" ", string.Empty)
+                    .ToUpperInvariant();
             }
             catch
             {
