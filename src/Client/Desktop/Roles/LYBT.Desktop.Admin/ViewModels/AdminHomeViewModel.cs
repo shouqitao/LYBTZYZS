@@ -170,7 +170,9 @@ namespace LYBT.Desktop.Admin.ViewModels
         }
 
         /// <summary>
-        /// 加载当前用户信息 (Issue #1887-1892)
+        /// 加载当前用户信息
+        /// Issue #1887-1892: 个人信息修改
+        /// Issue #1909: 三角色体系统一认证
         /// </summary>
         private async void LoadCurrentUser()
         {
@@ -179,42 +181,39 @@ namespace LYBT.Desktop.Admin.ViewModels
                 var currentUser = await _authService.GetCurrentUserAsync();
                 if (currentUser != null && currentUser.Id != Guid.Empty)
                 {
-                    // 普通管理员用户
+                    // Issue #1909: 所有用户（包括SuperAdmin）都在Users表中
                     CurrentUserName = currentUser.RealName ?? currentUser.UserName ?? "管理员";
+                    // 不再需要IsSysAdmin标志，SuperAdmin也是普通用户，只是Role不同
                     IsSysAdmin = false;
                 }
                 else
                 {
-                    // sysadmin 系统管理员（虚拟用户）
-                    CurrentUserName = "系统管理员";
-                    IsSysAdmin = true;
+                    // 获取用户信息失败（不应该发生）
+                    Logger.LogWarning("无法获取当前用户信息，可能未登录");
+                    CurrentUserName = "未知用户";
+                    IsSysAdmin = false;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载当前用户信息失败");
-                CurrentUserName = "系统管理员";
-                IsSysAdmin = true;
+                CurrentUserName = "加载失败";
+                IsSysAdmin = false;
             }
         }
 
         /// <summary>
-        /// 执行修改个人信息命令 (Issue #1887-1892)
+        /// 执行修改个人信息命令
+        /// Issue #1887-1892: 个人信息修改功能
+        /// Issue #1909: SuperAdmin也可以修改个人信息
         /// </summary>
         private void ExecuteEditProfileCommand()
         {
             try
             {
-                // Issue #1887-1892: sysadmin 不允许修改个人信息
-                if (IsSysAdmin)
-                {
-                    Logger.LogWarning("sysadmin 不允许修改个人信息");
-                    return;
-                }
-
                 Logger.LogInformation("打开个人信息对话框");
 
-                // 打开 UserProfileDialog（不传递参数，普通模式）
+                // Issue #1909: 所有用户（包括SuperAdmin）都可以修改个人信息
                 _dialogService.ShowDialog("UserProfileDialog", null, result =>
                 {
                     if (result.Result == ButtonResult.OK)
@@ -232,26 +231,22 @@ namespace LYBT.Desktop.Admin.ViewModels
         }
 
         /// <summary>
-        /// 执行修改密码命令 (Issue #1887-1892)
+        /// 执行修改密码命令
+        /// Issue #1887-1892: 密码修改功能
+        /// Issue #1909: 统一密码修改流程（SuperAdmin也使用UserService）
         /// </summary>
         private void ExecuteChangePasswordCommand()
         {
             try
             {
-                Logger.LogInformation("打开系统管理员修改密码对话框");
+                Logger.LogInformation("打开修改密码对话框");
 
-                // 打开 ChangePasswordDialog，传递参数标识为 sysadmin 模式
-                var parameters = new DialogParameters
-                {
-                    { "IsSysAdmin", true }
-                };
-
-                _dialogService.ShowDialog("ChangePasswordDialog", parameters, result =>
+                // Issue #1909: 所有用户统一使用ChangePasswordDialog（不再传递IsSysAdmin参数）
+                _dialogService.ShowDialog("ChangePasswordDialog", null, result =>
                 {
                     if (result.Result == ButtonResult.OK)
                     {
-                        Logger.LogInformation("系统管理员密码修改成功");
-                        // 可选：显示成功提示
+                        Logger.LogInformation("密码修改成功");
                     }
                     else if (result.Result == ButtonResult.Cancel)
                     {

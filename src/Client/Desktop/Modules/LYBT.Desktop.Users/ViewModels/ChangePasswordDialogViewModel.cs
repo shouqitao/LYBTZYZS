@@ -127,31 +127,19 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             try
             {
-                // 判断是否为 sysadmin 模式
-                _isSysAdmin = parameters.GetValue<bool>("IsSysAdmin");
-
-                if (_isSysAdmin)
+                // Issue #1909: 所有用户（包括SuperAdmin）统一从SessionManager获取
+                var currentUser = _sessionManager?.CurrentUser;
+                if (currentUser == null)
                 {
-                    // sysadmin 模式：从配置读取用户名
-                    UserName = "sysadmin";
-                    _currentUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                }
-                else
-                {
-                    // 普通用户模式：从会话获取当前用户
-                    var currentUser = _sessionManager?.CurrentUser;
-                    if (currentUser == null)
-                    {
-                        Logger.LogError("SessionManager.CurrentUser 为空");
-                        return;
-                    }
-
-                    UserName = currentUser.UserName;
-                    _currentUserId = currentUser.Id;
+                    Logger.LogError("SessionManager.CurrentUser 为空，无法修改密码");
+                    return;
                 }
 
-                Logger.LogInformation("ChangePasswordDialog 打开，模式: {Mode}, 用户: {UserName}",
-                    _isSysAdmin ? "sysadmin" : "普通用户", UserName);
+                UserName = currentUser.UserName;
+                _currentUserId = currentUser.Id;
+
+                Logger.LogInformation("ChangePasswordDialog 打开，用户: {UserName} (ID: {UserId})",
+                    UserName, _currentUserId);
             }
             catch (Exception ex)
             {
@@ -199,85 +187,42 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 SetIsBusy(true, "正在修改密码...");
 
-                if (_isSysAdmin)
+                // Issue #1909: 所有用户（包括SuperAdmin）统一调用 UserRepository.ChangePasswordAsync
+                var request = new ChangePasswordRequest
                 {
-                    // sysadmin 模式：调用 ChangeSysAdminPasswordAsync
-                    var request = new ChangeSysAdminPassword
-                    {
-                        OldPassword = OldPassword,
-                        NewPassword = NewPassword
-                    };
+                    OldPassword = OldPassword,
+                    NewPassword = NewPassword
+                };
 
-                    var result = await _authService.ChangeSysAdminPasswordAsync(request);
+                var result = await _userRepository.ChangePasswordAsync(_currentUserId, request);
 
-                    if (result.IsSuccess)
-                    {
-                        Logger.LogInformation("sysadmin 密码修改成功，准备自动logout");
+                if (result.IsSuccess)
+                {
+                    Logger.LogInformation("用户 {UserName} 密码修改成功，准备自动logout", UserName);
 
-                        // ⭐ Issue #1906修复：调整执行顺序，先完成所有操作，最后关闭对话框
+                    // ⭐ Issue #1906修复：调整执行顺序，先完成所有操作，最后关闭对话框
 
-                        // 1. 自动logout（清除Server端和Client端的所有Token）
-                        await _authService.LogoutAsync();
+                    // 1. 自动logout（清除Server端和Client端的所有Token）
+                    await _authService.LogoutAsync();
 
-                        // 2. 先关闭对话框（避免对话框变空白）
-                        SetIsBusy(false);
-                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
+                    // 2. 先关闭对话框（避免对话框变空白）
+                    SetIsBusy(false);
+                    RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
 
-                        // 3. 导航到登录界面
-                        EventAggregator.GetEvent<PasswordChangedEvent>().Publish();
+                    // 3. 导航到登录界面
+                    EventAggregator.GetEvent<PasswordChangedEvent>().Publish();
 
-                        Logger.LogInformation("sysadmin 已关闭对话框并导航到登录界面");
+                    Logger.LogInformation("用户 {UserName} 已关闭对话框并导航到登录界面", UserName);
 
-                        // 4. 稍微延迟，确保对话框关闭和UI更新完成
-                        await Task.Delay(200);
+                    // 4. 稍微延迟，确保对话框关闭和UI更新完成
+                    await Task.Delay(200);
 
-                        // 5. 显示成功消息（此时只有登录界面和MessageBox）
-                        await ShowSuccessMessageAsync("密码修改成功！\n\n请使用新密码重新登录。");
-                    }
-                    else
-                    {
-                        Logger.LogWarning("sysadmin 密码修改失败: {Message}", result.Message);
-                    }
+                    // 5. 显示成功消息（此时只有登录界面和MessageBox）
+                    await ShowSuccessMessageAsync("密码修改成功！\n\n请使用新密码重新登录。");
                 }
                 else
                 {
-                    // 普通用户模式：调用 UserRepository.ChangePasswordAsync
-                    var request = new ChangePasswordRequest
-                    {
-                        OldPassword = OldPassword,
-                        NewPassword = NewPassword
-                    };
-
-                    var result = await _userRepository.ChangePasswordAsync(_currentUserId, request);
-
-                    if (result.IsSuccess)
-                    {
-                        Logger.LogInformation("用户 {UserName} 密码修改成功，准备自动logout", UserName);
-
-                        // ⭐ Issue #1906修复：调整执行顺序，先完成所有操作，最后关闭对话框
-
-                        // 1. 自动logout（清除Server端和Client端的所有Token）
-                        await _authService.LogoutAsync();
-
-                        // 2. 先关闭对话框（避免对话框变空白）
-                        SetIsBusy(false);
-                        RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
-
-                        // 3. 导航到登录界面
-                        EventAggregator.GetEvent<PasswordChangedEvent>().Publish();
-
-                        Logger.LogInformation("用户 {UserName} 已关闭对话框并导航到登录界面", UserName);
-
-                        // 4. 稍微延迟，确保对话框关闭和UI更新完成
-                        await Task.Delay(200);
-
-                        // 5. 显示成功消息（此时只有登录界面和MessageBox）
-                        await ShowSuccessMessageAsync("密码修改成功！\n\n请使用新密码重新登录。");
-                    }
-                    else
-                    {
-                        Logger.LogWarning("用户 {UserName} 密码修改失败: {Message}", UserName, result.Message);
-                    }
+                    Logger.LogWarning("用户 {UserName} 密码修改失败: {Message}", UserName, result.Message);
                 }
             }
             catch (Exception ex)
