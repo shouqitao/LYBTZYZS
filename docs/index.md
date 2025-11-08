@@ -140,7 +140,7 @@
 ### 常用操作快速入口
 
 | 我想... | 查阅文档 |
-|--------|---------|
+|--------|----------|
 | 添加新模块 | [Server端操作总览](how-to-guides/server/README.md) |
 | 创建新API | [WebAPI开发指南](how-to-guides/server/webapi-development.md) |
 | 开发新页面 | [Foundation层开发](how-to-guides/client/foundation-development.md) / [Presentation层开发](how-to-guides/client/presentation-development.md) |
@@ -369,6 +369,12 @@
 
 - **[重构计划 (2025-10-29)](reports/refactoring-plan-2025-10-29.md)**
   文档驱动重构计划、时间估算、风险评估
+
+- **[用户管理交互模式统一可行性分析 (2025-11-08)](reports/user-management-interaction-unification-feasibility-2025-11-08.md)**
+  Dialog vs Navigation模式对比、UI统一方案、工作量估算（22-25小时）
+
+- **[用户管理交互模式统一深度分析 (2025-11-08)](reports/user-management-interaction-unification-deep-analysis-2025-11-08.md)**
+  架构模式差异详细分析、代码级别迁移指南、UI样式转换方案、4个Sprint实施计划 ⭐⭐⭐
 
 ---
 
