@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Users.Events; // Issue #1927: 添加Events命名空间
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs; // Issue #1798: 添加Dialog服务
+using Prism.Services.Dialogs; // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Users.ViewModels
         // Issue #1785: 使用CommandHandler替代直接Repository访问
         private readonly UserCommandHandler _commandHandler;
 
-        // Issue #1798: Dialog服务用于打开用户表单对话框
+        // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
         private readonly IDialogService _dialogService;
 
         #endregion
@@ -133,7 +134,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         public UserManagementViewModel(
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
-            IDialogService dialogService, // Issue #1798: 注入DialogService
+            IDialogService dialogService, // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -144,7 +145,7 @@ namespace LYBT.Desktop.Users.ViewModels
             // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
-            // Issue #1798: 注入DialogService
+            // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化选项
@@ -157,6 +158,13 @@ namespace LYBT.Desktop.Users.ViewModels
 
             // 初始化用户特定命令
             InitializeUserCommands();
+
+            // Issue #1927: 订阅用户创建和更新事件
+            EventAggregator.GetEvent<UserCreatedEvent>().Subscribe(OnUserCreated);
+            EventAggregator.GetEvent<UserUpdatedEvent>().Subscribe(OnUserUpdated);
+
+            // Issue #1928: 订阅密码重置事件
+            EventAggregator.GetEvent<UserPasswordResetEvent>().Subscribe(OnUserPasswordReset);
 
             Logger.LogDebug("用户管理ViewModel已初始化");
         }
@@ -302,21 +310,8 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             Logger.LogDebug("执行添加新用户");
 
-            // Issue #1798: 使用UserFormDialog
-            var parameters = new DialogParameters
-            {
-                { "mode", "create" }
-            };
-
-            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    Logger.LogInformation("用户创建成功，刷新列表");
-                    // 修复：回调本身在UI线程，直接await刷新
-                    await SearchAsync();
-                }
-            });
+            // Issue #1927: 使用Navigation模式代替Dialog
+            NavigateTo("ContentRegion", "UserCreateView");
 
             return Task.CompletedTask;
         }
@@ -395,22 +390,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            // Issue #1798: 使用UserFormDialog
-            var parameters = new DialogParameters
+            // Issue #1927: 使用Navigation模式代替Dialog
+            var parameters = new NavigationParameters
             {
-                { "mode", "edit" },
-                { "userId", user.Id }
+                { "UserId", user.Id }
             };
-
-            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    Logger.LogInformation("用户编辑成功，刷新列表");
-                    // 修复：回调本身在UI线程，直接await刷新
-                    await SearchAsync();
-                }
-            });
+            NavigateTo("ContentRegion", "UserEditView", parameters);
         }
 
         /// <summary>
@@ -428,34 +413,43 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            await ExecuteSafelyAsync(() =>
+            await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogDebug("打开重置密码对话框, UserId: {UserId}, UserName: {UserName}", 
+                Logger.LogDebug("准备重置密码, UserId: {UserId}, UserName: {UserName}", 
                     user.Id, user.UserName);
 
-                // Issue #1911: 打开重置密码对话框
-                var parameters = new DialogParameters
-                {
-                    { "User", user }
-                };
+                // Issue #1928 (Sprint 2 优化): 重置密码改为直接重置到默认密码
+                // 确认是否重置
+                var confirmed = await ShowConfirmationAsync(
+                    $"确认重置用户 [{user.RealName ?? user.UserName}] 的密码吗？\n\n密码将被重置为默认密码：123456",
+                    "重置密码确认");
 
-                _dialogService.ShowDialog(
-                    "ResetPasswordDialog",
-                    parameters,
-                    result =>
-                    {
-                        if (result.Result == ButtonResult.OK)
-                        {
-                            Logger.LogInformation("重置密码对话框关闭（成功）, UserId: {UserId}", user.Id);
-                            // 刷新用户列表（可选）
-                            // await LoadUsersAsync();
-                        }
-                        else
-                        {
-                            Logger.LogDebug("重置密码对话框关闭（取消）, UserId: {UserId}", user.Id);
-                        }
-                    });
-                return Task.CompletedTask;
+                if (!confirmed)
+                {
+                    Logger.LogDebug("用户取消重置密码, UserId: {UserId}", user.Id);
+                    return;
+                }
+
+                // 调用 CommandHandler 重置密码
+                const string defaultPassword = "123456";
+                var result = await _commandHandler.ResetPasswordAsync(user.Id, defaultPassword);
+
+                if (result.success && result.response != null)
+                {
+                    Logger.LogInformation("重置密码成功, UserId: {UserId}, UserName: {UserName}", 
+                        user.Id, user.UserName);
+                    
+                    await ShowSuccessMessageAsync($"用户 [{user.RealName ?? user.UserName}] 的密码已重置为默认密码：123456");
+                    
+                    // 发布密码重置事件（如果其他地方需要监听）
+                    EventAggregator.GetEvent<UserPasswordResetEvent>().Publish(user);
+                }
+                else
+                {
+                    Logger.LogWarning("重置密码失败, UserId: {UserId}, ErrorMessage: {ErrorMessage}", 
+                        user.Id, result.errorMessage);
+                    ErrorMessage = result.errorMessage ?? "重置密码失败";
+                }
             }, "重置密码");
         }
 
@@ -582,6 +576,37 @@ namespace LYBT.Desktop.Users.ViewModels
             ClearFiltersCommand?.RaiseCanExecuteChanged();
             FirstPageCommand?.RaiseCanExecuteChanged();
             LastPageCommand?.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 事件处理 - Issue #1927
+
+        /// <summary>
+        /// 用户创建事件处理 - 刷新列表
+        /// </summary>
+        private void OnUserCreated(UserDto user)
+        {
+            Logger.LogInformation("接收到用户创建事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            _ = SearchAsync(); // 刷新列表
+        }
+
+        /// <summary>
+        /// 用户更新事件处理 - 刷新列表
+        /// </summary>
+        private void OnUserUpdated(UserDto user)
+        {
+            Logger.LogInformation("接收到用户更新事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            _ = SearchAsync(); // 刷新列表
+        }
+
+        /// <summary>
+        /// 用户密码重置事件处理 - Issue #1928
+        /// </summary>
+        private void OnUserPasswordReset(UserDto user)
+        {
+            Logger.LogInformation("接收到密码重置事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            StatusMessage = $"用户 {user.RealName} 的密码已重置";
         }
 
         #endregion

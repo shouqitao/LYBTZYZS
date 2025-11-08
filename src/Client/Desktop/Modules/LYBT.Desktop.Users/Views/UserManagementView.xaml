@@ -110,6 +110,30 @@
                                         Margin="4,0"
                                         Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}" />
+                                <Button Content="重置密码"
+                                        Style="{StaticResource WarningButton}"
+                                        Margin="4,0"
+                                        Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                                <Button Style="{StaticResource PrimaryButton}"
+                                        Margin="4,0"
+                                        Command="{Binding DataContext.ToggleUserStatusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Content>
+                                        <TextBlock>
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="启用" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Enabled">
+                                                            <Setter Property="Text" Value="禁用" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Button.Content>
+                                </Button>
                                 <Button Content="删除"
                                         Style="{StaticResource DangerButton}"
                                         Margin="4,0"
