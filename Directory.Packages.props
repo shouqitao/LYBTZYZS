@@ -34,6 +34,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.0" />
+    <PackageVersion Include="NPinyin" Version="0.2.6321.26573" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- 对象映射 - 使用兼容版本 -->
     <PackageVersion Include="AutoMapper" Version="12.0.1" />
