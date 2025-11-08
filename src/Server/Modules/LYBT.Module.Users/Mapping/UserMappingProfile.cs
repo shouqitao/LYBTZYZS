@@ -32,9 +32,10 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
 
-            // UserInputDto转用户实体
+            // UserInputDto转用户实体（创建和更新场景通用）
+            // Issue #1911: 修复重复映射配置导致UserName丢失的问题
             CreateMap<UserInputDto, User>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName)) // 映射Username到UserName
+                .ForMember(dest => dest.UserName, opt => opt.Condition(src => !string.IsNullOrEmpty(src.UserName))) // 创建时映射，更新时忽略（UserName为null）
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
                 .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
                 .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
@@ -43,23 +44,6 @@ namespace LYBT.Module.Users.Mapping
                 .ForMember(dest => dest.Remark, opt => opt.Ignore())
                 // 忽略 BaseEntity 审计字段
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
-
-            // UserInputDto转用户实体
-            CreateMap<UserInputDto, User>()
-                .ForMember(dest => dest.UserName, opt => opt.Ignore()) // 用户名不允许修改
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // 密码由业务逻辑处理
-                .ForMember(dest => dest.FailedLoginCount, opt => opt.Ignore())
-                .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-                .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 由业务逻辑自动生成
-                .ForMember(dest => dest.LastLoginTime, opt => opt.Ignore())
-                .ForMember(dest => dest.Remark, opt => opt.Ignore())
-                // 忽略 BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
