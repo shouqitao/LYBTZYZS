@@ -5,6 +5,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -255,7 +256,7 @@ namespace LYBT.Module.Users.Services
                 var entity = _mapper.Map<User>(dto);
 
                 // Issue #1911: 生成拼音码（基于RealName）
-                entity.PinYinCode = LYBT.Shared.Utilities.Text.PinYinHelper.GetPinYinCode(dto.RealName);
+                entity.PinYinCode = PinYinHelper.GetPinYinCode(dto.RealName);
 
                 // Issue #1262: 对密码进行哈希处理，如果未提供密码则使用默认密码
                 string passwordToHash;
@@ -318,12 +319,16 @@ namespace LYBT.Module.Users.Services
                 // 注意：UserInputDto不包含Username属性，用户名一旦创建不可更改
                 // 这也避免了用户后期尝试改为超级管理员用户名的风险
 
+                // Issue #1911: 保存原 RealName 用于比较
+                var oldRealName = entity.RealName;
                 _mapper.Map(dto, entity);
 
-                // Issue #1911: 更新拼音码（如果RealName有变化）
-                if (!string.IsNullOrWhiteSpace(dto.RealName))
+                // Issue #1911: 更新拼音码（仅当RealName发生变化时）
+                if (!string.IsNullOrWhiteSpace(dto.RealName) && dto.RealName != oldRealName)
                 {
-                    entity.PinYinCode = LYBT.Shared.Utilities.Text.PinYinHelper.GetPinYinCode(dto.RealName);
+                    entity.PinYinCode = PinYinHelper.GetPinYinCode(dto.RealName);
+                    _logger.LogDebug("RealName变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                        oldRealName, dto.RealName, entity.PinYinCode);
                 }
 
                 var result = await _repository.UpdateAsync(entity);
