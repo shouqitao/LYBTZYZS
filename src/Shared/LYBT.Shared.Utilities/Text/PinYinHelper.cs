@@ -1,12 +1,14 @@
 using System.Text;
+using hyjiacan.py4n;
 
 namespace LYBT.Shared.Utilities.Text
 {
     /// <summary>
-    /// 拼音码生成工具类 - 基于NPinyin库
+    /// 拼音码生成工具类 - 基于hyjiacan.pinyin4net库
     /// 生成汉字首字母拼音码用于快速搜索
     /// Issue #1911: 实现基础拼音码生成功能
-    /// Issue #1911 Bug修复: 使用NPinyin库替代不准确的Unicode区间映射
+    /// Issue #1911 Bug修复: 使用hyjiacan.pinyin4net库替代不准确的Unicode区间映射
+    /// hyjiacan.pinyin4net v4.1.1 原生支持.NET 8.0
     /// </summary>
     public static class PinYinHelper
     {
@@ -29,16 +31,22 @@ namespace LYBT.Shared.Utilities.Text
 
             try
             {
-                // 使用NPinyin库获取拼音首字母（准确且高效）
-                // GetInitials返回首字母，例如："张韶涵" → "ZSH"
-                var initials = NPinyin.Pinyin.GetInitials(text);
+                // 使用hyjiacan.pinyin4net获取拼音首字母
+                // firstLetterOnly: true → 仅返回首字母
+                // multiFirstLetter: false → 多音字取第一个读音
+                var initials = Pinyin4Net.GetPinyin(
+                    text,
+                    PinyinFormat.UPPERCASE,
+                    caseSpread: false,
+                    firstLetterOnly: true,
+                    multiFirstLetter: false);
 
-                // 转为大写并去除空格
-                return initials.ToUpperInvariant().Replace(" ", string.Empty);
+                // 去除空格，例如："Z S H " → "ZSH"
+                return initials.Replace(" ", string.Empty);
             }
             catch
             {
-                // 降级方案：如果NPinyin出错，使用简单的字符处理
+                // 降级方案：如果拼音库出错，使用简单的字符处理
                 return GetPinYinCodeFallback(text);
             }
         }
