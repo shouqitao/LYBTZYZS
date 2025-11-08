@@ -211,22 +211,14 @@ namespace LYBT.Desktop.Admin.ViewModels
         {
             try
             {
-                Logger.LogInformation("打开个人信息对话框");
+                Logger.LogInformation("导航到个人资料页面");
 
-                // Issue #1909: 所有用户（包括SuperAdmin）都可以修改个人信息
-                _dialogService.ShowDialog("UserProfileDialog", null, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        Logger.LogInformation("个人信息修改成功");
-                        // 刷新当前用户显示名称
-                        LoadCurrentUser();
-                    }
-                });
+                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+                NavigateTo("ContentRegion", "UserProfileView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "打开个人信息对话框失败");
+                Logger.LogError(ex, "导航到个人资料页面失败");
             }
         }
 
@@ -234,29 +226,20 @@ namespace LYBT.Desktop.Admin.ViewModels
         /// 执行修改密码命令
         /// Issue #1887-1892: 密码修改功能
         /// Issue #1909: 统一密码修改流程（SuperAdmin也使用UserService）
+        /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
         /// </summary>
         private void ExecuteChangePasswordCommand()
         {
             try
             {
-                Logger.LogInformation("打开修改密码对话框");
+                Logger.LogInformation("导航到修改密码页面");
 
-                // Issue #1909: 所有用户统一使用ChangePasswordDialog（不再传递IsSysAdmin参数）
-                _dialogService.ShowDialog("ChangePasswordDialog", null, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        Logger.LogInformation("密码修改成功");
-                    }
-                    else if (result.Result == ButtonResult.Cancel)
-                    {
-                        Logger.LogInformation("取消修改密码");
-                    }
-                });
+                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+                NavigateTo("ContentRegion", "ChangePasswordView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "打开修改密码对话框时发生异常");
+                Logger.LogError(ex, "导航到修改密码页面失败");
             }
         }
 

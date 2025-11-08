@@ -242,60 +242,34 @@ namespace LYBT.Desktop.Clinical.ViewModels
         {
             try
             {
-                Logger.LogInformation("打开个人资料对话框");
+                Logger.LogInformation("导航到个人资料页面");
 
-                // 打开 UserProfileDialog（不需要参数）
-                _dialogService.ShowDialog("UserProfileDialog", null, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        Logger.LogInformation("个人资料修改成功");
-                        // 刷新当前用户信息
-                        LoadCurrentUser();
-                    }
-                    else if (result.Result == ButtonResult.Cancel)
-                    {
-                        Logger.LogInformation("取消修改个人资料");
-                    }
-                });
+                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+                _regionManager.RequestNavigate("ContentRegion", "UserProfileView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "打开个人资料对话框时发生异常");
+                Logger.LogError(ex, "导航到个人资料页面时发生异常");
             }
         }
 
 
         /// <summary>
         /// 修改密码 (Issue #1887-1892)
+        /// Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
         /// </summary>
         private void ExecuteChangePasswordCommand()
         {
             try
             {
-                Logger.LogInformation("打开修改密码对话框");
+                Logger.LogInformation("导航到修改密码页面");
 
-                // 打开 ChangePasswordDialog，传递参数标识为普通用户模式
-                var parameters = new DialogParameters
-                {
-                    { "IsSysAdmin", false }
-                };
-
-                _dialogService.ShowDialog("ChangePasswordDialog", parameters, result =>
-                {
-                    if (result.Result == ButtonResult.OK)
-                    {
-                        Logger.LogInformation("密码修改成功");
-                    }
-                    else if (result.Result == ButtonResult.Cancel)
-                    {
-                        Logger.LogInformation("取消修改密码");
-                    }
-                });
+                // Issue #1929: Sprint 3 - 使用Navigation模式代替Dialog
+                _regionManager.RequestNavigate("ContentRegion", "ChangePasswordView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "打开修改密码对话框时发生异常");
+                Logger.LogError(ex, "导航到修改密码页面时发生异常");
             }
         }
 
