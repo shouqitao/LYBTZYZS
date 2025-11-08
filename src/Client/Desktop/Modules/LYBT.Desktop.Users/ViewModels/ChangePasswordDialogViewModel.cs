@@ -15,7 +15,8 @@ namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
     /// 修改密码对话框 ViewModel
-    /// Issue #1887-1892: 独立的密码修改对话框，支持 sysadmin 和普通用户
+    /// Issue #1887-1892: 独立的密码修改对话框
+    /// Issue #1909: 三角色体系统一认证（SuperAdmin/Admin/Doctor统一使用UserService）
     /// </summary>
     public class ChangePasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
@@ -23,7 +24,6 @@ namespace LYBT.Desktop.Users.ViewModels
         private readonly IUserRepository _userRepository;
         private readonly ISessionManager _sessionManager;
         private Guid _currentUserId;
-        private bool _isSysAdmin;
 
         #region 属性
 
@@ -71,7 +71,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region IDialogAware
 
-        public string Title => _isSysAdmin ? "修改管理员密码" : "修改密码";
+        public string Title => "修改密码";
 
         public event Action<IDialogResult>? RequestClose;
 

@@ -123,6 +123,15 @@ namespace LYBT.Desktop.Foundation.Security
                     ErrorMessage = "Token已过期"
                 });
             }
+            catch (SecurityTokenSignatureKeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Token签名密钥不匹配（可能使用了旧密钥签名的Token）");
+                return Task.FromResult(new TokenValidationResult
+                {
+                    IsValid = false,
+                    ErrorMessage = "Token签名密钥不匹配，请重新登录"
+                });
+            }
             catch (SecurityTokenInvalidSignatureException ex)
             {
                 _logger.LogError(ex, "Token签名无效");
