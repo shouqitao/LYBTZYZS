@@ -6,9 +6,11 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Security.Claims;
 using Xunit;
 
 namespace LYBT.Module.Users.Tests.Services
@@ -23,20 +25,50 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly Mock<IUserRepository> _repositoryMock;
         private readonly Mock<ILogger<UserService>> _loggerMock;
         private readonly Mock<IConfiguration> _configurationMock;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
 
         public UserServiceTests()
         {
             _repositoryMock = CreateMock<IUserRepository>();
             _loggerMock = CreateLoggerMock<UserService>();
             _configurationMock = CreateMock<IConfiguration>();
+            _httpContextAccessorMock = CreateMock<IHttpContextAccessor>();
 
             // 创建UserService实例，使用基类提供的Mapper
             _userService = new UserService(
                 _repositoryMock.Object,
                 Mapper,
                 _loggerMock.Object,
-                _configurationMock.Object);
+                _configurationMock.Object,
+                _httpContextAccessorMock.Object);
+
+            // Issue #1909: 默认设置为SuperAdmin角色，允许所有操作
+            SetupUserRole(UserRole.SuperAdmin);
         }
+
+        #region 辅助方法 - Issue #1909: 权限测试支持
+
+        /// <summary>
+        /// 设置当前用户角色（用于权限测试）
+        /// </summary>
+        private void SetupUserRole(UserRole role)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Role, role.ToString())
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuthType");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+
+            var httpContext = new DefaultHttpContext
+            {
+                User = claimsPrincipal
+            };
+
+            _httpContextAccessorMock.Setup(x => x.HttpContext).Returns(httpContext);
+        }
+
+        #endregion
 
         #region GetPagedAsync 测试
 
@@ -413,6 +445,24 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var targetUser = new User
+            {
+                Id = userId,
+                UserName = "testuser",
+                PasswordHash = "hash",
+                Role = UserRole.Doctor,
+                RealName = "Test User"
+            };
+
+            // Issue #1909: Mock GetByIdAsync to return the target user
+            _repositoryMock
+                .Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(targetUser);
+
+            // Issue #1909: Mock CountAsync for last-one protection check
+            _repositoryMock
+                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(2); // More than 1, so deletion is allowed
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))
@@ -433,6 +483,24 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var targetUser = new User
+            {
+                Id = userId,
+                UserName = "testuser",
+                PasswordHash = "hash",
+                Role = UserRole.Doctor,
+                RealName = "Test User"
+            };
+
+            // Issue #1909: Mock GetByIdAsync
+            _repositoryMock
+                .Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(targetUser);
+
+            // Issue #1909: Mock CountAsync
+            _repositoryMock
+                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(2);
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))
@@ -452,7 +520,25 @@ namespace LYBT.Module.Users.Tests.Services
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var targetUser = new User
+            {
+                Id = userId,
+                UserName = "testuser",
+                PasswordHash = "hash",
+                Role = UserRole.Doctor,
+                RealName = "Test User"
+            };
             var exception = new Exception("数据库错误");
+
+            // Issue #1909: Mock GetByIdAsync first
+            _repositoryMock
+                .Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(targetUser);
+
+            // Issue #1909: Mock CountAsync
+            _repositoryMock
+                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(2);
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))

@@ -97,9 +97,11 @@ namespace LYBT.Module.Users.Interfaces
         Task<ServiceResult> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);
 
         /// <summary>
-        /// 修改个人信息
+        /// 修改个人信息 (Issue #1888)
         /// </summary>
-        Task<ServiceResult> ChangeProfileAsync(Guid userId, string realName, string phoneNumber);
+        /// <param name="userId">用户ID</param>
+        /// <param name="dto">个人资料DTO</param>
+        Task<ServiceResult<UserDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
 
         #endregion
     }

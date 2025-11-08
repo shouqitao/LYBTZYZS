@@ -124,5 +124,62 @@ namespace LYBT.Desktop.Users.Repositories
         }
 
         #endregion
+
+        /// <summary>
+        /// 修改个人资料 (Issue #1891)
+        /// </summary>
+        public async Task<UserDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
+        {
+            try
+            {
+                _logger.LogInformation("修改个人资料: UserId={UserId}", userId);
+
+                var response = await _api.ChangeProfileAsync(userId, dto);
+
+                if (response.Success && response.Data != null)
+                {
+                    _logger.LogInformation("个人资料修改成功");
+                    return response.Data;
+                }
+
+                var errorMsg = response.Message ?? "修改个人资料失败";
+                _logger.LogWarning("修改个人资料失败: {Message}", errorMsg);
+                throw new InvalidOperationException(errorMsg);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修改个人资料时发生异常: UserId={UserId}", userId);
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// 修改密码 (Issue #1887-1892)
+        /// </summary>
+        public async Task<ServiceResult> ChangePasswordAsync(Guid userId, LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("修改密码: UserId={UserId}", userId);
+
+                var response = await _api.ChangePasswordAsync(userId, request);
+
+                if (response.Success)
+                {
+                    _logger.LogInformation("密码修改成功");
+                    return ServiceResult.Success();
+                }
+
+                var errorMsg = response.Message ?? "修改密码失败";
+                _logger.LogWarning("修改密码失败: {Message}", errorMsg);
+                return ServiceResult.Failure(errorMsg);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修改密码时发生异常: UserId={UserId}", userId);
+                return ServiceResult.Failure($"修改密码失败: {ex.Message}");
+            }
+        }
     }
 }

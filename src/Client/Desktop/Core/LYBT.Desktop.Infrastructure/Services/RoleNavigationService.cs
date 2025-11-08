@@ -24,19 +24,21 @@ namespace LYBT.Desktop.Infrastructure.Services
 
         /// <summary>
         /// 根据角色名称导航到对应的角色主页
+        /// Issue #1909: 三角色体系（SuperAdmin/Admin/Doctor）
         /// </summary>
-        /// <param name="roleName">角色名称（Doctor/Admin/Receptionist/Pharmacist）</param>
+        /// <param name="roleName">角色名称（SuperAdmin/Admin/Doctor）</param>
         public void NavigateToRoleHome(string roleName)
         {
             try
             {
                 var viewName = roleName switch
                 {
-                    "Doctor" => "ClinicalHomeView",
+                    "SuperAdmin" => "AdminHomeView",  // Issue #1909: SuperAdmin也导航到管理员主页
                     "Admin" => "AdminHomeView",
-                    // MVP后期扩展
-                    "Receptionist" => "ReceptionHomeView",
-                    "Pharmacist" => "PharmacyHomeView",
+                    "Doctor" => "ClinicalHomeView",
+                    // 旧角色保留兼容性（已过时，统一到Doctor）
+                    "Receptionist" => "ClinicalHomeView",
+                    "Pharmacist" => "ClinicalHomeView",
                     _ => throw new ArgumentException($"未知角色: {roleName}", nameof(roleName))
                 };
 

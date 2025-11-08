@@ -317,5 +317,84 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException<UserDto>(ex, "切换用户状态", new { UserId = id });
             }
         }
+
+        /// <summary>
+        /// 修改个人资料 (Issue #1889)
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <param name="dto">个人资料信息</param>
+        [HttpPut("{id:guid}/profile")]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<UserDto>>> ChangeProfile(
+            Guid id,
+            [FromBody] ChangeProfileDto dto)
+        {
+            try
+            {
+                // 验证用户ID
+                var guidValidationResult = ValidateGuid<UserDto>(id, "用户ID");
+                if (guidValidationResult != null) return guidValidationResult;
+
+                // 验证模型
+                var modelValidationResult = ValidateModel<UserDto>();
+                if (modelValidationResult != null) return modelValidationResult;
+
+                // 调用服务
+                var result = await _userService.ChangeProfileAsync(id, dto);
+
+                if (result.IsSuccess)
+                {
+                    LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
+                }
+
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException<UserDto>(ex, "修改个人资料", new { UserId = id, ProfileData = dto });
+            }
+        }
+
+
+        /// <summary>
+        /// 用户修改密码 (Issue #1887-1892)
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        /// <param name="request">修改密码请求</param>
+        [HttpPut("{id:guid}/change-password")]
+        [ProducesResponseType(typeof(ApiResponse), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse>> ChangePassword(
+            Guid id,
+            [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
+        {
+            try
+            {
+                // 验证用户ID
+                var guidValidationResult = ValidateGuid(id, "用户ID");
+                if (guidValidationResult != null) return guidValidationResult;
+
+                // 验证模型
+                var modelValidationResult = ValidateModel();
+                if (modelValidationResult != null) return modelValidationResult;
+
+                // 调用服务
+                var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
+
+                if (result.IsSuccess)
+                {
+                    LogOperation("修改密码", new { UserId = id }, id);
+                }
+
+                return HandleServiceResult(result, "密码修改成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "修改密码", new { UserId = id });
+            }
+        }
     }
 }

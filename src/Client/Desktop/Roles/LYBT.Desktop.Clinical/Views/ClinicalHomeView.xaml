@@ -20,7 +20,37 @@
                           FontSize="18"
                           Foreground="#666"
                           HorizontalAlignment="Center"
-                          Margin="0,0,0,40" />
+                          Margin="0,0,0,20" />
+
+                <!-- 用户信息与操作区域 (Issue #1887-1891) -->
+                <Border Background="White"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20,15"
+                        Margin="0,0,0,30"
+                        HorizontalAlignment="Center"
+                        MinWidth="400">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="👤" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrentUserName, FallbackValue='医生'}"
+                                  FontSize="16"
+                                  FontWeight="SemiBold"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,20,0"/>
+                        <!-- Issue #1887-1892: 独立的修改信息和修改密码按钮 -->
+                        <Button Content="修改个人信息"
+                                Command="{Binding EditProfileCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                Padding="15,8"
+                                Margin="0,0,10,0"/>
+                        <Button Content="修改密码"
+                                Command="{Binding ChangePasswordCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                Padding="15,8"
+                                Margin="0"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- 上层：主卡片 + 统计卡片 -->
                 <Grid>

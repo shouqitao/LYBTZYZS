@@ -32,9 +32,9 @@ namespace LYBT.Infrastructure.Data.Configurations
             // 配置并发控制字段
             entity.Property(u => u.RowVersion).IsRowVersion().IsConcurrencyToken();
 
-            // Issue #1074: 移除sysadmin种子数据
-            // 超级管理员通过AdminSecrets表认证，不应存在于Users表中
-            // 保持Users表仅用于业务用户，确保架构边界清晰
+            // Issue #1909: 三角色体系 - SuperAdmin/Admin/Doctor统一存储在Users表
+            // SuperAdmin通过Role=100标识，初始化时通过迁移脚本创建
+            // 所有用户（包括SuperAdmin）统一使用Users表，简化认证流程
         }
     }
 }

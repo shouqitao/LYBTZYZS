@@ -211,10 +211,6 @@ public partial class App : PrismApplication
         _splashScreen?.UpdateStatus("正在初始化核心服务...");
         await _bootstrapper!.InitializeCoreServicesAsync();
 
-        // Issue #1865: Token清理逻辑 - 启动时清除过期Token
-        _splashScreen?.UpdateStatus("正在验证本地认证信息...");
-        await CleanupExpiredTokensAsync();
-
         // Issue #1823: API健康检查前置 - 避免登录界面延迟
         _splashScreen?.UpdateStatus("正在检查API连接...");
         var appStateService = Container.Resolve<IApplicationStateService>();
@@ -230,44 +226,6 @@ public partial class App : PrismApplication
         _performanceMonitor?.StartStage("应用预热");
         _splashScreen?.UpdateStatus("正在预热应用程序...");
         await _bootstrapper!.InitializeApplicationWarmupAsync();
-    }
-
-    /// <summary>
-    /// 清理过期的本地Token
-    /// Issue #1865: Token认证安全重构 - 启动时清理过期Token
-    /// </summary>
-    private async Task CleanupExpiredTokensAsync()
-    {
-        try
-        {
-            var tokenStorage = Container.Resolve<ITokenStorageService>();
-            var tokenValidator = Container.Resolve<ITokenValidator>();
-            var logger = Container.Resolve<ILogger<App>>();
-
-            var token = await tokenStorage.GetTokenAsync();
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                var validationResult = await tokenValidator.ValidateTokenAsync(token);
-
-                if (!validationResult.IsValid)
-                {
-                    logger.LogInformation("检测到过期或无效的本地Token，正在清除: {ErrorMessage}",
-                        validationResult.ErrorMessage);
-                    await tokenStorage.ClearAuthenticationAsync();
-                }
-                else
-                {
-                    logger.LogDebug("本地Token验证通过");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            var logger = Container.Resolve<ILogger<App>>();
-            logger.LogWarning(ex, "Token清理过程发生错误");
-            // 不中断启动流程
-        }
     }
 
     /// <summary>

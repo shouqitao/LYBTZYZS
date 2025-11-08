@@ -113,49 +113,9 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 修改系统管理员密码
-        /// </summary>
-        /// <param name="request">修改密码请求</param>
-        /// <returns>修改结果</returns>
-        [HttpPost("changeSysAdminPassword")]
-        [Authorize(Roles = "Admin")]  // 仅管理员可访问
-        public async Task<ActionResult<LYBT.Shared.Models.Contracts.Common.ApiResponse>> ChangeSysAdminPasswordAsync([FromBody] ChangeSysAdminPassword request)
-        {
-            try
-            {
-                // 参数验证
-                var validation = ValidateModel();
-                if (validation != null)
-                {
-                    return validation;
-                }
-
-                if (request == null)
-                {
-                    return ValidationFail("修改密码请求不能为空");
-                }
-
-                if (string.IsNullOrWhiteSpace(request.NewPassword))
-                {
-                    return ValidationFail("新密码不能为空");
-                }
-
-                // 简化密码验证：仅检查长度（适度设计原则）
-                if (request.NewPassword.Length < 6)
-                {
-                    return ValidationFail("新密码长度不能少于6位");
-                }
-
-                // 调用认证服务修改密码
-                var result = await _authService.ChangeSysAdminPasswordAsync(request);
-                return HandleBoolServiceResult(result, "密码修改成功");
-            }
-            catch (Exception ex)
-            {
-                return HandleException(ex, "修改密码", request);
-            }
-        }
+        // Issue #1909: changeSysAdminPassword端点已移除
+        // SuperAdmin现在统一使用UsersController.ChangePassword进行密码修改
+        // 通过三角色权限控制确保只有具有相应权限的用户可以修改密码
 
         /// <summary>
         /// 刷新访问令牌 - Issue #1838

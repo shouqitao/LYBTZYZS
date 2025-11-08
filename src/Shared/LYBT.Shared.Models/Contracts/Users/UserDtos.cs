@@ -236,15 +236,11 @@ namespace LYBT.Shared.Models.Contracts.Users
     }
 
     /// <summary>
-    /// 修改个人资料DTO
+    /// 修改个人资料DTO (Issue #1887: 简化为MVP必需字段)
+    /// UserId从路由参数获取，Email/Avatar/Bio暂不支持修改
     /// </summary>
     public class ChangeProfileDto
     {
-        /// <summary>用户ID</summary>
-        [Required(ErrorMessage = "用户ID不能为空")]
-        [DisplayName("用户ID")]
-        public Guid UserId { get; set; }
-
         /// <summary>真实姓名</summary>
         [Required(ErrorMessage = "真实姓名不能为空")]
         [StringLength(50, ErrorMessage = "真实姓名长度不能超过50个字符")]
@@ -256,22 +252,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         [StringLength(20, ErrorMessage = "电话号码长度不能超过20个字符")]
         [DisplayName("电话号码")]
         public string? PhoneNumber { get; set; }
-
-        /// <summary>邮箱</summary>
-        [EmailAddress(ErrorMessage = "邮箱格式不正确")]
-        [StringLength(100, ErrorMessage = "邮箱长度不能超过100个字符")]
-        [DisplayName("邮箱")]
-        public string? Email { get; set; }
-
-        /// <summary>头像URL</summary>
-        [StringLength(500, ErrorMessage = "头像URL长度不能超过500个字符")]
-        [DisplayName("头像")]
-        public string? Avatar { get; set; }
-
-        /// <summary>个人简介</summary>
-        [StringLength(1000, ErrorMessage = "个人简介长度不能超过1000个字符")]
-        [DisplayName("个人简介")]
-        public string? Bio { get; set; }
     }
 
     /// <summary>

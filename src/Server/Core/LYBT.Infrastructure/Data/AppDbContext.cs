@@ -36,8 +36,7 @@ namespace LYBT.Infrastructure.Data
         // 用户管理
         public DbSet<User> Users { get; set; }
 
-        // 管理员密钥
-        public DbSet<AdminSecretModel> AdminSecrets { get; set; }
+        // Issue #1909: AdminSecrets表已移除，超级管理员已统一到Users表（Role=SuperAdmin）
 
         // 认证管理
         public DbSet<AuthSession> AuthSessions { get; set; }

@@ -28,8 +28,9 @@ public static class ApiServiceCollectionExtensions
             // 在响应头中报告支持的API版本
             options.ReportApiVersions = true;
 
-            // MVP阶段：移除ApiVersionReader配置，使用默认行为
-            // 原因：只有v1.0，6-12个月内无v2.0计划，3种读取方式（QueryString/Header/UrlSegment）属过度设计
+            // MVP阶段：仅使用URL路径版本读取器
+            // Issue #1887-1892 修复：必须指定UrlSegmentApiVersionReader才能正确解析URL中的v1
+            options.ApiVersionReader = new Asp.Versioning.UrlSegmentApiVersionReader();
         }).AddMvc().AddApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV";

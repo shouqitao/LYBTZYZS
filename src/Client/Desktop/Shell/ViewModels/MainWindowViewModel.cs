@@ -245,6 +245,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private void InitializeEvents()
     {
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
+        EventAggregator.GetEvent<PasswordChangedEvent>().Subscribe(OnPasswordChanged); // Issue #1906
         _navigationManager.SubscribeToRegionCollection();
     }
 
@@ -346,6 +347,28 @@ public class MainWindowViewModel : UnifiedViewModelBase
         {
             await EnsureWorkstationModulesLoaded(user);
             await Application.Current.Dispatcher.InvokeAsync(() => LoadMainContent());
+        });
+    }
+
+    /// <summary>
+    /// 密码修改成功事件处理 - Issue #1906
+    /// 当用户修改密码后，自动导航到登录界面
+    /// </summary>
+    private void OnPasswordChanged()
+    {
+        Logger.LogInformation("收到密码修改成功事件，导航到登录界面");
+
+        // 使用Dispatcher确保在UI线程执行
+        Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            // Issue #1906修复：必须先更新UI状态，才能显示LoginRegion
+            CurrentUser = null;
+            IsLoggedIn = false;
+            Title = "凌隐宝堂中医诊所诊疗系统";
+
+            // 清理界面并显示登录界面
+            _navigationManager.ClearContentRegion();
+            _navigationManager.ShowLoginDialog();
         });
     }
 

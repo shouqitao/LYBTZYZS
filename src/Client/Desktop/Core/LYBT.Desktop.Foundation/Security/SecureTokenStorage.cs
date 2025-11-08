@@ -1,45 +1,55 @@
 using LYBT.Shared.Models.Contracts.Auth;
 using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 
 namespace LYBT.Desktop.Foundation.Security
 {
     /// <summary>
-    /// 安全Token存储实现 - 使用Windows DPAPI加密存储
+    /// 安全Token存储实现 - 内存存储（Session级别）
     /// </summary>
     /// <remarks>
-    /// Issue #1862: Token认证安全重构 - 使用DPAPI加密存储
+    /// Issue #1907: Token改为内存存储 - 符合医疗系统安全要求
     ///
-    /// 设计要点：
-    /// 1. 使用Windows DPAPI（ProtectedData.Protect）加密Token
-    /// 2. 保护范围：CurrentUser级别
-    /// 3. 存储路径：%LOCALAPPDATA%\LYBTZYZS\tokens.dat
-    /// 4. 降级策略：DPAPI失败时降级为明文存储并记录警告
+    /// 设计原则：
+    /// 1. Token = 会话级数据（Session Token），应用关闭即失效
+    /// 2. 存储方式：进程内存（不持久化到磁盘）
+    /// 3. 生命周期：应用启动 → 用户登录 → 应用退出
+    /// 4. 安全原则：数据安全高于方便
+    ///
+    /// 医疗系统特殊要求：
+    /// - 每次启动必须输入密码（合规性要求）
+    /// - 多人共享工作站安全（患者隐私保护）
+    /// - 审计追溯完整（每次登录可追踪）
+    /// - 进程结束自动清除（任何退出方式都安全）
+    ///
+    /// Token作用：
+    /// - 登录后提高业务流畅性（API请求无需重复密码）
+    /// - 30分钟内自动刷新（无需重新输入密码）
+    /// - 不是持久化认证凭证（不支持自动登录）
     /// </remarks>
     public class SecureTokenStorage : ITokenStorage
     {
         private readonly ILogger<SecureTokenStorage> _logger;
-        private readonly string _storageFilePath;
+        
+        // ⭐ 内存字段：Session级Token（应用关闭即失效）
+        private LoginResponse? _sessionToken;
 
         public SecureTokenStorage(ILogger<SecureTokenStorage> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            // 设置存储路径：%LOCALAPPDATA%\LYBTZYZS\tokens.dat
-            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var lybtFolder = Path.Combine(appDataPath, "LYBTZYZS");
-            _storageFilePath = Path.Combine(lybtFolder, "tokens.dat");
-
-            // 确保目录存在
-            Directory.CreateDirectory(lybtFolder);
+            
+            _logger.LogDebug("SecureTokenStorage 初始化（内存存储模式）");
         }
 
         /// <summary>
-        /// 保存Token到加密存储
+        /// 保存Token到内存（Session级别）
         /// </summary>
+        /// <remarks>
+        /// Token仅存储在进程内存中，应用退出后自动清除（包括：
+        /// - 正常退出：用户点击关闭
+        /// - 异常退出：应用崩溃、强制结束、断电
+        /// 
+        /// 操作系统保证：进程结束 → 内存自动回收 → Token自动清除
+        /// </remarks>
         public async Task SaveTokenAsync(LoginResponse loginResponse)
         {
             if (loginResponse == null)
@@ -47,151 +57,52 @@ namespace LYBT.Desktop.Foundation.Security
                 throw new ArgumentNullException(nameof(loginResponse));
             }
 
-            try
-            {
-                // 序列化为JSON
-                var json = JsonSerializer.Serialize(loginResponse, new JsonSerializerOptions
-                {
-                    WriteIndented = false,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-
-                // 转换为字节数组
-                var plainBytes = Encoding.UTF8.GetBytes(json);
-
-                // 使用DPAPI加密
-                var encryptedBytes = ProtectedData.Protect(
-                    plainBytes,
-                    null,
-                    DataProtectionScope.CurrentUser);
-
-                // 写入加密文件
-                await File.WriteAllBytesAsync(_storageFilePath, encryptedBytes);
-
-                _logger.LogDebug("Token已加密存储到 {FilePath}", _storageFilePath);
-            }
-            catch (CryptographicException ex)
-            {
-                // 降级策略：DPAPI加密失败，降级为明文存储
-                _logger.LogWarning(ex, "DPAPI加密失败，降级为明文存储。请检查Windows用户配置文件是否正常。");
-
-                // 明文存储
-                var json = JsonSerializer.Serialize(loginResponse, new JsonSerializerOptions
-                {
-                    WriteIndented = false,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-
-                await File.WriteAllTextAsync(_storageFilePath, json, Encoding.UTF8);
-
-                _logger.LogWarning("Token已以明文形式存储，存在安全风险");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "保存Token时发生错误");
-                throw;
-            }
+            _sessionToken = loginResponse;
+            
+            _logger.LogDebug("Token已保存到内存（Session级别，应用退出即失效）");
+            
+            await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 从加密存储加载Token
+        /// 从内存加载Token
         /// </summary>
+        /// <remarks>
+        /// 仅在当前应用会话中有效。
+        /// 应用重启后返回null（必须重新登录）。
+        /// </remarks>
         public async Task<LoginResponse?> LoadTokenAsync()
         {
-            try
+            if (_sessionToken != null)
             {
-                // 检查文件是否存在
-                if (!File.Exists(_storageFilePath))
-                {
-                    _logger.LogDebug("Token存储文件不存在: {FilePath}", _storageFilePath);
-                    return null;
-                }
-
-                // 读取加密文件
-                var encryptedBytes = await File.ReadAllBytesAsync(_storageFilePath);
-
-                if (encryptedBytes == null || encryptedBytes.Length == 0)
-                {
-                    _logger.LogWarning("Token存储文件为空");
-                    return null;
-                }
-
-                try
-                {
-                    // 尝试使用DPAPI解密
-                    var plainBytes = ProtectedData.Unprotect(
-                        encryptedBytes,
-                        null,
-                        DataProtectionScope.CurrentUser);
-
-                    // 转换为JSON字符串
-                    var json = Encoding.UTF8.GetString(plainBytes);
-
-                    // 反序列化
-                    var loginResponse = JsonSerializer.Deserialize<LoginResponse>(json, new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                    });
-
-                    _logger.LogDebug("Token已从加密存储加载");
-                    return loginResponse;
-                }
-                catch (CryptographicException ex)
-                {
-                    // 尝试以明文方式读取（降级模式）
-                    _logger.LogWarning(ex, "DPAPI解密失败，尝试以明文方式读取");
-
-                    var json = Encoding.UTF8.GetString(encryptedBytes);
-                    var loginResponse = JsonSerializer.Deserialize<LoginResponse>(json, new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                    });
-
-                    if (loginResponse != null)
-                    {
-                        _logger.LogWarning("Token以明文形式读取成功，建议重新登录以使用加密存储");
-                        return loginResponse;
-                    }
-
-                    throw;
-                }
+                _logger.LogDebug("从内存读取Token（Session有效）");
             }
-            catch (JsonException ex)
+            else
             {
-                _logger.LogError(ex, "Token反序列化失败，数据可能已损坏");
-                return null;
+                _logger.LogDebug("内存中无Token（需要登录）");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "加载Token时发生错误");
-                return null;
-            }
+            
+            return await Task.FromResult(_sessionToken);
         }
 
         /// <summary>
-        /// 清除加密存储中的Token
+        /// 清除内存中的Token
         /// </summary>
+        /// <remarks>
+        /// 用于：
+        /// - 用户主动logout
+        /// - 密码修改后强制重新登录
+        /// - Token验证失败时清除
+        /// 
+        /// 注：应用退出时无需调用，进程结束会自动清除内存。
+        /// </remarks>
         public async Task ClearTokenAsync()
         {
-            try
-            {
-                if (File.Exists(_storageFilePath))
-                {
-                    File.Delete(_storageFilePath);
-                    _logger.LogDebug("Token存储文件已删除: {FilePath}", _storageFilePath);
-                }
-                else
-                {
-                    _logger.LogDebug("Token存储文件不存在，无需删除");
-                }
-
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "清除Token存储时发生错误");
-                throw;
-            }
+            _sessionToken = null;
+            
+            _logger.LogDebug("Token已从内存清除");
+            
+            await Task.CompletedTask;
         }
     }
 }

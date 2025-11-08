@@ -39,13 +39,17 @@ namespace LYBT.Shared.Models.Enums
     }
 
     /// <summary>
-    /// 用户角色枚举 - 统一为 Doctor 主角色模式（Admin/Doctor）
+    /// 用户角色枚举 - 三角色体系（SuperAdmin/Admin/Doctor）
+    /// Issue #1909: 重构为三角色体系以解决权限管理严谨性问题
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum UserRole
     {
+        /// <summary>超级管理员（最高权限，可以管理Admin，系统初始化创建）</summary>
+        [Description("超级管理员")]
+        SuperAdmin = 100,
 
-        /// <summary>管理员（系统管理、用户管理、系统配置）</summary>
+        /// <summary>管理员（系统管理、用户管理、系统配置，可以管理Doctor但不能管理Admin）</summary>
         [Description("管理员")]
         Admin = 10,
 

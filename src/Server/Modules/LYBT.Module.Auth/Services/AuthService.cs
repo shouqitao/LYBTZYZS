@@ -49,68 +49,12 @@ namespace LYBT.Module.Auth.Services
             _auditService = auditService; // Issue #1872
         }
 
-        #region 超级管理员认证
-
-        /// <summary>
-        /// 检查是否为超级管理员凭据
-        /// 超级管理员不在Users表中，密码哈希独立存储在AdminSecrets表
-        /// 用户名从配置文件读取，不存储在数据库中，防止SQL注入后暴露账户名
-        /// </summary>
-        private async Task<bool> IsSuperAdminCredentials(string username, string password, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                // 从配置获取超级管理员用户名
-                // Issue #1761 Phase 3.1: 配置扁平化后路径调整
-                var configUserName = _configuration["Lybt:SystemAdmin:UserName"];
-                if (string.IsNullOrEmpty(configUserName))
-                {
-                    _logger.LogWarning("配置中未找到超级管理员用户名");
-                    return false;
-                }
-
-                // 验证用户名是否匹配
-                if (!string.Equals(username, configUserName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // 从AdminSecrets表获取超级管理员密码哈希
-                var adminSecret = await _dbContext.AdminSecrets.FirstOrDefaultAsync(cancellationToken);
-                if (adminSecret == null)
-                {
-                    _logger.LogWarning("AdminSecrets表为空，超级管理员未初始化");
-                    return false;
-                }
-
-                // 使用 BCrypt 验证密码（与普通用户一致）
-                bool isValid = BCrypt.Net.BCrypt.Verify(password, adminSecret.PasswordHash);
-
-                if (isValid)
-                {
-                    _logger.LogInformation("超级管理员登录成功");
-                }
-                else
-                {
-                    _logger.LogWarning("超级管理员认证失败：密码错误");
-                }
-
-                return isValid;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证超级管理员凭据时发生错误");
-                return false;
-            }
-        }
-
-        #endregion
-
         #region 核心认证操作
 
         /// <summary>
-        /// 验证用户凭据
+        /// 验证用户凭据（统一认证）
         /// Issue #1008: 改为直接使用IUserRepository和BCrypt验证
+        /// Issue #1909: 三角色统一认证（SuperAdmin/Admin/Doctor）
         /// </summary>
         public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
@@ -119,30 +63,21 @@ namespace LYBT.Module.Auth.Services
 
             try
             {
-                // 首先检查是否是超级管理员登录
-                if (await IsSuperAdminCredentials(request.UserName, request.Password, cancellationToken))
-                {
-                    _logger.LogInformation("超级管理员认证成功 [用户名: {UserName}] [时间: {Timestamp}]",
-                    request.UserName, DateTime.UtcNow);
-                    // 返回特殊的超级管理员标识
-                    return ServiceResult<string>.Success("SUPER_ADMIN:" + request.UserName);
-                }
-
-                // 普通用户认证流程 - 直接调用Repository
+                // 统一认证流程 - 所有用户（包括SuperAdmin）都从Users表验证
                 var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                 if (userEntity == null)
                     return ServiceResult<string>.Failure("用户名或密码错误");
 
-                // 直接使用BCrypt验证密码
+                // 使用BCrypt验证密码
                 if (BCrypt.Net.BCrypt.Verify(request.Password, userEntity.PasswordHash))
                 {
-                    _logger.LogInformation("用户认证成功 [用户名: {UserName}] [时间: {Timestamp}]",
-                    request.UserName, DateTime.UtcNow);
+                    _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
+                        request.UserName, userEntity.Role, DateTime.UtcNow);
                     return ServiceResult<string>.Success(userEntity.Id.ToString());
                 }
 
                 _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: 密码错误] [时间: {Timestamp}]",
-                request.UserName, DateTime.UtcNow);
+                    request.UserName, DateTime.UtcNow);
                 return ServiceResult<string>.Failure("用户名或密码错误");
             }
             catch (Exception ex)
@@ -152,22 +87,16 @@ namespace LYBT.Module.Auth.Services
             }
         }
 
-        /// <summary>
-        /// 修改系统管理员密码
-        /// </summary>
-        public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
-        {
-            // 简化实现：暂不支持此功能
-            await Task.CompletedTask;
-            return ServiceResult<bool>.Failure("系统管理员密码修改功能暂未实现");
-        }
+        // Issue #1909: ChangeSysAdminPasswordAsync方法已移除
+        // SuperAdmin现在统一使用UserService.ChangePasswordAsync进行密码修改
 
         #endregion 核心认证操作
 
         #region 认证流程操作
 
         /// <summary>
-        /// 用户登录
+        /// 用户登录（统一流程）
+        /// Issue #1909: 三角色统一登录流程（SuperAdmin/Admin/Doctor）
         /// </summary>
         public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
@@ -188,125 +117,60 @@ namespace LYBT.Module.Auth.Services
                     return ServiceResult<LoginResponse>.Failure(credentialsResult.Message ?? "凭据验证失败");
                 }
 
-                LoginResponse response;
+                // 统一用户登录流程（包括SuperAdmin） - 所有角色都从Users表获取
+                var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
+                if (userEntity == null)
+                    return ServiceResult<LoginResponse>.Failure("获取用户信息失败");
 
-                // 检查是否是超级管理员
-                if (credentialsResult.Data != null && credentialsResult.Data.StartsWith("SUPER_ADMIN:"))
+                var userDto = _mapper.Map<UserDto>(userEntity);
+
+                // 确定用户类型（SuperAdmin特殊处理UserType）
+                string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
+
+                // 生成JWT令牌
+                var token = _jwtService.GenerateToken(
+                    userDto.Id.ToString(),
+                    userDto.UserName,
+                    userDto.Role,
+                    userType); // Issue #1909: 根据角色设置正确的user_type claim
+
+                // Issue #1838: 生成并存储RefreshToken
+                var refreshToken = GenerateRefreshToken();
+                var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
+                var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
+
+                var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
                 {
-                    // 超级管理员登录
-                    var sysAdminUsername = credentialsResult.Data.Substring("SUPER_ADMIN:".Length);
+                    Token = refreshToken,
+                    UserId = userDto.Id,
+                    UserType = userType, // Issue #1909: 根据角色设置用户类型
+                    Jti = Guid.NewGuid().ToString(),
+                    ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
+                    FamilyId = Guid.NewGuid().ToString() // 新家族ID
+                };
+                _dbContext.RefreshTokens.Add(refreshTokenRecord);
+                await _dbContext.SaveChangesAsync();
 
-                    // 生成超级管理员专用的JWT令牌
-                    var token = _jwtService.GenerateToken(
-                        "00000000-0000-0000-0000-000000000001", // 超级管理员特殊ID（对应AdminSecrets表）
-                        sysAdminUsername,
-                        UserRole.Admin, // 使用Admin角色，但通过特殊ID区分
-                        new Dictionary<string, string>
-                        {
-                            { "IsSuperAdmin", "true" },
-                            { "AuthSource", "AdminSecrets" }
-                        },
-                        "superadmin"); // Issue #1861: 标记为超级管理员类型
-
-                    // Issue #1838: 超级管理员也生成RefreshToken
-                    var sysAdminRefreshToken = GenerateRefreshToken();
-                    var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
-                    var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
-
-                    // 存储RefreshToken（超级管理员使用特殊的UserId）
-                    var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
-                    {
-                        Token = sysAdminRefreshToken,
-                        UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"), // 超级管理员固定ID
-                        UserType = "superadmin", // Issue #1861: 标记为超级管理员
-                        Jti = Guid.NewGuid().ToString(),
-                        ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
-                        FamilyId = Guid.NewGuid().ToString() // 新家族ID
-                    };
-                    _dbContext.RefreshTokens.Add(refreshTokenRecord);
-                    await _dbContext.SaveChangesAsync();
-
-                    response = new LoginResponse
-                    {
-                        Token = token,
-                        User = new UserDto
-                        {
-                            Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), // 超级管理员固定ID
-                            UserName = sysAdminUsername,
-                            RealName = "系统超级管理员",
-                            Role = UserRole.Admin,
-                            Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com"
-                        },
-                        RefreshToken = sysAdminRefreshToken, // Issue #1838: 返回RefreshToken
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
-                    };
-
-                    // Issue #1872: 记录超级管理员登录成功审计日志
-                    await _auditService.LogAsync(new SecurityAuditEvent
-                    {
-                        EventType = "Login",
-                        UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        UserType = "superadmin",
-                        UserName = sysAdminUsername,
-                        Success = true
-                    });
-
-                    _logger.LogInformation("超级管理员登录成功（用户名已隐藏）");
-                }
-                else
+                var response = new LoginResponse
                 {
-                    // 普通用户登录流程 - Issue #1008: 改为直接调用Repository
-                    var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
-                    if (userEntity == null)
-                        return ServiceResult<LoginResponse>.Failure("获取用户信息失败");
+                    Token = token,
+                    User = userDto,
+                    RefreshToken = refreshToken, // Issue #1838: 返回RefreshToken
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
+                };
 
-                    var userDto = _mapper.Map<UserDto>(userEntity);
+                // Issue #1872: 记录登录成功审计日志
+                await _auditService.LogAsync(new SecurityAuditEvent
+                {
+                    EventType = "Login",
+                    UserId = userDto.Id,
+                    UserType = userType,
+                    UserName = userDto.UserName,
+                    Success = true
+                });
 
-                    // 生成JWT令牌
-                    var token = _jwtService.GenerateToken(
-                        userDto.Id.ToString(),
-                        userDto.UserName,
-                        userDto.Role,
-                        "user"); // Issue #1861: 明确标记为普通用户类型
-
-                    // Issue #1838: 生成并存储RefreshToken
-                    var refreshToken = GenerateRefreshToken();
-                    var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
-                    var tokenExpireMinutes = _configuration.GetValue<int?>("Lybt:Jwt:ExpireMinutes") ?? 15;
-
-                    var refreshTokenRecord = new LYBT.Entities.Auth.RefreshToken
-                    {
-                        Token = refreshToken,
-                        UserId = userDto.Id,
-                        UserType = "user", // Issue #1861: 标记为普通用户
-                        Jti = Guid.NewGuid().ToString(),
-                        ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
-                        FamilyId = Guid.NewGuid().ToString() // 新家族ID
-                    };
-                    _dbContext.RefreshTokens.Add(refreshTokenRecord);
-                    await _dbContext.SaveChangesAsync();
-
-                    response = new LoginResponse
-                    {
-                        Token = token,
-                        User = userDto,
-                        RefreshToken = refreshToken, // Issue #1838: 返回RefreshToken
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpireMinutes)
-                    };
-
-                    // Issue #1872: 记录普通用户登录成功审计日志
-                    await _auditService.LogAsync(new SecurityAuditEvent
-                    {
-                        EventType = "Login",
-                        UserId = userDto.Id,
-                        UserType = "user",
-                        UserName = userDto.UserName,
-                        Success = true
-                    });
-
-                    _logger.LogInformation("用户登录成功 [用户名: {UserName}] [时间: {Timestamp}]",
-                    request.UserName, DateTime.UtcNow);
-                }
+                _logger.LogInformation("用户登录成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
+                    request.UserName, userDto.Role, DateTime.UtcNow);
 
                 return ServiceResult<LoginResponse>.Success(response);
             }
@@ -408,37 +272,17 @@ namespace LYBT.Module.Auth.Services
                     _logger.LogWarning("RefreshToken使用次数异常：{Count}", tokenRecord.UsageCount);
                 }
 
-                // 4. 根据用户类型路由验证逻辑 (Issue #1861: ADR-010)
-                UserDto userDto;
-                string userType;
+                // 4. 统一从Users表获取用户信息（包括SuperAdmin） - Issue #1909
+                var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+                if (userEntity == null)
+                    return ServiceResult<LoginResponse>.Failure("用户不存在");
 
-                if (tokenRecord.UserType == "superadmin")
-                {
-                    // SuperAdmin路由：不查User表，直接构造SuperAdmin信息
-                    _logger.LogInformation("Token刷新：SuperAdmin [UserId: {UserId}]", tokenRecord.UserId);
-                    
-                    userDto = new UserDto
-                    {
-                        Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        UserName = _configuration["Lybt:SystemAdmin:Username"] ?? "admin",
-                        RealName = "系统超级管理员",
-                        Role = UserRole.Admin,
-                        Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com"
-                    };
-                    userType = "superadmin";
-                }
-                else
-                {
-                    // User路由：查User表获取用户信息
-                    var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
-                    if (userEntity == null)
-                        return ServiceResult<LoginResponse>.Failure("用户不存在");
+                var userDto = _mapper.Map<UserDto>(userEntity);
 
-                    userDto = _mapper.Map<UserDto>(userEntity);
-                    userType = "user";
-                    
-                    _logger.LogInformation("Token刷新：User [UserName: {UserName}]", userDto.UserName);
-                }
+                // 确定用户类型（SuperAdmin特殊处理UserType）
+                string userType = userDto.Role == UserRole.SuperAdmin ? "superadmin" : "user";
+
+                _logger.LogInformation("Token刷新：[UserName: {UserName}] [Role: {Role}]", userDto.UserName, userDto.Role);
 
                 // 5. 生成新的Access Token
                 var newAccessToken = _jwtService.GenerateToken(

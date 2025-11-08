@@ -58,5 +58,11 @@ namespace LYBT.Desktop.Foundation.Security
         /// <param name="newPassword">新密码</param>
         /// <returns>修改是否成功</returns>
         Task<bool> ChangePasswordAsync(string currentPassword, string newPassword);
+
+        /// <summary>
+        /// 修改系统管理员密码 (Issue #1892)
+        /// </summary>
+        /// <param name="request">修改密码请求</param>
+        Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
     }
 }

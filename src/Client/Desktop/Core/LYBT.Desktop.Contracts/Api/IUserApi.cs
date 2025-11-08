@@ -40,5 +40,18 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Delete("/api/v1/users/{id}")]
         Task<ApiResponse<ApiResponse>> DeleteUserAsync(Guid id);
+
+        /// <summary>
+        /// 修改个人资料 (Issue #1891)
+        /// </summary>
+        [Refit.Put("/api/v1/users/{id}/profile")]
+        Task<ApiResponse<UserDto>> ChangeProfileAsync(Guid id, [Refit.Body] ChangeProfileDto request);
+
+
+        /// <summary>
+        /// 修改密码 (Issue #1887-1892)
+        /// </summary>
+        [Refit.Put("/api/v1/users/{id}/change-password")]
+        Task<ApiResponse<ApiResponse>> ChangePasswordAsync(Guid id, [Refit.Body] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
     }
 }

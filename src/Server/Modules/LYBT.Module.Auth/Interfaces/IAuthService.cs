@@ -21,10 +21,8 @@ namespace LYBT.Module.Auth.Interfaces
         /// </summary>
         Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request);
 
-        /// <summary>
-        /// 修改sysadmin密码
-        /// </summary>
-        Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request);
+        // Issue #1909: ChangeSysAdminPasswordAsync已移除
+        // SuperAdmin现在统一使用UserService.ChangePasswordAsync进行密码修改
 
         /// <summary>
         /// 验证用户凭据

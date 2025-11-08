@@ -25,7 +25,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 创建用户
         /// </summary>
-        public async Task<(bool success, UserDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
+        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> CreateAsync(UserInputDto createDto)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 更新用户
         /// </summary>
-        public async Task<(bool success, UserDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto)
+        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> UpdateAsync(UserInputDto updateDto)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 删除用户
         /// </summary>
-        public async Task<(bool success, string? errorMessage)> DeleteAsync(Guid userId)
+        public virtual async Task<(bool success, string? errorMessage)> DeleteAsync(Guid userId)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 根据ID获取用户
         /// </summary>
-        public async Task<(bool success, UserDto? user, string? errorMessage)> GetByIdAsync(Guid userId)
+        public virtual async Task<(bool success, UserDto? user, string? errorMessage)> GetByIdAsync(Guid userId)
         {
             try
             {
@@ -234,6 +234,32 @@ namespace LYBT.Desktop.Users.ViewModels.Components
             {
                 _logger.LogError(ex, "查询医生列表时发生异常");
                 return (false, null, "查询医生列表时发生系统错误");
+            }
+        }
+
+        #endregion
+
+        #region 个人资料管理
+
+        /// <summary>
+        /// 修改个人资料 (Issue #1891)
+        /// </summary>
+        public async Task<(bool success, UserDto? user, string? errorMessage)> ChangeProfileAsync(
+            Guid userId, ChangeProfileDto dto)
+        {
+            try
+            {
+                _logger.LogInformation("修改个人资料: UserId={UserId}", userId);
+
+                var updatedUser = await _repository.ChangeProfileAsync(userId, dto);
+
+                _logger.LogInformation("个人资料修改成功");
+                return (true, updatedUser, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修改个人资料时发生异常: UserId={UserId}", userId);
+                return (false, null, "修改个人资料时发生系统错误");
             }
         }
 

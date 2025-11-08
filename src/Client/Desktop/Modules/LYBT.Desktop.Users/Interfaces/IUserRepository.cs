@@ -18,5 +18,19 @@ namespace LYBT.Desktop.Users.Interfaces
         Task<UserDto> GetByUsernameAsync(string username);
         Task<List<UserDto>> SearchAsync(string keyword);
         Task<List<UserDto>> GetDoctorsAsync();
+
+        /// <summary>
+        /// 修改个人资料 (Issue #1891)
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="dto">个人资料DTO</param>
+        Task<UserDto> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
+
+        /// <summary>
+        /// 修改密码 (Issue #1887-1892)
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="request">修改密码请求</param>
+        Task<ServiceResult> ChangePasswordAsync(Guid userId, LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
     }
 }

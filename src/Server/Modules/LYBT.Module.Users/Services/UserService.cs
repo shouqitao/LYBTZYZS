@@ -5,14 +5,17 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Utilities.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace LYBT.Module.Users.Services
 {
     /// <summary>
     /// 用户服务实现 - 标准CRUD模式
     /// Issue #1008: 重构为标准Service，移除过度设计方法
+    /// Issue #1909: 添加三角色权限控制（SuperAdmin/Admin/Doctor）
     /// 遵循单一服务原则，符合MVP适度设计原则
     /// </summary>
     public class UserService : IUserService
@@ -21,18 +24,93 @@ namespace LYBT.Module.Users.Services
         private readonly IMapper _mapper;
         private readonly ILogger<UserService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository repository,
             IMapper mapper,
             ILogger<UserService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _mapper = mapper;
             _logger = logger;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
+
+        #region 权限检查辅助方法（Issue #1909）
+
+        /// <summary>
+        /// 获取当前用户角色
+        /// </summary>
+        private UserRole? GetCurrentUserRole()
+        {
+            try
+            {
+                var roleClaim = _httpContextAccessor.HttpContext?.User?
+                    .FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(roleClaim))
+                    return null;
+
+                return Enum.TryParse<UserRole>(roleClaim, out var role) ? role : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 检查当前用户是否可以管理目标用户
+        /// 权限规则：
+        /// - SuperAdmin（100）可以管理 Admin 和 Doctor
+        /// - Admin（10）可以管理 Doctor，但不能管理 Admin 或 SuperAdmin
+        /// - Doctor（1）只能修改自己的信息
+        /// </summary>
+        private bool CanManageUser(UserRole? currentUserRole, UserRole? targetUserRole)
+        {
+            if (!currentUserRole.HasValue || !targetUserRole.HasValue)
+                return false;
+
+            return currentUserRole.Value switch
+            {
+                UserRole.SuperAdmin => true,  // SuperAdmin可以管理所有用户
+                UserRole.Admin => targetUserRole.Value == UserRole.Doctor,  // Admin只能管理Doctor
+                UserRole.Doctor => false,  // Doctor不能管理其他用户
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// 检查是否可以删除指定用户（包含最后一个保护）
+        /// </summary>
+        private async Task<ServiceResult> CanDeleteUserAsync(Guid userId, UserRole targetRole)
+        {
+            // 权限检查
+            var currentRole = GetCurrentUserRole();
+            if (!CanManageUser(currentRole, targetRole))
+            {
+                return ServiceResult.Failure("您没有权限删除该用户");
+            }
+
+            // 最后一个SuperAdmin/Admin保护
+            if (targetRole == UserRole.SuperAdmin || targetRole == UserRole.Admin)
+            {
+                var count = await _repository.CountAsync(u => u.Role == targetRole && !u.IsDeleted);
+                if (count <= 1)
+                {
+                    var roleName = targetRole == UserRole.SuperAdmin ? "超级管理员" : "管理员";
+                    return ServiceResult.Failure($"不能删除最后一个{roleName}");
+                }
+            }
+
+            return ServiceResult.Success();
+        }
+
+        #endregion
 
         #region 查询操作
 
@@ -141,22 +219,24 @@ namespace LYBT.Module.Users.Services
 
         /// <summary>
         /// 创建用户
+        /// Issue #1909: 添加三角色权限控制
         /// </summary>
         public async Task<ServiceResult<UserDto>> CreateAsync(UserInputDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
-                // 获取超级管理员用户名（可配置）
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
-
-                // 检查是否尝试使用超级管理员用户名
-                if (string.Equals(dto.UserName, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                // Issue #1909: 权限检查 - 不能创建比自己权限高的角色
+                var currentRole = GetCurrentUserRole();
+                if (!CanManageUser(currentRole, dto.Role))
                 {
-                    _logger.LogWarning("尝试创建与超级管理员相同的用户名: {UserName}", dto.UserName);
-                    return ServiceResult<UserDto>.Failure($"用户名 '{dto.UserName}' 为系统保留用户名，不可使用");
+                    var roleName = dto.Role == UserRole.SuperAdmin ? "超级管理员" :
+                                   dto.Role == UserRole.Admin ? "管理员" : "医生";
+                    _logger.LogWarning("用户 {CurrentRole} 尝试创建更高权限的用户: {TargetRole}",
+                        currentRole, dto.Role);
+                    return ServiceResult<UserDto>.Failure($"您没有权限创建{roleName}账户");
                 }
 
-                // 可选：添加其他保留用户名列表
+                // 保留用户名检查（Issue #1909: 简化，仅保留系统保留用户名）
                 var reservedUsernames = new[] { "admin", "administrator", "root", "system", "superadmin", "sysadmin" };
                 if (reservedUsernames.Any(reserved => string.Equals(dto.UserName, reserved, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -205,6 +285,7 @@ namespace LYBT.Module.Users.Services
 
         /// <summary>
         /// 更新用户
+        /// Issue #1909: 添加三角色权限控制
         /// </summary>
         public async Task<ServiceResult<UserDto>> UpdateAsync(Guid id, UserInputDto dto, CancellationToken cancellationToken = default)
         {
@@ -213,6 +294,23 @@ namespace LYBT.Module.Users.Services
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
                     return ServiceResult<UserDto>.Failure("用户不存在");
+
+                // Issue #1909: 权限检查 - 只能更新有权限管理的用户
+                var currentRole = GetCurrentUserRole();
+                if (!CanManageUser(currentRole, entity.Role))
+                {
+                    _logger.LogWarning("用户 {CurrentRole} 尝试更新无权限的用户: {TargetUserId}, {TargetRole}",
+                        currentRole, id, entity.Role);
+                    return ServiceResult<UserDto>.Failure("您没有权限更新该用户");
+                }
+
+                // Issue #1909: 检查角色变更权限
+                if (dto.Role != entity.Role && !CanManageUser(currentRole, dto.Role))
+                {
+                    _logger.LogWarning("用户 {CurrentRole} 尝试将用户角色改为更高权限: {OldRole} -> {NewRole}",
+                        currentRole, entity.Role, dto.Role);
+                    return ServiceResult<UserDto>.Failure("您没有权限将用户角色修改为该级别");
+                }
 
                 // 注意：UserInputDto不包含Username属性，用户名一旦创建不可更改
                 // 这也避免了用户后期尝试改为超级管理员用户名的风险
@@ -233,12 +331,28 @@ namespace LYBT.Module.Users.Services
 
         /// <summary>
         /// 删除用户（软删除）
+        /// Issue #1909: 添加三角色权限控制和最后一个保护
         /// </summary>
         public async Task<ServiceResult> DeleteAsync(Guid id)
         {
             try
             {
+                // 获取目标用户
+                var targetUser = await _repository.GetByIdAsync(id);
+                if (targetUser == null)
+                    return ServiceResult.Failure("用户不存在");
+
+                // Issue #1909: 权限检查和保护逻辑
+                var permissionCheck = await CanDeleteUserAsync(id, targetUser.Role);
+                if (!permissionCheck.IsSuccess)
+                {
+                    _logger.LogWarning("删除用户权限检查失败: {UserId}, {Reason}",
+                        id, permissionCheck.Message);
+                    return permissionCheck;
+                }
+
                 var result = await _repository.DeleteAsync(id);
+                _logger.LogInformation("成功删除用户: {UserId}, Role: {Role}", id, targetUser.Role);
                 return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
             }
             catch (Exception ex)
@@ -250,7 +364,9 @@ namespace LYBT.Module.Users.Services
 
 
         /// <summary>
-        /// 批量删除用户（软删除）(Issue #1169)
+        /// 批量删除用户（软删除）
+        /// Issue #1169: 批量操作
+        /// Issue #1909: 更新为三角色保护逻辑
         /// </summary>
         public async Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids)
         {
@@ -271,9 +387,6 @@ namespace LYBT.Module.Users.Services
                     Message = "批量删除完成"
                 };
 
-                // 获取超级管理员用户名（可配置）
-                var sysAdminUsername = _configuration["Lybt:Business:SystemAdmin:UserName"] ?? "clinic_admin";
-
                 foreach (var userId in ids)
                 {
                     try
@@ -292,16 +405,16 @@ namespace LYBT.Module.Users.Services
                             continue;
                         }
 
-                        // 检查是否是超级管理员
-                        if (user.Role == UserRole.Admin ||
-                            string.Equals(user.UserName, sysAdminUsername, StringComparison.OrdinalIgnoreCase))
+                        // Issue #1909: 使用统一的权限检查和保护逻辑
+                        var permissionCheck = await CanDeleteUserAsync(userId, user.Role);
+                        if (!permissionCheck.IsSuccess)
                         {
                             result.FailureCount++;
                             result.FailedIds.Add(userId);
                             result.Errors.Add(new BatchOperationResultDto.ErrorDetail
                             {
                                 RecordIdentifier = user.UserName,
-                                ErrorMessage = "不能删除超级管理员"
+                                ErrorMessage = permissionCheck.Message ?? "删除失败"
                             });
                             continue;
                         }
@@ -519,25 +632,46 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
-        /// 修改个人信息
+        /// 修改个人信息 (Issue #1888)
         /// </summary>
-        public async Task<ServiceResult> ChangeProfileAsync(Guid userId, string realName, string phoneNumber)
+        public async Task<ServiceResult<UserDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto)
         {
             try
             {
+                // 验证输入
+                if (dto == null)
+                {
+                    return ServiceResult<UserDto>.Failure("个人资料信息不能为空");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.RealName))
+                {
+                    return ServiceResult<UserDto>.Failure("真实姓名不能为空");
+                }
+
+                // 获取用户实体
                 var entity = await _repository.GetByIdAsync(userId);
                 if (entity == null)
-                    return ServiceResult.Failure("用户不存在");
+                {
+                    _logger.LogWarning("尝试修改不存在的用户资料: {UserId}", userId);
+                    return ServiceResult<UserDto>.Failure("用户不存在");
+                }
 
-                entity.RealName = realName;
-                entity.PhoneNumber = phoneNumber;
-                await _repository.UpdateAsync(entity);
-                return ServiceResult.Success();
+                // 更新字段
+                entity.RealName = dto.RealName;
+                entity.PhoneNumber = dto.PhoneNumber;
+
+                // 保存更改
+                var updatedEntity = await _repository.UpdateAsync(entity);
+                var resultDto = _mapper.Map<UserDto>(updatedEntity);
+
+                _logger.LogInformation("成功修改用户资料: {UserId}, RealName: {RealName}", userId, dto.RealName);
+                return ServiceResult<UserDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "修改个人信息失败");
-                return ServiceResult.Failure("修改个人信息失败");
+                _logger.LogError(ex, "修改个人资料失败: {UserId}", userId);
+                return ServiceResult<UserDto>.Failure("修改个人资料失败");
             }
         }
 

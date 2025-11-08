@@ -1,26 +1,41 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+﻿using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Models.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Clinical.ViewModels
 {
     /// <summary>
     /// 医生工作台主页视图模型
-    /// 核心功能："开始接诊"按钮（导航到PatientSelectionView） + 今日统计
+    /// 核心功能："开始接诊"按钮（导航到PatientSelectionView） + 今日统计 + 个人资料
     /// Issue #1553: 角色模块化重构 - Clinical模块
     /// Issue #1567: 导航到患者选择视图（新流程：主页 → 患者选择 → 3步看病流程）
+    /// Issue #1887-1891: 添加个人资料编辑功能
     /// </summary>
     public class ClinicalHomeViewModel : UnifiedViewModelBase
     {
         #region 依赖服务
 
         private readonly IRegionManager _regionManager;
+        private readonly IAuthenticationService _authService;
+        private readonly IDialogService _dialogService;
 
         #endregion 依赖服务
 
         #region 属性
+
+        private string _currentUserName = "医生";
+        /// <summary>
+        /// 当前用户名 (Issue #1887-1891)
+        /// </summary>
+        public string CurrentUserName
+        {
+            get => _currentUserName;
+            set => SetProperty(ref _currentUserName, value);
+        }
 
         private int _todayConsultationCount = 0;
         /// <summary>
@@ -71,6 +86,16 @@ namespace LYBT.Desktop.Clinical.ViewModels
         /// </summary>
         public DelegateCommand NavigateToFormulaLibraryCommand { get; }
 
+        /// <summary>
+        /// 编辑个人资料命令 (Issue #1887-1892)
+        /// </summary>
+        public DelegateCommand EditProfileCommand { get; }
+
+        /// <summary>
+        /// 修改密码命令 (Issue #1887-1892)
+        /// </summary>
+        public DelegateCommand ChangePasswordCommand { get; }
+
         #endregion 命令
 
         #region 构造函数
@@ -78,10 +103,14 @@ namespace LYBT.Desktop.Clinical.ViewModels
         public ClinicalHomeViewModel(
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IAuthenticationService authService,
+            IDialogService dialogService)
             : base(eventAggregator, loggerFactory, regionManager)
         {
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化核心命令
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation);
@@ -91,6 +120,13 @@ namespace LYBT.Desktop.Clinical.ViewModels
             NavigateToMedicalCaseQueryCommand = new DelegateCommand(ExecuteNavigateToMedicalCaseQuery);
             NavigateToHerbLibraryCommand = new DelegateCommand(ExecuteNavigateToHerbLibrary);
             NavigateToFormulaLibraryCommand = new DelegateCommand(ExecuteNavigateToFormulaLibrary);
+
+            // Issue #1887-1892: 初始化编辑个人资料和修改密码命令
+            EditProfileCommand = new DelegateCommand(ExecuteEditProfileCommand);
+            ChangePasswordCommand = new DelegateCommand(ExecuteChangePasswordCommand);
+
+            // 加载当前用户信息
+            LoadCurrentUser();
 
             // 加载今日统计数据
             LoadTodayStatistics();
@@ -199,9 +235,97 @@ namespace LYBT.Desktop.Clinical.ViewModels
             }
         }
 
+        /// <summary>
+        /// 编辑个人资料 (Issue #1887-1891)
+        /// </summary>
+        private void ExecuteEditProfileCommand()
+        {
+            try
+            {
+                Logger.LogInformation("打开个人资料对话框");
+
+                // 打开 UserProfileDialog（不需要参数）
+                _dialogService.ShowDialog("UserProfileDialog", null, result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        Logger.LogInformation("个人资料修改成功");
+                        // 刷新当前用户信息
+                        LoadCurrentUser();
+                    }
+                    else if (result.Result == ButtonResult.Cancel)
+                    {
+                        Logger.LogInformation("取消修改个人资料");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开个人资料对话框时发生异常");
+            }
+        }
+
+
+        /// <summary>
+        /// 修改密码 (Issue #1887-1892)
+        /// </summary>
+        private void ExecuteChangePasswordCommand()
+        {
+            try
+            {
+                Logger.LogInformation("打开修改密码对话框");
+
+                // 打开 ChangePasswordDialog，传递参数标识为普通用户模式
+                var parameters = new DialogParameters
+                {
+                    { "IsSysAdmin", false }
+                };
+
+                _dialogService.ShowDialog("ChangePasswordDialog", parameters, result =>
+                {
+                    if (result.Result == ButtonResult.OK)
+                    {
+                        Logger.LogInformation("密码修改成功");
+                    }
+                    else if (result.Result == ButtonResult.Cancel)
+                    {
+                        Logger.LogInformation("取消修改密码");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开修改密码对话框时发生异常");
+            }
+        }
+
         #endregion 命令实现
 
         #region 辅助方法
+
+        /// <summary>
+        /// 加载当前用户信息 (Issue #1887-1891)
+        /// </summary>
+        private async void LoadCurrentUser()
+        {
+            try
+            {
+                var currentUser = await _authService.GetCurrentUserAsync();
+                if (currentUser != null)
+                {
+                    CurrentUserName = currentUser.RealName ?? currentUser.UserName ?? "医生";
+                }
+                else
+                {
+                    CurrentUserName = "医生";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载当前用户信息失败");
+                CurrentUserName = "医生";
+            }
+        }
 
         /// <summary>
         /// 加载今日统计数据

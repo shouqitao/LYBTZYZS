@@ -238,6 +238,36 @@ namespace LYBT.Desktop.Foundation.Security
         }
 
         /// <summary>
+        /// 修改系统管理员密码 (Issue #1892)
+        /// </summary>
+        public async Task<ServiceResult<bool>> ChangeSysAdminPasswordAsync(ChangeSysAdminPassword request)
+        {
+            try
+            {
+                _logger.LogInformation("修改系统管理员密码");
+
+                var apiResponse = await _authApi.ChangeSysAdminPasswordAsync(request);
+
+                if (apiResponse.Success)
+                {
+                    _logger.LogInformation("系统管理员密码修改成功");
+                    return ServiceResult<bool>.Success(true, apiResponse.Message ?? "密码修改成功");
+                }
+                else
+                {
+                    var errorMsg = apiResponse.Message ?? "密码修改失败";
+                    _logger.LogWarning("系统管理员密码修改失败: {Message}", errorMsg);
+                    return ServiceResult<bool>.Failure(errorMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修改系统管理员密码时发生异常");
+                return ServiceResult<bool>.Failure($"修改密码失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// 从JWT Token中提取过期时间
         /// Issue #1864: 辅助方法，用于本地Token验证
         /// </summary>
