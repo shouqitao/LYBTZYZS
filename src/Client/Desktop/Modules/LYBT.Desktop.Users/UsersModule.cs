@@ -40,6 +40,9 @@ namespace LYBT.Desktop.Users
             containerRegistry.RegisterForNavigation<Views.UserCreateView, ViewModels.UserCreateViewModel>();
             containerRegistry.RegisterForNavigation<Views.UserEditView, ViewModels.UserEditViewModel>();
 
+            // Issue #1928: Sprint 2 - ResetPassword迁移为Navigation模式
+            containerRegistry.RegisterForNavigation<Views.ResetPasswordView, ViewModels.ResetPasswordViewModel>();
+
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();
             containerRegistry.RegisterDialog<Views.ResetPasswordDialog, ViewModels.ResetPasswordDialogViewModel>();

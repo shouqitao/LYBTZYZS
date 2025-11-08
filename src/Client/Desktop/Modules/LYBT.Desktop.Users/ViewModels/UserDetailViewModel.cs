@@ -191,11 +191,14 @@ namespace LYBT.Desktop.Users.ViewModels
                 return;
             }
 
-            Logger.LogInformation("打开重置密码对话框: UserId={UserId}", User.Id);
+            Logger.LogInformation("导航到重置密码页面: UserId={UserId}", User.Id);
 
-            // TODO: 使用 Prism IDialogService 打开 ResetPasswordDialog
-            // 当前先记录日志
-            StatusMessage = "重置密码功能开发中...";
+            // Issue #1928: 使用Navigation模式代替Dialog
+            var parameters = new NavigationParameters
+            {
+                { "UserId", User.Id }
+            };
+            NavigateTo("ContentRegion", "ResetPasswordView", parameters);
         }
 
         private bool CanExecuteResetPassword()
