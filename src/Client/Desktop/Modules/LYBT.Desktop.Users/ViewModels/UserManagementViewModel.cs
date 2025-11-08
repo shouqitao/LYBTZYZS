@@ -1,5 +1,6 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Users.Events; // Issue #1927: 添加Events命名空间
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs; // Issue #1798: 添加Dialog服务
+using Prism.Services.Dialogs; // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -22,7 +23,7 @@ namespace LYBT.Desktop.Users.ViewModels
         // Issue #1785: 使用CommandHandler替代直接Repository访问
         private readonly UserCommandHandler _commandHandler;
 
-        // Issue #1798: Dialog服务用于打开用户表单对话框
+        // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
         private readonly IDialogService _dialogService;
 
         #endregion
@@ -133,7 +134,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         public UserManagementViewModel(
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
-            IDialogService dialogService, // Issue #1798: 注入DialogService
+            IDialogService dialogService, // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -144,7 +145,7 @@ namespace LYBT.Desktop.Users.ViewModels
             // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
-            // Issue #1798: 注入DialogService
+            // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化选项
@@ -157,6 +158,10 @@ namespace LYBT.Desktop.Users.ViewModels
 
             // 初始化用户特定命令
             InitializeUserCommands();
+
+            // Issue #1927: 订阅用户创建和更新事件
+            EventAggregator.GetEvent<UserCreatedEvent>().Subscribe(OnUserCreated);
+            EventAggregator.GetEvent<UserUpdatedEvent>().Subscribe(OnUserUpdated);
 
             Logger.LogDebug("用户管理ViewModel已初始化");
         }
@@ -302,21 +307,8 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             Logger.LogDebug("执行添加新用户");
 
-            // Issue #1798: 使用UserFormDialog
-            var parameters = new DialogParameters
-            {
-                { "mode", "create" }
-            };
-
-            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    Logger.LogInformation("用户创建成功，刷新列表");
-                    // 修复：回调本身在UI线程，直接await刷新
-                    await SearchAsync();
-                }
-            });
+            // Issue #1927: 使用Navigation模式代替Dialog
+            NavigateTo("ContentRegion", "UserCreateView");
 
             return Task.CompletedTask;
         }
@@ -395,22 +387,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("编辑用户: {UserId} - {UserName}", user.Id, user.UserName);
 
-            // Issue #1798: 使用UserFormDialog
-            var parameters = new DialogParameters
+            // Issue #1927: 使用Navigation模式代替Dialog
+            var parameters = new NavigationParameters
             {
-                { "mode", "edit" },
-                { "userId", user.Id }
+                { "UserId", user.Id }
             };
-
-            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    Logger.LogInformation("用户编辑成功，刷新列表");
-                    // 修复：回调本身在UI线程，直接await刷新
-                    await SearchAsync();
-                }
-            });
+            NavigateTo("ContentRegion", "UserEditView", parameters);
         }
 
         /// <summary>
@@ -582,6 +564,28 @@ namespace LYBT.Desktop.Users.ViewModels
             ClearFiltersCommand?.RaiseCanExecuteChanged();
             FirstPageCommand?.RaiseCanExecuteChanged();
             LastPageCommand?.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region 事件处理 - Issue #1927
+
+        /// <summary>
+        /// 用户创建事件处理 - 刷新列表
+        /// </summary>
+        private void OnUserCreated(UserDto user)
+        {
+            Logger.LogInformation("接收到用户创建事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            _ = SearchAsync(); // 刷新列表
+        }
+
+        /// <summary>
+        /// 用户更新事件处理 - 刷新列表
+        /// </summary>
+        private void OnUserUpdated(UserDto user)
+        {
+            Logger.LogInformation("接收到用户更新事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            _ = SearchAsync(); // 刷新列表
         }
 
         #endregion

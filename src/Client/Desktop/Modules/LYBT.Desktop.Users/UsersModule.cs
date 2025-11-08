@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.DependencyInjection;
+using LYBT.Desktop.Infrastructure.DependencyInjection;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.ViewModels;
@@ -35,6 +35,10 @@ namespace LYBT.Desktop.Users
             // 注册实际存在的视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
+
+            // Issue #1927: Sprint 1 - Dialog迁移为Navigation模式
+            containerRegistry.RegisterForNavigation<Views.UserCreateView, ViewModels.UserCreateViewModel>();
+            containerRegistry.RegisterForNavigation<Views.UserEditView, ViewModels.UserEditViewModel>();
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();

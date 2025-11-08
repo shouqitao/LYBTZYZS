@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -169,12 +169,13 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogInformation("导航到编辑用户页面: UserId={UserId}", User.Id);
 
+            // Issue #1927: 统一使用ContentRegion
             var parameters = new NavigationParameters
             {
                 { "UserId", User.Id }
             };
 
-            NavigateTo("AdminContentRegion", "UserEditView", parameters);
+            NavigateTo("ContentRegion", "UserEditView", parameters);
         }
 
         private bool CanExecuteEditUser()
