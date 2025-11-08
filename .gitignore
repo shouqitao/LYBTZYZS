@@ -42,6 +42,9 @@ temp/
 *.local.md
 *.private.*
 
+# 验证报告和实施总结（临时文件，归档到 docs/reports/ 后删除）
+.verification/
+
 # 构建日志和临时文件（防止污染根目录）
 *.log
 build.log
