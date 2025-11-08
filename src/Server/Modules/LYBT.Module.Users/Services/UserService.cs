@@ -254,6 +254,9 @@ namespace LYBT.Module.Users.Services
 
                 var entity = _mapper.Map<User>(dto);
 
+                // Issue #1911: 生成拼音码（基于RealName）
+                entity.PinYinCode = LYBT.Shared.Utilities.Text.PinYinHelper.GetPinYinCode(dto.RealName);
+
                 // Issue #1262: 对密码进行哈希处理，如果未提供密码则使用默认密码
                 string passwordToHash;
                 if (!string.IsNullOrWhiteSpace(dto.Password))
@@ -316,6 +319,13 @@ namespace LYBT.Module.Users.Services
                 // 这也避免了用户后期尝试改为超级管理员用户名的风险
 
                 _mapper.Map(dto, entity);
+
+                // Issue #1911: 更新拼音码（如果RealName有变化）
+                if (!string.IsNullOrWhiteSpace(dto.RealName))
+                {
+                    entity.PinYinCode = LYBT.Shared.Utilities.Text.PinYinHelper.GetPinYinCode(dto.RealName);
+                }
+
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<UserDto>(result);
 

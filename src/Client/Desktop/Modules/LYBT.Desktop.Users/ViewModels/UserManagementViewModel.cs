@@ -308,16 +308,13 @@ namespace LYBT.Desktop.Users.ViewModels
                 { "mode", "create" }
             };
 
-            _dialogService.ShowDialog("UserFormDialog", parameters, result =>
+            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
             {
                 if (result.Result == ButtonResult.OK)
                 {
                     Logger.LogInformation("用户创建成功，刷新列表");
-                    // 修复：使用Dispatcher避免UI线程死锁
-                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () =>
-                    {
-                        await SearchAsync();
-                    });
+                    // 修复：回调本身在UI线程，直接await刷新
+                    await SearchAsync();
                 }
             });
 
@@ -405,16 +402,13 @@ namespace LYBT.Desktop.Users.ViewModels
                 { "userId", user.Id }
             };
 
-            _dialogService.ShowDialog("UserFormDialog", parameters, result =>
+            _dialogService.ShowDialog("UserFormDialog", parameters, async result =>
             {
                 if (result.Result == ButtonResult.OK)
                 {
                     Logger.LogInformation("用户编辑成功，刷新列表");
-                    // 修复：使用Dispatcher避免UI线程死锁
-                    System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () =>
-                    {
-                        await SearchAsync();
-                    });
+                    // 修复：回调本身在UI线程，直接await刷新
+                    await SearchAsync();
                 }
             });
         }
