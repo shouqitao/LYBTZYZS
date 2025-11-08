@@ -91,7 +91,7 @@
                                     Width="220" />
 
                 <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="280">
+                <DataGridTemplateColumn Header="操作" Width="450">
                     <DataGridTemplateColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="HorizontalContentAlignment" Value="Right" />
