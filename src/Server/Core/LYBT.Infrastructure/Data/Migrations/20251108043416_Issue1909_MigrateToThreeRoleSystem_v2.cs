@@ -1,3 +1,4 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -9,7 +10,7 @@ namespace LYBT.Infrastructure.Data.Migrations
     /// 将AdminSecrets表中的超级管理员密码迁移到Users表，统一认证流程
     /// </summary>
     /// <inheritdoc />
-    public partial class Issue1909_MigrateToThreeRoleSystem : Migration
+    public partial class Issue1909_MigrateToThreeRoleSystem_v2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,18 +19,9 @@ namespace LYBT.Infrastructure.Data.Migrations
             // 创建SuperAdmin用户（Role=100），使用AdminSecrets表中的密码哈希
             migrationBuilder.Sql(@"
                 INSERT INTO Users (
-                    Id,
-                    UserName,
-                    RealName,
-                    Email,
-                    Role,
-                    Status,
-                    PasswordHash,
-                    FailedLoginCount,
-                    LockoutEnd,
-                    CreatedAt,
-                    UpdatedAt,
-                    IsDeleted
+                    Id, UserName, RealName, Email, Role, Status,
+                    PasswordHash, FailedLoginCount, LockoutEnd,
+                    CreatedAt, UpdatedAt, IsDeleted
                 )
                 SELECT
                     '00000000-0000-0000-0000-000000000001' AS Id,
@@ -51,7 +43,7 @@ namespace LYBT.Infrastructure.Data.Migrations
                 );
             ");
 
-            // 步骤2: 删除AdminSecrets表（数据已迁移到Users表）
+            // 步骤2: 删除AdminSecrets表
             migrationBuilder.DropTable(
                 name: "AdminSecrets");
         }
@@ -59,7 +51,7 @@ namespace LYBT.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // 步骤1: 重新创建AdminSecrets表
+            // 回滚步骤1: 重新创建AdminSecrets表
             migrationBuilder.CreateTable(
                 name: "AdminSecrets",
                 columns: table => new
@@ -72,20 +64,22 @@ namespace LYBT.Infrastructure.Data.Migrations
                     table.PrimaryKey("PK_AdminSecrets", x => x.Id);
                 });
 
-            // 步骤2: 从Users表迁移SuperAdmin数据回AdminSecrets表
+            // 回滚步骤2: 将SuperAdmin用户的密码迁移回AdminSecrets表
             migrationBuilder.Sql(@"
                 INSERT INTO AdminSecrets (Id, PasswordHash)
-                SELECT Id, PasswordHash
+                SELECT
+                    '00000000-0000-0000-0000-000000000001' AS Id,
+                    PasswordHash
                 FROM Users
                 WHERE Id = '00000000-0000-0000-0000-000000000001'
-                  AND Role = 100;  -- SuperAdmin
+                AND Role = 100;  -- SuperAdmin
             ");
 
-            // 步骤3: 从Users表删除SuperAdmin用户
+            // 回滚步骤3: 删除从Users表中迁移的SuperAdmin用户
             migrationBuilder.Sql(@"
                 DELETE FROM Users
                 WHERE Id = '00000000-0000-0000-0000-000000000001'
-                  AND Role = 100;
+                AND Role = 100;  -- SuperAdmin
             ");
         }
     }
