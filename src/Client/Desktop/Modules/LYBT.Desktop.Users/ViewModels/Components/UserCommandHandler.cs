@@ -282,12 +282,46 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         /// <summary>
         /// 重置密码（占位实现 - 实际应该调用认证服务）
         /// </summary>
-        public Task<(bool success, string? errorMessage)> ResetPasswordAsync(Guid userId, string newPassword)
+        /// <summary>
+        /// 重置用户密码（管理员操作）(Issue #1911)
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="newPassword">新密码（明文）</param>
+        /// <returns>成功标志、错误信息、重置响应数据</returns>
+        public async Task<(bool success, string? errorMessage, ResetPasswordResponseDto? response)> ResetPasswordAsync(
+            Guid userId, 
+            string newPassword)
         {
-            _logger.LogInformation("重置密码: {UserId}", userId);
+            try
+            {
+                _logger.LogInformation("CommandHandler: 开始重置密码, UserId: {UserId}", userId);
 
-            // TODO: 实现重置密码逻辑（应该调用认证服务）
-            return Task.FromResult<(bool, string?)>((true, "重置密码功能开发中"));
+                // 构建请求DTO
+                var request = new ResetPasswordRequestDto
+                {
+                    NewPassword = newPassword
+                };
+
+                // 调用Repository
+                var result = await _repository.ResetPasswordAsync(userId, request);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    _logger.LogInformation("CommandHandler: 重置密码成功, UserId: {UserId}", userId);
+                    return (true, null, result.Data);
+                }
+                else
+                {
+                    _logger.LogWarning("CommandHandler: 重置密码失败, UserId: {UserId}, Message: {Message}", 
+                        userId, result.Message);
+                    return (false, result.Message, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CommandHandler: 重置密码异常, UserId: {UserId}", userId);
+                return (false, $"重置密码异常: {ex.Message}", null);
+            }
         }
 
         #endregion

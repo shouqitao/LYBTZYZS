@@ -420,20 +420,33 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (user == null) return;
 
-            await ExecuteSafelyAsync(() =>
+            await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogDebug("重置用户密码: {UserId} - {UserName}", user.Id, user.UserName);
+                Logger.LogDebug("打开重置密码对话框, UserId: {UserId}, UserName: {UserName}", 
+                    user.Id, user.UserName);
 
-                // 调用应用的密码重置服务，或者打开密码重置对话框
-                // 暂时记录日志
-                Logger.LogInformation("用户 {UserName} 的密码重置请求已提交", user.UserName);
+                // Issue #1911: 打开重置密码对话框
+                var parameters = new DialogParameters
+                {
+                    { "User", user }
+                };
 
-                // 实际实现可能需要：
-                // 1. 打开密码重置对话框
-                // 2. 调用密码重置API
-                // 3. 显示成功通知
-
-                return Task.CompletedTask;
+                _dialogService.ShowDialog(
+                    "ResetPasswordDialog",
+                    parameters,
+                    result =>
+                    {
+                        if (result.Result == ButtonResult.OK)
+                        {
+                            Logger.LogInformation("重置密码对话框关闭（成功）, UserId: {UserId}", user.Id);
+                            // 刷新用户列表（可选）
+                            // await LoadUsersAsync();
+                        }
+                        else
+                        {
+                            Logger.LogDebug("重置密码对话框关闭（取消）, UserId: {UserId}", user.Id);
+                        }
+                    });
             }, "重置密码");
         }
 

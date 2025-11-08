@@ -53,5 +53,11 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Put("/api/v1/users/{id}/change-password")]
         Task<ApiResponse<ApiResponse>> ChangePasswordAsync(Guid id, [Refit.Body] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
+
+        /// <summary>
+        /// 管理员重置用户密码 (Issue #1910)
+        /// </summary>
+        [Refit.Post("/api/v1/users/{id}/reset-password")]
+        Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
     }
 }

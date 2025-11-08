@@ -32,5 +32,15 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <param name="userId">用户ID</param>
         /// <param name="request">修改密码请求</param>
         Task<ServiceResult> ChangePasswordAsync(Guid userId, LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request);
+
+        /// <summary>
+        /// 管理员重置用户密码 (Issue #1911)
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="request">重置密码请求数据</param>
+        /// <returns>包含新密码的响应结果</returns>
+        Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(
+            Guid userId, 
+            ResetPasswordRequestDto request);
     }
 }

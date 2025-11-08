@@ -339,11 +339,22 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 SetIsBusy(true, "正在重置密码...");
 
-                // TODO: 当前 Client 端没有 ResetPassword 服务方法，暂时 Mock 成功
-                // 真实实现需要调用服务端 API
-                await Task.Delay(500); // 模拟网络延迟
+                // Issue #1911: 调用真实的重置密码服务
+                var (success, errorMessage, response) = await _commandHandler.ResetPasswordAsync(
+                    _targetUserId, 
+                    NewPassword);
 
-                await ShowSuccessMessageAsync("密码重置成功");
+                if (!success || response == null)
+                {
+                    await ShowErrorMessageAsync($"密码重置失败: {errorMessage}");
+                    return;
+                }
+
+                await ShowSuccessMessageAsync(
+                    $"密码重置成功！\n\n" +
+                    $"用户: {UserName}\n" +
+                    $"新密码: {response.TemporaryPassword}\n\n" +
+                    $"请妥善保管并告知用户。");
 
                 var dialogResult = new DialogResult(ButtonResult.OK);
                 dialogResult.Parameters.Add("RequirePasswordChange", RequirePasswordChange);
