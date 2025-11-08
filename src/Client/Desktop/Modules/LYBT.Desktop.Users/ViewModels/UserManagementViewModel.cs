@@ -421,7 +421,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 // Issue #1928 (Sprint 2 优化): 重置密码改为直接重置到默认密码
                 // 确认是否重置
                 var confirmed = await ShowConfirmationAsync(
-                    $"确认重置用户 [{user.RealName ?? user.UserName}] 的密码吗？\n\n密码将被重置为默认密码：123456",
+                    $"确认重置用户 [{user.RealName ?? user.UserName}] 的密码吗？\n\n密码将被重置为系统配置的默认密码",
                     "重置密码确认");
 
                 if (!confirmed)
@@ -430,17 +430,18 @@ namespace LYBT.Desktop.Users.ViewModels
                     return;
                 }
 
-                // 调用 CommandHandler 重置密码
-                const string defaultPassword = "123456";
-                var result = await _commandHandler.ResetPasswordAsync(user.Id, defaultPassword);
+                // 调用 CommandHandler 重置密码（传 null 使用服务器配置的默认密码）
+                var result = await _commandHandler.ResetPasswordAsync(user.Id, null!);
 
                 if (result.success && result.response != null)
                 {
-                    Logger.LogInformation("重置密码成功, UserId: {UserId}, UserName: {UserName}", 
+                    Logger.LogInformation("重置密码成功, UserId: {UserId}, UserName: {UserName}",
                         user.Id, user.UserName);
-                    
-                    await ShowSuccessMessageAsync($"用户 [{user.RealName ?? user.UserName}] 的密码已重置为默认密码：123456");
-                    
+
+                    // 显示实际重置的密码（从配置文件读取）
+                    var resetPassword = result.response.TemporaryPassword;
+                    await ShowSuccessMessageAsync($"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{resetPassword}");
+
                     // 发布密码重置事件（如果其他地方需要监听）
                     EventAggregator.GetEvent<UserPasswordResetEvent>().Publish(user);
                 }

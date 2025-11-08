@@ -573,8 +573,11 @@ namespace LYBT.Module.Users.Services
                 if (entity == null)
                     return ServiceResult<ResetPasswordResponseDto>.Failure("用户不存在");
 
-                // 生成或使用提供的密码（Issue #1757: 使用PasswordHelper）
-                string password = request.NewPassword ?? PasswordHelper.GenerateTemporaryPassword();
+                // 生成或使用提供的密码
+                // 优先级：1. request.NewPassword 2. 配置文件中的默认密码 3. 随机生成
+                string password = request.NewPassword
+                    ?? _configuration["DefaultPasswords:NewUserPassword"]
+                    ?? PasswordHelper.GenerateTemporaryPassword();
 
                 // 哈希密码并更新
                 entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
