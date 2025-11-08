@@ -411,12 +411,11 @@ namespace LYBT.Desktop.Users.ViewModels
             if (result.success && result.user != null)
             {
                 Logger.LogInformation("成功创建用户：{UserName}", result.user.UserName);
-                
+
                 // 修复：在关闭对话框前清除IsLoading状态
                 IsLoading = false;
-                
-                ShowInfoMessage($"成功创建用户：{result.user.RealName}");
 
+                // 修复：移除ShowInfoMessage避免死锁，对话框关闭+列表刷新就是最好的反馈
                 // 关闭对话框，返回成功结果
                 RequestClose?.Invoke(new DialogResult(ButtonResult.OK, new DialogParameters
                 {
@@ -427,7 +426,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogError("创建用户失败：{ErrorMessage}", result.errorMessage);
                 IsLoading = false;  // 修复：失败时也要清除IsLoading
-                ShowErrorMessage(result.errorMessage ?? "创建用户失败");
+                await ShowErrorMessageAsync(result.errorMessage ?? "创建用户失败");
             }
         }
 
@@ -442,7 +441,7 @@ namespace LYBT.Desktop.Users.ViewModels
             if (!_userId.HasValue || _originalUser == null)
             {
                 IsLoading = false;  // 修复：早期返回也要清除IsLoading
-                ShowErrorMessage("无法更新用户：缺少用户信息");
+                await ShowErrorMessageAsync("无法更新用户：缺少用户信息");
                 return;
             }
 
@@ -464,12 +463,11 @@ namespace LYBT.Desktop.Users.ViewModels
             if (result.success && result.user != null)
             {
                 Logger.LogInformation("成功更新用户：{UserName}", result.user.UserName);
-                
+
                 // 修复：在关闭对话框前清除IsLoading状态
                 IsLoading = false;
-                
-                ShowInfoMessage($"成功更新用户：{result.user.RealName}");
 
+                // 修复：移除ShowInfoMessage避免死锁，对话框关闭+列表刷新就是最好的反馈
                 // 关闭对话框，返回成功结果
                 RequestClose?.Invoke(new DialogResult(ButtonResult.OK, new DialogParameters
                 {
@@ -480,7 +478,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogError("更新用户失败：{ErrorMessage}", result.errorMessage);
                 IsLoading = false;  // 修复：失败时也要清除IsLoading
-                ShowErrorMessage(result.errorMessage ?? "更新用户失败");
+                await ShowErrorMessageAsync(result.errorMessage ?? "更新用户失败");
             }
         }
 
