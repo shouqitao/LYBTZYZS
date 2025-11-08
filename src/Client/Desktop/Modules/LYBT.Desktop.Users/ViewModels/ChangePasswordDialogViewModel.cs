@@ -200,24 +200,28 @@ namespace LYBT.Desktop.Users.ViewModels
                 {
                     Logger.LogInformation("用户 {UserName} 密码修改成功，准备自动logout", UserName);
 
-                    // ⭐ Issue #1906修复：调整执行顺序，先完成所有操作，最后关闭对话框
+                    // ⭐ Issue #1906修复 + 竞态条件修复：确保Token完全清除后再导航
 
                     // 1. 自动logout（清除Server端和Client端的所有Token）
                     await _authService.LogoutAsync();
+                    Logger.LogInformation("用户 {UserName} Token已清除", UserName);
 
-                    // 2. 先关闭对话框（避免对话框变空白）
+                    // 2. 额外延迟，确保Token清除操作完全完成（避免竞态条件）
+                    await Task.Delay(100);
+
+                    // 3. 先关闭对话框（避免对话框变空白）
                     SetIsBusy(false);
                     RequestClose?.Invoke(new DialogResult(ButtonResult.OK));
 
-                    // 3. 导航到登录界面
+                    // 4. 导航到登录界面（此时Token已确保被清除）
                     EventAggregator.GetEvent<PasswordChangedEvent>().Publish();
 
                     Logger.LogInformation("用户 {UserName} 已关闭对话框并导航到登录界面", UserName);
 
-                    // 4. 稍微延迟，确保对话框关闭和UI更新完成
+                    // 5. 稍微延迟，确保对话框关闭和UI更新完成
                     await Task.Delay(200);
 
-                    // 5. 显示成功消息（此时只有登录界面和MessageBox）
+                    // 6. 显示成功消息（此时只有登录界面和MessageBox）
                     await ShowSuccessMessageAsync("密码修改成功！\n\n请使用新密码重新登录。");
                 }
                 else
