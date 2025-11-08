@@ -148,10 +148,14 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
+        /// <summary>
+        /// 返回用户列表 (Issue #1911修复: Region名称错误)
+        /// </summary>
         private void ExecuteGoBack()
         {
             Logger.LogInformation("返回用户列表");
-            NavigateBack("AdminContentRegion");
+            // 修复：使用正确的Region名称 ContentRegion
+            NavigateBack("ContentRegion");
         }
 
         private void ExecuteEditUser()

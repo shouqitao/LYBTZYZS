@@ -358,6 +358,9 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 提交表单（创建或保存）
         /// </summary>
+        /// <summary>
+        /// 提交表单 (Issue #1911修复: IsLoading状态由Create/Update方法管理)
+        /// </summary>
         private async Task SubmitAsync()
         {
             try
@@ -377,15 +380,17 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 Logger.LogError(ex, "提交表单失败");
                 ShowErrorMessage($"操作失败：{ex.Message}");
-            }
-            finally
-            {
+                // 异常情况下清除IsLoading
                 IsLoading = false;
             }
+            // 注意：成功情况下IsLoading由Create/UpdateUserAsync在关闭对话框前清除
         }
 
         /// <summary>
         /// 创建用户
+        /// </summary>
+        /// <summary>
+        /// 创建用户 (Issue #1911修复: IsLoading状态管理)
         /// </summary>
         private async Task CreateUserAsync()
         {
@@ -406,6 +411,10 @@ namespace LYBT.Desktop.Users.ViewModels
             if (result.success && result.user != null)
             {
                 Logger.LogInformation("成功创建用户：{UserName}", result.user.UserName);
+                
+                // 修复：在关闭对话框前清除IsLoading状态
+                IsLoading = false;
+                
                 ShowInfoMessage($"成功创建用户：{result.user.RealName}");
 
                 // 关闭对话框，返回成功结果
@@ -423,6 +432,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         /// <summary>
         /// 更新用户
+        /// </summary>
+        /// <summary>
+        /// 更新用户 (Issue #1911修复: IsLoading状态管理)
         /// </summary>
         private async Task UpdateUserAsync()
         {
@@ -450,6 +462,10 @@ namespace LYBT.Desktop.Users.ViewModels
             if (result.success && result.user != null)
             {
                 Logger.LogInformation("成功更新用户：{UserName}", result.user.UserName);
+                
+                // 修复：在关闭对话框前清除IsLoading状态
+                IsLoading = false;
+                
                 ShowInfoMessage($"成功更新用户：{result.user.RealName}");
 
                 // 关闭对话框，返回成功结果
