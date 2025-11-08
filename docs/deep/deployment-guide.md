@@ -549,17 +549,7 @@ CREATE TABLE Users (
 );
 GO
 
--- 超级管理员密钥表（双轨认证）
-CREATE TABLE AdminSecrets (
-    ID INT IDENTITY(1,1) PRIMARY KEY,
-    SecretKey NVARCHAR(64) NOT NULL UNIQUE,
-    HashedSecret NVARCHAR(256) NOT NULL,
-    Description NVARCHAR(200) NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    CreatedDate DATETIME2 NOT NULL DEFAULT GETDATE(),
-    ExpiryDate DATETIME2 NULL
-);
-GO
+-- Issue #1909: AdminSecrets表已移除，所有用户（包括SuperAdmin）统一存储在Users表
 ```
 
 ### 2. 数据库迁移脚本
@@ -587,16 +577,16 @@ VALUES
     ('黄芪', 'HQ001', '补气药', 'Astragalus membranaceus', 'g', 4.20, '甘肃药材基地');
 GO
 
--- 插入系统管理员用户
-INSERT INTO Users (Username, PasswordHash, Email, Role)
+-- Issue #1909: 插入三角色体系用户（SuperAdmin自动初始化，这里仅作示例）
+-- 注意: SuperAdmin会在应用首次启动时自动创建，无需手动插入
+-- 此处仅插入示例Admin和Doctor用户
+INSERT INTO Users (UserName, PasswordHash, RealName, Email, Role, IsActive, CreatedAt, UpdatedAt)
 VALUES
-    ('admin', '$2a$10$YourHashedPasswordHere', 'admin@clinic.com', 'Admin');
-GO
-
--- 插入超级管理员密钥
-INSERT INTO AdminSecrets (SecretKey, HashedSecret, Description, ExpiryDate)
-VALUES
-    ('LYBT-ADMIN-2024', '$2a$10$YourHashedSecretHere', '2024年度超级管理员密钥', '2024-12-31 23:59:59');
+    -- SuperAdmin (Role=100) 由应用自动创建
+    -- Admin示例 (Role=10)
+    ('admin1', '$2a$11$YourHashedPasswordHere', '管理员1', 'admin1@clinic.com', 10, 1, GETDATE(), GETDATE()),
+    -- Doctor示例 (Role=1)
+    ('doctor1', '$2a$11$YourHashedPasswordHere', '医生1', 'doctor1@clinic.com', 1, 1, GETDATE(), GETDATE());
 GO
 ```
 

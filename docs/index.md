@@ -434,7 +434,7 @@
 ### 🏗️ 架构特色
 - ✅ **Diátaxis框架**: 4种文档类型清晰分类
 - ✅ **三层对齐**: Server/Client/Shared架构完全对应
-- ✅ **双轨认证**: Users表 + AdminSecrets表物理隔离
+- ✅ **三角色体系**: SuperAdmin/Admin/Doctor统一认证架构（Issue #1909）
 - ✅ **中医特色**: 四诊合参、辨证论治、处方管理完整覆盖
 
 ### 📚 质量保证

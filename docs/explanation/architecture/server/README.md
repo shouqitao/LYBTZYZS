@@ -880,8 +880,7 @@ public class AppDbContext : DbContext
     }
 
     // DbSets for entities
-    public DbSet<User> Users { get; set; }
-    public DbSet<AdminSecret> AdminSecrets { get; set; }
+    public DbSet<User> Users { get; set; }  // Issue #1909: 包含所有角色（SuperAdmin/Admin/Doctor）
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<MedicalCase> MedicalCases { get; set; }
