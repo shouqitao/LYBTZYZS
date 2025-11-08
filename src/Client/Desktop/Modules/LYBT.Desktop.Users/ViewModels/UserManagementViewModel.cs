@@ -163,6 +163,9 @@ namespace LYBT.Desktop.Users.ViewModels
             EventAggregator.GetEvent<UserCreatedEvent>().Subscribe(OnUserCreated);
             EventAggregator.GetEvent<UserUpdatedEvent>().Subscribe(OnUserUpdated);
 
+            // Issue #1928: 订阅密码重置事件
+            EventAggregator.GetEvent<UserPasswordResetEvent>().Subscribe(OnUserPasswordReset);
+
             Logger.LogDebug("用户管理ViewModel已初始化");
         }
 
@@ -586,6 +589,15 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             Logger.LogInformation("接收到用户更新事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
             _ = SearchAsync(); // 刷新列表
+        }
+
+        /// <summary>
+        /// 用户密码重置事件处理 - Issue #1928
+        /// </summary>
+        private void OnUserPasswordReset(UserDto user)
+        {
+            Logger.LogInformation("接收到密码重置事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
+            StatusMessage = $"用户 {user.RealName} 的密码已重置";
         }
 
         #endregion
