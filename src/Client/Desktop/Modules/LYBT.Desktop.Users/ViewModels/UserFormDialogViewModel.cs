@@ -426,6 +426,7 @@ namespace LYBT.Desktop.Users.ViewModels
             else
             {
                 Logger.LogError("创建用户失败：{ErrorMessage}", result.errorMessage);
+                IsLoading = false;  // 修复：失败时也要清除IsLoading
                 ShowErrorMessage(result.errorMessage ?? "创建用户失败");
             }
         }
@@ -440,6 +441,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             if (!_userId.HasValue || _originalUser == null)
             {
+                IsLoading = false;  // 修复：早期返回也要清除IsLoading
                 ShowErrorMessage("无法更新用户：缺少用户信息");
                 return;
             }
@@ -477,6 +479,7 @@ namespace LYBT.Desktop.Users.ViewModels
             else
             {
                 Logger.LogError("更新用户失败：{ErrorMessage}", result.errorMessage);
+                IsLoading = false;  // 修复：失败时也要清除IsLoading
                 ShowErrorMessage(result.errorMessage ?? "更新用户失败");
             }
         }
