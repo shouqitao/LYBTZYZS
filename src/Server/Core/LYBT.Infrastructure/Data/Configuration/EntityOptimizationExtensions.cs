@@ -1,4 +1,5 @@
 ﻿using LYBT.Entities.Common;
+using LYBT.Entities.Formula;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,11 @@ namespace LYBT.Infrastructure.Data.Configuration
                     method?.Invoke(null, new object[] { modelBuilder });
                 }
             }
+
+            // 为FormulaHerbItem添加全局过滤器（基于关联的Formula.IsDeleted）
+            // 修复警告: Entity 'Formula' has a global query filter defined and is the required end of a relationship with the entity 'FormulaHerbItem'
+            modelBuilder.Entity<FormulaHerbItem>()
+                .HasQueryFilter(fh => fh.Formula == null || !fh.Formula.IsDeleted);
         }
 
         /// <summary>
