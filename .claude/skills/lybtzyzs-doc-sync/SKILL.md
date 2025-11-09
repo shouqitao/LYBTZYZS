@@ -35,19 +35,20 @@ last_updated: 2025-10-30
 - **`docs/tutorials/`** - 新手教程、快速开始、第一个功能
 
 **How-to Guides（操作指南 - 任务导向）**：
-- **`docs/how-to-guides/server/`** - Server端开发指南（API、模块、数据库）
-- **`docs/how-to-guides/client/`** - Client端开发指南（MVVM、UI、功能模块）
-- **`docs/how-to-guides/shared/`** - 共享开发指南（DTO、组件、通用工具）
+- **`docs/how-to/server/`** - Server端开发指南（API、模块、数据库）
+- **`docs/how-to/client/`** - Client端开发指南（MVVM、UI、功能模块）
+- **`docs/how-to/shared/`** - 共享开发指南（DTO、组件、通用工具）
 
 **Reference（参考手册 - 信息导向）**：
-- **`docs/reference/quick-reference/`** - 快速参考（API、配置、代码模式、问题排查）
-  - `api-reference.md` - API快速参考
-  - `config-templates.md` - 配置模板 ⭐ 最新变更（Issue #1726）
-  - `code-patterns.md` - 代码模式
-  - `troubleshooting.md` - 问题排查
+- **`docs/reference/`** - 快速参考（扁平化后，直接在根目录）
+  - `code-patterns-enhancement-summary.md` - 代码模式
+  - `configuration-parameters-guide.md` - 配置参数指南 ⭐ 最新变更（Issue #1726）
+  - `technology-stack.md` - 技术栈总览
   - `development-checklist.md` - 开发清单
+  - `troubleshooting.md` - 问题排查
 - **`docs/reference/api/`** - API完整文档（12个控制器）
 - **`docs/reference/modules/`** - 模块完整文档（8个业务模块）
+- **`docs/reference/templates/`** - 模板文件
 
 **Explanation（概念解释 - 理解导向）**：
 - **`docs/explanation/architecture/server/`** - Server端架构设计（三层架构、8模块）⭐⭐⭐
@@ -58,8 +59,14 @@ last_updated: 2025-10-30
 **核心业务规则**：
 - **`docs/business-rules.md`** - 14条核心业务规则 ⭐⭐⭐
 
-**深度参考**（遗留文档，逐步迁移到Diátaxis）：
-- **`docs/deep/`** - 高级主题、部署指南、深度设计模式
+**深度技术分析**（已整合到Explanation）：
+- **`docs/explanation/`** - 需求讨论、设计文档、深度分析（扁平化）
+  - `advanced-patterns.md` - 高级模式
+  - `api-design-best-practices.md` - API设计最佳实践
+  - `performance-optimization.md` - 性能优化
+  - `testing-strategies.md` - 测试策略
+  - `token-authentication-security-refactor.md` - Token认证安全重构
+  - 工作流文档（00-complete-startup-to-workstation-flow.md等）
 
 ---
 
@@ -88,11 +95,11 @@ last_updated: 2025-10-30
    ### 模块相关（根据需求选择）
    - [ ] `docs/reference/modules/{module-name}/README.md` - 相关模块文档
    - [ ] `docs/reference/api/{module-name}-api.md` - 相关API文档
-   - [ ] `docs/reference/quick-reference/code-patterns.md` - 代码模式参考
+   - [ ] `docs/reference/code-patterns-enhancement-summary.md` - 代码模式参考
 
    ### 设计参考（可选）
-   - [ ] `docs/deep/advanced-patterns.md` - 高级设计模式（遗留文档）
-   - [ ] `docs/deep/api-design-best-practices.md` - API设计最佳实践（遗留文档）
+   - [ ] `docs/explanation/advanced-patterns.md` - 高级设计模式
+   - [ ] `docs/explanation/api-design-best-practices.md` - API设计最佳实践
    ```
 
 3. **验证文档阅读**：
@@ -233,14 +240,14 @@ serena find_symbol "Controller" --include-body
   方法: CreatePrescription
   影响文档：
     - docs/reference/api/patients-api.md
-    - docs/reference/quick-reference/api-reference.md
+    - docs/reference/api/
 
 修改端点：
 - GET /api/consultations/{id}
   变更: 返回类型从ConsultationDto改为ConsultationDetailDto
   影响文档：
     - docs/reference/api/consultations-api.md
-    - docs/reference/quick-reference/api-reference.md
+    - docs/reference/api/
 
 删除端点：
 - DELETE /api/temp-endpoint
@@ -281,11 +288,11 @@ serena search_for_pattern "class.*Repository" --paths_include_glob="*.cs"
 
 **Service变更**：
 - 影响：`docs/explanation/architecture/server/services.md`（如存在）
-- 影响：`docs/reference/quick-reference/code-patterns.md`（Service模式示例）
+- 影响：`docs/reference/code-patterns-enhancement-summary.md`（Service模式示例）
 
 **Repository变更**：
 - 影响：`docs/explanation/architecture/server/repositories.md`（如存在）
-- 影响：`docs/reference/quick-reference/code-patterns.md`（Repository模式示例）
+- 影响：`docs/reference/code-patterns-enhancement-summary.md`（Repository模式示例）
 
 **示例报告**：
 ```
@@ -334,7 +341,7 @@ git diff HEAD~1 src/Shared/Enums/
 **影响文档**：
 - 实体变更 → `docs/explanation/architecture/server/domain-model.md`（如存在）
 - DTO变更 → `docs/reference/api/{module}-api.md`（请求/响应示例）
-- Enum变更 → `docs/reference/quick-reference/api-reference.md`
+- Enum变更 → `docs/reference/api/`
 
 ---
 
@@ -349,8 +356,8 @@ git diff HEAD~1 src/Shared/Enums/
 - `Directory.Build.props`
 
 **影响文档**：
-- `docs/reference/quick-reference/config-templates.md`
-- `docs/how-to-guides/server/environment-setup.md`（如存在）
+- `docs/reference/configuration-parameters-guide.md`
+- `docs/how-to/server/environment-setup.md`（如存在）
 
 ---
 
@@ -405,7 +412,7 @@ grep -r "\[.*\](docs/" docs/ --include="*.md"
   - 新增端点：POST /api/patients/{id}/prescriptions
   - 添加请求/响应示例
 
-- [ ] 更新`docs/reference/quick-reference/api-reference.md`
+- [ ] 更新`docs/reference/api/`
   - 添加新端点到快速参考
 
 ### 架构文档
@@ -421,7 +428,7 @@ grep -r "\[.*\](docs/" docs/ --include="*.md"
   - 状态：等待确认
 
 ### 示例代码
-- [ ] 更新`docs/reference/quick-reference/code-patterns.md`
+- [ ] 更新`docs/reference/code-patterns-enhancement-summary.md`
   - 分析：新增ReportService
   - 建议：添加Service模式示例
   - 状态：等待确认
@@ -476,7 +483,7 @@ public async Task<ActionResult<PrescriptionDto>> CreatePrescription(
   方法: CreatePrescription
   影响文档：
     - docs/reference/api/patients-api.md
-    - docs/reference/quick-reference/api-reference.md
+    - docs/reference/api/
 
 文档更新清单：
 - [ ] 在patients-api.md中添加新端点文档

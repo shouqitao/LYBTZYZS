@@ -381,5 +381,5 @@ medicalCase.AddPrescriptionItem(item);  // 通过聚合根公共方法
 
 - Server架构文档：`docs/architecture/server/README.md`
 - Client架构文档：`docs/architecture/client/README.md`
-- DDD最佳实践：`docs/deep/advanced-patterns.md`
-- Repository模式：`docs/quick-reference/code-patterns.md`
+- DDD最佳实践：`docs/explanation/advanced-patterns.md`
+- Repository模式：`docs/reference/code-patterns-enhancement-summary.md`
