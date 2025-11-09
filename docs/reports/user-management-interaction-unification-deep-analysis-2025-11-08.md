@@ -51,7 +51,7 @@
 
 ### 1.3 技术栈
 
-- **框架**: WPF + Prism 9.0, .NET 8
+- **框架**: WPF + Prism 8.x, .NET 8
 - **基类**: UnifiedViewModelBase（Issue #1240已支持异步初始化）
 - **导航**: IRegionManager + ContentRegion
 - **事件**: EventAggregator事件驱动

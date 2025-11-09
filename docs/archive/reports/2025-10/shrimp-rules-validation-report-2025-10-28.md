@@ -460,7 +460,7 @@
 
 #### 2. Prism框架版本
 
-**现状**: CLAUDE.md提到Prism 9.0.x，shrimp-rules.md技术栈表格中未列出
+**现状**: CLAUDE.md提到Prism 8.x，shrimp-rules.md技术栈表格中未列出
 
 **建议**: 在技术栈表格中补充Prism行：
 ```

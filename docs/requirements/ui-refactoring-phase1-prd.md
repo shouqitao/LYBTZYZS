@@ -560,7 +560,7 @@ git revert <merge-commit-hash>
 
 ### 7.2 技术依赖
 - .NET 8.0 SDK
-- Prism 9.0
+- Prism 8.x
 - xUnit 2.6+
 - NSubstitute 5.1+
 

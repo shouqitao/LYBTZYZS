@@ -628,7 +628,7 @@ public class FormulaManagementViewModel : UnifiedViewModelBase
 | **MVVM框架** | Prism.DryIoc | 9.0.x | 模块化、区域导航、命令、事件 |
 | **UI组件库** | MaterialDesignThemes | 5.1.x | Material Design风格UI |
 | **数据绑定** | ObservableCollection | .NET 8.0 | 集合变更通知 |
-| **命令模式** | AsyncDelegateCommand | Prism 9.0.x | 异步命令 |
+| **命令模式** | AsyncDelegateCommand | Prism 8.x | 异步命令 |
 | **HTTP通信** | IApiService | 自定义 | HTTP通信封装（返回裸类型） |
 
 ---

@@ -722,7 +722,7 @@ public override async void OnNavigatedTo(NavigationContext navigationContext)
 
 #### 5.1 技术约束
 
-- **技术栈**: .NET 8 + WPF + Prism 9.0 + EF Core 8.0
+- **技术栈**: .NET 8 + WPF + Prism 8.x + EF Core 8.0
 - **架构模式**: Desktop端MVVM + Server端三层架构
 - **聚合根模式**: 所有Write操作必须通过IMedicalCaseRepository
 - **Constitution约束**: 禁止使用Redis/CQRS/MediatR/Docker等黑名单技术

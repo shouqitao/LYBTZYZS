@@ -40,7 +40,7 @@
 
 - **.NET Framework**: .NET 8.0
 - **UI框架**: WPF (Windows Presentation Foundation)
-- **MVVM框架**: Prism 9.0.x
+- **MVVM框架**: Prism 8.x
 - **依赖注入**: Prism.Ioc + Microsoft.Extensions.DependencyInjection
 - **日志**: Microsoft.Extensions.Logging
 - **数据绑定**: WPF DataBinding Engine

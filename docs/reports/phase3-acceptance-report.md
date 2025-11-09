@@ -238,7 +238,7 @@ dotnet build LYBT.All.sln -c Release --no-restore
 
 ✅ **仅使用允许技术栈**:
 - ✅ .NET 8.0 WPF
-- ✅ Prism 9.0
+- ✅ Prism 8.x
 - ✅ SQL Server（后端）
 - ✅ 简单直接的架构
 

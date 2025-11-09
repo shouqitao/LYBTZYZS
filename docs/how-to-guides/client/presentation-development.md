@@ -13,7 +13,7 @@
 
 **核心原则**：
 - **MVVM模式**：严格分离View（XAML）和ViewModel（C#）
-- **Prism框架**：使用Prism 9.0.x进行模块化和导航
+- **Prism框架**：使用Prism 8.x进行模块化和导航
 - **依赖注入**：仅使用构造函数注入
 - **数据绑定**：利用WPF强大的数据绑定引擎
 - **命令模式**：使用DelegateCommand处理用户交互

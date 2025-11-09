@@ -224,7 +224,7 @@
 ### Technical Stack - 技术栈
 - .NET 8.0
 - WPF (Windows Presentation Foundation)
-- Prism 9.0.x (MVVM框架)
+- Prism 8.x (MVVM框架)
 - ASP.NET Core 8.0
 - Entity Framework Core 8.0
 - SQL Server 2022

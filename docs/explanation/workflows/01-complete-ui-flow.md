@@ -1038,7 +1038,7 @@ flowchart TD
 
 ### 9.2 技术架构约束
 
-1. **Prism 9.0 + WPF MVVM**
+1. **Prism 8.x + WPF MVVM**
    - 视图与ViewModel严格分离
    - 依赖注入（DI）管理组件生命周期
    - 区域导航（Region Navigation）管理视图切换

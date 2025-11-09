@@ -54,7 +54,7 @@ repo = "LYBTZYZS"
 
 ### 🔧 技术栈
 
-**核心框架**: .NET 8.0, WPF, ASP.NET Core, EF Core 8.0, Prism 9.0, Avalonia 11.2
+**核心框架**: .NET 8.0, WPF, ASP.NET Core, EF Core 8.0, Prism 8.x, Avalonia 11.2
 
 **数据库**: SQL Server 2022
 

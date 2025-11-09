@@ -1897,7 +1897,7 @@ public void ExecuteNextStep()
 |-----|---------|-----|
 | **.NET 8** | https://learn.microsoft.com/dotnet/core/ | 基础框架 |
 | **WPF** | https://learn.microsoft.com/dotnet/desktop/wpf/ | Windows Presentation Foundation |
-| **Prism 9.0** | https://prismlibrary.com/ | MVVM框架、模块化、DI容器 |
+| **Prism 8.x** | https://prismlibrary.com/ | MVVM框架、模块化、DI容器 |
 | **MaterialDesignThemes** | https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit | Material Design UI组件库 |
 | **Prism.DryIoc** | https://github.com/PrismLibrary/Prism | DryIoc依赖注入容器 |
 | **INavigationAware** | https://prismlibrary.com/docs/navigation.html | Prism导航生命周期 |
