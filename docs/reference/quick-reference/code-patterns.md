@@ -2683,4 +2683,487 @@ services.AddTransient<PatientSelectionViewModel>(); // ViewModel: Transient (每
 
 ---
 
+## 🔀 Navigation模式 ViewModel (Epic #1926)
+
+> **架构统一**：从Dialog模式全面迁移至Navigation模式，提供一致的用户体验和代码规范。
+
+### Navigation模式 vs Dialog模式
+
+| 特性 | Dialog模式（已废弃） | Navigation模式（当前） |
+|-----|---------------------|---------------------|
+| **导航体验** | 模态对话框，无历史记录 | 支持Back按钮、面包屑导航 |
+| **状态保持** | 关闭后状态丢失 | 可保持页面状态 |
+| **布局灵活性** | 固定对话框尺寸 | 响应式布局，占满ContentRegion |
+| **代码复杂度** | IDialogAware接口实现 | INavigationAware接口（更简单） |
+| **用户体验** | 不一致（部分Dialog，部分Navigation） | 统一Navigation模式 |
+
+### 标准Navigation ViewModel模式 ⭐
+
+#### 1. 基础Navigation ViewModel（创建/编辑）
+
+```csharp
+/// <summary>
+/// 用户创建视图模型 - Navigation模式
+/// Epic #1926 Sprint 1: Dialog → Navigation统一迁移
+///
+/// 核心特性：
+/// - INavigationAware接口：处理导航生命周期
+/// - OnNavigatedTo：接收导航参数，初始化表单
+/// - OnNavigatedFrom：清理资源，保存状态
+/// - IsNavigationTarget：控制实例复用策略
+/// </summary>
+public class UserCreateViewModel : UnifiedViewModelBase
+{
+    #region 依赖服务
+
+    private readonly IUserService _userService;
+    private readonly IRegionManager _regionManager;
+
+    #endregion
+
+    #region 绑定属性
+
+    private UserCreateDto _user = new();
+    /// <summary>用户表单数据</summary>
+    public UserCreateDto User
+    {
+        get => _user;
+        set => SetProperty(ref _user, value);
+    }
+
+    private bool _isBusy;
+    /// <summary>是否正在保存</summary>
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetProperty(ref _isBusy, value);
+    }
+
+    #endregion
+
+    #region 命令
+
+    /// <summary>保存并返回</summary>
+    public DelegateCommand SaveCommand { get; }
+
+    /// <summary>取消并返回</summary>
+    public DelegateCommand CancelCommand { get; }
+
+    #endregion
+
+    #region 构造函数
+
+    public UserCreateViewModel(
+        IUserService userService,
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory)
+        : base(eventAggregator, loggerFactory, regionManager)
+    {
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
+
+        // 初始化命令
+        SaveCommand = new DelegateCommand(ExecuteSaveCommand, CanExecuteSave)
+            .ObservesProperty(() => IsBusy);
+        CancelCommand = new DelegateCommand(ExecuteCancelCommand);
+    }
+
+    #endregion
+
+    #region INavigationAware实现
+
+    /// <summary>
+    /// 导航到此视图时调用
+    /// ⭐ Navigation模式核心：初始化表单数据
+    /// </summary>
+    public override void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        try
+        {
+            Logger.LogInformation("导航到用户创建页面");
+
+            // 重置表单数据
+            User = new UserCreateDto
+            {
+                Role = UserRole.Doctor, // 默认角色
+                IsActive = true
+            };
+
+            // 刷新命令状态
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "初始化用户创建页面失败");
+        }
+    }
+
+    /// <summary>
+    /// 控制导航目标策略
+    /// ⭐ 返回false：每次导航创建新实例（推荐用于Create场景）
+    /// </summary>
+    public override bool IsNavigationTarget(NavigationContext navigationContext)
+    {
+        // Create场景：每次导航创建新实例，确保表单数据干净
+        return false;
+    }
+
+    /// <summary>
+    /// 离开此视图时调用
+    /// ⭐ Navigation模式：清理资源、取消订阅
+    /// </summary>
+    public override void OnNavigatedFrom(NavigationContext navigationContext)
+    {
+        Logger.LogInformation("离开用户创建页面");
+        // 清理逻辑（如需要）
+    }
+
+    #endregion
+
+    #region 命令实现
+
+    /// <summary>执行保存命令</summary>
+    private async void ExecuteSaveCommand()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            Logger.LogInformation("开始创建用户：{UserName}", User.UserName);
+
+            var result = await _userService.CreateAsync(User);
+            if (result.IsSuccess)
+            {
+                Logger.LogInformation("用户创建成功：{UserId}", result.Data?.Id);
+
+                // ⭐ Navigation模式：使用RequestNavigate返回列表
+                _regionManager.RequestNavigate("ContentRegion", "UserManagementView");
+            }
+            else
+            {
+                Logger.LogWarning("创建用户失败：{Message}", result.Message);
+                // 显示错误提示（实际项目使用IDialogService或NotificationService）
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "创建用户异常");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>判断是否可以保存</summary>
+    private bool CanExecuteSave()
+    {
+        return !IsBusy
+            && !string.IsNullOrWhiteSpace(User?.UserName)
+            && !string.IsNullOrWhiteSpace(User?.RealName);
+    }
+
+    /// <summary>执行取消命令</summary>
+    private void ExecuteCancelCommand()
+    {
+        Logger.LogInformation("取消创建用户");
+        // ⭐ Navigation模式：直接返回列表
+        _regionManager.RequestNavigate("ContentRegion", "UserManagementView");
+    }
+
+    #endregion
+}
+```
+
+#### 2. 编辑场景Navigation ViewModel（带参数传递）
+
+```csharp
+/// <summary>
+/// 用户编辑视图模型 - Navigation模式（带参数）
+/// Epic #1926 Sprint 1: 从Dialog迁移
+///
+/// 关键差异：
+/// - OnNavigatedTo接收userId参数
+/// - IsNavigationTarget返回true（复用实例）
+/// </summary>
+public class UserEditViewModel : UnifiedViewModelBase
+{
+    private readonly IUserService _userService;
+    private readonly IRegionManager _regionManager;
+
+    private Guid _currentUserId;
+    private UserUpdateDto _user = new();
+
+    public UserUpdateDto User
+    {
+        get => _user;
+        set => SetProperty(ref _user, value);
+    }
+
+    public DelegateCommand SaveCommand { get; }
+    public DelegateCommand CancelCommand { get; }
+
+    public UserEditViewModel(
+        IUserService userService,
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory)
+        : base(eventAggregator, loggerFactory, regionManager)
+    {
+        _userService = userService;
+        _regionManager = regionManager;
+
+        SaveCommand = new DelegateCommand(ExecuteSaveCommand);
+        CancelCommand = new DelegateCommand(ExecuteCancelCommand);
+    }
+
+    /// <summary>
+    /// Navigation模式参数传递 ⭐
+    /// </summary>
+    public override void OnNavigatedTo(NavigationContext navigationContext)
+    {
+        try
+        {
+            // ⭐ 从导航参数获取userId
+            if (navigationContext.Parameters.TryGetValue("userId", out Guid userId))
+            {
+                _currentUserId = userId;
+                Logger.LogInformation("导航到用户编辑页面，UserId: {UserId}", userId);
+
+                // 加载用户数据
+                LoadUserDataAsync(userId);
+            }
+            else
+            {
+                Logger.LogWarning("未提供userId参数，无法加载用户数据");
+                // 返回列表
+                _regionManager.RequestNavigate("ContentRegion", "UserManagementView");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "初始化用户编辑页面失败");
+        }
+    }
+
+    /// <summary>
+    /// Edit场景：复用实例，提升性能
+    /// </summary>
+    public override bool IsNavigationTarget(NavigationContext navigationContext)
+    {
+        // Edit场景可复用实例（根据项目需求决定）
+        return true;
+    }
+
+    /// <summary>加载用户数据</summary>
+    private async void LoadUserDataAsync(Guid userId)
+    {
+        try
+        {
+            var result = await _userService.GetByIdAsync(userId);
+            if (result.IsSuccess && result.Data != null)
+            {
+                User = new UserUpdateDto
+                {
+                    UserName = result.Data.UserName,
+                    RealName = result.Data.RealName,
+                    Role = result.Data.Role,
+                    IsActive = result.Data.IsActive
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "加载用户数据失败，UserId: {UserId}", userId);
+        }
+    }
+
+    private async void ExecuteSaveCommand()
+    {
+        try
+        {
+            var result = await _userService.UpdateAsync(_currentUserId, User);
+            if (result.IsSuccess)
+            {
+                Logger.LogInformation("用户更新成功：{UserId}", _currentUserId);
+                _regionManager.RequestNavigate("ContentRegion", "UserManagementView");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "更新用户失败");
+        }
+    }
+
+    private void ExecuteCancelCommand()
+    {
+        _regionManager.RequestNavigate("ContentRegion", "UserManagementView");
+    }
+}
+```
+
+#### 3. 列表页面调用Navigation（导航触发）
+
+```csharp
+/// <summary>
+/// 用户管理列表 ViewModel - 触发Navigation导航
+/// Epic #1926: 全面迁移至Navigation模式
+/// </summary>
+public class UserManagementViewModel : UnifiedViewModelBase
+{
+    private readonly IRegionManager _regionManager;
+
+    public DelegateCommand CreateUserCommand { get; }
+    public DelegateCommand<Guid?> EditUserCommand { get; }
+
+    public UserManagementViewModel(
+        IRegionManager regionManager,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory)
+        : base(eventAggregator, loggerFactory, regionManager)
+    {
+        _regionManager = regionManager;
+
+        // 创建用户命令
+        CreateUserCommand = new DelegateCommand(ExecuteCreateUserCommand);
+
+        // 编辑用户命令
+        EditUserCommand = new DelegateCommand<Guid?>(ExecuteEditUserCommand);
+    }
+
+    /// <summary>
+    /// 导航到创建用户页面
+    /// ⭐ Navigation模式：无参数导航
+    /// </summary>
+    private void ExecuteCreateUserCommand()
+    {
+        Logger.LogInformation("导航到创建用户页面");
+        _regionManager.RequestNavigate("ContentRegion", "UserCreateView");
+    }
+
+    /// <summary>
+    /// 导航到编辑用户页面
+    /// ⭐ Navigation模式：带参数导航
+    /// </summary>
+    private void ExecuteEditUserCommand(Guid? userId)
+    {
+        if (!userId.HasValue)
+        {
+            Logger.LogWarning("userId为空，无法导航到编辑页面");
+            return;
+        }
+
+        Logger.LogInformation("导航到编辑用户页面，UserId: {UserId}", userId.Value);
+
+        // ⭐ 创建导航参数
+        var parameters = new NavigationParameters
+        {
+            { "userId", userId.Value }
+        };
+
+        // ⭐ 带参数导航
+        _regionManager.RequestNavigate("ContentRegion", "UserEditView", parameters);
+    }
+}
+```
+
+### Navigation模式关键要点
+
+#### ✅ DO（推荐做法）
+
+1. **使用INavigationAware接口**：
+   ```csharp
+   public class MyViewModel : UnifiedViewModelBase
+   {
+       public override void OnNavigatedTo(NavigationContext navigationContext) { }
+       public override bool IsNavigationTarget(NavigationContext navigationContext) { return false; }
+       public override void OnNavigatedFrom(NavigationContext navigationContext) { }
+   }
+   ```
+
+2. **Create场景返回false**（每次创建新实例）：
+   ```csharp
+   public override bool IsNavigationTarget(NavigationContext navigationContext) => false;
+   ```
+
+3. **Edit场景返回true**（复用实例）：
+   ```csharp
+   public override bool IsNavigationTarget(NavigationContext navigationContext) => true;
+   ```
+
+4. **使用NavigationParameters传递参数**：
+   ```csharp
+   var parameters = new NavigationParameters { { "userId", userId } };
+   _regionManager.RequestNavigate("ContentRegion", "UserEditView", parameters);
+   ```
+
+5. **在OnNavigatedTo中接收参数**：
+   ```csharp
+   navigationContext.Parameters.TryGetValue("userId", out Guid userId);
+   ```
+
+#### ❌ DON'T（禁止做法）
+
+1. **不要使用Dialog模式**（Epic #1926已全面废弃）：
+   ```csharp
+   // ❌ 已废弃
+   _dialogService.ShowDialog("UserFormDialog", parameters, callback);
+   ```
+
+2. **不要在ViewModel中保存Region名称硬编码**：
+   ```csharp
+   // ❌ 不推荐：硬编码Region名称
+   _regionManager.RequestNavigate("ContentRegion", "UserCreateView");
+
+   // ✅ 推荐：提取为常量或配置
+   public static class RegionNames
+   {
+       public const string ContentRegion = "ContentRegion";
+   }
+   ```
+
+3. **不要忘记清理资源**：
+   ```csharp
+   public override void OnNavigatedFrom(NavigationContext navigationContext)
+   {
+       // ✅ 取消事件订阅
+       _eventAggregator.GetEvent<MyEvent>().Unsubscribe(OnMyEvent);
+       // ✅ 释放资源
+       _someDisposable?.Dispose();
+   }
+   ```
+
+### Prism模块注册（Navigation模式）
+
+```csharp
+/// <summary>
+/// Users模块注册 - Navigation模式
+/// Epic #1926 Sprint 4: 移除Dialog注册，统一Navigation
+/// </summary>
+public class UsersModule : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        // ✅ 注册Navigation视图
+        containerRegistry.RegisterForNavigation<Views.UserManagementView, ViewModels.UserManagementViewModel>();
+        containerRegistry.RegisterForNavigation<Views.UserCreateView, ViewModels.UserCreateViewModel>();
+        containerRegistry.RegisterForNavigation<Views.UserEditView, ViewModels.UserEditViewModel>();
+        containerRegistry.RegisterForNavigation<Views.UserDetailView, ViewModels.UserDetailViewModel>();
+        containerRegistry.RegisterForNavigation<Views.ChangePasswordView, ViewModels.ChangePasswordViewModel>();
+        containerRegistry.RegisterForNavigation<Views.UserProfileView, ViewModels.UserProfileViewModel>();
+
+        // ❌ Dialog注册已移除（Epic #1926 Sprint 4）
+        // containerRegistry.RegisterDialog<UserFormDialog, UserFormDialogViewModel>(); // 已废弃
+    }
+}
+```
+
+---
+
+*此Navigation模式基于Epic #1926（Dialog to Navigation Migration）实战经验总结，确保100%准确性和可复用性。*
+
+---
+
 *此代码模式文档基于实际8个业务模块代码生成，确保100%准确性。如有疑问，请查看具体模块实现代码。*

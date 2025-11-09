@@ -1279,6 +1279,28 @@ public class SecureStorageService : ISecureStorage
 }
 ```
 
+## 📚 模块开发指南
+
+### 用户管理模块
+
+- **[用户管理交互模式统一实现](user-management-navigation.md)** (Epic #1926)  
+  用户列表、创建、编辑、详情、重置密码、修改密码、个人资料（统一Navigation模式）
+  - ✅ UserCreateView/EditView - 创建和编辑用户
+  - ✅ UserDetailView - 查看用户详情
+  - ✅ ResetPasswordView - 管理员重置密码（已移至列表操作）
+  - ✅ ChangePasswordView - 用户修改密码
+  - ✅ UserProfileView - 个人资料编辑
+  - ⚠️ Dialog模式已废弃（UserFormDialog、ResetPasswordDialog等）
+
+### 其他模块
+
+- **患者管理模块** - 开发中
+- **医案管理模块** - 开发中
+- **诊疗模块** - 开发中
+- **处方模块** - 开发中
+- **药材模块** - 开发中
+- **验方模块** - 开发中
+
 ## 🔗 相关文档
 
 - **[架构总览](../../architecture/README.md)** - 三层对齐架构设计原理

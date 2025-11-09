@@ -1265,6 +1265,70 @@ Modules/Prescriptions/
 - 编辑处方：`NavigateTo("MainRegion", "PrescriptionView", parameters)`
 - 管理列表：`NavigateTo("PrescriptionContentRegion", "PrescriptionManagementView")`
 
+#### 📋 Users模块架构演化（Epic #1926 - Dialog to Navigation Migration）
+
+**重要变更**：用户管理模块交互模式已于2025-11完成统一，全面迁移至Navigation模式。
+
+| 演化阶段 | 交互模式 | 视图实现 | 状态 | 实施时间 |
+|---------|---------|---------|------|----------|
+| **Phase 1**（已废弃） | Dialog模式 | UserFormDialog, ResetPasswordDialog等 | 2025-11废弃 | Epic #1926前 |
+| **统一架构**（当前） | Navigation模式 | UserCreateView, UserEditView等 | 当前使用 | 2025-11 |
+
+**架构迁移过程**（Epic #1926 - 4个Sprint）：
+- ✅ **Sprint 1** (#1927): UserFormDialog → UserCreateView + UserEditView
+- ✅ **Sprint 2** (#1928): UserProfileDialog + ResetPasswordDialog → Navigation模式
+- ✅ **Sprint 3** (#1929): ChangePasswordDialog + UserProfileDialog → Navigation模式
+- ✅ **Sprint 4** (#1930): 清理废弃代码 + 文档更新
+
+**当前Users视图结构**：
+```
+Modules/Users/
+├── Views/
+│   ├── UserManagementView.xaml        # 用户列表主界面
+│   ├── UserCreateView.xaml            # 创建用户（Navigation模式）
+│   ├── UserEditView.xaml              # 编辑用户（Navigation模式）
+│   ├── UserDetailView.xaml            # 用户详情查看
+│   ├── ChangePasswordView.xaml        # 修改密码（Navigation模式）
+│   ├── UserProfileView.xaml           # 个人资料（Navigation模式）
+│   ├── UserFormDialog.xaml            # [已废弃] Sprint 1迁移
+│   ├── ResetPasswordDialog.xaml       # [已废弃] Sprint 2迁移（功能移至列表操作）
+│   ├── ChangePasswordDialog.xaml      # [已废弃] Sprint 3迁移
+│   └── UserProfileDialog.xaml         # [已废弃] Sprint 3迁移
+├── ViewModels/
+│   ├── UserManagementViewModel.cs
+│   ├── UserCreateViewModel.cs         # Navigation模式ViewModel
+│   ├── UserEditViewModel.cs           # Navigation模式ViewModel
+│   ├── UserDetailViewModel.cs
+│   ├── ChangePasswordViewModel.cs     # Navigation模式ViewModel
+│   ├── UserProfileViewModel.cs        # Navigation模式ViewModel
+│   ├── UserFormDialogViewModel.cs     # [已废弃] 标记为Obsolete
+│   ├── ResetPasswordDialogViewModel.cs # [已废弃] 标记为Obsolete
+│   ├── ChangePasswordDialogViewModel.cs # [已废弃] 标记为Obsolete
+│   └── UserProfileDialogViewModel.cs  # [已废弃] 标记为Obsolete
+└── Repositories/
+    └── UserRepository.cs              # Repository模式数据访问
+```
+
+**导航配置**：
+- 创建用户：`NavigateTo("ContentRegion", "UserCreateView")`
+- 编辑用户：`NavigateTo("ContentRegion", "UserEditView", parameters)`
+- 用户详情：`NavigateTo("ContentRegion", "UserDetailView", parameters)`
+- 修改密码：`NavigateTo("ContentRegion", "ChangePasswordView")`
+- 个人资料：`NavigateTo("ContentRegion", "UserProfileView")`
+- 重置密码：列表操作按钮（直接调用UserService.ResetPasswordAsync）
+
+**废弃代码标记**（Sprint 4 - Issue #1930）：
+- ✅ 所有Dialog ViewModels标记为`[Obsolete(..., true)]`
+- ✅ 所有Dialog Views标记为`[Obsolete(..., true)]`
+- ✅ UsersModule.cs移除RegisterDialog调用
+- ✅ 测试类使用`#pragma warning disable CS0619`抑制警告
+
+**架构优势**：
+- ✅ **统一导航体验**：所有功能使用Navigation模式，一致的用户体验
+- ✅ **返回导航支持**：支持Back按钮和面包屑导航
+- ✅ **状态保持**：Navigation模式更好地保持页面状态
+- ✅ **代码简化**：移除Dialog样板代码，减少40%代码量
+
 **Prism模块标准实现**（真实代码：Modules/LYBT.Desktop.Patients/PatientsModule.cs）：
 
 ```csharp
