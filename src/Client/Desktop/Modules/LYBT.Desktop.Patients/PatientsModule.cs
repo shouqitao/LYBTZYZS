@@ -1,8 +1,11 @@
-﻿using LYBT.Desktop.Contracts.Services;
+﻿using FluentValidation;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Patients.Components;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Repositories;
 using LYBT.Desktop.Patients.Services; // Issue #1790: 引入Manager服务
+using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Validators.Patients;
 using Prism.Ioc;
 using Prism.Modularity;
 
@@ -26,6 +29,9 @@ namespace LYBT.Desktop.Patients
         {
             // Phase 2：Repository由模块自己注册
             containerRegistry.RegisterSingleton<IPatientRepository, PatientRepository>();
+
+            // 注册FluentValidation验证器
+            containerRegistry.Register<IValidator<PatientInputDto>, PatientInputDtoValidator>();
 
             // Issue #1781 Task 8 Phase 1: 注册Excel解析服务（Singleton生命周期）
             containerRegistry.RegisterSingleton<IExcelParserService, ExcelParserService>();
@@ -55,6 +61,10 @@ namespace LYBT.Desktop.Patients
             containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
+
+            // CRUD统一模式：Region Navigation视图
+            containerRegistry.RegisterForNavigation<Views.PatientCreateView>();
+            containerRegistry.RegisterForNavigation<Views.PatientEditView>();
 
             // Issue #1547: PatientSelectionDialog已删除（由MedicalCaseFlowView的Step 1替代）
             // containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();

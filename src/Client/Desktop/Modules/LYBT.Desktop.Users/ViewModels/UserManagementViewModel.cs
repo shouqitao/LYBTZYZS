@@ -476,10 +476,17 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 Logger.LogDebug("{Action}用户: {UserId} - {UserName}", action, user.Id, user.UserName);
 
+                // 构建完整的UserInputDto，避免AutoMapper覆盖其他字段
+                // 注意：UserName 不可更改，但验证器要求必填，所以传递原值
                 var updateDto = new UserInputDto
                 {
                     Id = user.Id,
-                    Status = newStatus
+                    UserName = user.UserName,  // 保持原值，满足验证器要求
+                    RealName = user.RealName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    Role = user.Role,
+                    Status = newStatus  // 只修改状态
                 };
 
                 // Issue #1785: 使用CommandHandler更新

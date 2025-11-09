@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using FluentValidation;
-using LYBT.Shared.Utilities;
+using LYBT.Shared.Utilities.Text;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -50,9 +50,21 @@ namespace LYBT.Module.Patients.Services
                     ascending: false
                 );
 
+                var items = _mapper.Map<List<PatientDto>>(pagedResult.Items);
+
+                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
+                foreach (var item in items)
+                {
+                    var entity = pagedResult.Items.FirstOrDefault(e => e.Id == item.Id);
+                    if (entity != null)
+                    {
+                        item.Age = entity.Age;
+                    }
+                }
+
                 var dto = new PagedResult<PatientDto>
                 {
-                    Items = _mapper.Map<List<PatientDto>>(pagedResult.Items),
+                    Items = items,
                     TotalCount = pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
@@ -75,6 +87,10 @@ namespace LYBT.Module.Patients.Services
                     return ServiceResult<PatientDto>.Failure("患者不存在");
 
                 var dto = _mapper.Map<PatientDto>(entity);
+
+                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
+                dto.Age = entity.Age;
+
                 return ServiceResult<PatientDto>.Success(dto);
             }
             catch (Exception ex)
@@ -89,8 +105,16 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 var entity = _mapper.Map<Patient>(dto);
+
+                // 生成拼音码（基于姓名）
+                entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<PatientDto>(result);
+
+                // 确保Age属性正确计算
+                resultDto.Age = result.Age;
+
                 return ServiceResult<PatientDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -108,9 +132,25 @@ namespace LYBT.Module.Patients.Services
                 if (entity == null)
                     return ServiceResult<PatientDto>.Failure("患者不存在");
 
+                // 保存旧的姓名用于检测变化
+                var oldName = entity.Name;
+
                 _mapper.Map(dto, entity);
+
+                // 更新拼音码（仅当姓名发生变化时）
+                if (entity.Name != oldName)
+                {
+                    entity.PinYinCode = PinYinHelper.GetPinYinCode(entity.Name);
+                    _logger.LogDebug("患者姓名变化，重新生成拼音码: {OldName} -> {NewName}, PinYin: {PinYin}",
+                        oldName, entity.Name, entity.PinYinCode);
+                }
+
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<PatientDto>(result);
+
+                // 确保Age属性正确计算
+                resultDto.Age = result.Age;
+
                 return ServiceResult<PatientDto>.Success(resultDto);
             }
             catch (Exception ex)
@@ -249,9 +289,9 @@ namespace LYBT.Module.Patients.Services
 
                         // 映射到Patient实体
                         var patient = _mapper.Map<Patient>(inputDto);
-                        
+
                         // 生成拼音码（Task 2.6）
-                        patient.PinYinCode = PinYinHelper.GetInitials(patient.Name);
+                        patient.PinYinCode = PinYinHelper.GetPinYinCode(patient.Name);
 
                         patientsToCreate.Add(patient);
                     }

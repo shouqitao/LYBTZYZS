@@ -63,7 +63,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _ => "未知"
         };
 
-        public int Age => Patient?.Age ?? 0;
+        public int? Age => Patient?.Age;
         public string PhoneNumber => Patient?.PhoneNumber ?? string.Empty;
         public string IdNumber => Patient?.IdNumber ?? string.Empty;
         public string Address => Patient?.Address ?? string.Empty;

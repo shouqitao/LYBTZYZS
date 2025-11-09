@@ -1,7 +1,40 @@
 ﻿using System.Net.Http;
+using LYBT.Desktop.Admin;
+using LYBT.Desktop.Admin.Services;
+using LYBT.Desktop.Auth;
+using LYBT.Desktop.Auth.Services;
+using LYBT.Desktop.Clinical;
+using LYBT.Desktop.Consultation;
+using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Formula;
+using LYBT.Desktop.Formula.Repositories;
+using LYBT.Desktop.Formula.ViewModels.Components;
+using LYBT.Desktop.Foundation.Application;
+using LYBT.Desktop.Foundation.HealthCheck;
+using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
+using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Herbs;
+using LYBT.Desktop.Herbs.Components;
+using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Infrastructure.Commands;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Services;
+using LYBT.Desktop.MedicalCase;
+using LYBT.Desktop.MedicalCase.Components;
+using LYBT.Desktop.MedicalCase.Repositories;
+using LYBT.Desktop.Patients;
+using LYBT.Desktop.Patients.Repositories;
+using LYBT.Desktop.Patients.ViewModels.Components;
+using LYBT.Desktop.Prescriptions;
+using LYBT.Desktop.Prescriptions.Services;
+using LYBT.Desktop.Presentation.Notifications;
+using LYBT.Desktop.Shell.Services;
+using LYBT.Desktop.Shell.Services.Bootstrap;
+using LYBT.Desktop.Users;
+using LYBT.Desktop.Users.Repositories;
+using LYBT.Desktop.Users.ViewModels.Components;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -69,7 +102,6 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterComponentLoggers(containerRegistry);
         }
 
-
         /// <summary>
         /// 注册LoggerFactory
         /// Issue #1789: 从RegisterLogging提取，封装LoggerFactory注册逻辑
@@ -98,10 +130,10 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterInfrastructureLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Infrastructure.Services.RoleNavigationService>(containerRegistry);
+            RegisterLogger<MainWindowServicesFacade>(containerRegistry);
+            RegisterLogger<StandardErrorHandler>(containerRegistry);
+            RegisterLogger<KeyboardShortcutService>(containerRegistry);
+            RegisterLogger<RoleNavigationService>(containerRegistry);
         }
 
         /// <summary>
@@ -110,18 +142,18 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterFoundationLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Foundation.Http.ApiService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>(containerRegistry); // Issue #1838: Token自动刷新
-            RegisterLogger<LYBT.Desktop.Foundation.Security.AuthenticationService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Security.TokenStorageService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Security.UsernameStorageService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Security.SecureCredentialStorage>(containerRegistry);
+            RegisterLogger<ApiService>(containerRegistry);
+            RegisterLogger<AuthorizationMessageHandler>(containerRegistry);
+            RegisterLogger<TokenRefreshHandler>(containerRegistry); // Issue #1838: Token自动刷新
+            RegisterLogger<AuthenticationService>(containerRegistry);
+            RegisterLogger<TokenStorageService>(containerRegistry);
+            RegisterLogger<UsernameStorageService>(containerRegistry);
+            RegisterLogger<SecureCredentialStorage>(containerRegistry);
             // Issue #1862-1864: Token认证安全重构 - 新增Logger
-            RegisterLogger<LYBT.Desktop.Foundation.Security.SecureTokenStorage>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Security.LocalTokenValidator>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Modules.ModuleLoadingService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Performance.StartupOptimizationService>(containerRegistry);
+            RegisterLogger<SecureTokenStorage>(containerRegistry);
+            RegisterLogger<LocalTokenValidator>(containerRegistry);
+            RegisterLogger<ModuleLoadingService>(containerRegistry);
+            RegisterLogger<StartupOptimizationService>(containerRegistry);
         }
 
         /// <summary>
@@ -130,14 +162,14 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterPresentationAndShellLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Presentation.Notifications.NotificationService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Shell.App>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Shell.Services.ApplicationInitializationService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Foundation.Application.ApplicationStateService>(containerRegistry); // Issue #1823: API健康检查前置
-            RegisterLogger<LYBT.Desktop.Shell.Services.NavigationManager>(containerRegistry); // Issue #1823: NavigationManager需要Logger
-            RegisterLogger<LYBT.Desktop.Shell.Services.MenuManager>(containerRegistry); // Issue #1823: MenuManager需要Logger
+            RegisterLogger<NotificationService>(containerRegistry);
+            RegisterLogger<UnifiedErrorHandlingService>(containerRegistry);
+            RegisterLogger<App>(containerRegistry);
+            RegisterLogger<ApplicationInitializationService>(containerRegistry);
+            RegisterLogger<ApplicationBootstrapper>(containerRegistry);
+            RegisterLogger<ApplicationStateService>(containerRegistry); // Issue #1823: API健康检查前置
+            RegisterLogger<NavigationManager>(containerRegistry); // Issue #1823: NavigationManager需要Logger
+            RegisterLogger<MenuManager>(containerRegistry); // Issue #1823: MenuManager需要Logger
         }
 
         /// <summary>
@@ -146,16 +178,16 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterModuleLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Auth.AuthenticationModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Users.UsersModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Patients.PatientsModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Consultation.ConsultationModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.MedicalCase.MedicalCaseModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Prescriptions.PrescriptionsModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Herbs.HerbsModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Formula.FormulaModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Clinical.ClinicalModule>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Admin.AdminModule>(containerRegistry);
+            RegisterLogger<AuthenticationModule>(containerRegistry);
+            RegisterLogger<UsersModule>(containerRegistry);
+            RegisterLogger<PatientsModule>(containerRegistry);
+            RegisterLogger<ConsultationModule>(containerRegistry);
+            RegisterLogger<MedicalCaseModule>(containerRegistry);
+            RegisterLogger<PrescriptionsModule>(containerRegistry);
+            RegisterLogger<HerbsModule>(containerRegistry);
+            RegisterLogger<FormulaModule>(containerRegistry);
+            RegisterLogger<ClinicalModule>(containerRegistry);
+            RegisterLogger<AdminModule>(containerRegistry);
         }
 
         /// <summary>
@@ -164,11 +196,11 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterRepositoryLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Users.Repositories.UserRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Patients.Repositories.PatientRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Herbs.Repositories.HerbRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Formula.Repositories.FormulaRepository>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.MedicalCase.Repositories.MedicalCaseRepository>(containerRegistry);
+            RegisterLogger<UserRepository>(containerRegistry);
+            RegisterLogger<PatientRepository>(containerRegistry);
+            RegisterLogger<HerbRepository>(containerRegistry);
+            RegisterLogger<FormulaRepository>(containerRegistry);
+            RegisterLogger<MedicalCaseRepository>(containerRegistry);
         }
 
         /// <summary>
@@ -177,8 +209,8 @@ namespace LYBT.Desktop.Shell.Extensions
         /// </summary>
         private static void RegisterServiceLoggers(IContainerRegistry containerRegistry)
         {
-            RegisterLogger<LYBT.Desktop.Prescriptions.Services.PrescriptionEditorService>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Admin.Services.SystemSettingsService>(containerRegistry); // Epic #1832 Phase 2: SystemSettings服务Logger
+            RegisterLogger<PrescriptionEditorService>(containerRegistry);
+            RegisterLogger<SystemSettingsService>(containerRegistry); // Epic #1832 Phase 2: SystemSettings服务Logger
         }
 
         /// <summary>
@@ -188,14 +220,18 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterComponentLoggers(IContainerRegistry containerRegistry)
         {
             // CommandHandler Loggers
-            RegisterLogger<LYBT.Desktop.Users.ViewModels.Components.UserCommandHandler>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Formula.ViewModels.Components.FormulaCommandHandler>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Patients.ViewModels.Components.PatientCommandHandler>(containerRegistry); // Issue #1834: 添加PatientCommandHandler Logger
+            RegisterLogger<UserCommandHandler>(containerRegistry);
+            RegisterLogger<FormulaCommandHandler>(containerRegistry);
+            RegisterLogger<PatientCommandHandler>(containerRegistry); // Issue #1834: 添加PatientCommandHandler Logger
 
             // DataManager Loggers（Issue #1831: 修复管理界面导航问题 + Logger类型统一）
-            RegisterLogger<LYBT.Desktop.Herbs.Components.HerbDataManager>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.MedicalCase.Components.MedicalCaseDataManager>(containerRegistry);
-            RegisterLogger<LYBT.Desktop.Formula.ViewModels.Components.FormulaDataManager>(containerRegistry);
+            RegisterLogger<HerbDataManager>(containerRegistry);
+            RegisterLogger<MedicalCaseDataManager>(containerRegistry);
+            RegisterLogger<FormulaDataManager>(containerRegistry);
+            RegisterLogger<PatientDataManager>(containerRegistry); // 修复PatientDetailView DI错误
+
+            // Validator Loggers（CRUD统一模式升级）
+            RegisterLogger<PatientValidator>(containerRegistry); // 修复PatientValidator DI错误
         }
 
         /// <summary>
@@ -225,10 +261,10 @@ namespace LYBT.Desktop.Shell.Extensions
             var ignoreSslErrors = config.GetValue<bool>("Lybt:Client:Api:IgnoreSslErrors", false);
 
             // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
+            containerRegistry.RegisterSingleton<AuthorizationMessageHandler>();
 
             // Issue #1838: 注册 TokenRefreshHandler
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>();
+            containerRegistry.RegisterSingleton<TokenRefreshHandler>();
 
             // Issue #1239 修复 + Issue #1838: 手动创建带有 TokenRefreshHandler 和 AuthorizationMessageHandler 的 HttpClient
             // 不使用 ServiceCollection，因为 Handler 依赖 Prism 容器中的服务
@@ -243,11 +279,11 @@ namespace LYBT.Desktop.Shell.Extensions
                 }
 
                 // 2. 从 Prism 容器解析 TokenRefreshHandler（先检查Token过期并刷新）
-                var tokenRefreshHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.TokenRefreshHandler>();
+                var tokenRefreshHandler = resolver.Resolve<TokenRefreshHandler>();
                 tokenRefreshHandler.InnerHandler = httpHandler;
 
                 // 3. 从 Prism 容器解析 AuthorizationMessageHandler（添加Bearer Token到请求头）
-                var authHandler = resolver.Resolve<LYBT.Desktop.Foundation.Http.AuthorizationMessageHandler>();
+                var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
                 authHandler.InnerHandler = tokenRefreshHandler;
 
                 // 4. 使用 authHandler 创建 HttpClient（自动刷新Token + 自动添加 Bearer Token）
@@ -262,29 +298,29 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Issue #1239 修复: 使用延迟解析注册 Refit 客户端（避免在注册阶段解析 HttpClient）
             // 所有 Refit 客户端共享同一个 HttpClient 实例（包含 AuthorizationMessageHandler）
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IAuthApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IAuthApi>(resolver =>
+                Refit.RestService.For<IAuthApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPatientApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IPatientApi>(resolver =>
+                Refit.RestService.For<IPatientApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IUserApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IUserApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IUserApi>(resolver =>
+                Refit.RestService.For<IUserApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IConsultationApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IConsultationApi>(resolver =>
+                Refit.RestService.For<IConsultationApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IHerbApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IHerbApi>(resolver =>
+                Refit.RestService.For<IHerbApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IFormulaApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IFormulaApi>(resolver =>
+                Refit.RestService.For<IFormulaApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IMedicalCaseApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IMedicalCaseApi>(resolver =>
+                Refit.RestService.For<IMedicalCaseApi>(resolver.Resolve<HttpClient>()));
 
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver =>
-                Refit.RestService.For<LYBT.Desktop.Contracts.Api.IPrescriptionApi>(resolver.Resolve<HttpClient>()));
+            containerRegistry.RegisterSingleton<IPrescriptionApi>(resolver =>
+                Refit.RestService.For<IPrescriptionApi>(resolver.Resolve<HttpClient>()));
         }
 
         /// <summary>
@@ -305,32 +341,25 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<ITokenValidator, LocalTokenValidator>();
 
             // Issue #1245 修复: 用户名存储服务 - Foundation/Security
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.IUsernameStorageService,
-                LYBT.Desktop.Foundation.Security.UsernameStorageService>();
+            containerRegistry.RegisterSingleton<IUsernameStorageService, UsernameStorageService>();
 
             // Issue #1246 修复: 安全凭据存储服务（密码加密）- Foundation/Security
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Security.ISecureCredentialStorage,
-                LYBT.Desktop.Foundation.Security.SecureCredentialStorage>();
+            containerRegistry.RegisterSingleton<ISecureCredentialStorage, SecureCredentialStorage>();
 
             // Issue #1825: 连接设置服务（远程/本地模式切换）- Auth/Services
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Auth.Services.IConnectionSettingsService,
-                LYBT.Desktop.Auth.Services.ConnectionSettingsService>();
+            containerRegistry.RegisterSingleton<IConnectionSettingsService, ConnectionSettingsService>();
 
             // Epic #1832 Phase 2: 系统设置服务 - Admin/Services
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Admin.Services.ISystemSettingsService,
-                LYBT.Desktop.Admin.Services.SystemSettingsService>();
+            containerRegistry.RegisterSingleton<ISystemSettingsService, SystemSettingsService>();
 
             // API 健康检查服务 - Foundation/HealthCheck
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.HealthCheck.IApiHealthCheckService,
-                LYBT.Desktop.Foundation.HealthCheck.ApiHealthCheckService>();
+            containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
 
             // Issue #1239 修复: 注册 API 服务基类 - Foundation/Http
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Http.IApiService,
-                LYBT.Desktop.Foundation.Http.ApiService>();
+            containerRegistry.RegisterSingleton<IApiService, ApiService>();
 
             // Issue #1239 修复: 注册启动优化服务 - Foundation/Performance
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Performance.IStartupOptimizationService,
-                LYBT.Desktop.Foundation.Performance.StartupOptimizationService>();
+            containerRegistry.RegisterSingleton<IStartupOptimizationService, StartupOptimizationService>();
         }
 
         /// <summary>
@@ -340,16 +369,14 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterPresentationServices(IContainerRegistry containerRegistry)
         {
             // 通知服务 - Presentation/Notifications
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.INotificationService,
-                LYBT.Desktop.Presentation.Notifications.NotificationService>();
+            containerRegistry.RegisterSingleton<INotificationService, NotificationService>();
 
             // 错误处理服务 - Presentation/Notifications
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Presentation.Notifications.IErrorHandlingService,
-                LYBT.Desktop.Presentation.Notifications.UnifiedErrorHandlingService>();
+            containerRegistry.RegisterSingleton<IErrorHandlingService, UnifiedErrorHandlingService>();
 
             // Issue #1790: 注册Shell层导航和菜单管理器
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.NavigationManager>();
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.MenuManager>();
+            containerRegistry.RegisterSingleton<NavigationManager>();
+            containerRegistry.RegisterSingleton<MenuManager>();
 
             // 注意：PatientSelector组件使用反射进行手动映射,不需要AutoMapper配置
             // 原因：Presentation层不能引用Modules层(避免循环依赖)
@@ -361,39 +388,31 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterInfrastructureServices(IContainerRegistry containerRegistry)
         {
             // 会话管理器
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.ISessionManager,
-                LYBT.Desktop.Infrastructure.Services.SessionManager>();
+            containerRegistry.RegisterSingleton<ISessionManager, SessionManager>();
 
             // 用户通知服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService,
-                LYBT.Desktop.Infrastructure.Services.UserNotificationService>();
+            containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();
 
             // 主窗口服务门面
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IMainWindowServicesFacade,
-                LYBT.Desktop.Infrastructure.Services.MainWindowServicesFacade>();
+            containerRegistry.RegisterSingleton<IMainWindowServicesFacade, MainWindowServicesFacade>();
 
             // 标准错误处理器
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IStandardErrorHandler,
-                LYBT.Desktop.Infrastructure.Services.StandardErrorHandler>();
+            containerRegistry.RegisterSingleton<IStandardErrorHandler, StandardErrorHandler>();
 
             // 处方打印服务已移除（等待 Issue #1202 实现新的统一打印系统）
             // 新的打印服务将在 Desktop.Presentation/Print/ 中实现，使用 QuestPDF
 
             // 键盘快捷键服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Services.IKeyboardShortcutService,
-                LYBT.Desktop.Infrastructure.Services.KeyboardShortcutService>();
+            containerRegistry.RegisterSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
 
             // 功能开关服务 (Issue #1477 #1479 架构纠正v2)
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IFeatureToggleService,
-                LYBT.Desktop.Infrastructure.Services.FeatureToggleService>();
+            containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
 
             // Issue #1553: 角色导航服务 - 根据用户角色导航到对应的主页
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IRoleNavigationService,
-                LYBT.Desktop.Infrastructure.Services.RoleNavigationService>();
+            containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
 
             // Epic #1934: 通用对话框服务 - 支持批量导入/导出功能的文件对话框
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.ICommonDialogService,
-                LYBT.Desktop.Infrastructure.Services.CommonDialogService>();
+            containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
 
             // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
             // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
@@ -417,16 +436,13 @@ namespace LYBT.Desktop.Shell.Extensions
         private static void RegisterApplicationServices(IContainerRegistry containerRegistry)
         {
             // 应用程序初始化服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.IApplicationInitializationService,
-                LYBT.Desktop.Shell.Services.ApplicationInitializationService>();
+            containerRegistry.RegisterSingleton<IApplicationInitializationService, ApplicationInitializationService>();
 
             // 应用程序启动引导服务
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Shell.Services.Bootstrap.IApplicationBootstrapper,
-                LYBT.Desktop.Shell.Services.Bootstrap.ApplicationBootstrapper>();
+            containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
 
             // 应用程序状态服务 - Issue #1823: API健康检查前置优化
-            containerRegistry.RegisterSingleton<LYBT.Desktop.Foundation.Application.IApplicationStateService,
-                LYBT.Desktop.Foundation.Application.ApplicationStateService>();
+            containerRegistry.RegisterSingleton<IApplicationStateService, ApplicationStateService>();
         }
     }
 }

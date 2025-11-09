@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -45,10 +46,18 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             PageTitle = "患者管理";
 
+            // CRUD统一模式: 初始化列表操作命令（同步Navigation模式）
+            ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails);
+            EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit);
+
             // Epic #1934: 初始化导入/导出命令
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
+
+            // CRUD统一模式: 订阅患者创建和更新事件
+            EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(OnPatientCreated);
+            EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(OnPatientUpdated);
         }
 
         #endregion
@@ -91,20 +100,48 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 重写虚方法 (Phase 2仅列表功能,其他功能待后续实现)
 
         /// <summary>
-        /// 执行添加操作 (Phase 2暂不实现)
+        /// 执行添加操作 - CRUD统一模式（Region Navigation）
         /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            await ShowSuccessMessageAsync("添加患者功能开发中");
+            // Region Navigation必须在UI线程执行
+            Logger.LogInformation("导航到创建患者视图");
+            NavigateTo("ContentRegion", "PatientCreateView");
+            await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 执行删除操作 (Phase 2暂不实现)
+        /// 删除患者
         /// </summary>
         protected override async Task OnExecuteDeleteAsync(PatientDto item)
         {
-            await ShowSuccessMessageAsync($"删除患者功能开发中：{item.Name}");
+            if (item == null) return;
+
+            Logger.LogDebug("删除患者: {PatientId} - {PatientName}", item.Id, item.Name);
+
+            // 使用CommandHandler删除
+            var result = await _commandHandler.DeletePatientAsync(item.Id);
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException(result.ErrorMessage ?? "删除患者失败");
+            }
+
+            Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
         }
+
+        #endregion
+
+        #region 列表操作命令（FR-005）
+
+        /// <summary>
+        /// 查看患者详情命令
+        /// </summary>
+        public ICommand ViewDetailsCommand { get; }
+
+        /// <summary>
+        /// 编辑患者命令
+        /// </summary>
+        public ICommand EditCommand { get; }
 
         #endregion
 
@@ -249,6 +286,67 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 await _dialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
             }, "下载模板");
+        }
+
+        #endregion
+
+        #region 列表操作命令实现 - CRUD统一模式（Region Navigation）
+
+        /// <summary>
+        /// 执行查看患者详情
+        /// </summary>
+        private void ExecuteViewDetails(PatientDto? patient)
+        {
+            if (patient == null)
+            {
+                return;
+            }
+
+            Logger.LogInformation("查看患者详情：{PatientId} - {PatientName}", patient.Id, patient.Name);
+
+            // 导航到详情视图
+            NavigateTo("ContentRegion", "PatientDetailView", new NavigationParameters
+            {
+                { "PatientId", patient.Id },
+                { "title", $"患者详情 - {patient.Name}" }
+            });
+        }
+
+        /// <summary>
+        /// 执行编辑患者
+        /// </summary>
+        private void ExecuteEdit(PatientDto? patient)
+        {
+            if (patient == null)
+            {
+                return;
+            }
+
+            Logger.LogInformation("编辑患者：{PatientId} - {PatientName}", patient.Id, patient.Name);
+
+            // 导航到编辑视图
+            NavigateTo("ContentRegion", "PatientEditView", new NavigationParameters
+            {
+                { "PatientId", patient.Id }
+            });
+        }
+
+        /// <summary>
+        /// 患者创建事件处理
+        /// </summary>
+        private async void OnPatientCreated(PatientDto patient)
+        {
+            Logger.LogInformation("收到患者创建事件：{PatientId} - {PatientName}", patient.Id, patient.Name);
+            await RefreshAsync();
+        }
+
+        /// <summary>
+        /// 患者更新事件处理
+        /// </summary>
+        private async void OnPatientUpdated(PatientDto patient)
+        {
+            Logger.LogInformation("收到患者更新事件：{PatientId} - {PatientName}", patient.Id, patient.Name);
+            await RefreshAsync();
         }
 
         #endregion

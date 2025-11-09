@@ -7,7 +7,10 @@ namespace LYBT.Shared.Validators.Users
     {
         public UserInputDtoValidator()
         {
-            RuleFor(x => x.UserName).NotEmpty();
+            // 用户名：创建时必填（Id为null），更新时可选
+            RuleFor(x => x.UserName)
+                .NotEmpty()
+                .When(x => x.Id == null || x.Id == Guid.Empty);
         }
     }
 }
