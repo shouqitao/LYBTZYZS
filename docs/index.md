@@ -360,6 +360,18 @@
   - [ADR-006: 病案/诊断/处方重构](explanation/architecture/decisions/ADR-006-medicalcase-consultation-prescription-refactoring.md)
   - [ADR-007: Repository和Service层简化重构](explanation/architecture/decisions/ADR-007-repository-service-simplification.md) ⭐ Epic #1725
 
+### 项目愿景与结构（⭐ Phase 3新增）
+
+> **Phase 3文档整合**：2025-11-09从.spec-workflow/steering/迁移核心文档到docs/explanation/，统一文档体系
+
+- **[产品愿景与战略目标](explanation/product-vision.md)** ⭐⭐⭐
+  产品愿景、业务目标、用户角色、核心功能、成功指标
+
+- **[项目结构与组织指南](explanation/project-structure.md)** ⭐⭐⭐
+  根目录结构、Server/Client/Shared三层代码组织、命名规范、依赖关系
+
+> **📌 归档说明**：原.spec-workflow/已归档至[docs/archive/spec-workflow-legacy-2025-11-09/](archive/spec-workflow-legacy-2025-11-09/)，查看[迁移说明](archive/spec-workflow-legacy-2025-11-09/MIGRATION.md)了解详细映射关系
+
 ### 业务规则与设计
 
 - **[业务规则文档](explanation/business-rules.md)** ⭐⭐⭐

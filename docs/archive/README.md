@@ -1,75 +1,54 @@
 # 文档归档目录
 
-## 📋 归档说明
+本目录存放已废弃或迁移的历史文档，用于保留项目演进轨迹。
 
-本目录用于存放已完成、已废弃或已过期的文档,保持主文档目录的精简和时效性。
+## 归档原则
 
-## 📂 目录结构
+- **归档时机**：文档体系重构、工具废弃、流程变更时
+- **命名规范**：`{原目录名}-legacy-{归档日期YYYY-MM-DD}`
+- **保留期限**：至少保留6个月，供历史追溯和回退参考
+- **访问限制**：仅供查阅，禁止作为当前开发依据
 
-```
-docs/archive/
-├── requirements-completed-2025/       # 已完成实施的需求文档
-├── discussions-deprecated-2025/       # 已废弃的讨论文档
-├── discussions-client-2025-10/        # 2025-10月归档的Client讨论文档（18个）
-├── discussions-shared-2025-10/        # 2025-10月归档的Shared讨论文档（9个）
-├── reports-2025-10/                   # 2025-10月归档的旧报告（待执行）
-└── tasks/                             # 旧版任务管理文件
-```
+## 归档清单
 
-## 🗂️ 归档策略
+### spec-workflow-legacy-2025-11-09
 
-### 1. 已完成实施的需求文档
+**归档日期**：2025-11-09  
+**原路径**：`.spec-workflow/`  
+**归档原因**：文档系统整合（Issue #1933）
 
-**归档条件**：
-- GitHub Issue状态为"closed + completed"
-- 功能已上线并稳定运行 >1个月
-- 不再需要频繁参考
+**迁移说明**：
+- ✅ **steering/product.md** → 迁移至 `docs/explanation/product-vision.md`
+- ✅ **steering/structure.md** → 迁移至 `docs/explanation/project-structure.md`
+- ✅ **steering/constitution.md** → 内容已整合至 `docs/explanation/architecture/principles.md`
+- ✅ **steering/tech.md** → 内容已整合至 `docs/explanation/architecture/principles.md` 和各ADR文档
 
-**归档位置**：`requirements-completed-{YEAR}/`
+**废弃内容**：
+- `specs/` 目录：Spec工作流文档（已不再使用）
+- `approvals/` 目录：审批流程文档（已不再使用）
 
-**示例**：
-- ✅ `workstation-refactoring-requirements.md` - Issue #1513已完成（2025-10-21关闭）
-
-### 2. 已废弃的讨论文档
-
-**归档条件**：
-- 讨论结果已被新方案替代
-- 架构已重构,旧设计不再适用
-- 明确标记为"废弃"或"已过时"
-
-**归档位置**：`discussions-deprecated-{YEAR}/`
-
-**示例**：
-- （待识别）
-
-### 3. 保留策略
-
-**不归档的文档**：
-- ✅ 记录架构演进过程的文档（即使包含旧方案,但有历史价值）
-  - 例如：`medicalcase-fourstep-workflow-discussion.md`（记录四步→三步演进）
-- ✅ 当前活跃的需求、设计、架构文档
-- ✅ 未完成的Epic相关文档
-
-## 📅 归档历史
-
-| 日期 | 归档文档 | 原位置 | 归档原因 | 关联Issue |
-|-----|---------|--------|---------|----------|
-| 2025-01-24 | workstation-refactoring-requirements.md | docs/requirements/ | 已完成实施 | #1513 (closed) |
-| 2025-10-26 | 18个Client讨论文档 | docs/architecture/client/ | 讨论已完成，正式文档已生成 | Issue #1611 Phase 1 |
-| 2025-10-26 | 9个Shared讨论文档 | docs/architecture/shared/ | 讨论已完成，正式文档已生成 | Issue #1611 Phase 1 |
-
-## 🔍 查询归档文档
-
-如需查找归档文档,可使用以下命令：
-
+**查阅方式**：
 ```bash
-# 按关键词搜索
-grep -r "关键词" docs/archive/
+# 查看归档内容
+ls docs/archive/spec-workflow-legacy-2025-11-09/
 
-# 查看归档列表
-find docs/archive/ -name "*.md" -type f
+# 查看steering/核心文档
+cat docs/archive/spec-workflow-legacy-2025-11-09/steering/product.md
 ```
 
-## ♻️ 定期清理
+**相关Issue**：[#1933 文档系统整合](https://github.com/shouqitao/LYBTZYZS/issues/1933)
 
-建议每季度Review一次主文档目录,将符合归档条件的文档移至本目录。
+---
+
+## 历史归档索引
+
+| 归档目录 | 归档日期 | 原因 | 相关Issue |
+|---------|---------|------|----------|
+| spec-workflow-legacy-2025-11-09 | 2025-11-09 | 文档系统整合，steering/文档迁移至docs/explanation/ | #1933 |
+
+---
+
+**维护说明**：
+- 每次归档需更新本README的归档清单
+- 归档目录命名必须包含日期后缀
+- 重要迁移需在归档目录内创建MIGRATION.md说明迁移映射
