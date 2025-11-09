@@ -1,8 +1,8 @@
 # 凌隐宝堂中医诊所 - 文档导航中心
 
-**文档版本**：v6.0 Diátaxis框架版
+**文档版本**：v6.1 Diátaxis框架重构版
 **创建时间**：2025-10-15
-**最后更新**：2025-10-29
+**最后更新**：2025-11-09（Issue #1933 文档系统整合）
 **维护负责**：项目团队
 
 ---
@@ -62,64 +62,64 @@
 
 ### 核心指南
 
-- **[How-to Guides总览](how-to-guides/README.md)** ⭐ **操作指南入口**
+- **[How-to Guides总览](how-to/README.md)** ⭐ **操作指南入口**
   开发规范、流程指导、任务导航
 
 ### 分层操作指南（三层对齐架构）
 
 #### Server端开发指南
 
-- **[Server端操作总览](how-to-guides/server/README.md)** ⭐
+- **[Server端操作总览](how-to/server/README.md)** ⭐
   后端开发、API开发、数据库操作
-- **[认证集成指南](how-to-guides/server/auth-integration.md)**
+- **[认证集成指南](how-to/server/auth-integration.md)**
   JWT认证、双轨认证实现、权限验证
-- **[诊断模块开发](how-to-guides/server/consultation-development.md)**
+- **[诊断模块开发](how-to/server/consultation-development.md)**
   Consultation Service/Controller/Repository开发
-- **[事件总线集成](how-to-guides/server/eventbus-integration.md)**
+- **[事件总线集成](how-to/server/eventbus-integration.md)**
   事件发布订阅、跨模块通信
-- **[方剂模块开发](how-to-guides/server/formula-development.md)**
+- **[方剂模块开发](how-to/server/formula-development.md)**
   Formula Service/Controller/Repository开发
-- **[接口层使用指南](how-to-guides/server/interfaces-usage.md)**
+- **[接口层使用指南](how-to/server/interfaces-usage.md)**
   IRepository/IService接口规范
-- **[医案模块开发](how-to-guides/server/medical-case-development.md)**
+- **[医案模块开发](how-to/server/medical-case-development.md)**
   MedicalCase Service/Controller/Repository开发
-- **[处方模块开发](how-to-guides/server/prescriptions-development.md)**
+- **[处方模块开发](how-to/server/prescriptions-development.md)**
   Prescription Service/Controller/Repository开发
-- **[WebAPI开发指南](how-to-guides/server/webapi-development.md)**
+- **[WebAPI开发指南](how-to/server/webapi-development.md)**
   API端点设计、Swagger配置、错误处理
-- **[WebAPI部署指南](how-to-guides/server/webapi-deployment.md)**
+- **[WebAPI部署指南](how-to/server/webapi-deployment.md)**
   生产环境部署、Windows Service配置、自动化脚本
 
 #### Client端开发指南
 
-- **[Client端操作总览](how-to-guides/client/README.md)** ⭐
+- **[Client端操作总览](how-to/client/README.md)** ⭐
   WPF开发、UI设计、客户端逻辑
-- **[诊断模块开发](how-to-guides/client/consultation-development.md)**
+- **[诊断模块开发](how-to/client/consultation-development.md)**
   ConsultationViewModel/View开发、四诊合参UI
-- **[方剂模块开发](how-to-guides/client/formula-development.md)**
+- **[方剂模块开发](how-to/client/formula-development.md)**
   FormulaViewModel/View开发、验方管理
-- **[Foundation层开发](how-to-guides/client/foundation-development.md)**
+- **[Foundation层开发](how-to/client/foundation-development.md)**
   ViewModelBase、命令封装、依赖注入
-- **[Infrastructure层使用](how-to-guides/client/infrastructure-usage.md)**
+- **[Infrastructure层使用](how-to/client/infrastructure-usage.md)**
   ApiClient、事件聚合器、本地存储
-- **[医案模块开发](how-to-guides/client/medical-case-development.md)**
+- **[医案模块开发](how-to/client/medical-case-development.md)**
   MedicalCaseViewModel/View开发、病案管理UI
-- **[Models层使用指南](how-to-guides/client/models-usage.md)**
+- **[Models层使用指南](how-to/client/models-usage.md)**
   ClientDTO设计、数据绑定、验证规则
-- **[处方模块开发](how-to-guides/client/prescriptions-development.md)**
+- **[处方模块开发](how-to/client/prescriptions-development.md)**
   PrescriptionViewModel/View开发、药材选择器
-- **[Presentation层开发](how-to-guides/client/presentation-development.md)**
+- **[Presentation层开发](how-to/client/presentation-development.md)**
   样式主题、控件模板、资源字典
-- **[打印功能开发](how-to-guides/client/print-functionality.md)**
+- **[打印功能开发](how-to/client/print-functionality.md)**
   打印模板设计、FlowDocument生成、打印预览
 
 #### 共享开发指南
 
-- **[共享操作总览](how-to-guides/shared/README.md)** ⭐
+- **[共享操作总览](how-to/shared/README.md)** ⭐
   跨端开发、通用组件、接口定义
-- **[DTO开发指南](how-to-guides/shared/dto-development.md)**
+- **[DTO开发指南](how-to/shared/dto-development.md)**
   DTO创建五步法、验证规则、AutoMapper配置
-- **[共享组件使用](how-to-guides/shared/components-usage.md)**
+- **[共享组件使用](how-to/shared/components-usage.md)**
   Result/PagedResult/ApiResponse、通用工具类
 
 ### Phase 3 角色模块（⭐ 新增）
@@ -128,13 +128,13 @@
 
 #### Client端角色模块开发
 
-- **[Admin模块开发](how-to-guides/client/admin-development.md)**
+- **[Admin模块开发](how-to/client/admin-development.md)**
   管理员控制台、用户管理、系统配置、数据库维护
-- **[Clinical模块开发](how-to-guides/client/clinical-development.md)**
+- **[Clinical模块开发](how-to/client/clinical-development.md)**
   诊疗工作台、待诊列表、快速开单、今日工作总结
-- **[Herbs模块集成](how-to-guides/client/herbs-integration.md)**
+- **[Herbs模块集成](how-to/client/herbs-integration.md)**
   药材选择器集成、处方生成、药材搜索
-- **[Formula模块集成](how-to-guides/client/formula-integration.md)**
+- **[Formula模块集成](how-to/client/formula-integration.md)**
   验方选择器集成、一键套用、验方保存
 
 ### Claude Code Skills工具指南（⭐ Phase 2新增）
@@ -205,11 +205,11 @@
 
 | 我想... | 查阅文档 |
 |--------|----------|
-| 添加新模块 | [Server端操作总览](how-to-guides/server/README.md) |
-| 创建新API | [WebAPI开发指南](how-to-guides/server/webapi-development.md) |
-| 开发新页面 | [Foundation层开发](how-to-guides/client/foundation-development.md) / [Presentation层开发](how-to-guides/client/presentation-development.md) |
-| 编写测试 | [任务工作流清单](how-to-guides/shared/task-workflow-checklist.md) |
-| 提交代码 | [任务工作流清单](how-to-guides/shared/task-workflow-checklist.md) |
+| 添加新模块 | [Server端操作总览](how-to/server/README.md) |
+| 创建新API | [WebAPI开发指南](how-to/server/webapi-development.md) |
+| 开发新页面 | [Foundation层开发](how-to/client/foundation-development.md) / [Presentation层开发](how-to/client/presentation-development.md) |
+| 编写测试 | [任务工作流清单](how-to/shared/task-workflow-checklist.md) |
+| 提交代码 | [任务工作流清单](how-to/shared/task-workflow-checklist.md) |
 
 **下一步**：查阅[Reference](#-reference参考手册)获取具体API和配置信息
 
@@ -231,8 +231,14 @@
 - **[API快速参考](reference/quick-reference/api-reference.md)**
   最常用API和调用示例
 
-- **[代码模式](reference/quick-reference/code-patterns.md)**
+- **[代码模式](reference/code-patterns-enhancement-summary.md)**
   常用代码模式和模板
+
+- **[配置参数指南](reference/configuration-parameters-guide.md)**
+  配置文件参数说明和最佳实践
+
+- **[技术栈总览](reference/technology-stack.md)**
+  项目使用的技术栈和版本信息
 
 - **[问题排查](reference/quick-reference/troubleshooting.md)**
   常见问题和解决方案
@@ -242,6 +248,9 @@
 
 - **[配置模板](reference/quick-reference/config-templates.md)**
   常用配置文件模板
+
+- **[模板文档](reference/templates/)**
+  Issue模板、PR模板、文档模板等
 
 ### API文档
 
@@ -378,16 +387,36 @@
 - **[看诊流程实体关系](explanation/architecture/shared/clinical-workflow-entity-relationships.md)** ⭐⭐⭐ **权威文档**
   挂号/医案/诊断/处方实体关系与状态机设计
 
-- **[医案/诊断/处方增强设计](explanation/design/medicalcase-consultation-prescription-enhancement-design.md)** ⭐
-  三步工作流优化、处方管理增强、其他病案查询功能详细设计
+### UI工作流文档（⭐ 新增）
 
-- **[医案/诊断/处方差距分析](explanation/design/medicalcase-consultation-prescription-gap-analysis.md)** ⭐⭐
-  现有代码与设计的差距、修改计划、工作量估算
+- **[完整启动到工作台流程](explanation/00-complete-startup-to-workstation-flow.md)**
+  应用启动、登录、工作台选择完整流程
 
-### 需求文档
+- **[完整UI交互流程](explanation/01-complete-ui-flow.md)**
+  主要功能模块UI交互流程
 
-- **[需求文档目录](explanation/requirements/)**
-  功能需求规格说明
+- **[启动登录优化流程](explanation/02-startup-login-optimized.md)**
+  优化后的启动和登录流程
+
+- **[Clinical诊疗工作台](explanation/03-clinical-home-dashboard.md)**
+  诊疗工作台设计与交互流程
+
+### 深度技术分析（⭐ 新增）
+
+- **[高级模式](explanation/advanced-patterns.md)**
+  高级设计模式和架构模式
+
+- **[API设计最佳实践](explanation/api-design-best-practices.md)**
+  API设计原则、RESTful实践、错误处理
+
+- **[性能优化](explanation/performance-optimization.md)**
+  性能分析、优化策略、最佳实践
+
+- **[测试策略](explanation/testing-strategies.md)**
+  测试金字塔、单元测试、集成测试策略
+
+- **[Token认证安全重构](explanation/token-authentication-security-refactor.md)**
+  JWT认证安全改进、双轨认证设计
 
 ---
 
@@ -433,19 +462,69 @@
 
 ## 📊 项目分析报告
 
-**代码现状与架构演进** - 关键模块深度分析
+**代码质量与架构演进** - 核心质量报告（18个）
 
-- **[文档缺失分析报告 (2025-10-29)](reports/documentation-gap-analysis-2025-10-29.md)**
-  模块文档完成度分析、优先级排序、补充计划
+### Phase系列质量分析
 
-- **[重构计划 (2025-10-29)](reports/refactoring-plan-2025-10-29.md)**
-  文档驱动重构计划、时间估算、风险评估
+- **[Phase 2.1: 三层架构依赖方向验证](reports/phase2.1-analysis-report.md)** ⭐⭐⭐
+  架构违规34个（ViewModel→Repository）、违规率50.75%、修复建议
 
-- **[用户管理交互模式统一可行性分析 (2025-11-08)](reports/user-management-interaction-unification-feasibility-2025-11-08.md)**
-  Dialog vs Navigation模式对比、UI统一方案、工作量估算（22-25小时）
+- **[Phase 2.2: DI模式和技术黑名单检查](reports/phase2.2-analysis-report.md)**
+  DI合规性100%、技术栈100%符合MVP约束
 
-- **[用户管理交互模式统一深度分析 (2025-11-08)](reports/user-management-interaction-unification-deep-analysis-2025-11-08.md)**
-  架构模式差异详细分析、代码级别迁移指南、UI样式转换方案、4个Sprint实施计划 ⭐⭐⭐
+- **[Phase 3: 代码质量度量分析](reports/phase3-analysis-report.md)** ⭐⭐⭐
+  文件大小违规6个、方法复杂度违规41个、修复计划
+
+- **[Phase 4: 组件化质量分析](reports/phase4-analysis-report.md)** ⭐⭐⭐
+  Component使用率19.76%、ROI -76.5%、重构建议
+
+- **[Desktop代码质量综合报告](reports/desktop-code-quality-comprehensive-report.md)**
+  综合Phase 1-4所有发现、整体质量评估
+
+### Epic与Issue验证报告
+
+- **[Doc Sync Report - Epic #1773](reports/doc-sync-report-epic-1773.md)**
+  组件化文档更新清单、架构文档同步验证
+
+- **[Issues完成验证报告](reports/issues-completion-verification-report.md)**
+  Issue完成情况汇总验证
+
+- **[Sysadmin数据污染分析报告](reports/sysadmin-数据污染-分析报告.md)**
+  超级管理员数据污染问题分析与修复
+
+- **[User模块代码审查报告 (2025-11-08)](reports/User模块代码审查报告_2025-11-08.md)**
+  User模块代码规范审查
+
+### 最近分析报告（2025-11）
+
+- **[文档整合最终报告 (2025-11-09)](reports/documentation-consolidation-final-report-2025-11-09.md)** ⭐
+  Issue #1933完整执行记录、Phases 1-5成果
+
+- **[文档整合Phase 1分析 (2025-11-09)](reports/documentation-consolidation-phase1-analysis-2025-11-09.md)**
+  Phase 1执行分析与后续计划
+
+- **[自动化工作流设计 (2025-11-07)](reports/automation-workflow-design-2025-11-07.md)**
+  lybtzyzs-workflow-orchestrator设计方案
+
+- **[Doc Sync Check (2025-11-09)](reports/doc-sync-check-2025-11-09.md)**
+  文档同步检查结果
+
+- **[Root Files Audit (2025-11-09)](reports/root-files-audit-2025-11-09.md)**
+  根目录文件审计报告
+
+- **[WebAPI配置整合分析 (2025-11-09)](reports/webapi-configuration-consolidation-analysis-2025-11-09.md)**
+  WebAPI配置优化分析
+
+- **[WebAPI配置整合验证 (2025-11-09)](reports/webapi-configuration-consolidation-verification-2025-11-09.md)**
+  WebAPI配置整合实施验证
+
+- **[用户管理交互统一可行性 (2025-11-08)](reports/user-management-interaction-unification-feasibility-2025-11-08.md)**
+  Dialog vs Navigation模式对比、UI统一方案
+
+- **[用户管理交互统一深度分析 (2025-11-08)](reports/user-management-interaction-unification-deep-analysis-2025-11-08.md)** ⭐⭐⭐
+  架构模式差异详细分析、代码级别迁移指南
+
+> **📌 历史报告归档**：2025-10月及之前的历史报告（29个）已归档至 [archive/reports-2025-11/](archive/reports-2025-11/)，包括Epic #1886、Issue #1906/1907/1908/1887-1892系列验证报告及历史分析报告
 
 ---
 
@@ -533,6 +612,35 @@
 
 ## 🔄 版本更新说明
 
+### Issue #1933 文档系统整合 (2025-11-09)
+
+**整合目标**：消除多套文档体系，深度Diátaxis框架重构，清理历史文档
+
+**成果**：
+- ✅ **阶段1**：迁移20个开发文档（从.claude/skills/, .design/, .verification/等）到docs/
+- ✅ **阶段2**：Diátaxis框架深度重构（6-phase计划）
+  - Phase 1: 合并how-to/和how-to-guides/（41个文档统一到how-to/）
+  - Phase 2: 清理explanation/子目录（扁平化workflows/，归档spec-workflow/）
+  - Phase 3: 重新分配30个非Diátaxis文档（按框架分类）
+  - Phase 4: 归档reports/历史报告（保留18个核心，归档29个历史）
+  - Phase 5: 更新docs/index.md导航（反映新结构）
+- ✅ **阶段3**：清理隐藏文件夹（删除.verification/, .ai/, .temp/等6个目录）
+- ✅ **GitHub同步**：同步Skills到GitHub，删除.claude/skills/本地副本
+
+**统计**：
+- 文档迁移：26个（20个开发文档 + 6个MD报告）
+- 文档重构：71个（合并、重分配、归档）
+- 历史归档：60个（报告29个 + spec-workflow 21个 + 其他10个）
+- 目录清理：16个（非Diátaxis目录10个 + 隐藏文件夹6个）
+- docs/结构：8个一级目录（tutorials/ how-to/ reference/ explanation/ reports/ archive/ support/ index.md）
+
+**详细变更记录**：[文档整合最终报告](reports/documentation-consolidation-final-report-2025-11-09.md)
+
+**相关Issue**：
+- [Issue #1933](https://github.com/shouqitao/LYBTZYZS/issues/1933) - 文档系统整合（当前）
+
+---
+
 ### Issue #1733 WebAPI MVP合规优化 (2025-10-31)
 
 **优化目标**：移除过度设计的监控系统，统一缓存策略，简化控制器逻辑
@@ -599,9 +707,10 @@
 
 ---
 
-*本文档中心基于Diátaxis框架重构，提供清晰、准确、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
+*本文档中心基于Diátaxis框架深度重构，提供清晰、准确、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-10-31 - Issue #1733 WebAPI MVP合规优化** 🎉
+**最后更新：2025-11-09 - Issue #1933 文档系统整合** 🎉
 **文档框架：Diátaxis 4种类型（Tutorial/How-to/Reference/Explanation）** 📚
 **架构特色：三层对齐架构（Server/Client/Shared）** 🏗️
-**总体完成度：91%（模块文档待补充）** ✅
+**文档体系：统一docs/体系，清理多套文档（Skills/Spec-workflow整合）** 🧹
+**总体完成度：93%（模块文档待补充）** ✅
