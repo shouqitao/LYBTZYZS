@@ -123,17 +123,8 @@ public class ProductionConfigurationValidator
             return;
         }
 
-        // 检查 2: 是否仍是占位符
-        if (value.Contains("#{") && value.Contains("}#"))
-        {
-            _errors.Add(new ConfigurationError
-            {
-                Item = item,
-                ErrorType = ErrorType.Placeholder,
-                Message = $"配置值包含占位符: {value}"
-            });
-            return;
-        }
+        // Issue #1932: 占位符检查已移除
+        // 现在使用环境变量直接覆盖配置文件中的默认值，不再使用#{VAR}#占位符格式
 
         // 检查 3: 长度验证
         if (item.MinLength.HasValue && value.Length < item.MinLength.Value)

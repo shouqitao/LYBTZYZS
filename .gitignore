@@ -234,12 +234,17 @@ appsettings.Local.json
 *.private
 
 # 环境变量文件 - 包含敏感配置信息
+# 忽略本地环境变量文件
 .env
 .env.local
-.env.development
 .env.staging
 .env.production
-*.env
+
+# 允许开发环境默认配置和模板文件
+!.env.development
+!.env.example
+!**/.env.development
+!**/.env.example
 
 # Test helper scripts (excluded from VCS)
 tests/*.ps1

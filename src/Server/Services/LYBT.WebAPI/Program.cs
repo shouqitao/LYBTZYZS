@@ -3,9 +3,11 @@
 /// UltraThink重构：采用统一服务注入管理，简化代码结构，提高可维护性
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持
 /// Issue #1077 Fix: 转换为传统Main方法确保WebApplicationFactory完全兼容性
+/// Issue #1932: 配置文件整合 - 统一appsettings.json + .env环境变量模式
 /// </summary>
 using LYBT.WebAPI.Extensions;
 using Serilog;
+using DotNetEnv;
 
 /// <summary>
 /// 凌隐宝堂中医诊所诊疗系统 WebAPI 程序入口
@@ -15,26 +17,32 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        // 环境感知的配置构建
+        // Issue #1932: 简化的配置加载逻辑
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+
+        // 加载 .env 文件（如果存在）
+        var envFile = environment == "Development" ? ".env.development" : ".env";
+        var envPath = Path.Combine(Directory.GetCurrentDirectory(), envFile);
+        if (File.Exists(envPath))
+        {
+            Env.Load(envPath);
+        }
+
+        // 配置构建
         var configBuilder = new ConfigurationBuilder();
 
-        // 测试环境单独处理（不加载包含MSSqlServer sink的appsettings.json）
+        // 测试环境单独处理（使用SQLite内存数据库）
         if (environment == "Test")
         {
             configBuilder.AddJsonFile("appsettings.Test.json", optional: false);
         }
-        else if (environment == "Development")
-        {
-            configBuilder.AddJsonFile("appsettings.json", optional: false);
-            configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
-        }
         else
         {
-            configBuilder.AddJsonFile("appsettings.Security.json", optional: false);
-            configBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true);
+            // 统一使用 appsettings.json（包含环境变量占位符）
+            configBuilder.AddJsonFile("appsettings.json", optional: false);
         }
 
+        // 环境变量具有最高优先级，覆盖配置文件中的默认值
         configBuilder.AddEnvironmentVariables();
 
         // 配置Serilog

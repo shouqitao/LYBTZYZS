@@ -125,6 +125,8 @@
     <!-- 数据库和数据处理 -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.1" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
+    <!-- .env文件支持 -->
+    <PackageVersion Include="DotNetEnv" Version="3.1.1" />
     <!-- UI和设计 -->
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
     <!-- HTTP和API -->

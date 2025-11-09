@@ -1,12 +1,11 @@
 ﻿{
-  "_comment1": "凌隐宝堂WebAPI统一配置文件",
-  "_comment2": "Issue #1932: 配置整合 - 单一配置文件 + 环境变量覆盖",
-  "_comment3": "本地开发：使用 .env.development 默认配置（已加载为环境变量）",
-  "_comment4": "生产部署：使用系统环境变量覆盖以下默认值",
-  "_comment5": "关键环境变量：DATABASE_CONNECTION_STRING, JWT_SECRET_KEY, JWT_ACCESS_TOKEN_EXPIRATION 等",
-
+  "_environment": "Development",
+  "_comment1": "⚠️ 警告：此配置文件仅限开发环境使用！生产环境请使用 appsettings.Security.json + 环境变量",
+  "_comment2": "⚠️ WARNING: This configuration file is for DEVELOPMENT ONLY! Use appsettings.Security.json + Environment Variables in Production",
+  "_comment3": "🔒 包含开发用的默认密钥和连接字符串，禁止在生产环境使用",
+  
   "AllowedHosts": "*",
-
+  
   "Kestrel": {
     "Endpoints": {
       "Http": {
@@ -17,7 +16,7 @@
       }
     }
   },
-
+  
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost;Database=LYBTDB;Trusted_Connection=True;TrustServerCertificate=true;MultipleActiveResultSets=true;Connection Timeout=30;Command Timeout=30;Max Pool Size=20;Min Pool Size=2;Pooling=true;Application Name=LYBT.WebAPI"
   },
@@ -31,7 +30,7 @@
       "AccessTokenExpirationMinutes": 30,
       "RefreshTokenExpirationDays": 7,
       "ClockSkewSeconds": 300,
-      "_comment": "JWT配置 - 开发环境默认值，生产环境通过环境变量覆盖"
+      "_comment": "开发环境JWT配置 - AccessToken: 30分钟, RefreshToken: 7天"
     },
     "PasswordPolicy": {
       "MinLength": 8,
@@ -48,8 +47,7 @@
     "DefaultPasswords": {
       "SysAdminPassword": "LybtAdmin2025@SecurePass!",
       "NewUserPassword": "Lybt2025@TempPass!",
-      "ForceChangeOnFirstLogin": true,
-      "_comment": "⚠️ 生产环境必须通过环境变量覆盖默认密码"
+      "ForceChangeOnFirstLogin": true
     },
     "Security": {
       "RateLimiting": {
@@ -85,8 +83,7 @@
         "MaxConnections": 20,
         "MinConnections": 2,
         "ConnectionTimeoutSeconds": 30,
-        "CommandTimeoutSeconds": 30,
-        "_comment": "连接池配置 - 可通过 DB_MAX_CONNECTIONS 和 DB_MIN_CONNECTIONS 环境变量覆盖"
+        "CommandTimeoutSeconds": 30
       },
       "Monitoring": {
         "Enabled": true,
@@ -104,8 +101,7 @@
       "SizeLimit": 104857600,
       "CompactionPercentage": 0.05,
       "ExpirationScanFrequencySeconds": 60,
-      "DefaultExpirationMinutes": 5,
-      "_comment": "缓存大小限制 - 可通过 CACHE_SIZE_LIMIT 环境变量覆盖（单位：字节）"
+      "DefaultExpirationMinutes": 5
     },
     "_comment_phase3.1_business": "Issue #1761 Phase 3.1: 配置扁平化 - Business.* → 顶层",
     "UserManagement": {
@@ -121,8 +117,7 @@
       "Email": "admin@lybt.com",
       "DisplayName": "系统管理员",
       "AutoCreateOnStartup": true,
-      "SessionTimeoutMinutes": 240,
-      "_comment": "系统管理员配置 - 可通过 SYSADMIN_USERNAME 和 SYSADMIN_EMAIL 环境变量覆盖"
+      "SessionTimeoutMinutes": 240
     }
   },
 
@@ -131,14 +126,13 @@
       "Default": "Information",
       "Override": {
         "Microsoft.AspNetCore": "Warning",
-        "Microsoft.EntityFrameworkCore.Database.Command": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning", 
         "Microsoft.EntityFrameworkCore": "Warning",
         "System": "Warning",
         "Microsoft.AspNetCore.Hosting.Diagnostics": "Information",
         "LYBT.Module": "Information",
         "LYBT.WebAPI.Controllers": "Information"
-      },
-      "_comment": "日志级别 - 可通过 LOG_LEVEL 环境变量覆盖 Default 级别"
+      }
     },
     "WriteTo": [
       {

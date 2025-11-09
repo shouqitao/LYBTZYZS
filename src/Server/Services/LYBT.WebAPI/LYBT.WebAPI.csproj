@@ -67,6 +67,8 @@
 		<PackageReference Include="Serilog.Enrichers.Thread" />
 		<!-- Windows Service支持 -->
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+		<!-- .env文件支持 -->
+		<PackageReference Include="DotNetEnv" />
 	</ItemGroup>
 
 	<ItemGroup>
