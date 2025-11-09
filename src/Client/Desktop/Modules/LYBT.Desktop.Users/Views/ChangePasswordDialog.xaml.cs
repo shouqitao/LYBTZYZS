@@ -8,6 +8,7 @@ namespace LYBT.Desktop.Users.Views
     /// ChangePasswordDialog.xaml 的交互逻辑
     /// Issue #1887-1892: 独立的密码修改对话框
     /// </summary>
+    [Obsolete("此Dialog已废弃，请使用 ChangePasswordView 替代。Epic #1926 Sprint 4。", true)]
     public partial class ChangePasswordDialog : UserControl
     {
         public ChangePasswordDialog()

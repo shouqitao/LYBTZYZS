@@ -16,6 +16,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 用户表单对话框 ViewModel - Issue #1798
     /// 功能：合并用户创建和编辑功能，支持Create/Edit两种模式
     /// </summary>
+    [Obsolete("此Dialog已废弃，请使用 UserCreateView/UserEditView 替代。Epic #1926 Sprint 4。", true)]
     public class UserFormDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         #region 服务依赖

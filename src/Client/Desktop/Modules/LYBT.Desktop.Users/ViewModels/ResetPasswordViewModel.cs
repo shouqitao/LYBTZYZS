@@ -1,22 +1,21 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
+using LYBT.Desktop.Users.Events; // Issue #1928: 添加Events命名空间
+using LYBT.Desktop.Users.ViewModels.Components;
+using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 重置密码对话框 ViewModel
-    /// TODO: 当前使用 Mock 实现，待后续集成真实服务
+    /// 重置密码视图模型 - Issue #1928 (Sprint 2)
+    /// 管理员重置用户密码功能（Navigation模式）
     /// </summary>
-    [Obsolete("此Dialog已废弃，重置密码功能已迁移到列表直接操作。Epic #1926 Sprint 4。", true)]
-    public class ResetPasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
+    public class ResetPasswordViewModel : UnifiedViewModelBase
     {
-        // Issue #1785: 使用CommandHandler替代直接Repository访问
         private readonly UserCommandHandler _commandHandler;
         private Guid _targetUserId;
 
@@ -29,14 +28,14 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 属性
 
-        private string _username = string.Empty;
+        private UserDto? _user;
         /// <summary>
-        /// 目标用户名（只读显示）
+        /// 目标用户信息
         /// </summary>
-        public string UserName
+        public UserDto? User
         {
-            get => _username;
-            set => SetProperty(ref _username, value);
+            get => _user;
+            set => SetProperty(ref _user, value);
         }
 
         private string _newPassword = string.Empty;
@@ -50,7 +49,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 if (SetProperty(ref _newPassword, value))
                 {
-                    ClearError();
+                    ClearValidationError();
                 }
             }
         }
@@ -66,7 +65,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 if (SetProperty(ref _confirmPassword, value))
                 {
-                    ClearError();
+                    ClearValidationError();
                 }
             }
         }
@@ -91,24 +90,24 @@ namespace LYBT.Desktop.Users.ViewModels
             set => SetProperty(ref _sendNotification, value);
         }
 
-        private string _errorMessage = string.Empty;
+        private string _validationError = string.Empty;
         /// <summary>
-        /// 错误消息
+        /// 验证错误消息
         /// </summary>
-        public new string ErrorMessage
+        public string ValidationError
         {
-            get => _errorMessage;
-            set => SetProperty(ref _errorMessage, value);
+            get => _validationError;
+            set => SetProperty(ref _validationError, value);
         }
 
-        private bool _hasError;
+        private bool _hasValidationError;
         /// <summary>
-        /// 是否有错误
+        /// 是否有验证错误
         /// </summary>
-        public new bool HasError
+        public bool HasValidationError
         {
-            get => _hasError;
-            set => SetProperty(ref _hasError, value);
+            get => _hasValidationError;
+            set => SetProperty(ref _hasValidationError, value);
         }
 
         #endregion
@@ -116,55 +115,15 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 命令
 
         public DelegateCommand GeneratePasswordCommand { get; }
-        public DelegateCommand ConfirmCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-
-        #endregion
-
-        #region IDialogAware 实现
-
-        public string Title => "重置密码";
-
-        public event Action<IDialogResult>? RequestClose;
-
-        public bool CanCloseDialog() => true;
-
-        public void OnDialogClosed() { }
-
-        public void OnDialogOpened(IDialogParameters parameters)
-        {
-            try
-            {
-                if (parameters.TryGetValue("UserId", out Guid userId))
-                {
-                    _targetUserId = userId;
-                    _ = LoadUserInfoAsync(userId);
-                }
-                else
-                {
-                    Logger.LogError("ResetPasswordDialog 需要 UserId 参数");
-                    SetError("缺少必要的参数");
-                }
-
-                // 可选参数
-                if (parameters.TryGetValue("UserName", out string username))
-                {
-                    UserName = username;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "打开重置密码对话框时发生异常");
-                SetError("对话框初始化失败");
-            }
-        }
+        public DelegateCommand ResetPasswordCommand { get; }
+        public DelegateCommand GoBackCommand { get; }
 
         #endregion
 
         #region 构造函数
 
-        public ResetPasswordDialogViewModel(
-            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
+        public ResetPasswordViewModel(
+            UserCommandHandler commandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -172,16 +131,47 @@ namespace LYBT.Desktop.Users.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
             GeneratePasswordCommand = new DelegateCommand(GenerateRandomPassword);
 
-            ConfirmCommand = new DelegateCommand(async () => await ConfirmAsync(), CanConfirm)
+            ResetPasswordCommand = new DelegateCommand(async () => await ResetPasswordAsync(), CanResetPassword)
                 .ObservesProperty(() => NewPassword)
                 .ObservesProperty(() => ConfirmPassword);
 
-            CancelCommand = new DelegateCommand(Cancel);
+            GoBackCommand = new DelegateCommand(ExecuteGoBack);
+        }
+
+        #endregion
+
+        #region 导航处理
+
+        /// <summary>
+        /// 处理导航参数（同步）
+        /// Issue #1240: 立即设置导航参数
+        /// </summary>
+        protected override void ProcessNavigationParameters(NavigationParameters parameters)
+        {
+            base.ProcessNavigationParameters(parameters);
+
+            if (parameters.ContainsKey("UserId"))
+            {
+                _targetUserId = parameters.GetValue<Guid>("UserId");
+            }
+        }
+
+        /// <summary>
+        /// 异步初始化数据
+        /// Issue #1240: 使用 InitializeAsync 模式
+        /// </summary>
+        protected override async Task InitializeAsync(NavigationParameters parameters)
+        {
+            await base.InitializeAsync(parameters);
+
+            if (_targetUserId != Guid.Empty)
+            {
+                await LoadUserAsync();
+            }
         }
 
         #endregion
@@ -191,32 +181,40 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 加载用户信息
         /// </summary>
-        private async Task LoadUserInfoAsync(Guid userId)
+        private async Task LoadUserAsync()
         {
+            if (_targetUserId == Guid.Empty)
+            {
+                Logger.LogWarning("LoadUserAsync: UserId 为空");
+                return;
+            }
+
             try
             {
-                SetIsBusy(true, "正在加载用户信息...");
+                IsLoading = true;
+                Logger.LogInformation("开始加载用户信息: UserId={UserId}", _targetUserId);
 
-                // Issue #1785: 使用CommandHandler查询
-                var result = await _commandHandler.GetByIdAsync(userId);
+                var result = await _commandHandler.GetByIdAsync(_targetUserId);
                 if (result.success && result.user != null)
                 {
-                    UserName = result.user.UserName; // 注意：UserDto 属性名是 UserName
+                    User = result.user;
+                    PageTitle = $"重置密码 - {User.RealName}";
+                    Logger.LogInformation("用户信息加载成功: {UserName}", User.UserName);
                 }
                 else
                 {
-                    SetError(result.errorMessage ?? "无法加载用户信息");
-                    Logger.LogWarning("加载用户信息失败：{ErrorMessage}", result.errorMessage);
+                    Logger.LogWarning("未找到用户: UserId={UserId}, ErrorMessage={ErrorMessage}", _targetUserId, result.errorMessage);
+                    ErrorMessage = result.errorMessage ?? "未找到该用户信息";
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载用户信息时发生异常");
-                SetError($"加载失败: {ex.Message}");
+                Logger.LogError(ex, "加载用户信息失败: UserId={UserId}", _targetUserId);
+                ErrorMessage = $"加载用户信息失败: {ex.Message}";
             }
             finally
             {
-                SetIsBusy(false);
+                IsLoading = false;
             }
         }
 
@@ -235,7 +233,7 @@ namespace LYBT.Desktop.Users.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "生成随机密码时发生异常");
-                SetError("生成密码失败");
+                SetValidationError("生成密码失败");
             }
         }
 
@@ -282,29 +280,29 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private bool ValidatePasswords()
         {
-            ClearError();
+            ClearValidationError();
 
             if (string.IsNullOrWhiteSpace(NewPassword))
             {
-                SetError("请输入新密码");
+                SetValidationError("请输入新密码");
                 return false;
             }
 
             if (NewPassword.Length < 8)
             {
-                SetError("密码长度至少8个字符");
+                SetValidationError("密码长度至少8个字符");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(ConfirmPassword))
             {
-                SetError("请确认密码");
+                SetValidationError("请确认密码");
                 return false;
             }
 
             if (NewPassword != ConfirmPassword)
             {
-                SetError("两次输入的密码不一致");
+                SetValidationError("两次输入的密码不一致");
                 return false;
             }
 
@@ -312,19 +310,26 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 是否可以确认
+        /// 是否可以重置密码
         /// </summary>
-        private bool CanConfirm()
+        private bool CanResetPassword()
         {
             return !string.IsNullOrWhiteSpace(NewPassword) &&
-                   !string.IsNullOrWhiteSpace(ConfirmPassword);
+                   !string.IsNullOrWhiteSpace(ConfirmPassword) &&
+                   !IsLoading;
         }
 
         /// <summary>
-        /// 确认重置密码
+        /// 重置密码
         /// </summary>
-        private async Task ConfirmAsync()
+        private async Task ResetPasswordAsync()
         {
+            if (User == null)
+            {
+                Logger.LogWarning("无法重置密码：用户为空");
+                return;
+            }
+
             try
             {
                 if (!ValidatePasswords())
@@ -334,76 +339,80 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 if (_targetUserId == Guid.Empty)
                 {
-                    SetError("无效的用户ID");
+                    SetValidationError("无效的用户ID");
                     return;
                 }
 
-                SetIsBusy(true, "正在重置密码...");
+                IsLoading = true;
+                Logger.LogInformation("开始重置密码: UserId={UserId}", _targetUserId);
 
-                // Issue #1911: 调用真实的重置密码服务
+                // 调用重置密码服务
                 var (success, errorMessage, response) = await _commandHandler.ResetPasswordAsync(
-                    _targetUserId, 
+                    _targetUserId,
                     NewPassword);
 
                 if (!success || response == null)
                 {
-                    await ShowErrorMessageAsync($"密码重置失败: {errorMessage}");
+                    ErrorMessage = $"密码重置失败: {errorMessage}";
+                    Logger.LogWarning("密码重置失败: {ErrorMessage}", errorMessage);
                     return;
                 }
 
+                // 显示成功消息（包含临时密码）
                 await ShowSuccessMessageAsync(
                     $"密码重置成功！\n\n" +
-                    $"用户: {UserName}\n" +
+                    $"用户: {User.UserName}\n" +
                     $"新密码: {response.TemporaryPassword}\n\n" +
                     $"请妥善保管并告知用户。");
 
-                var dialogResult = new DialogResult(ButtonResult.OK);
-                dialogResult.Parameters.Add("RequirePasswordChange", RequirePasswordChange);
-                dialogResult.Parameters.Add("SendNotification", SendNotification);
-
-                RequestClose?.Invoke(dialogResult);
+                // Issue #1928: 发布事件通知订阅者
+                EventAggregator.GetEvent<UserPasswordResetEvent>().Publish(User);
 
                 Logger.LogInformation(
                     "用户 {UserId} 密码重置成功 (要求修改密码: {RequireChange}, 发送通知: {SendNotification})",
                     _targetUserId,
                     RequirePasswordChange,
                     SendNotification);
+
+                // 返回上一页
+                NavigateBack("ContentRegion");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "重置密码时发生异常");
-                await ShowErrorMessageAsync($"重置密码失败: {ex.Message}");
+                Logger.LogError(ex, "重置密码时发生异常: UserId={UserId}", _targetUserId);
+                ErrorMessage = $"重置密码失败: {ex.Message}";
             }
             finally
             {
-                SetIsBusy(false);
+                IsLoading = false;
             }
         }
 
         /// <summary>
-        /// 取消
+        /// 返回上一页
         /// </summary>
-        private void Cancel()
+        private void ExecuteGoBack()
         {
-            RequestClose?.Invoke(new DialogResult(ButtonResult.Cancel));
+            Logger.LogInformation("取消重置密码，返回上一页");
+            NavigateBack("ContentRegion");
         }
 
         /// <summary>
-        /// 设置错误
+        /// 设置验证错误
         /// </summary>
-        private void SetError(string message)
+        private void SetValidationError(string message)
         {
-            ErrorMessage = message;
-            HasError = true;
+            ValidationError = message;
+            HasValidationError = true;
         }
 
         /// <summary>
-        /// 清除错误
+        /// 清除验证错误
         /// </summary>
-        private new void ClearError()
+        private void ClearValidationError()
         {
-            ErrorMessage = string.Empty;
-            HasError = false;
+            ValidationError = string.Empty;
+            HasValidationError = false;
         }
 
         #endregion

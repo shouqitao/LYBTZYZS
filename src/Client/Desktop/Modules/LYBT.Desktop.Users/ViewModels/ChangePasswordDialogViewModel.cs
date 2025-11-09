@@ -18,6 +18,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// Issue #1887-1892: 独立的密码修改对话框
     /// Issue #1909: 三角色体系统一认证（SuperAdmin/Admin/Doctor统一使用UserService）
     /// </summary>
+    [Obsolete("此Dialog已废弃，请使用 ChangePasswordView 替代。Epic #1926 Sprint 4。", true)]
     public class ChangePasswordDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         private readonly IAuthenticationService _authService;

@@ -47,13 +47,11 @@ namespace LYBT.Desktop.Users
             containerRegistry.RegisterForNavigation<Views.ChangePasswordView, ViewModels.ChangePasswordViewModel>();
             containerRegistry.RegisterForNavigation<Views.UserProfileView, ViewModels.UserProfileViewModel>();
 
-            // Phase 3: 启用 Prism Dialog 注册
-            containerRegistry.RegisterDialog<Views.ChangePasswordDialog, ViewModels.ChangePasswordDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.ResetPasswordDialog, ViewModels.ResetPasswordDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.UserProfileDialog, ViewModels.UserProfileDialogViewModel>();
-
-            // Issue #1798: 用户表单对话框（合并创建和编辑功能）
-            containerRegistry.RegisterDialog<Views.UserFormDialog, ViewModels.UserFormDialogViewModel>();
+            // Epic #1926 Sprint 4: Dialog已全部迁移为Navigation模式，以下DI注册已移除：
+            // - ChangePasswordDialog → ChangePasswordView
+            // - ResetPasswordDialog → 重置密码移至列表操作
+            // - UserProfileDialog → UserProfileView
+            // - UserFormDialog → UserCreateView + UserEditView
         }
     }
 }

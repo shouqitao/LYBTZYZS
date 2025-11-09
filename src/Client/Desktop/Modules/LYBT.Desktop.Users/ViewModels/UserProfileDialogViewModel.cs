@@ -13,6 +13,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 个人资料编辑对话框 ViewModel
     /// Issue #1887-1892 重构：独立的个人信息修改对话框（密码修改已拆分为单独的 ChangePasswordDialog）
     /// </summary>
+    [Obsolete("此Dialog已废弃，请使用 UserProfileView 替代。Epic #1926 Sprint 4。", true)]
     public class UserProfileDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         private readonly UserCommandHandler _commandHandler;

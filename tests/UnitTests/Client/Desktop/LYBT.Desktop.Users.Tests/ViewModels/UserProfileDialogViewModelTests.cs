@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+#pragma warning disable CS0619 // Epic #1926 Sprint 4: 测试已废弃的Dialog类
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
@@ -18,6 +19,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// UserProfileDialogViewModel 单元测试
     /// 测试个人资料编辑对话框的功能
     /// </summary>
+    [Obsolete("此测试类已废弃，UserProfileDialog已迁移为UserProfileView。Epic #1926 Sprint 4。", true)]
     public class UserProfileDialogViewModelTests : IDisposable
     {
         private readonly Mock<UserCommandHandler> _mockCommandHandler;

@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Users.Views
     /// <summary>
     /// ResetPasswordDialog.xaml 的交互逻辑
     /// </summary>
+    [Obsolete("此Dialog已废弃，重置密码功能已迁移到列表直接操作。Epic #1926 Sprint 4。", true)]
     public partial class ResetPasswordDialog : UserControl
     {
 

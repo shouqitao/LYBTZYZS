@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+#pragma warning disable CS0619 // Epic #1926 Sprint 4: 测试已废弃的Dialog类
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
@@ -17,6 +18,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// ResetPasswordDialogViewModel 单元测试
     /// 测试管理员重置用户密码的功能
     /// </summary>
+    [Obsolete("此测试类已废弃，ResetPasswordDialog已迁移。Epic #1926 Sprint 4。", true)]
     public class ResetPasswordDialogViewModelTests : IDisposable
     {
         private readonly Mock<UserCommandHandler> _mockCommandHandler;

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+#pragma warning disable CS0619 // Epic #1926 Sprint 4: 测试已废弃的Dialog类
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
@@ -13,6 +14,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     /// ChangePasswordDialogViewModel 单元测试
     /// 测试修改密码对话框的核心功能
     /// </summary>
+    [Obsolete("此测试类已废弃，ChangePasswordDialog已迁移为ChangePasswordView。Epic #1926 Sprint 4。", true)]
     public class ChangePasswordDialogViewModelTests : IDisposable
     {
         private readonly Mock<IAuthenticationService> _mockAuthService;
