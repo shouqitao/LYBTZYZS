@@ -138,13 +138,17 @@ public partial class App : PrismApplication
         _performanceMonitor.StartStage("应用初始化");
 
         // 设置控制台编码为UTF-8,解决Visual Studio输出窗口中文日志乱码问题 (Issue #993)
-        try
+        // 先检查是否有控制台可用，避免抛出 IOException（WPF 应用默认无控制台）
+        if (HasConsole())
         {
-            System.Console.OutputEncoding = System.Text.Encoding.UTF8;
-        }
-        catch (System.IO.IOException)
-        {
-            // 无控制台窗口时忽略
+            try
+            {
+                System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+            }
+            catch (System.IO.IOException)
+            {
+                // 极端情况下仍可能失败，静默忽略
+            }
         }
 
         // ✅ 在 Prism 生命周期中执行异步初始化
@@ -389,6 +393,26 @@ public partial class App : PrismApplication
         {
             System.Diagnostics.Debug.WriteLine($"角色驱动模块加载异常: {ex.Message}");
             throw;
+        }
+    }
+
+    /// <summary>
+    /// 检查应用程序是否有可用的控制台窗口
+    /// 用于避免在无控制台的 WPF 应用中设置 Console.OutputEncoding 时抛出 IOException
+    /// </summary>
+    /// <returns>如果有控制台窗口则返回 true，否则返回 false</returns>
+    private static bool HasConsole()
+    {
+        try
+        {
+            // 尝试访问 Console.WindowHeight，如果无控制台会抛出异常
+            _ = System.Console.WindowHeight;
+            return true;
+        }
+        catch
+        {
+            // 无控制台窗口或无法访问
+            return false;
         }
     }
 }
