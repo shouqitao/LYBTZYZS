@@ -137,6 +137,70 @@
 - **[Formula模块集成](how-to-guides/client/formula-integration.md)**
   验方选择器集成、一键套用、验方保存
 
+### Claude Code Skills工具指南（⭐ Phase 2新增）
+
+> **Skills工具体系**：2025-11-09整合，提供自动化开发、质量检查、文档生成等21个专业工具
+
+#### 质量检查工具
+
+- **[架构合规检查](how-to/quality/arch-compliance.md)**
+  三层对齐架构验证、依赖方向检查、DDD边界检测
+- **[代码审查](how-to/quality/code-review.md)**
+  编码规范检查、MVVM模式验证、命名规范审查
+- **[设计架构验证](how-to/quality/design-arch-validator.md)**
+  设计文档架构合规性检查、技术选型验证
+- **[MVP合规检查](how-to/quality/mvp-compliance.md)**
+  技术黑名单检测、过度设计识别、MVP原则验证
+- **[需求架构守护](how-to/quality/requirements-arch-guard.md)**
+  需求文档架构约束检查、技术债务预警
+- **[质量报告生成](how-to/quality/quality-reporter.md)**
+  质量评分、自动合并决策、测试覆盖率分析
+
+#### 开发辅助工具
+
+- **[上下文构建器](how-to/development/context-builder.md)**
+  任务上下文聚合、文档检索、代码依赖分析
+- **[依赖分析器](how-to/development/dependency-analyzer.md)**
+  依赖图生成、循环依赖检测、影响范围分析
+- **[设计文档生成](how-to/development/design-generator.md)**
+  需求→设计文档转换、API设计、Phase拆分
+- **[Issue模板生成](how-to/development/issue-template.md)**
+  GitHub Issue批量生成、标准化模板、Epic关联
+- **[PR生成器](how-to/development/pr-generator.md)**
+  Pull Request描述生成、commit分析、影响评估
+- **[需求文档生成](how-to/development/requirements-generator.md)**
+  用户需求→结构化需求文档、业务规则分析
+- **[研究助手](how-to/development/research-assistant.md)**
+  技术调研、代码示例搜索、方案对比分析
+- **[任务分解器](how-to/development/task-breakdown.md)**
+  设计→任务清单、Phase划分、工作量估算
+- **[任务执行器](how-to/development/task-executor.md)** ⭐ 核心工具
+  Issue→代码→验证→提交全流程自动化
+- **[任务反思器](how-to/development/task-reflector.md)**
+  任务完成后反思、技术债务识别、知识归档
+- **[任务追踪器](how-to/development/task-tracker.md)**
+  GitHub双向同步、Epic进度聚合、依赖可视化
+- **[工作流编排器](how-to/development/workflow-orchestrator.md)** 🔴 自动化引擎
+  14状态自动化流程、5个确认点、85%自动化率
+- **[工作量估算器](how-to/development/workload-estimator.md)**
+  智能工作量估算、历史数据分析、团队速率计算
+
+#### 测试与文档工具
+
+- **[测试生成器](how-to/testing/test-generator.md)**
+  xUnit测试用例自动生成、AAA模式、Mock配置
+- **[文档同步检查](how-to/documentation/doc-sync.md)**
+  代码变更检测、文档更新清单、100%同步保证
+
+#### Skills总览
+
+- **[Skills工具概览](explanation/skills-overview.md)** ⭐ 完整索引
+  21个Skills完整列表、分类说明、使用场景
+- **[Skills协作指南](explanation/skills-collaboration.md)**
+  多Skills联动、工作流编排、最佳实践
+- **[自动化系统总结](explanation/automation-system.md)**
+  workflow-orchestrator详解、自动化率提升路径
+
 ### 常用操作快速入口
 
 | 我想... | 查阅文档 |
