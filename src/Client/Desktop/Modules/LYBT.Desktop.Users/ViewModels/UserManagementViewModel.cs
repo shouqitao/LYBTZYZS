@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Events; // Issue #1927: 添加Events命名空间
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
