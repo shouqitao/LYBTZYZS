@@ -58,6 +58,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
 
+        /// <summary>既往病史（Epic #1934批量导入功能新增）</summary>
+        [DisplayName("既往病史")]
+        public string? MedicalHistory { get; set; }
+
         /// <summary>紧急联系人姓名</summary>
         [DisplayName("紧急联系人姓名")]
         public string? EmergencyContactName { get; set; }
@@ -132,6 +136,11 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "过敏史长度不能超过{1}个字符")]
         [DisplayName("过敏史")]
         public string? AllergyHistory { get; set; }
+
+        /// <summary>既往病史（Epic #1934批量导入功能新增）</summary>
+        [StringLength(1000, ErrorMessage = "既往病史长度不能超过1000个字符")]
+        [DisplayName("既往病史")]
+        public string? MedicalHistory { get; set; }
 
         /// <summary>婚姻状态</summary>
         [DisplayName("婚姻状态")]

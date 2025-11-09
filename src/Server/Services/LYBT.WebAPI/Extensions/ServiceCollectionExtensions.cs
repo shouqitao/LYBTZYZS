@@ -125,6 +125,14 @@ public static class ServiceCollectionExtensions
         });
         services.AddFluentValidationClientsideAdapters();
 
+        // Epic #1934: 配置文件上传限制（10MB）
+        services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+        {
+            options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
+            options.ValueLengthLimit = int.MaxValue;
+            options.MultipartHeadersLengthLimit = int.MaxValue;
+        });
+
         services.AddControllers()
             .AddJsonOptions(options =>
             {

@@ -6,6 +6,8 @@ using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
+using FluentValidation;
+using LYBT.Shared.Utilities;
 
 namespace LYBT.Module.Patients.Services
 {
@@ -18,15 +20,18 @@ namespace LYBT.Module.Patients.Services
         private readonly IPatientRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILogger<PatientService> _logger;
+        private readonly IValidator<PatientInputDto> _validator;
 
         public PatientService(
             IPatientRepository repository,
             IMapper mapper,
-            ILogger<PatientService> logger)
+            ILogger<PatientService> logger,
+            IValidator<PatientInputDto> validator)
         {
             _repository = repository;
             _mapper = mapper;
             _logger = logger;
+            _validator = validator;
         }
 
         public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
@@ -157,13 +162,13 @@ namespace LYBT.Module.Patients.Services
         }
 
         /// <summary>
-        /// 从Excel文件导入患者数据 (Issue #1165)
+        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 实现BR-002失败恢复机制：部分成功模式 + 详细失败信息
         /// </summary>
-        public async Task<ServiceResult<ImportResultDto<PatientDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null)
+        public async Task<ServiceResult<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
         {
-            var result = new ImportResultDto<PatientDto>
+            var result = new BatchImportResultDto
             {
-                FileName = fileName,
                 ImportTime = DateTime.Now
             };
 
@@ -177,231 +182,300 @@ namespace LYBT.Module.Patients.Services
 
                 if (worksheet == null)
                 {
-                    result.IsSuccess = false;
-                    result.Message = "Excel文件中没有工作表";
-                    return ServiceResult<ImportResultDto<PatientDto>>.Failure("Excel文件格式错误");
+                    return ServiceResult<BatchImportResultDto>.Failure("Excel文件中没有工作表");
                 }
 
                 var rowCount = worksheet.Dimension?.Rows ?? 0;
                 if (rowCount <= 1)
                 {
-                    result.IsSuccess = false;
-                    result.Message = "Excel文件中没有数据行";
-                    return ServiceResult<ImportResultDto<PatientDto>>.Success(result);
+                    return ServiceResult<BatchImportResultDto>.Success(result);
                 }
 
-                result.TotalCount = rowCount - 1; // 排除表头
+                // BR-003: 限制最大导入行数
+                if (rowCount > 1000)
+                {
+                    return ServiceResult<BatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+                }
+
+                var patientsToCreate = new List<Patient>();
 
                 // 从第2行开始读取数据（第1行是表头）
                 for (int row = 2; row <= rowCount; row++)
                 {
                     try
                     {
-                        var name = worksheet.Cells[row, 1].Text?.Trim();
-                        var genderText = worksheet.Cells[row, 2].Text?.Trim();
-                        var birthDateText = worksheet.Cells[row, 3].Text?.Trim();
-                        var idCard = worksheet.Cells[row, 4].Text?.Trim();
-                        var phoneNumber = worksheet.Cells[row, 5].Text?.Trim();
-                        var address = worksheet.Cells[row, 6].Text?.Trim();
+                        // 解析Excel行数据到PatientInputDto
+                        var inputDto = ParseExcelRow(worksheet, row);
 
-                        // 验证必填字段
-                        if (string.IsNullOrWhiteSpace(name))
+                        // FluentValidation验证
+                        var validationResult = await _validator.ValidateAsync(inputDto);
+
+                        if (!validationResult.IsValid)
                         {
+                            // 记录验证失败详情
                             result.FailureCount++;
-                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            var firstError = validationResult.Errors.First();
+                            result.Failures.Add(new ImportFailureDetailDto
                             {
-                                RecordIdentifier = $"第{row}行",
-                                ErrorMessage = "姓名不能为空"
+                                OriginalRowNumber = row,
+                                FailureReason = firstError.ErrorMessage,
+                                FieldName = firstError.PropertyName,
+                                OriginalValue = GetFieldValue(inputDto, firstError.PropertyName),
+                                SuggestedFix = GenerateSuggestedFix(firstError.PropertyName, firstError.ErrorMessage),
+                                DataSnapshot = inputDto
                             });
                             continue;
                         }
 
-                        if (string.IsNullOrWhiteSpace(phoneNumber))
+                        // BR-004: 检查手机号重复
+                        if (!string.IsNullOrEmpty(inputDto.PhoneNumber))
                         {
-                            result.FailureCount++;
-                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                            var existing = await _repository.GetByPhoneNumberAsync(inputDto.PhoneNumber);
+                            if (existing != null)
                             {
-                                RecordIdentifier = $"第{row}行",
-                                ErrorMessage = "联系电话不能为空"
-                            });
-                            continue;
-                        }
-
-                        // 验证电话号码格式（11位数字）
-                        if (phoneNumber.Length != 11 || !phoneNumber.All(char.IsDigit))
-                        {
-                            result.FailureCount++;
-                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
-                            {
-                                RecordIdentifier = $"第{row}行",
-                                ErrorMessage = "联系电话格式错误（需要11位数字）"
-                            });
-                            continue;
-                        }
-
-                        // 解析性别
-                        Gender gender = Gender.Unknown;
-                        if (!string.IsNullOrWhiteSpace(genderText))
-                        {
-                            if (genderText == "男")
-                                gender = Gender.Male;
-                            else if (genderText == "女")
-                                gender = Gender.Female;
-                            else
-                            {
-                                result.FailureCount++;
-                                result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                                result.SkippedCount++;
+                                result.Failures.Add(new ImportFailureDetailDto
                                 {
-                                    RecordIdentifier = $"第{row}行",
-                                    ErrorMessage = "性别格式错误（应为'男'或'女'）"
+                                    OriginalRowNumber = row,
+                                    FailureReason = "手机号已存在",
+                                    FieldName = "PhoneNumber",
+                                    OriginalValue = inputDto.PhoneNumber,
+                                    SuggestedFix = "修改手机号或跳过该记录",
+                                    DataSnapshot = inputDto
                                 });
                                 continue;
                             }
                         }
 
-                        // 解析出生日期
-                        DateTime? birthDate = null;
-                        if (!string.IsNullOrWhiteSpace(birthDateText))
-                        {
-                            if (!DateTime.TryParse(birthDateText, out var parsedDate))
-                            {
-                                result.FailureCount++;
-                                result.Errors.Add(new BatchOperationResultDto.ErrorDetail
-                                {
-                                    RecordIdentifier = $"第{row}行",
-                                    ErrorMessage = "出生日期格式错误（应为YYYY-MM-DD）"
-                                });
-                                continue;
-                            }
+                        // 映射到Patient实体
+                        var patient = _mapper.Map<Patient>(inputDto);
+                        
+                        // 生成拼音码（Task 2.6）
+                        patient.PinYinCode = PinYinHelper.GetInitials(patient.Name);
 
-                            if (parsedDate > DateTime.Today)
-                            {
-                                result.FailureCount++;
-                                result.Errors.Add(new BatchOperationResultDto.ErrorDetail
-                                {
-                                    RecordIdentifier = $"第{row}行",
-                                    ErrorMessage = "出生日期不能晚于今天"
-                                });
-                                continue;
-                            }
-
-                            birthDate = parsedDate;
-                        }
-
-                        // 验证身份证号格式
-                        if (!string.IsNullOrWhiteSpace(idCard))
-                        {
-                            if (idCard.Length != 18)
-                            {
-                                result.FailureCount++;
-                                result.Errors.Add(new BatchOperationResultDto.ErrorDetail
-                                {
-                                    RecordIdentifier = $"第{row}行",
-                                    ErrorMessage = "身份证号格式错误（应为18位）"
-                                });
-                                continue;
-                            }
-                        }
-
-                        // 创建患者实体
-                        var patient = new Patient
-                        {
-                            Name = name,
-                            Gender = gender,
-                            BirthDate = birthDate,
-                            IdNumber = idCard,
-                            PhoneNumber = phoneNumber,
-                            Address = address,
-                            CreatedAt = DateTime.Now
-                        };
-
-                        // 保存到数据库
-                        var savedPatient = await _repository.AddAsync(patient);
-                        var patientDto = _mapper.Map<PatientDto>(savedPatient);
-
-                        result.SuccessCount++;
-                        result.SuccessfulIds.Add(savedPatient.Id);
-                        result.ImportedData.Add(patientDto);
+                        patientsToCreate.Add(patient);
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, $"处理第{row}行数据时发生异常");
                         result.FailureCount++;
-                        result.Errors.Add(new BatchOperationResultDto.ErrorDetail
+                        result.Failures.Add(new ImportFailureDetailDto
                         {
-                            RecordIdentifier = $"第{row}行",
-                            ErrorMessage = $"导入失败：{ex.Message}"
+                            OriginalRowNumber = row,
+                            FailureReason = $"数据解析异常: {ex.Message}",
+                            FieldName = "Unknown",
+                            OriginalValue = string.Empty,
+                            SuggestedFix = "检查该行数据格式是否正确",
+                            DataSnapshot = new PatientInputDto()
                         });
-                        _logger.LogError(ex, "导入第{Row}行时发生错误", row);
                     }
                 }
 
-                result.IsSuccess = true;
-                result.Message = $"导入完成：成功 {result.SuccessCount} 条，失败 {result.FailureCount} 条";
+                // 批量保存患者
+                if (patientsToCreate.Count > 0)
+                {
+                    var savedPatients = await _repository.BatchCreateAsync(patientsToCreate);
+                    result.SuccessCount = savedPatients.Count;
+                }
 
-                return ServiceResult<ImportResultDto<PatientDto>>.Success(result);
+                return ServiceResult<BatchImportResultDto>.Success(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "导入患者数据时发生错误");
-                result.IsSuccess = false;
-                result.Message = $"导入失败：{ex.Message}";
-                return ServiceResult<ImportResultDto<PatientDto>>.Failure($"导入失败：{ex.Message}");
+                _logger.LogError(ex, "批量导入患者数据失败");
+                return ServiceResult<BatchImportResultDto>.Failure($"导入失败: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 生成患者导入模板 (Issue #1165)
+        /// 解析Excel行数据到PatientInputDto
         /// </summary>
-        public MemoryStream GenerateImportTemplate()
+        private PatientInputDto ParseExcelRow(ExcelWorksheet worksheet, int row)
         {
-            try
+            return new PatientInputDto
             {
-                // 设置EPPlus许可证上下文（非商业用途）
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                Name = worksheet.Cells[row, 1].Text?.Trim() ?? string.Empty,
+                Gender = ParseGender(worksheet.Cells[row, 2].Text?.Trim()),
+                BirthDate = ParseDate(worksheet.Cells[row, 3].Text?.Trim()),
+                IdNumber = worksheet.Cells[row, 4].Text?.Trim(),
+                PhoneNumber = worksheet.Cells[row, 5].Text?.Trim(),
+                Address = worksheet.Cells[row, 6].Text?.Trim(),
+                AllergyHistory = worksheet.Cells[row, 7].Text?.Trim(),
+                MedicalHistory = worksheet.Cells[row, 8].Text?.Trim() // Epic #1934新增
+            };
+        }
 
-                var stream = new MemoryStream();
-                using (var package = new ExcelPackage(stream))
+        /// <summary>
+        /// 解析性别
+        /// </summary>
+        private Gender ParseGender(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return Gender.Unknown;
+            return text switch
+            {
+                "男" => Gender.Male,
+                "女" => Gender.Female,
+                _ => Gender.Unknown
+            };
+        }
+
+        /// <summary>
+        /// 解析日期
+        /// </summary>
+        private DateTime? ParseDate(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            if (DateTime.TryParse(text, out var date)) return date;
+            return null;
+        }
+
+        /// <summary>
+        /// 获取字段值（用于失败详情）
+        /// </summary>
+        private string GetFieldValue(PatientInputDto dto, string propertyName)
+        {
+            var property = typeof(PatientInputDto).GetProperty(propertyName);
+            return property?.GetValue(dto)?.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 生成修复建议
+        /// </summary>
+        private string GenerateSuggestedFix(string fieldName, string errorMessage)
+        {
+            return fieldName switch
+            {
+                "Name" => "请输入有效的患者姓名（1-50个字符）",
+                "PhoneNumber" => "请输入11位手机号码",
+                "IdNumber" => "请输入18位身份证号",
+                "BirthDate" => "请输入有效的出生日期（YYYY-MM-DD）",
+                "Age" => "年龄必须在0-150之间",
+                _ => "请检查该字段的值是否符合要求"
+            };
+        }
+
+        /// <summary>
+        /// 导出患者导入模板 (Epic #1934 FR-002)
+        /// </summary>
+        public async Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using var package = new ExcelPackage();
+            var worksheet = package.Workbook.Worksheets.Add("患者导入模板");
+
+            // 设置表头
+            worksheet.Cells[1, 1].Value = "姓名*";
+            worksheet.Cells[1, 2].Value = "性别";
+            worksheet.Cells[1, 3].Value = "出生日期";
+            worksheet.Cells[1, 4].Value = "身份证号";
+            worksheet.Cells[1, 5].Value = "手机号码";
+            worksheet.Cells[1, 6].Value = "地址";
+            worksheet.Cells[1, 7].Value = "过敏史";
+            worksheet.Cells[1, 8].Value = "既往病史"; // Epic #1934新增
+
+            // 设置表头样式
+            using (var range = worksheet.Cells[1, 1, 1, 8])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            }
+
+            // 添加示例数据（如果配置要求）
+            if (config.IncludeSampleData)
+            {
+                var sampleRowCount = Math.Min(config.SampleRowCount, 10);
+                for (int i = 0; i < sampleRowCount; i++)
                 {
-                    var worksheet = package.Workbook.Worksheets.Add("患者信息");
-
-                    // 设置表头
-                    worksheet.Cells[1, 1].Value = "姓名*";
-                    worksheet.Cells[1, 2].Value = "性别";
-                    worksheet.Cells[1, 3].Value = "出生日期";
-                    worksheet.Cells[1, 4].Value = "身份证号";
-                    worksheet.Cells[1, 5].Value = "联系电话*";
-                    worksheet.Cells[1, 6].Value = "地址";
-
-                    // 表头样式
-                    using (var range = worksheet.Cells[1, 1, 1, 6])
-                    {
-                        range.Style.Font.Bold = true;
-                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                    }
-
-                    // 添加示例数据
-                    worksheet.Cells[2, 1].Value = "张三";
-                    worksheet.Cells[2, 2].Value = "男";
-                    worksheet.Cells[2, 3].Value = "1980-01-01";
-                    worksheet.Cells[2, 4].Value = "110101198001011234";
-                    worksheet.Cells[2, 5].Value = "13800138000";
-                    worksheet.Cells[2, 6].Value = "北京市朝阳区";
-
-                    // 自动调整列宽
-                    worksheet.Cells.AutoFitColumns();
-
-                    package.Save();
+                    int row = i + 2;
+                    worksheet.Cells[row, 1].Value = $"张三{i + 1}";
+                    worksheet.Cells[row, 2].Value = i % 2 == 0 ? "男" : "女";
+                    worksheet.Cells[row, 3].Value = $"1990-0{(i % 9) + 1}-15";
+                    worksheet.Cells[row, 4].Value = $"110101199001{(i % 9) + 1:D2}001{i}";
+                    worksheet.Cells[row, 5].Value = $"1380000000{i}";
+                    worksheet.Cells[row, 6].Value = $"北京市朝阳区示例地址{i + 1}号";
+                    worksheet.Cells[row, 7].Value = i % 3 == 0 ? "青霉素过敏" : "";
+                    worksheet.Cells[row, 8].Value = i % 4 == 0 ? "高血压病史" : "";
                 }
+            }
 
-                stream.Position = 0;
-                return stream;
-            }
-            catch (Exception ex)
+            // 自动调整列宽
+            worksheet.Cells.AutoFitColumns();
+
+            // 返回Excel文件流
+            var stream = new MemoryStream();
+            await package.SaveAsAsync(stream);
+            stream.Position = 0;
+            return stream;
+        }
+
+        /// <summary>
+        /// 导出患者数据到Excel (Epic #1934 FR-003)
+        /// </summary>
+        public async Task<MemoryStream> ExportPatientsAsync(string? keyword = null)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            // 获取患者数据（使用分页查询，最大10000条）
+            var patients = string.IsNullOrWhiteSpace(keyword)
+                ? await _repository.SearchPatientsAsync(null, 1, 10000)
+                : await _repository.SearchPatientsAsync(keyword, 1, 10000);
+
+            using var package = new ExcelPackage();
+            var worksheet = package.Workbook.Worksheets.Add("患者数据");
+
+            // 设置表头
+            worksheet.Cells[1, 1].Value = "姓名";
+            worksheet.Cells[1, 2].Value = "性别";
+            worksheet.Cells[1, 3].Value = "出生日期";
+            worksheet.Cells[1, 4].Value = "年龄";
+            worksheet.Cells[1, 5].Value = "身份证号";
+            worksheet.Cells[1, 6].Value = "手机号码";
+            worksheet.Cells[1, 7].Value = "地址";
+            worksheet.Cells[1, 8].Value = "过敏史";
+            worksheet.Cells[1, 9].Value = "既往病史"; // Epic #1934新增
+            worksheet.Cells[1, 10].Value = "最后就诊时间";
+            worksheet.Cells[1, 11].Value = "就诊次数";
+            worksheet.Cells[1, 12].Value = "状态";
+
+            // 设置表头样式
+            using (var range = worksheet.Cells[1, 1, 1, 12])
             {
-                _logger.LogError(ex, "生成导入模板时发生错误");
-                throw;
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
             }
+
+            // 填充数据
+            int row = 2;
+            foreach (var patient in patients.Items)
+            {
+                worksheet.Cells[row, 1].Value = patient.Name;
+                worksheet.Cells[row, 2].Value = patient.Gender.ToString();
+                worksheet.Cells[row, 3].Value = patient.BirthDate?.ToString("yyyy-MM-dd");
+                worksheet.Cells[row, 4].Value = patient.Age;
+                worksheet.Cells[row, 5].Value = patient.IdNumber;
+                worksheet.Cells[row, 6].Value = patient.PhoneNumber;
+                worksheet.Cells[row, 7].Value = patient.Address;
+                worksheet.Cells[row, 8].Value = patient.AllergyHistory;
+                worksheet.Cells[row, 9].Value = patient.MedicalHistory;
+                worksheet.Cells[row, 10].Value = patient.LastVisitTime?.ToString("yyyy-MM-dd HH:mm");
+                worksheet.Cells[row, 11].Value = patient.VisitCount;
+                worksheet.Cells[row, 12].Value = patient.Status.ToString();
+                row++;
+            }
+
+            // 自动调整列宽
+            worksheet.Cells.AutoFitColumns();
+
+            // 返回Excel文件流
+            var stream = new MemoryStream();
+            await package.SaveAsAsync(stream);
+            stream.Position = 0;
+            return stream;
         }
     }
 }

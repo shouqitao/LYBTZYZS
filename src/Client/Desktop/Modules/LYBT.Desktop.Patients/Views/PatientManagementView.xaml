@@ -34,6 +34,38 @@
                             <TextBlock Text="新增患者" />
                         </StackPanel>
                     </Button>
+
+                    <!-- Epic #1934: 批量导入/导出功能 -->
+                    <Button Command="{Binding ImportCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="{StaticResource SpacingSmall}"
+                            ToolTip="批量导入患者数据（支持Excel .xlsx格式）">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📥" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="导入患者" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ExportCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="{StaticResource SpacingSmall}"
+                            ToolTip="导出当前筛选的患者数据到Excel">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📤" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="导出患者" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding DownloadTemplateCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            Margin="{StaticResource SpacingSmall}"
+                            ToolTip="下载Excel导入模板（包含示例数据）">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📄" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="下载模板" />
+                        </StackPanel>
+                    </Button>
+
                     <Button Content="刷新"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding RefreshCommand}"
@@ -84,8 +116,8 @@
                                     Binding="{Binding VisitCount}"
                                     Width="100" />
 
-                <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="120">
+                <!-- 操作 (Epic #1934 FR-005: 操作列3个按钮 - 查看、编辑、删除) -->
+                <DataGridTemplateColumn Header="操作" Width="220">
                     <DataGridTemplateColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -94,10 +126,27 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
-                                <!-- Phase 2: 仅保留删除按钮，查看/编辑功能待后续实现 -->
+                                <!-- 查看按钮 -->
+                                <Button Content="查看"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Margin="4,0"
+                                        ToolTip="查看患者详情"
+                                        Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+
+                                <!-- 编辑按钮 -->
+                                <Button Content="编辑"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="4,0"
+                                        ToolTip="编辑患者信息"
+                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+
+                                <!-- 删除按钮 -->
                                 <Button Content="删除"
                                         Style="{StaticResource DangerButton}"
                                         Margin="4,0"
+                                        ToolTip="删除患者（软删除）"
                                         Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}" />
                             </StackPanel>

@@ -49,5 +49,19 @@ namespace LYBT.Module.Patients.Interfaces
         /// 批量更新最后就诊时间
         /// </summary>
         Task UpdateLastVisitDateAsync(IEnumerable<Guid> patientIds, DateTime visitDate);
+
+        /// <summary>
+        /// 批量创建患者（Epic #1934 FR-001）
+        /// </summary>
+        /// <param name="patients">待创建的患者列表</param>
+        /// <returns>创建成功的患者列表</returns>
+        Task<List<Patient>> BatchCreateAsync(IEnumerable<Patient> patients);
+
+        /// <summary>
+        /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
+        /// </summary>
+        /// <param name="phoneNumber">手机号</param>
+        /// <returns>患者对象，不存在返回null</returns>
+        Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
     }
 }

@@ -179,6 +179,37 @@ namespace LYBT.Module.Patients.Repositories
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(p => p.UpdatedAt, DateTime.Now));
         }
+
+        /// <summary>
+        /// 批量创建患者（Epic #1934 FR-001）
+        /// 使用AddRangeAsync批量添加，减少数据库往返次数
+        /// </summary>
+        /// <param name="patients">待创建的患者列表</param>
+        /// <returns>创建成功的患者列表</returns>
+        public async Task<List<Patient>> BatchCreateAsync(IEnumerable<Patient> patients)
+        {
+            var patientList = patients.ToList();
+
+            // 批量添加到DbSet（性能优化：单次操作）
+            await _dbSet.AddRangeAsync(patientList);
+
+            // 保存到数据库
+            await _context.SaveChangesAsync();
+
+            return patientList;
+        }
+
+        /// <summary>
+        /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
+        /// </summary>
+        /// <param name="phoneNumber">手机号</param>
+        /// <returns>患者对象，不存在返回null</returns>
+        public async Task<Patient?> GetByPhoneNumberAsync(string phoneNumber)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && !p.IsDeleted);
+        }
     }
 
     /// <summary>

@@ -79,6 +79,14 @@ namespace LYBT.Entities.Patients
         [SensitiveData(SensitiveDataType.MedicalInfo, MaskingMode = MaskingMode.Hash)]
         public string? AllergyHistory { get; set; }
 
+        /// <summary>既往病史 - Epic #1934: 批量导入功能新增字段</summary>
+        [StringLength(1000)]
+        [DisplayName("既往病史")]
+
+        // Epic 05-P0-03: 标记为医疗敏感数据需要加密
+        [SensitiveData(SensitiveDataType.MedicalInfo, MaskingMode = MaskingMode.Hash)]
+        public string? MedicalHistory { get; set; }
+
         /// <summary>血型（数据库中存在的字段）</summary>
         [DisplayName("血型")]
         public int BloodType { get; set; } = 0;

@@ -1,8 +1,12 @@
+using System.IO;
+using System.Windows.Input;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
@@ -17,6 +21,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 服务依赖
 
         private readonly PatientCommandHandler _commandHandler;
+        private readonly IPatientRepository _patientRepository; // Epic #1934
+        private readonly ICommonDialogService _dialogService; // Epic #1934
 
         #endregion
 
@@ -24,6 +30,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         public PatientManagementViewModel(
             PatientCommandHandler commandHandler,
+            IPatientRepository patientRepository, // Epic #1934
+            ICommonDialogService dialogService, // Epic #1934
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -32,8 +40,15 @@ namespace LYBT.Desktop.Patients.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "患者管理";
+
+            // Epic #1934: 初始化导入/导出命令
+            ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
+            ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
+            DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
         }
 
         #endregion
@@ -89,6 +104,151 @@ namespace LYBT.Desktop.Patients.ViewModels
         protected override async Task OnExecuteDeleteAsync(PatientDto item)
         {
             await ShowSuccessMessageAsync($"删除患者功能开发中：{item.Name}");
+        }
+
+        #endregion
+
+        #region Epic #1934: 批量导入/导出功能
+
+        /// <summary>
+        /// 导入患者命令
+        /// </summary>
+        public ICommand ImportCommand { get; }
+
+        /// <summary>
+        /// 导出患者命令
+        /// </summary>
+        public ICommand ExportCommand { get; }
+
+        /// <summary>
+        /// 下载导入模板命令
+        /// </summary>
+        public ICommand DownloadTemplateCommand { get; }
+
+        /// <summary>
+        /// 执行导入患者
+        /// </summary>
+        private async Task ExecuteImportAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开文件选择对话框
+                var filePath = await _dialogService.ShowOpenFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "选择患者导入文件");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 读取文件并导入
+                using var fileStream = File.OpenRead(filePath);
+                var fileName = Path.GetFileName(filePath);
+
+                Logger.LogInformation("开始导入患者文件：{FileName}", fileName);
+                var result = await _patientRepository.BatchImportAsync(fileStream, fileName);
+
+                if (result == null)
+                {
+                    await _dialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入患者");
+                    return;
+                }
+
+                // 显示导入结果
+                var message = $"导入完成！\n\n" +
+                              $"✅ 成功：{result.SuccessCount}条\n" +
+                              $"❌ 失败：{result.FailureCount}条\n" +
+                              $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
+                              $"成功率：{result.SuccessRate:F1}%";
+
+                if (result.FailureCount > 0)
+                {
+                    message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：\n";
+                    foreach (var failure in result.Failures.Take(3))
+                    {
+                        message += $"\n第{failure.OriginalRowNumber}行：{failure.FailureReason}";
+                    }
+                }
+
+                await _dialogService.ShowInfoAsync(message, "导入结果");
+
+                // 刷新列表
+                if (result.SuccessCount > 0)
+                {
+                    await RefreshAsync();
+                }
+            }, "导入患者");
+        }
+
+        /// <summary>
+        /// 执行导出患者
+        /// </summary>
+        private async Task ExecuteExportAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开保存文件对话框
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "导出患者数据",
+                    defaultFileName: $"患者数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 导出数据（使用当前搜索关键词）
+                Logger.LogInformation("导出患者数据，关键词：{Keyword}", SearchText);
+                var bytes = await _patientRepository.ExportPatientsAsync(SearchText);
+
+                if (bytes == null || bytes.Length == 0)
+                {
+                    await _dialogService.ShowErrorAsync("导出失败，请稍后重试", "导出患者");
+                    return;
+                }
+
+                // 保存文件
+                await File.WriteAllBytesAsync(filePath, bytes);
+
+                await _dialogService.ShowInfoAsync($"成功导出患者数据到：\n{filePath}", "导出成功");
+            }, "导出患者");
+        }
+
+        /// <summary>
+        /// 执行下载导入模板
+        /// </summary>
+        private async Task ExecuteDownloadTemplateAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开保存文件对话框
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "保存患者导入模板",
+                    defaultFileName: $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 下载模板
+                Logger.LogInformation("下载患者导入模板");
+                var bytes = await _patientRepository.ExportTemplateAsync();
+
+                if (bytes == null || bytes.Length == 0)
+                {
+                    await _dialogService.ShowErrorAsync("下载模板失败，请稍后重试", "下载模板");
+                    return;
+                }
+
+                // 保存文件
+                await File.WriteAllBytesAsync(filePath, bytes);
+
+                await _dialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
+            }, "下载模板");
         }
 
         #endregion

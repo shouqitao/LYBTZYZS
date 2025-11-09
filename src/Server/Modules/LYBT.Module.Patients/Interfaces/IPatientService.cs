@@ -39,17 +39,26 @@ namespace LYBT.Module.Patients.Interfaces
         Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
 
         /// <summary>
-        /// 从Excel文件导入患者数据 (Issue #1165)
+        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 支持部分成功模式、失败恢复机制（BR-002）
         /// </summary>
         /// <param name="stream">Excel文件流</param>
         /// <param name="fileName">文件名（可选，用于日志记录）</param>
-        /// <returns>导入结果，包含成功、失败数量和详细错误信息</returns>
-        Task<ServiceResult<ImportResultDto<PatientDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+        /// <returns>批量导入结果，包含成功/失败/跳过数量和详细失败信息</returns>
+        Task<ServiceResult<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null);
 
         /// <summary>
-        /// 生成患者导入模板 (Issue #1165)
+        /// 导出患者导入模板 (Epic #1934 FR-002)
         /// </summary>
-        /// <returns>包含示例数据的Excel模板流</returns>
-        MemoryStream GenerateImportTemplate();
+        /// <param name="config">模板配置（示例数据行数等）</param>
+        /// <returns>Excel模板文件流</returns>
+        Task<MemoryStream> ExportTemplateAsync(ExportTemplateDto config);
+
+        /// <summary>
+        /// 导出患者数据到Excel (Epic #1934 FR-003)
+        /// </summary>
+        /// <param name="keyword">搜索关键词（可选）</param>
+        /// <returns>Excel文件流</returns>
+        Task<MemoryStream> ExportPatientsAsync(string? keyword = null);
     }
 }

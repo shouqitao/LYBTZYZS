@@ -391,6 +391,10 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.IRoleNavigationService,
                 LYBT.Desktop.Infrastructure.Services.RoleNavigationService>();
 
+            // Epic #1934: 通用对话框服务 - 支持批量导入/导出功能的文件对话框
+            containerRegistry.RegisterSingleton<LYBT.Desktop.Infrastructure.Interfaces.ICommonDialogService,
+                LYBT.Desktop.Infrastructure.Services.CommonDialogService>();
+
             // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
             // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
         }

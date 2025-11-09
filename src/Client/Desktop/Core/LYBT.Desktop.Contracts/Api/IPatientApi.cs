@@ -41,5 +41,31 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Delete("/api/v1/patients/{id}")]
         Task<ApiResponse<ApiResponse>> DeletePatientAsync(Guid id);
+
+        // ========== Epic #1934: 批量导入/导出功能 ==========
+
+        /// <summary>
+        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// </summary>
+        /// <param name="file">Excel文件流</param>
+        /// <returns>导入结果（成功/失败/跳过数量及详细失败信息）</returns>
+        [Refit.Multipart]
+        [Refit.Post("/api/v1/patients/import")]
+        Task<ApiResponse<BatchImportResultDto>> BatchImportAsync([Refit.AliasAs("file")] Refit.StreamPart file);
+
+        /// <summary>
+        /// 下载患者导入模板 (Epic #1934 FR-002)
+        /// </summary>
+        /// <returns>Excel模板文件流（包含示例数据）</returns>
+        [Refit.Get("/api/v1/patients/import-template")]
+        Task<HttpResponseMessage> ExportTemplateAsync();
+
+        /// <summary>
+        /// 导出患者数据到Excel (Epic #1934 FR-003)
+        /// </summary>
+        /// <param name="keyword">搜索关键词（可选）</param>
+        /// <returns>包含患者数据的Excel文件流</returns>
+        [Refit.Get("/api/v1/patients/export")]
+        Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
     }
 }

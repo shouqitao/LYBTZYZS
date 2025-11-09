@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Patients.Services;
@@ -21,17 +23,25 @@ namespace LYBT.Module.Patients.Tests.Services
         private readonly PatientService _patientService;
         private readonly Mock<IPatientRepository> _repositoryMock;
         private readonly Mock<ILogger<PatientService>> _loggerMock;
+        private readonly Mock<IValidator<PatientInputDto>> _validatorMock;
 
         public PatientServiceTests()
         {
             _repositoryMock = CreateMock<IPatientRepository>();
             _loggerMock = CreateLoggerMock<PatientService>();
+            _validatorMock = CreateMock<IValidator<PatientInputDto>>();
+
+            // 默认validator返回验证成功
+            _validatorMock
+                .Setup(x => x.ValidateAsync(It.IsAny<PatientInputDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             // 创建PatientService实例，使用基类提供的Mapper
             _patientService = new PatientService(
                 _repositoryMock.Object,
                 Mapper,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _validatorMock.Object);
         }
 
 
