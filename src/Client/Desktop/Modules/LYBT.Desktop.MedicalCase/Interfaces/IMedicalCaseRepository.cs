@@ -13,11 +13,14 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     {
         Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
         Task<MedicalCaseDto?> GetByIdAsync(Guid id);
-        Task<MedicalCaseDto> CreateAsync(MedicalCaseCreateDto dto);
-        Task<MedicalCaseDto> UpdateAsync(MedicalCaseUpdateDto dto);
+        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
+        Task<MedicalCaseDto> CreateAsync(MedicalCaseInputDto dto);
+        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
+        Task<MedicalCaseDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId);
-        Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseCreateDto caseDto,
+        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
+        Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null);
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
@@ -85,8 +88,9 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseUpdateDto dto);
+        Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
 
         // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
 

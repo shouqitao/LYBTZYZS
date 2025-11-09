@@ -131,7 +131,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.UpdateConsultationAsync(medicalCaseId, request);
+            var result = await _service.UpdateConsultationAsync(medicalCaseId, request, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().NotBeNull();
@@ -157,7 +157,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.UpdateConsultationAsync(medicalCaseId, request));
+                () => _service.UpdateConsultationAsync(medicalCaseId, request, Guid.NewGuid(), isAdmin: true));
         }
 
         #endregion
@@ -191,7 +191,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription);
+            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().NotBeNull();
@@ -221,7 +221,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription));
+                () => _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, Guid.NewGuid(), isAdmin: true));
         }
 
         #endregion
@@ -236,9 +236,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var patientId = Guid.NewGuid();
             var doctorId = Guid.NewGuid();
             var request = new PrescriptionCreateDto
-            {
-                Indication = "感冒",
-                Items = new List<PrescriptionItemDto>()
+            {                Items = new List<PrescriptionItemInputDto>()
             };
 
             var medicalCase = new MedicalCaseEntity
@@ -329,9 +327,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCaseId = Guid.NewGuid();
             var prescriptionId = Guid.NewGuid();
             var request = new PrescriptionEditDto
-            {
-                Indication = "更新后的主治",
-                Items = new List<PrescriptionItemDto>()
+            {                Items = new List<PrescriptionItemInputDto>()
             };
 
             var prescription = new PrescriptionEntity
@@ -357,7 +353,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request);
+            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().NotBeNull();
@@ -376,7 +372,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync((MedicalCaseEntity?)null);
 
             // Act
-            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request);
+            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeNull();
@@ -401,7 +397,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request);
+            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeNull();
@@ -433,7 +429,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request);
+            var result = await _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeNull();
@@ -465,7 +461,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request));
+                () => _service.UpdatePrescriptionAsync(medicalCaseId, prescriptionId, request, Guid.NewGuid(), isAdmin: true));
         }
 
         #endregion
@@ -500,7 +496,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId);
+            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeTrue();
@@ -518,7 +514,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync((MedicalCaseEntity?)null);
 
             // Act
-            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId);
+            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeFalse();
@@ -542,7 +538,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId);
+            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeFalse();
@@ -573,7 +569,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(medicalCase);
 
             // Act
-            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId);
+            var result = await _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId, Guid.NewGuid(), isAdmin: true);
 
             // Assert
             result.Should().BeFalse();
@@ -604,7 +600,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId));
+                () => _service.DeletePrescriptionAsync(medicalCaseId, prescriptionId, Guid.NewGuid(), isAdmin: true));
         }
 
         #endregion
@@ -892,12 +888,12 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = prescription
             };
 
-            var prescriptionDto = new PrescriptionDetailDto { Id = prescription.Id, Indication = "Test Indication" };
+            var prescriptionDto = new MedicalCasePrescriptionDto { Id = prescription.Id, Indication = "Test Indication" };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
-            _mapperMock.Setup(x => x.Map<PrescriptionDetailDto>(prescription))
+            _mapperMock.Setup(x => x.Map<MedicalCasePrescriptionDto>(prescription))
                 .Returns(prescriptionDto);
 
             var result = await _service.GetPrescriptionListAsync(medicalCaseId);

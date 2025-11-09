@@ -57,9 +57,10 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 创建医疗案例
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         [Refit.Post("/api/v1/medicalcases")]
-        Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseCreateDto request);
+        Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseAsync([Refit.Body] MedicalCaseInputDto request);
 
         /// <summary>
         /// 创建完整的医疗案例（包含诊疗和可选处方）
@@ -69,9 +70,10 @@ namespace LYBT.Desktop.Contracts.Api
 
         /// <summary>
         /// 更新医疗案例
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<MedicalCaseDto>> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseUpdateDto request);
+        Task<ApiResponse<MedicalCaseDto>> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
 
         /// <summary>
         /// 更新医案的诊断信息（聚合根方法）
@@ -161,11 +163,12 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/save-as-draft")]
         Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
             Guid medicalCaseId,
-            [Refit.Body] MedicalCaseUpdateDto request);
+            [Refit.Body] MedicalCaseInputDto request);
 
         // ========== Epic #1676 Phase 4 Task 4.1 - 新增专用API ==========
 

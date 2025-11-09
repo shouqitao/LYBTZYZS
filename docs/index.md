@@ -2,7 +2,7 @@
 
 **文档版本**：v6.1 Diátaxis框架重构版
 **创建时间**：2025-10-15
-**最后更新**：2025-11-09（Issue #1933 文档系统整合）
+**最后更新**：2025-11-09（Epic #1961 FluentValidation统一设计文档同步）
 **维护负责**：项目团队
 
 ---
@@ -94,6 +94,8 @@
 
 - **[Client端操作总览](how-to/client/README.md)** ⭐
   WPF开发、UI设计、客户端逻辑
+- **[患者管理CRUD操作](how-to/client/patient-management.md)** ⭐ **新增**
+  患者新建/编辑/查看/删除、拼音码自动生成、年龄计算、身份证验证
 - **[诊断模块开发](how-to/client/consultation-development.md)**
   ConsultationViewModel/View开发、四诊合参UI
 - **[方剂模块开发](how-to/client/formula-development.md)**
@@ -408,6 +410,9 @@
 
 - **[API设计最佳实践](explanation/api-design-best-practices.md)**
   API设计原则、RESTful实践、错误处理
+
+- **[FluentValidation验证模式](explanation/validation-patterns.md)** ⭐ **新增**
+  条件验证、InputDto统一模式、创建/更新场景区分（Epic #1934）
 
 - **[性能优化](explanation/performance-optimization.md)**
   性能分析、优化策略、最佳实践

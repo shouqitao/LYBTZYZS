@@ -16,14 +16,50 @@ namespace LYBT.Module.MedicalCase.Mapping
 
         public MedicalCaseMappingProfile()
         {
-            // ========== 旧的DTO映射（保持兼容性） ==========
+            // ========== Response映射（保持兼容性） ==========
 
-            // MedicalCaseCreateDto -> MedicalCase
-            CreateMap<MedicalCaseCreateDto, LYBT.Entities.MedicalCase.MedicalCase>()
+            // MedicalCase -> MedicalCaseDto
+            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDto>()
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
+                .ForMember(dest => dest.Diagnosis, opt => opt.Ignore());
+
+            // MedicalCase -> MedicalCaseDetailDto
+            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDetailDto>()
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
+                .ForMember(dest => dest.Diagnosis, opt => opt.Ignore())
+                .ForMember(dest => dest.PresentIllness, opt => opt.Ignore())
+                .ForMember(dest => dest.DiagnosisResult, opt => opt.Ignore())
+                .ForMember(dest => dest.TreatmentPlan, opt => opt.Ignore())
+                .ForMember(dest => dest.Prescription, opt => opt.Ignore());
+
+            // ========== Epic #1961: FluentValidation统一设计 ==========
+
+            // MedicalCaseInputDto -> MedicalCase (统一创建/更新)
+            // 注意：MedicalCaseInputDto 是扁平化 DTO，部分字段应映射到 Consultation 实体
+            // 此配置仅映射 MedicalCase 实体字段，Consultation 字段由 Service 层处理
+            CreateMap<MedicalCaseInputDto, LYBT.Entities.MedicalCase.MedicalCase>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) // Service层生成
+                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
+                .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId))
+                .ForMember(dest => dest.ConsultationDate, opt => opt.MapFrom(src => src.VisitDate))
+                .ForMember(dest => dest.Remark, opt => opt.MapFrom(src => src.Remark))
+                // 以下字段由 Service 层管理
+                .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+                .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.NeedsPrescription, opt => opt.Ignore())
+                // 导航属性
                 .ForMember(dest => dest.Consultation, opt => opt.Ignore())
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore())
                 // BaseEntity 审计字段
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
@@ -31,31 +67,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
-            // MedicalCaseUpdateDto -> MedicalCase
-            CreateMap<MedicalCaseUpdateDto, LYBT.Entities.MedicalCase.MedicalCase>()
-                .ForMember(dest => dest.Consultation, opt => opt.Ignore())
-                .ForMember(dest => dest.Prescription, opt => opt.Ignore())
-                .ForSourceMember(src => src.DiagnosisSummary, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.ChiefComplaint, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.PresentIllness, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.DiagnosisResult, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.TreatmentPlan, opt => opt.DoNotValidate())
-                // BaseEntity 审计字段
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-
-            // MedicalCase -> MedicalCaseDto
-            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDto>();
-
-            // MedicalCase -> MedicalCaseDetailDto
-            CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDetailDto>();
-
-            // ========== Epic #1612 新的DTO映射 ==========
+            // ========== Epic #1612 旧的Request映射（保持兼容性） ==========
 
             // Request映射: ConsultationInputDto -> Consultation (Shared层)
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultation.Consultation>()
@@ -87,6 +99,10 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
+                .ForMember(dest => dest.Indication, opt => opt.Ignore())
+                .ForMember(dest => dest.Discount, opt => opt.Ignore())
+                .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
+                .ForMember(dest => dest.Items, opt => opt.Ignore())
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -108,6 +124,11 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.IsPrinted, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
+                .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore())
+                .ForMember(dest => dest.Indication, opt => opt.Ignore())
+                .ForMember(dest => dest.FormulaSource, opt => opt.Ignore())
+                .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
+                .ForMember(dest => dest.Items, opt => opt.Ignore())
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -133,15 +154,25 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Prescription, opt => opt.MapFrom(src => src.Prescription));
 
             // Response映射: Consultation -> ConsultationDto (Shared层)
-            CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDto>();
+            CreateMap<LYBT.Entities.Consultation.Consultation, ConsultationDto>()
+                .ForMember(dest => dest.PatientId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.PatientName, opt => opt.Ignore())
+                .ForMember(dest => dest.DoctorName, opt => opt.Ignore());
 
             // Response映射: Prescription -> MedicalCasePrescriptionDto
             CreateMap<LYBT.Entities.Prescriptions.Prescription, MedicalCasePrescriptionDto>()
+                .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src =>
                     src.Items.Sum(i => i.Amount) * src.DosageCount * src.Discount));
 
             // Response映射: PrescriptionItem -> PrescriptionItemDto (嵌套对象)
             CreateMap<LYBT.Entities.Prescriptions.PrescriptionItem, PrescriptionItemDto>()
+                .ForMember(dest => dest.Dosage, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalWeight, opt => opt.Ignore())
+                .ForMember(dest => dest.Subtotal, opt => opt.Ignore())
+                .ForMember(dest => dest.Notes, opt => opt.Ignore())
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => (decimal)src.Quantity));
         }
     }

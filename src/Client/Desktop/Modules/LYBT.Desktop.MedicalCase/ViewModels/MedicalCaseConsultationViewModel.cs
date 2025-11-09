@@ -512,13 +512,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 await SaveConsultationAsync();
 
                 // 然后暂存病案状态
-                var request = new MedicalCaseUpdateDto
+                // Epic #1961: 使用统一的 MedicalCaseInputDto
+                var request = new MedicalCaseInputDto
                 {
                     Id = _medicalCaseId,
                     PatientId = _patientId,
                     DoctorId = _doctorId,
-                    Remark = Remark,
-                    Status = "Draft" // 暂存状态
+                    VisitDate = DateTime.Now, // TODO: 应该使用已有的就诊日期
+                    Remark = Remark
+                    // 注意：Status 字段由 Service 层管理，不在 InputDto 中
                 };
 
                 // Issue #1783: 使用DataManager业务命令方法

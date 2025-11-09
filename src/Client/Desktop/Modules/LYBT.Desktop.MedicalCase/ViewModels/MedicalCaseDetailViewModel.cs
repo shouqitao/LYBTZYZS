@@ -235,19 +235,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 MedicalCase.CaseNumber = CaseNumber.Trim();
                 MedicalCase.ChiefComplaint = ChiefComplaint.Trim();
 
-                // 创建MedicalCaseUpdateDto对象 - 使用正确的属性结构
-                var updateDto = new MedicalCaseUpdateDto
+                // Epic #1961: 使用统一的 MedicalCaseInputDto
+                var updateDto = new MedicalCaseInputDto
                 {
                     Id = MedicalCase.Id,
                     PatientId = MedicalCase.PatientId,
                     DoctorId = MedicalCase.DoctorId,
-                    Remark = MedicalCase.Remark,
+                    VisitDate = MedicalCase.ConsultationDate, // 使用原有就诊日期
                     ChiefComplaint = MedicalCase.ChiefComplaint,
-                    PresentIllness = MedicalCase.ChiefComplaint, // 使用主诉作为现病史
-                    PhysicalExamination = "",
-                    AuxiliaryExamination = "",
-                    PrescriptionInfo = "",
-                    FollowUpPlan = ""
+                    PresentIllnessHistory = MedicalCase.ChiefComplaint, // 使用主诉作为现病史
+                    Remark = MedicalCase.Remark
+                    // 注意：旧DTO的 PhysicalExamination, AuxiliaryExamination, PrescriptionInfo, FollowUpPlan
+                    // 在 MedicalCaseInputDto 中不存在，已移除
                 };
 
                 // Issue #1783: 使用DataManager更新

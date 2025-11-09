@@ -54,7 +54,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
             _mockDataManager.Setup(x => x.CurrentPrescription).Returns(prescription);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<ConsultationInputDto>()))
                 .ReturnsAsync(new ValidationResult());
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
             var validationError = new ValidationFailure("ChiefComplaint", "主诉不能为空");
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult(new[] { validationError }));
 
             // Act
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<ConsultationInputDto>()))
                 .ReturnsAsync(new ValidationResult());
@@ -134,7 +134,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentPrescription).Returns(prescription);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<PrescriptionUpdateDto>()))
                 .ReturnsAsync(new ValidationResult());
@@ -160,7 +160,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
 
-            _mockValidationService.Setup(x => x.IsValid(It.IsAny<MedicalCaseUpdateDto>(), out It.Ref<string>.IsAny))
+            _mockValidationService.Setup(x => x.IsValid(It.IsAny<MedicalCaseInputDto>(), out It.Ref<string>.IsAny))
                 .Returns((object obj, out string error) => { error = string.Empty; return true; });
             _mockValidationService.Setup(x => x.IsValid(It.IsAny<ConsultationInputDto>(), out It.Ref<string>.IsAny))
                 .Returns((object obj, out string error) => { error = string.Empty; return true; });
@@ -204,7 +204,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 new ValidationFailure("PatientId", "患者ID不能为空")
             };
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult(errors));
 
             // Act
@@ -388,7 +388,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
             _mockDataManager.Setup(x => x.CurrentConsultation).Returns(consultation);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
             _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<ConsultationInputDto>()))
                 .ReturnsAsync(new ValidationResult());
@@ -407,7 +407,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCase = CreateValidMedicalCaseDto();
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
 
             // Act
@@ -424,7 +424,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var medicalCase = CreateValidMedicalCaseDto();
             _mockDataManager.Setup(x => x.Current).Returns(medicalCase);
 
-            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockValidationService.Setup(x => x.ValidateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(new ValidationResult());
 
             // Act

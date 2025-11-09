@@ -80,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()), Times.Never);
+            _mockRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()), Times.Never);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             var detail = CreateMedicalCaseDetail(medicalCaseId);
             _mockRepository.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(detail);
-            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockRepository.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(detail);
 
             await _sut.InitializeAsync(medicalCaseId);
@@ -104,7 +104,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
-            _mockRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()), Times.Once);
+            _mockRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()), Times.Once);
         }
 
         [Fact]

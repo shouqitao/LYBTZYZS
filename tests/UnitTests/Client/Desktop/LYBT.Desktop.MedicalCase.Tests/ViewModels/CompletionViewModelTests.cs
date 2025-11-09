@@ -70,7 +70,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 
             _mockMedicalCaseRepository.Setup(x => x.GetByIdAsync(medicalCaseId))
                 .ReturnsAsync(existingCase);
-            _mockMedicalCaseRepository.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()))
+            _mockMedicalCaseRepository.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()))
                 .ReturnsAsync(updatedCase);
 
             var viewModel = CreateViewModel();
@@ -101,7 +101,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 
             // Assert
             _mockMedicalCaseRepository.Verify(x => x.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
-            _mockMedicalCaseRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()), Times.Never);
+            _mockMedicalCaseRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()), Times.Never);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
             await viewModel.InitializeAsync(medicalCaseId);
 
             // Assert
-            _mockMedicalCaseRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseUpdateDto>()), Times.Never);
+            _mockMedicalCaseRepository.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseInputDto>()), Times.Never);
         }
 
         [Fact]

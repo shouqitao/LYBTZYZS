@@ -10,25 +10,24 @@ namespace LYBT.Shared.Models.Extensions
     public static class MedicalCaseDtoExtensions
     {
         /// <summary>
-        /// 将MedicalCaseCreateDto转换为MedicalCaseDto
-        /// Issue #1152: 替代AutoMapper
-        /// 字段映射: Status→CaseStatus
+        /// 将MedicalCaseInputDto转换为MedicalCaseDto
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// 注意：PatientName/DoctorName等需要在Service层填充
         /// </summary>
-        public static MedicalCaseDto ToDto(this MedicalCaseCreateDto dto)
+        public static MedicalCaseDto ToDto(this MedicalCaseInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
             return new MedicalCaseDto
             {
-                CaseNumber = dto.CaseNumber,
+                Id = dto.Id ?? Guid.Empty,
                 ChiefComplaint = dto.ChiefComplaint,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
-                CaseStatus = dto.Status,  // Status → CaseStatus
+                CaseStatus = MedicalCaseStatus.Active,
                 Remark = dto.Remark,
-                ConsultationDate = DateTime.Now,
+                ConsultationDate = dto.VisitDate,
                 // 以下字段需要在Service层设置
                 PatientName = string.Empty,
                 DoctorName = string.Empty,
@@ -43,49 +42,52 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将MedicalCaseDto转换为MedicalCaseUpdateDto
-        /// Issue #1778: 组件化架构需要
+        /// 将MedicalCaseDto转换为MedicalCaseInputDto
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        public static MedicalCaseUpdateDto ToUpdateDto(this MedicalCaseDto dto)
+        public static MedicalCaseInputDto ToInputDto(this MedicalCaseDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            return new MedicalCaseUpdateDto
+            return new MedicalCaseInputDto
             {
                 Id = dto.Id,
-                ChiefComplaint = dto.ChiefComplaint,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
+                VisitDate = dto.ConsultationDate,
+                ChiefComplaint = dto.ChiefComplaint,
                 Remark = dto.Remark
             };
         }
 
         /// <summary>
-        /// 将MedicalCaseDetailDto转换为MedicalCaseUpdateDto
-        /// Issue #1778: 组件化架构需要
+        /// 将MedicalCaseDetailDto转换为MedicalCaseInputDto
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        public static MedicalCaseUpdateDto ToUpdateDto(this MedicalCaseDetailDto dto)
+        public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            return new MedicalCaseUpdateDto
+            return new MedicalCaseInputDto
             {
                 Id = dto.Id,
-                ChiefComplaint = dto.ChiefComplaint,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
+                VisitDate = dto.ConsultationDate,
+                ChiefComplaint = dto.ChiefComplaint,
+                PresentIllnessHistory = dto.PresentIllness,
                 Remark = dto.Remark
             };
         }
 
         /// <summary>
-        /// 将MedicalCaseUpdateDto应用到现有MedicalCaseDto
-        /// Issue #1152: 替代AutoMapper
-        /// 注意：MedicalCaseDto字段有限，UpdateDto中的很多字段无法映射
+        /// 将MedicalCaseInputDto应用到现有MedicalCaseDto
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
+        /// 注意：MedicalCaseDto字段有限，InputDto中的很多字段无法映射
         /// </summary>
-        public static void ApplyUpdate(this MedicalCaseDto existing, MedicalCaseUpdateDto dto)
+        public static void ApplyUpdate(this MedicalCaseDto existing, MedicalCaseInputDto dto)
         {
             if (existing == null)
                 throw new ArgumentNullException(nameof(existing));
@@ -93,13 +95,13 @@ namespace LYBT.Shared.Models.Extensions
                 throw new ArgumentNullException(nameof(dto));
 
             // 只更新MedicalCaseDto中实际存在的字段
-            existing.ChiefComplaint = dto.ChiefComplaint;
             existing.PatientId = dto.PatientId;
             existing.DoctorId = dto.DoctorId;
+            existing.ConsultationDate = dto.VisitDate;
+            existing.ChiefComplaint = dto.ChiefComplaint;
             existing.Remark = dto.Remark;
             existing.UpdatedAt = DateTime.UtcNow;
-            // 注意：UpdateDto中的PresentIllness、PastHistory、DiagnosisResult、TreatmentPlan等字段
-            // 在MedicalCaseDto中不存在，无法映射
+            // 注意：InputDto中的中医诊疗字段（四诊、辨证等）在MedicalCaseDto中不存在，无法映射
         }
     }
 }

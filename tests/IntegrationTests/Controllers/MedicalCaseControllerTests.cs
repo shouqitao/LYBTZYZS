@@ -117,10 +117,11 @@ namespace LYBT.IntegrationTests.Api
             // Arrange
             var createDto = new MedicalCaseWithDetailsCreateDto
             {
-                MedicalCase = new MedicalCaseCreateDto
+                MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    VisitDate = DateTime.Now, // Epic #1961: 必填字段
                     Remark = "集成测试医疗案例"
                 },
                 Consultation = new ConsultationInputDto
@@ -164,7 +165,7 @@ namespace LYBT.IntegrationTests.Api
             // Arrange
             var createDto = new MedicalCaseWithDetailsCreateDto
             {
-                MedicalCase = new MedicalCaseCreateDto
+                MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
@@ -197,7 +198,7 @@ namespace LYBT.IntegrationTests.Api
             // Arrange - 先创建一个医疗案例
             var createDto = new MedicalCaseWithDetailsCreateDto
             {
-                MedicalCase = new MedicalCaseCreateDto
+                MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
@@ -257,10 +258,11 @@ namespace LYBT.IntegrationTests.Api
             // Arrange - 创建多个医疗案例
             for (int i = 0; i < 5; i++)
             {
-                var createDto = new MedicalCaseCreateDto
+                var createDto = new MedicalCaseInputDto
                 {
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    VisitDate = DateTime.Now, // Epic #1961: 必填字段
                     Remark = $"测试案例{i}"
                 };
 
@@ -296,10 +298,11 @@ namespace LYBT.IntegrationTests.Api
             // Arrange
             _client.DefaultRequestHeaders.Authorization = null; // 移除认证头
 
-            var createDto = new MedicalCaseCreateDto
+            var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
+                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 
             var json = JsonConvert.SerializeObject(createDto);
@@ -320,10 +323,11 @@ namespace LYBT.IntegrationTests.Api
         public async Task CreateWithInvalidData_ShouldReturn400()
         {
             // Arrange - PatientId为空
-            var createDto = new MedicalCaseCreateDto
+            var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Empty, // 无效的PatientId
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
+                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 
             var json = JsonConvert.SerializeObject(createDto);
@@ -353,7 +357,7 @@ namespace LYBT.IntegrationTests.Api
             // Arrange - 创建会导致服务器错误的请求
             var createDto = new MedicalCaseWithDetailsCreateDto
             {
-                MedicalCase = new MedicalCaseCreateDto
+                MedicalCase = new MedicalCaseInputDto
                 {
                     PatientId = Guid.NewGuid(), // 不存在的患者ID
                     DoctorId = Guid.NewGuid()   // 不存在的医生ID
@@ -386,10 +390,11 @@ namespace LYBT.IntegrationTests.Api
         public async Task GetWithDetails_ShouldReturnWithin1Second()
         {
             // Arrange
-            var createDto = new MedicalCaseCreateDto
+            var createDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
+                DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                VisitDate = DateTime.Now // Epic #1961: 必填字段
             };
 
             var json = JsonConvert.SerializeObject(createDto);

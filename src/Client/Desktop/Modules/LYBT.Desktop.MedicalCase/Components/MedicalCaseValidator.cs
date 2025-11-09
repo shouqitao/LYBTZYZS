@@ -60,8 +60,8 @@ namespace LYBT.Desktop.MedicalCase.Components
                     return new ValidationResult(errors);
                 }
 
-                // 使用 ToUpdateDto() 转换并验证
-                var medicalCaseResult = await _validationService.ValidateAsync(_dataManager.Current.ToUpdateDto());
+                // Epic #1961: 使用 ToInputDto() 转换并验证
+                var medicalCaseResult = await _validationService.ValidateAsync(_dataManager.Current.ToInputDto());
                 if (!medicalCaseResult.IsValid)
                 {
                     errors.AddRange(medicalCaseResult.Errors);
@@ -118,8 +118,8 @@ namespace LYBT.Desktop.MedicalCase.Components
                     return false;
                 }
 
-                // 使用 ToUpdateDto() 转换并验证
-                if (!_validationService.IsValid(_dataManager.Current.ToUpdateDto(), out var medicalCaseError))
+                // Epic #1961: 使用 ToInputDto() 转换并验证
+                if (!_validationService.IsValid(_dataManager.Current.ToInputDto(), out var medicalCaseError))
                 {
                     errorMessage = medicalCaseError;
                     return false;

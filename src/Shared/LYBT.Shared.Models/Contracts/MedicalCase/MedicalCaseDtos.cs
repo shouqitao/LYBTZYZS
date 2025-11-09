@@ -116,34 +116,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public string? Remark { get; set; }
     }
 
-    /// <summary>
-    /// 创建医疗案例DTO - 继承医疗案例输入基础DTO
-    /// </summary>
-    public class MedicalCaseCreateDto : MedicalCaseInputBaseDto
-    {
-        [DisplayName("案例编号")]
-        [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
-        public string? CaseNumber { get; set; }
-
-        [DisplayName("主诉")]
-        [StringLength(1000, ErrorMessage = "主诉长度不能超过1000个字符")]
-        public string? ChiefComplaint { get; set; }
-
-        [DisplayName("现病史")]
-        [StringLength(2000, ErrorMessage = "现病史长度不能超过2000个字符")]
-        public string? PresentIllnessHistory { get; set; }
-
-        [DisplayName("既往史")]
-        [StringLength(1000, ErrorMessage = "既往史长度不能超过1000个字符")]
-        public string? PastMedicalHistory { get; set; }
-
-        [DisplayName("状态")]
-        public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
-
-        [StringLength(200, ErrorMessage = "诊断摘要长度不能超过200个字符")]
-        [DisplayName("诊断摘要")]
-        public string? DiagnosisSummary { get; set; }
-    }
 
     /// <summary>
     /// 编辑医疗案例DTO - 继承医疗案例输入基础DTO并添加ID字段
@@ -184,35 +156,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public string? Status { get; set; }
     }
 
-    /// <summary>
-    /// 更新医疗案例DTO - 继承编辑DTO，用于更复杂的更新操作
-    /// </summary>
-    public class MedicalCaseUpdateDto : MedicalCaseEditDto
-    {
-        /// <summary>诊断ID - Issue #1544: 支持更新ConsultationId</summary>
-        [DisplayName("诊断ID")]
-        public Guid? ConsultationId { get; set; }
-
-        /// <summary>处方ID - Issue #1545: 支持更新PrescriptionId</summary>
-        [DisplayName("处方ID")]
-        public Guid? PrescriptionId { get; set; }
-
-        [StringLength(1000, ErrorMessage = "体格检查长度不能超过1000个字符")]
-        [DisplayName("体格检查")]
-        public string? PhysicalExamination { get; set; }
-
-        [StringLength(1000, ErrorMessage = "辅助检查长度不能超过1000个字符")]
-        [DisplayName("辅助检查")]
-        public string? AuxiliaryExamination { get; set; }
-
-        [StringLength(1000, ErrorMessage = "处方信息长度不能超过1000个字符")]
-        [DisplayName("处方信息")]
-        public string? PrescriptionInfo { get; set; }
-
-        [StringLength(1000, ErrorMessage = "随访计划长度不能超过1000个字符")]
-        [DisplayName("随访计划")]
-        public string? FollowUpPlan { get; set; }
-    }
 
     /// <summary>
     /// 医疗案例查询DTO - 基础查询条件
@@ -432,13 +375,14 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案完整聚合创建DTO - 包含诊疗和可选处方
     /// 作为聚合根统一管理整个诊疗流程
+    /// Epic #1961: 使用统一的 MedicalCaseInputDto
     /// </summary>
     public class MedicalCaseWithDetailsCreateDto
     {
         /// <summary>医案基础信息</summary>
         [Required(ErrorMessage = "医案信息不能为空")]
         [DisplayName("医案信息")]
-        public MedicalCaseCreateDto MedicalCase { get; set; } = new();
+        public MedicalCaseInputDto MedicalCase { get; set; } = new();
 
         /// <summary>诊疗记录信息（必需）</summary>
         [Required(ErrorMessage = "诊疗信息不能为空")]
@@ -453,13 +397,14 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医案+处方联建创建DTO - Phase B2 事务优化
     /// 在单个事务中创建医案和关联处方
+    /// Epic #1961: 使用统一的 MedicalCaseInputDto
     /// </summary>
     public class MedicalCaseWithPrescriptionCreateDto
     {
         /// <summary>医案创建信息</summary>
         [Required(ErrorMessage = "医案信息不能为空")]
         [DisplayName("医案信息")]
-        public MedicalCaseCreateDto MedicalCase { get; set; } = new();
+        public MedicalCaseInputDto MedicalCase { get; set; } = new();
 
         /// <summary>处方创建信息（可选）</summary>
         [DisplayName("处方信息")]

@@ -12,8 +12,9 @@ namespace LYBT.Desktop.MedicalCase.Repositories
     /// <summary>
     /// 医疗案例数据仓储实现 - RepositoryBase统一架构
     /// Project Standardization 3.0 - 迁移到统一RepositoryBase
+    /// Epic #1961: 使用统一的 MedicalCaseInputDto
     /// </summary>
-    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDto, MedicalCaseCreateDto, MedicalCaseUpdateDto, IMedicalCaseApi>, IMedicalCaseRepository
+    public class MedicalCaseRepository : RepositoryBase<MedicalCaseDto, MedicalCaseInputDto, MedicalCaseInputDto, IMedicalCaseApi>, IMedicalCaseRepository
     {
         public MedicalCaseRepository(
             IMedicalCaseApi medicalCaseApi,
@@ -58,9 +59,10 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         /// <summary>
         /// 创建完整的医疗案例（包含诊疗和可选处方）
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         public async Task<MedicalCaseDto> CreateWithDetailsAsync(
-            MedicalCaseCreateDto caseDto,
+            MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
             PrescriptionCreateDto? prescriptionDto = null)
         {
@@ -278,8 +280,9 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// <summary>
         /// 暂存病案（保存当前状态）
         /// Epic #1589 Phase 5 - 架构合规版本
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        public async Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseUpdateDto dto)
+        public async Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
         {
             if (medicalCaseId == Guid.Empty)
                 throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
@@ -379,12 +382,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
 
-        protected override Task<ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseCreateDto dto)
+        protected override Task<ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
         {
             return _api.CreateMedicalCaseAsync(dto);
         }
 
-        protected override Task<ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseUpdateDto dto)
+        protected override Task<ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseInputDto dto)
         {
             return _api.UpdateMedicalCaseAsync(id, dto);
         }
@@ -394,7 +397,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return _api.DeleteMedicalCaseAsync(id);
         }
 
-        protected override Guid? GetIdFromUpdateDto(MedicalCaseUpdateDto dto)
+        protected override Guid? GetIdFromUpdateDto(MedicalCaseInputDto dto)
         {
             return dto?.Id;
         }

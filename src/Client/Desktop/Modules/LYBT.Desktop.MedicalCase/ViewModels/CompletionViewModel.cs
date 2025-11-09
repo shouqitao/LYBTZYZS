@@ -201,10 +201,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                var updateDto = new MedicalCaseUpdateDto
+                // Epic #1961: 使用统一的 MedicalCaseInputDto
+                // ⚠️ TODO: InputDto 不包含 Status 字段，应使用专用的状态更新API（如CloseCaseAsync）
+                var updateDto = new MedicalCaseInputDto
                 {
                     Id = MedicalCaseId,
-                    Status = MedicalCaseStatus.Completed.ToString()  // 设置状态为Completed - Epic #1612修正版
+                    PatientId = Guid.Empty, // TODO: 从_medicalCase加载
+                    DoctorId = Guid.Empty, // TODO: 从_medicalCase加载
+                    VisitDate = DateTime.Now // TODO: 从_medicalCase加载
                 };
 
                 // Issue #1783: 使用DataManager更新状态

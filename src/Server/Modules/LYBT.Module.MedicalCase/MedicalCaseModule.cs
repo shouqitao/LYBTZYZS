@@ -27,8 +27,8 @@ namespace LYBT.Module.MedicalCase
             // 服务层 - Epic #1612: 新接口实现（14方法，Write/Read/Helper分离）
             services.AddScoped<IMedicalCaseService, MedicalCaseService>();
 
-            // 注册验证器 - 自动注册所有Validator
-            services.AddValidatorsFromAssemblyContaining<MedicalCaseCreateDtoValidator>();
+            // Epic #1961: 注册验证器 - 使用统一的 MedicalCaseInputDtoValidator
+            services.AddValidatorsFromAssemblyContaining<MedicalCaseInputDtoValidator>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

@@ -151,7 +151,8 @@ namespace LYBT.Desktop.MedicalCase.Components
                 // 1. 保存病案基本信息
                 if (IsMedicalCaseChanged())
                 {
-                    var updateDto = _currentDetail.ToUpdateDto();
+                    // Epic #1961: 使用 ToInputDto() 转换
+                    var updateDto = _currentDetail.ToInputDto();
                     var updated = await _repository.UpdateAsync(updateDto);
                     if (updated != null)
                     {
@@ -267,8 +268,9 @@ namespace LYBT.Desktop.MedicalCase.Components
         /// <summary>
         /// 简单更新病案数据（不使用聚合根模式）
         /// 用于只需要更新病案基本信息的场景（如DetailView）
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        public virtual async Task<MedicalCaseDto?> UpdateSimpleAsync(MedicalCaseUpdateDto dto)
+        public virtual async Task<MedicalCaseDto?> UpdateSimpleAsync(MedicalCaseInputDto dto)
         {
             try
             {
@@ -286,8 +288,9 @@ namespace LYBT.Desktop.MedicalCase.Components
         /// 创建新的医案（不使用聚合根模式）
         /// 用于FlowViewModel创建新医案的场景
         /// Issue #1783: 为FlowViewModel提供创建方法
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
-        public virtual async Task<MedicalCaseDto?> CreateAsync(MedicalCaseCreateDto dto)
+        public virtual async Task<MedicalCaseDto?> CreateAsync(MedicalCaseInputDto dto)
         {
             try
             {
@@ -454,10 +457,11 @@ namespace LYBT.Desktop.MedicalCase.Components
         /// <summary>
         /// 暂存病案（保存当前状态为草稿）
         /// Issue #1783: 为ConsultationViewModel提供业务命令
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
         public virtual async Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
             Guid medicalCaseId,
-            MedicalCaseUpdateDto request)
+            MedicalCaseInputDto request)
         {
             try
             {

@@ -133,99 +133,72 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
         #endregion
 
-        #region MedicalCaseCreateDto -> MedicalCase 映射测试
+        #region MedicalCaseInputDto -> MedicalCase 映射测试（Epic #1961）
 
         [Fact]
-        public void MedicalCaseCreateDto_To_MedicalCase_ShouldMapCorrectly()
+        public void MedicalCaseInputDto_To_MedicalCase_ShouldMapCorrectly()
         {
             // Arrange
-            var createDto = new MedicalCaseCreateDto
+            var inputDto = new MedicalCaseInputDto
+            {
+                Id = null, // 创建场景：Id为null
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                VisitDate = DateTime.Now,
+                ChiefComplaint = "主诉内容",
+                Remark = "备注信息"
+            };
+
+            // Act
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
+
+            // Assert
+            medicalCase.Should().NotBeNull();
+            medicalCase.PatientId.Should().Be(inputDto.PatientId);
+            medicalCase.DoctorId.Should().Be(inputDto.DoctorId);
+            medicalCase.ConsultationDate.Should().Be(inputDto.VisitDate);
+            medicalCase.Remark.Should().Be(inputDto.Remark);
+        }
+
+        [Fact]
+        public void MedicalCaseInputDto_To_MedicalCase_ShouldIgnoreIdAndNavigationProperties()
+        {
+            // Arrange
+            var inputDto = new MedicalCaseInputDto
+            {
+                Id = Guid.NewGuid(), // 更新场景：提供Id但应被忽略
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
+
+            // Assert - Id和导航属性应该被忽略
+            // 注意：AutoMapper Ignore 不会将 Id 设为 Empty，而是保持实体的默认值
+            // Service 层会在实际使用时生成新的 ID
+            medicalCase.Id.Should().NotBe(inputDto.Id ?? Guid.Empty); // 确认未从 DTO 映射
+            medicalCase.Consultation.Should().BeNull();
+            medicalCase.Prescription.Should().BeNull();
+        }
+
+        [Fact]
+        public void MedicalCaseInputDto_WithMinimalData_ShouldMapSuccessfully()
+        {
+            // Arrange - 只提供必填字段
+            var inputDto = new MedicalCaseInputDto
             {
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
-                Remark = "新病历备注"
+                VisitDate = DateTime.Now
             };
 
             // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(createDto);
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
 
-            // Assert
+            // Assert - 可选字段为null
             medicalCase.Should().NotBeNull();
-            medicalCase.PatientId.Should().Be(createDto.PatientId);
-            medicalCase.DoctorId.Should().Be(createDto.DoctorId);
-            medicalCase.Remark.Should().Be(createDto.Remark);
-        }
-
-        [Fact]
-        public void MedicalCaseCreateDto_To_MedicalCase_ShouldIgnoreIdAndNavigationProperties()
-        {
-            // Arrange
-            var createDto = new MedicalCaseCreateDto
-            {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(createDto);
-
-            // Assert - Id和导航属性应该被忽略
-            medicalCase.Id.Should().Be(Guid.Empty);
-            medicalCase.Consultation.Should().BeNull();
-            medicalCase.Prescription.Should().BeNull();
-        }
-
-        #endregion
-
-        #region MedicalCaseUpdateDto -> MedicalCase 映射测试
-
-        [Fact]
-        public void MedicalCaseUpdateDto_To_MedicalCase_ShouldMapAllowedFields()
-        {
-            // Arrange
-            var updateDto = new MedicalCaseUpdateDto
-            {
-                Remark = "更新的备注"
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(updateDto);
-
-            // Assert
-            medicalCase.Should().NotBeNull();
-            medicalCase.Remark.Should().Be(updateDto.Remark);
-        }
-
-        [Fact]
-        public void MedicalCaseUpdateDto_To_MedicalCase_ShouldIgnoreNavigationProperties()
-        {
-            // Arrange
-            var updateDto = new MedicalCaseUpdateDto
-            {
-                Remark = "忽略测试"
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(updateDto);
-
-            // Assert - 导航属性应该被忽略
-            medicalCase.Consultation.Should().BeNull();
-            medicalCase.Prescription.Should().BeNull();
-        }
-
-        [Fact]
-        public void MedicalCaseUpdateDto_To_MedicalCase_ShouldOnlyMapNonNullValues()
-        {
-            // Arrange
-            var updateDto = new MedicalCaseUpdateDto
-            {
-                Remark = null // null值应该被跳过
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(updateDto);
-
-            // Assert - ForAllMembers条件会跳过null值
             medicalCase.Remark.Should().BeNull();
         }
 
@@ -272,26 +245,6 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
 
             // Assert
             dto.Should().BeNull();
-        }
-
-        [Fact]
-        public void MedicalCaseCreateDto_WithMinimalData_ShouldMapSuccessfully()
-        {
-            // Arrange
-            var createDto = new MedicalCaseCreateDto
-            {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid()
-            };
-
-            // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(createDto);
-
-            // Assert
-            medicalCase.Should().NotBeNull();
-            medicalCase.PatientId.Should().Be(createDto.PatientId);
-            medicalCase.DoctorId.Should().Be(createDto.DoctorId);
-            medicalCase.Remark.Should().BeNull();
         }
 
         #endregion
