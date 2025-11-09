@@ -6,6 +6,7 @@
   "allowed_files": [
     "README.md",
     "CLAUDE.md",
+    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "LICENSE",
     "version.txt",
