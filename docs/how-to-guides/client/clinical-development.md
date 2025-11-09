@@ -88,8 +88,8 @@ mkdir Dialogs
 
   <ItemGroup>
     <!-- Prism框架 -->
-    <PackageReference Include="Prism.Unity" Version="9.0.537" />
-    <PackageReference Include="Prism.Wpf" Version="9.0.537" />
+    <PackageReference Include="Prism.Unity" Version="8.1.537" />
+    <PackageReference Include="Prism.Wpf" Version="8.1.537" />
 
     <!-- 日志 -->
     <PackageReference Include="NLog" Version="5.2.0" />

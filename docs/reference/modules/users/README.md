@@ -101,7 +101,7 @@ LYBT.Desktop.Users/
 
 **依赖关系**：
 - **依赖服务**：LYBT.Desktop.Foundation（BaseApiRepository、IApiService）、LYBT.Desktop.Infrastructure（UnifiedViewModelBase、DialogService）、LYBT.Desktop.Contracts（UserDto、CreateUserDto）
-- **UI依赖**：MaterialDesignThemes 5.1.x（Material Design组件）、Prism.DryIoc 9.0.x（MVVM框架）
+- **UI依赖**：MaterialDesignThemes 5.1.x（Material Design组件）、Prism.DryIoc 8.x（MVVM框架）
 - **Shell集成**：Shell根据Admin角色加载Users模块（OnDemand模式）
 
 ## 🔧 核心功能
@@ -693,7 +693,7 @@ public class BatchOperationResult
 | 技术 | 版本 | 用途 |
 |-----|------|------|
 | **WPF** | .NET 8 | 桌面UI框架 |
-| **Prism.DryIoc** | 9.0.x | MVVM框架、模块化、依赖注入、区域导航 |
+| **Prism.DryIoc** | 8.x | MVVM框架、模块化、依赖注入、区域导航 |
 | **MaterialDesignThemes** | 5.1.x | Material Design风格UI组件库 |
 | **UnifiedViewModelBase** | 自定义 | 统一的分页、搜索、排序基类 |
 | **Microsoft.Extensions.Logging** | 8.0.x | 日志记录 |

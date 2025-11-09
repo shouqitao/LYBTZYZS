@@ -126,8 +126,8 @@ LYBT.Desktop.Infrastructure/
 3. **LYBT.Desktop.Workstations.*** - 所有工作站使用基础设施组件
 
 ### NuGet包
-- **Prism.Core** (9.0.x) - Prism核心库（事件聚合器、命令等）
-- **Prism.Wpf** (9.0.x) - Prism WPF扩展（区域管理、导航等）
+- **Prism.Core** (8.x) - Prism核心库（事件聚合器、命令等）
+- **Prism.Wpf** (8.x) - Prism WPF扩展（区域管理、导航等）
 - **NPOI** - Excel文件读写库（ExcelHelper使用）
 - **System.Reactive** - 响应式扩展库（Rx.NET）
 - **Microsoft.Extensions.Configuration** (8.0.x) - 配置框架
@@ -138,7 +138,7 @@ LYBT.Desktop.Infrastructure/
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: UI框架
-- **Prism 9.x**: MVVM框架（区域管理、事件聚合器、命令、依赖注入）
+- **Prism 8.x**: MVVM框架（区域管理、事件聚合器、命令、依赖注入）
 - **NPOI**: Excel文件操作库
 - **Reactive Extensions (Rx.NET)**: 响应式编程支持
 - **Microsoft.Extensions.Configuration**: 配置管理框架

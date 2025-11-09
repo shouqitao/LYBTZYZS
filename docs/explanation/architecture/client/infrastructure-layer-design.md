@@ -44,7 +44,7 @@ Infrastructure层是Client端（Desktop WPF应用）的**基础设施核心层**
         │               │               │
 ┌───────▼───────┐ ┌────▼────────┐ ┌────▼────────┐
 │ LYBT.Desktop. │ │ LYBT.Shared │ │ Prism.Wpf   │
-│ Foundation    │ │ .Models     │ │ (9.0.x)     │
+│ Foundation    │ │ .Models     │ │ (8.x)     │
 └───────────────┘ └─────────────┘ └─────────────┘
 ```
 

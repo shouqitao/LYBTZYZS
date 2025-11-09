@@ -49,7 +49,7 @@ LYBT.Desktop.Auth/
 2. **其他业务模块** - 依赖认证模块提供的会话状态和用户信息
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架和依赖注入容器
+- **Prism.DryIoc** (8.x) - MVVM框架和依赖注入容器
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志记录
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件
 
@@ -57,7 +57,7 @@ LYBT.Desktop.Auth/
 
 - **.NET 8**: 基础框架
 - **WPF**: Windows Presentation Foundation UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架、模块化、依赖注入、区域导航
+- **Prism.DryIoc 8.x**: MVVM框架、模块化、依赖注入、区域导航
 - **MaterialDesignThemes 5.1.x**: Material Design风格UI组件库
 - **System.Security.Cryptography**: DPAPI加密凭证存储
 - **Microsoft.Extensions.Logging**: 结构化日志记录

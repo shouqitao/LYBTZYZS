@@ -773,11 +773,11 @@ public class PatientStatistics
 |------|------|------|
 | .NET | 8.0 | 基础框架 |
 | WPF | .NET 8.0 | Windows桌面UI框架 |
-| Prism.DryIoc | 9.0.x | MVVM框架,模块化,依赖注入 |
+| Prism.DryIoc | 8.x | MVVM框架,模块化,依赖注入 |
 | MaterialDesignThemes | 5.1.x | Material Design风格UI组件库 |
-| Prism EventAggregator | 9.0.x | 事件聚合器（模块间通信） |
-| Prism Dialog Service | 9.0.x | 模态对话框服务 |
-| Prism Navigation | 9.0.x | 区域导航（视图切换） |
+| Prism EventAggregator | 8.x | 事件聚合器（模块间通信） |
+| Prism Dialog Service | 8.x | 模态对话框服务 |
+| Prism Navigation | 8.x | 区域导航（视图切换） |
 | Repository Pattern | - | 三层架构数据访问 |
 | 异步编程 | async/await | 避免阻塞UI线程 |
 

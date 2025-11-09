@@ -80,7 +80,7 @@ LYBT.Desktop.Auth/
 
 **依赖关系**：
 - **依赖服务**：IAuthenticationService、ITokenStorageService、ISecureCredentialStorage、IApiHealthCheckService、IUsernameStorage（来自LYBT.Desktop.Foundation）
-- **UI依赖**：MaterialDesignThemes 5.1.x（Material Design组件）、Prism.DryIoc 9.0.x（MVVM框架）
+- **UI依赖**：MaterialDesignThemes 5.1.x（Material Design组件）、Prism.DryIoc 8.x（MVVM框架）
 - **Shell集成**：Shell项目根据登录状态决定显示LoginWindow或MainWindow
 
 ## 🔧 核心功能
@@ -806,7 +806,7 @@ public class AuthSessionDto
 | 技术 | 版本 | 用途 |
 |-----|------|------|
 | **WPF** | .NET 8 | 桌面UI框架 |
-| **Prism.DryIoc** | 9.0.x | MVVM框架和模块化 |
+| **Prism.DryIoc** | 8.x | MVVM框架和模块化 |
 | **MaterialDesignThemes** | 5.1.x | Material Design UI组件 |
 | **System.Security.Cryptography** | .NET 8 | DPAPI加密凭证存储 |
 | **Microsoft.Extensions.Logging** | 8.0.x | 日志记录 |

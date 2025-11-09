@@ -1149,7 +1149,7 @@ private async Task ExecuteCompleteStep1()
 |-----|------|------|
 | .NET | 8.0 | 基础框架 |
 | WPF | .NET 8 | Windows桌面UI框架 |
-| Prism.DryIoc | 9.0.x | MVVM框架、依赖注入、区域导航 |
+| Prism.DryIoc | 8.x | MVVM框架、依赖注入、区域导航 |
 | MaterialDesignThemes | 5.1.x | Material Design风格UI组件库 |
 | Microsoft.Extensions.Logging | 8.0.x | 日志记录框架 |
 

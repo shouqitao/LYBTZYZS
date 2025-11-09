@@ -50,7 +50,7 @@
 <!-- LYBT.Desktop.Prescriptions.csproj -->
 <ItemGroup>
   <!-- Prism MVVM框架 -->
-  <PackageReference Include="Prism.Wpf" Version="9.0.x" />
+  <PackageReference Include="Prism.Wpf" Version="8.1.x" />
 
   <!-- 日志 -->
   <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />

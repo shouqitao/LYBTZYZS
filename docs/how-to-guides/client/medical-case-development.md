@@ -43,7 +43,7 @@ LYBT.Desktop.MedicalCase 模块负责 Client 端的病案管理功能，包括�
 | 技术 | 版本 | 用途 |
 |------|------|------|
 | WPF | .NET 8.0 | UI框架 |
-| Prism | 9.0.x | MVVM框架、依赖注入、事件总线 |
+| Prism | 8.x | MVVM框架、依赖注入、事件总线 |
 | LYBT.Client.Infrastructure | v1.0 | Repository、UnifiedViewModelBase |
 | LYBT.Shared.Models | v1.0 | DTO模型 |
 | LYBT.Shared.Components | v1.0 | 中药计算器、验证器 |

@@ -38,7 +38,7 @@ Domain层 (Server端领域模型)
 |------|------|------|
 | .NET | 8.0 | 框架基础 |
 | WPF | .NET 8.0 | UI框架 |
-| Prism | 9.0.x | MVVM框架、导航、DI |
+| Prism | 8.x | MVVM框架、导航、DI |
 | HttpClient | .NET 8.0 | WebAPI调用 |
 | ObservableCollection | .NET 8.0 | 数据绑定 |
 | System.Text.Json | .NET 8.0 | JSON序列化 |

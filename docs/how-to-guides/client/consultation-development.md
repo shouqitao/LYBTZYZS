@@ -49,7 +49,7 @@
 
 <ItemGroup>
   <!-- Prism框架 -->
-  <PackageReference Include="Prism.Wpf" Version="9.0.x" />
+  <PackageReference Include="Prism.Wpf" Version="8.1.x" />
 
   <!-- Material Design -->
   <PackageReference Include="MaterialDesignThemes" Version="5.1.x" />

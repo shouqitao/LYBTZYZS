@@ -88,7 +88,7 @@ LYBT.Desktop.Prescriptions/
 2. **LYBT.Desktop.MedicalCase** - 医案模块(MedicalCaseFlowViewModel通过ISaveable接口调用处方功能)
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架与依赖注入容器
+- **Prism.DryIoc** (8.x) - MVVM框架与依赖注入容器
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **Microsoft.Extensions.Logging.Abstractions** (8.0.x) - 日志抽象
 - **System.Text.Json** (8.0.x) - JSON序列化
@@ -97,7 +97,7 @@ LYBT.Desktop.Prescriptions/
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架、模块化、依赖注入、区域导航、事件聚合器
+- **Prism.DryIoc 8.x**: MVVM框架、模块化、依赖注入、区域导航、事件聚合器
 - **MaterialDesignThemes 5.1.x**: Material Design风格的UI组件库
 - **XAML**: WPF声明式UI标记语言
 - **Data Binding**: WPF数据绑定机制(OneWay、TwoWay、UpdateSourceTrigger)

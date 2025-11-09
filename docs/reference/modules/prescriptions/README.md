@@ -1334,7 +1334,7 @@ public class PagedResult<T>
 |------|------|------|
 | .NET | 8.0 | 运行时框架 |
 | WPF | .NET 8.0 | 桌面应用框架 |
-| Prism | 9.0.x | MVVM框架 |
+| Prism | 8.x | MVVM框架 |
 | ObservableCollection | .NET 8.0 | 数据绑定集合 |
 | WPF PrintDialog | .NET 8.0 | 打印对话框 |
 | FlowDocument | .NET 8.0 | 打印文档生成 |

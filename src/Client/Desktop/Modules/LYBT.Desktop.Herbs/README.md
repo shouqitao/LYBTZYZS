@@ -58,7 +58,7 @@ LYBT.Desktop.Herbs/
 4. **LYBT.WebAPI** - Server端通过/api/v1/herbs提供API端点
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架和依赖注入容器
+- **Prism.DryIoc** (8.x) - MVVM框架和依赖注入容器
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志框架
 - **Newtonsoft.Json** (13.0.x) - JSON序列化与反序列化
@@ -66,7 +66,7 @@ LYBT.Desktop.Herbs/
 ## 🛠 技术栈
 
 - **.NET 8 & WPF**: Windows桌面应用基础框架
-- **Prism.DryIoc 9.0.x**: MVVM框架,提供模块化、区域导航、命令、事件聚合器
+- **Prism.DryIoc 8.x**: MVVM框架,提供模块化、区域导航、命令、事件聚合器
 - **MaterialDesignThemes 5.1.x**: Material Design风格的UI组件库（DataGrid、Button、TextBox等）
 - **ObservableCollection**: WPF数据绑定核心,支持集合变更通知
 - **ICommand / AsyncDelegateCommand**: Prism异步命令模式

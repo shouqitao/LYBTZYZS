@@ -97,8 +97,8 @@ LYBT.Desktop.Models/
 2. **LYBT.Desktop.Workstations.*** - 所有工作站的ViewModel继承自ViewModelBase
 
 ### NuGet包
-- **Prism.Core** (9.0.x) - Prism核心库（BindableBase、DelegateCommand等）
-- **Prism.Wpf** (9.0.x) - Prism WPF扩展（事件聚合器、依赖注入等）
+- **Prism.Core** (8.x) - Prism核心库（BindableBase、DelegateCommand等）
+- **Prism.Wpf** (8.x) - Prism WPF扩展（事件聚合器、依赖注入等）
 - **System.ComponentModel.Annotations** - 数据注解支持（验证特性）
 - **System.Reactive** - 响应式扩展库（Rx.NET）
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志框架（ViewModelBase内置日志支持）
@@ -107,7 +107,7 @@ LYBT.Desktop.Models/
 ## 🛠 技术栈
 
 - **.NET 8**: 基础框架
-- **Prism 9.x**: MVVM框架（BindableBase、EventAggregator、DelegateCommand）
+- **Prism 8.x**: MVVM框架（BindableBase、EventAggregator、DelegateCommand）
 - **INotifyPropertyChanged**: WPF数据绑定接口（ViewModelBase实现）
 - **INotifyDataErrorInfo**: 数据验证接口（ViewModelBase实现）
 - **IDisposable**: 资源清理接口（ViewModelBase实现）

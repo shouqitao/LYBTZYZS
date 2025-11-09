@@ -195,7 +195,7 @@ LYBT.Desktop.Consultation
 #### 2.3.3 NuGet包依赖
 
 ```xml
-<PackageReference Include="Prism.DryIoc" Version="9.0.x" />
+<PackageReference Include="Prism.DryIoc" Version="8.1.x" />
 <PackageReference Include="MaterialDesignThemes" Version="5.1.x" />
 <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.x" />
 ```
@@ -2682,7 +2682,7 @@ public async Task SaveAsync()
 - ✅ **Prism MVVM**: 模块化、依赖注入、区域导航
 
 **关键技术**:
-- **.NET 8** + **WPF** + **Prism.DryIoc 9.0** + **MaterialDesignThemes 5.1**
+- **.NET 8** + **WPF** + **Prism.DryIoc 8.x** + **MaterialDesignThemes 5.1**
 - **MVVM模式** + **Repository模式** + **接口契约模式**
 - **async/await异步编程** + **INotifyPropertyChanged观察者模式**
 

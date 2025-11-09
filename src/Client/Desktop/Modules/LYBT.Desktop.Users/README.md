@@ -81,7 +81,7 @@ LYBT.Desktop.Users/
 2. **其他业务模块** - 可能需要查询用户列表（如Patients模块选择医生）
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架和依赖注入容器
+- **Prism.DryIoc** (8.x) - MVVM框架和依赖注入容器
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志记录
 
@@ -89,7 +89,7 @@ LYBT.Desktop.Users/
 
 - **.NET 8**: 基础框架
 - **WPF**: Windows Presentation Foundation UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架、模块化、依赖注入、区域导航
+- **Prism.DryIoc 8.x**: MVVM框架、模块化、依赖注入、区域导航
 - **MaterialDesignThemes 5.1.x**: Material Design风格UI组件库（DataGrid、Button、Dialog、Card）
 - **Repository模式**: 数据访问层抽象，继承BaseApiRepository
 - **UnifiedViewModelBase**: 统一的分页、搜索、排序基类

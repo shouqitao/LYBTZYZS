@@ -46,8 +46,8 @@
 
 **NuGet包版本**：
 ```xml
-<PackageReference Include="Prism.Wpf" Version="9.0.537" />
-<PackageReference Include="Prism.DryIoc" Version="9.0.271" />
+<PackageReference Include="Prism.Wpf" Version="8.1.537" />
+<PackageReference Include="Prism.DryIoc" Version="8.1.271" />
 <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
 ```
 

@@ -53,7 +53,7 @@ LYBT.Desktop.Consultation/
    - LYBT.Desktop.IntegrationTests（集成测试）
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架、依赖注入、区域导航
+- **Prism.DryIoc** (8.x) - MVVM框架、依赖注入、区域导航
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志记录框架
 
@@ -61,7 +61,7 @@ LYBT.Desktop.Consultation/
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: Windows桌面UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架，模块化、依赖注入、区域导航
+- **Prism.DryIoc 8.x**: MVVM框架，模块化、依赖注入、区域导航
 - **MaterialDesignThemes 5.1.x**: Material Design风格UI组件库
 - **MVVM模式**: Model-View-ViewModel架构，数据绑定与业务逻辑分离
 - **异步编程**: 全异步方法(async/await)，UI响应性优化

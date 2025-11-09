@@ -84,7 +84,7 @@ LYBT.Desktop.Infrastructure/
 ```xml
 <ItemGroup>
   <!-- Prism.Wpf: MVVM框架 + EventAggregator -->
-  <PackageReference Include="Prism.Wpf" Version="9.0.537" />
+  <PackageReference Include="Prism.Wpf" Version="8.1.537" />
 
   <!-- NPOI: Excel操作库 -->
   <PackageReference Include="NPOI" Version="2.7.0" />

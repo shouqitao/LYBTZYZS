@@ -77,7 +77,7 @@ Client端模块层级结构：
 
 **技术栈**：
 - .NET 8 + WPF（Windows Presentation Foundation）
-- Prism.DryIoc 9.0.x（MVVM框架、模块化、DI容器）
+- Prism.DryIoc 8.x（MVVM框架、模块化、DI容器）
 - MaterialDesignThemes 5.1.x（Material Design UI组件库）
 - INavigationAware（Prism导航生命周期接口）
 - AsyncDelegateCommand（Prism异步命令）

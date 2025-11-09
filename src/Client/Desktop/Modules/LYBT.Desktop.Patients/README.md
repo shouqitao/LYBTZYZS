@@ -52,8 +52,8 @@ LYBT.Desktop.Patients/
 1. **LYBT.Desktop.Foundation** - 基础设施(ViewModel基类、IApiService、导航服务)
 2. **LYBT.Desktop.Presentation** - 共享UI组件和样式
 3. **LYBT.Shared.Models** - 共享DTO模型(PatientDto、CreatePatientDto、UpdatePatientDto、PagedResultDto等)
-4. **Prism.Core** (9.0.x) - MVVM框架核心
-5. **Prism.DryIoc** (9.0.x) - 依赖注入容器
+4. **Prism.Core** (8.x) - MVVM框架核心
+5. **Prism.DryIoc** (8.x) - 依赖注入容器
 6. **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 
 ### 被依赖项目
@@ -62,8 +62,8 @@ LYBT.Desktop.Patients/
 3. **LYBT.Desktop.Consultation** - 诊断模块依赖患者信息展示
 
 ### NuGet包
-- **Prism.Core** (9.0.x) - MVVM核心框架
-- **Prism.DryIoc** (9.0.x) - 依赖注入与模块化支持
+- **Prism.Core** (8.x) - MVVM核心框架
+- **Prism.DryIoc** (8.x) - 依赖注入与模块化支持
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件
 - **Microsoft.Extensions.Logging** (8.0.x) - 结构化日志
 - **System.Collections.ObjectModel** (8.0.x) - ObservableCollection支持
@@ -72,7 +72,7 @@ LYBT.Desktop.Patients/
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: Windows桌面UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架,模块化,依赖注入,区域导航
+- **Prism.DryIoc 8.x**: MVVM框架,模块化,依赖注入,区域导航
 - **MaterialDesignThemes 5.1.x**: Material Design风格UI组件库
 - **MVVM架构**: Model-View-ViewModel架构模式
 - **Prism EventAggregator**: 事件聚合器(PatientSelectedEvent、MedicalCaseCreatedEvent等)

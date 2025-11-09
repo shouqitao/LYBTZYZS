@@ -75,7 +75,7 @@ LYBT.Desktop.MedicalCase/
 4. **LYBT.Desktop.Prescriptions** - 处方步骤子模块(Step 2)
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架、模块化、依赖注入
+- **Prism.DryIoc** (8.x) - MVVM框架、模块化、依赖注入
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志框架
 
@@ -83,7 +83,7 @@ LYBT.Desktop.MedicalCase/
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: Windows桌面UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架、模块化、依赖注入、区域导航
+- **Prism.DryIoc 8.x**: MVVM框架、模块化、依赖注入、区域导航
 - **MaterialDesignThemes 5.1.x**: Material Design UI组件库
 - **INavigationAware**: Prism导航生命周期接口
 - **DelegateCommand/AsyncDelegateCommand**: Prism命令模式

@@ -27,7 +27,7 @@
 
 - **UI 框架**: WPF (Windows Presentation Foundation)
 - **架构模式**: MVVM (Model-View-ViewModel)
-- **模块化框架**: Prism.DryIoc 9.0+
+- **模块化框架**: Prism.DryIoc 8.x+
 - **依赖注入**: Prism.DryIoc (DryIoc 容器)
 - **对象映射**: AutoMapper 13.0+
 - **.NET 版本**: .NET 8.0

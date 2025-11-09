@@ -69,8 +69,8 @@ LYBT.Desktop.Presentation/
     - LYBT.Desktop.IntegrationTests（集成测试）
 
 ### NuGet包
-- **Prism.Core** (9.0.x) - MVVM框架核心（IEventAggregator、INavigationAware）
-- **Prism.Wpf** (9.0.x) - WPF集成（DelegateCommand、IContainerRegistry）
+- **Prism.Core** (8.x) - MVVM框架核心（IEventAggregator、INavigationAware）
+- **Prism.Wpf** (8.x) - WPF集成（DelegateCommand、IContainerRegistry）
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志框架
 - **Microsoft.Extensions.DependencyInjection** (8.0.x) - 依赖注入容器
 - **AutoMapper** (13.x) - 对象映射框架（支持PatientSelector的DTO转换）
@@ -79,7 +79,7 @@ LYBT.Desktop.Presentation/
 
 - **.NET 8**: 基础框架
 - **WPF**: Windows Presentation Foundation（桌面端UI框架）
-- **Prism 9.x**: MVVM框架（导航、命令、事件聚合器）
+- **Prism 8.x**: MVVM框架（导航、命令、事件聚合器）
 - **AutoMapper 13.x**: 对象映射框架（跨模块组件的DTO转换）
 - **System.Windows.Threading**: UI线程调度器（确保UI线程安全）
 - **System.ComponentModel**: INotifyPropertyChanged支持（MVVM数据绑定）

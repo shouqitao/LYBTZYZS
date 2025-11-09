@@ -67,7 +67,7 @@ LYBT.Desktop.Formula/
 2. **LYBT.Desktop.Prescriptions** - 处方模块可能引用验方作为模板（创建处方时选择验方）
 
 ### NuGet包
-- **Prism.DryIoc** (9.0.x) - MVVM框架、依赖注入、区域导航
+- **Prism.DryIoc** (8.x) - MVVM框架、依赖注入、区域导航
 - **MaterialDesignThemes** (5.1.x) - Material Design UI组件库
 - **MaterialDesignExtensions** (3.3.x) - Material Design扩展控件
 - **Newtonsoft.Json** (13.0.x) - JSON序列化（用于ApiService交互）
@@ -76,7 +76,7 @@ LYBT.Desktop.Formula/
 
 - **.NET 8**: 基础框架
 - **WPF**: Windows Presentation Foundation桌面UI框架
-- **Prism.DryIoc 9.0.x**: MVVM框架，提供模块化、依赖注入、区域导航、命令支持
+- **Prism.DryIoc 8.x**: MVVM框架，提供模块化、依赖注入、区域导航、命令支持
 - **MaterialDesignThemes 5.1.x**: Material Design UI组件库，提供现代化界面风格
 - **MVVM架构**: Model-View-ViewModel设计模式，实现UI与业务逻辑分离
 - **Repository模式**: FormulaRepository → BaseApiRepository → ApiService → HTTP → Server

@@ -47,16 +47,16 @@ LYBT.Desktop.Admin/
 1. **LYBT.Desktop.Shell** - Shell层加载管理员模块,注入主工作区
 
 ### NuGet包
-- **Prism.Core** (9.0.x) - Prism核心库(导航、命令)
-- **Prism.Wpf** (9.0.x) - Prism WPF扩展(区域管理、依赖注入)
-- **Prism.DryIoc** (9.0.x) - Prism DI容器(依赖注入实现)
+- **Prism.Core** (8.x) - Prism核心库(导航、命令)
+- **Prism.Wpf** (8.x) - Prism WPF扩展(区域管理、依赖注入)
+- **Prism.DryIoc** (8.x) - Prism DI容器(依赖注入实现)
 - **Microsoft.Extensions.Logging** (8.0.x) - 日志框架
 
 ## 🛠 技术栈
 
 - **.NET 8**: 基础框架
 - **WPF (Windows Presentation Foundation)**: UI框架
-- **Prism 9.x**: MVVM框架(区域导航、命令、事件聚合器)
+- **Prism 8.x**: MVVM框架(区域导航、命令、事件聚合器)
 - **DryIoc**: 依赖注入容器
 - **MVVM模式**: Model-View-ViewModel架构
 - **INavigationAware**: Prism导航感知接口
