@@ -294,8 +294,6 @@
   事件发布订阅模式、跨模块通信机制、事件存储设计
 - **[方剂模块架构](explanation/architecture/server/formula-design.md)**
   Formula聚合根设计、验方管理、配伍规则引擎
-- **[接口层设计](explanation/architecture/server/interfaces-layer-design.md)**
-  IRepository/IService接口规范、依赖注入策略
 - **[医案模块架构](explanation/architecture/server/medical-case-design.md)**
   MedicalCase聚合根设计、状态机管理、生命周期控制
 - **[处方模块架构](explanation/architecture/server/prescriptions-design.md)**
@@ -436,9 +434,6 @@
 ## 📊 项目分析报告
 
 **代码现状与架构演进** - 关键模块深度分析
-
-- **[医案/诊断/处方三模块现状分析 (2025-10-24)](reports/medicalcase-consultation-prescription-current-status-analysis-2025-10-24.md)**
-  Server端3199行、Desktop端17231行、文档20078行完整统计分析，包含架构演进、代码复杂度、测试覆盖率、优化建议 ⭐⭐⭐
 
 - **[文档缺失分析报告 (2025-10-29)](reports/documentation-gap-analysis-2025-10-29.md)**
   模块文档完成度分析、优先级排序、补充计划
