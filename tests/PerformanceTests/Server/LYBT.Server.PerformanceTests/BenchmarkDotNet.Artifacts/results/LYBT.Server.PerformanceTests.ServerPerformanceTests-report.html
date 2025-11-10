@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>LYBT.Server.PerformanceTests.ServerPerformanceTests-20251110-153730</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 10 (10.0.19044.6456/21H2/November2021Update)
+Intel Core i7-7700 CPU 3.60GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+.NET SDK 8.0.414
+  [Host]     : .NET 8.0.21 (8.0.2125.47513), X64 RyuJIT AVX2
+  Job-ZJXARG : .NET 8.0.21 (8.0.2125.47513), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>IterationCount=10  WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method              </th><th>Mean   </th><th>Error   </th><th>StdDev  </th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Users-分页查询（100条，第1页20条）</td><td>91.32 &mu;s</td><td>7.677 &mu;s</td><td>5.078 &mu;s</td><td>16.1133</td><td>0.4883</td><td>67.42 KB</td>
+</tr><tr><td>Patients-分页查询（100条，第1页20条）</td><td>99.45 &mu;s</td><td>6.682 &mu;s</td><td>4.420 &mu;s</td><td>18.0664</td><td>-</td><td>75.74 KB</td>
+</tr><tr><td>Herbs-分页查询（100条，第1页20条）</td><td>135.33 &mu;s</td><td>22.373 &mu;s</td><td>14.799 &mu;s</td><td>15.6250</td><td>0.9766</td><td>66.05 KB</td>
+</tr><tr><td>Herbs-单条创建</td><td>10,370.68 &mu;s</td><td>2,827.805 &mu;s</td><td>1,870.418 &mu;s</td><td>1187.5000</td><td>7.8125</td><td>4865.95 KB</td>
+</tr><tr><td>Patients-单条创建</td><td>15,692.33 &mu;s</td><td>6,938.781 &mu;s</td><td>4,589.574 &mu;s</td><td>2921.8750</td><td>15.6250</td><td>11937.39 KB</td>
+</tr><tr><td>Users-单条创建</td><td>17,992.34 &mu;s</td><td>8,187.532 &mu;s</td><td>5,415.546 &mu;s</td><td>2242.1875</td><td>19.5313</td><td>9146.29 KB</td>
+</tr><tr><td>Users-批量导入（1000条模拟）</td><td>236,785.01 &mu;s</td><td>105,005.255 &mu;s</td><td>69,454.475 &mu;s</td><td>43000.0000</td><td>1200.0000</td><td>180151.39 KB</td>
+</tr><tr><td>Herbs-批量导入（1000条模拟）</td><td>246,757.43 &mu;s</td><td>75,791.399 &mu;s</td><td>45,102.246 &mu;s</td><td>42400.0000</td><td>1200.0000</td><td>177495.95 KB</td>
+</tr><tr><td>Patients-批量导入（1000条模拟）</td><td>329,612.55 &mu;s</td><td>161,353.407 &mu;s</td><td>106,725.289 &mu;s</td><td>32666.6667</td><td>1333.3333</td><td>136816.39 KB</td>
+</tr></tbody></table>
+</body>
+</html>

@@ -45,13 +45,12 @@ namespace LYBT.Desktop.Contracts.Api
         // ========== Epic #1934: 批量导入/导出功能 ==========
 
         /// <summary>
-        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 批量导入患者数据 (Issue #2004 Task 2.11)
+        /// Desktop主导模式：Desktop解析Excel并组装DTO，API接收并批量创建
+        /// Note: Server端需要实现对应的 POST /api/v1/patients/batch-import endpoint
         /// </summary>
-        /// <param name="file">Excel文件流</param>
-        /// <returns>导入结果（成功/失败/跳过数量及详细失败信息）</returns>
-        [Refit.Multipart]
-        [Refit.Post("/api/v1/patients/import")]
-        Task<ApiResponse<BatchImportResultDto>> BatchImportAsync([Refit.AliasAs("file")] Refit.StreamPart file);
+        [Refit.Post("/api/v1/patients/batch-import")]
+        Task<ApiResponse<BatchImportResultDto>> BatchImportAsync([Refit.Body] PatientBatchImportRequestDto request);
 
         /// <summary>
         /// 下载患者导入模板 (Epic #1934 FR-002)

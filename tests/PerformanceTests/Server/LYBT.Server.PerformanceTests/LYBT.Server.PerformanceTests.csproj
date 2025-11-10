@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS8625</NoWarn>
+
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- BenchmarkDotNet 核心依赖 -->
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+
+    <!-- 测试框架 -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+
+    <!-- EF Core 依赖 -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+
+    <!-- 测试辅助工具 -->
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Bogus" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Server端模块引用 -->
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Core\LYBT.Entities\LYBT.Entities.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Users\LYBT.Module.Users.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Server\Modules\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
+    <ProjectReference Include="..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
+  </ItemGroup>
+
+</Project>

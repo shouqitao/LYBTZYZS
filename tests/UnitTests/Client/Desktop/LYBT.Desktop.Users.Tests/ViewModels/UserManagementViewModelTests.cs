@@ -22,6 +22,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
     {
         private readonly Mock<UserCommandHandler> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly Mock<ICommonDialogService> _mockCommonDialogService; // Issue #2003
         private readonly Mock<IDialogService> _mockDialogService;
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
@@ -44,6 +45,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _mockUserRepository = new Mock<IUserRepository>();
             _mockCommandLogger = new Mock<ILogger<UserCommandHandler>>();
             _mockCommandHandler = new Mock<UserCommandHandler>(_mockUserRepository.Object, _mockCommandLogger.Object);
+            _mockCommonDialogService = new Mock<ICommonDialogService>(); // Issue #2003
             _mockDialogService = new Mock<IDialogService>();
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
@@ -57,9 +59,11 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_mockLogger.Object);
 
-            // Create ViewModel instance (Issue #1798: 添加IDialogService参数)
+            // Create ViewModel instance (Issue #2003: 添加IUserRepository和ICommonDialogService参数)
             _viewModel = new UserManagementViewModel(
                 _mockCommandHandler.Object,
+                _mockUserRepository.Object,
+                _mockCommonDialogService.Object,
                 _mockDialogService.Object,
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
@@ -87,15 +91,22 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         public void Constructor_ShouldInitializeCommands()
         {
             // Assert
-            _viewModel.SearchCommand.Should().NotBeNull();
+            // Issue #1995: BaseManagementViewModel 提供的命令
             _viewModel.RefreshCommand.Should().NotBeNull();
-            _viewModel.AddCommand.Should().NotBeNull();
             _viewModel.DeleteCommand.Should().NotBeNull();
+            _viewModel.PreviousPageCommand.Should().NotBeNull();
+            _viewModel.NextPageCommand.Should().NotBeNull();
+
+            // Issue #1995: UserManagementViewModel 特定命令
             _viewModel.EditCommand.Should().NotBeNull();
             _viewModel.ResetPasswordCommand.Should().NotBeNull();
             _viewModel.ToggleUserStatusCommand.Should().NotBeNull();
             _viewModel.FirstPageCommand.Should().NotBeNull();
             _viewModel.LastPageCommand.Should().NotBeNull();
+
+            // Issue #1995 注意: BaseManagementViewModel 没有 SearchCommand 和 AddCommand
+            // SearchText 属性变化会自动触发搜索（500ms防抖）
+            // AddCommand 需要在子类中自行实现（未来 Task 可能统一）
         }
 
         #endregion

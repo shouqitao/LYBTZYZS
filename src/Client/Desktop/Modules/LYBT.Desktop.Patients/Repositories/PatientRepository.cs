@@ -72,35 +72,23 @@ namespace LYBT.Desktop.Patients.Repositories
 
         #endregion
 
-        #region Epic #1934: 批量导入/导出功能
+        #region Issue #2004: 批量导入/导出功能（Desktop主导模式）
 
         /// <summary>
-        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 批量导入患者数据 (Issue #2004 Task 2.11)
+        /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
         /// </summary>
-        public async Task<BatchImportResultDto?> BatchImportAsync(Stream fileStream, string fileName)
+        public async Task<BatchImportResultDto?> BatchImportAsync(PatientBatchImportRequestDto request)
         {
             try
             {
-                _logger.LogInformation("开始批量导入患者：{FileName}", fileName);
-
-                // 创建StreamPart用于Multipart上传
-                var streamPart = new Refit.StreamPart(fileStream, fileName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                var response = await _api.BatchImportAsync(streamPart);
-
-                if (!response.Success || response.Data == null)
-                {
-                    _logger.LogError("批量导入患者失败：{Message}", response.Message);
-                    return null;
-                }
-
-                _logger.LogInformation("批量导入完成：成功{SuccessCount}条，失败{FailureCount}条，跳过{SkippedCount}条",
-                    response.Data.SuccessCount, response.Data.FailureCount, response.Data.SkippedCount);
-
+                // 调用Server端API: POST /api/v1/patients/batch-import
+                var response = await _api.BatchImportAsync(request);
                 return response.Data;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "批量导入患者时发生异常");
+                _logger.LogError(ex, "批量导入患者失败");
                 return null;
             }
         }

@@ -214,5 +214,29 @@ namespace LYBT.Desktop.Users.Repositories
                 return ServiceResult<ResetPasswordResponseDto>.Failure($"重置密码异常: {ex.Message}");
             }
         }
+
+
+        /// <summary>
+        /// 批量导入用户 (Issue #2003 Task 2.10)
+        /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
+        /// </summary>
+        /// <summary>
+        /// 批量导入用户 (Issue #2003 Task 2.10)
+        /// Desktop主导模式：接收Desktop解析好的DTO列表，调用Server API
+        /// </summary>
+        public async Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportRequestDto request)
+        {
+            try
+            {
+                // 调用Server端API: POST /api/v1/users/batch-import
+                var response = await _api.BatchImportAsync(request);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量导入用户失败");
+                return null;
+            }
+        }
     }
 }

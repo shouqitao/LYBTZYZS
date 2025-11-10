@@ -1,169 +1,155 @@
-﻿<UserControl x:Class="LYBT.Desktop.Patients.Views.PatientManagementView"
+<!--
+    PatientManagementView - 患者管理视图
+    Issue #2000 - Task 2.7: 应用BaseMasterDataListView模板
+
+    重构说明：
+    - 使用 BaseMasterDataListView 替代原有的三行布局
+    - 移除重复的工具栏、数据表格、分页控件代码
+    - 通过 Columns 和 ActionButtons 属性定义患者特定内容
+-->
+<UserControl x:Class="LYBT.Desktop.Patients.Views.PatientManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
-    <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />  <!-- 工具栏 -->
-            <RowDefinition Height="*" />      <!-- 表格 -->
-            <RowDefinition Height="Auto" />  <!-- 分页栏 -->
-        </Grid.RowDefinitions>
+    <!-- Issue #2000: 应用 BaseMasterDataListView 模板 -->
+    <views:BaseMasterDataListView
+        ItemsSource="{Binding Items}"
+        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SearchText="{Binding SearchText, Mode=TwoWay}"
+        CurrentPage="{Binding PageIndex, Mode=TwoWay}"
+        TotalPages="{Binding TotalPages}"
+        PageSize="{Binding PageSize, Mode=TwoWay}"
+        TotalCount="{Binding TotalCount}"
+        FirstPageCommand="{Binding FirstPageCommand}"
+        PreviousPageCommand="{Binding PreviousPageCommand}"
+        NextPageCommand="{Binding NextPageCommand}"
+        LastPageCommand="{Binding LastPageCommand}"
+        IsBusy="{Binding IsBusy}"
+        BusyMessage="{Binding BusyMessage}"
+        EmptyStateText="暂无患者数据">
 
-        <!-- Issue #1840: 统一工具栏 -->
-        <controls:UnifiedManagementToolBar
-            Grid.Row="0"
-            SearchText="{Binding SearchText, Mode=TwoWay}"
-            SearchCommand="{Binding SearchCommand}">
+        <!-- 定义患者特定的 DataGrid 列 -->
+        <views:BaseMasterDataListView.Columns>
+            <!-- 姓名 -->
+            <DataGridTextColumn Header="姓名"
+                                Binding="{Binding Name}"
+                                Width="120" />
 
-            <!-- 筛选区(暂不添加筛选,保持简洁) -->
-            <controls:UnifiedManagementToolBar.FilterContent>
-                <StackPanel Orientation="Horizontal" />
-            </controls:UnifiedManagementToolBar.FilterContent>
+            <!-- 性别 -->
+            <DataGridTextColumn Header="性别"
+                                Binding="{Binding Gender}"
+                                Width="80" />
 
-            <!-- 操作按钮区 -->
-            <controls:UnifiedManagementToolBar.ActionButtons>
-                <StackPanel Orientation="Horizontal">
-                    <Button Command="{Binding AddCommand}"
-                            Style="{StaticResource SuccessButton}"
-                            Margin="{StaticResource SpacingSmall}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0" />
-                            <TextBlock Text="新增患者" />
+            <!-- 年龄 -->
+            <DataGridTextColumn Header="年龄"
+                                Binding="{Binding Age}"
+                                Width="80" />
+
+            <!-- 手机号 -->
+            <DataGridTextColumn Header="手机号"
+                                Binding="{Binding PhoneNumber}"
+                                Width="140" />
+
+            <!-- 身份证号 -->
+            <DataGridTextColumn Header="身份证号"
+                                Binding="{Binding IdNumber}"
+                                Width="180" />
+
+            <!-- 就诊次数 -->
+            <DataGridTextColumn Header="就诊次数"
+                                Binding="{Binding VisitCount}"
+                                Width="100" />
+
+            <!-- 操作列 -->
+            <DataGridTemplateColumn Header="操作" Width="220">
+                <DataGridTemplateColumn.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="HorizontalContentAlignment" Value="Right" />
+                    </Style>
+                </DataGridTemplateColumn.CellStyle>
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
+                            <Button Content="查看"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="4,0"
+                                    ToolTip="查看患者详情"
+                                    Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="编辑"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="4,0"
+                                    ToolTip="编辑患者信息"
+                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="删除"
+                                    Style="{StaticResource DangerButton}"
+                                    Margin="4,0"
+                                    ToolTip="删除患者（软删除）"
+                                    Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
                         </StackPanel>
-                    </Button>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+        </views:BaseMasterDataListView.Columns>
 
-                    <!-- Epic #1934: 批量导入/导出功能 -->
-                    <Button Command="{Binding ImportCommand}"
-                            Style="{StaticResource PrimaryButton}"
-                            Margin="{StaticResource SpacingSmall}"
-                            ToolTip="批量导入患者数据（支持Excel .xlsx格式）">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📥" FontSize="16" Margin="0,0,6,0" />
-                            <TextBlock Text="导入患者" />
-                        </StackPanel>
-                    </Button>
+        <!-- 定义操作按钮区域 -->
+        <views:BaseMasterDataListView.ActionButtons>
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding AddCommand}"
+                        Style="{StaticResource SuccessButton}"
+                        Margin="{StaticResource SpacingSmall}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✚" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="新增患者" />
+                    </StackPanel>
+                </Button>
 
-                    <Button Command="{Binding ExportCommand}"
-                            Style="{StaticResource PrimaryButton}"
-                            Margin="{StaticResource SpacingSmall}"
-                            ToolTip="导出当前筛选的患者数据到Excel">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📤" FontSize="16" Margin="0,0,6,0" />
-                            <TextBlock Text="导出患者" />
-                        </StackPanel>
-                    </Button>
+                <!-- Epic #1934: 批量导入/导出功能 -->
+                <Button Command="{Binding ImportCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="{StaticResource SpacingSmall}"
+                        ToolTip="批量导入患者数据（支持Excel .xlsx格式）">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📥" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="导入患者" />
+                    </StackPanel>
+                </Button>
 
-                    <Button Command="{Binding DownloadTemplateCommand}"
-                            Style="{StaticResource SecondaryButton}"
-                            Margin="{StaticResource SpacingSmall}"
-                            ToolTip="下载Excel导入模板（包含示例数据）">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📄" FontSize="16" Margin="0,0,6,0" />
-                            <TextBlock Text="下载模板" />
-                        </StackPanel>
-                    </Button>
+                <Button Command="{Binding ExportCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="{StaticResource SpacingSmall}"
+                        ToolTip="导出当前筛选的患者数据到Excel">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📤" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="导出患者" />
+                    </StackPanel>
+                </Button>
 
-                    <Button Content="刷新"
-                            Style="{StaticResource SecondaryButton}"
-                            Command="{Binding RefreshCommand}"
-                            Margin="{StaticResource SpacingSmall}"/>
-                    <Button Content="🏠 返回主页"
-                            Style="{StaticResource PrimaryButton}"
-                            Command="{Binding NavigateToHomeCommand}"
-                            ToolTip="返回管理员主页" />
-                </StackPanel>
-            </controls:UnifiedManagementToolBar.ActionButtons>
-        </controls:UnifiedManagementToolBar>
+                <Button Command="{Binding DownloadTemplateCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="{StaticResource SpacingSmall}"
+                        ToolTip="下载Excel导入模板（包含示例数据）">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📄" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="下载模板" />
+                    </StackPanel>
+                </Button>
 
-        <!-- Issue #1840: 统一数据表格 -->
-        <controls:UnifiedManagementTable
-            Grid.Row="1"
-            ItemsSource="{Binding Items}"
-            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-            EmptyStateText="暂无患者数据">
-
-            <controls:UnifiedManagementTable.Columns>
-                <!-- 姓名 -->
-                <DataGridTextColumn Header="姓名"
-                                    Binding="{Binding Name}"
-                                    Width="120" />
-
-                <!-- 性别 -->
-                <DataGridTextColumn Header="性别"
-                                    Binding="{Binding Gender}"
-                                    Width="80" />
-
-                <!-- 年龄 -->
-                <DataGridTextColumn Header="年龄"
-                                    Binding="{Binding Age}"
-                                    Width="80" />
-
-                <!-- 手机号 -->
-                <DataGridTextColumn Header="手机号"
-                                    Binding="{Binding PhoneNumber}"
-                                    Width="140" />
-
-                <!-- 身份证号 -->
-                <DataGridTextColumn Header="身份证号"
-                                    Binding="{Binding IdNumber}"
-                                    Width="180" />
-
-                <!-- 就诊次数 -->
-                <DataGridTextColumn Header="就诊次数"
-                                    Binding="{Binding VisitCount}"
-                                    Width="100" />
-
-                <!-- 操作 (Epic #1934 FR-005: 操作列3个按钮 - 查看、编辑、删除) -->
-                <DataGridTemplateColumn Header="操作" Width="220">
-                    <DataGridTemplateColumn.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="HorizontalContentAlignment" Value="Right" />
-                        </Style>
-                    </DataGridTemplateColumn.CellStyle>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
-                                <!-- 查看按钮 -->
-                                <Button Content="查看"
-                                        Style="{StaticResource PrimaryButton}"
-                                        Margin="4,0"
-                                        ToolTip="查看患者详情"
-                                        Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-
-                                <!-- 编辑按钮 -->
-                                <Button Content="编辑"
-                                        Style="{StaticResource SecondaryButton}"
-                                        Margin="4,0"
-                                        ToolTip="编辑患者信息"
-                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-
-                                <!-- 删除按钮 -->
-                                <Button Content="删除"
-                                        Style="{StaticResource DangerButton}"
-                                        Margin="4,0"
-                                        ToolTip="删除患者（软删除）"
-                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </controls:UnifiedManagementTable.Columns>
-        </controls:UnifiedManagementTable>
-
-        <!-- Issue #1840: 统一分页栏 -->
-        <controls:UnifiedPaginationBar
-            Grid.Row="2"
-            CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
-            TotalPages="{Binding TotalPages}"
-            PageSize="{Binding PageSize, Mode=TwoWay}"
-            TotalCount="{Binding TotalCount}"
-            PreviousPageCommand="{Binding PreviousPageCommand}"
-            NextPageCommand="{Binding NextPageCommand}" />
-    </Grid>
+                <Button Content="刷新"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding RefreshCommand}"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="🏠 返回主页"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding NavigateToHomeCommand}"
+                        ToolTip="返回管理员主页"
+                        Margin="{StaticResource SpacingSmall}" />
+            </StackPanel>
+        </views:BaseMasterDataListView.ActionButtons>
+    </views:BaseMasterDataListView>
 </UserControl>

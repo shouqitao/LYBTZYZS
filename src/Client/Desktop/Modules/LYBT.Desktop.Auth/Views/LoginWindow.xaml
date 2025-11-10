@@ -231,7 +231,6 @@
                 <!-- 现代化进度条 -->
                 <ProgressBar IsIndeterminate="True"
                              Width="240"
-                             Style="{DynamicResource ModernProgressBarStyle}"
                              AutomationProperties.AutomationId="LoadingProgressBar"
                              AutomationProperties.Name="登录进度指示器" />
 

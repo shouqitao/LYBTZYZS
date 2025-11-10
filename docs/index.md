@@ -2,7 +2,7 @@
 
 **文档版本**：v6.1 Diátaxis框架重构版
 **创建时间**：2025-10-15
-**最后更新**：2025-11-10（Epic #1962 Phase 5 架构文档更新）
+**最后更新**：2025-11-10（Phase 1基础数据模块重构完成）
 **维护负责**：项目团队
 
 ---
@@ -94,10 +94,12 @@
 
 - **[Client端操作总览](how-to/client/README.md)** ⭐
   WPF开发、UI设计、客户端逻辑
-- **[患者管理CRUD操作](how-to/client/patient-management.md)** ⭐ **新增**
-  患者新建/编辑/查看/删除、拼音码自动生成、年龄计算、身份证验证
-- **[药材管理操作指南](how-to/client/herbs-management.md)** ⭐ **Epic #1962新增**
-  批量导入/导出、引用检查、重复策略、失败恢复流程
+- **[用户管理操作指南](how-to/client/user-management.md)** ⭐ **Phase 1基础模块**
+  用户新建/编辑/查看/删除、状态管理、密码管理、批量删除
+- **[患者管理操作指南](how-to/client/patient-management.md)** ⭐ **Phase 1基础模块**
+  患者新建/编辑/查看/删除、批量导入/导出、拼音码生成、年龄计算
+- **[药材管理操作指南](how-to/client/herbs-management.md)** ⭐ **Phase 1基础模块**
+  批量导入/导出（Desktop主导）、引用检查、重复策略、失败恢复流程
 - **[诊断模块开发](how-to/client/consultation-development.md)**
   ConsultationViewModel/View开发、四诊合参UI
 - **[方剂模块开发](how-to/client/formula-development.md)**
@@ -266,8 +268,13 @@
 - **[API总览](reference/api/README.md)**
   12个控制器完整API文档
 
+**Phase 1基础数据模块API**（⭐ Users/Patients/Herbs）：
+- **[Users API参考](reference/api/users-api.md)** - 用户管理API完整参考（认证、状态管理、批量操作）
+- **[Patients API参考](reference/api/patients-api.md)** - 患者管理API完整参考（批量导入Server主导模式，Epic #1934）
+- **[Herbs API参考](reference/api/herbs-api.md)** - 药材管理API完整参考（批量操作Desktop主导模式，Epic #1962）
+
+**其他模块API**：
 - **[Prescriptions API参考](reference/api/prescriptions-api.md)** - 处方管理API完整参考
-- **[Herbs API参考](reference/api/herbs-api.md)** - 药材管理API完整参考（Epic #1962）
 
 - **模块API**：[认证](reference/api/auth/) | [患者](reference/api/patients/) | [医案](reference/api/medicalcase/) | [诊断](reference/api/consultation/) | [处方](reference/api/prescription/) | [药品](reference/api/herbs/) | [方剂](reference/api/formula/) | [用户](reference/api/users/)
 
@@ -322,9 +329,13 @@
 - **[WebAPI设计](explanation/architecture/server/webapi-design.md)**
   API版本管理、错误处理、Swagger配置、跨域策略
 
-**模块架构文档**（⭐ Epic #1962新增）：
+**模块架构文档**（⭐ Phase 1基础数据模块）：
+- **[Users模块架构](explanation/architecture/server/modules/users.md)** ⭐⭐⭐
+  用户模块三层架构、认证与安全、批量操作、状态管理、性能基准
+- **[Patients模块架构](explanation/architecture/server/modules/patients.md)** ⭐⭐⭐
+  患者模块三层架构、批量导入（Server主导）、多条件搜索、性能基准
 - **[Herbs模块架构](explanation/architecture/server/modules/herbs.md)** ⭐⭐⭐
-  药材模块三层架构、批量操作实现、Repository/Service/Controller设计、性能基准
+  药材模块三层架构、批量操作（Desktop主导）、引用检查、性能基准
 
 #### Client端架构设计
 
@@ -730,7 +741,7 @@
 
 *本文档中心基于Diátaxis框架深度重构，提供清晰、准确、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-11-10 - Epic #1962 文档同步（Issue #1984）** 🎉
+**最后更新：2025-11-10 - Phase 1基础数据模块重构完成（Tasks 1.1-1.12）** 🎉
 **文档框架：Diátaxis 4种类型（Tutorial/How-to/Reference/Explanation）** 📚
 **架构特色：三层对齐架构（Server/Client/Shared）** 🏗️
 **文档体系：统一docs/体系，清理多套文档（Skills/Spec-workflow整合）** 🧹

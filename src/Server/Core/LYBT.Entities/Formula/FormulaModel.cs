@@ -22,9 +22,9 @@ namespace LYBT.Entities.Formula
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>功效</summary>
+        /// <summary>功用</summary>
         [StringLength(500)]
-        [DisplayName("功效")]
+        [DisplayName("功用")]
         public string? Effect { get; set; }
 
         /// <summary>用法</summary>

@@ -59,5 +59,14 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/users/{id}/reset-password")]
         Task<ApiResponse<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, [Refit.Body] ResetPasswordRequestDto request);
+
+
+        /// <summary>
+        /// 批量导入用户 (Issue #2003 Task 2.10)
+        /// Desktop主导模式：Desktop解析Excel并组装DTO，API接收并批量创建
+        /// Note: Server端需要实现对应的 POST /api/v1/users/batch-import endpoint
+        /// </summary>
+        [Refit.Post("/api/v1/users/batch-import")]
+        Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync([Refit.Body] UserBatchImportRequestDto request);
     }
 }

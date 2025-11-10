@@ -34,9 +34,12 @@ namespace LYBT.Desktop.Patients.Interfaces
         // ========== Epic #1934: 批量导入/导出功能 ==========
 
         /// <summary>
-        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 批量导入患者数据 (Issue #2004 Task 2.11)
+        /// Desktop主导模式：Desktop解析Excel并组装DTO，Repository调用API
         /// </summary>
-        Task<BatchImportResultDto?> BatchImportAsync(Stream fileStream, string fileName);
+        /// <param name="request">批量导入请求（包含患者列表和重复处理策略）</param>
+        /// <returns>导入结果</returns>
+        Task<BatchImportResultDto?> BatchImportAsync(PatientBatchImportRequestDto request);
 
         /// <summary>
         /// 下载患者导入模板 (Epic #1934 FR-002)

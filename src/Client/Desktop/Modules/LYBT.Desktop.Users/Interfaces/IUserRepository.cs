@@ -42,5 +42,13 @@ namespace LYBT.Desktop.Users.Interfaces
         Task<ServiceResult<ResetPasswordResponseDto>> ResetPasswordAsync(
             Guid userId, 
             ResetPasswordRequestDto request);
+
+        /// <summary>
+        /// 批量导入用户 (Issue #2003 Task 2.10)
+        /// Desktop主导模式：Desktop解析Excel并组装DTO，Repository调用API
+        /// </summary>
+        /// <param name="request">批量导入请求（包含用户列表和重复处理策略）</param>
+        /// <returns>导入结果</returns>
+        Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportRequestDto request);
     }
 }

@@ -46,7 +46,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public HerbDto? Herb
         {
             get => _herb;
-            set => SetProperty(ref _herb, value);
+            set
+            {
+                if (SetProperty(ref _herb, value))
+                {
+                    // 当Herb对象改变时，通知审计字段属性变更
+                    RaisePropertyChanged(nameof(CreatedAt));
+                    RaisePropertyChanged(nameof(UpdatedAt));
+                }
+            }
         }
 
         /// <summary>
@@ -172,6 +180,16 @@ namespace LYBT.Desktop.Herbs.ViewModels
             get => _status;
             set => SetProperty(ref _status, value);
         }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime? CreatedAt => Herb?.CreatedAt;
+
+        /// <summary>
+        /// 更新时间
+        /// </summary>
+        public DateTime? UpdatedAt => Herb?.UpdatedAt;
 
         /// <summary>
         /// 是否只读模式

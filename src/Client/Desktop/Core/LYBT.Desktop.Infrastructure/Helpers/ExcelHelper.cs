@@ -331,5 +331,361 @@ namespace LYBT.Desktop.Infrastructure.Helpers
                     return string.Empty;
             }
         }
+
+
+        #region Issue #2002: 泛型异步方法
+
+        /// <summary>
+        /// 异步解析Excel文件为泛型列表
+        /// Issue #2002 - Task 2.9: 支持泛型类型反射映射
+        /// </summary>
+        /// <typeparam name="T">目标类型</typeparam>
+        /// <param name="stream">Excel文件流</param>
+        /// <param name="hasHeader">是否有标题行</param>
+        /// <returns>解析后的数据列表</returns>
+        public static async Task<List<T>> ParseAsync<T>(Stream stream, bool hasHeader = true) where T : class, new()
+        {
+            return await Task.Run(() =>
+            {
+                var result = new List<T>();
+                var type = typeof(T);
+                var properties = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    .Where(p => p.CanWrite)
+                    .ToList();
+
+                using (stream)
+                {
+                    IWorkbook workbook = new XSSFWorkbook(stream);
+                    ISheet sheet = workbook.GetSheetAt(0);
+
+                    // 获取标题行（如果存在）
+                    IRow? headerRow = hasHeader ? sheet.GetRow(0) : null;
+                    Dictionary<int, System.Reflection.PropertyInfo> columnPropertyMap = new Dictionary<int, System.Reflection.PropertyInfo>();
+
+                    if (headerRow != null)
+                    {
+                        // 建立列索引到属性的映射（基于列名）
+                        for (int i = 0; i < headerRow.LastCellNum; i++)
+                        {
+                            ICell? cell = headerRow.GetCell(i);
+                            if (cell != null)
+                            {
+                                string columnName = cell.ToString() ?? string.Empty;
+                                var property = properties.FirstOrDefault(p =>
+                                {
+                                    // 支持 Display 和 DisplayName 特性
+                                    var displayAttr = p.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault() as System.ComponentModel.DataAnnotations.DisplayAttribute;
+                                    var displayNameAttr = p.GetCustomAttributes(typeof(System.ComponentModel.DisplayNameAttribute), false).FirstOrDefault() as System.ComponentModel.DisplayNameAttribute;
+
+                                    return (displayAttr != null && displayAttr.Name == columnName) ||
+                                           (displayNameAttr != null && displayNameAttr.DisplayName == columnName) ||
+                                           p.Name.Equals(columnName, StringComparison.OrdinalIgnoreCase);
+                                });
+
+                                if (property != null)
+                                {
+                                    columnPropertyMap[i] = property;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 无标题行：按列索引映射属性
+                        for (int i = 0; i < properties.Count; i++)
+                        {
+                            columnPropertyMap[i] = properties[i];
+                        }
+                    }
+
+                    // 读取数据行
+                    int startRow = hasHeader ? 1 : 0;
+                    for (int i = startRow; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow? row = sheet.GetRow(i);
+                        if (row == null)
+                        {
+                            continue;
+                        }
+
+                        var instance = new T();
+                        bool hasValue = false;
+
+                        foreach (var kvp in columnPropertyMap)
+                        {
+                            int columnIndex = kvp.Key;
+                            var property = kvp.Value;
+                            ICell? cell = row.GetCell(columnIndex);
+
+                            if (cell != null)
+                            {
+                                try
+                                {
+                                    object? cellValue = GetCellValue(cell);
+                                    if (cellValue != null && !string.IsNullOrWhiteSpace(cellValue.ToString()))
+                                    {
+                                        hasValue = true;
+                                        var convertedValue = ConvertValueToPropertyType(cellValue, property.PropertyType);
+                                        property.SetValue(instance, convertedValue);
+                                    }
+                                }
+                                catch
+                                {
+                                    // 忽略类型转换错误，继续处理下一个单元格
+                                }
+                            }
+                        }
+
+                        if (hasValue)
+                        {
+                            result.Add(instance);
+                        }
+                    }
+
+                    workbook.Close();
+                }
+
+                return result;
+            });
+        }
+
+        /// <summary>
+        /// 异步导出泛型列表到Excel文件
+        /// Issue #2002 - Task 2.9: 支持泛型类型反射映射
+        /// </summary>
+        /// <typeparam name="T">数据类型</typeparam>
+        /// <param name="data">数据列表</param>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="sheetName">工作表名称</param>
+        /// <returns>异步任务</returns>
+        public static async Task ExportAsync<T>(IEnumerable<T> data, string filePath, string sheetName = "Sheet1") where T : class
+        {
+            await Task.Run(() =>
+            {
+                var type = typeof(T);
+                var properties = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    .Where(p => p.CanRead)
+                    .ToList();
+
+                IWorkbook workbook = new XSSFWorkbook();
+                ISheet sheet = workbook.CreateSheet(sheetName);
+
+                // 创建标题行
+                IRow headerRow = sheet.CreateRow(0);
+                var headerStyle = CreateHeaderStyle(workbook);
+
+                for (int i = 0; i < properties.Count; i++)
+                {
+                    ICell cell = headerRow.CreateCell(i);
+                    
+                    // 获取列标题（优先使用Display特性）
+                    string columnHeader = GetColumnHeader(properties[i]);
+                    cell.SetCellValue(columnHeader);
+                    cell.CellStyle = headerStyle;
+                }
+
+                // 写入数据行
+                int rowIndex = 1;
+                foreach (var item in data)
+                {
+                    IRow dataRow = sheet.CreateRow(rowIndex);
+                    for (int i = 0; i < properties.Count; i++)
+                    {
+                        ICell cell = dataRow.CreateCell(i);
+                        var value = properties[i].GetValue(item);
+                        SetCellValue(cell, value);
+                    }
+                    rowIndex++;
+                }
+
+                // 自动调整列宽
+                AutoResizeColumns(sheet, properties.Count);
+
+                // 保存文件
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    workbook.Write(fs);
+                }
+
+                workbook.Close();
+            });
+        }
+
+        /// <summary>
+        /// 异步生成Excel导入模板
+        /// Issue #2002 - Task 2.9: 支持泛型类型反射映射
+        /// </summary>
+        /// <typeparam name="T">数据类型</typeparam>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="sheetName">工作表名称</param>
+        /// <param name="sampleData">示例数据（可选）</param>
+        /// <returns>异步任务</returns>
+        public static async Task GenerateTemplateAsync<T>(string filePath, string sheetName = "Sheet1", IEnumerable<T>? sampleData = null) where T : class
+        {
+            await Task.Run(() =>
+            {
+                var type = typeof(T);
+                var properties = type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                    .Where(p => p.CanWrite)
+                    .ToList();
+
+                IWorkbook workbook = new XSSFWorkbook();
+                ISheet sheet = workbook.CreateSheet(sheetName);
+
+                // 创建标题行
+                IRow headerRow = sheet.CreateRow(0);
+                var headerStyle = CreateHeaderStyle(workbook);
+
+                for (int i = 0; i < properties.Count; i++)
+                {
+                    ICell cell = headerRow.CreateCell(i);
+                    string columnHeader = GetColumnHeader(properties[i]);
+                    cell.SetCellValue(columnHeader);
+                    cell.CellStyle = headerStyle;
+                }
+
+                // 添加示例数据（如果提供）
+                if (sampleData != null)
+                {
+                    var sampleStyle = CreateSampleStyle(workbook);
+                    int rowIndex = 1;
+                    foreach (var item in sampleData)
+                    {
+                        IRow dataRow = sheet.CreateRow(rowIndex);
+                        for (int i = 0; i < properties.Count; i++)
+                        {
+                            ICell cell = dataRow.CreateCell(i);
+                            var value = properties[i].GetValue(item);
+                            SetCellValue(cell, value);
+                            cell.CellStyle = sampleStyle;
+                        }
+                        rowIndex++;
+                    }
+                }
+
+                // 自动调整列宽
+                AutoResizeColumns(sheet, properties.Count);
+
+                // 保存文件
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    workbook.Write(fs);
+                }
+
+                workbook.Close();
+            });
+        }
+
+        /// <summary>
+        /// 获取列标题（支持Display和DisplayName特性）
+        /// </summary>
+        private static string GetColumnHeader(System.Reflection.PropertyInfo property)
+        {
+            // 优先使用 Display 特性的 Name
+            var displayAttr = property.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault() as System.ComponentModel.DataAnnotations.DisplayAttribute;
+            if (displayAttr != null && !string.IsNullOrEmpty(displayAttr.Name))
+            {
+                return displayAttr.Name;
+            }
+
+            // 其次使用 DisplayName 特性
+            var displayNameAttr = property.GetCustomAttributes(typeof(System.ComponentModel.DisplayNameAttribute), false).FirstOrDefault() as System.ComponentModel.DisplayNameAttribute;
+            if (displayNameAttr != null && !string.IsNullOrEmpty(displayNameAttr.DisplayName))
+            {
+                return displayNameAttr.DisplayName;
+            }
+
+            // 最后使用属性名
+            return property.Name;
+        }
+
+        /// <summary>
+        /// 转换单元格值到目标属性类型
+        /// </summary>
+        private static object? ConvertValueToPropertyType(object value, Type targetType)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            // 处理 Nullable 类型
+            Type underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            // 空字符串处理
+            if (value is string str && string.IsNullOrWhiteSpace(str))
+            {
+                if (targetType.IsValueType && Nullable.GetUnderlyingType(targetType) == null)
+                {
+                    return Activator.CreateInstance(targetType); // 返回值类型的默认值
+                }
+                return null;
+            }
+
+            // 直接类型匹配
+            if (underlyingType.IsInstanceOfType(value))
+            {
+                return value;
+            }
+
+            // 字符串到枚举的转换
+            if (underlyingType.IsEnum)
+            {
+                string enumString = value.ToString() ?? string.Empty;
+                if (Enum.IsDefined(underlyingType, enumString))
+                {
+                    return Enum.Parse(underlyingType, enumString);
+                }
+                // 尝试按整数值解析
+                if (int.TryParse(enumString, out int enumValue))
+                {
+                    return Enum.ToObject(underlyingType, enumValue);
+                }
+                return null;
+            }
+
+            // DateTime 特殊处理
+            if (underlyingType == typeof(DateTime))
+            {
+                if (value is double doubleValue)
+                {
+                    return DateTime.FromOADate(doubleValue);
+                }
+                if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
+                {
+                    return dateValue;
+                }
+            }
+
+            // Boolean 特殊处理
+            if (underlyingType == typeof(bool))
+            {
+                string boolString = value.ToString()?.Trim().ToLower() ?? string.Empty;
+                if (boolString == "true" || boolString == "是" || boolString == "1")
+                {
+                    return true;
+                }
+                if (boolString == "false" || boolString == "否" || boolString == "0")
+                {
+                    return false;
+                }
+                if (bool.TryParse(boolString, out bool boolValue))
+                {
+                    return boolValue;
+                }
+            }
+
+            // 通用类型转换
+            try
+            {
+                return Convert.ChangeType(value, underlyingType);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        #endregion
     }
 }
