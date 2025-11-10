@@ -166,7 +166,7 @@
 
         <!-- 内容区域 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="16">
+            <Grid Margin="40,28,40,28" Background="#F8FAFC">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -175,8 +175,13 @@
                 </Grid.RowDefinitions>
 
                 <!-- 患者头像和基本信息卡片 -->
-                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                    <Grid Margin="16">
+                <Border Grid.Row="0"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -186,7 +191,7 @@
                         <Border Grid.Column="0"
                                 Width="80" Height="80"
                                 CornerRadius="40"
-                                Background="{DynamicResource PrimaryHueLightBrush}"
+                                Background="#3B82F6"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,20,0">
@@ -222,7 +227,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Border Background="{DynamicResource SuccessBrush}"
+                            <Border Background="#10B981"
                                     CornerRadius="12"
                                     Padding="12,4">
                                 <TextBlock Text="{Binding StatusMessage}"
@@ -235,9 +240,14 @@
                 </Border>
 
                 <!-- 详细信息 -->
-                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Border Grid.Row="1"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28">
                     <Expander Header="详细信息" IsExpanded="True">
-                        <Grid Margin="16">
+                        <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -391,9 +401,14 @@
                 </Border>
 
                 <!-- 就诊历史快速预览 -->
-                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Border Grid.Row="2"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28">
                     <Expander Header="就诊记录" IsExpanded="False">
-                        <Grid Margin="16">
+                        <Grid>
                             <StackPanel>
                                 <TextBlock Text="最近就诊记录将在此显示"
                                            Foreground="Gray"
