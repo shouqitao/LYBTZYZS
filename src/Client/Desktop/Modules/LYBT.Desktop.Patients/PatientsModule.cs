@@ -55,6 +55,8 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.PatientImportWizardViewModel>();
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
             containerRegistry.Register<ViewModels.PatientManagementViewModel>();  // 患者管理视图模型
+            containerRegistry.Register<ViewModels.PatientCreateViewModel>();  // CRUD统一模式：创建视图模型
+            containerRegistry.Register<ViewModels.PatientEditViewModel>();  // CRUD统一模式：编辑视图模型
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
