@@ -15,14 +15,16 @@ namespace LYBT.Module.Formula.Mapping
         {
             // Formula -> FormulaDto
             CreateMap<LYBT.Entities.Formula.Formula, FormulaDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
 
             // FormulaHerbItem -> FormulaHerbItemDto
             CreateMap<LYBT.Entities.Formula.FormulaHerbItem, FormulaHerbItemDto>();
 
             // Formula -> FormulaDetailDto
             CreateMap<LYBT.Entities.Formula.Formula, FormulaDetailDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
 
             // FormulaInputDto -> Formula
             CreateMap<FormulaInputDto, LYBT.Entities.Formula.Formula>()
