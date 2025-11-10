@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Herbs.Interfaces;
@@ -77,6 +77,51 @@ namespace LYBT.Module.Herbs.Repositories
                 query.OrderBy(h => h.Name),
                 pageNumber,
                 pageSize);
+        }
+
+        /// <summary>
+        /// 检查药材名称是否存在（支持排除指定ID，用于更新时验证）
+        /// Epic #1962 Task 1.2: 批量导入重复检查
+        /// </summary>
+        public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(h => h.Name == name && !h.IsDeleted);
+
+            if (excludeId.HasValue)
+            {
+                query = query.Where(h => h.Id != excludeId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        /// <summary>
+        /// 按分类查询药材列表
+        /// Epic #1962 Task 1.2: 分类管理支持
+        /// </summary>
+        public async Task<List<Herb>> GetByCategoryAsync(string category)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(h => h.Category == category && !h.IsDeleted)
+                .OrderBy(h => h.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 软删除药材（覆盖BaseRepository的硬删除）
+        /// Epic #1962 Task 1.2: BR-007软删除支持
+        /// </summary>
+        public new async Task DeleteAsync(Guid id)
+        {
+            var herb = await _dbSet.FindAsync(id);
+            if (herb != null)
+            {
+                herb.IsDeleted = true;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

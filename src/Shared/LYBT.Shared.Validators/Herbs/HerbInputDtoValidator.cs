@@ -1,34 +1,76 @@
-﻿using FluentValidation;
+using FluentValidation;
+using LYBT.Shared.Models.Constants;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Shared.Validators.Herbs
 {
     /// <summary>
-    /// 药材创建DTO验证器
+    /// 药材输入DTO验证器
+    /// Epic #1962 Task 1.3: 实现BR-001到BR-008验证规则
     /// </summary>
     public class HerbInputDtoValidator : AbstractValidator<HerbInputDto>
     {
         public HerbInputDtoValidator()
         {
+            // BR-001: 药材名称1-50字符，必填
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("药材名称不能为空")
-                .MaximumLength(100).WithMessage("药材名称长度不能超过100个字符");
+                .Length(1, ValidationConstants.NameMaxLength)
+                .WithMessage($"药材名称长度必须在1-{ValidationConstants.NameMaxLength}个字符之间");
 
-            // Code字段已移除 - 改为自动生成
-            // RuleFor(x => x.Code)
-            //     .NotEmpty().WithMessage("药材编码不能为空")
-            //     .MaximumLength(50).WithMessage("药材编码长度不能超过50个字符");
+            // BR-003: 拼音码50字符以内（可选）
+            RuleFor(x => x.PinYinCode)
+                .MaximumLength(ValidationConstants.CodeMaxLength)
+                .WithMessage($"拼音码长度不能超过{ValidationConstants.CodeMaxLength}个字符")
+                .When(x => !string.IsNullOrEmpty(x.PinYinCode));
 
+            // BR-004: 分类50字符以内（可选）
+            RuleFor(x => x.Category)
+                .MaximumLength(ValidationConstants.CodeMaxLength)
+                .WithMessage($"分类长度不能超过{ValidationConstants.CodeMaxLength}个字符")
+                .When(x => !string.IsNullOrEmpty(x.Category));
+
+            // 产地100字符以内（可选）
+            RuleFor(x => x.Origin)
+                .MaximumLength(100)
+                .WithMessage("产地长度不能超过100个字符")
+                .When(x => !string.IsNullOrEmpty(x.Origin));
+
+            // 规格50字符以内（可选）
+            RuleFor(x => x.Spec)
+                .MaximumLength(50)
+                .WithMessage("规格长度不能超过50个字符")
+                .When(x => !string.IsNullOrEmpty(x.Spec));
+
+            // 单位必填，20字符以内
+            RuleFor(x => x.Unit)
+                .NotEmpty().WithMessage("单位不能为空")
+                .MaximumLength(20)
+                .WithMessage("单位长度不能超过20个字符");
+
+            // BR-005: 单价 > 0
             RuleFor(x => x.Price)
-                .GreaterThan(0).WithMessage("单价必须大于0");
+                .GreaterThan(ValidationConstants.PriceMinValue)
+                .WithMessage("单价必须大于0")
+                .LessThanOrEqualTo(ValidationConstants.PriceMaxValue)
+                .WithMessage($"单价不能超过{ValidationConstants.PriceMaxValue}");
 
-            // Stock字段已移除 - 库存管理不在MVP范围
-            // RuleFor(x => x.Stock)
-            //     .GreaterThanOrEqualTo(0).WithMessage("库存不能为负数")
-            //     .When(x => x.Stock.HasValue);
+            // 功效500字符以内（可选）
+            RuleFor(x => x.Effect)
+                .MaximumLength(ValidationConstants.RemarkMaxLength)
+                .WithMessage($"功效长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
+                .When(x => !string.IsNullOrEmpty(x.Effect));
 
+            // 用法用量200字符以内（可选）
+            RuleFor(x => x.Usage)
+                .MaximumLength(ValidationConstants.UsageMaxLength)
+                .WithMessage($"用法用量长度不能超过{ValidationConstants.UsageMaxLength}个字符")
+                .When(x => !string.IsNullOrEmpty(x.Usage));
+
+            // 备注500字符以内（可选）
             RuleFor(x => x.Remark)
-                .MaximumLength(500).WithMessage("备注长度不能超过500个字符")
+                .MaximumLength(ValidationConstants.RemarkMaxLength)
+                .WithMessage($"备注长度不能超过{ValidationConstants.RemarkMaxLength}个字符")
                 .When(x => !string.IsNullOrEmpty(x.Remark));
         }
     }

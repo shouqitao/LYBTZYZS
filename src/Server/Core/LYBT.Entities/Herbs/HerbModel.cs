@@ -19,16 +19,21 @@ namespace LYBT.Entities.Herbs
 
         // Id字段继承自BaseEntity
 
-        /// <summary>药材名称</summary>
+        /// &lt;summary&gt;药材名称（BR-001: 1-50字符）Epic #1962&lt;/summary&gt;
         [Required]
-        [StringLength(100)]
+        [StringLength(50, MinimumLength = 1)]
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>拼音码（用于快速搜索）</summary>
+        /// &lt;summary&gt;拼音码（用于快速搜索）&lt;/summary&gt;
         [StringLength(50)]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
+
+        /// &lt;summary&gt;分类（用于分组管理，如：补血药、补气药）&lt;/summary&gt;
+        [StringLength(50)]
+        [DisplayName("分类")]
+        public string? Category { get; set; }
 
         /// <summary>产地</summary>
         [StringLength(100)]

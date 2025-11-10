@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+﻿using System.IO;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Herbs.Interfaces
@@ -15,5 +16,22 @@ namespace LYBT.Desktop.Herbs.Interfaces
         Task<HerbDto> UpdateAsync(HerbInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<HerbDto>> SearchAsync(string keyword);
+
+        // ========== Epic #1962: 批量导入/导出功能 ==========
+
+        /// <summary>
+        /// 批量导入药材数据
+        /// </summary>
+        Task<HerbBatchImportResultDto?> BatchImportAsync(Stream fileStream, string fileName);
+
+        /// <summary>
+        /// 下载药材导入模板
+        /// </summary>
+        Task<byte[]?> ExportTemplateAsync();
+
+        /// <summary>
+        /// 导出药材数据到Excel
+        /// </summary>
+        Task<byte[]?> ExportHerbsAsync(string? keyword = null);
     }
 }

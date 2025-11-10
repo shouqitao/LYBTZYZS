@@ -4,6 +4,7 @@ using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 
@@ -119,8 +120,8 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var result = await _repository.DeleteAsync(id);
-                return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
+                await _repository.DeleteAsync(id);
+                return ServiceResult.Success();
             }
             catch (Exception ex)
             {
@@ -173,23 +174,10 @@ namespace LYBT.Module.Herbs.Services
                         // TODO: 检查药材是否被处方或验方使用（后续迭代）
                         // 现在MVP阶段直接允许删除
 
-                        // 执行删除
-                        var deleteResult = await _repository.DeleteAsync(herbId);
-                        if (deleteResult)
-                        {
-                            result.SuccessCount++;
-                            result.SuccessfulIds.Add(herbId);
-                        }
-                        else
-                        {
-                            result.FailureCount++;
-                            result.FailedIds.Add(herbId);
-                            result.Errors.Add(new BatchOperationResultDto.ErrorDetail
-                            {
-                                RecordIdentifier = herbId.ToString(),
-                                ErrorMessage = "删除失败"
-                            });
-                        }
+                        // 执行软删除（DeleteAsync现在是void方法，成功执行即视为成功）
+                        await _repository.DeleteAsync(herbId);
+                        result.SuccessCount++;
+                        result.SuccessfulIds.Add(herbId);
                     }
                     catch (Exception ex)
                     {
@@ -498,6 +486,224 @@ namespace LYBT.Module.Herbs.Services
             {
                 _logger.LogError(ex, "生成导入模板时发生错误");
                 throw;
+            }
+        }
+
+        // ========== Epic #1962: 批量导入/导出和引用检查方法实现 ==========
+
+        /// <summary>
+        /// 批量导入药材（Epic #1962 Task 2.2）
+        /// </summary>
+        public async Task<ServiceResult<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy)
+        {
+            const int MAX_IMPORT_SIZE = 10000; // BR-006
+
+            var result = new HerbBatchImportResultDto
+            {
+                ImportTime = DateTime.Now
+            };
+
+            try
+            {
+                // BR-006: 批量导入数量限制
+                if (herbs.Count > MAX_IMPORT_SIZE)
+                {
+                    return ServiceResult<HerbBatchImportResultDto>.Failure($"批量导入最多支持{MAX_IMPORT_SIZE}条记录");
+                }
+
+                _logger.LogInformation("开始批量导入药材，总数: {Count}, 策略: {Strategy}", herbs.Count, strategy);
+
+                for (int i = 0; i < herbs.Count; i++)
+                {
+                    var dto = herbs[i];
+                    var rowNumber = i + 2; // Excel行号（从第2行开始）
+
+                    try
+                    {
+                        // BR-008: 自动生成拼音码
+                        if (string.IsNullOrWhiteSpace(dto.PinYinCode))
+                        {
+                            dto.PinYinCode = PinYinHelper.GetPinYinCode(dto.Name);
+                        }
+
+                        // BR-002: 检查药材名称是否已存在
+                        var exists = await _repository.ExistsByNameAsync(dto.Name);
+
+                        if (exists)
+                        {
+                            // 处理重复项
+                            switch (strategy)
+                            {
+                                case DuplicateStrategy.Skip:
+                                    result.SkippedCount++;
+                                    _logger.LogDebug("跳过重复药材: {Name}", dto.Name);
+                                    continue;
+
+                                case DuplicateStrategy.Update:
+                                    // 查找现有药材并更新
+                                    var existingHerbs = await _repository.FindAsync(h => h.Name == dto.Name);
+                                    var existingHerb = existingHerbs.FirstOrDefault();
+                                    if (existingHerb != null)
+                                    {
+                                        _mapper.Map(dto, existingHerb);
+                                        existingHerb.UpdatedAt = DateTime.Now;
+                                        await _repository.UpdateAsync(existingHerb);
+                                        result.SuccessCount++;
+                                        _logger.LogDebug("更新已存在药材: {Name}", dto.Name);
+                                    }
+                                    continue;
+
+                                case DuplicateStrategy.Error:
+                                    result.FailureCount++;
+                                    result.Failures.Add(new HerbImportFailureDetailDto
+                                    {
+                                        RowNumber = rowNumber,
+                                        HerbName = dto.Name,
+                                        Reason = "药材名称重复",
+                                        ErrorDetails = new List<string> { "已存在同名药材，导入策略设置为报错" }
+                                    });
+                                    _logger.LogWarning("发现重复药材（Error策略）: {Name}", dto.Name);
+                                    continue;
+                            }
+                        }
+
+                        // 创建新药材
+                        var entity = _mapper.Map<Herb>(dto);
+                        entity.CreatedAt = DateTime.Now;
+                        entity.Status = CommonStatus.Enabled;
+
+                        await _repository.AddAsync(entity);
+                        result.SuccessCount++;
+                        _logger.LogDebug("成功导入药材: {Name}", dto.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.FailureCount++;
+                        result.Failures.Add(new HerbImportFailureDetailDto
+                        {
+                            RowNumber = rowNumber,
+                            HerbName = dto.Name,
+                            Reason = "导入失败",
+                            ErrorDetails = new List<string> { ex.Message }
+                        });
+                        _logger.LogError(ex, "导入第{Row}行药材失败: {Name}", rowNumber, dto.Name);
+                    }
+                }
+
+                _logger.LogInformation("批量导入完成: 成功{Success}, 失败{Failed}, 跳过{Skipped}",
+                    result.SuccessCount, result.FailureCount, result.SkippedCount);
+
+                return ServiceResult<HerbBatchImportResultDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量导入药材异常");
+                return ServiceResult<HerbBatchImportResultDto>.Failure($"批量导入失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取所有药材数据用于导出（Epic #1962 Task 3.1）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbDto>>> GetAllForExportAsync(string? category = null)
+        {
+            try
+            {
+                var herbs = await _repository.GetAllAsync();
+                var herbDtos = _mapper.Map<List<HerbDto>>(herbs);
+
+                // 应用分类筛选
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    herbDtos = herbDtos.Where(h =>
+                        !string.IsNullOrEmpty(h.Category) &&
+                        h.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                }
+
+                _logger.LogInformation("导出药材数据: 总数{Count}, 分类筛选{Category}",
+                    herbDtos.Count, category ?? "无");
+
+                return ServiceResult<List<HerbDto>>.Success(herbDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取导出数据失败");
+                return ServiceResult<List<HerbDto>>.Failure($"获取导出数据失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
+        /// </summary>
+        public async Task<ServiceResult<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId)
+        {
+            try
+            {
+                var herb = await _repository.GetByIdAsync(herbId);
+                if (herb == null)
+                {
+                    return ServiceResult<HerbReferenceCheckDto>.Failure("药材不存在");
+                }
+
+                var result = new HerbReferenceCheckDto
+                {
+                    HerbId = herbId,
+                    HerbName = herb.Name,
+                    HasReferences = false,
+                    ReferenceCount = 0,
+                    CanDelete = true, // BR-007: 支持软删除，始终可删除
+                    RecentReferences = new List<PrescriptionReferenceDto>()
+                };
+
+                // TODO: 实现处方引用检查
+                // 当前版本暂不检查，直接返回无引用
+                // 后续迭代中需要查询 PrescriptionItems 表
+                _logger.LogInformation("检查药材引用: {HerbName}, 暂不支持引用检查", herb.Name);
+
+                return ServiceResult<HerbReferenceCheckDto>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "检查药材引用失败: {HerbId}", herbId);
+                return ServiceResult<HerbReferenceCheckDto>.Failure($"检查引用失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 批量检查药材引用关系（Epic #1962 Task 4.2）
+        /// </summary>
+        public async Task<ServiceResult<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds)
+        {
+            const int MAX_CHECK_SIZE = 100; // BR-006
+
+            try
+            {
+                // BR-006: 批量检查数量限制
+                if (herbIds.Count > MAX_CHECK_SIZE)
+                {
+                    return ServiceResult<List<HerbReferenceCheckDto>>.Failure($"批量检查最多支持{MAX_CHECK_SIZE}条记录");
+                }
+
+                var results = new List<HerbReferenceCheckDto>();
+
+                foreach (var herbId in herbIds)
+                {
+                    var checkResult = await CheckReferenceAsync(herbId);
+                    if (checkResult.IsSuccess && checkResult.Data != null)
+                    {
+                        results.Add(checkResult.Data);
+                    }
+                }
+
+                _logger.LogInformation("批量检查药材引用完成: {Count}条", results.Count);
+
+                return ServiceResult<List<HerbReferenceCheckDto>>.Success(results);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "批量检查药材引用异常");
+                return ServiceResult<List<HerbReferenceCheckDto>>.Failure($"批量检查失败: {ex.Message}");
             }
         }
     }

@@ -1,7 +1,8 @@
-﻿using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
+﻿using System.IO;
+using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
+using LYBT.Desktop.Herbs.Interfaces; // Epic #1962: 重新添加IHerbRepository（批量导入/导出需要）
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-// Epic #1773: 已移除LYBT.Desktop.Herbs.Interfaces using（不再需要IHerbRepository）
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         // Epic #1773: 使用DataManager替代Repository依赖
         private readonly HerbDataManager _dataManager;
+        // Epic #1962: 批量导入/导出需要Repository和对话框服务
+        private readonly IHerbRepository _herbRepository;
+        private readonly ICommonDialogService _dialogService;
 
         #endregion
 
@@ -28,6 +32,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         public HerbManagementViewModel(
             HerbDataManager dataManager, // Epic #1773: 注入DataManager
+            IHerbRepository herbRepository, // Epic #1962: 注入Repository（批量导入/导出）
+            ICommonDialogService dialogService, // Epic #1962: 注入对话框服务
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -37,6 +43,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             // Epic #1773: 注入DataManager
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            // Epic #1962: 注入批量导入/导出依赖
+            _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "药材管理";
 
@@ -53,25 +62,32 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private void InitializeCustomCommands()
         {
+            // 视图导航命令
+            ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
+            EditCommand = new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
+            CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
+
+            // 状态管理命令
             ToggleStatusCommand = new DelegateCommand<HerbDto>(
                 async (herb) => await ToggleStatusAsync(herb),
                 herb => herb != null && !IsBusy
             );
 
+            // Epic #1962: 批量导入/导出命令（移除占位实现，启用真实功能）
             ImportHerbsCommand = new DelegateCommand(
                 async () => await ImportHerbsAsync(),
-                () => !IsBusy
-            );
+                () => !IsBusy && !IsLoading
+            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
 
             ExportTemplateCommand = new DelegateCommand(
                 async () => await ExportTemplateAsync(),
-                () => !IsBusy
-            );
+                () => !IsBusy && !IsLoading
+            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
 
             ExportHerbsCommand = new DelegateCommand(
                 async () => await ExportHerbsAsync(),
-                () => !IsBusy && Items.Count > 0
-            );
+                () => !IsBusy && !IsLoading && Items.Count > 0
+            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
 
             FirstPageCommand = new DelegateCommand(
                 ExecuteFirstPage,
@@ -121,7 +137,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            NavigateTo("MainRegion", "HerbDetailView");
+            Logger.LogInformation("导航到创建药材视图");
+            NavigateTo("ContentRegion", "HerbCreateView");
             await Task.CompletedTask;
         }
 
@@ -221,9 +238,19 @@ namespace LYBT.Desktop.Herbs.ViewModels
         #region 自定义命令
 
         /// <summary>
-        /// 编辑命令 - 别名指向 EditHerbCommand
+        /// 查看药材详情命令
         /// </summary>
-        public DelegateCommand<HerbDto> EditCommand => EditHerbCommand;
+        public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 编辑药材命令
+        /// </summary>
+        public DelegateCommand<HerbDto> EditCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 复制药材命令
+        /// </summary>
+        public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
 
         /// <summary>
         /// 切换状态命令
@@ -262,24 +289,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// <summary>
         /// 查看药材详情
         /// </summary>
-        public DelegateCommand<HerbDto> ViewDetailCommand =>
-            new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
-
-        /// <summary>
-        /// 编辑药材
-        /// </summary>
-        public DelegateCommand<HerbDto> EditHerbCommand =>
-            new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
-
-        /// <summary>
-        /// 复制药材
-        /// </summary>
-        public DelegateCommand<HerbDto> CopyHerbCommand =>
-            new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
-
-        /// <summary>
-        /// 查看药材详情
-        /// </summary>
         private void ViewHerbDetail(HerbDto herb)
         {
             if (herb == null) return;
@@ -289,7 +298,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 { "HerbId", herb.Id },
                 { "ReadOnly", true }
             };
-            NavigateTo("MainRegion", "HerbDetailView", parameters);
+            NavigateTo("ContentRegion", "HerbDetailView", parameters);
         }
 
         /// <summary>
@@ -303,7 +312,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             {
                 { "HerbId", herb.Id }
             };
-            NavigateTo("MainRegion", "HerbDetailView", parameters);
+            NavigateTo("ContentRegion", "HerbDetailView", parameters);
         }
 
         /// <summary>
@@ -318,7 +327,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 { "SourceHerbId", herb.Id },
                 { "Mode", "Copy" }
             };
-            NavigateTo("MainRegion", "HerbDetailView", parameters);
+            NavigateTo("ContentRegion", "HerbDetailView", parameters);
         }
 
         /// <summary>
@@ -395,17 +404,56 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private async Task ImportHerbsAsync()
         {
-            try
+            await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogInformation("导入药材");
-                ShowInfoMessage("导入药材功能开发中");
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导入药材失败");
-                await ShowErrorMessageAsync("导入药材失败");
-            }
+                // ① 打开文件选择对话框
+                var filePath = await _dialogService.ShowOpenFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "选择药材导入文件");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // ② 读取文件流
+                using var fileStream = File.OpenRead(filePath);
+                var fileName = Path.GetFileName(filePath);
+
+                // ③ 调用Repository导入
+                Logger.LogInformation("开始导入药材文件：{FileName}", fileName);
+                var result = await _herbRepository.BatchImportAsync(fileStream, fileName);
+
+                if (result == null)
+                {
+                    await _dialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入药材");
+                    return;
+                }
+
+                // ④ 显示导入结果
+                var message = $"导入完成！\n\n" +
+                              $"✅ 成功：{result.SuccessCount}条\n" +
+                              $"❌ 失败：{result.FailureCount}条\n" +
+                              $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
+                              $"成功率：{result.SuccessRate:F1}%";
+
+                if (result.FailureCount > 0)
+                {
+                    message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：\n";
+                    foreach (var failure in result.Failures.Take(3))
+                    {
+                        message += $"\n第{failure.RowNumber}行（{failure.HerbName}）：{failure.Reason}";
+                    }
+                }
+
+                await _dialogService.ShowInfoAsync(message, "导入结果");
+
+                // ⑤ 刷新列表
+                if (result.SuccessCount > 0)
+                {
+                    await RefreshAsync();
+                }
+            }, "导入药材");
         }
 
         /// <summary>
@@ -413,17 +461,36 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private async Task ExportTemplateAsync()
         {
-            try
+            await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogInformation("导出药材导入模板");
-                ShowInfoMessage("导出模板功能开发中");
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导出模板失败");
-                await ShowErrorMessageAsync("导出模板失败");
-            }
+                // ① 打开保存文件对话框
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "保存药材导入模板",
+                    defaultFileName: $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // ② 下载模板
+                Logger.LogInformation("下载药材导入模板");
+                var bytes = await _herbRepository.ExportTemplateAsync();
+
+                if (bytes == null || bytes.Length == 0)
+                {
+                    await _dialogService.ShowErrorAsync("下载模板失败，请稍后重试", "下载模板");
+                    return;
+                }
+
+                // ③ 保存文件
+                await File.WriteAllBytesAsync(filePath, bytes);
+
+                await _dialogService.ShowInfoAsync(
+                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入药材」功能导入。",
+                    "下载成功");
+            }, "下载模板");
         }
 
         /// <summary>
@@ -431,17 +498,34 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private async Task ExportHerbsAsync()
         {
-            try
+            await ExecuteSafelyAsync(async () =>
             {
-                Logger.LogInformation("导出药材数据");
-                ShowInfoMessage("导出药材功能开发中");
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导出药材失败");
-                await ShowErrorMessageAsync("导出药材失败");
-            }
+                // ① 打开保存文件对话框
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "导出药材数据",
+                    defaultFileName: $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // ② 导出数据（使用当前搜索关键词）
+                Logger.LogInformation("导出药材数据，关键词：{Keyword}", SearchText);
+                var bytes = await _herbRepository.ExportHerbsAsync(SearchText);
+
+                if (bytes == null || bytes.Length == 0)
+                {
+                    await _dialogService.ShowErrorAsync("导出失败，请稍后重试", "导出药材");
+                    return;
+                }
+
+                // ③ 保存文件
+                await File.WriteAllBytesAsync(filePath, bytes);
+
+                await _dialogService.ShowInfoAsync($"成功导出药材数据到：\n{filePath}", "导出成功");
+            }, "导出药材");
         }
 
         /// <summary>

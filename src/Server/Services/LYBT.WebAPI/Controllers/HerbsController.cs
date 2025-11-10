@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -315,6 +316,154 @@ namespace LYBT.WebAPI.Controllers
             {
                 _logger.LogError(ex, "生成药材导入模板失败");
                 return StatusCode(500);
+            }
+        }
+
+        // ========== Epic #1962: 批量导入/导出和引用检查端点 ==========
+
+        /// <summary>
+        /// 批量导入药材（Epic #1962 Task 2.3）
+        /// Desktop层负责Excel解析，Server层接收DTO列表
+        /// </summary>
+        /// <param name="request">批量导入请求（包含药材DTO列表和重复处理策略）</param>
+        /// <returns>批量导入结果（成功/失败/跳过数量和详细错误信息）</returns>
+        [HttpPost("batch-import")]
+        [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<HerbBatchImportResultDto>>> BatchImport([FromBody] HerbBatchImportRequestDto request)
+        {
+            try
+            {
+                // 验证请求
+                if (request.Herbs == null || request.Herbs.Count == 0)
+                {
+                    return ValidationFail<HerbBatchImportResultDto>("药材列表不能为空");
+                }
+
+                // BR-006: 批量导入数量限制
+                if (request.Herbs.Count > 10000)
+                {
+                    return ValidationFail<HerbBatchImportResultDto>("批量导入最多支持10000条记录");
+                }
+
+                var result = await _herbService.BatchImportAsync(request.Herbs, request.Strategy);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("批量导入药材（Epic #1962）",
+                        new {
+                            TotalCount = result.Data.TotalCount,
+                            SuccessCount = result.Data.SuccessCount,
+                            FailureCount = result.Data.FailureCount,
+                            SkippedCount = result.Data.SkippedCount,
+                            Strategy = request.Strategy.ToString()
+                        },
+                        null);
+                }
+
+                return HandleServiceResult(result, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<HerbBatchImportResultDto>(ex, "批量导入药材", new { HerbCount = request.Herbs?.Count, Strategy = request.Strategy });
+            }
+        }
+
+        /// <summary>
+        /// 获取所有药材数据用于导出（Epic #1962 Task 3.2）
+        /// Desktop层负责Excel生成，Server层返回JSON数据
+        /// </summary>
+        /// <param name="category">可选的分类筛选参数</param>
+        /// <returns>药材数据列表（JSON格式）</returns>
+        [HttpGet("export-all")]
+        [ProducesResponseType(typeof(ApiResponse<List<HerbDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<HerbDto>>>> GetAllForExport([FromQuery] string? category = null)
+        {
+            try
+            {
+                var result = await _herbService.GetAllForExportAsync(category);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("导出药材数据（Epic #1962）",
+                        new { Category = category, Count = result.Data.Count },
+                        null);
+                }
+
+                return HandleServiceResult(result, "导出数据查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<HerbDto>>(ex, "获取导出数据", new { Category = category });
+            }
+        }
+
+        /// <summary>
+        /// 检查药材是否被处方引用（Epic #1962 Task 4.3）
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        /// <returns>引用检查结果</returns>
+        [HttpGet("{id}/check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<ApiResponse<HerbReferenceCheckDto>>> CheckReference(Guid id)
+        {
+            try
+            {
+                var validation = ValidateGuid<HerbReferenceCheckDto>(id, "药材ID");
+                if (validation != null)
+                {
+                    return validation;
+                }
+
+                var result = await _herbService.CheckReferenceAsync(id);
+                return HandleServiceResult(result, "引用检查完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<HerbReferenceCheckDto>(ex, "检查药材引用", id);
+            }
+        }
+
+        /// <summary>
+        /// 批量检查药材引用关系（Epic #1962 Task 4.3）
+        /// </summary>
+        /// <param name="request">批量检查请求（包含药材ID列表）</param>
+        /// <returns>引用检查结果列表</returns>
+        [HttpPost("batch-check-reference")]
+        [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<ApiResponse<List<HerbReferenceCheckDto>>>> BatchCheckReference([FromBody] BatchCheckReferenceRequestDto request)
+        {
+            try
+            {
+                // 验证请求
+                if (request.HerbIds == null || request.HerbIds.Count == 0)
+                {
+                    return ValidationFail<List<HerbReferenceCheckDto>>("药材ID列表不能为空");
+                }
+
+                // BR-006: 批量检查数量限制
+                if (request.HerbIds.Count > 100)
+                {
+                    return ValidationFail<List<HerbReferenceCheckDto>>("批量检查最多支持100条记录");
+                }
+
+                var result = await _herbService.BatchCheckReferenceAsync(request.HerbIds);
+
+                if (result.IsSuccess && result.Data != null)
+                {
+                    LogOperation("批量检查药材引用（Epic #1962）",
+                        new { Count = result.Data.Count },
+                        null);
+                }
+
+                return HandleServiceResult(result, "批量引用检查完成");
+            }
+            catch (Exception ex)
+            {
+                return HandleException<List<HerbReferenceCheckDto>>(ex, "批量检查药材引用", new { Count = request.HerbIds?.Count });
             }
         }
     }

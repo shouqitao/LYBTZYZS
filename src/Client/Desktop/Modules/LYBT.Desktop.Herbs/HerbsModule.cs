@@ -31,10 +31,12 @@ namespace LYBT.Desktop.Herbs
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbManagementViewModel>();
             containerRegistry.Register<ViewModels.HerbDetailViewModel>();
+            containerRegistry.Register<ViewModels.HerbCreateViewModel>();
 
             // Phase 2: 启用 Region Navigation 注册（试点模块）
             containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
             containerRegistry.RegisterForNavigation<Views.HerbDetailView>();
+            containerRegistry.RegisterForNavigation<Views.HerbCreateView>();
         }
     }
 }

@@ -173,6 +173,24 @@ namespace LYBT.Desktop.Herbs.ViewModels
             set => SetProperty(ref _status, value);
         }
 
+        /// <summary>
+        /// 是否只读模式
+        /// </summary>
+        private bool _isReadOnly;
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                if (SetProperty(ref _isReadOnly, value))
+                {
+                    // 只读模式改变时，刷新命令状态
+                    SaveCommand?.RaiseCanExecuteChanged();
+                    EditCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         #endregion
 
         #region 选项集合
@@ -332,6 +350,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private bool CanSave()
         {
             return !IsBusy &&
+                   !IsReadOnly &&
                    !string.IsNullOrWhiteSpace(Name) &&
                    !string.IsNullOrWhiteSpace(Unit) &&
                    !HasErrors;
@@ -479,6 +498,65 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void NavigateToHerbManagement()
         {
             NavigateTo("MainRegion", "HerbManagementView");
+        }
+
+        #endregion
+
+        #region 导航参数处理
+
+        /// <summary>
+        /// 处理导航参数（同步）
+        /// </summary>
+        protected override void ProcessNavigationParameters(NavigationParameters parameters)
+        {
+            base.ProcessNavigationParameters(parameters);
+
+            // 检查是否是只读模式
+            if (parameters.TryGetValue("ReadOnly", out bool readOnly))
+            {
+                IsReadOnly = readOnly;
+            }
+            else
+            {
+                IsReadOnly = false; // 默认编辑模式
+            }
+        }
+
+        /// <summary>
+        /// 异步初始化（加载数据）
+        /// </summary>
+        protected override async Task InitializeAsync(NavigationParameters parameters)
+        {
+            await base.InitializeAsync(parameters);
+
+            // 检查导航参数
+            if (parameters.TryGetValue("HerbId", out Guid herbId))
+            {
+                // 编辑/查看模式：加载现有数据
+                await LoadHerbAsync(herbId);
+            }
+            else if (parameters.TryGetValue("SourceHerbId", out Guid sourceHerbId))
+            {
+                // 复制模式：加载源数据并清空ID
+                await LoadHerbAsync(sourceHerbId);
+                Herb = null; // 清空ID，标记为新建
+            }
+            else
+            {
+                // 新建模式：使用默认值
+                Herb = null;
+                Name = string.Empty;
+                PinYinCode = null;
+                Origin = null;
+                Spec = null;
+                Unit = "克";
+                Price = 0;
+                CostPrice = null;
+                Effect = null;
+                Usage = null;
+                Remark = null;
+                Status = CommonStatus.Enabled;
+            }
         }
 
         #endregion

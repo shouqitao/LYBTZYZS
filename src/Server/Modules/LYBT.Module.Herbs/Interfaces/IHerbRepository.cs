@@ -1,4 +1,4 @@
-﻿using LYBT.Entities.Herbs;
+using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 
@@ -33,5 +33,27 @@ namespace LYBT.Module.Herbs.Interfaces
             int pageNumber,
             int pageSize,
             string? keyword = null);
+
+        /// <summary>
+        /// 检查药材名称是否存在（支持排除指定ID，用于更新时验证）
+        /// Epic #1962 Task 1.2: 批量导入重复检查
+        /// </summary>
+        /// <param name="name">药材名称</param>
+        /// <param name="excludeId">排除的ID（更新时传入当前记录ID）</param>
+        Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
+
+        /// <summary>
+        /// 按分类查询药材列表
+        /// Epic #1962 Task 1.2: 分类管理支持
+        /// </summary>
+        /// <param name="category">分类名称</param>
+        Task<List<Herb>> GetByCategoryAsync(string category);
+
+        /// <summary>
+        /// 软删除药材（覆盖BaseRepository的硬删除）
+        /// Epic #1962 Task 1.2: BR-007软删除支持
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        new Task DeleteAsync(Guid id);
     }
 }

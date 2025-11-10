@@ -71,9 +71,9 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     public class HerbDetailDto : StatusDto, IRemarkable
     {
 
-        /// <summary>药材名称</summary>
+        /// &lt;summary&gt;药材名称（BR-001: 1-50字符）Epic #1962&lt;/summary&gt;
         [Required(ErrorMessage = "药材名称不能为空")]
-        [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
+        [StringLength(50, MinimumLength = 1, ErrorMessage = "药材名称长度必须在1-50个字符之间")]
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -124,22 +124,27 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     /// </summary>
     public class HerbInputDto
     {
-        /// <summary>药材ID（更新时必填，创建时为null）</summary>
+        /// &lt;summary&gt;药材ID（更新时必填，创建时为null）&lt;/summary&gt;
         [DisplayName("药材ID")]
         public Guid? Id { get; set; }
 
-        /// <summary>药材名称</summary>
+        /// &lt;summary&gt;药材名称&lt;/summary&gt;
         [Required(ErrorMessage = "药材名称不能为空")]
         [StringLength(100, ErrorMessage = "药材名称长度不能超过100个字符")]
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>拼音码</summary>
+        /// &lt;summary&gt;拼音码&lt;/summary&gt;
         [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 
-        /// <summary>产地</summary>
+        /// &lt;summary&gt;分类（如：补血药、补气药）Epic #1962&lt;/summary&gt;
+        [StringLength(50, ErrorMessage = "分类长度不能超过50个字符")]
+        [DisplayName("分类")]
+        public string? Category { get; set; }
+
+        /// &lt;summary&gt;产地&lt;/summary&gt;
         [StringLength(100, ErrorMessage = "产地长度不能超过100个字符")]
         [DisplayName("产地")]
         public string? Origin { get; set; }

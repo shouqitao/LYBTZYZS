@@ -1,5 +1,6 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Module.Herbs.Interfaces
 {
@@ -62,5 +63,34 @@ namespace LYBT.Module.Herbs.Interfaces
         /// 生成药材导入模板 (Issue #1166)
         /// </summary>
         MemoryStream GenerateImportTemplate();
+
+        // ========== Epic #1962: 新增批量导入/导出和引用检查方法 ==========
+
+        /// <summary>
+        /// 批量导入药材（Epic #1962 Task 2.2）
+        /// Desktop层负责Excel解析，Server层接收DTO列表
+        /// </summary>
+        /// <param name="herbs">药材DTO列表（≤10000条，BR-006）</param>
+        /// <param name="strategy">重复处理策略（Skip/Update/Error）</param>
+        Task<ServiceResult<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy);
+
+        /// <summary>
+        /// 获取所有药材数据用于导出（Epic #1962 Task 3.1）
+        /// Desktop层负责Excel生成，Server层返回JSON数据
+        /// </summary>
+        /// <param name="category">分类筛选（可选）</param>
+        Task<ServiceResult<List<HerbDto>>> GetAllForExportAsync(string? category = null);
+
+        /// <summary>
+        /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
+        /// </summary>
+        /// <param name="herbId">药材ID</param>
+        Task<ServiceResult<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId);
+
+        /// <summary>
+        /// 批量检查药材引用关系（Epic #1962 Task 4.2）
+        /// </summary>
+        /// <param name="herbIds">药材ID列表（≤100条，BR-006）</param>
+        Task<ServiceResult<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds);
     }
 }
