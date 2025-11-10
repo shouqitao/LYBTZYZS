@@ -16,6 +16,73 @@
                               ShadowDepth="2"
                               Opacity="0.08"
                               Color="#000000"/>
+
+            <!-- 单行文本框样式 -->
+            <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ScrollViewer x:Name="PART_ContentHost" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                                </Trigger>
+                                <Trigger Property="IsReadOnly" Value="True">
+                                    <Setter Property="Background" Value="#F9FAFB" />
+                                    <Setter Property="Foreground" Value="#6B7280" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 多行文本框样式 -->
+            <Style x:Key="ModernMultilineTextBoxStyle" TargetType="TextBox">
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="AcceptsReturn" Value="True"/>
+                <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                                </Trigger>
+                                <Trigger Property="IsReadOnly" Value="True">
+                                    <Setter Property="Background" Value="#F9FAFB" />
+                                    <Setter Property="Foreground" Value="#6B7280" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -291,87 +358,110 @@
 
                             <!-- 第一行 -->
                             <TextBlock Grid.Row="0" Grid.Column="0"
-                                       Text="药材名称:"
-                                       FontWeight="Bold"
+                                       Text="药材名称"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="0" Grid.Column="1"
                                      Text="{Binding Name, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8,16,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,16,24" />
 
                             <TextBlock Grid.Row="0" Grid.Column="2"
-                                       Text="拼音码:"
-                                       FontWeight="Bold"
+                                       Text="拼音码"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="0" Grid.Column="3"
                                      Text="{Binding PinYinCode, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,0,24" />
 
                             <!-- 第二行 -->
                             <TextBlock Grid.Row="1" Grid.Column="0"
-                                       Text="产地:"
-                                       FontWeight="Bold"
+                                       Text="产地"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="1" Grid.Column="1"
                                      Text="{Binding Origin, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8,16,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,16,24" />
 
                             <TextBlock Grid.Row="1" Grid.Column="2"
-                                       Text="规格:"
-                                       FontWeight="Bold"
+                                       Text="规格"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="1" Grid.Column="3"
                                      Text="{Binding Spec, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,0,24" />
 
                             <!-- 第三行 -->
                             <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="单位:"
-                                       FontWeight="Bold"
+                                       Text="单位"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="2" Grid.Column="1"
                                      Text="{Binding Unit, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8,16,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,16,24" />
 
                             <TextBlock Grid.Row="2" Grid.Column="2"
-                                       Text="单价(元):"
-                                       FontWeight="Bold"
+                                       Text="单价(元)"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,24" />
                             <TextBox Grid.Row="2" Grid.Column="3"
                                      Text="{Binding Price, Mode=TwoWay, StringFormat=F2}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     Margin="0,8" />
+                                     Style="{StaticResource ModernTextBoxStyle}"
+                                     Margin="0,0,0,24" />
 
                             <!-- 第四行 -->
                             <TextBlock Grid.Row="3" Grid.Column="0"
-                                       Text="创建时间:"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Text="创建时间"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center" />
                             <TextBlock Grid.Row="3" Grid.Column="1"
                                        Text="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       FontSize="15"
+                                       Foreground="#6B7280"
                                        VerticalAlignment="Center"
-                                       Margin="0,8,16,8" />
+                                       Margin="0,0,16,0" />
 
                             <TextBlock Grid.Row="3" Grid.Column="2"
-                                       Text="更新时间:"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       Text="更新时间"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center" />
                             <TextBlock Grid.Row="3" Grid.Column="3"
                                        Text="{Binding UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
-                                       VerticalAlignment="Center"
-                                       Margin="0,8" />
+                                       FontSize="15"
+                                       Foreground="#6B7280"
+                                       VerticalAlignment="Center" />
                         </Grid>
                     </Expander>
                 </Border>
@@ -393,42 +483,48 @@
 
                             <!-- 功效说明 -->
                             <TextBlock Grid.Row="0"
-                                       Text="功效说明:"
-                                       FontWeight="Bold"
+                                       Text="功效说明"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Top"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,8" />
                             <TextBox Grid.Row="0"
                                      Text="{Binding Effect, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
-                                     MinHeight="60"
-                                     Margin="0,32,0,8" />
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
+                                     MinHeight="80"
+                                     Margin="0,28,0,24" />
 
                             <!-- 用法用量 -->
                             <TextBlock Grid.Row="1"
-                                       Text="用法用量:"
-                                       FontWeight="Bold"
+                                       Text="用法用量"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Top"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,8" />
                             <TextBox Grid.Row="1"
                                      Text="{Binding Usage, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
-                                     MinHeight="60"
-                                     Margin="0,32,0,8" />
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
+                                     MinHeight="80"
+                                     Margin="0,28,0,24" />
 
                             <!-- 备注 -->
                             <TextBlock Grid.Row="2"
-                                       Text="备注:"
-                                       FontWeight="Bold"
+                                       Text="备注"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="#374151"
                                        VerticalAlignment="Top"
-                                       Margin="0,8" />
+                                       Margin="0,0,0,8" />
                             <TextBox Grid.Row="2"
                                      Text="{Binding Remark, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
-                                     MinHeight="40"
-                                     Margin="0,32,0,8" />
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
+                                     MinHeight="60"
+                                     Margin="0,28,0,0" />
                         </Grid>
                     </Expander>
                 </Border>
