@@ -86,7 +86,7 @@ namespace LYBT.Module.Users.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20))
+                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
                 .ReturnsAsync(pagedResult);
 
             // Act
@@ -101,7 +101,7 @@ namespace LYBT.Module.Users.Tests.Services
             result.Data!.CurrentPage.Should().Be(1);
             result.Data!.PageSize.Should().Be(20);
 
-            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20), Times.Once);
+            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()), Times.Once);
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace LYBT.Module.Users.Tests.Services
             // Arrange
             var exception = new Exception("数据库错误");
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -144,7 +144,7 @@ namespace LYBT.Module.Users.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20))
+                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
                 .ReturnsAsync(pagedResult);
 
             // Act
@@ -459,10 +459,10 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock CountAsync for last-one protection check
+            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
             _repositoryMock
-                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(2); // More than 1, so deletion is allowed
+                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))
@@ -497,10 +497,10 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock CountAsync
+            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
             _repositoryMock
-                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(2);
+                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))
@@ -535,10 +535,10 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock CountAsync
+            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
             _repositoryMock
-                .Setup(x => x.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
-                .ReturnsAsync(2);
+                .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
 
             _repositoryMock
                 .Setup(x => x.DeleteAsync(userId))

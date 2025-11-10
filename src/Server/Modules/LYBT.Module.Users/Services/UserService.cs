@@ -100,7 +100,9 @@ namespace LYBT.Module.Users.Services
             // 最后一个SuperAdmin/Admin保护
             if (targetRole == UserRole.SuperAdmin || targetRole == UserRole.Admin)
             {
-                var count = await _repository.CountAsync(u => u.Role == targetRole && !u.IsDeleted);
+                // 使用FindAsync查询符合条件的用户数量（IBaseRepository<T>无带参数的CountAsync）
+                var users = await _repository.FindAsync(u => u.Role == targetRole);
+                var count = users.Count();
                 if (count <= 1)
                 {
                     var roleName = targetRole == UserRole.SuperAdmin ? "超级管理员" : "管理员";
@@ -246,7 +248,8 @@ namespace LYBT.Module.Users.Services
                 }
 
                 // Issue #1262: 检查用户名是否已存在（唯一性验证）
-                var existingUser = await _repository.ExistsAsync(u => u.UserName == dto.UserName);
+                // 使用IUserRepository特定方法检查用户名是否存在
+                var existingUser = await _repository.IsUsernameExistsAsync(dto.UserName);
                 if (existingUser)
                 {
                     _logger.LogWarning("尝试创建重复的用户名: {UserName}", dto.UserName);
