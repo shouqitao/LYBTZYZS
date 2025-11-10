@@ -58,15 +58,27 @@ namespace LYBT.Infrastructure.DependencyInjection
 
         /// <summary>
         /// 注册Server端核心Repository（基于BaseRepository）
+        /// Phase 2 Task 2.4: 支持新旧两套接口注册（向后兼容）
         /// </summary>
         /// <param name="services">服务集合</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddServerRepositories(this IServiceCollection services)
         {
-            // Phase 1: 注册泛型只读Repository接口
+            // Phase 1: 注册泛型只读Repository接口（已迁移到Shared层）
             // 用于从属实体模块（Consultation, Prescription）
-            services.AddScoped(typeof(LYBT.Infrastructure.Interfaces.IReadRepository<>),
+            services.AddScoped(typeof(LYBT.Shared.Models.Interfaces.IReadRepository<>),
                               typeof(LYBT.Infrastructure.Repositories.BaseReadRepository<>));
+
+            // Phase 2: 注册新的泛型Repository接口（Shared层）
+            // 用于聚合根实体模块（Users, Patients, Herbs）
+            services.AddScoped(typeof(LYBT.Shared.Models.Interfaces.IRepository<>),
+                              typeof(LYBT.Infrastructure.Repositories.BaseRepository<>));
+
+            // Phase 2: 保留旧接口注册（向后兼容，Phase 3-5迁移后删除）
+#pragma warning disable CS0618 // 忽略Obsolete警告
+            services.AddScoped(typeof(LYBT.Infrastructure.Interfaces.IRepositoryLegacy<>),
+                              typeof(LYBT.Infrastructure.Repositories.BaseRepository<>));
+#pragma warning restore CS0618
 
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository

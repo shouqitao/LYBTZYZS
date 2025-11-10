@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Infrastructure.Repositories;

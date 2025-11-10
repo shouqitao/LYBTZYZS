@@ -40,7 +40,7 @@ namespace LYBT.Module.Patients.Services
             try
             {
                 // Bug #1587修复：支持关键字搜索（姓名/拼音码/手机号）
-                // IBaseRepository<T>统一接口：GetPagedAsync(page, pageSize, keyword)
+                // IRepository<T>统一接口：GetPagedAsync(page, pageSize, keyword)
                 var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
 
                 var items = _mapper.Map<List<PatientDto>>(pagedResult.Items);

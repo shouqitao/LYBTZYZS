@@ -9,12 +9,12 @@ namespace LYBT.Module.Patients.Interfaces
     /// 病人仓储接口 - 优化版，包含查询优化方法
     /// </summary>
     /// <summary>
-/// 患者仓储接口 - 继承IBaseRepository<Patient>标准接口
+/// 患者仓储接口 - 继承IRepository<Patient>标准接口
 /// Phase 1 Task 1.3: 实现基础数据模块统一Repository规范
 /// </summary>
 /// <remarks>
 /// 设计原则：
-/// - ⭐ 统一共性：继承IBaseRepository<Patient>获得11个标准CRUD方法
+/// - ⭐ 统一共性：继承IRepository<Patient>获得11个标准CRUD方法
 /// - ⭐ 保持特性：保留患者模块特定业务方法
 /// 
 /// 特定业务方法说明：
@@ -22,7 +22,7 @@ namespace LYBT.Module.Patients.Interfaces
 /// - BatchCreateAsync: 批量导入患者（Epic #1934）
 /// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
 /// </remarks>
-public interface IPatientRepository : IBaseRepository<Patient>
+public interface IPatientRepository : IRepository<Patient>
 {
     /// <summary>
     /// 搜索患者（支持多条件和分页）

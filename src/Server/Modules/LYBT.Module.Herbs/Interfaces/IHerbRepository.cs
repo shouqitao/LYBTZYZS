@@ -4,12 +4,12 @@ using LYBT.Shared.Models.Interfaces;
 namespace LYBT.Module.Herbs.Interfaces
 {
     /// <summary>
-    /// 药材仓储接口 - 继承IBaseRepository&lt;Herb&gt;标准接口
+    /// 药材仓储接口 - 继承IRepository&lt;Herb&gt;标准接口
     /// Phase 1 Task 1.4: 实现基础数据模块统一Repository规范
     /// </summary>
     /// <remarks>
     /// 设计原则：
-    /// - ⭐ 统一共性：继承IBaseRepository&lt;Herb&gt;获得11个标准CRUD方法
+    /// - ⭐ 统一共性：继承IRepository&lt;Herb&gt;获得11个标准CRUD方法
     /// - ⭐ 保持特性：保留药材模块4个特定业务方法
     ///
     /// 特定业务方法说明：
@@ -18,7 +18,7 @@ namespace LYBT.Module.Herbs.Interfaces
     /// - ExistsByNameAsync: 名称重复检查（批量导入Epic #1962）
     /// - GetByCategoryAsync: 分类查询（分类管理Epic #1962）
     /// </remarks>
-    public interface IHerbRepository : IBaseRepository<Herb>
+    public interface IHerbRepository : IRepository<Herb>
     {
         /// <summary>
         /// 根据名称精确获取药材

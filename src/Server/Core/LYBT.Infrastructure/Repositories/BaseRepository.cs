@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ namespace LYBT.Infrastructure.Repositories
     /// 仓储基类
     /// 提供通用的CRUD操作和查询功能
     /// </summary>
-    /// Issue #1766: 删除IBaseRepository - 未被任何地方使用，简化接口层次
+    /// Issue #1766: 删除IRepository - 未被任何地方使用，简化接口层次
     public abstract class BaseRepository<TEntity> : IRepository<TEntity>
         where TEntity : BaseEntity
     {
@@ -203,38 +203,39 @@ namespace LYBT.Infrastructure.Repositories
             return (items, totalCount);
         }
 
+        /// <summary>
+        /// 分页查询（IRepository接口实现 - 支持关键字搜索）
+        /// </summary>
+        /// <param name="pageNumber">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="keyword">搜索关键字（可选）</param>
+        /// <returns>分页结果</returns>
+        /// <remarks>
+        /// 子类应重写此方法以实现特定的关键字搜索逻辑
+        /// 默认实现：忽略keyword参数，按CreatedAt降序返回分页数据
+        /// </remarks>
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        {
+            // 基类默认实现：忽略keyword参数，子类可重写实现搜索逻辑
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
+        }
+
         // Issue #1756: 删除GetPagedWithIncludesAsync - 未使用，功能与GetPagedAsync重复
         // 使用GetPagedAsync替代
 
-        // IRepository GetPagedAsync实现
-        async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(int pageNumber, int pageSize)
-        {
-            var (items, totalCount) = await GetPagedAsync(pageNumber, pageSize);
-            return new PagedResult<TEntity>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = pageNumber,
-                PageSize = pageSize
-            };
-        }
 
-        async Task<PagedResult<TEntity>> IRepository<TEntity>.GetPagedAsync(
-            Expression<Func<TEntity, bool>>? predicate,
-            int pageNumber,
-            int pageSize,
-            Expression<Func<TEntity, object>>? orderBy,
-            bool ascending)
-        {
-            var (items, totalCount) = await GetPagedAsync(pageNumber, pageSize, predicate, orderBy, !ascending);
-            return new PagedResult<TEntity>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = pageNumber,
-                PageSize = pageSize
-            };
-        }
+
+
 
         // IRepository GetSingleAsync实现
         async Task<TEntity?> IRepository<TEntity>.GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
@@ -264,7 +265,15 @@ namespace LYBT.Infrastructure.Repositories
         // Issue #1766: 删除显式接口实现ExistsAsync(Expression) - public方法已自动实现接口
 
         /// <summary>
-        /// 获取数量
+        /// 获取实体总数（IRepository接口实现）
+        /// </summary>
+        public virtual async Task<int> CountAsync()
+        {
+            return await _dbSet.CountAsync(e => !e.IsDeleted);
+        }
+
+        /// <summary>
+        /// 获取符合条件的实体数量
         /// </summary>
         public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
         {
@@ -278,16 +287,7 @@ namespace LYBT.Infrastructure.Repositories
             return await query.CountAsync();
         }
 
-        // IRepository CountAsync实现
-        async Task<long> IRepository<TEntity>.CountAsync()
-        {
-            return await CountAsync();
-        }
 
-        async Task<long> IRepository<TEntity>.CountAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await CountAsync(predicate);
-        }
 
         #endregion
 
@@ -335,11 +335,7 @@ namespace LYBT.Infrastructure.Repositories
             return entityList;
         }
 
-        // IRepository AddRangeAsync实现
-        async Task<IEnumerable<TEntity>> IRepository<TEntity>.AddRangeAsync(IEnumerable<TEntity> entities)
-        {
-            return await AddRangeAsync(entities);
-        }
+
 
         #endregion
 
@@ -409,14 +405,7 @@ namespace LYBT.Infrastructure.Repositories
             return true;
         }
 
-        // IRepository DeleteAsync(TEntity)实现 - 保留（BaseRepository无此重载）
-        async Task<bool> IRepository<TEntity>.DeleteAsync(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
 
-            return await DeleteAsync(entity.Id);
-        }
 
         // Issue #1766: 删除显式接口实现DeleteAsync(Guid) - public方法已自动实现接口
 
@@ -435,51 +424,6 @@ namespace LYBT.Infrastructure.Repositories
                 _logger?.LogWarning("没有找到符合条件的实体进行删除 - 类型: {EntityType}", typeof(TEntity).Name);
                 return 0;
             }
-
-            foreach (var entity in entities)
-            {
-                entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
-            }
-
-            _dbSet.UpdateRange(entities);
-            await SaveChangesAsync();
-
-            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
-                typeof(TEntity).Name, entities.Count);
-
-            return entities.Count;
-        }
-
-        // IRepository DeleteRangeAsync(IEnumerable<TEntity>)实现
-        async Task<int> IRepository<TEntity>.DeleteRangeAsync(IEnumerable<TEntity> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            var entityList = entities.ToList();
-            foreach (var entity in entityList)
-            {
-                entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
-            }
-
-            _dbSet.UpdateRange(entityList);
-            await SaveChangesAsync();
-
-            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
-                typeof(TEntity).Name, entityList.Count);
-
-            return entityList.Count;
-        }
-
-        // IRepository DeleteRangeAsync(IEnumerable<Guid>)实现
-        async Task<int> IRepository<TEntity>.DeleteRangeAsync(IEnumerable<Guid> ids)
-        {
-            var idList = ids.ToList();
-            var entities = await _dbSet
-                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
-                .ToListAsync();
 
             foreach (var entity in entities)
             {

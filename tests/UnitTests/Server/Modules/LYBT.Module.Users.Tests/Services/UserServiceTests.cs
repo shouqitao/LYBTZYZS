@@ -468,7 +468,7 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
+            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
             _repositoryMock
                 .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
                 .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
@@ -506,7 +506,7 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
+            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
             _repositoryMock
                 .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
                 .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除
@@ -544,7 +544,7 @@ namespace LYBT.Module.Users.Tests.Services
                 .Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(targetUser);
 
-            // Issue #1909: Mock FindAsync for last-one protection check (IBaseRepository<T>无参数CountAsync)
+            // Issue #1909: Mock FindAsync for last-one protection check (IRepository<T>无参数CountAsync)
             _repositoryMock
                 .Setup(x => x.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
                 .ReturnsAsync(new List<User> { new User(), new User() }); // 返回2个用户，允许删除

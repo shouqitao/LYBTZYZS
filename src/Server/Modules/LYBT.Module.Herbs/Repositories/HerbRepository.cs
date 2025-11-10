@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 namespace LYBT.Module.Herbs.Repositories
 {
     /// <summary>
-    /// 药材仓储实现 - 实现IBaseRepository&lt;Herb&gt;标准接口
+    /// 药材仓储实现 - 实现IRepository&lt;Herb&gt;标准接口
     /// Phase 1 Task 1.4: 基础数据模块Repository层统一重构
     /// </summary>
     /// <remarks>
     /// 设计原则：
-    /// - 统一共性：实现IBaseRepository&lt;Herb&gt;的11个标准CRUD方法
+    /// - 统一共性：实现IRepository&lt;Herb&gt;的11个标准CRUD方法
     /// - 保持特性：保留药材模块4个特定业务方法
     /// - 软删除模式：所有查询自动过滤IsDeleted=true的数据
     /// - 查询优化：只读查询使用AsNoTracking提升性能
@@ -29,7 +29,7 @@ namespace LYBT.Module.Herbs.Repositories
             _dbSet = _context.Set<Herb>();
         }
 
-        #region IBaseRepository<Herb> 标准方法实现
+        #region IRepository<Herb> 标准方法实现
 
         /// <summary>
         /// 根据ID获取药材（包含软删除过滤）

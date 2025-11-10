@@ -105,7 +105,7 @@ namespace LYBT.Module.Users.Services
             // 最后一个SuperAdmin/Admin保护
             if (targetRole == UserRole.SuperAdmin || targetRole == UserRole.Admin)
             {
-                // 使用FindAsync查询符合条件的用户数量（IBaseRepository<T>无带参数的CountAsync）
+                // 使用FindAsync查询符合条件的用户数量（IRepository<T>无带参数的CountAsync）
                 var users = await _repository.FindAsync(u => u.Role == targetRole);
                 var count = users.Count();
                 if (count <= 1)
