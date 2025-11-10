@@ -91,8 +91,20 @@ namespace LYBT.Desktop.Infrastructure.Controls
         /// <summary>
         /// 获取DataGrid的列集合
         /// 允许在XAML中定义DataGrid列
+        /// Issue #2011: 添加 null 检查，防止在视觉树构建期间访问未初始化的 DataGrid
         /// </summary>
-        public System.Collections.ObjectModel.ObservableCollection<DataGridColumn> Columns => DataGrid.Columns;
+        public System.Collections.ObjectModel.ObservableCollection<DataGridColumn> Columns
+        {
+            get
+            {
+                // 确保 DataGrid 已经在视觉树中初始化
+                if (DataGrid == null)
+                {
+                    return new System.Collections.ObjectModel.ObservableCollection<DataGridColumn>();
+                }
+                return DataGrid.Columns;
+            }
+        }
 
         #endregion
     }
