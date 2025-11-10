@@ -5,6 +5,7 @@ using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Events;
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -14,10 +15,11 @@ using Prism.Regions;
 namespace LYBT.Desktop.Patients.ViewModels
 {
     /// <summary>
-    /// 患者管理视图模型 - 基于UnifiedListViewModelBase实现
+    /// 患者管理视图模型 - 基于BaseManagementViewModel实现
+    /// Issue #1996 - Task 2.3: 重构继承BaseManagementViewModel<PatientDto>
     /// Issue #1834 Phase 2 - 完成占位实现,实现真实列表查询
     /// </summary>
-    public class PatientManagementViewModel : UnifiedListViewModelBase<PatientDto>
+    public class PatientManagementViewModel : BaseManagementViewModel<PatientDto>
     {
         #region 服务依赖
 
@@ -46,9 +48,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             PageTitle = "患者管理";
 
-            // CRUD统一模式: 初始化列表操作命令（同步Navigation模式）
-            ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails);
-            EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit);
+            // Issue #1996: 设置分页大小（基类提供）
+            PageSize = 20;
+
+            // Issue #1996: 初始化患者特定命令
+            InitializePatientCommands();
 
             // Epic #1934: 初始化导入/导出命令
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
@@ -58,51 +62,155 @@ namespace LYBT.Desktop.Patients.ViewModels
             // CRUD统一模式: 订阅患者创建和更新事件
             EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(OnPatientCreated);
             EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(OnPatientUpdated);
+
+            Logger.LogDebug("患者管理ViewModel已初始化");
         }
 
         #endregion
 
-        #region 实现基类抽象方法
+        #region 命令初始化
 
         /// <summary>
-        /// 获取数据项（实现基类抽象方法）
+        /// 初始化患者特定命令
+        /// Issue #1996: 初始化AddCommand, FirstPageCommand, LastPageCommand等
         /// </summary>
-        protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        private void InitializePatientCommands()
         {
+            // Issue #1996: 基类不提供AddCommand，需要子类自行实现
+            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy);
+
+            ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, patient => patient != null);
+            EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit, patient => patient != null);
+
+            // Issue #1996: 使用基类提供的 HasPreviousPage 和 HasNextPage
+            // Issue #2011: 使用 ObservesProperty 避免 CanExecute 无限循环
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => HasPreviousPage && !IsLoading && !IsBusy)
+                .ObservesProperty(() => PageIndex)
+                .ObservesProperty(() => IsLoading)
+                .ObservesProperty(() => IsBusy);
+
+            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => HasNextPage && !IsLoading && !IsBusy)
+                .ObservesProperty(() => PageIndex)
+                .ObservesProperty(() => IsLoading)
+                .ObservesProperty(() => IsBusy);
+        }
+
+        #endregion
+
+        #region 实现BaseManagementViewModel抽象方法
+
+        /// <summary>
+        /// 加载患者分页数据（实现基类抽象方法）
+        /// Issue #1996: 返回PagedResult而非IEnumerable，由基类自动管理分页属性
+        /// </summary>
+        protected override async Task<PagedResult<PatientDto>> LoadDataAsync(int pageIndex, int pageSize, string? searchText)
+        {
+            Logger.LogDebug("加载患者列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", pageIndex, pageSize, searchText);
+
             try
             {
-                var result = await _commandHandler.GetPatientsPagedAsync(page, pageSize, searchText);
+                // 使用CommandHandler获取分页数据
+                var result = await _commandHandler.GetPatientsPagedAsync(pageIndex, pageSize, searchText);
 
-                if (!result.IsSuccess || result.Data == null)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    Logger.LogError("加载患者数据失败：{ErrorMessage}", result.ErrorMessage);
-                    throw new InvalidOperationException(result.ErrorMessage ?? "查询患者失败");
+                    // 返回PagedResult（基类会自动管理TotalCount等分页属性）
+                    return new PagedResult<PatientDto>
+                    {
+                        Items = result.Data.Items,
+                        TotalCount = result.Data.TotalCount,
+                        CurrentPage = pageIndex,
+                        PageSize = pageSize
+                    };
                 }
-
-                var pagedData = result.Data;
-
-                // 更新分页信息
-                TotalCount = pagedData.TotalCount;
-                CurrentPage = pagedData.CurrentPage;
-                PageSize = pagedData.PageSize;
-
-                return pagedData.Items;
+                else
+                {
+                    Logger.LogWarning("加载患者列表失败: {ErrorMessage}", result.ErrorMessage);
+                    return new PagedResult<PatientDto>
+                    {
+                        Items = new List<PatientDto>(),
+                        TotalCount = 0,
+                        CurrentPage = pageIndex,
+                        PageSize = pageSize
+                    };
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载患者数据时发生异常");
-                throw;  // 重新抛出异常，让ExecuteSafelyAsync统一处理
+                Logger.LogError(ex, "加载患者列表时发生异常");
+                var contextMessage = $"加载患者列表 - 模块:{nameof(PatientManagementViewModel)}";
+                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+
+                return new PagedResult<PatientDto>
+                {
+                    Items = new List<PatientDto>(),
+                    TotalCount = 0,
+                    CurrentPage = pageIndex,
+                    PageSize = pageSize
+                };
+            }
+        }
+
+        /// <summary>
+        /// 删除患者（实现基类抽象方法）
+        /// Issue #1996: 返回bool表示删除成功与否
+        /// </summary>
+        protected override async Task<bool> DeleteItemAsync(PatientDto item)
+        {
+            if (item == null)
+            {
+                Logger.LogWarning("DeleteItemAsync: 患者对象为null");
+                return false;
+            }
+
+            Logger.LogDebug("删除患者: {PatientId} - {PatientName}", item.Id, item.Name);
+
+            try
+            {
+                // 确认删除
+                var confirmed = await ShowConfirmationAsync(
+                    $"确认删除患者 [{item.Name}] 吗？",
+                    "删除确认");
+
+                if (!confirmed)
+                {
+                    Logger.LogDebug("用户取消删除, PatientId: {PatientId}", item.Id);
+                    return false;
+                }
+
+                // 使用CommandHandler删除
+                var result = await _commandHandler.DeletePatientAsync(item.Id);
+                if (result.IsSuccess)
+                {
+                    Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
+                    await ShowSuccessMessageAsync($"患者 [{item.Name}] 已删除");
+                    return true;
+                }
+                else
+                {
+                    Logger.LogError("删除患者失败: {PatientName}, {ErrorMessage}", item.Name, result.ErrorMessage);
+                    ErrorMessage = result.ErrorMessage ?? "删除患者失败";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除患者时发生异常: {PatientName}", item.Name);
+                var contextMessage = $"删除患者 - 模块:{nameof(PatientManagementViewModel)}";
+                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+                return false;
             }
         }
 
         #endregion
 
-        #region 重写虚方法 (Phase 2仅列表功能,其他功能待后续实现)
+        #region 重写基类虚方法
 
         /// <summary>
         /// 执行添加操作 - CRUD统一模式（Region Navigation）
+        /// Issue #1996: BaseManagementViewModel不提供AddCommand，子类自行实现
         /// </summary>
-        protected override async Task OnExecuteAddAsync()
+        protected virtual async Task OnExecuteAddAsync()
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建患者视图");
@@ -110,38 +218,37 @@ namespace LYBT.Desktop.Patients.ViewModels
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 删除患者
-        /// </summary>
-        protected override async Task OnExecuteDeleteAsync(PatientDto item)
-        {
-            if (item == null) return;
-
-            Logger.LogDebug("删除患者: {PatientId} - {PatientName}", item.Id, item.Name);
-
-            // 使用CommandHandler删除
-            var result = await _commandHandler.DeletePatientAsync(item.Id);
-            if (!result.IsSuccess)
-            {
-                throw new InvalidOperationException(result.ErrorMessage ?? "删除患者失败");
-            }
-
-            Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
-        }
-
         #endregion
 
-        #region 列表操作命令（FR-005）
+        #region 列表操作命令
+
+        /// <summary>
+        /// 添加患者命令
+        /// Issue #1996: BaseManagementViewModel不提供AddCommand，需要子类自行实现
+        /// </summary>
+        public DelegateCommand AddCommand { get; private set; } = null!;
 
         /// <summary>
         /// 查看患者详情命令
         /// </summary>
-        public ICommand ViewDetailsCommand { get; }
+        public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
 
         /// <summary>
         /// 编辑患者命令
         /// </summary>
-        public ICommand EditCommand { get; }
+        public DelegateCommand<PatientDto> EditCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 第一页命令
+        /// Issue #1996: BaseManagementViewModel提供此命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 最后一页命令
+        /// Issue #1996: BaseManagementViewModel提供此命令
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
 
         #endregion
 
@@ -179,12 +286,30 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return; // 用户取消
                 }
 
-                // 读取文件并导入
+                // 读取文件并使用ExcelHelper.ParseAsync解析
                 using var fileStream = File.OpenRead(filePath);
                 var fileName = Path.GetFileName(filePath);
 
                 Logger.LogInformation("开始导入患者文件：{FileName}", fileName);
-                var result = await _patientRepository.BatchImportAsync(fileStream, fileName);
+
+                // Issue #2004: 使用ExcelHelper.ParseAsync解析Excel为PatientInputDto列表
+                var patients = await Infrastructure.Helpers.ExcelHelper.ParseAsync<PatientInputDto>(fileStream, hasHeader: true);
+
+                if (patients == null || patients.Count == 0)
+                {
+                    await _dialogService.ShowErrorAsync("文件中没有有效的患者数据", "导入患者");
+                    return;
+                }
+
+                // 组装PatientBatchImportRequestDto
+                var request = new PatientBatchImportRequestDto
+                {
+                    Patients = patients,
+                    Strategy = LYBT.Shared.Models.Enums.DuplicateStrategy.Skip // 默认策略：跳过重复
+                };
+
+                // 调用Server端BatchImportAsync API
+                var result = await _patientRepository.BatchImportAsync(request);
 
                 if (result == null)
                 {
@@ -236,20 +361,20 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return; // 用户取消
                 }
 
-                // 导出数据（使用当前搜索关键词）
+                // 获取所有患者数据（使用当前搜索关键词）
                 Logger.LogInformation("导出患者数据，关键词：{Keyword}", SearchText);
-                var bytes = await _patientRepository.ExportPatientsAsync(SearchText);
+                var allPatients = await _patientRepository.SearchAsync(SearchText ?? string.Empty);
 
-                if (bytes == null || bytes.Length == 0)
+                if (allPatients == null || allPatients.Count == 0)
                 {
-                    await _dialogService.ShowErrorAsync("导出失败，请稍后重试", "导出患者");
+                    await _dialogService.ShowErrorAsync("没有可导出的数据", "导出患者");
                     return;
                 }
 
-                // 保存文件
-                await File.WriteAllBytesAsync(filePath, bytes);
+                // 使用ExcelHelper.ExportAsync导出
+                await Infrastructure.Helpers.ExcelHelper.ExportAsync(allPatients, filePath, "患者数据");
 
-                await _dialogService.ShowInfoAsync($"成功导出患者数据到：\n{filePath}", "导出成功");
+                await _dialogService.ShowInfoAsync($"成功导出{allPatients.Count}条患者数据到：\n{filePath}", "导出成功");
             }, "导出患者");
         }
 
@@ -271,20 +396,36 @@ namespace LYBT.Desktop.Patients.ViewModels
                     return; // 用户取消
                 }
 
-                // 下载模板
-                Logger.LogInformation("下载患者导入模板");
-                var bytes = await _patientRepository.ExportTemplateAsync();
-
-                if (bytes == null || bytes.Length == 0)
+                // 创建示例数据
+                var sampleData = new List<PatientInputDto>
                 {
-                    await _dialogService.ShowErrorAsync("下载模板失败，请稍后重试", "下载模板");
-                    return;
-                }
+                    new PatientInputDto
+                    {
+                        Name = "张三",
+                        Gender = LYBT.Shared.Models.Enums.Gender.Male,
+                        BirthDate = new DateTime(1980, 1, 1),
+                        PhoneNumber = "13800138000",
+                        Address = "北京市朝阳区",
+                        Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+                    },
+                    new PatientInputDto
+                    {
+                        Name = "李四",
+                        Gender = LYBT.Shared.Models.Enums.Gender.Female,
+                        BirthDate = new DateTime(1990, 5, 15),
+                        PhoneNumber = "13800138001",
+                        Address = "上海市浦东新区",
+                        Status = LYBT.Shared.Models.Enums.CommonStatus.Enabled
+                    }
+                };
 
-                // 保存文件
-                await File.WriteAllBytesAsync(filePath, bytes);
+                // 使用ExcelHelper.GenerateTemplateAsync生成模板
+                Logger.LogInformation("生成患者导入模板");
+                await Infrastructure.Helpers.ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
 
-                await _dialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");
+                await _dialogService.ShowInfoAsync(
+                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。\n\n注意：\n1. 患者姓名必填\n2. 性别可选值：Male(男)、Female(女)、Unknown(未知)\n3. 状态可选值：Enabled(启用)、Disabled(禁用)",
+                    "下载成功");
             }, "下载模板");
         }
 
@@ -347,6 +488,34 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             Logger.LogInformation("收到患者更新事件：{PatientId} - {PatientName}", patient.Id, patient.Name);
             await RefreshAsync();
+        }
+
+        #endregion
+
+        #region 分页命令实现
+
+        /// <summary>
+        /// 执行跳转到第一页
+        /// Issue #1996: BaseManagementViewModel提供PageIndex属性
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            if (HasPreviousPage)
+            {
+                PageIndex = 1;
+            }
+        }
+
+        /// <summary>
+        /// 执行跳转到最后一页
+        /// Issue #1996: BaseManagementViewModel提供TotalPages属性
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            if (HasNextPage && TotalPages > 0)
+            {
+                PageIndex = TotalPages;
+            }
         }
 
         #endregion
