@@ -333,6 +333,73 @@
                           ShadowDepth="2"
                           Opacity="0.15"
                           Color="#3B82F6"/>
+
+        <!-- 单行文本框样式 -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6" />
+                            </Trigger>
+                            <Trigger Property="IsReadOnly" Value="True">
+                                <Setter Property="Background" Value="#F9FAFB" />
+                                <Setter Property="Foreground" Value="#6B7280" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 多行文本框样式 -->
+        <Style x:Key="ModernMultilineTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6" />
+                            </Trigger>
+                            <Trigger Property="IsReadOnly" Value="True">
+                                <Setter Property="Background" Value="#F9FAFB" />
+                                <Setter Property="Foreground" Value="#6B7280" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </ResourceDictionary>
 </UserControl.Resources>
 ```
@@ -380,6 +447,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" /> <!-- 可选：底部按钮栏 -->
             </Grid.RowDefinitions>
 
             <!-- 顶部操作栏 -->
@@ -497,10 +565,103 @@
                     </StackPanel>
                 </Grid>
             </Border>
+
+            <!-- 底部按钮栏（可选，用于编辑操作） -->
+            <Border Grid.Row="2"
+                    Background="White"
+                    CornerRadius="16"
+                    Padding="32,24"
+                    Effect="{StaticResource CardShadow}"
+                    Margin="0,28,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <!-- 取消按钮 -->
+                    <Button Command="{Binding CancelCommand}"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Foreground="#374151"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Height="48"
+                            MinWidth="120"
+                            Cursor="Hand"
+                            Margin="0,0,16,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="10"
+                                                    Padding="24,12">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#F9FAFB" />
+                                                    <Setter Property="BorderBrush" Value="#9CA3AF" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="取消" />
+                    </Button>
+
+                    <!-- 保存修改按钮 -->
+                    <Button Command="{Binding SaveCommand}"
+                            Background="#3B82F6"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Height="48"
+                            MinWidth="120"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="10"
+                                                    Padding="24,12">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#2563EB" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#1D4ED8" />
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#D1D5DB" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="保存修改" />
+                    </Button>
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 </UserControl>
 ```
+
+**说明**: 
+- Grid.Row="2" 的底部按钮栏是**可选的**，仅在 Detail View 支持编辑操作时使用
+- 如果是纯查看视图，可以省略第三行（Grid.Row="2"）和底部按钮栏
+- 取消按钮：白色背景 + 灰色边框，hover 时背景变浅灰
+- 保存按钮：蓝色背景，hover 时颜色加深，禁用时变灰
 
 ### 2. Create View（创建视图）
 

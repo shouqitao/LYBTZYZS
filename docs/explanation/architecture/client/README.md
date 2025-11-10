@@ -251,6 +251,132 @@ public abstract class ViewModelBase : ObservableObject, IDisposable
 }
 ```
 
+**通用管理ViewModel基类**：
+
+```csharp
+// Core/LYBT.Desktop.Models/ViewModels/Base/BaseManagementViewModel.cs
+/// <summary>
+/// 通用管理类ViewModel基类（支持分页、搜索、删除）
+/// Issue #1994: 500ms搜索防抖
+/// Issue #2011: 防止构造期间StackOverflow
+/// </summary>
+public abstract class BaseManagementViewModel<TDto> : UnifiedViewModelBase 
+    where TDto : class
+{
+    #region 分页属性
+    
+    public int PageIndex { get; set; }       // 当前页码（1开始）
+    public int PageSize { get; set; }        // 每页大小（默认20）
+    public int TotalCount { get; set; }      // 总记录数
+    public int TotalPages { get; }           // 总页数（计算属性）
+    public bool HasPreviousPage { get; }     // 是否有上一页
+    public bool HasNextPage { get; }         // 是否有下一页
+    
+    #endregion
+    
+    #region 搜索属性
+    
+    public string SearchText { get; set; }   // 搜索关键词（500ms防抖）
+    
+    #endregion
+    
+    #region 数据集合
+    
+    public ObservableCollection<TDto> Items { get; }  // 数据项集合
+    public TDto? SelectedItem { get; set; }           // 当前选中项
+    
+    #endregion
+    
+    #region 标准命令
+    
+    public DelegateCommand RefreshCommand { get; }           // 刷新命令
+    public DelegateCommand PreviousPageCommand { get; }      // 上一页命令
+    public DelegateCommand NextPageCommand { get; }          // 下一页命令
+    public DelegateCommand<TDto> DeleteCommand { get; }      // 删除命令
+    
+    #endregion
+    
+    #region 抽象方法（子类必须实现）
+    
+    /// <summary>
+    /// 加载数据（子类必须实现）
+    /// </summary>
+    protected abstract Task<PagedResult<TDto>> LoadDataAsync(
+        int pageIndex, int pageSize, string? searchText);
+    
+    /// <summary>
+    /// 删除数据项（子类必须实现）
+    /// </summary>
+    protected abstract Task<bool> DeleteItemAsync(TDto item);
+    
+    #endregion
+    
+    #region 内置功能
+    
+    // 500ms搜索防抖（Issue #1994）
+    private async Task TriggerSearchWithDebounceAsync()
+    {
+        _searchCancellation?.Cancel();
+        _searchCancellation = new CancellationTokenSource();
+        
+        await Task.Delay(500, _searchCancellation.Token);
+        PageIndex = 1;  // 搜索后重置到第一页
+    }
+    
+    // 防止构造期间StackOverflow（Issue #2011）
+    protected override async Task InitializeAsync(NavigationParameters parameters)
+    {
+        _isInitializing = false;  // 初始化完成后允许数据加载
+        await LoadDataAsync();
+    }
+    
+    #endregion
+}
+```
+
+**使用示例**：`HerbManagementViewModel`
+
+```csharp
+public class HerbManagementViewModel : BaseManagementViewModel<HerbDto>
+{
+    private readonly IHerbRepository _herbRepository;
+    
+    public HerbManagementViewModel(
+        IHerbRepository herbRepository,
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager)
+        : base(eventAggregator, loggerFactory, regionManager)
+    {
+        _herbRepository = herbRepository;
+    }
+    
+    // 实现抽象方法
+    protected override async Task<PagedResult<HerbDto>> LoadDataAsync(
+        int pageIndex, int pageSize, string? searchText)
+    {
+        return await _herbRepository.GetPagedAsync(pageIndex, pageSize, searchText);
+    }
+    
+    protected override async Task<bool> DeleteItemAsync(HerbDto item)
+    {
+        var result = await _herbRepository.DeleteAsync(item.Id);
+        return result.IsSuccess;
+    }
+}
+```
+
+**自动提供的功能**：
+- ✅ 分页导航（上一页/下一页/页码变化）
+- ✅ 500ms搜索防抖（避免频繁请求）
+- ✅ 自动命令管理（Refresh/Delete/PreviousPage/NextPage）
+- ✅ 忙碌状态控制（加载中禁用命令）
+- ✅ 防止构造期间StackOverflow（Issue #2011）
+
+**子类只需：**
+1. 实现 `LoadDataAsync` （调用Repository加载数据）
+2. 实现 `DeleteItemAsync` （调用Repository删除数据）
+
 ### 3. ~~Services层 - 业务服务~~ （已废弃 - Phase 2/4）
 
 > **⚠️ 架构演进**：Phase 2（Issue #1114）移除了业务Service层，Phase 4（Epic #1676）清理了临时Service遗留。
