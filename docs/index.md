@@ -2,7 +2,7 @@
 
 **文档版本**：v6.1 Diátaxis框架重构版
 **创建时间**：2025-10-15
-**最后更新**：2025-11-09（Epic #1961 FluentValidation统一设计文档同步）
+**最后更新**：2025-11-10（Epic #1962 Phase 5 架构文档更新）
 **维护负责**：项目团队
 
 ---
@@ -123,6 +123,11 @@
   DTO创建五步法、验证规则、AutoMapper配置
 - **[共享组件使用](how-to/shared/components-usage.md)**
   Result/PagedResult/ApiResponse、通用工具类
+
+#### 架构模式指南（⭐ Epic #1962新增）
+
+- **[批量操作模式](how-to/patterns/batch-operations.md)** ⭐⭐⭐
+  Desktop主导模式、批量导入/导出实现、EPPlus集成、性能优化
 
 ### Phase 3 角色模块（⭐ 新增）
 
@@ -312,6 +317,10 @@
 - **[WebAPI设计](explanation/architecture/server/webapi-design.md)**
   API版本管理、错误处理、Swagger配置、跨域策略
 
+**模块架构文档**（⭐ Epic #1962新增）：
+- **[Herbs模块架构](explanation/architecture/server/modules/herbs.md)** ⭐⭐⭐
+  药材模块三层架构、批量操作实现、Repository/Service/Controller设计、性能基准
+
 #### Client端架构设计
 
 - **[Client端架构总览](explanation/architecture/client/README.md)** ⭐⭐⭐
@@ -354,6 +363,8 @@
   DTO基类体系、命名规范、验证规则、UltraThink v2.0简化原则
 - **[共享组件设计](explanation/architecture/shared/components-design.md)**
   Result/PagedResult/ApiResponse设计、通用工具类、扩展方法
+- **[跨模块依赖关系](explanation/architecture/shared/cross-module-dependencies.md)** ⭐⭐⭐ ⭐ Epic #1962新增
+  Herbs→Prescriptions依赖、引用检查实现、DI配置、聚合根边界保护
 
 ### 架构决策记录（ADR）
 

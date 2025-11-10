@@ -322,14 +322,38 @@ namespace LYBT.WebAPI.Controllers
         // ========== Epic #1962: 批量导入/导出和引用检查端点 ==========
 
         /// <summary>
-        /// 批量导入药材（Epic #1962 Task 2.3）
-        /// Desktop层负责Excel解析，Server层接收DTO列表
+        /// 批量导入药材数据
         /// </summary>
+        /// <remarks>
+        /// <para><strong>功能说明</strong></para>
+        /// <list type="bullet">
+        ///   <item>支持从Desktop层接收DTO列表（Excel解析在Desktop层完成）</item>
+        ///   <item>自动生成拼音码（调用Shared层PinYinHelper）</item>
+        ///   <item>支持3种重复策略：Skip（跳过）、Update（更新）、Error（报错）</item>
+        /// </list>
+        ///
+        /// <para><strong>业务规则</strong></para>
+        /// <list type="bullet">
+        ///   <item><strong>BR-006</strong>: 单次导入最多10000条，超出返回400错误</item>
+        ///   <item><strong>BR-001</strong>: 药材名称1-50字符，必填</item>
+        ///   <item><strong>BR-002</strong>: 药材名称唯一性检查（重复策略控制）</item>
+        /// </list>
+        ///
+        /// <para><strong>性能要求</strong></para>
+        /// <list type="bullet">
+        ///   <item>1000条记录 &lt; 10秒</item>
+        ///   <item>使用数据库事务保证一致性</item>
+        /// </list>
+        /// </remarks>
         /// <param name="request">批量导入请求（包含药材DTO列表和重复处理策略）</param>
-        /// <returns>批量导入结果（成功/失败/跳过数量和详细错误信息）</returns>
+        /// <returns>批量导入结果（成功数、跳过数、失败数、错误详情）</returns>
+        /// <response code="200">导入成功，返回统计信息</response>
+        /// <response code="400">请求参数错误（超出数量限制、DTO验证失败）</response>
+        /// <response code="500">服务器内部错误</response>
         [HttpPost("batch-import")]
         [ProducesResponseType(typeof(ApiResponse<HerbBatchImportResultDto>), 200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        [ProducesResponseType(typeof(ApiResponse), 500)]
         public async Task<ActionResult<ApiResponse<HerbBatchImportResultDto>>> BatchImport([FromBody] HerbBatchImportRequestDto request)
         {
             try
@@ -370,13 +394,29 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取所有药材数据用于导出（Epic #1962 Task 3.2）
-        /// Desktop层负责Excel生成，Server层返回JSON数据
+        /// 导出药材数据（返回JSON列表，Desktop层负责Excel生成）
         /// </summary>
-        /// <param name="category">可选的分类筛选参数</param>
-        /// <returns>药材数据列表（JSON格式）</returns>
+        /// <remarks>
+        /// <para><strong>功能说明</strong></para>
+        /// <list type="bullet">
+        ///   <item>返回JSON格式的药材列表（不返回Excel文件）</item>
+        ///   <item>Desktop层使用EPPlus生成Excel</item>
+        ///   <item>支持按分类过滤（可选）</item>
+        /// </list>
+        ///
+        /// <para><strong>性能要求</strong></para>
+        /// <list type="bullet">
+        ///   <item>10000条记录 &lt; 2秒</item>
+        ///   <item>使用AsNoTracking()提升查询性能</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="category">分类筛选（可选），例如"补血药"</param>
+        /// <returns>药材DTO列表</returns>
+        /// <response code="200">查询成功，返回药材列表（可能为空数组）</response>
+        /// <response code="500">服务器内部错误</response>
         [HttpGet("export-all")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 500)]
         public async Task<ActionResult<ApiResponse<List<HerbDto>>>> GetAllForExport([FromQuery] string? category = null)
         {
             try
@@ -399,14 +439,38 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 检查药材是否被处方引用（Epic #1962 Task 4.3）
+        /// 检查药材是否被处方引用
         /// </summary>
+        /// <remarks>
+        /// <para><strong>功能说明</strong></para>
+        /// <list type="bullet">
+        ///   <item>查询Prescription模块的引用关系（跨模块依赖）</item>
+        ///   <item>返回引用统计和最近引用记录（最多10条）</item>
+        ///   <item><strong>BR-007</strong>: CanDelete始终为true（支持软删除）</item>
+        /// </list>
+        ///
+        /// <para><strong>业务规则</strong></para>
+        /// <list type="bullet">
+        ///   <item>有引用时：提示"药材被X个处方引用，删除后将软删除"</item>
+        ///   <item>无引用时：正常删除提示</item>
+        /// </list>
+        ///
+        /// <para><strong>性能要求</strong></para>
+        /// <list type="bullet">
+        ///   <item>单次检查 &lt; 500ms</item>
+        /// </list>
+        /// </remarks>
         /// <param name="id">药材ID</param>
-        /// <returns>引用检查结果</returns>
+        /// <returns>引用检查结果DTO</returns>
+        /// <response code="200">检查成功，返回引用信息</response>
+        /// <response code="400">请求参数错误（ID格式无效）</response>
+        /// <response code="404">药材不存在</response>
+        /// <response code="500">服务器内部错误</response>
         [HttpGet("{id}/check-reference")]
         [ProducesResponseType(typeof(ApiResponse<HerbReferenceCheckDto>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse), 500)]
         public async Task<ActionResult<ApiResponse<HerbReferenceCheckDto>>> CheckReference(Guid id)
         {
             try
@@ -427,13 +491,36 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 批量检查药材引用关系（Epic #1962 Task 4.3）
+        /// 批量检查药材引用关系
         /// </summary>
-        /// <param name="request">批量检查请求（包含药材ID列表）</param>
+        /// <remarks>
+        /// <para><strong>功能说明</strong></para>
+        /// <list type="bullet">
+        ///   <item>批量查询多个药材的引用关系（批量删除前调用）</item>
+        ///   <item>返回每个药材的引用统计和最近引用记录</item>
+        ///   <item><strong>BR-007</strong>: 所有药材的CanDelete均为true（支持软删除）</item>
+        /// </list>
+        ///
+        /// <para><strong>业务规则</strong></para>
+        /// <list type="bullet">
+        ///   <item><strong>BR-006</strong>: 单次检查最多100条，超出返回400错误</item>
+        ///   <item>有引用的药材会在结果中标注引用数量</item>
+        /// </list>
+        ///
+        /// <para><strong>性能要求</strong></para>
+        /// <list type="bullet">
+        ///   <item>100条记录检查 &lt; 5秒</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="request">批量检查请求（包含药材ID列表，≤100）</param>
         /// <returns>引用检查结果列表</returns>
+        /// <response code="200">检查成功，返回引用信息列表</response>
+        /// <response code="400">请求参数错误（超出数量限制、ID列表为空）</response>
+        /// <response code="500">服务器内部错误</response>
         [HttpPost("batch-check-reference")]
         [ProducesResponseType(typeof(ApiResponse<List<HerbReferenceCheckDto>>), 200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(typeof(ApiResponse), 400)]
+        [ProducesResponseType(typeof(ApiResponse), 500)]
         public async Task<ActionResult<ApiResponse<List<HerbReferenceCheckDto>>>> BatchCheckReference([FromBody] BatchCheckReferenceRequestDto request)
         {
             try
