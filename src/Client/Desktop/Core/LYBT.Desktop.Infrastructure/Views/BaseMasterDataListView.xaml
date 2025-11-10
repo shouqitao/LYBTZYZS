@@ -1,0 +1,75 @@
+<!--
+    BaseMasterDataListView - 基础数据管理视图模板
+    Issue #1998 - Task 2.5: 创建统一的XAML视图模板
+
+    功能：
+    - 统一三行布局：工具栏 + 数据表格 + 分页控件
+    - 支持子类自定义：DataGrid列、操作按钮、筛选区域
+    - 集成忙碌指示器
+
+    使用方式：
+    1. 在子类View中使用此UserControl
+    2. 通过暴露的属性设置列、按钮等内容
+    3. 绑定ViewModel的相应属性
+-->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Views.BaseMasterDataListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls"
+             Background="{StaticResource BackgroundBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />  <!-- 工具栏 -->
+            <RowDefinition Height="*" />      <!-- 数据表格 -->
+            <RowDefinition Height="Auto" />  <!-- 分页栏 -->
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: 统一工具栏 -->
+        <!-- Issue #2011: 直接绑定属性，避免嵌套 ContentPresenter 造成视觉树循环引用 -->
+        <controls:UnifiedManagementToolBar
+            x:Name="ToolBar"
+            Grid.Row="0"
+            SearchText="{Binding SearchText, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            SearchCommand="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            FilterContent="{Binding FilterContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            ActionButtons="{Binding ActionButtons, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+
+        <!-- Row 1: 统一数据表格 -->
+        <controls:UnifiedManagementTable
+            x:Name="DataTable"
+            Grid.Row="1"
+            ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            EmptyStateText="{Binding EmptyStateText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+
+        <!-- Row 2: 统一分页栏 -->
+        <controls:UnifiedPaginationBar
+            x:Name="PaginationBar"
+            Grid.Row="2"
+            CurrentPage="{Binding CurrentPage, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            TotalPages="{Binding TotalPages, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            PageSize="{Binding PageSize, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            TotalCount="{Binding TotalCount, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            FirstPageCommand="{Binding FirstPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            PreviousPageCommand="{Binding PreviousPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            NextPageCommand="{Binding NextPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            LastPageCommand="{Binding LastPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+
+        <!-- 忙碌指示器 - 半透明遮罩 + ProgressBar -->
+        <Grid Grid.RowSpan="3"
+              Background="#80000000"
+              Visibility="{Binding IsBusy, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar Width="200"
+                             Height="8"
+                             IsIndeterminate="True" />
+                <TextBlock Text="{Binding BusyMessage, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Foreground="White"
+                           FontSize="{StaticResource FontSizeBody}"
+                           Margin="{StaticResource SpacingMedium}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
