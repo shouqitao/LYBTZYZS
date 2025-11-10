@@ -497,7 +497,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private void NavigateToHerbManagement()
         {
-            NavigateTo("MainRegion", "HerbManagementView");
+            NavigateTo("ContentRegion", "HerbManagementView");
         }
 
         #endregion
