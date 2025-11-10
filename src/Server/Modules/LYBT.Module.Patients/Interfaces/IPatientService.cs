@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Module.Patients.Interfaces
@@ -11,32 +12,32 @@ namespace LYBT.Module.Patients.Interfaces
         /// <summary>
         /// 分页查询患者
         /// </summary>
-        Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+        Task<Result<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
-        Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id);
+        Task<Result<PatientDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新患者
         /// </summary>
-        Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto);
+        Task<Result<PatientDto>> CreateAsync(PatientInputDto dto);
 
         /// <summary>
         /// 更新患者信息
         /// </summary>
-        Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto);
+        Task<Result<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto);
 
         /// <summary>
         /// 删除患者（软删除）
         /// </summary>
-        Task<ServiceResult> DeleteAsync(Guid id);
+        Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
         /// 搜索患者
         /// </summary>
-        Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword);
+        Task<Result<List<PatientDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 批量导入患者数据 (Epic #1934 FR-001)
@@ -45,7 +46,7 @@ namespace LYBT.Module.Patients.Interfaces
         /// <param name="stream">Excel文件流</param>
         /// <param name="fileName">文件名（可选，用于日志记录）</param>
         /// <returns>批量导入结果，包含成功/失败/跳过数量和详细失败信息</returns>
-        Task<ServiceResult<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null);
+        Task<Result<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null);
 
         /// <summary>
         /// 导出患者导入模板 (Epic #1934 FR-002)

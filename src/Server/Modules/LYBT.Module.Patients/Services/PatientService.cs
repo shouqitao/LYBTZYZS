@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Patients;
 using LYBT.Module.Patients.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Enums;
@@ -34,7 +35,7 @@ namespace LYBT.Module.Patients.Services
             _validator = validator;
         }
 
-        public async Task<ServiceResult<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        public async Task<Result<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null)
         {
             try
             {
@@ -61,41 +62,50 @@ namespace LYBT.Module.Patients.Services
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };
-                return ServiceResult<PagedResult<PatientDto>>.Success(dto);
+                return Result<PagedResult<PatientDto>>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
-                return ServiceResult<PagedResult<PatientDto>>.Failure("获取患者列表失败");
+                return Result<PagedResult<PatientDto>>.Failure("获取患者列表失败");
             }
         }
 
-        public async Task<ServiceResult<PatientDto>> GetByIdAsync(Guid id)
+        public async Task<Result<PatientDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
-                    return ServiceResult<PatientDto>.Failure("患者不存在");
+                    return Result<PatientDto>.Failure("患者不存在");
 
                 var dto = _mapper.Map<PatientDto>(entity);
 
                 // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 dto.Age = entity.Age;
 
-                return ServiceResult<PatientDto>.Success(dto);
+                return Result<PatientDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者详情失败");
-                return ServiceResult<PatientDto>.Failure("获取患者详情失败");
+                return Result<PatientDto>.Failure("获取患者详情失败");
             }
         }
 
-        public async Task<ServiceResult<PatientDto>> CreateAsync(PatientInputDto dto)
+        public async Task<Result<PatientDto>> CreateAsync(PatientInputDto dto)
         {
             try
             {
+                // FluentValidation 验证（Phase 1 Task 1.7）
+                var validationResult = await _validator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    _logger.LogWarning("患者创建验证失败: {Errors}", string.Join("; ", errors));
+                    return Result<PatientDto>.Failure(errors);
+                }
+
                 var entity = _mapper.Map<Patient>(dto);
 
                 // 生成拼音码（基于姓名）
@@ -107,22 +117,31 @@ namespace LYBT.Module.Patients.Services
                 // 确保Age属性正确计算
                 resultDto.Age = result.Age;
 
-                return ServiceResult<PatientDto>.Success(resultDto);
+                return Result<PatientDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建患者失败");
-                return ServiceResult<PatientDto>.Failure("创建患者失败");
+                return Result<PatientDto>.Failure("创建患者失败");
             }
         }
 
-        public async Task<ServiceResult<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto)
+        public async Task<Result<PatientDto>> UpdateAsync(Guid id, PatientInputDto dto)
         {
             try
             {
                 var entity = await _repository.GetByIdAsync(id);
                 if (entity == null)
-                    return ServiceResult<PatientDto>.Failure("患者不存在");
+                    return Result<PatientDto>.Failure("患者不存在");
+
+                // FluentValidation 验证（Phase 1 Task 1.7）
+                var validationResult = await _validator.ValidateAsync(dto);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    _logger.LogWarning("患者更新验证失败: {PatientId}, {Errors}", id, string.Join("; ", errors));
+                    return Result<PatientDto>.Failure(errors);
+                }
 
                 // 保存旧的姓名用于检测变化
                 var oldName = entity.Name;
@@ -143,23 +162,23 @@ namespace LYBT.Module.Patients.Services
                 // 确保Age属性正确计算
                 resultDto.Age = result.Age;
 
-                return ServiceResult<PatientDto>.Success(resultDto);
+                return Result<PatientDto>.Success(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新患者失败");
-                return ServiceResult<PatientDto>.Failure("更新患者失败");
+                return Result<PatientDto>.Failure("更新患者失败");
             }
         }
 
-        public async Task<ServiceResult<List<PatientDto>>> SearchAsync(string keyword)
+        public async Task<Result<List<PatientDto>>> SearchAsync(string keyword)
         {
             try
             {
                 // 如果关键字为空，返回空列表
                 if (string.IsNullOrWhiteSpace(keyword))
                 {
-                    return ServiceResult<List<PatientDto>>.Success(new List<PatientDto>());
+                    return Result<List<PatientDto>>.Success(new List<PatientDto>());
                 }
 
                 // 搜索匹配关键字的患者（姓名、电话或身份证号）
@@ -170,26 +189,26 @@ namespace LYBT.Module.Patients.Services
                 // 转换为DTO
                 var patientDtos = _mapper.Map<List<PatientDto>>(patients);
 
-                return ServiceResult<List<PatientDto>>.Success(patientDtos);
+                return Result<List<PatientDto>>.Success(patientDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索患者时发生错误，关键字：{Keyword}", keyword);
-                return ServiceResult<List<PatientDto>>.Failure($"搜索患者失败：{ex.Message}");
+                return Result<List<PatientDto>>.Failure($"搜索患者失败：{ex.Message}");
             }
         }
 
-        public async Task<ServiceResult> DeleteAsync(Guid id)
+        public async Task<Result> DeleteAsync(Guid id)
         {
             try
             {
                 var result = await _repository.DeleteAsync(id);
-                return result ? ServiceResult.Success() : ServiceResult.Failure("删除失败");
+                return result ? Result.Success() : Result.Failure("删除失败");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "删除患者失败");
-                return ServiceResult.Failure("删除患者失败");
+                return Result.Failure("删除患者失败");
             }
         }
 
@@ -197,7 +216,7 @@ namespace LYBT.Module.Patients.Services
         /// 批量导入患者数据 (Epic #1934 FR-001)
         /// 实现BR-002失败恢复机制：部分成功模式 + 详细失败信息
         /// </summary>
-        public async Task<ServiceResult<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
+        public async Task<Result<BatchImportResultDto>> BatchImportAsync(Stream stream, string? fileName = null)
         {
             var result = new BatchImportResultDto
             {
@@ -214,19 +233,19 @@ namespace LYBT.Module.Patients.Services
 
                 if (worksheet == null)
                 {
-                    return ServiceResult<BatchImportResultDto>.Failure("Excel文件中没有工作表");
+                    return Result<BatchImportResultDto>.Failure("Excel文件中没有工作表");
                 }
 
                 var rowCount = worksheet.Dimension?.Rows ?? 0;
                 if (rowCount <= 1)
                 {
-                    return ServiceResult<BatchImportResultDto>.Success(result);
+                    return Result<BatchImportResultDto>.Success(result);
                 }
 
                 // BR-003: 限制最大导入行数
                 if (rowCount > 1000)
                 {
-                    return ServiceResult<BatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
+                    return Result<BatchImportResultDto>.Failure($"导入数据超过限制（最大1000行，实际{rowCount - 1}行）");
                 }
 
                 var patientsToCreate = new List<Patient>();
@@ -310,12 +329,12 @@ namespace LYBT.Module.Patients.Services
                     result.SuccessCount = savedPatients.Count;
                 }
 
-                return ServiceResult<BatchImportResultDto>.Success(result);
+                return Result<BatchImportResultDto>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "批量导入患者数据失败");
-                return ServiceResult<BatchImportResultDto>.Failure($"导入失败: {ex.Message}");
+                return Result<BatchImportResultDto>.Failure($"导入失败: {ex.Message}");
             }
         }
 

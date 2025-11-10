@@ -44,7 +44,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _service.GetPagedAsync(page, pageSize, keyword);
-                return HandlePagedServiceResult(result, "查询成功");
+                return HandlePagedResult(result, "查询成功");
             }
             catch (Exception ex)
             {
