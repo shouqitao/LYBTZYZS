@@ -96,6 +96,8 @@
   WPF开发、UI设计、客户端逻辑
 - **[患者管理CRUD操作](how-to/client/patient-management.md)** ⭐ **新增**
   患者新建/编辑/查看/删除、拼音码自动生成、年龄计算、身份证验证
+- **[药材管理操作指南](how-to/client/herbs-management.md)** ⭐ **Epic #1962新增**
+  批量导入/导出、引用检查、重复策略、失败恢复流程
 - **[诊断模块开发](how-to/client/consultation-development.md)**
   ConsultationViewModel/View开发、四诊合参UI
 - **[方剂模块开发](how-to/client/formula-development.md)**
@@ -263,6 +265,9 @@
 
 - **[API总览](reference/api/README.md)**
   12个控制器完整API文档
+
+- **[Prescriptions API参考](reference/api/prescriptions-api.md)** - 处方管理API完整参考
+- **[Herbs API参考](reference/api/herbs-api.md)** - 药材管理API完整参考（Epic #1962）
 
 - **模块API**：[认证](reference/api/auth/) | [患者](reference/api/patients/) | [医案](reference/api/medicalcase/) | [诊断](reference/api/consultation/) | [处方](reference/api/prescription/) | [药品](reference/api/herbs/) | [方剂](reference/api/formula/) | [用户](reference/api/users/)
 
@@ -725,7 +730,7 @@
 
 *本文档中心基于Diátaxis框架深度重构，提供清晰、准确、易用的技术文档。如有问题或建议，请通过GitHub Issues反馈。*
 
-**最后更新：2025-11-09 - Issue #1933 文档系统整合** 🎉
+**最后更新：2025-11-10 - Epic #1962 文档同步（Issue #1984）** 🎉
 **文档框架：Diátaxis 4种类型（Tutorial/How-to/Reference/Explanation）** 📚
 **架构特色：三层对齐架构（Server/Client/Shared）** 🏗️
 **文档体系：统一docs/体系，清理多套文档（Skills/Spec-workflow整合）** 🧹

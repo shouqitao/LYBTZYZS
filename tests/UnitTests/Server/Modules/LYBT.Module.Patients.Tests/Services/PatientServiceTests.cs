@@ -62,7 +62,7 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20))
+                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
                 .ReturnsAsync(pagedResult);
 
             // Act
@@ -77,7 +77,7 @@ namespace LYBT.Module.Patients.Tests.Services
             result.Data!.CurrentPage.Should().Be(1);
             result.Data!.PageSize.Should().Be(20);
 
-            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20), Times.Once);
+            _repositoryMock.Verify(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()), Times.Once);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace LYBT.Module.Patients.Tests.Services
             // Arrange
             var exception = new Exception("数据库错误");
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>()))
+                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -120,7 +120,7 @@ namespace LYBT.Module.Patients.Tests.Services
             };
 
             _repositoryMock
-                .Setup(x => x.GetPagedAsync(1, 20))
+                .Setup(x => x.GetPagedAsync(1, 20, It.IsAny<string?>()))
                 .ReturnsAsync(pagedResult);
 
             // Act
