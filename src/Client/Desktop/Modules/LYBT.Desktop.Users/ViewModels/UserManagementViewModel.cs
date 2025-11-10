@@ -107,6 +107,11 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 编辑用户命令
         /// </summary>
+        /// <summary>
+        /// 新建用户命令
+        /// </summary>
+        public DelegateCommand AddCommand { get; private set; } = null!;
+
         public DelegateCommand<UserDto> EditCommand { get; private set; } = null!;
 
         /// <summary>
@@ -219,6 +224,9 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private void InitializeUserCommands()
         {
+            // Issue #1997: 基类不提供AddCommand，需要子类自行实现
+            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy);
+
             EditCommand = new DelegateCommand<UserDto>(ExecuteEditUser, CanExecuteEditUser);
 
             // Issue #2011: 使用 ObservesProperty 防止构造期间无限循环
@@ -272,6 +280,17 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 加载数据（实现基类抽象方法）
         /// Issue #1995: 从GetItemsAsync重构为LoadDataAsync，返回PagedResult
         /// </summary>
+        /// <summary>
+        /// 执行新建用户命令
+        /// </summary>
+        protected virtual async Task OnExecuteAddAsync()
+        {
+            // Region Navigation必须在UI线程执行
+            Logger.LogInformation("导航到创建用户视图");
+            NavigateTo("ContentRegion", "UserCreateView");
+            await Task.CompletedTask;
+        }
+
         protected override async Task<PagedResult<UserDto>> LoadDataAsync(int pageIndex, int pageSize, string? searchText)
         {
             Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", pageIndex, pageSize, searchText);
