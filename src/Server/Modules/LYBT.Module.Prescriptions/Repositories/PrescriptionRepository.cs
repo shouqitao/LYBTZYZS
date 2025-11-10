@@ -10,16 +10,18 @@ using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 namespace LYBT.Module.Prescriptions.Repositories
 {
     /// <summary>
-    /// 处方仓储 - 优化版，包含Include策略以解决N+1查询问题
+    /// 处方仓储 - 继承BaseReadRepository标准实现（Epic #2016 Phase 3）
     /// </summary>
-    internal class PrescriptionRepository : BaseRepository<PrescriptionEntity>, IPrescriptionRepository
+    /// <remarks>
+    /// 设计原则：
+    /// - ⭐ 统一共性：继承BaseReadRepository&lt;PrescriptionEntity&gt;获得5个标准只读方法
+    /// - ⭐ 保持特性：保留处方模块特定业务方法
+    /// - Read-only模式：所有写操作必须通过MedicalCase聚合根
+    /// - Include策略：预加载Items关联以避免N+1查询
+    /// </remarks>
+    internal class PrescriptionRepository : BaseReadRepository<PrescriptionEntity>, IPrescriptionRepository
     {
         public PrescriptionRepository(AppDbContext context) : base(context)
-        {
-        }
-
-        public PrescriptionRepository(AppDbContext context, ILogger<PrescriptionRepository> logger)
-            : base(context, logger)
         {
         }
 
@@ -28,7 +30,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// </summary>
         public async Task<PrescriptionEntity?> GetByIdWithItemsAsync(Guid id)
         {
-            return await _dbSet
+            return await DbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.Id == id && !p.IsDeleted)
@@ -45,7 +47,7 @@ namespace LYBT.Module.Prescriptions.Repositories
             int pageSize,
             string? keyword = null)
         {
-            var query = _dbSet
+            var query = DbSet
                 .AsNoTracking()
                 .Include(p => p.Items)  // 预加载处方项
                 .Where(p => !p.IsDeleted);
@@ -59,11 +61,16 @@ namespace LYBT.Module.Prescriptions.Repositories
                     p.Items.Any(i => i.HerbName.Contains(keyword)));
             }
 
-            // 使用BaseRepository辅助方法处理分页（Epic #1725）
-            return await GetPagedResultAsync(
-                query.OrderByDescending(p => p.CreatedAt),
-                pageNumber,
-                pageSize);
+            // 分页处理
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<PrescriptionEntity>(items, totalCount, pageNumber, pageSize);
         }
 
         /// <summary>
@@ -71,7 +78,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// </summary>
         public async Task<List<PrescriptionEntity>> GetByPatientIdAsync(Guid patientId)
         {
-            return await _dbSet
+            return await DbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.PatientId == patientId && !p.IsDeleted)
@@ -84,7 +91,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// </summary>
         public async Task<List<PrescriptionEntity>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            return await _dbSet
+            return await DbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
                 .Where(p => p.MedicalCaseId == medicalCaseId && !p.IsDeleted)
@@ -98,30 +105,11 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// </summary>
         public async Task<List<string>> GetPrescriptionNumbersByPrefixAsync(string prefix)
         {
-            return await _dbSet
+            return await DbSet
                 .AsNoTracking()
                 .Where(p => !p.IsDeleted && p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix))
                 .Select(p => p.PrescriptionNumber!)
                 .ToListAsync();
-        }
-
-        // ========== 显式接口实现（Issue #1600 Phase 1）==========
-        // 由于BaseRepository返回List<T>,而IPrescriptionRepository定义返回IEnumerable<T>
-
-        /// <summary>
-        /// 获取所有实体（显式实现）
-        /// </summary>
-        async Task<IEnumerable<PrescriptionEntity>> IPrescriptionRepository.GetAllAsync()
-        {
-            return await GetAllAsync();
-        }
-
-        /// <summary>
-        /// 根据条件查找（显式实现）
-        /// </summary>
-        async Task<IEnumerable<PrescriptionEntity>> IPrescriptionRepository.FindAsync(Expression<Func<PrescriptionEntity, bool>> predicate)
-        {
-            return await FindAsync(predicate);
         }
     }
 }

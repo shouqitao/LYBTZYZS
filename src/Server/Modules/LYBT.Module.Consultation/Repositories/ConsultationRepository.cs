@@ -10,16 +10,18 @@ using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 namespace LYBT.Module.Consultation.Repositories
 {
     /// <summary>
-    /// 诊疗仓储 - 优化版，包含Include策略以解决N+1查询问题
+    /// 诊疗仓储 - 继承BaseReadRepository标准实现（Epic #2016 Phase 3）
     /// </summary>
-    internal class ConsultationRepository : BaseRepository<ConsultationEntity>, IConsultationRepository
+    /// <remarks>
+    /// 设计原则：
+    /// - ⭐ 统一共性：继承BaseReadRepository&lt;ConsultationEntity&gt;获得5个标准只读方法
+    /// - ⭐ 保持特性：保留诊疗模块特定业务方法
+    /// - Read-only模式：所有写操作必须通过MedicalCase聚合根
+    /// - Include策略：预加载MedicalCase关联以避免N+1查询
+    /// </remarks>
+    internal class ConsultationRepository : BaseReadRepository<ConsultationEntity>, IConsultationRepository
     {
         public ConsultationRepository(AppDbContext context) : base(context)
-        {
-        }
-
-        public ConsultationRepository(AppDbContext context, ILogger<ConsultationRepository> logger)
-            : base(context, logger)
         {
         }
 
@@ -28,7 +30,7 @@ namespace LYBT.Module.Consultation.Repositories
         /// </summary>
         public async Task<List<ConsultationEntity>> GetByPatientIdAsync(Guid patientId)
         {
-            return await _dbSet
+            return await DbSet
                 .AsNoTracking()
                 .Include(c => c.MedicalCase)  // 包含医疗案例信息
                 .Where(c => c.MedicalCase.PatientId == patientId && !c.IsDeleted)
@@ -46,7 +48,7 @@ namespace LYBT.Module.Consultation.Repositories
             int pageSize,
             string? keyword = null)
         {
-            var query = _dbSet
+            var query = DbSet
                 .AsNoTracking()
                 .Include(c => c.MedicalCase)  // 预加载病案信息（包含患者和医生信息）
                 .Where(c => !c.IsDeleted);
@@ -61,11 +63,16 @@ namespace LYBT.Module.Consultation.Repositories
                     c.MedicalCase.DoctorName.Contains(keyword));
             }
 
-            // 使用BaseRepository辅助方法处理分页（Epic #1725）
-            return await GetPagedResultAsync(
-                query.OrderByDescending(c => c.CreatedAt),
-                pageNumber,
-                pageSize);
+            // 分页处理
+            query = query.OrderByDescending(c => c.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<ConsultationEntity>(items, totalCount, pageNumber, pageSize);
         }
 
         /// <summary>
@@ -73,7 +80,7 @@ namespace LYBT.Module.Consultation.Repositories
         /// </summary>
         public async Task<ConsultationEntity> GetByIdWithDetailsAsync(Guid id)
         {
-            return (await _dbSet
+            return (await DbSet
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == id && !c.IsDeleted)
@@ -91,30 +98,11 @@ namespace LYBT.Module.Consultation.Repositories
         /// </remarks>
         public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
-            return (await _dbSet
+            return (await DbSet
             .AsNoTracking()
             .Include(c => c.MedicalCase)
                 .Where(c => c.Id == medicalCaseId && !c.IsDeleted)  // c.Id == MedicalCase.Id（共享主键）
                 .SingleOrDefaultAsync())!;
-        }
-
-        // ========== 显式接口实现（Issue #1600 Phase 1）==========
-        // 由于BaseRepository返回List<T>,而IConsultationRepository定义返回IEnumerable<T>
-
-        /// <summary>
-        /// 获取所有实体（显式实现）
-        /// </summary>
-        async Task<IEnumerable<ConsultationEntity>> IConsultationRepository.GetAllAsync()
-        {
-            return await GetAllAsync();
-        }
-
-        /// <summary>
-        /// 根据条件查找（显式实现）
-        /// </summary>
-        async Task<IEnumerable<ConsultationEntity>> IConsultationRepository.FindAsync(Expression<Func<ConsultationEntity, bool>> predicate)
-        {
-            return await FindAsync(predicate);
         }
     }
 }
