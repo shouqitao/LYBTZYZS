@@ -27,6 +27,11 @@ namespace LYBT.Entities.Formula
         [DisplayName("功用")]
         public string? Effect { get; set; }
 
+        /// <summary>主治（验方三要素之一：名称+功用+主治）</summary>
+        [StringLength(1000)]
+        [DisplayName("主治")]
+        public string? Indication { get; set; }
+
         /// <summary>用法</summary>
         [StringLength(500)]
         [DisplayName("用法")]
