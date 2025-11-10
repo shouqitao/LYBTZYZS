@@ -1329,6 +1329,286 @@ Modules/Users/
 - ✅ **状态保持**：Navigation模式更好地保持页面状态
 - ✅ **代码简化**：移除Dialog样板代码，减少40%代码量
 
+#### 📦 Herbs模块批量操作（Epic #1962）
+
+**重要功能**：药材管理模块于2025-11实现了完整的批量导入/导出功能，采用Desktop端主导模式。
+
+| 功能 | 实现方式 | 说明 | 实施时间 |
+|-----|---------|------|----------|
+| **批量导入** | Desktop端Excel解析 | EPPlus解析，Server端接收DTO列表 | 2025-11 Epic #1962 |
+| **数据导出** | Desktop端Excel生成 | EPPlus生成，Server端返回JSON数据 | 2025-11 Epic #1962 |
+| **模板下载** | Desktop端预设模板 | 内置示例数据，无需Server端 | 2025-11 Epic #1962 |
+
+**架构设计原则**（Desktop主导模式）：
+- ✅ **职责分离**：Desktop负责文件处理，Server负责业务验证
+- ✅ **性能优化**：大文件处理在Desktop端，减少网络传输
+- ✅ **用户体验**：即时反馈，进度展示，错误详情
+
+**三层数据流**：
+
+**1. 批量导入流程**：
+```
+User选择Excel文件（FileDialog）
+    ↓
+Desktop端：EPPlus解析Excel → List<HerbInputDto>
+    ↓
+HerbManagementViewModel → IHerbRepository
+    ↓
+POST /api/v1/herbs/batch-import（HerbBatchImportRequestDto）
+    ↓
+Server端：逐条验证 + 重复策略处理 + 批量保存
+    ↓
+返回 HerbBatchImportResultDto（成功/失败/跳过统计）
+    ↓
+Desktop端：显示结果对话框 + 刷新列表
+```
+
+**2. 数据导出流程**：
+```
+User点击导出按钮
+    ↓
+HerbManagementViewModel → IHerbRepository
+    ↓
+GET /api/v1/herbs/export-all?category=xxx
+    ↓
+Server端：查询所有数据 → List<HerbDto>
+    ↓
+Desktop端：EPPlus生成Excel文件
+    ↓
+SaveFileDialog保存到用户指定位置
+```
+
+**3. 模板下载流程**：
+```
+User点击下载模板
+    ↓
+HerbManagementViewModel → IHerbRepository
+    ↓
+Desktop端：直接调用GenerateImportTemplate()
+    ↓
+内置示例数据 + EPPlus生成模板
+    ↓
+SaveFileDialog保存
+```
+
+**ViewModel命令实现**（真实代码：HerbManagementViewModel.cs）：
+
+```csharp
+/// <summary>
+/// 药材管理视图模型 - Epic #1962批量操作
+/// </summary>
+public class HerbManagementViewModel : UnifiedViewModelBase
+{
+    private readonly HerbDataManager _dataManager;
+    private readonly IHerbRepository _herbRepository;  // Epic #1962: 批量操作需要
+    private readonly ICommonDialogService _dialogService;  // Epic #1962: 文件对话框
+
+    // Epic #1962: 三个批量操作命令
+    public ICommand ImportHerbsCommand { get; }
+    public ICommand ExportTemplateCommand { get; }
+    public ICommand ExportHerbsCommand { get; }
+
+    public HerbManagementViewModel(
+        HerbDataManager dataManager,
+        IHerbRepository herbRepository,  // ⭐ 注入Repository
+        ICommonDialogService dialogService,  // ⭐ 注入对话框服务
+        IEventAggregator eventAggregator,
+        ILoggerFactory loggerFactory,
+        IRegionManager regionManager,
+        ISessionManager? sessionManager = null,
+        IUserNotificationService? userNotificationService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+    {
+        _dataManager = dataManager;
+        _herbRepository = herbRepository;
+        _dialogService = dialogService;
+
+        // ⭐ 初始化批量操作命令（带CanExecute验证）
+        ImportHerbsCommand = new DelegateCommand(
+            async () => await ImportHerbsAsync(),
+            () => !IsBusy && !IsLoading
+        ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
+
+        ExportTemplateCommand = new DelegateCommand(
+            async () => await ExportTemplateAsync(),
+            () => !IsBusy && !IsLoading
+        ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
+
+        ExportHerbsCommand = new DelegateCommand(
+            async () => await ExportHerbsAsync(),
+            () => !IsBusy && !IsLoading && Items.Count > 0
+        ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
+    }
+
+    /// <summary>
+    /// 批量导入药材（Epic #1962 Task 2.4）
+    /// Desktop端负责：文件选择 + Excel解析 + 结果展示
+    /// </summary>
+    private async Task ImportHerbsAsync()
+    {
+        try
+        {
+            // 1. 文件选择对话框
+            var filePath = await _dialogService.ShowOpenFileDialogAsync(
+                "Excel Files|*.xlsx",
+                "选择药材导入文件");
+
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return;
+
+            IsBusy = true;
+
+            // 2. ⭐ Desktop端解析Excel（使用EPPlus）
+            var herbs = ParseExcelToHerbList(filePath);
+
+            if (herbs.Count == 0)
+            {
+                await ShowWarningMessageAsync("Excel文件中没有有效数据");
+                return;
+            }
+
+            // 3. ⭐ 调用Repository批量导入（Server端处理）
+            var result = await _herbRepository.BatchImportAsync(herbs, DuplicateStrategy.Skip);
+
+            // 4. 显示结果
+            await ShowSuccessMessageAsync(
+                $"导入完成: 成功{result.SuccessCount}条, 失败{result.FailureCount}条, 跳过{result.SkippedCount}条");
+
+            // 5. 刷新列表
+            await _dataManager.LoadPagedAsync(CurrentPage, PageSize);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"批量导入失败: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// 导出药材数据（Epic #1962 Task 3.3）
+    /// Desktop端负责：文件保存 + Excel生成
+    /// </summary>
+    private async Task ExportHerbsAsync()
+    {
+        try
+        {
+            // 1. 文件保存对话框
+            var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                "Excel Files|*.xlsx",
+                "保存导出文件");
+
+            if (string.IsNullOrEmpty(filePath))
+                return;
+
+            IsBusy = true;
+
+            // 2. ⭐ 调用Repository获取所有数据（JSON格式）
+            var herbs = await _herbRepository.GetAllForExportAsync(SelectedCategory);
+
+            // 3. ⭐ Desktop端生成Excel（使用EPPlus）
+            GenerateExcelFromHerbList(herbs, filePath);
+
+            await ShowSuccessMessageAsync($"导出成功：{herbs.Count}条记录");
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"导出失败: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// 下载导入模板（Epic #1962 Task 2.2）
+    /// 完全在Desktop端生成，无需Server端
+    /// </summary>
+    private async Task ExportTemplateAsync()
+    {
+        try
+        {
+            var filePath = await _dialogService.ShowSaveFileDialogAsync(
+                $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx",
+                "Excel Files|*.xlsx",
+                "保存模板文件");
+
+            if (string.IsNullOrEmpty(filePath))
+                return;
+
+            // ⭐ Desktop端直接生成模板（内置示例数据）
+            _herbRepository.GenerateImportTemplate(filePath);
+
+            await ShowSuccessMessageAsync("模板下载成功");
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessageAsync($"下载模板失败: {ex.Message}");
+        }
+    }
+}
+```
+
+**Repository接口定义**（IHerbRepository.cs）：
+
+```csharp
+public interface IHerbRepository
+{
+    // ========== Epic #1962: 批量导入/导出功能 ==========
+
+    /// <summary>
+    /// 批量导入药材（Desktop已解析）
+    /// </summary>
+    Task<HerbBatchImportResultDto> BatchImportAsync(
+        List<HerbInputDto> herbs, 
+        DuplicateStrategy strategy);
+
+    /// <summary>
+    /// 获取所有药材用于导出（JSON格式）
+    /// </summary>
+    Task<List<HerbDto>> GetAllForExportAsync(string? category = null);
+
+    /// <summary>
+    /// 生成导入模板（Desktop端实现）
+    /// </summary>
+    void GenerateImportTemplate(string filePath);
+}
+```
+
+**API端点映射**（IHerbApi.cs - Refit接口）：
+
+```csharp
+public interface IHerbApi
+{
+    // ========== Epic #1962: 批量导入/导出API ==========
+
+    /// <summary>
+    /// 批量导入药材（Server端接收DTO列表）
+    /// </summary>
+    [Post("/api/v1/herbs/batch-import")]
+    Task<ApiResponse<HerbBatchImportResultDto>> BatchImportAsync(
+        [Body] HerbBatchImportRequestDto request);
+
+    /// <summary>
+    /// 获取所有药材数据（JSON格式）
+    /// </summary>
+    [Get("/api/v1/herbs/export-all")]
+    Task<ApiResponse<List<HerbDto>>> GetAllForExportAsync(
+        [Query] string? category = null);
+}
+```
+
+**架构优势**：
+- ✅ **性能优越**：Excel处理在Desktop端，避免大文件上传
+- ✅ **离线友好**：模板下载无需Server端响应
+- ✅ **用户体验佳**：文件对话框、进度反馈、详细错误信息
+- ✅ **职责清晰**：Desktop负责UI交互，Server负责业务验证
+- ✅ **可扩展性**：支持多种重复处理策略（Skip/Update/Error）
+
 **Prism模块标准实现**（真实代码：Modules/LYBT.Desktop.Patients/PatientsModule.cs）：
 
 ```csharp
