@@ -22,7 +22,7 @@
             <DropShadowEffect x:Key="CardShadow"
                               BlurRadius="16"
                               ShadowDepth="2"
-                              Opacity="0.05"
+                              Opacity="0.08"
                               Color="#000000"/>
         </ResourceDictionary>
     </UserControl.Resources>
