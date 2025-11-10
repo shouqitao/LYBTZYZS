@@ -8,85 +8,184 @@
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
 
-    <Grid>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!-- 卡片阴影 -->
+            <DropShadowEffect x:Key="CardShadow"
+                              BlurRadius="16"
+                              ShadowDepth="2"
+                              Opacity="0.05"
+                              Color="#000000"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="#F8FAFC">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="16">
-            <Grid>
+        <!-- 顶部操作栏 -->
+        <Border Grid.Row="0"
+                Background="White"
+                CornerRadius="16"
+                Padding="32,24"
+                Margin="40,28,40,0"
+                Effect="{StaticResource CardShadow}">
+            <Grid MinHeight="64">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!-- 返回按钮 -->
                 <Button Grid.Column="0"
                         Command="{Binding BackCommand}"
-                        Background="Transparent" BorderThickness="0" Padding="8"
-                        Foreground="White"
-                        Margin="0,0,16,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="←" VerticalAlignment="Center" FontSize="16" />
-                        <TextBlock Text="返回" Margin="4,0,0,0" />
-                    </StackPanel>
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#64748B"
+                        FontSize="15"
+                        FontWeight="Medium"
+                        Cursor="Hand"
+                        Padding="14,10"
+                        VerticalAlignment="Center">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="◀"
+                                                           FontSize="14"
+                                                           Foreground="{TemplateBinding Foreground}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,8,0"/>
+                                                <TextBlock Text="返回"
+                                                           FontSize="{TemplateBinding FontSize}"
+                                                           FontWeight="{TemplateBinding FontWeight}"
+                                                           Foreground="{TemplateBinding Foreground}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F1F5F9" />
+                                                <Setter Property="Foreground" Value="#475569" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
                 </Button>
 
+                <!-- 标题 -->
                 <TextBlock Grid.Column="1"
                            Text="中药材详情"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           VerticalAlignment="Center" />
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="#1E293B"
+                           Margin="20,0,0,0" />
 
+                <!-- 操作按钮 -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Command="{Binding EditCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="✏" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="编辑" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding SaveCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="💾" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="保存" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding CancelEditCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <TextBlock Text="✖" FontSize="16" VerticalAlignment="Center" />
-                    </Button>
-
+                    <!-- 用药记录按钮 -->
                     <Button Command="{Binding ViewUsageHistoryCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Background="#10B981"
                             Foreground="White"
-                            Margin="4">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📈" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="用药记录" Margin="4,0,0,0" />
-                        </StackPanel>
+                            BorderThickness="0"
+                            Height="48"
+                            MinWidth="130"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Cursor="Hand"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="10"
+                                                    Padding="24,12">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <TextBlock Text="📈"
+                                                               FontSize="16"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"/>
+                                                    <TextBlock Text="用药记录"
+                                                               FontSize="{TemplateBinding FontSize}"
+                                                               FontWeight="{TemplateBinding FontWeight}"
+                                                               Foreground="{TemplateBinding Foreground}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#059669" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#047857" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
                     </Button>
 
+                    <!-- 打印按钮 -->
                     <Button Command="{Binding PrintCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
+                            Background="#6366F1"
                             Foreground="White"
-                            Margin="4">
-                        <TextBlock Text="🖨" FontSize="16" VerticalAlignment="Center" />
+                            BorderThickness="0"
+                            Height="48"
+                            MinWidth="100"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Cursor="Hand"
+                            VerticalAlignment="Center">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="10"
+                                                    Padding="24,12">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <TextBlock Text="🖨"
+                                                               FontSize="16"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"/>
+                                                    <TextBlock Text="打印"
+                                                               FontSize="{TemplateBinding FontSize}"
+                                                               FontWeight="{TemplateBinding FontWeight}"
+                                                               Foreground="{TemplateBinding Foreground}"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#4F46E5" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#4338CA" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
                     </Button>
                 </StackPanel>
             </Grid>
