@@ -1,6 +1,6 @@
+using System.Linq.Expressions;
 using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
-using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
@@ -8,17 +8,173 @@ using Microsoft.EntityFrameworkCore;
 namespace LYBT.Module.Herbs.Repositories
 {
     /// <summary>
-    /// 药材仓储 - 简化版，包含基础CRUD和分页功能
-    /// Phase 2: Repository层简化（Epic #1725）- 新增分页支持
+    /// 药材仓储实现 - 实现IBaseRepository&lt;Herb&gt;标准接口
+    /// Phase 1 Task 1.4: 基础数据模块Repository层统一重构
     /// </summary>
-    internal class HerbRepository : BaseRepository<Herb>, IHerbRepository
+    /// <remarks>
+    /// 设计原则：
+    /// - 统一共性：实现IBaseRepository&lt;Herb&gt;的11个标准CRUD方法
+    /// - 保持特性：保留药材模块4个特定业务方法
+    /// - 软删除模式：所有查询自动过滤IsDeleted=true的数据
+    /// - 查询优化：只读查询使用AsNoTracking提升性能
+    /// </remarks>
+    internal class HerbRepository : IHerbRepository
     {
-        public HerbRepository(AppDbContext context) : base(context)
+        private readonly AppDbContext _context;
+        private readonly DbSet<Herb> _dbSet;
+
+        public HerbRepository(AppDbContext context)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _dbSet = _context.Set<Herb>();
+        }
+
+        #region IBaseRepository<Herb> 标准方法实现
+
+        /// <summary>
+        /// 根据ID获取药材（包含软删除过滤）
+        /// </summary>
+        public async Task<Herb?> GetByIdAsync(Guid id)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
         }
 
         /// <summary>
-        /// 根据名称获取药材
+        /// 获取所有药材（⚠️ 仅用于下拉列表等小数据量场景）
+        /// </summary>
+        public async Task<IEnumerable<Herb>> GetAllAsync()
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted)
+                .OrderBy(h => h.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 分页查询药材（支持名称/拼音码搜索）
+        /// </summary>
+        public async Task<PagedResult<Herb>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted);
+
+            // 关键字搜索：名称、拼音码
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var searchTerm = keyword.Trim();
+                query = query.Where(h =>
+                    h.Name.Contains(searchTerm) ||
+                    (h.PinYinCode != null && h.PinYinCode.Contains(searchTerm))
+                );
+            }
+
+            query = query.OrderBy(h => h.Name);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Herb>(items, totalCount, pageNumber, pageSize);
+        }
+
+        /// <summary>
+        /// 条件查询（⚠️ 谨慎使用，建议使用具体业务方法）
+        /// </summary>
+        public async Task<IEnumerable<Herb>> FindAsync(Expression<Func<Herb, bool>> predicate)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted)
+                .Where(predicate)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取单个药材（条件查询）
+        /// </summary>
+        public async Task<Herb?> GetSingleAsync(Expression<Func<Herb, bool>> predicate)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(h => !h.IsDeleted)
+                .FirstOrDefaultAsync(predicate);
+        }
+
+        /// <summary>
+        /// 新增药材
+        /// </summary>
+        public async Task<Herb> AddAsync(Herb entity)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        /// <summary>
+        /// 更新药材
+        /// </summary>
+        public async Task<Herb> UpdateAsync(Herb entity)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+
+            entity.UpdatedAt = DateTime.UtcNow;
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        /// <summary>
+        /// 删除药材（软删除）
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity == null) return false;
+
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 检查药材是否存在
+        /// </summary>
+        public async Task<bool> ExistsAsync(Guid id)
+        {
+            return await _dbSet.AnyAsync(h => h.Id == id && !h.IsDeleted);
+        }
+
+        /// <summary>
+        /// 获取药材总数
+        /// </summary>
+        public async Task<int> CountAsync()
+        {
+            return await _dbSet.CountAsync(h => !h.IsDeleted);
+        }
+
+        /// <summary>
+        /// 保存更改（⚠️ 通常由Service层调用）
+        /// </summary>
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
+        #endregion
+
+        #region IHerbRepository 特定业务方法
+
+        /// <summary>
+        /// 根据名称精确获取药材
         /// </summary>
         public async Task<Herb?> GetByNameAsync(string name)
         {
@@ -52,34 +208,6 @@ namespace LYBT.Module.Herbs.Repositories
         }
 
         /// <summary>
-        /// 获取分页列表
-        /// Phase 2: Repository层简化（Epic #1725）- 新增分页功能（支持300+药材）
-        /// </summary>
-        public async Task<PagedResult<Herb>> GetPagedAsync(
-            int pageNumber,
-            int pageSize,
-            string? keyword = null)
-        {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(h => !h.IsDeleted);
-
-            // 关键字搜索（名称或拼音码）
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                query = query.Where(h =>
-                    h.Name.Contains(keyword) ||
-                    (h.PinYinCode != null && h.PinYinCode.Contains(keyword)));
-            }
-
-            // 使用BaseRepository辅助方法处理分页（Epic #1725）
-            return await GetPagedResultAsync(
-                query.OrderBy(h => h.Name),
-                pageNumber,
-                pageSize);
-        }
-
-        /// <summary>
         /// 检查药材名称是否存在（支持排除指定ID，用于更新时验证）
         /// Epic #1962 Task 1.2: 批量导入重复检查
         /// </summary>
@@ -110,18 +238,6 @@ namespace LYBT.Module.Herbs.Repositories
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// 软删除药材（覆盖BaseRepository的硬删除）
-        /// Epic #1962 Task 1.2: BR-007软删除支持
-        /// </summary>
-        public new async Task DeleteAsync(Guid id)
-        {
-            var herb = await _dbSet.FindAsync(id);
-            if (herb != null)
-            {
-                herb.IsDeleted = true;
-                await _context.SaveChangesAsync();
-            }
-        }
+        #endregion
     }
 }
