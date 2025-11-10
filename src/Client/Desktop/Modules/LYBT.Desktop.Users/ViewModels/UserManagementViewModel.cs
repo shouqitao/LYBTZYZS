@@ -1,7 +1,11 @@
+using System.IO; // Issue #2003: 文件操作
+using System.Windows.Input; // Issue #2003: ICommand
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Events; // Issue #1927: 添加Events命名空间
+using LYBT.Desktop.Users.Interfaces; // Issue #2003: IUserRepository
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
+using LYBT.Shared.Models.Contracts.Common; // Issue #1995: PagedResult<T>
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -13,10 +17,10 @@ using Prism.Services.Dialogs; // 临时保留：Sprint 2 (#1928) 将迁移 Reset
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户管理视图模型 - Phase 1核心功能版本
-    /// 基于最新的ListPageViewModel实现完整用户管理功能
+    /// 用户管理视图模型 - Phase 2统一架构版本
+    /// Issue #1995: 继承BaseManagementViewModel泛型基类，享受500ms搜索防抖等统一功能
     /// </summary>
-    public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
+    public class UserManagementViewModel : BaseManagementViewModel<UserDto>
     {
         #region 服务依赖
 
@@ -25,6 +29,10 @@ namespace LYBT.Desktop.Users.ViewModels
 
         // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
         private readonly IDialogService _dialogService;
+
+        // Issue #2003: 批量导入功能依赖
+        private readonly IUserRepository _userRepository;
+        private readonly ICommonDialogService _commonDialogService;
 
         #endregion
 
@@ -44,7 +52,8 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 if (SetProperty(ref _selectedRole, value))
                 {
-                    _ = SearchAsync();
+                    // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
+                    PageIndex = 1;
                 }
             }
         }
@@ -59,7 +68,8 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 if (SetProperty(ref _selectedStatus, value))
                 {
-                    _ = SearchAsync();
+                    // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
+                    PageIndex = 1;
                 }
             }
         }
@@ -74,7 +84,8 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 if (SetProperty(ref _showInactiveUsers, value))
                 {
-                    _ = SearchAsync();
+                    // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
+                    PageIndex = 1;
                 }
             }
         }
@@ -130,10 +141,35 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
+        #region Issue #2003: 批量导入/导出功能
+
+        /// <summary>
+        /// 导入用户命令
+        /// </summary>
+        public ICommand ImportCommand { get; }
+
+        /// <summary>
+        /// 导出用户命令
+        /// </summary>
+        public ICommand ExportCommand { get; }
+
+        /// <summary>
+        /// 下载导入模板命令
+        /// </summary>
+        public ICommand DownloadTemplateCommand { get; }
+
+        #endregion
+
+        #region
+
+        #endregion
+
         #region 构造函数
 
         public UserManagementViewModel(
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
+            IUserRepository userRepository, // Issue #2003: 批量导入功能
+            ICommonDialogService commonDialogService, // Issue #2003: 批量导入功能
             IDialogService dialogService, // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -145,6 +181,10 @@ namespace LYBT.Desktop.Users.ViewModels
             // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
+            // Issue #2003: 批量导入功能
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _commonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
+
             // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
@@ -152,12 +192,16 @@ namespace LYBT.Desktop.Users.ViewModels
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
 
-            // 初始化页面标题
-            PageTitle = "用户管理";
+            // Issue #1995: 设置分页大小（基类提供）
             PageSize = 20;
 
             // 初始化用户特定命令
             InitializeUserCommands();
+
+            // Issue #2003: 初始化批量导入/导出命令
+            ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
+            ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
+            DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
 
             // Issue #1927: 订阅用户创建和更新事件
             EventAggregator.GetEvent<UserCreatedEvent>().Subscribe(OnUserCreated);
@@ -176,8 +220,16 @@ namespace LYBT.Desktop.Users.ViewModels
         private void InitializeUserCommands()
         {
             EditCommand = new DelegateCommand<UserDto>(ExecuteEditUser, CanExecuteEditUser);
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
+
+            // Issue #2011: 使用 ObservesProperty 防止构造期间无限循环
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => HasPreviousPage && !IsLoading)
+                .ObservesProperty(() => PageIndex)
+                .ObservesProperty(() => IsLoading);
+
+            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => HasNextPage && !IsLoading)
+                .ObservesProperty(() => PageIndex)
+                .ObservesProperty(() => IsLoading);
+
             ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ExecuteResetPasswordAsync(user), CanExecuteResetPassword);
             ToggleUserStatusCommand = new DelegateCommand<UserDto>(async user => await ExecuteToggleUserStatusAsync(user), CanExecuteToggleUserStatus);
             ViewDetailsCommand = new DelegateCommand<UserDto>(ExecuteViewDetails, user => user != null);
@@ -186,64 +238,73 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 暴露基类命令
+        #region 暴露基类命令 - Issue #1995: BaseManagementViewModel 提供的命令
 
         /// <summary>
-        /// 搜索命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand SearchCommand => base.SearchCommand;
-
-        /// <summary>
-        /// 刷新命令 - 暴露基类实现
+        /// 刷新命令 - 基类提供
         /// </summary>
         public new DelegateCommand RefreshCommand => base.RefreshCommand;
 
         /// <summary>
-        /// 添加命令 - 暴露基类实现
-        /// </summary>
-        public new DelegateCommand AddCommand => base.AddCommand;
-
-        /// <summary>
-        /// 删除命令 - 暴露基类实现
+        /// 删除命令 - 基类提供
         /// </summary>
         public new DelegateCommand<UserDto> DeleteCommand => base.DeleteCommand;
 
         /// <summary>
-        /// 上一页命令 - 暴露基类实现
+        /// 上一页命令 - 基类提供
         /// </summary>
         public new DelegateCommand PreviousPageCommand => base.PreviousPageCommand;
 
         /// <summary>
-        /// 下一页命令 - 暴露基类实现
+        /// 下一页命令 - 基类提供
         /// </summary>
         public new DelegateCommand NextPageCommand => base.NextPageCommand;
 
+        // Issue #1995 注意: BaseManagementViewModel 没有 SearchCommand 和 AddCommand
+        // SearchText 属性变化会自动触发搜索（500ms防抖）
+        // AddCommand 需要在子类中自行实现（未来 Task 可能统一）
+
         #endregion
 
-        #region 数据加载
+        #region 数据加载 - Issue #1995: 实现BaseManagementViewModel抽象方法
 
         /// <summary>
-        /// 获取数据项
-        /// Issue #1794: 优化方法长度（52→32行），提取筛选逻辑和错误处理
+        /// 加载数据（实现基类抽象方法）
+        /// Issue #1995: 从GetItemsAsync重构为LoadDataAsync，返回PagedResult
         /// </summary>
-        protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        protected override async Task<PagedResult<UserDto>> LoadDataAsync(int pageIndex, int pageSize, string? searchText)
         {
-            Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", page, pageSize, searchText);
+            Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", pageIndex, pageSize, searchText);
 
             try
             {
                 // Issue #1785: 使用CommandHandler获取分页数据
-                var cmdResult = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
+                var cmdResult = await _commandHandler.GetPagedAsync(pageIndex, pageSize, searchText);
 
                 if (cmdResult.success && cmdResult.data != null)
                 {
+                    // 应用客户端筛选（角色、状态）
                     var filteredItems = ApplyFilters(cmdResult.data.Items);
-                    TotalCount = cmdResult.data.TotalCount;
-                    return filteredItems;
+
+                    // 返回 PagedResult（注意：客户端筛选可能导致实际返回数量少于 pageSize）
+                    return new PagedResult<UserDto>
+                    {
+                        Items = filteredItems.ToList(),
+                        TotalCount = cmdResult.data.TotalCount,
+                        CurrentPage = pageIndex,
+                        PageSize = pageSize
+                    };
                 }
                 else
                 {
-                    return HandleGetItemsError(cmdResult.errorMessage);
+                    Logger.LogWarning("加载用户列表失败: {ErrorMessage}", cmdResult.errorMessage);
+                    return new PagedResult<UserDto>
+                    {
+                        Items = new List<UserDto>(),
+                        TotalCount = 0,
+                        CurrentPage = pageIndex,
+                        PageSize = pageSize
+                    };
                 }
             }
             catch (Exception ex)
@@ -252,8 +313,64 @@ namespace LYBT.Desktop.Users.ViewModels
                 var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
                 await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
 
-                TotalCount = 0;
-                return new List<UserDto>();
+                return new PagedResult<UserDto>
+                {
+                    Items = new List<UserDto>(),
+                    TotalCount = 0,
+                    CurrentPage = pageIndex,
+                    PageSize = pageSize
+                };
+            }
+        }
+
+        /// <summary>
+        /// 删除数据项（实现基类抽象方法）
+        /// Issue #1995: 从OnExecuteDeleteAsync重构为DeleteItemAsync
+        /// </summary>
+        protected override async Task<bool> DeleteItemAsync(UserDto item)
+        {
+            if (item == null)
+            {
+                Logger.LogWarning("DeleteItemAsync: 用户对象为null");
+                return false;
+            }
+
+            Logger.LogDebug("删除用户: {UserId} - {UserName}", item.Id, item.UserName);
+
+            try
+            {
+                // 确认删除
+                var confirmed = await ShowConfirmationAsync(
+                    $"确认删除用户 [{item.RealName ?? item.UserName}] 吗？",
+                    "删除确认");
+
+                if (!confirmed)
+                {
+                    Logger.LogDebug("用户取消删除, UserId: {UserId}", item.Id);
+                    return false;
+                }
+
+                // Issue #1785: 使用CommandHandler删除
+                var result = await _commandHandler.DeleteAsync(item.Id);
+                if (result.success)
+                {
+                    Logger.LogInformation("成功删除用户: {UserName}", item.UserName);
+                    await ShowSuccessMessageAsync($"用户 [{item.RealName ?? item.UserName}] 已删除");
+                    return true;
+                }
+                else
+                {
+                    Logger.LogError("删除用户失败: {UserName}, {ErrorMessage}", item.UserName, result.errorMessage);
+                    ErrorMessage = result.errorMessage ?? "删除用户失败";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除用户时发生异常: {UserName}", item.UserName);
+                var contextMessage = $"删除用户 - 模块:{nameof(UserManagementViewModel)}";
+                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+                return false;
             }
         }
 
@@ -284,94 +401,12 @@ namespace LYBT.Desktop.Users.ViewModels
             return filteredItems;
         }
 
-        /// <summary>
-        /// 处理加载用户列表失败
-        /// Issue #1794: 从GetItemsAsync提取
-        /// </summary>
-        private IEnumerable<UserDto> HandleGetItemsError(string? errorMessage)
-        {
-            Logger.LogWarning("加载用户列表失败: {ErrorMessage}", errorMessage);
-            TotalCount = 0;
-            return new List<UserDto>();
-        }
-
         #endregion
 
-        #region 用户操作实现
+        #region 用户操作实现 - Issue #1995: 移除基类已实现的逻辑
 
-        /// <summary>
-        /// 添加新用户
-        /// Issue #1798: 使用Dialog替代Region导航
-        /// </summary>
-        /// <summary>
-        /// 执行添加新用户 (Issue #1911修复: 异步调用导致UI卡死)
-        /// </summary>
-        protected override Task OnExecuteAddAsync()
-        {
-            Logger.LogDebug("执行添加新用户");
-
-            // Issue #1927: 使用Navigation模式代替Dialog
-            NavigateTo("ContentRegion", "UserCreateView");
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 删除用户
-        /// </summary>
-        protected override async Task OnExecuteDeleteAsync(UserDto user)
-        {
-            if (user == null) return;
-
-            Logger.LogDebug("删除用户: {UserId} - {UserName}", user.Id, user.UserName);
-
-            // Issue #1785: 使用CommandHandler删除
-            var result = await _commandHandler.DeleteAsync(user.Id);
-            if (!result.success)
-            {
-                throw new InvalidOperationException(result.errorMessage ?? "删除用户失败");
-            }
-
-            Logger.LogInformation("成功删除用户: {UserName}", user.UserName);
-        }
-
-        /// <summary>
-        /// 批量删除用户
-        /// </summary>
-        protected override async Task OnExecuteBatchDeleteAsync(List<UserDto> users)
-        {
-            Logger.LogDebug("批量删除{Count}个用户", users.Count);
-
-            var failedUsers = new List<string>();
-
-            foreach (var user in users)
-            {
-                try
-                {
-                    // Issue #1785: 使用CommandHandler删除
-                    var result = await _commandHandler.DeleteAsync(user.Id);
-                    if (!result.success)
-                    {
-                        Logger.LogError("删除用户失败: {UserName}, {ErrorMessage}", user.UserName, result.errorMessage);
-                        failedUsers.Add($"{user.UserName}: {result.errorMessage}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "删除用户失败: {UserName}", user.UserName);
-                    failedUsers.Add($"{user.UserName}: {ex.Message}");
-                }
-            }
-
-            if (failedUsers.Count > 0)
-            {
-                var errorMessage = $"以下用户删除失败：{string.Join("; ", failedUsers)}";
-                Logger.LogWarning("批量删除部分失败: {FailedCount}/{TotalCount}", failedUsers.Count, users.Count);
-                throw new InvalidOperationException(errorMessage);
-            }
-
-            Logger.LogInformation("成功批量删除{Count}个用户", users.Count);
-        }
+        // Issue #1995: OnExecuteDeleteAsync 已由 DeleteItemAsync 替代
+        // Issue #1995: OnExecuteBatchDeleteAsync 在 Phase 2 批量操作重构中会有新实现（Task 2.10）
 
         #endregion
 
@@ -494,7 +529,8 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (result.success && result.user != null)
                 {
                     Logger.LogInformation("成功{Action}用户: {UserName}", action, user.UserName);
-                    await LoadPageAsync(); // 刷新列表
+                    // Issue #1995: 使用基类提供的 RefreshAsync
+                    await RefreshAsync();
                 }
                 else
                 {
@@ -554,14 +590,15 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 命令刷新
+        #region 命令刷新 - Issue #1995: 使用基类提供的属性
 
         /// <summary>
         /// 跳转首页
         /// </summary>
         private void ExecuteFirstPage()
         {
-            CurrentPage = 1;
+            // Issue #1995: 使用基类提供的 PageIndex
+            PageIndex = 1;
         }
 
         /// <summary>
@@ -569,15 +606,19 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void ExecuteLastPage()
         {
-            CurrentPage = TotalPages;
+            // Issue #1995: 使用基类提供的 PageIndex 和 TotalPages
+            PageIndex = TotalPages;
         }
 
-        protected override void RefreshCanExecuteChanged()
+        /// <summary>
+        /// 刷新命令状态 - Issue #1995: 重写基类方法
+        /// </summary>
+        protected override void RefreshCommands()
         {
-            base.RefreshCanExecuteChanged();
+            base.RefreshCommands(); // 刷新基类命令（RefreshCommand, DeleteCommand, PreviousPageCommand, NextPageCommand）
 
+            // 刷新用户特定命令
             EditCommand?.RaiseCanExecuteChanged();
-            DeleteCommand?.RaiseCanExecuteChanged();
             ResetPasswordCommand?.RaiseCanExecuteChanged();
             ToggleUserStatusCommand?.RaiseCanExecuteChanged();
             ViewDetailsCommand?.RaiseCanExecuteChanged();
@@ -596,7 +637,8 @@ namespace LYBT.Desktop.Users.ViewModels
         private void OnUserCreated(UserDto user)
         {
             Logger.LogInformation("接收到用户创建事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
-            _ = SearchAsync(); // 刷新列表
+            // Issue #1995: 使用基类提供的 RefreshAsync
+            _ = RefreshAsync();
         }
 
         /// <summary>
@@ -605,7 +647,8 @@ namespace LYBT.Desktop.Users.ViewModels
         private void OnUserUpdated(UserDto user)
         {
             Logger.LogInformation("接收到用户更新事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
-            _ = SearchAsync(); // 刷新列表
+            // Issue #1995: 使用基类提供的 RefreshAsync
+            _ = RefreshAsync();
         }
 
         /// <summary>
@@ -615,6 +658,174 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             Logger.LogInformation("接收到密码重置事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
             StatusMessage = $"用户 {user.RealName} 的密码已重置";
+        }
+
+
+        #endregion
+
+        #region Issue #2003: 批量导入/导出功能实现
+
+        /// <summary>
+        /// 执行导入用户
+        /// Issue #2003 Task 2.10: Desktop主导批量导入模式
+        /// </summary>
+        private async Task ExecuteImportAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开文件选择对话框
+                var filePath = await _commonDialogService.ShowOpenFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "选择用户导入文件");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 读取文件并使用ExcelHelper.ParseAsync解析
+                using var fileStream = File.OpenRead(filePath);
+                var fileName = Path.GetFileName(filePath);
+
+                Logger.LogInformation("开始导入用户文件：{FileName}", fileName);
+
+                // Issue #2003: 使用ExcelHelper.ParseAsync解析Excel为UserInputDto列表
+                var users = await Infrastructure.Helpers.ExcelHelper.ParseAsync<UserInputDto>(fileStream, hasHeader: true);
+
+                if (users == null || users.Count == 0)
+                {
+                    await _commonDialogService.ShowErrorAsync("文件中没有有效的用户数据", "导入用户");
+                    return;
+                }
+
+                // 组装UserBatchImportRequestDto
+                var request = new UserBatchImportRequestDto
+                {
+                    Users = users,
+                    Strategy = LYBT.Shared.Models.Enums.DuplicateStrategy.Skip // 默认策略：跳过重复
+                };
+
+                // 调用Server端BatchImportAsync API
+                var result = await _userRepository.BatchImportAsync(request);
+
+                if (result == null)
+                {
+                    await _commonDialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入用户");
+                    return;
+                }
+
+                // 显示导入结果
+                var message = $"导入完成！\n\n" +
+                              $"✅ 成功：{result.SuccessCount}条\n" +
+                              $"❌ 失败：{result.FailureCount}条\n" +
+                              $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
+                              $"成功率：{result.SuccessRate:F1}%";
+
+                if (result.FailureCount > 0)
+                {
+                    message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：\n";
+                    foreach (var failure in result.Failures.Take(3))
+                    {
+                        message += $"\n第{failure.OriginalRowNumber}行 [{failure.UserName}]：{failure.FailureReason}";
+                    }
+                }
+
+                await _commonDialogService.ShowInfoAsync(message, "导入结果");
+
+                // 刷新列表
+                if (result.SuccessCount > 0)
+                {
+                    await RefreshAsync();
+                }
+            }, "导入用户");
+        }
+
+        /// <summary>
+        /// 执行导出用户
+        /// Issue #2003 Task 2.10
+        /// </summary>
+        private async Task ExecuteExportAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开保存文件对话框
+                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "导出用户数据",
+                    defaultFileName: $"用户数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 获取所有用户数据（使用当前搜索关键词）
+                Logger.LogInformation("导出用户数据，关键词：{Keyword}", SearchText);
+                var allUsers = await _userRepository.SearchAsync(SearchText ?? string.Empty);
+
+                if (allUsers == null || allUsers.Count == 0)
+                {
+                    await _commonDialogService.ShowErrorAsync("没有可导出的数据", "导出用户");
+                    return;
+                }
+
+                // 使用ExcelHelper.ExportAsync导出
+                await Infrastructure.Helpers.ExcelHelper.ExportAsync(allUsers, filePath, "用户数据");
+
+                await _commonDialogService.ShowInfoAsync($"成功导出{allUsers.Count}条用户数据到：\n{filePath}", "导出成功");
+            }, "导出用户");
+        }
+
+        /// <summary>
+        /// 执行下载导入模板
+        /// Issue #2003 Task 2.10
+        /// </summary>
+        private async Task ExecuteDownloadTemplateAsync()
+        {
+            await ExecuteSafelyAsync(async () =>
+            {
+                // 打开保存文件对话框
+                var filePath = await _commonDialogService.ShowSaveFileDialogAsync(
+                    filter: "Excel文件|*.xlsx",
+                    title: "保存用户导入模板",
+                    defaultFileName: $"用户导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return; // 用户取消
+                }
+
+                // 创建示例数据
+                var sampleData = new List<UserInputDto>
+                {
+                    new UserInputDto
+                    {
+                        UserName = "doctor001",
+                        RealName = "张医生",
+                        PhoneNumber = "13800138000",
+                        Email = "doctor001@example.com",
+                        Role = UserRole.Doctor,
+                        Status = CommonStatus.Enabled
+                    },
+                    new UserInputDto
+                    {
+                        UserName = "admin001",
+                        RealName = "李管理员",
+                        PhoneNumber = "13800138001",
+                        Email = "admin001@example.com",
+                        Role = UserRole.Admin,
+                        Status = CommonStatus.Enabled
+                    }
+                };
+
+                // 使用ExcelHelper.GenerateTemplateAsync生成模板
+                Logger.LogInformation("生成用户导入模板");
+                await Infrastructure.Helpers.ExcelHelper.GenerateTemplateAsync(filePath, "用户导入模板", sampleData);
+
+                await _commonDialogService.ShowInfoAsync(
+                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 状态可选值：Enabled(启用)、Disabled(禁用)",
+                    "下载成功");
+            }, "下载模板");
         }
 
         #endregion
