@@ -8,6 +8,8 @@
 
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
+    <!-- 禁用测试SDK自动生成的Main方法，使用顶层语句 -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
