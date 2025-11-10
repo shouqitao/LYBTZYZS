@@ -77,7 +77,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         private void InitializePatientCommands()
         {
             // Issue #1996: 基类不提供AddCommand，需要子类自行实现
-            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy);
+            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy)
+                .ObservesProperty(() => IsLoading)
+                .ObservesProperty(() => IsBusy);
 
             ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, patient => patient != null);
             EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit, patient => patient != null);

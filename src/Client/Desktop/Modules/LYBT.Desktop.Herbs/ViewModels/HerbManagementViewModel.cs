@@ -69,7 +69,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private void InitializeHerbCommands()
         {
             // Issue #1997: 基类不提供AddCommand，需要子类自行实现
-            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy);
+            AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy)
+                .ObservesProperty(() => IsLoading)
+                .ObservesProperty(() => IsBusy);
 
             // 视图导航命令
             ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
