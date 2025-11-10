@@ -245,6 +245,15 @@
 - **[代码模式](reference/code-patterns-enhancement-summary.md)**
   常用代码模式和模板
 
+- **[UI设计规范](reference/ui-design-guidelines.md)** ⭐ **WPF UI标准**
+  颜色规范、间距规范、完整视图模板、ModernTextBoxStyle
+
+- **[WPF常见问题](reference/wpf-common-issues.md)** ⭐ **问题解决**
+  视觉树循环依赖、命令无限循环、数据绑定、性能优化
+
+- **[Prism框架指南](reference/prism-framework-guide.md)** ⭐ **框架使用**
+  Region导航、命令系统、依赖注入、事件聚合器
+
 - **[配置参数指南](reference/configuration-parameters-guide.md)**
   配置文件参数说明和最佳实践
 

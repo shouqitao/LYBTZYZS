@@ -91,7 +91,33 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var entity = _mapper.Map<FormulaEntity>(dto);
+                // Issue #2014: 手动创建entity（不依赖AutoMapper处理Herbs集合）
+                var entity = new FormulaEntity
+                {
+                    Name = dto.Name,
+                    Effect = dto.Effect,
+                    Indication = dto.Indications, // Issue #2014: DTO.Indications → Entity.Indication
+                    Usage = dto.Usage,
+                    Remark = dto.Remark,
+                    Property = dto.Property,
+                    Category = dto.Category,
+                    FormulaType = FormulaType.Experience, // 默认经验方（DTO暂无此字段）
+                    IsShared = dto.IsShared,
+                    Status = CommonStatus.Enabled,
+                    ValidationStatus = FormulaValidationStatus.Draft,
+                    Herbs = dto.Herbs?.Select(h => new FormulaHerbItem
+                    {
+                        HerbId = h.HerbId,
+                        HerbName = h.HerbName,
+                        Quantity = (int)h.Quantity, // decimal → int
+                        Unit = h.Unit,
+                        ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod，回退到Preparation
+                        Usage = h.Usage,
+                        OriginalHerbName = h.HerbName, // 保存原始名称用于延迟绑定
+                        IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
+                    }).ToList() ?? new List<FormulaHerbItem>()
+                };
+
                 var result = await _repository.AddAsync(entity);
                 var resultDto = _mapper.Map<FormulaDto>(result);
                 return ServiceResult<FormulaDto>.Success(resultDto);
@@ -107,11 +133,40 @@ namespace LYBT.Module.Formula.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // Issue #2014: 使用GetByIdWithHerbsAsync（包含Herbs集合）
+                var entity = await _repository.GetByIdWithHerbsAsync(id);
                 if (entity == null)
                     return ServiceResult<FormulaDto>.Failure("验方不存在");
 
-                _mapper.Map(dto, entity);
+                // Issue #2014: 手动更新基础字段（包括新增的Indication）
+                entity.Name = dto.Name;
+                entity.Effect = dto.Effect;
+                entity.Indication = dto.Indications; // Issue #2014: DTO.Indications → Entity.Indication
+                entity.Usage = dto.Usage;
+                entity.Remark = dto.Remark;
+                entity.Property = dto.Property;
+                entity.Category = dto.Category;
+                // FormulaType保持现有值（DTO暂无此字段）
+                entity.IsShared = dto.IsShared;
+
+                // Issue #2014: 粗粒度全量替换Herbs（Formula-Design-Decision-002）
+                // 优势：匹配用户工作流（Excel批量保存）、DDD模式、性能可接受
+                entity.Herbs.Clear();
+                if (dto.Herbs != null && dto.Herbs.Any())
+                {
+                    entity.Herbs.AddRange(dto.Herbs.Select(h => new FormulaHerbItem
+                    {
+                        HerbId = h.HerbId,
+                        HerbName = h.HerbName,
+                        Quantity = (int)h.Quantity, // decimal → int
+                        Unit = h.Unit,
+                        ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod
+                        Usage = h.Usage,
+                        OriginalHerbName = h.HerbName, // 保存原始名称
+                        IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
+                    }));
+                }
+
                 var result = await _repository.UpdateAsync(entity);
                 var resultDto = _mapper.Map<FormulaDto>(result);
                 return ServiceResult<FormulaDto>.Success(resultDto);
