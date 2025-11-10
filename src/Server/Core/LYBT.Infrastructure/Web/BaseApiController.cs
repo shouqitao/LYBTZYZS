@@ -285,6 +285,62 @@ namespace LYBT.Infrastructure.Web
 
         #endregion ServiceResult统一处理方法 - UltraThink核心模式
 
+        #region Result<T>统一处理方法 - Phase 1 Task 1.6
+
+        /// <summary>
+        /// Result<T>自动解包并返回统一响应
+        /// Phase 1 Task 1.6: 新的Result<T>返回值模式
+        /// </summary>
+        protected ActionResult<ApiResponse<T>> HandleResult<T>(LYBT.Shared.Models.Common.Result<T> result, string? successMessage = null)
+        {
+            if (result.IsSuccess)
+            {
+                return Success(result.Data!, successMessage ?? "操作成功");
+            }
+            else
+            {
+                return BusinessFail<T>(result.ErrorMessage ?? "操作失败");
+            }
+        }
+
+        /// <summary>
+        /// 分页Result<T>自动解包 - 统一格式：ApiResponse<PagedResult<T>>
+        /// Phase 1 Task 1.6: 新的Result<T>返回值模式
+        /// </summary>
+        protected ActionResult<ApiResponse<PagedResult<T>>> HandlePagedResult<T>(LYBT.Shared.Models.Common.Result<PagedResult<T>> result, string? successMessage = null)
+        {
+            if (result.IsSuccess && result.Data != null)
+            {
+                var response = ApiResponse<PagedResult<T>>.CreateSuccess(result.Data, successMessage ?? "查询成功");
+                response.RequestId = GetRequestId();
+                return Ok(response);
+            }
+            else
+            {
+                var response = ApiResponse<PagedResult<T>>.CreateFail(result.ErrorMessage ?? "查询失败");
+                response.RequestId = GetRequestId();
+                return BadRequest(response);
+            }
+        }
+
+        /// <summary>
+        /// 非泛型Result解包（无数据返回场景，如删除操作）
+        /// Phase 1 Task 1.6: 新的Result返回值模式
+        /// </summary>
+        protected ActionResult<ApiResponse> HandleResult(LYBT.Shared.Models.Common.Result result, string? successMessage = null)
+        {
+            if (result.IsSuccess)
+            {
+                return Success(successMessage ?? "操作成功");
+            }
+            else
+            {
+                return BusinessFail(result.ErrorMessage ?? "操作失败");
+            }
+        }
+
+        #endregion Result<T>统一处理方法 - Phase 1 Task 1.6
+
         #region 业务验证方法
 
         /// <summary>

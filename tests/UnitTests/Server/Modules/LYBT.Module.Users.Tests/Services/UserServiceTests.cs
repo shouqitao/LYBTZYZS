@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using LYBT.Entities.Users;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Services;
@@ -26,6 +28,7 @@ namespace LYBT.Module.Users.Tests.Services
         private readonly Mock<ILogger<UserService>> _loggerMock;
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private readonly Mock<IValidator<UserInputDto>> _validatorMock;
 
         public UserServiceTests()
         {
@@ -33,6 +36,11 @@ namespace LYBT.Module.Users.Tests.Services
             _loggerMock = CreateLoggerMock<UserService>();
             _configurationMock = CreateMock<IConfiguration>();
             _httpContextAccessorMock = CreateMock<IHttpContextAccessor>();
+            _validatorMock = CreateMock<IValidator<UserInputDto>>();
+
+            // Phase 1 Task 1.6: 默认设置 validator 返回成功
+            _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValidationResult());
 
             // 创建UserService实例，使用基类提供的Mapper
             _userService = new UserService(
@@ -40,7 +48,8 @@ namespace LYBT.Module.Users.Tests.Services
                 Mapper,
                 _loggerMock.Object,
                 _configurationMock.Object,
-                _httpContextAccessorMock.Object);
+                _httpContextAccessorMock.Object,
+                _validatorMock.Object);
 
             // Issue #1909: 默认设置为SuperAdmin角色，允许所有操作
             SetupUserRole(UserRole.SuperAdmin);

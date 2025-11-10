@@ -101,3 +101,80 @@ public class Result<T>
         };
     }
 }
+
+/// <summary>
+/// 无数据返回的统一结果模式
+/// Phase 1 Task 1.6: 用于Delete、Enable等无需返回数据的操作
+/// </summary>
+/// <remarks>
+/// 使用场景：Delete、Enable、Disable等操作，只需要返回成功/失败状态
+/// 使用示例：
+/// <code>
+/// // 成功
+/// return Result.Success();
+///
+/// // 失败
+/// return Result.Failure("删除失败");
+///
+/// // 多个错误
+/// return Result.Failure(new List&lt;string&gt; { "错误1", "错误2" });
+/// </code>
+/// </remarks>
+public class Result
+{
+    /// <summary>
+    /// 操作是否成功
+    /// </summary>
+    public bool IsSuccess { get; set; }
+
+    /// <summary>
+    /// 错误信息（失败时有值）
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// 错误列表（失败时有值，用于返回多个验证错误）
+    /// </summary>
+    public List<string>? Errors { get; set; }
+
+    /// <summary>
+    /// 消息属性（兼容性）
+    /// </summary>
+    public string? Message => ErrorMessage;
+
+    /// <summary>
+    /// 创建成功结果
+    /// </summary>
+    public static Result Success()
+    {
+        return new Result
+        {
+            IsSuccess = true
+        };
+    }
+
+    /// <summary>
+    /// 创建失败结果（单个错误信息）
+    /// </summary>
+    public static Result Failure(string errorMessage)
+    {
+        return new Result
+        {
+            IsSuccess = false,
+            ErrorMessage = errorMessage
+        };
+    }
+
+    /// <summary>
+    /// 创建失败结果（多个错误信息）
+    /// </summary>
+    public static Result Failure(List<string> errors)
+    {
+        return new Result
+        {
+            IsSuccess = false,
+            Errors = errors,
+            ErrorMessage = string.Join("; ", errors)
+        };
+    }
+}
