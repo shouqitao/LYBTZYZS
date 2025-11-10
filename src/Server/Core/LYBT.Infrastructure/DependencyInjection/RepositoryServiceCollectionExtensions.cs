@@ -63,6 +63,11 @@ namespace LYBT.Infrastructure.DependencyInjection
         /// <returns>服务集合</returns>
         public static IServiceCollection AddServerRepositories(this IServiceCollection services)
         {
+            // Phase 1: 注册泛型只读Repository接口
+            // 用于从属实体模块（Consultation, Prescription）
+            services.AddScoped(typeof(LYBT.Infrastructure.Interfaces.IReadRepository<>),
+                              typeof(LYBT.Infrastructure.Repositories.BaseReadRepository<>));
+
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository
             // services.AddScoped<IUserRepository, UserRepository>();

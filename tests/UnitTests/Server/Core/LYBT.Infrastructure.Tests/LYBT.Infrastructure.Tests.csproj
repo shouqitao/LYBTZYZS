@@ -40,4 +40,11 @@
     <ProjectReference Include="..\..\..\..\..\src\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 排除备份目录中的旧测试文件 -->
+    <Compile Remove="_backup\**\*.cs" />
+    <EmbeddedResource Remove="_backup\**\*" />
+    <None Remove="_backup\**\*" />
+  </ItemGroup>
+
 </Project>

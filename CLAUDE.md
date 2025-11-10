@@ -58,7 +58,7 @@ repo = "LYBTZYZS"
 
 **数据库**: SQL Server 2022
 
-**MCP工具**: serena, filesystem, github, context7, microsoft_docs_mcp, sequential-thinking, shrimp-task-manager, interactive-feedback, drawio
+**MCP工具**: serena, filesystem, github, context7, microsoft_docs_mcp, sequential-thinking, graphiti-memory
 
 **完整信息** → [.claude/reference/project-info.md](.claude/reference/project-info.md)
 
@@ -156,7 +156,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - **完整文档**: [AUTOMATION-SYSTEM-SUMMARY.md](.claude/skills/AUTOMATION-SYSTEM-SUMMARY.md)
 
 **触发方式**:
-用户明确说明是"复杂需求"、"新功能开发"、"Epic任务"时，自动调用 lybtzyzs-workflow-orchestrator skill
+用户明确说明是"复杂需求"、"新功能开发"、"Epic任务"时，调用 lybtzyzs-workflow-orchestrator skill
 
 ---
 
@@ -249,15 +249,33 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 - **github**: GitHub API（⚠️必须显式owner/repo）
 - **context7**: 技术文档查询（最新官方文档）
 - **sequential-thinking**: 深度推理分析
-- **shrimp-task-manager**: 任务管理（规划→分析→拆分→执行→验证）
-- **interactive-feedback**: 人机交互反馈
+- **graphiti-memory**: 时序感知知识图谱（项目知识"第二大脑"）
 
 **协同模式**:
 ```
-深度分析: sequential-thinking → context7 → serena → memory
-快速开发: serena → context7 → serena → ide → git
-任务管理: shrimp（规划→分析→拆分→执行→验证）
+深度分析: sequential-thinking → context7 → serena → graphiti-memory
+快速开发: serena → context7 → serena → git
+知识积累: graphiti-memory（决策→存储→查询→复用）
 ```
+
+#### Graphiti Memory 工具（⚠️必选工具）
+
+**核心能力**: 时序感知知识图谱，自动追踪时间戳，混合语义搜索
+
+**强制使用场景** (⚠️必须实时使用):
+1. 长期对话上下文 - 跨会话知识连续性
+2. 技术决策记录 - 架构选型、设计方案
+3. 问题诊断历史 - Bug根因、解决方案
+4. 代码关系映射 - 模块依赖、接口调用
+5. 用户偏好学习 - 编码风格、命名习惯
+
+**存储触发**: 决策后、完成Issue后、遇Bug后、架构讨论后、Review发现模式后
+
+**查询时机**: 新任务前、遇类似问题、架构设计、Code Review
+
+> 💡 **核心原则**: Graphiti是项目知识的"第二大脑"，所有重要信息必须实时归档
+
+**详细使用指南** → [graphiti-memory.md](.claude/reference/graphiti-memory.md)
 
 ---
 
@@ -408,21 +426,14 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 | 📝 更新文档 | [documentation.md](.claude/guides/documentation.md) |
 | 🔍 代码审查 | [code-review.md](.claude/modes/code-review.md) |
 | 🏗️ 架构设计 | [architecture-philosophy.md](.claude/explanation/architecture-philosophy.md) |
-
-### 按角色
-
-| 角色 | 推荐路径 |
-|-----|---------|
-| 🆕 新手开发者 | [getting-started](.claude/guides/getting-started.md) → [issue-workflow](.claude/guides/issue-workflow.md) |
-| 👨‍💻 日常开发 | [commands](.claude/reference/commands.md) → [coding-standards](.claude/reference/coding-standards.md) |
-| 🏗️ 架构师 | [architecture-philosophy](.claude/explanation/architecture-philosophy.md) → [mvp-philosophy](.claude/explanation/mvp-philosophy.md) |
-| 📝 文档维护 | [documentation](.claude/guides/documentation.md) → [doc-sync](.claude/guides/skills-usage.md) |
+| 🧠 知识管理 | [graphiti-memory.md](.claude/reference/graphiti-memory.md) |
 
 ---
 
-**最后更新**: 2025-10-28（v6.1.1 平衡精简版 - 从531行优化至400行）
+**最后更新**: 2025-11-11（v6.2 Graphiti集成版 - 知识图谱"第二大脑"）
 
 **变更历史**:
+- v6.2（2025-11-11）: 集成Graphiti Memory知识图谱，移除停用MCP工具（shrimp/interactive-feedback/spec-workflow），优化底部导航
 - v6.1.1（2025-10-28）: 平衡精简优化，再减少25%，保留关键示例
 - v6.1（2025-10-28）: 重构为模块化架构，创建15个专门文档，主文档精简94%
 - v6.0（2025-10-20）: 新增版本管理规范、验证优先策略、长期目标原则

@@ -1,4 +1,5 @@
 ﻿using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -150,6 +151,9 @@ public static class DatabaseServiceCollectionExtensions
                 Console.WriteLine("[WARNING] AppDbContext 注册时没有可用的数据库连接字符串");
             });
         }
+
+        // Phase 1: 注册泛型Repository基础设施
+        services.AddServerRepositories();
 
         // 常用服务
         services.AddHttpContextAccessor();
