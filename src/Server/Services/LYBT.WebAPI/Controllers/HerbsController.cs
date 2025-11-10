@@ -52,7 +52,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
-                return HandlePagedServiceResult(result, "查询成功");
+                return HandlePagedResult(result, "查询成功");
             }
             catch (Exception ex)
             {
@@ -75,7 +75,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _herbService.GetByIdAsync(id);
-                return HandleServiceResult(result, "查询成功");
+                return HandleResult(result, "查询成功");
             }
             catch (Exception ex)
             {
@@ -103,7 +103,7 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("创建药材", result.Data, result.Data.Id);
                 }
 
-                return HandleServiceResult(result, "药材创建成功");
+                return HandleResult(result, "药材创建成功");
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("更新药材信息", result.Data, id);
                 }
 
-                return HandleServiceResult(result, "药材信息更新成功");
+                return HandleResult(result, "药材信息更新成功");
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _herbService.DeleteAsync(id);
-                return HandleServiceResult(result, "删除成功");
+                return HandleResult(result, "删除成功");
             }
             catch (Exception ex)
             {
@@ -203,7 +203,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleServiceResult(result, result.Data?.Message ?? "批量删除完成");
+                return HandleResult(result, result.Data?.Message ?? "批量删除完成");
             }
             catch (Exception ex)
             {
@@ -385,7 +385,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleServiceResult(result, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
+                return HandleResult(result, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
             }
             catch (Exception ex)
             {
@@ -430,7 +430,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleServiceResult(result, "导出数据查询成功");
+                return HandleResult(result, "导出数据查询成功");
             }
             catch (Exception ex)
             {
@@ -482,7 +482,7 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _herbService.CheckReferenceAsync(id);
-                return HandleServiceResult(result, "引用检查完成");
+                return HandleResult(result, "引用检查完成");
             }
             catch (Exception ex)
             {
@@ -546,7 +546,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleServiceResult(result, "批量引用检查完成");
+                return HandleResult(result, "批量引用检查完成");
             }
             catch (Exception ex)
             {

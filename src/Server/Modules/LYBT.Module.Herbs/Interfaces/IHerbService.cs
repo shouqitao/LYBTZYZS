@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
@@ -16,43 +17,43 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选（可选）</param>
-        Task<ServiceResult<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+        Task<Result<PagedResult<HerbDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
         /// 根据ID获取药材详情
         /// </summary>
-        Task<ServiceResult<HerbDto>> GetByIdAsync(Guid id);
+        Task<Result<HerbDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新药材
         /// </summary>
-        Task<ServiceResult<HerbDto>> CreateAsync(HerbInputDto dto);
+        Task<Result<HerbDto>> CreateAsync(HerbInputDto dto);
 
         /// <summary>
         /// 更新药材信息
         /// </summary>
-        Task<ServiceResult<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto);
+        Task<Result<HerbDto>> UpdateAsync(Guid id, HerbInputDto dto);
 
         /// <summary>
         /// 删除药材（软删除）
         /// </summary>
-        Task<ServiceResult> DeleteAsync(Guid id);
+        Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
         /// 批量删除药材（软删除）(Issue #1169)
         /// </summary>
         /// <param name="ids">药材ID列表</param>
-        Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
 
         /// <summary>
         /// 搜索药材 - 支持多条件搜索
         /// </summary>
-        Task<ServiceResult<List<HerbDto>>> SearchAsync(string keyword);
+        Task<Result<List<HerbDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 从Excel文件导入药材数据 (Issue #1166)
         /// </summary>
-        Task<ServiceResult<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
+        Task<Result<ImportResultDto<HerbDto>>> ImportFromExcelAsync(Stream stream, string? fileName = null);
 
         /// <summary>
         /// 导出药材数据到Excel (Issue #1166)
@@ -72,25 +73,25 @@ namespace LYBT.Module.Herbs.Interfaces
         /// </summary>
         /// <param name="herbs">药材DTO列表（≤10000条，BR-006）</param>
         /// <param name="strategy">重复处理策略（Skip/Update/Error）</param>
-        Task<ServiceResult<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy);
+        Task<Result<HerbBatchImportResultDto>> BatchImportAsync(List<HerbInputDto> herbs, DuplicateStrategy strategy);
 
         /// <summary>
         /// 获取所有药材数据用于导出（Epic #1962 Task 3.1）
         /// Desktop层负责Excel生成，Server层返回JSON数据
         /// </summary>
         /// <param name="category">分类筛选（可选）</param>
-        Task<ServiceResult<List<HerbDto>>> GetAllForExportAsync(string? category = null);
+        Task<Result<List<HerbDto>>> GetAllForExportAsync(string? category = null);
 
         /// <summary>
         /// 检查药材是否被处方引用（Epic #1962 Task 4.2）
         /// </summary>
         /// <param name="herbId">药材ID</param>
-        Task<ServiceResult<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId);
+        Task<Result<HerbReferenceCheckDto>> CheckReferenceAsync(Guid herbId);
 
         /// <summary>
         /// 批量检查药材引用关系（Epic #1962 Task 4.2）
         /// </summary>
         /// <param name="herbIds">药材ID列表（≤100条，BR-006）</param>
-        Task<ServiceResult<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds);
+        Task<Result<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds);
     }
 }
