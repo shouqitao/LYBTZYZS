@@ -455,7 +455,7 @@
                                                         <!-- Issue #2077: 键盘导航 -->
                                                         <i:EventTrigger EventName="PreviewKeyDown">
                                                             <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                                                       />
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
                                                     <ComboBox.ItemTemplate>
@@ -500,7 +500,7 @@
                                                         <!-- Issue #2077: 键盘导航 -->
                                                         <i:EventTrigger EventName="PreviewKeyDown">
                                                             <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                                                       />
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
                                                     <ComboBox.ItemTemplate>
@@ -545,7 +545,7 @@
                                                         <!-- Issue #2077: 键盘导航 -->
                                                         <i:EventTrigger EventName="PreviewKeyDown">
                                                             <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                                                       />
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
                                                     <ComboBox.ItemTemplate>
@@ -590,7 +590,7 @@
                                                         <!-- Issue #2077: 键盘导航 -->
                                                         <i:EventTrigger EventName="PreviewKeyDown">
                                                             <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                                                       />
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
                                                     <ComboBox.ItemTemplate>
