@@ -160,101 +160,7 @@
                            Foreground="#1E293B"
                            Margin="20,0,0,0" />
 
-                <!-- 操作按钮 -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <!-- 用药记录按钮 -->
-                    <Button Command="{Binding ViewUsageHistoryCommand}"
-                            Background="#10B981"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Height="48"
-                            MinWidth="130"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Cursor="Hand"
-                            VerticalAlignment="Center"
-                            Margin="0,0,12,0">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="10"
-                                                    Padding="24,12">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <TextBlock Text="📈"
-                                                               FontSize="16"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,8,0"/>
-                                                    <TextBlock Text="用药记录"
-                                                               FontSize="{TemplateBinding FontSize}"
-                                                               FontWeight="{TemplateBinding FontWeight}"
-                                                               Foreground="{TemplateBinding Foreground}"
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#059669" />
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#047857" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
 
-                    <!-- 打印按钮 -->
-                    <Button Command="{Binding PrintCommand}"
-                            Background="#6366F1"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Height="48"
-                            MinWidth="100"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Cursor="Hand"
-                            VerticalAlignment="Center">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="10"
-                                                    Padding="24,12">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <TextBlock Text="🖨"
-                                                               FontSize="16"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,8,0"/>
-                                                    <TextBlock Text="打印"
-                                                               FontSize="{TemplateBinding FontSize}"
-                                                               FontWeight="{TemplateBinding FontWeight}"
-                                                               Foreground="{TemplateBinding Foreground}"
-                                                               VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#4F46E5" />
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#4338CA" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </StackPanel>
             </Grid>
         </Border>
 
@@ -265,76 +171,10 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- 药材基本信息卡片 -->
-                <Border Grid.Row="0"
-                        Background="White"
-                        CornerRadius="16"
-                        Padding="32,24"
-                        Effect="{StaticResource CardShadow}"
-                        Margin="0,0,0,28">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border Grid.Column="0"
-                                Width="80" Height="80"
-                                CornerRadius="8"
-                                Background="#A78BFA"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Margin="0,0,20,0">
-                            <TextBlock Text="🌿"
-                                       FontSize="36"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
-                        </Border>
-
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Name}"
-                                       FontSize="24"
-                                       FontWeight="Bold" />
-
-                            <TextBlock FontSize="16" Foreground="Gray" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}{0} · ¥{1:F2}/{2}">
-                                        <Binding Path="Origin" />
-                                        <Binding Path="Price" />
-                                        <Binding Path="Unit" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-
-                            <TextBlock FontSize="14" Foreground="Gray" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="规格: {0} · 单位: {1}">
-                                        <Binding Path="Spec" />
-                                        <Binding Path="Unit" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Border Background="#10B981"
-                                    CornerRadius="12"
-                                    Padding="12,4">
-                                <TextBlock Text="{Binding StatusMessage}"
-                                           Foreground="White"
-                                           FontWeight="Bold"
-                                           FontSize="12" />
-                            </Border>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
                 <!-- 详细信息 -->
-                <Border Grid.Row="1"
+                <Border Grid.Row="0"
                         Background="White"
                         CornerRadius="16"
                         Padding="32,24"
@@ -467,7 +307,7 @@
                 </Border>
 
                 <!-- 功效用法信息 -->
-                <Border Grid.Row="2"
+                <Border Grid.Row="1"
                         Background="White"
                         CornerRadius="16"
                         Padding="32,24"
@@ -530,7 +370,7 @@
                 </Border>
 
                 <!-- 底部按钮栏 -->
-                <Border Grid.Row="3"
+                <Border Grid.Row="2"
                         Background="White"
                         CornerRadius="16"
                         Padding="32,24"

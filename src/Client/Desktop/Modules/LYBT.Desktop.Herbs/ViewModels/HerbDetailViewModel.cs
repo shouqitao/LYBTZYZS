@@ -247,15 +247,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         public DelegateCommand CancelEditCommand { get; }
 
-        /// <summary>
-        /// 打印命令
-        /// </summary>
-        public DelegateCommand PrintCommand { get; }
 
-        /// <summary>
-        /// 查看使用历史命令
-        /// </summary>
-        public DelegateCommand ViewUsageHistoryCommand { get; }
 
         #endregion
 
@@ -282,8 +274,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
             BackCommand = new DelegateCommand(NavigateToHerbManagement);
             EditCommand = new DelegateCommand(EnableEdit, CanEdit);
             CancelEditCommand = new DelegateCommand(Cancel);
-            PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
-            ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, CanViewUsageHistory);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
@@ -395,58 +385,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// 检查是否可以编辑
         /// </summary>
         private bool CanEdit()
-        {
-            return !IsBusy && Herb != null;
-        }
-
-        /// <summary>
-        /// 打印药材信息
-        /// </summary>
-        private void ExecutePrint()
-        {
-            try
-            {
-                Logger.LogInformation("打印药材信息");
-                // TODO: 实现打印逻辑
-                StatusMessage = "打印功能开发中";
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "打印药材信息时发生异常");
-                HandleError(ex, "打印药材信息");
-            }
-        }
-
-        /// <summary>
-        /// 检查是否可以打印
-        /// </summary>
-        private bool CanPrint()
-        {
-            return !IsBusy && Herb != null;
-        }
-
-        /// <summary>
-        /// 查看使用历史
-        /// </summary>
-        private void ExecuteViewUsageHistory()
-        {
-            try
-            {
-                Logger.LogInformation("查看药材使用历史");
-                // TODO: 实现查看使用历史逻辑
-                StatusMessage = "查看使用历史功能开发中";
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "查看使用历史时发生异常");
-                HandleError(ex, "查看使用历史");
-            }
-        }
-
-        /// <summary>
-        /// 检查是否可以查看使用历史
-        /// </summary>
-        private bool CanViewUsageHistory()
         {
             return !IsBusy && Herb != null;
         }
