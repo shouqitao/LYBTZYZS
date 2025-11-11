@@ -390,36 +390,45 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 **完整参考** → [.claude/reference/mcp-tools.md](.claude/reference/mcp-tools.md)
 
 **核心工具**:
-- **serena**: 代码语义分析与编辑
+- **graphiti-memory**: 时序感知知识图谱（⭐ 项目知识"第二大脑"，唯一长期知识库）
+- **serena**: 代码语义分析与编辑（含项目特定记忆，用于当前会话上下文）
 - **filesystem**: 文件系统操作
 - **github**: GitHub API（⚠️必须显式owner/repo）
 - **context7**: 技术文档查询（最新官方文档）
 - **sequential-thinking**: 深度推理分析
-- **graphiti-memory**: 时序感知知识图谱（项目知识"第二大脑"）
 
 **协同模式**:
 ```
-深度分析: sequential-thinking → context7 → serena → graphiti-memory
-快速开发: serena → context7 → serena → git
-知识积累: graphiti-memory（决策→存储→查询→复用）
+深度分析: sequential-thinking → graphiti-memory（查询历史）→ context7 → serena
+快速开发: serena → context7 → graphiti-memory（存储决策）
+知识积累: graphiti-memory（决策→存储→查询→复用）← 唯一长期知识库
 ```
 
-#### Graphiti Memory 工具（⚠️必选工具）
+**工具定位**:
+- **Graphiti Memory**: 项目唯一"第二大脑"，跨会话长期知识图谱，所有重要决策必须存储
+- **Serena Memory**: 项目特定记忆（如编码规范、命令速查），仅用于当前会话快速参考
 
-**核心能力**: 时序感知知识图谱，自动追踪时间戳，混合语义搜索
+#### Graphiti Memory 工具（⭐ 项目唯一"第二大脑"）
+
+**定位**: 项目长期知识图谱，唯一的跨会话知识存储系统
+
+**核心能力**: 时序感知知识图谱，自动追踪时间戳，混合语义搜索，关系推理
 
 **强制使用场景** (⚠️必须实时使用):
-1. 长期对话上下文 - 跨会话知识连续性
-2. 技术决策记录 - 架构选型、设计方案
-3. 问题诊断历史 - Bug根因、解决方案
-4. 代码关系映射 - 模块依赖、接口调用
-5. 用户偏好学习 - 编码风格、命名习惯
+1. **长期对话上下文** - 跨会话知识连续性（替代临时记忆方案）
+2. **技术决策记录** - 架构选型、设计方案、ADR决策
+3. **问题诊断历史** - Bug根因、解决方案、修复模式
+4. **代码关系映射** - 模块依赖、接口调用、数据流向
+5. **用户偏好学习** - 编码风格、命名习惯、工作流偏好
+6. **重构历史追踪** - 架构演进、重构决策、技术债务
 
-**存储触发**: 决策后、完成Issue后、遇Bug后、架构讨论后、Review发现模式后
+**存储触发**: 决策后、完成Issue后、遇Bug后、架构讨论后、Review发现模式后、重构完成后
 
-**查询时机**: 新任务前、遇类似问题、架构设计、Code Review
+**查询时机**: 新任务前、遇类似问题、架构设计、Code Review、技术选型前
 
-> 💡 **核心原则**: Graphiti是项目知识的"第二大脑"，所有重要信息必须实时归档
+> 💡 **核心原则**: Graphiti 是项目知识的"第二大脑"，所有重要信息必须实时归档
+> 
+> ⚠️ **重要变更（2025-11-11）**: Graphiti 已调试成功，现为项目唯一长期知识库。Serena memory 仅用于项目特定记忆（如命令速查），不再作为临时"第二大脑"方案
 
 **详细使用指南** → [graphiti-memory.md](.claude/reference/graphiti-memory.md)
 
@@ -576,9 +585,10 @@ dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 
 ---
 
-**最后更新**: 2025-11-11（v6.2 Graphiti集成版 - 知识图谱"第二大脑"）
+**最后更新**: 2025-11-11（v6.3 Graphiti完全集成版 - 唯一"第二大脑"）
 
 **变更历史**:
+- v6.3（2025-11-11）: ⭐ Graphiti Memory调试成功，成为项目唯一长期知识库，明确Serena memory仅用于项目特定记忆
 - v6.2（2025-11-11）: 集成Graphiti Memory知识图谱，移除停用MCP工具（shrimp/interactive-feedback/spec-workflow），优化底部导航
 - v6.1.1（2025-10-28）: 平衡精简优化，再减少25%，保留关键示例
 - v6.1（2025-10-28）: 重构为模块化架构，创建15个专门文档，主文档精简94%
