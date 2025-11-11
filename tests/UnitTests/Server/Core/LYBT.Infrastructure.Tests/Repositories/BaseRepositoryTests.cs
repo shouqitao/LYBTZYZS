@@ -467,8 +467,8 @@ public class BaseRepositoryTests : IDisposable
         await _context.Set<User>().AddRangeAsync(users);
         await _context.SaveChangesAsync();
 
-        // Act - 使用扩展方法重载(descending=false升序)
-        var result = await ((TestRepository)_repository).GetPagedAsync(1, 10, null, u => u.RealName, false);
+        // Act - 使用扩展方法重载(ascending=true升序)
+        var result = await ((TestRepository)_repository).GetPagedAsync(1, 10, null, u => u.RealName, true);
 
         // Assert
         result.Items.Should().HaveCount(3);
@@ -747,6 +747,569 @@ public class BaseRepositoryTests : IDisposable
         // Assert
         result.Should().Be(1); // 只删除 user1，user2 已经被软删除
     }
+
+    #region 批量操作扩展测试 - AddRangeAsync（3个新用例）
+
+    [Fact]
+    public async Task AddRangeAsync_WithLargeDataset_Should_AddAllEntities()
+    {
+        // Arrange - 创建大量实体（300+）
+        var users = Enumerable.Range(1, 350)
+            .Select(i => CreateTestUser($"User{i}"))
+            .ToList();
+
+        // Act
+        var result = await ((TestRepository)_repository).AddRangeAsync(users);
+
+        // Assert
+        result.Should().HaveCount(350);
+        result.Should().AllSatisfy(u => u.Id.Should().NotBeEmpty());
+
+        var savedUsers = await _context.Set<User>().Where(u => !u.IsDeleted).ToListAsync();
+        savedUsers.Should().HaveCount(350);
+    }
+
+    [Fact]
+    public async Task AddRangeAsync_WithTransactionRollback_Should_NotPersistChanges()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("User1"),
+            CreateTestUser("User2")
+        };
+
+        // Act - 添加但不调用SaveChanges
+        await _context.Set<User>().AddRangeAsync(users);
+
+        // 模拟事务回滚（通过Dispose而不SaveChanges）
+        _context.Entry(users[0]).State = EntityState.Detached;
+        _context.Entry(users[1]).State = EntityState.Detached;
+
+        // Assert - 验证未持久化
+        var count = await _context.Set<User>().Where(u => !u.IsDeleted).CountAsync();
+        count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AddRangeAsync_WithDuplicateData_Should_ThrowDbUpdateException()
+    {
+        // Arrange - 创建具有相同ID的用户（模拟主键冲突）
+        var userId = Guid.NewGuid();
+        var user1 = CreateTestUser("User1");
+        user1.Id = userId;
+        var user2 = CreateTestUser("User2");
+        user2.Id = userId; // 重复的ID
+
+        await _context.Set<User>().AddAsync(user1);
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await _context.Set<User>().AddAsync(user2);
+            await _context.SaveChangesAsync();
+        });
+    }
+
+    #endregion
+
+    #region 批量操作扩展测试 - DeleteRangeAsync(entities)（4个新用例）
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithEntities_Should_SoftDeleteAllEntities()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("User1"),
+            CreateTestUser("User2"),
+            CreateTestUser("User3")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(users);
+
+        // Assert
+        result.Should().Be(3);
+
+        var deletedUsers = await _context.Set<User>()
+            .IgnoreQueryFilters()
+            .Where(u => users.Select(x => x.Id).Contains(u.Id))
+            .ToListAsync();
+        deletedUsers.Should().HaveCount(3);
+        deletedUsers.Should().AllSatisfy(u => u.IsDeleted.Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithEmptyEntityList_Should_ReturnZero()
+    {
+        // Arrange
+        var emptyList = Array.Empty<User>();
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(emptyList);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithPartiallyDeletedEntities_Should_OnlyDeleteNonDeleted()
+    {
+        // Arrange
+        var user1 = CreateTestUser("User1");
+        var user2 = CreateTestUser("User2");
+        user2.IsDeleted = true; // 已删除
+        var user3 = CreateTestUser("User3");
+
+        await _context.Set<User>().AddRangeAsync(user1, user2, user3);
+        await _context.SaveChangesAsync();
+
+        // Act - 尝试删除所有3个用户
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(new[] { user1, user2, user3 });
+
+        // Assert
+        result.Should().Be(2); // 只删除user1和user3
+
+        var allUsers = await _context.Set<User>()
+            .IgnoreQueryFilters()
+            .ToListAsync();
+        allUsers.Should().AllSatisfy(u => u.IsDeleted.Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithNullEntities_Should_ThrowArgumentNullException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await ((TestRepository)_repository).DeleteRangeAsync((IEnumerable<User>)null!));
+    }
+
+    #endregion
+
+    #region 批量操作扩展测试 - DeleteRangeAsync(ids)（4个新用例）
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithIds_Should_SoftDeleteEntitiesByIds()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("User1"),
+            CreateTestUser("User2"),
+            CreateTestUser("User3")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        var ids = users.Select(u => u.Id).ToList();
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(ids);
+
+        // Assert
+        result.Should().Be(3);
+
+        var deletedUsers = await _context.Set<User>()
+            .IgnoreQueryFilters()
+            .Where(u => ids.Contains(u.Id))
+            .ToListAsync();
+        deletedUsers.Should().HaveCount(3);
+        deletedUsers.Should().AllSatisfy(u => u.IsDeleted.Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithEmptyIdList_Should_ReturnZero()
+    {
+        // Arrange
+        var emptyIds = Array.Empty<Guid>();
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(emptyIds);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithNonExistentIds_Should_ReturnZero()
+    {
+        // Arrange
+        var nonExistentIds = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(nonExistentIds);
+
+        // Assert
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithIdsIncludingDeleted_Should_OnlyDeleteNonDeleted()
+    {
+        // Arrange
+        var user1 = CreateTestUser("User1");
+        var user2 = CreateTestUser("User2");
+        user2.IsDeleted = true; // 已删除
+        var user3 = CreateTestUser("User3");
+
+        await _context.Set<User>().AddRangeAsync(user1, user2, user3);
+        await _context.SaveChangesAsync();
+
+        var ids = new[] { user1.Id, user2.Id, user3.Id };
+
+        // Act
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(ids);
+
+        // Assert
+        result.Should().Be(2); // 只删除user1和user3
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithNullIds_Should_ThrowArgumentNullException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await ((TestRepository)_repository).DeleteRangeAsync((IEnumerable<Guid>)null!));
+    }
+
+    #endregion
+
+    #region 批量操作事务测试（3个用例）
+
+    [Fact]
+    public async Task AddRangeAsync_WithTransaction_Should_CommitAllOrNone()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("User1"),
+            CreateTestUser("User2"),
+            CreateTestUser("User3")
+        };
+
+        // Act - AddRangeAsync内部会调用SaveChangesAsync
+        var result = await ((TestRepository)_repository).AddRangeAsync(users);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(u => u.Id.Should().NotBeEmpty());
+
+        var allUsers = await _context.Set<User>().Where(u => !u.IsDeleted).ToListAsync();
+        allUsers.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task DeleteRangeAsync_WithTransaction_Should_CommitAllOrNone()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("User1"),
+            CreateTestUser("User2"),
+            CreateTestUser("User3")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 批量删除会自动调用SaveChanges
+        var deletedCount = await ((TestRepository)_repository).DeleteRangeAsync(u => u.RealName.StartsWith("User"));
+
+        // Assert
+        deletedCount.Should().Be(3);
+        var remainingUsers = await _context.Set<User>().Where(u => !u.IsDeleted).ToListAsync();
+        remainingUsers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MixedOperations_WithTransaction_Should_MaintainConsistency()
+    {
+        // Arrange
+        var existingUser = CreateTestUser("Existing");
+        await _context.Set<User>().AddAsync(existingUser);
+        await _context.SaveChangesAsync();
+
+        var newUsers = new[]
+        {
+            CreateTestUser("New1"),
+            CreateTestUser("New2")
+        };
+
+        // Act - 混合操作：添加新用户并删除现有用户
+        await ((TestRepository)_repository).AddRangeAsync(newUsers);
+        await ((TestRepository)_repository).DeleteAsync(existingUser.Id);
+
+        // Assert
+        var allUsers = await _context.Set<User>().Where(u => !u.IsDeleted).ToListAsync();
+        allUsers.Should().HaveCount(2);
+        allUsers.Should().AllSatisfy(u => u.RealName.Should().StartWith("New"));
+    }
+
+    #endregion
+
+    #endregion
+
+    #region 高级分页测试（12个新用例）
+
+    #region 动态过滤、排序、分页组合（2个新用例）
+
+    [Fact]
+    public async Task GetPagedAsync_WithPredicateAndOrderBy_Should_FilterAndSort()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("Alice"),
+            CreateTestUser("Bob"),
+            CreateTestUser("Charlie"),
+            CreateTestUser("David"),
+            CreateTestUser("Eve")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 查询名字长度>3的用户，按名字降序排序
+        var result = await ((BaseRepository<User>)_repository).GetPagedAsync(
+            pageNumber: 1,
+            pageSize: 10,
+            predicate: u => u.RealName.Length > 3,
+            orderBy: u => u.RealName,
+            ascending: false);
+
+        // Assert
+        result.Items.Should().HaveCount(3);
+        result.Items[0].RealName.Should().Be("David");
+        result.Items[1].RealName.Should().Be("Charlie");
+        result.Items[2].RealName.Should().Be("Alice");
+        result.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithComplexPredicate_Should_HandleMultipleConditions()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("Alice"),
+            CreateTestUser("Bob"),
+            CreateTestUser("Charlie"),
+            CreateTestUser("David"),
+            CreateTestUser("Eve")
+        };
+        // 修改部分用户的Status
+        users[1].Status = CommonStatus.Disabled;
+        users[3].Status = CommonStatus.Disabled;
+
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 复杂条件：Status=Enabled AND RealName包含'e'
+        var result = await ((BaseRepository<User>)_repository).GetPagedAsync(
+            pageNumber: 1,
+            pageSize: 10,
+            predicate: u => u.Status == CommonStatus.Enabled && u.RealName.Contains("e"));
+
+        // Assert
+        result.Items.Should().HaveCount(3); // Alice, Charlie, Eve都包含'e'且Status=Enabled
+        result.Items.Should().Contain(u => u.RealName == "Alice");
+        result.Items.Should().Contain(u => u.RealName == "Charlie");
+        result.Items.Should().Contain(u => u.RealName == "Eve");
+        result.TotalCount.Should().Be(3);
+    }
+
+    #endregion
+
+    #region 空结果集、边界条件（5个用例）
+
+    [Fact]
+    public async Task GetPagedAsync_WithNoMatches_Should_ReturnEmptyPage()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("Alice"),
+            CreateTestUser("Bob")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 查询不存在的名字
+        var result = await ((BaseRepository<User>)_repository).GetPagedAsync(
+            pageNumber: 1,
+            pageSize: 10,
+            predicate: u => u.RealName == "NonExistent");
+
+        // Assert
+        result.Items.Should().BeEmpty();
+        result.TotalCount.Should().Be(0);
+        result.TotalPages.Should().Be(1);
+        result.CurrentPage.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithPageExceedingTotal_Should_ReturnEmptyPage()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("Alice"),
+            CreateTestUser("Bob")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 请求第10页（只有2条数据）
+        var result = await _repository.GetPagedAsync(
+            pageNumber: 10,
+            pageSize: 10);
+
+        // Assert
+        result.Items.Should().BeEmpty();
+        result.TotalCount.Should().Be(2);
+        result.CurrentPage.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithSinglePage_Should_ReturnAllItems()
+    {
+        // Arrange
+        var users = new[]
+        {
+            CreateTestUser("Alice"),
+            CreateTestUser("Bob"),
+            CreateTestUser("Charlie")
+        };
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - PageSize大于总数
+        var result = await _repository.GetPagedAsync(
+            pageNumber: 1,
+            pageSize: 100);
+
+        // Assert
+        result.Items.Should().HaveCount(3);
+        result.TotalCount.Should().Be(3);
+        result.TotalPages.Should().Be(1);
+        result.HasNextPage.Should().BeFalse();
+        result.HasPreviousPage.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithFirstPage_Should_HaveNextPage()
+    {
+        // Arrange - 创建10个用户
+        var users = Enumerable.Range(1, 10)
+            .Select(i => CreateTestUser($"User{i}"))
+            .ToArray();
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 每页3个，请求第1页
+        var result = await _repository.GetPagedAsync(
+            pageNumber: 1,
+            pageSize: 3);
+
+        // Assert
+        result.Items.Should().HaveCount(3);
+        result.TotalCount.Should().Be(10);
+        result.TotalPages.Should().Be(4);
+        result.HasNextPage.Should().BeTrue();
+        result.HasPreviousPage.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithLastPage_Should_HavePreviousPage()
+    {
+        // Arrange - 创建10个用户
+        var users = Enumerable.Range(1, 10)
+            .Select(i => CreateTestUser($"User{i}"))
+            .ToArray();
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 每页3个，请求最后一页（第4页）
+        var result = await _repository.GetPagedAsync(
+            pageNumber: 4,
+            pageSize: 3);
+
+        // Assert
+        result.Items.Should().HaveCount(1); // 最后一页只有1个
+        result.TotalCount.Should().Be(10);
+        result.TotalPages.Should().Be(4);
+        result.HasNextPage.Should().BeFalse();
+        result.HasPreviousPage.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region 大数据集与性能测试（2个用例）
+
+    [Fact]
+    public async Task GetPagedAsync_WithLargeDataset_Should_PaginateCorrectly()
+    {
+        // Arrange - 创建500个用户
+        var users = Enumerable.Range(1, 500)
+            .Select(i => CreateTestUser($"User{i:D4}"))
+            .ToArray();
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 每页50个，请求第5页
+        var result = await ((BaseRepository<User>)_repository).GetPagedAsync(
+            pageNumber: 5,
+            pageSize: 50,
+            orderBy: u => u.RealName,
+            ascending: true);
+
+        // Assert
+        result.Items.Should().HaveCount(50);
+        result.TotalCount.Should().Be(500);
+        result.TotalPages.Should().Be(10);
+        result.CurrentPage.Should().Be(5);
+        result.Items[0].RealName.Should().Be("User0201"); // 第5页第1个（索引200）
+        result.Items[49].RealName.Should().Be("User0250"); // 第5页最后1个（索引249）
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_WithMultiplePages_Should_ReturnCorrectPage()
+    {
+        // Arrange - 创建15个用户
+        var users = Enumerable.Range(1, 15)
+            .Select(i => CreateTestUser($"User{i:D2}"))
+            .ToArray();
+        await _context.Set<User>().AddRangeAsync(users);
+        await _context.SaveChangesAsync();
+
+        // Act - 每页5个，分别请求第1、2、3页
+        var repo = (BaseRepository<User>)_repository;
+        var page1 = await repo.GetPagedAsync(1, 5, orderBy: u => u.RealName, ascending: true);
+        var page2 = await repo.GetPagedAsync(2, 5, orderBy: u => u.RealName, ascending: true);
+        var page3 = await repo.GetPagedAsync(3, 5, orderBy: u => u.RealName, ascending: true);
+
+        // Assert
+        page1.Items.Should().HaveCount(5);
+        page1.Items[0].RealName.Should().Be("User01");
+        page1.Items[4].RealName.Should().Be("User05");
+
+        page2.Items.Should().HaveCount(5);
+        page2.Items[0].RealName.Should().Be("User06");
+        page2.Items[4].RealName.Should().Be("User10");
+
+        page3.Items.Should().HaveCount(5);
+        page3.Items[0].RealName.Should().Be("User11");
+        page3.Items[4].RealName.Should().Be("User15");
+
+        // 验证分页元数据
+        page1.TotalPages.Should().Be(3);
+        page2.TotalPages.Should().Be(3);
+        page3.TotalPages.Should().Be(3);
+    }
+
+    #endregion
 
     #endregion
 
