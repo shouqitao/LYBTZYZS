@@ -444,7 +444,8 @@
                                                 <ComboBox SelectedItem="{Binding Herb1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           IsEditable="True"
-                                                          IsTextSearchEnabled="False"
+                                                          TextSearch.TextPath="Name"
+                                                          IsTextSearchEnabled="True"
                                                           StaysOpenOnEdit="True"
                                                           MaxDropDownHeight="200">
                                                     <i:Interaction.Triggers>
@@ -489,7 +490,8 @@
                                                 <ComboBox SelectedItem="{Binding Herb2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           IsEditable="True"
-                                                          IsTextSearchEnabled="False"
+                                                          TextSearch.TextPath="Name"
+                                                          IsTextSearchEnabled="True"
                                                           StaysOpenOnEdit="True"
                                                           MaxDropDownHeight="200">
                                                     <i:Interaction.Triggers>
@@ -534,7 +536,8 @@
                                                 <ComboBox SelectedItem="{Binding Herb3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           IsEditable="True"
-                                                          IsTextSearchEnabled="False"
+                                                          TextSearch.TextPath="Name"
+                                                          IsTextSearchEnabled="True"
                                                           StaysOpenOnEdit="True"
                                                           MaxDropDownHeight="200">
                                                     <i:Interaction.Triggers>
@@ -579,7 +582,8 @@
                                                 <ComboBox SelectedItem="{Binding Herb4, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           IsEditable="True"
-                                                          IsTextSearchEnabled="False"
+                                                          TextSearch.TextPath="Name"
+                                                          IsTextSearchEnabled="True"
                                                           StaysOpenOnEdit="True"
                                                           MaxDropDownHeight="200">
                                                     <i:Interaction.Triggers>
