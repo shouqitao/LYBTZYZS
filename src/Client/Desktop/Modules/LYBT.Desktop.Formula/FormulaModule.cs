@@ -29,6 +29,8 @@ namespace LYBT.Desktop.Formula
             containerRegistry.Register<ViewModels.Components.FormulaCommandHandler>();
             containerRegistry.Register<ViewModels.Components.FormulaValidator>();
             containerRegistry.Register<ViewModels.Components.FormulaCalculator>();
+            // Issue #2072: 注册药材过滤管理器（8列DataGrid拼音码智能过滤）
+            containerRegistry.Register<ViewModels.Components.FormulaHerbFilterManager>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.FormulaManagementViewModel>();
