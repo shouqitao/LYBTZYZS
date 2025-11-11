@@ -74,12 +74,6 @@ namespace LYBT.Infrastructure.DependencyInjection
             services.AddScoped(typeof(LYBT.Shared.Models.Interfaces.IRepository<>),
                               typeof(LYBT.Infrastructure.Repositories.BaseRepository<>));
 
-            // Phase 2: 保留旧接口注册（向后兼容，Phase 3-5迁移后删除）
-#pragma warning disable CS0618 // 忽略Obsolete警告
-            services.AddScoped(typeof(LYBT.Infrastructure.Interfaces.IRepositoryLegacy<>),
-                              typeof(LYBT.Infrastructure.Repositories.BaseRepository<>));
-#pragma warning restore CS0618
-
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository
             // services.AddScoped<IUserRepository, UserRepository>();

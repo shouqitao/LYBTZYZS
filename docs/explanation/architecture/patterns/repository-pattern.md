@@ -18,6 +18,176 @@ Repository模式是一种数据访问抽象层，将业务逻辑与数据访问�
 
 ---
 
+## 🏗️ 三层接口架构（Epic #2016 Phase 3）
+
+### 设计理念
+
+**统一共性 + 保持特性 + 渐进式扩展**
+
+为解决Repository接口重复定义问题，项目采用三层接口继承架构：
+
+```
+层级1: IReadRepository<T>     ← 5个标准只读方法（Shared.Models/Interfaces）
+       ↓ 继承
+层级2: IRepository<T>         ← +9个写入/辅助方法（Shared.Models/Interfaces）
+       ↓ 继承
+层级3: IXxxRepository         ← +模块特定业务方法（Module.Xxx/Interfaces）
+```
+
+### 核心接口
+
+#### IReadRepository<T> - 只读基础接口
+
+**位置**: `src/Shared/LYBT.Shared.Models/Interfaces/IReadRepository.cs`
+
+```csharp
+public interface IReadRepository<T> where T : class
+{
+    /// <summary>根据ID获取实体</summary>
+    /// <remarks>自动过滤软删除记录（IsDeleted = true）</remarks>
+    Task<T?> GetByIdAsync(Guid id);
+
+    /// <summary>获取所有实体</summary>
+    /// <remarks>⚠️ 对于大数据集，建议使用分页查询</remarks>
+    Task<IEnumerable<T>> GetAllAsync();
+
+    /// <summary>根据条件查询实体</summary>
+    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+
+    /// <summary>根据条件获取单个实体</summary>
+    /// <exception cref="InvalidOperationException">找到多个匹配实体时抛出</exception>
+    Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
+
+    /// <summary>统计实体总数量</summary>
+    Task<long> CountAsync();
+}
+```
+
+#### IRepository<T> - 完整CRUD接口
+
+**位置**: `src/Shared/LYBT.Shared.Models/Interfaces/IRepository.cs`
+
+```csharp
+public interface IRepository<T> : IReadRepository<T> where T : class
+{
+    // ========== 继承5个只读方法 ==========
+    // GetByIdAsync, GetAllAsync, FindAsync, GetSingleAsync, CountAsync
+    
+    // ========== 写入方法 (6个) ==========
+    Task<T> AddAsync(T entity);
+    Task<T> UpdateAsync(T entity);
+    Task<bool> DeleteAsync(Guid id);
+    Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities);
+    Task<int> DeleteRangeAsync(IEnumerable<T> entities);
+    Task<int> DeleteRangeAsync(IEnumerable<Guid> ids);
+    
+    // ========== 辅助方法 (3个) ==========
+    Task<bool> ExistsAsync(Guid id);
+    Task<int> CountAsync();  // 返回int的重载
+    Task<int> SaveChangesAsync();
+}
+```
+
+### 标准实现
+
+#### BaseReadRepository<T> - 只读仓储基类
+
+**位置**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseReadRepository.cs`
+
+```csharp
+/// <summary>
+/// 只读仓储基类 - 实现IReadRepository接口的5个标准方法
+/// Epic #2016 Phase 3: 为从属实体提供只读数据访问
+/// </summary>
+public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity> 
+    where TEntity : BaseEntity
+{
+    protected readonly AppDbContext Context;
+    protected readonly DbSet<TEntity> DbSet;
+
+    protected BaseReadRepository(AppDbContext context)
+    {
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        DbSet = Context.Set<TEntity>();
+    }
+
+    // 所有方法自动过滤软删除记录 (IsDeleted = true)
+    public virtual async Task<TEntity?> GetByIdAsync(Guid id)
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted && e.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .ToListAsync();
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .Where(predicate)
+            .ToListAsync();
+    }
+
+    public virtual async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .Where(predicate)
+            .SingleOrDefaultAsync();
+    }
+
+    public virtual async Task<long> CountAsync()
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .LongCountAsync();
+    }
+}
+```
+
+#### BaseRepository<T> - 完整仓储基类
+
+**位置**: `src/Server/Core/LYBT.Infrastructure/Repositories/BaseRepository.cs`
+
+继承关系: `BaseRepository<T>` 实现 `IRepository<T>` 接口，内部组合 `BaseReadRepository<T>` 复用只读逻辑。
+
+### 使用指南
+
+#### 选择决策树
+
+```
+是否需要通过Repository直接写入?
+  ├─ 否 → 从属实体 → 继承 BaseReadRepository<T> + IReadRepository<T>
+  │        示例: Prescription, Consultation
+  │        原因: 所有写操作必须通过MedicalCase聚合根
+  │
+  └─ 是 → 聚合根实体 → 继承 BaseRepository<T> + IRepository<T>
+           示例: Patient, MedicalCase, Herb, Formula
+           原因: 独立业务实体,需要完整CRUD能力
+```
+
+#### 模块分类表
+
+| 模块 | Repository类型 | 接口继承 | 基类继承 | 原因 |
+|-----|---------------|---------|---------|------|
+| **Server端聚合根实体** | | | | |
+| Patients | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立业务实体 |
+| MedicalCase | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 聚合根(管理Prescription/Consultation) |
+| Herbs | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立中药管理 |
+| Formula | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立方剂管理 |
+| Users | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 用户管理 |
+| **Server端从属实体** | | | | |
+| Prescriptions | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
+| Consultation | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
+
+---
+
 ## 🎯 适用场景
 
 ### ✅ 应该使用Repository的场景
@@ -568,13 +738,14 @@ public async Task<MedicalCaseEntity?> GetByIdAsync(
 
 ## 🔗 相关资源
 
-- **架构原则**: [docs/architecture/principles.md](../principles.md) - P0-2（依赖方向）、P0-3（聚合根边界）
+- **架构原则**: [principles.md](../principles.md) - P0-2（依赖方向）、P0-3（聚合根边界）
 - **架构决策（ADR）**:
   - [ADR-003: Repository层简化](../decisions/ADR-003-repository-simplification.md) - Desktop端初步简化决策
   - [ADR-008: Desktop端不独立实现Repository](../decisions/ADR-008-desktop-consultation-prescription-no-independent-repository.md) - 完全删除空接口桩，体现YAGNI原则
-- **Server端架构**: [docs/architecture/server/README.md](../server/README.md) - 三层架构
+- **Server端架构**: [server/README.md](../server/README.md) - Server端三层架构与BaseReadRepository实现
+- **Shared架构**: [shared/README.md](../shared/README.md) - Repository接口定义（Section 1.1）
 - **聚合根模式**: [aggregate-root-pattern.md](./aggregate-root-pattern.md)
-- **业务规则**: [docs/business-rules.md](../../business-rules.md) - 规则#3（聚合根边界）
+- **业务规则**: [business-rules.md](../../business-rules.md) - 规则#3（聚合根边界）
 
 ---
 
@@ -584,8 +755,9 @@ public async Task<MedicalCaseEntity?> GetByIdAsync(
 |------|------|----------|------|
 | 2025-10-25 | v1.0 | 初始创建 | Claude Code |
 | 2025-11-02 | v1.1 | 补充ADR-008引用，强调Desktop端不实现子实体Repository的YAGNI原则 | Claude Code |
+| 2025-11-11 | v1.2 | Epic #2016 Phase 3：添加三层接口架构章节，更新相关资源引用 | Claude Code |
 
 ---
 
-**最后更新**: 2025-11-02
+**最后更新**: 2025-11-11
 **维护者**: 项目架构团队

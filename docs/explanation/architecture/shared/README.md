@@ -66,6 +66,10 @@ Exceptions/          # 异常类定义
 Extensions/          # 扩展方法
   ├── Application/             # 应用初始化扩展
   └── ServiceCollection/       # 服务集合扩展
+
+Interfaces/          # Repository接口定义（Epic #2016 Phase 3）
+  ├── IReadRepository.cs       # 只读仓储接口（5个标准方法）
+  └── IRepository.cs           # 完整仓储接口（14个方法）
 ```
 
 **设计原则**：
@@ -129,6 +133,71 @@ public enum Gender
 - ❌ **文档描述**：Entities/, DTOs/, Requests/, Responses/, ViewModels/（平坦结构）
 - ✅ **实际实现**：Contracts/{Module}/（按业务模块组织）+ Common/（通用）+ Constants/（常量）+ Enums/（枚举）
 - **原因**：实际架构更符合MVP原则（够用即好），避免过度分层
+
+---
+
+### 1.1 Repository接口层（Epic #2016 Phase 3）
+
+> **✨ 架构优化**（2025-11-XX）：三层接口架构统一共性、保持特性，Repository接口迁移至Shared.Models。
+
+**职责**：定义跨端共享的Repository标准接口
+
+**位置**：`src/Shared/LYBT.Shared.Models/Interfaces/`
+
+**核心接口**：
+
+```csharp
+// IReadRepository.cs - 只读仓储接口（5个标准方法）
+public interface IReadRepository<T> where T : class
+{
+    Task<T?> GetByIdAsync(Guid id);
+    Task<IEnumerable<T>> GetAllAsync();
+    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+    Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
+    Task<long> CountAsync();
+}
+
+// IRepository.cs - 完整仓储接口（继承IReadRepository，新增9个方法）
+public interface IRepository<T> : IReadRepository<T> where T : class
+{
+    Task<T> AddAsync(T entity);
+    Task<T> UpdateAsync(T entity);
+    Task<bool> DeleteAsync(Guid id);
+    Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities);
+    Task<int> DeleteRangeAsync(IEnumerable<T> entities);
+    Task<int> DeleteRangeAsync(IEnumerable<Guid> ids);
+    Task<bool> ExistsAsync(Guid id);
+    Task<int> CountAsync();  // 覆盖基接口，返回int
+    Task<int> SaveChangesAsync();
+}
+```
+
+**三层接口架构**：
+
+```
+层级1: IReadRepository<T>     ← 5个标准只读方法（Shared.Models）
+       ↓ 继承
+层级2: IRepository<T>         ← +9个写入/辅助方法（Shared.Models）
+       ↓ 继承
+层级3: IXxxRepository         ← +模块特定业务方法（各Module层）
+```
+
+**设计原则**：
+- ✅ **统一共性**：标准CRUD方法定义在Shared层，所有模块复用
+- ✅ **保持特性**：模块特定方法定义在各自的Module层接口
+- ✅ **依赖倒置**：Server端Repository实现依赖Shared层接口
+- ✅ **软删除内置**：所有查询方法自动过滤`IsDeleted = true`记录
+
+**使用场景**：
+- **IReadRepository<T>**：用于从属实体（如Prescription、Consultation），强制只读模式
+- **IRepository<T>**：用于聚合根实体（如Patient、MedicalCase、Herb、Formula），提供完整CRUD
+
+**架构背景**：
+- Epic #2016 Phase 3将Repository接口从各Module迁移到Shared.Models
+- 目的：统一接口定义，实现跨端共享，减少重复代码
+- 实现：Server端BaseReadRepository<T>和BaseRepository<T>提供标准实现
+
+**详细文档** → [repository-pattern.md](../patterns/repository-pattern.md)
 
 ---
 
@@ -589,6 +658,11 @@ Shared.Interfaces已移除：
 - 如需重新引入Shared.Interfaces项目，需创建新Issue并记录ADR
 
 **历史决策记录**：Shared.Interfaces空项目曾是**有意的架构选择**（ADR-005），现已演进为完全移除。
+
+> **✨ 例外情况**（Epic #2016 Phase 3）：  
+> 虽然Shared.Interfaces项目已移除，但**Repository标准接口**（`IReadRepository<T>`和`IRepository<T>`）  
+> 现已迁移至 `src/Shared/LYBT.Shared.Models/Interfaces/`，作为真正需要跨端共享的基础接口。  
+> 详见 **[Section 1.1 Repository接口层](#11-repository接口层epic-2016-phase-3)**
 
 ### 3. Components - 跨端组件层
 

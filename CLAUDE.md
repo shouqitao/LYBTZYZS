@@ -214,6 +214,152 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 **升级触发条件**: 重大架构重构、破坏性API变更、技术栈重大升级、MVP发布后里程碑
 
+### 2.4 Repository架构规范
+
+**完整说明** → [repository-pattern.md](docs/explanation/architecture/patterns/repository-pattern.md)
+
+#### 三层接口架构（Epic #2016 Phase 3）
+
+**设计理念**: 统一共性 + 保持特性 + 渐进式扩展
+
+```
+层级1: IReadRepository<T>     ← 5个标准只读方法（Shared层）
+       ↓ 继承
+层级2: IRepository<T>         ← +9个写入/辅助方法（Shared层）
+       ↓ 继承
+层级3: IXxxRepository         ← +模块特定业务方法（各Module层）
+```
+
+**核心接口**:
+
+| 接口 | 方法数 | 用途 | 位置 |
+|-----|-------|------|------|
+| `IReadRepository<T>` | 5个 | 只读操作基础接口 | `Shared.Models/Interfaces` |
+| `IRepository<T>` | 14个 | 完整CRUD接口 | `Shared.Models/Interfaces` |
+| `IXxxRepository` | 5+N个 | 模块特定接口 | `Module.Xxx/Interfaces` |
+
+**标准实现**:
+
+| 基类 | 实现接口 | 用途 | 位置 |
+|-----|---------|------|------|
+| `BaseReadRepository<T>` | `IReadRepository<T>` | 只读仓储基类 | `Infrastructure/Repositories` |
+| `BaseRepository<T>` | `IRepository<T>` | 完整仓储基类 | `Infrastructure/Repositories` |
+
+#### 使用指南
+
+**选择决策树**:
+
+```
+是否需要通过Repository直接写入?
+  ├─ 否 → 从属实体 → 继承 BaseReadRepository<T> + IReadRepository<T>
+  │        示例: Prescription, Consultation
+  │        原因: 所有写操作必须通过MedicalCase聚合根
+  │
+  └─ 是 → 聚合根实体 → 继承 BaseRepository<T> + IRepository<T>
+           示例: Patient, MedicalCase, Herb, Formula
+           原因: 独立业务实体,需要完整CRUD能力
+```
+
+**模块分类表**:
+
+| 模块 | Repository类型 | 接口继承 | 基类继承 | 原因 |
+|-----|---------------|---------|---------|------|
+| **聚合根实体** | | | | |
+| Patients | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立业务实体 |
+| MedicalCase | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 聚合根(管理Prescription/Consultation) |
+| Herbs | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立中药管理 |
+| Formula | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立方剂管理 |
+| Users | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 用户管理 |
+| **从属实体** | | | | |
+| Prescriptions | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
+| Consultation | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
+
+**代码示例**:
+
+```csharp
+// 1. 从属实体的只读Repository（Prescription示例）
+namespace LYBT.Module.Prescriptions.Interfaces
+{
+    /// <summary>
+    /// 处方仓储接口 - 继承IReadRepository标准接口
+    /// </summary>
+    public interface IPrescriptionRepository : IReadRepository<Prescription>
+    {
+        // 继承5个标准只读方法:
+        // - Task<T?> GetByIdAsync(Guid id)
+        // - Task<IEnumerable<T>> GetAllAsync()
+        // - Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        // - Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate)
+        // - Task<long> CountAsync()
+        
+        // 添加模块特定方法:
+        Task<Prescription?> GetByIdWithItemsAsync(Guid id);
+        Task<PagedResult<Prescription>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
+        Task<List<Prescription>> GetByPatientIdAsync(Guid patientId);
+        Task<List<Prescription>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+    }
+}
+
+namespace LYBT.Module.Prescriptions.Repositories
+{
+    /// <summary>
+    /// 处方仓储实现 - 继承BaseReadRepository标准实现
+    /// </summary>
+    internal class PrescriptionRepository : BaseReadRepository<Prescription>, IPrescriptionRepository
+    {
+        public PrescriptionRepository(AppDbContext context) : base(context) { }
+        
+        // 5个标准方法由BaseReadRepository自动提供（自动过滤软删除）
+        
+        // 实现模块特定方法:
+        public async Task<Prescription?> GetByIdWithItemsAsync(Guid id)
+        {
+            return await DbSet
+                .AsNoTracking()
+                .Include(p => p.Items)  // 预加载关联数据
+                .Where(p => p.Id == id && !p.IsDeleted)
+                .SingleOrDefaultAsync();
+        }
+        // ... 其他特定方法
+    }
+}
+
+// 2. 聚合根实体的完整Repository（Patient示例）
+namespace LYBT.Module.Patients.Interfaces
+{
+    public interface IPatientRepository : IRepository<Patient>
+    {
+        // 继承14个标准方法(5个读+6个写+3个辅助)
+        // 添加模块特定方法:
+        Task<PagedResult<Patient>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
+    }
+}
+
+namespace LYBT.Module.Patients.Repositories
+{
+    internal class PatientRepository : BaseRepository<Patient>, IPatientRepository
+    {
+        public PatientRepository(AppDbContext context, ILogger<PatientRepository> logger) 
+            : base(context, logger) { }
+        
+        // 14个标准方法由BaseRepository自动提供
+        // 实现模块特定方法...
+    }
+}
+```
+
+**关键特性**:
+
+1. **自动软删除过滤**: 所有读方法自动过滤 `IsDeleted = true` 记录
+2. **Repository可见性**: 实现类为 `internal`，仅Service层可访问（Epic #1600 Phase 3）
+3. **测试访问**: 通过 `InternalsVisibleTo` 属性允许单元测试访问
+4. **Include策略**: 模块特定方法负责预加载关联数据，避免N+1查询
+
+**详细文档**:
+- 完整Repository模式说明: [repository-pattern.md](docs/explanation/architecture/patterns/repository-pattern.md)
+- Server端Repository层架构: [server/README.md](docs/explanation/architecture/server/README.md)
+- 接口定义位置: [shared/README.md](docs/explanation/architecture/shared/README.md)
+
 ---
 
 ## 3. 工具快速参考

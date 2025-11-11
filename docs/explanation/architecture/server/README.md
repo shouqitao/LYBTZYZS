@@ -499,6 +499,118 @@ public class PatientService : IPatientService
 - ✅ **封装性增强**：Repository实现细节对外部模块隐藏
 - ✅ **测试支持**：通过InternalsVisibleTo保证单元测试可访问
 
+**Repository基类架构（Epic #2016 Phase 3）**：
+
+项目采用双基类架构，根据实体类型（聚合根 vs 从属实体）选择不同的基类：
+
+| 基类 | 实现接口 | 用途 | 位置 |
+|-----|---------|------|------|
+| `BaseReadRepository<T>` | `IReadRepository<T>` | 只读仓储基类 | `LYBT.Infrastructure/Repositories` |
+| `BaseRepository<T>` | `IRepository<T>` | 完整仓储基类 | `LYBT.Infrastructure/Repositories` |
+
+**BaseReadRepository<T> - 只读仓储基类（Epic #2016 Phase 3）**：
+
+用于从属实体（Prescription、Consultation），强制通过聚合根写入。
+
+```csharp
+/// <summary>
+/// 只读仓储基类 - 实现IReadRepository接口的5个标准方法
+/// Epic #2016 Phase 3: 为从属实体提供只读数据访问
+/// </summary>
+/// <remarks>
+/// 设计原则：
+/// - ⭐ 所有查询自动过滤软删除记录（IsDeleted = true）
+/// - ⭐ 适用于从属实体（Prescription/Consultation），强制通过聚合根写入
+/// - ⭐ 继承此类的Repository应为internal，防止外部直接访问
+/// </remarks>
+public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity> 
+    where TEntity : BaseEntity
+{
+    protected readonly AppDbContext Context;
+    protected readonly DbSet<TEntity> DbSet;
+
+    protected BaseReadRepository(AppDbContext context)
+    {
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+        DbSet = Context.Set<TEntity>();
+    }
+
+    // 所有方法自动过滤软删除记录 (IsDeleted = true)
+    public virtual async Task<TEntity?> GetByIdAsync(Guid id)
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted && e.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .ToListAsync();
+    }
+
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .Where(predicate)
+            .ToListAsync();
+    }
+
+    public virtual async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .Where(predicate)
+            .SingleOrDefaultAsync();
+    }
+
+    public virtual async Task<long> CountAsync()
+    {
+        return await DbSet
+            .Where(e => !e.IsDeleted)
+            .LongCountAsync();
+    }
+}
+```
+
+**关键特性**：
+- ✅ **自动软删除过滤**：所有查询自动排除 `IsDeleted = true` 的记录
+- ✅ **只读约束**：无写入方法，强制通过聚合根进行修改
+- ✅ **方法可重写**：所有方法为 `virtual`，允许派生类自定义实现
+- ✅ **参数校验**：对 `predicate` 参数进行空值检查
+
+**使用示例（PrescriptionRepository）**：
+```csharp
+// 从属实体的只读Repository
+internal class PrescriptionRepository : BaseReadRepository<Prescription>, IPrescriptionRepository
+{
+    public PrescriptionRepository(AppDbContext context) : base(context) { }
+    
+    // 继承5个标准只读方法（自动软删除过滤）
+    // 添加模块特定方法
+    public async Task<Prescription?> GetByIdWithItemsAsync(Guid id)
+    {
+        return await DbSet
+            .AsNoTracking()
+            .Include(p => p.Items)
+            .Where(p => p.Id == id && !p.IsDeleted)
+            .SingleOrDefaultAsync();
+    }
+}
+```
+
+**相关文档**：
+- **Repository模式详解** → [repository-pattern.md](../patterns/repository-pattern.md) - 三层接口架构完整说明
+- **Repository接口定义** → [shared/README.md](../shared/README.md#11-repository接口层epic-2016-phase-3) - IReadRepository和IRepository接口规范
+
+---
+
 **BaseRepository抽象类模板**：
 
 > **📝 Epic #1725改进** - 新增GetPagedResultAsync辅助方法（2025-10-30）：
