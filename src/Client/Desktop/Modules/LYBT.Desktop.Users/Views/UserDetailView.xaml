@@ -103,49 +103,6 @@
                                Foreground="#1E293B"
                                Margin="20,0,0,0" />
 
-                    <!-- 重置密码按钮 -->
-                    <Button Grid.Column="2"
-                            Command="{Binding ResetPasswordCommand}"
-                            Background="#F59E0B"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Height="48"
-                            MinWidth="130"
-                            FontSize="15"
-                            FontWeight="Medium"
-                            Cursor="Hand"
-                            VerticalAlignment="Center">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="10"
-                                                    Padding="24,12">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <TextBlock Text="🔐"
-                                                               FontSize="16"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,8,0"/>
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#D97706" />
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#B45309" />
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                        <TextBlock Text="重置密码" />
-                    </Button>
                 </Grid>
             </Border>
 

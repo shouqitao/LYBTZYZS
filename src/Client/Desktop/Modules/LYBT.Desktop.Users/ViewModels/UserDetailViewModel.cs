@@ -47,12 +47,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         public DelegateCommand EditUserCommand { get; }
 
-        /// <summary>
-        /// 重置密码命令
-        /// </summary>
-        public DelegateCommand ResetPasswordCommand { get; }
-
-        /// <summary>
+/// <summary>
         /// 切换状态命令（Issue #1263: 启用/禁用开关）
         /// </summary>
         public DelegateCommand ToggleStatusCommand { get; }
@@ -71,7 +66,6 @@ namespace LYBT.Desktop.Users.ViewModels
 
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
             EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
-            ResetPasswordCommand = new DelegateCommand(ExecuteResetPassword, CanExecuteResetPassword);
             // 异步命令包装（DelegateCommand不直接支持async Task）
             ToggleStatusCommand = new DelegateCommand(async () => await ExecuteToggleStatusAsync(), CanExecuteToggleStatus);
         }
@@ -183,29 +177,6 @@ namespace LYBT.Desktop.Users.ViewModels
             return User != null && !IsLoading;
         }
 
-        private void ExecuteResetPassword()
-        {
-            if (User == null)
-            {
-                Logger.LogWarning("无法重置密码：用户为空");
-                return;
-            }
-
-            Logger.LogInformation("导航到重置密码页面: UserId={UserId}", User.Id);
-
-            // Issue #1928: 使用Navigation模式代替Dialog
-            var parameters = new NavigationParameters
-            {
-                { "UserId", User.Id }
-            };
-            NavigateTo("ContentRegion", "ResetPasswordView", parameters);
-        }
-
-        private bool CanExecuteResetPassword()
-        {
-            return User != null && !IsLoading;
-        }
-
         /// <summary>
         /// 切换用户状态（启用/禁用）
         /// Issue #1794: 优化方法长度（58→30行）
@@ -309,7 +280,6 @@ namespace LYBT.Desktop.Users.ViewModels
         private void RaiseCanExecuteChanged()
         {
             EditUserCommand.RaiseCanExecuteChanged();
-            ResetPasswordCommand.RaiseCanExecuteChanged();
             ToggleStatusCommand.RaiseCanExecuteChanged();
         }
     }
