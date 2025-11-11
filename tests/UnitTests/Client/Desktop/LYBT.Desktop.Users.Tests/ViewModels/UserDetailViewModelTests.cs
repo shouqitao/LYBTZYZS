@@ -67,7 +67,6 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Assert
             _viewModel.GoBackCommand.Should().NotBeNull();
             _viewModel.EditUserCommand.Should().NotBeNull();
-            _viewModel.ResetPasswordCommand.Should().NotBeNull();
         }
 
         #endregion
@@ -142,40 +141,6 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             // Assert
             canExecute.Should().BeFalse();
-        }
-
-        #endregion
-
-        #region CanExecuteResetPassword 测试
-
-        [Fact]
-        public void CanExecuteResetPassword_WithoutUser_ShouldReturnFalse()
-        {
-            // Arrange
-            _viewModel.User = null;
-
-            // Act
-            var method = typeof(UserDetailViewModel)
-                .GetMethod("CanExecuteResetPassword", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var canExecute = (bool)method!.Invoke(_viewModel, null)!;
-
-            // Assert
-            canExecute.Should().BeFalse();
-        }
-
-        [Fact]
-        public void CanExecuteResetPassword_WithUserAndNotBusy_ShouldReturnTrue()
-        {
-            // Arrange
-            _viewModel.User = CreateSampleUserDto();
-
-            // Act
-            var method = typeof(UserDetailViewModel)
-                .GetMethod("CanExecuteResetPassword", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var canExecute = (bool)method!.Invoke(_viewModel, null)!;
-
-            // Assert
-            canExecute.Should().BeTrue();
         }
 
         #endregion
