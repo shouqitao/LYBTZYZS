@@ -232,6 +232,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Validator Loggers（CRUD统一模式升级）
             RegisterLogger<PatientValidator>(containerRegistry); // 修复PatientValidator DI错误
+
+            // Issue #2072: Formula组件Logger（8列DataGrid验方录入功能）
+            RegisterLogger<FormulaHerbFilterManager>(containerRegistry); // 修复FormulaDetailView DI错误
         }
 
         /// <summary>
