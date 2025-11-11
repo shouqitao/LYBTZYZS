@@ -64,15 +64,10 @@ namespace LYBT.Infrastructure.DependencyInjection
         /// <returns>服务集合</returns>
         public static IServiceCollection AddServerRepositories(this IServiceCollection services)
         {
-            // Phase 1: 注册泛型只读Repository接口（已迁移到Shared层）
-            // 用于从属实体模块（Consultation, Prescription）
-            services.AddScoped(typeof(LYBT.Shared.Models.Interfaces.IReadRepository<>),
-                              typeof(LYBT.Infrastructure.Repositories.BaseReadRepository<>));
-
-            // Phase 2: 注册新的泛型Repository接口（Shared层）
-            // 用于聚合根实体模块（Users, Patients, Herbs）
-            services.AddScoped(typeof(LYBT.Shared.Models.Interfaces.IRepository<>),
-                              typeof(LYBT.Infrastructure.Repositories.BaseRepository<>));
+            // ⚠️ 重要：不要注册开放泛型的基类（BaseReadRepository<>, BaseRepository<>）
+            // 原因：基类是抽象的，无法被DI容器实例化
+            // 具体的Repository实现类（如PrescriptionRepository, PatientRepository）
+            // 已在各自模块的Module注册方法中注册（如AddPrescriptionsModule）
 
             // 注册核心Repository（如果存在）
             // 这里可以手动添加已知的Repository
