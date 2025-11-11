@@ -3,6 +3,7 @@ using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LYBT.Module.Herbs.Repositories
@@ -60,7 +61,7 @@ namespace LYBT.Module.Herbs.Repositories
         {
             var query = _dbSet
                 .AsNoTracking()
-                .Where(h => !h.IsDeleted);
+                .Where(h => !h.IsDeleted && h.Status == CommonStatus.Enabled);
 
             // 关键字搜索：名称、拼音码
             if (!string.IsNullOrWhiteSpace(keyword))
