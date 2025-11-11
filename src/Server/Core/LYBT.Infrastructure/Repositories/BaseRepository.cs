@@ -168,42 +168,6 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// 分页查询
-        /// </summary>
-        public virtual async Task<(List<TEntity> Items, int TotalCount)> GetPagedAsync(
-            int pageNumber,
-            int pageSize,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Expression<Func<TEntity, object>>? orderBy = null,
-            bool descending = true)
-        {
-            var query = _dbSet.Where(e => !e.IsDeleted);
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            var totalCount = await query.CountAsync();
-
-            if (orderBy != null)
-            {
-                query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
-            }
-            else
-            {
-                query = query.OrderByDescending(e => e.CreatedAt);
-            }
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return (items, totalCount);
-        }
-
-        /// <summary>
         /// 分页查询（IRepository接口实现 - 支持关键字搜索）
         /// </summary>
         /// <param name="pageNumber">页码（从1开始）</param>
@@ -223,6 +187,53 @@ namespace LYBT.Infrastructure.Repositories
 
             var items = await query
                 .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<TEntity>(items, totalCount, pageNumber, pageSize);
+        }
+
+        /// <summary>
+        /// 高级分页查询（支持动态过滤、排序和分页）
+        /// Phase 6: 补全IRepository高级分页方法实现（Epic #2016）
+        /// </summary>
+        /// <param name="pageNumber">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <param name="predicate">查询条件表达式（可选）</param>
+        /// <param name="orderBy">排序表达式（可选）</param>
+        /// <param name="ascending">是否升序排序（默认false降序）</param>
+        /// <returns>分页结果对象</returns>
+        public virtual async Task<PagedResult<TEntity>> GetPagedAsync(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, object>>? orderBy = null,
+            bool ascending = false)
+        {
+            var query = _dbSet.Where(e => !e.IsDeleted);
+
+            // 应用查询条件
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            // 获取总数
+            var totalCount = await query.CountAsync();
+
+            // 应用排序
+            if (orderBy != null)
+            {
+                query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderByDescending(e => e.CreatedAt);
+            }
+
+            // 应用分页
+            var items = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -335,7 +346,11 @@ namespace LYBT.Infrastructure.Repositories
             return entityList;
         }
 
-
+        // IRepository AddRangeAsync显式接口实现
+        async Task<IEnumerable<TEntity>> IRepository<TEntity>.AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            return await AddRangeAsync(entities);
+        }
 
         #endregion
 
@@ -410,13 +425,91 @@ namespace LYBT.Infrastructure.Repositories
         // Issue #1766: 删除显式接口实现DeleteAsync(Guid) - public方法已自动实现接口
 
         /// <summary>
-        /// 批量软删除
+        /// 批量软删除（根据条件表达式）
         /// </summary>
         public virtual async Task<int> DeleteRangeAsync(Expression<Func<TEntity, bool>> predicate)
         {
             var entities = await _dbSet
                 .Where(e => !e.IsDeleted)
                 .Where(predicate)
+                .ToListAsync();
+
+            if (!entities.Any())
+            {
+                _logger?.LogWarning("没有找到符合条件的实体进行删除 - 类型: {EntityType}", typeof(TEntity).Name);
+                return 0;
+            }
+
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.Now;
+            }
+
+            _dbSet.UpdateRange(entities);
+            await SaveChangesAsync();
+
+            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+                typeof(TEntity).Name, entities.Count);
+
+            return entities.Count;
+        }
+
+        /// <summary>
+        /// 批量软删除（根据实体集合）
+        /// </summary>
+        public virtual async Task<int> DeleteRangeAsync(IEnumerable<TEntity> entities)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+
+            var entityList = entities.ToList();
+            if (!entityList.Any())
+            {
+                _logger?.LogWarning("实体集合为空，无法删除 - 类型: {EntityType}", typeof(TEntity).Name);
+                return 0;
+            }
+
+            var deletedCount = 0;
+            foreach (var entity in entityList)
+            {
+                if (!entity.IsDeleted)
+                {
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    deletedCount++;
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                _dbSet.UpdateRange(entityList.Where(e => e.IsDeleted));
+                await SaveChangesAsync();
+
+                _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
+                    typeof(TEntity).Name, deletedCount);
+            }
+
+            return deletedCount;
+        }
+
+        /// <summary>
+        /// 批量软删除（根据ID集合）
+        /// </summary>
+        public virtual async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+                throw new ArgumentNullException(nameof(ids));
+
+            var idList = ids.ToList();
+            if (!idList.Any())
+            {
+                _logger?.LogWarning("ID集合为空，无法删除 - 类型: {EntityType}", typeof(TEntity).Name);
+                return 0;
+            }
+
+            var entities = await _dbSet
+                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
                 .ToListAsync();
 
             if (!entities.Any())

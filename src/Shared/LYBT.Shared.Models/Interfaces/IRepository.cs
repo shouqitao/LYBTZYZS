@@ -76,7 +76,7 @@ public interface IRepository<T> where T : class
     /// <returns>单个实体对象，不存在时返回null</returns>
     Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
 
-    // ========== 写入方法 (3个) ==========
+    // ========== 写入方法 (6个) ==========
 
     /// <summary>
     /// 新增实体
@@ -98,6 +98,27 @@ public interface IRepository<T> where T : class
     /// <param name="id">实体唯一标识（Guid类型）</param>
     /// <returns>删除成功返回true，否则返回false</returns>
     Task<bool> DeleteAsync(Guid id);
+
+    /// <summary>
+    /// 批量新增实体
+    /// </summary>
+    /// <param name="entities">待新增的实体集合</param>
+    /// <returns>新增后的实体集合</returns>
+    Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities);
+
+    /// <summary>
+    /// 批量删除实体（软删除）
+    /// </summary>
+    /// <param name="entities">待删除的实体集合</param>
+    /// <returns>成功删除的数量</returns>
+    Task<int> DeleteRangeAsync(IEnumerable<T> entities);
+
+    /// <summary>
+    /// 批量删除实体（根据ID集合，软删除）
+    /// </summary>
+    /// <param name="ids">待删除的实体ID集合</param>
+    /// <returns>成功删除的数量</returns>
+    Task<int> DeleteRangeAsync(IEnumerable<Guid> ids);
 
     // ========== 辅助方法 (3个) ==========
 

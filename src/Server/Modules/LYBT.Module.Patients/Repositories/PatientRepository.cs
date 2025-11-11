@@ -133,6 +133,27 @@ namespace LYBT.Module.Patients.Repositories
         }
 
         /// <summary>
+        /// 批量新增患者
+        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
+        /// </summary>
+        public async Task<IEnumerable<Patient>> AddRangeAsync(IEnumerable<Patient> entities)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+
+            var entityList = entities.ToList();
+            foreach (var entity in entityList)
+            {
+                entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
+            }
+
+            await _dbSet.AddRangeAsync(entityList);
+            await SaveChangesAsync();
+
+            return entityList;
+        }
+
+        /// <summary>
         /// 删除患者（软删除）
         /// </summary>
         public async Task<bool> DeleteAsync(Guid id)
@@ -144,6 +165,69 @@ namespace LYBT.Module.Patients.Repositories
             entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// 批量软删除患者（根据实体集合）
+        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
+        /// </summary>
+        public async Task<int> DeleteRangeAsync(IEnumerable<Patient> entities)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+
+            var entityList = entities.ToList();
+            var deletedCount = 0;
+
+            foreach (var entity in entityList)
+            {
+                if (!entity.IsDeleted)
+                {
+                    entity.IsDeleted = true;
+                    entity.UpdatedAt = DateTime.Now;
+                    deletedCount++;
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                _dbSet.UpdateRange(entityList.Where(e => e.IsDeleted));
+                await SaveChangesAsync();
+            }
+
+            return deletedCount;
+        }
+
+        /// <summary>
+        /// 批量软删除患者（根据ID集合）
+        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
+        /// </summary>
+        public async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+                throw new ArgumentNullException(nameof(ids));
+
+            var idList = ids.ToList();
+            if (!idList.Any())
+                return 0;
+
+            var entities = await _dbSet
+                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
+                .ToListAsync();
+
+            if (!entities.Any())
+                return 0;
+
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+                entity.UpdatedAt = DateTime.Now;
+            }
+
+            _dbSet.UpdateRange(entities);
+            await SaveChangesAsync();
+
+            return entities.Count;
         }
 
         /// <summary>
