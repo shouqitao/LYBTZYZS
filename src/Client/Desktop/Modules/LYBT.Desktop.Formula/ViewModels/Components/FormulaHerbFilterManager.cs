@@ -91,10 +91,11 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
 
             try
             {
-                // 双重匹配：名称包含 OR 拼音码以输入开头
+                // 双重匹配：名称包含 OR 拼音码以输入开头（仅显示启用状态的药材）
                 var filtered = _allHerbs
-                    .Where(h => h.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                               (h.PinYinCode != null && h.PinYinCode.StartsWith(searchText, StringComparison.OrdinalIgnoreCase)))
+                    .Where(h => h.IsEnabled &&
+                               (h.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                               (h.PinYinCode != null && h.PinYinCode.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))))
                     .Take(maxResults)
                     .ToList();
 
