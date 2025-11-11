@@ -423,7 +423,7 @@
                                       ItemsSource="{Binding HerbRows}"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="True"
-                                      IsReadOnly="False"
+                                      IsReadOnly="{Binding IsReadOnly}"
                                       GridLinesVisibility="Horizontal"
                                       HeadersVisibility="Column"
                                       SelectionMode="Single"
