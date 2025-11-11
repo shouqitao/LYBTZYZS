@@ -82,7 +82,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         public ICommand EditCommand => _commandHandler.EditCommand;
         public ICommand SaveCommand => _commandHandler.SaveCommand;
         public ICommand CancelEditCommand => _commandHandler.CancelEditCommand;
-        public ICommand PrintCommand { get; }
         public ICommand ViewMedicalHistoryCommand => _commandHandler.ViewMedicalHistoryCommand;
 
         #endregion 命令
@@ -112,9 +111,6 @@ namespace LYBT.Desktop.Patients.ViewModels
             _commandHandler.OnEditCancelled += HandleEditCancelled;
             _commandHandler.OnPatientSaved += HandlePatientSaved;
             _commandHandler.OnPatientDeleted += HandlePatientDeleted;
-
-            // 打印命令（待实现）
-            PrintCommand = new Prism.Commands.DelegateCommand(async () => await PrintPatientAsync());
         }
 
         #endregion 构造函数
@@ -276,28 +272,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #endregion 事件处理
 
         #region 辅助方法
-
-        /// <summary>
-        /// 患者病历打印功能（待实现 Issue #1202）
-        /// </summary>
-        private async Task PrintPatientAsync()
-        {
-            if (Patient == null)
-            {
-                await ShowWarningMessageAsync("患者信息不完整，无法打印");
-                return;
-            }
-
-            try
-            {
-                await ShowWarningMessageAsync("打印功能正在开发中");
-                return;
-            }
-            catch (Exception ex)
-            {
-                await ShowErrorMessageAsync($"打印病历失败: {ex.Message}");
-            }
-        }
 
         private void RefreshProperties()
         {

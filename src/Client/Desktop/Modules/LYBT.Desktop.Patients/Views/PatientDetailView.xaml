@@ -92,155 +92,21 @@
                                Foreground="#1E293B"
                                Margin="20,0,0,0" />
 
-                    <!-- 右侧功能按钮 -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <!-- 查看病历按钮 -->
-                        <Button Command="{Binding ViewMedicalHistoryCommand}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Foreground="#64748B"
-                                FontSize="14"
-                                Cursor="Hand"
-                                Padding="12,8"
-                                Margin="0,0,8,0">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="8"
-                                                        Padding="{TemplateBinding Padding}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="📋" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0" />
-                                                        <TextBlock Text="病历" FontSize="{TemplateBinding FontSize}" VerticalAlignment="Center" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#F1F5F9" />
-                                                        <Setter Property="Foreground" Value="#475569" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-
-                        <!-- 打印按钮 -->
-                        <Button Command="{Binding PrintCommand}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Foreground="#64748B"
-                                FontSize="14"
-                                Cursor="Hand"
-                                Padding="12,8">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="8"
-                                                        Padding="{TemplateBinding Padding}">
-                                                    <TextBlock Text="🖨" FontSize="14" VerticalAlignment="Center" />
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#F1F5F9" />
-                                                        <Setter Property="Foreground" Value="#475569" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </Grid>
+                                    </Grid>
             </Border>
         </Grid>
 
         <!-- 内容区域 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="40,28,40,28" Background="#F8FAFC">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                                <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- 患者头像和基本信息卡片 -->
+                                                <!-- 详细信息 -->
                 <Border Grid.Row="0"
-                        Background="White"
-                        CornerRadius="16"
-                        Padding="32,24"
-                        Effect="{StaticResource CardShadow}"
-                        Margin="0,0,0,28">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border Grid.Column="0"
-                                Width="80" Height="80"
-                                CornerRadius="40"
-                                Background="#3B82F6"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Margin="0,0,20,0">
-                            <TextBlock Text="👤"
-                                       FontSize="36"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="White" />
-                        </Border>
-
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock FontSize="24" FontWeight="Bold">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}{0}">
-                                        <Binding Path="PatientName" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-
-                            <TextBlock FontSize="16" Foreground="Gray" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}{0} · {1}岁">
-                                        <Binding Path="Gender" />
-                                        <Binding Path="Age" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-
-                            <TextBlock Text="{Binding PhoneNumber}"
-                                       FontSize="14"
-                                       Foreground="Gray"
-                                       Margin="0,4,0,0" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Border Background="#10B981"
-                                    CornerRadius="12"
-                                    Padding="12,4">
-                                <TextBlock Text="{Binding StatusMessage}"
-                                           Foreground="White"
-                                           FontWeight="Bold"
-                                           FontSize="12" />
-                            </Border>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- 详细信息 -->
-                <Border Grid.Row="1"
                         Background="White"
                         CornerRadius="16"
                         Padding="32,24"
@@ -400,8 +266,8 @@
                     </Expander>
                 </Border>
 
-                <!-- 就诊历史快速预览 -->
-                <Border Grid.Row="2"
+                                <!-- 就诊历史快速预览 -->
+                <Border Grid.Row="1"
                         Background="White"
                         CornerRadius="16"
                         Padding="32,24"
