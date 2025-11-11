@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Formula.Models; // Issue #2071: FormulaItemRow
 using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -23,6 +25,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         // Issue #1787: 使用Component组件（通过DI注入）
         private readonly FormulaDataManager _dataManager;
         private readonly FormulaCommandHandler _commandHandler;
+        private readonly FormulaHerbFilterManager _herbFilterManager; // Issue #2076: 智能过滤组件
+        private readonly FormulaValidator _validator; // Issue #2079: 数据验证组件
 
         #endregion
 
@@ -32,12 +36,17 @@ namespace LYBT.Desktop.Formula.ViewModels
         private FormulaDto? _formula;
         private bool _isEditMode;
         private string _formulaName = string.Empty;
+        private string? _pinYinCode;
         private string _effect = string.Empty;
         private string _usage = string.Empty;
         private string _property = string.Empty;
         private string _remark = string.Empty;
         private bool _isShared;
         private string _category = string.Empty;
+
+        // Issue #2083: 复制模式支持
+        private bool _isCopy;
+        private string _saveButtonText = "保存";
 
         #endregion
 
@@ -77,9 +86,33 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
+                    RaisePropertyChanged(nameof(IsReadOnly));
                     UpdateCommandStates();
                 }
             }
+        }
+
+        /// <summary>
+        /// 是否为只读模式（与编辑模式相反）
+        /// </summary>
+        public bool IsReadOnly => !IsEditMode;
+
+        /// <summary>
+        /// 是否为复制模式（Issue #2083）
+        /// </summary>
+        public bool IsCopy
+        {
+            get => _isCopy;
+            set => SetProperty(ref _isCopy, value);
+        }
+
+        /// <summary>
+        /// 保存按钮文案（Issue #2083: 复制模式显示"另存为我的验方"）
+        /// </summary>
+        public string SaveButtonText
+        {
+            get => _saveButtonText;
+            set => SetProperty(ref _saveButtonText, value);
         }
 
         #endregion
@@ -99,9 +132,21 @@ namespace LYBT.Desktop.Formula.ViewModels
                 if (SetProperty(ref _formulaName, value))
                 {
                     ValidateProperty();
+                    // 自动更新拼音码（仅当名称发生变化时）
+                    PinYinCode = PinYinHelper.GetPinYinCode(value);
                     UpdateCommandStates();
                 }
             }
+        }
+
+        /// <summary>
+        /// 拼音码
+        /// </summary>
+        [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
+        public string? PinYinCode
+        {
+            get => _pinYinCode;
+            set => SetProperty(ref _pinYinCode, value);
         }
 
         /// <summary>
@@ -227,6 +272,21 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public ObservableCollection<FormulaHerbItemDto> HerbItems { get; } = new();
 
+        /// <summary>
+        /// 药材行集合（Issue #2071: 8列DataGrid数据模型）
+        /// </summary>
+        public ObservableCollection<FormulaItemRow> HerbRows { get; } = new();
+
+        /// <summary>
+        /// 命令处理器（Issue #2074: 暴露给XAML绑定）
+        /// </summary>
+        public FormulaCommandHandler CommandHandler => _commandHandler;
+
+        /// <summary>
+        /// 过滤管理器（Issue #2076: 暴露给XAML绑定FilteredHerbs）
+        /// </summary>
+        public FormulaHerbFilterManager FilterManager => _herbFilterManager;
+
         #endregion
 
         #region 命令
@@ -271,6 +331,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand ViewUsageHistoryCommand { get; }
 
+        /// <summary>
+        /// 过滤药材命令（Issue #2076: 智能匹配过滤）
+        /// </summary>
+        public DelegateCommand<string> FilterHerbsCommand { get; }
+
+        /// <summary>
+        /// 键盘导航命令（Issue #2077: ComboBox键盘导航）
+        /// </summary>
+        public DelegateCommand<System.Windows.Input.KeyEventArgs> HandleKeyNavigationCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -279,6 +349,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #1787: 注入Component组件
             FormulaDataManager dataManager,
             FormulaCommandHandler commandHandler,
+            FormulaHerbFilterManager herbFilterManager, // Issue #2076: 智能过滤组件
+            FormulaValidator validator, // Issue #2079: 数据验证组件
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -289,6 +361,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #1787: 通过DI注入组件
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _herbFilterManager = herbFilterManager ?? throw new ArgumentNullException(nameof(herbFilterManager)); // Issue #2076
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator)); // Issue #2079
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -299,6 +373,27 @@ namespace LYBT.Desktop.Formula.ViewModels
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), CanCopyFormula);
             PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
             ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, CanViewUsageHistory);
+            FilterHerbsCommand = new DelegateCommand<string>(OnFilterHerbs); // Issue #2076: 智能过滤命令
+            HandleKeyNavigationCommand = new DelegateCommand<System.Windows.Input.KeyEventArgs>(OnHandleKeyNavigation); // Issue #2077: 键盘导航命令
+
+            // 订阅CommandHandler事件（Issue #2074: 8列DataGrid行操作）
+            _commandHandler.OnHerbAdded += () =>
+            {
+                // TODO: Task 2.2 实现添加行逻辑
+                Logger.LogDebug("OnHerbAdded事件触发");
+            };
+
+            _commandHandler.OnHerbRemoved += () =>
+            {
+                // TODO: Task 2.2 实现删除行逻辑
+                Logger.LogDebug("OnHerbRemoved事件触发");
+            };
+
+            _commandHandler.OnHerbsCleared += () =>
+            {
+                // TODO: Task 2.2 实现清空逻辑
+                Logger.LogDebug("OnHerbsCleared事件触发");
+            };
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -320,9 +415,14 @@ namespace LYBT.Desktop.Formula.ViewModels
                 FormulaId = parameters.GetValue<Guid>("FormulaId");
             }
 
-            if (parameters.ContainsKey("EditMode"))
+            // 检查是否是只读模式（参考Herbs模块）
+            if (parameters.TryGetValue("ReadOnly", out bool readOnly))
             {
-                IsEditMode = parameters.GetValue<bool>("EditMode");
+                IsEditMode = !readOnly; // ReadOnly=true时，IsEditMode=false
+            }
+            else
+            {
+                IsEditMode = false; // 默认查看模式（与当前逻辑保持一致）
             }
         }
 
@@ -332,6 +432,39 @@ namespace LYBT.Desktop.Formula.ViewModels
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
             await base.InitializeAsync(parameters);
+
+            // Issue #2076: 初始化药材过滤管理器（加载所有药材到内存）
+            try
+            {
+                Logger.LogInformation("开始初始化FormulaHerbFilterManager");
+                await _herbFilterManager.InitializeAsync();
+                Logger.LogInformation("FormulaHerbFilterManager初始化完成");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "初始化FormulaHerbFilterManager时发生异常");
+                ShowErrorMessage("初始化失败：加载药材列表失败，请稍后重试");
+            }
+
+            // Issue #2083: 检测复制模式
+            if (parameters.ContainsKey("IsCopy") && parameters.GetValue<bool>("IsCopy"))
+            {
+                var copiedFormula = parameters.GetValue<FormulaDto>("Formula");
+                if (copiedFormula != null)
+                {
+                    Logger.LogInformation("进入复制模式: {FormulaName}", copiedFormula.Name);
+
+                    // 设置复制模式标志
+                    IsCopy = true;
+                    SaveButtonText = "另存为我的验方";
+
+                    // 预填充数据
+                    Formula = copiedFormula;
+                    IsEditMode = true;
+
+                    return; // 跳过后续的正常加载逻辑
+                }
+            }
 
             if (FormulaId != Guid.Empty)
             {
@@ -399,6 +532,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (Formula == null) return;
 
             FormulaName = Formula.Name ?? string.Empty;
+            PinYinCode = Formula.PinYinCode ?? string.Empty;
             Effect = Formula.Effect ?? string.Empty;
             Usage = Formula.Usage ?? string.Empty;
             Property = Formula.Property ?? string.Empty;
@@ -418,29 +552,98 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private async Task SaveAsync()
         {
+            // Issue #2083: 验证配方名称不为空
+            if (string.IsNullOrWhiteSpace(FormulaName))
+            {
+                await ShowErrorMessageAsync("验方名称不能为空");
+                return;
+            }
+
             if (Formula == null || !ValidateInputs())
             {
                 return;
             }
 
+            // Issue #2079: 验证药材行数据
+            var (isValid, validationError) = _validator.ValidateHerbRows(HerbRows);
+            if (!isValid)
+            {
+                await ShowErrorMessageAsync($"数据验证失败：\n{validationError}");
+                return;
+            }
+
             try
             {
-                SetIsBusy(true, "正在保存配方...");
+                SetIsBusy(true, IsCopy ? "正在另存为我的验方..." : "正在保存配方...");
 
-                var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
-                    Formula,
-                    FormulaName,
-                    Effect,
-                    Usage,
-                    Remark,
-                    IsShared,
-                    HerbItems);
+                // Issue #2079: 将HerbRows转换为HerbItems（8列布局 → DTO列表）
+                var herbItemsToSave = _dataManager.ConvertRowsToHerbItems(HerbRows);
 
-                if (success && updatedFormula != null)
+                bool success;
+                FormulaDto? resultFormula;
+                string? errorMessage;
+
+                // Issue #2083: 根据IsCopy决定调用CreateAsync还是UpdateAsync
+                if (IsCopy)
                 {
-                    Formula = updatedFormula;
+                    // 复制模式：创建新验方
+                    Logger.LogInformation("复制模式保存：创建新验方");
+
+                    var createDto = new FormulaInputDto
+                    {
+                        Id = null, // 创建模式Id为null
+                        Name = FormulaName.Trim(),
+                        PinYinCode = string.IsNullOrWhiteSpace(PinYinCode) ? null : PinYinCode.Trim(),
+                        Property = string.IsNullOrWhiteSpace(Property) ? null : Property.Trim(),
+                        Effect = Effect.Trim(),
+                        Usage = Usage.Trim(),
+                        Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
+                        IsShared = IsShared,
+                        Status = CommonStatus.Enabled,
+                        Herbs = herbItemsToSave.Select(h => new FormulaHerbItemInputDto
+                        {
+                            HerbId = h.HerbId,
+                            HerbName = h.Herb?.Name ?? h.HerbName ?? string.Empty,
+                            Quantity = h.Quantity,
+                            Unit = h.Unit ?? "g",
+                            Preparation = h.Preparation,
+                            Usage = h.Usage,
+                            SortOrder = h.SortOrder
+                        }).ToList()
+                    };
+
+                    (success, resultFormula, errorMessage) = await _commandHandler.CreateAsync(createDto);
+                }
+                else
+                {
+                    // 编辑模式：更新现有验方
+                    Logger.LogInformation("编辑模式保存：更新验方 {FormulaId}", Formula.Id);
+
+                    (success, resultFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
+                        Formula,
+                        FormulaName,
+                        PinYinCode,
+                        Property,
+                        Effect,
+                        Usage,
+                        Remark,
+                        IsShared,
+                        herbItemsToSave);
+                }
+
+                if (success && resultFormula != null)
+                {
+                    // Issue #2083: 先确定成功消息（在重置IsCopy之前）
+                    var successMessage = IsCopy ? "验方已另存为我的验方" : "验方保存成功";
+
+                    Formula = resultFormula;
                     IsEditMode = false;
-                    await ShowSuccessMessageAsync("配方保存成功");
+                    IsCopy = false; // 重置复制模式标志
+                    SaveButtonText = "保存"; // 重置按钮文案
+
+                    await ShowSuccessMessageAsync(successMessage);
+
+                    Logger.LogInformation("保存成功：{FormulaId}, {FormulaName}", resultFormula.Id, resultFormula.Name);
                 }
                 else
                 {
@@ -512,9 +715,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private void CancelEdit()
         {
-            IsEditMode = false;
-            LoadFormulaData(); // 重新加载原始数据
-            ClearAllErrors(); // 清除验证错误
+            // 与Herbs模块保持一致：直接返回列表页
+            NavigateBack();
         }
 
         /// <summary>
@@ -522,7 +724,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private void NavigateBack()
         {
-            NavigateTo("MainRegion", "FormulaManagementView");
+            NavigateTo("ContentRegion", "FormulaManagementView");
         }
 
         /// <summary>
@@ -615,6 +817,65 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             return !IsBusy && Formula != null;
         }
+
+        #endregion
+
+        #region 智能过滤方法（Issue #2076）
+
+        /// <summary>
+        /// 过滤药材（Issue #2076: 智能匹配过滤）
+        /// </summary>
+        /// <param name="searchText">搜索文本（药材名称或拼音码）</param>
+        private void OnFilterHerbs(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                _herbFilterManager.FilterHerbs(string.Empty); // 清空过滤结果
+                return;
+            }
+
+            try
+            {
+                Logger.LogDebug("开始过滤药材: {SearchText}", searchText);
+                _herbFilterManager.FilterHerbs(searchText, maxResults: 5);
+                Logger.LogDebug("过滤完成，结果数: {Count}", _herbFilterManager.FilteredHerbs.Count);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "过滤药材时发生异常: {SearchText}", searchText);
+                ShowErrorMessage($"过滤药材失败：{ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region 键盘导航方法（Issue #2077）
+
+        /// <summary>
+        /// 处理键盘导航（Issue #2077: ComboBox键盘导航）
+        /// </summary>
+        /// <param name="e">键盘事件参数</param>
+        private void OnHandleKeyNavigation(System.Windows.Input.KeyEventArgs e)
+        {
+            if (e == null) return;
+
+            Logger.LogDebug("处理键盘导航: Key={Key}, Source={Source}", e.Key, e.Source?.GetType().Name);
+
+            // Enter键：确认选择并跳转（焦点管理由View层的CodeBehind处理）
+            // Up/Down键：ComboBox默认行为（不需要特殊处理）
+            // Tab键：WPF默认Tab顺序（不需要特殊处理）
+            
+            // 这里只记录日志，实际的焦点管理由View层的CodeBehind实现
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                Logger.LogDebug("Enter键按下，准备跳转到用量列");
+                // e.Handled 由 CodeBehind 根据情况设置
+            }
+        }
+
+        #endregion
+
+        #region 命令状态更新
 
         /// <summary>
         /// 更新命令状态

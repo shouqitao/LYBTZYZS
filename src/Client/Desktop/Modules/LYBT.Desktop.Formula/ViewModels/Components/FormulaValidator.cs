@@ -1,4 +1,6 @@
-﻿using LYBT.Shared.Components;
+﻿using System.Collections.ObjectModel;
+using LYBT.Desktop.Formula.Models;
+using LYBT.Shared.Components;
 
 namespace LYBT.Desktop.Formula.ViewModels.Components
 {
@@ -101,6 +103,71 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         /// <summary>
         /// 验证配方完整性
         /// </summary>
+        #region 8列DataGrid验证（Issue #2079）
+
+        /// <summary>
+        /// 验证药材行数据（Issue #2079: 8列DataGrid数据验证）
+        /// </summary>
+        public (bool isValid, string? errorMessage) ValidateHerbRows(ObservableCollection<FormulaItemRow>? rows)
+        {
+            if (rows == null || rows.Count == 0)
+            {
+                return (false, "请至少添加一个药材");
+            }
+
+            var errors = new List<string>();
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var row = rows[i];
+
+                // 验证规则1：如果用量>0，药材不能为空
+                if (row.Quantity1 > 0 && row.Herb1 == null)
+                    errors.Add($"第{i + 1}行：药材1不能为空");
+                if (row.Quantity2 > 0 && row.Herb2 == null)
+                    errors.Add($"第{i + 1}行：药材2不能为空");
+                if (row.Quantity3 > 0 && row.Herb3 == null)
+                    errors.Add($"第{i + 1}行：药材3不能为空");
+                if (row.Quantity4 > 0 && row.Herb4 == null)
+                    errors.Add($"第{i + 1}行：药材4不能为空");
+
+                // 验证规则2：如果药材不为空，用量必须>0
+                if (row.Herb1 != null && row.Quantity1 <= 0)
+                    errors.Add($"第{i + 1}行：药材1的用量必须大于0");
+                if (row.Herb2 != null && row.Quantity2 <= 0)
+                    errors.Add($"第{i + 1}行：药材2的用量必须大于0");
+                if (row.Herb3 != null && row.Quantity3 <= 0)
+                    errors.Add($"第{i + 1}行：药材3的用量必须大于0");
+                if (row.Herb4 != null && row.Quantity4 <= 0)
+                    errors.Add($"第{i + 1}行：药材4的用量必须大于0");
+
+                // 验证规则3：同一行不能有重复药材
+                var herbIds = new List<Guid?>
+                {
+                    row.Herb1?.Id,
+                    row.Herb2?.Id,
+                    row.Herb3?.Id,
+                    row.Herb4?.Id
+                }
+                .Where(id => id.HasValue && id.Value != Guid.Empty)
+                .ToList();
+
+                if (herbIds.Count != herbIds.Distinct().Count())
+                {
+                    errors.Add($"第{i + 1}行：存在重复的药材");
+                }
+            }
+
+            if (errors.Any())
+            {
+                return (false, string.Join("\n", errors));
+            }
+
+            return (true, null);
+        }
+
+        #endregion
+
         public ValidationResult ValidateFormulaCompleteness(
             string formulaName,
             string effect,

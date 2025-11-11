@@ -4,18 +4,109 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Formula.Converters"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
 
-    <Grid>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!-- 布尔值到可见性转换器 -->
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+            <!-- 布尔值反转转换器（Issue #2075: 用于按钮IsEnabled绑定）-->
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+
+            <!-- 卡片阴影 -->
+            <DropShadowEffect x:Key="CardShadow"
+                              BlurRadius="16"
+                              ShadowDepth="2"
+                              Opacity="0.08"
+                              Color="#000000"/>
+
+            <!-- 单行文本框样式 -->
+            <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ScrollViewer x:Name="PART_ContentHost" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                                </Trigger>
+                                <Trigger Property="IsReadOnly" Value="True">
+                                    <Setter Property="Background" Value="#F9FAFB" />
+                                    <Setter Property="Foreground" Value="#6B7280" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 多行文本框样式 -->
+            <Style x:Key="ModernMultilineTextBoxStyle" TargetType="TextBox">
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Padding" Value="14,12"/>
+                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="AcceptsReturn" Value="True"/>
+                <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                                </Trigger>
+                                <Trigger Property="IsReadOnly" Value="True">
+                                    <Setter Property="Background" Value="#F9FAFB" />
+                                    <Setter Property="Foreground" Value="#6B7280" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="#F8FAFC">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="16">
+        <!-- 顶部操作栏 -->
+        <Border Grid.Row="0"
+                Background="White"
+                CornerRadius="16"
+                Padding="32,24"
+                Margin="40,28,40,0"
+                Effect="{StaticResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -23,88 +114,66 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!-- 返回按钮 -->
                 <Button Grid.Column="0"
                         Command="{Binding BackCommand}"
-                        Background="Transparent" BorderThickness="0" Padding="8"
-                        Foreground="White"
-                        Margin="0,0,16,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="←" VerticalAlignment="Center" FontSize="16" />
-                        <TextBlock Text="返回" Margin="4,0,0,0" />
-                    </StackPanel>
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#64748B"
+                        FontSize="15"
+                        FontWeight="Medium"
+                        Cursor="Hand"
+                        Padding="14,10"
+                        VerticalAlignment="Center">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="◀"
+                                                           FontSize="14"
+                                                           Foreground="{TemplateBinding Foreground}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,8,0"/>
+                                                <TextBlock Text="返回"
+                                                           FontSize="{TemplateBinding FontSize}"
+                                                           FontWeight="{TemplateBinding FontWeight}"
+                                                           Foreground="{TemplateBinding Foreground}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F1F5F9" />
+                                                <Setter Property="Foreground" Value="#475569" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
                 </Button>
 
+                <!-- 标题 -->
                 <TextBlock Grid.Column="1"
                            Text="验方详情"
-                           FontSize="20"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           VerticalAlignment="Center" />
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="#1E293B"
+                           Margin="20,0,0,0" />
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Command="{Binding EditCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="✏" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="编辑" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding SaveCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="💾" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="保存" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding CancelEditCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4"
-                            Visibility="{Binding IsReadOnly, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <TextBlock Text="✖" FontSize="16" VerticalAlignment="Center" />
-                    </Button>
-
-                    <Button Command="{Binding CopyFormulaCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📋" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="复制" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding ViewUsageHistoryCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📈" VerticalAlignment="Center" FontSize="16" />
-                            <TextBlock Text="使用记录" Margin="4,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Command="{Binding PrintCommand}"
-                            Background="Transparent" BorderThickness="0" Padding="8"
-                            Foreground="White"
-                            Margin="4">
-                        <TextBlock Text="🖨" FontSize="16" VerticalAlignment="Center" />
-                    </Button>
-                </StackPanel>
             </Grid>
         </Border>
 
         <!-- 内容区域 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="16">
+            <Grid Margin="40,28,40,28" Background="#F8FAFC">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -112,79 +181,13 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- 验方基本信息卡片 -->
-                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                    <Grid Margin="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border Grid.Column="0"
-                                Width="80" Height="80"
-                                CornerRadius="8"
-                                Background="{DynamicResource AccentBrush}"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Margin="0,0,20,0">
-                            <TextBlock Text="📜"
-                                       FontSize="36"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="White" />
-                        </Border>
-
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding FormulaName}"
-                                       FontSize="24"
-                                       FontWeight="Bold" />
-
-                            <TextBlock FontSize="16" Foreground="Gray" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}{0} · {1}味药材">
-                                        <Binding Path="Category" />
-                                        <Binding Path="HerbCount" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-
-                            <TextBlock FontSize="14" Foreground="Gray" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="总价: ¥{0:F2} · 难度: {1}">
-                                        <Binding Path="TotalPrice" />
-                                        <Binding Path="Difficulty" />
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Border Background="{DynamicResource SuccessBrush}"
-                                    CornerRadius="12"
-                                    Padding="12,4"
-                                    Margin="0,0,0,8">
-                                <TextBlock Text="{Binding StatusMessage}"
-                                           Foreground="White"
-                                           FontWeight="Bold"
-                                           FontSize="12" />
-                            </Border>
-
-                            <Border Background="{DynamicResource WarningBrush}"
-                                    CornerRadius="8"
-                                    Padding="8,3"
-                                    Visibility="{Binding IsShared, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="共享"
-                                           Foreground="White"
-                                           FontWeight="Bold"
-                                           FontSize="10" />
-                            </Border>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
                 <!-- 基本信息 -->
-                <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Border Grid.Row="0"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28">
                     <Expander Header="基本信息" IsExpanded="True">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
@@ -208,18 +211,20 @@
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBox Grid.Row="0" Grid.Column="1"
-                                     Text="{Binding Formula.Name, Mode=TwoWay}"
+                                     Text="{Binding FormulaName, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
                                      Margin="0,8,16,8" />
 
                             <TextBlock Grid.Row="0" Grid.Column="2"
-                                       Text="配制难度:"
+                                       Text="拼音码:"
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBox Grid.Row="0" Grid.Column="3"
-                                     Text="{Binding Formula.Difficulty, Mode=TwoWay}"
+                                     Text="{Binding PinYinCode, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
+                                     Style="{StaticResource ModernTextBoxStyle}"
                                      Margin="0,8" />
 
                             <!-- 第二行 -->
@@ -229,22 +234,23 @@
                                        VerticalAlignment="Top"
                                        Margin="0,8" />
                             <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
-                                     Text="{Binding Formula.Property, Mode=TwoWay}"
+                                     Text="{Binding Property, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
                                      MinHeight="40"
                                      Margin="0,8" />
 
                             <!-- 第三行 -->
                             <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="功效:"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Top"
-                                       Margin="0,8" />
+                           Text="功效*:"
+                           FontWeight="Bold"
+                           Foreground="Red"
+                           VerticalAlignment="Top"
+                           Margin="0,8" />
                             <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
-                                     Text="{Binding Formula.Effect, Mode=TwoWay}"
+                                     Text="{Binding Effect, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
                                      MinHeight="60"
                                      Margin="0,8" />
 
@@ -255,9 +261,9 @@
                                        VerticalAlignment="Top"
                                        Margin="0,8" />
                             <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                                     Text="{Binding Formula.Usage, Mode=TwoWay}"
+                                     Text="{Binding Usage, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
                                      MinHeight="60"
                                      Margin="0,8" />
 
@@ -268,7 +274,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBlock Grid.Row="4" Grid.Column="1"
-                                       Text="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding CreatedAtDisplay}"
                                        VerticalAlignment="Center"
                                        Margin="0,8,16,8" />
 
@@ -278,74 +284,433 @@
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                             <TextBlock Grid.Row="4" Grid.Column="3"
-                                       Text="{Binding UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding UpdatedAtDisplay}"
                                        VerticalAlignment="Center"
                                        Margin="0,8" />
                         </Grid>
                     </Expander>
                 </Border>
 
-                <!-- 药材组成 -->
-                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                    <Expander Header="药材组成" IsExpanded="True">
+                <!-- 药材组成（Issue #2075: 8列DataGrid快速录入布局）-->
+                <Border Grid.Row="1"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28">
+                    <Expander Header="药材组成（快速录入）" IsExpanded="True">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <!-- 药材统计信息 -->
+                            <!-- 操作按钮区（Issue #2075: 添加行、删除行、清空）-->
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                                <TextBlock Text="{Binding HerbCount, StringFormat='共{0}味药材'}"
-                                           FontWeight="Bold"
-                                           Margin="0,0,20,0" />
-                                <TextBlock Text="{Binding TotalPrice, StringFormat='总价: ¥{0:F2}'}"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource AccentBrush}" />
+                                <Button Content="添加行"
+                                        Command="{Binding CommandHandler.AddHerbCommand}"
+                                        IsEnabled="{Binding CommandHandler.IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+                                        Background="#10B981"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="14"
+                                        FontWeight="Medium"
+                                        Height="36"
+                                        MinWidth="100"
+                                        Margin="0,0,12,0"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="8"
+                                                                Padding="16,8">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#059669" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="Background" Value="#D1D5DB" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Content="删除行"
+                                        Command="{Binding CommandHandler.RemoveHerbCommand}"
+                                        IsEnabled="{Binding CommandHandler.IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+                                        Background="#EF4444"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="14"
+                                        FontWeight="Medium"
+                                        Height="36"
+                                        MinWidth="100"
+                                        Margin="0,0,12,0"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="8"
+                                                                Padding="16,8">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#DC2626" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="Background" Value="#D1D5DB" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <Button Content="清空"
+                                        Command="{Binding CommandHandler.ClearAllCommand}"
+                                        IsEnabled="{Binding CommandHandler.IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+                                        Background="#F59E0B"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="14"
+                                        FontWeight="Medium"
+                                        Height="36"
+                                        MinWidth="100"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="8"
+                                                                Padding="16,8">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#D97706" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="Background" Value="#D1D5DB" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </StackPanel>
 
-                            <!-- 药材列表 -->
+                            <!-- 8列DataGrid（Issue #2075: 药材1+用量1、药材2+用量2、药材3+用量3、药材4+用量4）-->
                             <DataGrid Grid.Row="1"
-                                      ItemsSource="{Binding HerbItems}"
+                                      ItemsSource="{Binding HerbRows}"
                                       AutoGenerateColumns="False"
-                                      CanUserAddRows="False"
-                                      CanUserDeleteRows="False"
-                                      IsReadOnly="{Binding IsReadOnly}"
+                                      CanUserAddRows="True"
+                                      IsReadOnly="False"
                                       GridLinesVisibility="Horizontal"
                                       HeadersVisibility="Column"
                                       SelectionMode="Single"
                                       AlternationCount="2"
-                                      MaxHeight="300">
+                                      MinHeight="200"
+                                      MaxHeight="400">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="序号"
-                                                        Binding="{Binding SortOrder}"
-                                                        Width="60" />
-                                    <DataGridTextColumn Header="药材名称"
-                                                        Binding="{Binding HerbName}"
-                                                        Width="120" />
-                                    <DataGridTextColumn Header="用量"
-                                                        Binding="{Binding Quantity, StringFormat=F1}"
+                                    <!-- 药材1 -->
+                                    <!-- 药材1 - 智能过滤ComboBox (Issue #2076) -->
+                                    <DataGridTemplateColumn Header="药材1" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Herb1.Name}" VerticalAlignment="Center" Padding="5,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedItem="{Binding Herb1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          IsEditable="True"
+                                                          IsTextSearchEnabled="False"
+                                                          StaysOpenOnEdit="True"
+                                                          MaxDropDownHeight="200">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="TextChanged">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.FilterHerbsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ComboBox}, Path=Text}"/>
+                                                        </i:EventTrigger>
+                                                        <!-- Issue #2077: 键盘导航 -->
+                                                        <i:EventTrigger EventName="PreviewKeyDown">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                                <TextBlock Text="{Binding PinYinCode}" FontSize="10" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 用量1 -->
+                                    <DataGridTextColumn Header="用量1(g)"
+                                                        Binding="{Binding Quantity1, Mode=TwoWay, StringFormat=F1}"
                                                         Width="80" />
-                                    <DataGridTextColumn Header="单位"
-                                                        Binding="{Binding Unit}"
-                                                        Width="60" />
-                                    <DataGridTextColumn Header="单价"
-                                                        Binding="{Binding Price, StringFormat=F2}"
+
+                                    <!-- 药材2 -->
+                                    <!-- 药材2 - 智能过滤ComboBox (Issue #2076) -->
+                                    <DataGridTemplateColumn Header="药材2" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Herb2.Name}" VerticalAlignment="Center" Padding="5,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedItem="{Binding Herb2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          IsEditable="True"
+                                                          IsTextSearchEnabled="False"
+                                                          StaysOpenOnEdit="True"
+                                                          MaxDropDownHeight="200">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="TextChanged">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.FilterHerbsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ComboBox}, Path=Text}"/>
+                                                        </i:EventTrigger>
+                                                        <!-- Issue #2077: 键盘导航 -->
+                                                        <i:EventTrigger EventName="PreviewKeyDown">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                                <TextBlock Text="{Binding PinYinCode}" FontSize="10" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 用量2 -->
+                                    <DataGridTextColumn Header="用量2(g)"
+                                                        Binding="{Binding Quantity2, Mode=TwoWay, StringFormat=F1}"
                                                         Width="80" />
-                                    <DataGridTextColumn Header="炮制方法"
-                                                        Binding="{Binding Preparation}"
-                                                        Width="100" />
-                                    <DataGridTextColumn Header="用法"
-                                                        Binding="{Binding Usage}"
-                                                        Width="*" />
+
+                                    <!-- 药材3 -->
+                                    <!-- 药材3 - 智能过滤ComboBox (Issue #2076) -->
+                                    <DataGridTemplateColumn Header="药材3" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Herb3.Name}" VerticalAlignment="Center" Padding="5,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedItem="{Binding Herb3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          IsEditable="True"
+                                                          IsTextSearchEnabled="False"
+                                                          StaysOpenOnEdit="True"
+                                                          MaxDropDownHeight="200">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="TextChanged">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.FilterHerbsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ComboBox}, Path=Text}"/>
+                                                        </i:EventTrigger>
+                                                        <!-- Issue #2077: 键盘导航 -->
+                                                        <i:EventTrigger EventName="PreviewKeyDown">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                                <TextBlock Text="{Binding PinYinCode}" FontSize="10" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 用量3 -->
+                                    <DataGridTextColumn Header="用量3(g)"
+                                                        Binding="{Binding Quantity3, Mode=TwoWay, StringFormat=F1}"
+                                                        Width="80" />
+
+                                    <!-- 药材4 -->
+                                    <!-- 药材4 - 智能过滤ComboBox (Issue #2076) -->
+                                    <DataGridTemplateColumn Header="药材4" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Herb4.Name}" VerticalAlignment="Center" Padding="5,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedItem="{Binding Herb4, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          ItemsSource="{Binding DataContext.FilterManager.FilteredHerbs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          IsEditable="True"
+                                                          IsTextSearchEnabled="False"
+                                                          StaysOpenOnEdit="True"
+                                                          MaxDropDownHeight="200">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="TextChanged">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.FilterHerbsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ComboBox}, Path=Text}"/>
+                                                        </i:EventTrigger>
+                                                        <!-- Issue #2077: 键盘导航 -->
+                                                        <i:EventTrigger EventName="PreviewKeyDown">
+                                                            <prism:InvokeCommandAction Command="{Binding DataContext.HandleKeyNavigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type i:EventTrigger}}, Path=EventArgs}"/>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                                <TextBlock Text="{Binding PinYinCode}" FontSize="10" Foreground="Gray"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 用量4 -->
+                                    <DataGridTextColumn Header="用量4(g)"
+                                                        Binding="{Binding Quantity4, Mode=TwoWay, StringFormat=F1}"
+                                                        Width="80" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
                     </Expander>
                 </Border>
 
+                <!-- 底部按钮栏（仅编辑模式显示）-->
+                <Border Grid.Row="2"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}"
+                        Margin="0,0,0,28"
+                        Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <!-- 取消按钮 -->
+                        <Button Command="{Binding CancelEditCommand}"
+                                Background="White"
+                                BorderBrush="#D1D5DB"
+                                BorderThickness="1"
+                                Foreground="#374151"
+                                FontSize="15"
+                                FontWeight="Medium"
+                                Height="48"
+                                MinWidth="120"
+                                Cursor="Hand"
+                                Margin="0,0,16,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="10"
+                                                        Padding="24,12">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#F9FAFB" />
+                                                        <Setter Property="BorderBrush" Value="#9CA3AF" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="取消" />
+                        </Button>
+
+                        <!-- 保存修改按钮 -->
+                        <Button Command="{Binding SaveCommand}"
+                                Background="#3B82F6"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontSize="15"
+                                FontWeight="Medium"
+                                Height="48"
+                                MinWidth="120"
+                                Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="10"
+                                                        Padding="24,12">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#2563EB" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter Property="Background" Value="#1D4ED8" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter Property="Background" Value="#D1D5DB" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                            <!-- Issue #2083: 绑定SaveButtonText以支持动态文案 -->
+                            <TextBlock Text="{Binding SaveButtonText}" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
                 <!-- 详细描述和备注 -->
-                <Border Grid.Row="3" Style="{StaticResource CardStyle}">
+                <Border Grid.Row="3"
+                        Background="White"
+                        CornerRadius="16"
+                        Padding="32,24"
+                        Effect="{StaticResource CardShadow}">
                     <Expander Header="详细描述" IsExpanded="False">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
@@ -362,7 +727,7 @@
                             <TextBox Grid.Row="0"
                                      Text="{Binding Formula.Description, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
                                      MinHeight="60"
                                      Margin="0,32,0,8" />
 
@@ -373,9 +738,9 @@
                                        VerticalAlignment="Top"
                                        Margin="0,8" />
                             <TextBox Grid.Row="1"
-                                     Text="{Binding Formula.Remark, Mode=TwoWay}"
+                                     Text="{Binding Remark, Mode=TwoWay}"
                                      IsReadOnly="{Binding IsReadOnly}"
-                                     TextWrapping="Wrap"
+                                     Style="{StaticResource ModernMultilineTextBoxStyle}"
                                      MinHeight="40"
                                      Margin="0,32,0,8" />
                         </Grid>

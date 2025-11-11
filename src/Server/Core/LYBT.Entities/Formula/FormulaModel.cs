@@ -22,6 +22,11 @@ namespace LYBT.Entities.Formula
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>拼音码（用于快速搜索）</summary>
+        [StringLength(50)]
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
         /// <summary>功用</summary>
         [StringLength(500)]
         [DisplayName("功用")]

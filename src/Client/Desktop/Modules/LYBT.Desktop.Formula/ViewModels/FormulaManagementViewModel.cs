@@ -21,12 +21,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         // Issue #1787: 使用CommandHandler替代直接Repository访问
         private readonly FormulaCommandHandler _commandHandler;
 
+        // Issue #2080: 注入DataManager用于复制验方
+        private readonly FormulaDataManager _dataManager;
+
         #endregion
 
         #region 构造函数
 
         public FormulaManagementViewModel(
             FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
+            FormulaDataManager dataManager, // Issue #2080: 注入DataManager
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -36,6 +40,9 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             // Issue #1787: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+
+            // Issue #2080: 注入DataManager
+            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
 
             PageTitle = "配方管理";
         }
@@ -85,7 +92,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            NavigateTo("MainRegion", "FormulaDetailView");
+            NavigateTo("ContentRegion", "FormulaDetailView");
             await Task.CompletedTask;
         }
 
@@ -223,37 +230,60 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 自定义功能
 
+        private DelegateCommand<FormulaDto>? _viewDetailCommand;
+        
         /// <summary>
         /// 查看配方详情
         /// </summary>
-        public DelegateCommand<FormulaDto> ViewDetailCommand =>
-            new DelegateCommand<FormulaDto>(ViewFormulaDetail, CanViewDetail);
+        public DelegateCommand<FormulaDto> ViewDetailCommand => 
+            _viewDetailCommand ??= new DelegateCommand<FormulaDto>(ViewFormulaDetail, CanViewDetail);
 
+        private DelegateCommand<FormulaDto>? _editCommand;
+        
         /// <summary>
         /// 编辑配方
         /// </summary>
-        public DelegateCommand<FormulaDto> EditCommand =>
-            new DelegateCommand<FormulaDto>(EditFormula, CanEditFormula);
+        public DelegateCommand<FormulaDto> EditCommand => 
+            _editCommand ??= new DelegateCommand<FormulaDto>(EditFormula, CanEditFormula);
 
+        private DelegateCommand<FormulaDto>? _copyCommand;
+        
         /// <summary>
         /// 复制配方
         /// </summary>
-        public DelegateCommand<FormulaDto> CopyCommand =>
-            new DelegateCommand<FormulaDto>(CopyFormula, CanCopyFormula);
+        public DelegateCommand<FormulaDto> CopyCommand => 
+            _copyCommand ??= new DelegateCommand<FormulaDto>(CopyFormula, CanCopyFormula);
 
         /// <summary>
         /// 查看配方详情
         /// </summary>
         private void ViewFormulaDetail(FormulaDto formula)
         {
-            if (formula == null) return;
-
-            var parameters = new NavigationParameters
+            try
             {
-                { "FormulaId", formula.Id },
-                { "ReadOnly", true }
-            };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+                Logger.LogInformation("开始查看验方详情，ID: {FormulaId}, Name: {FormulaName}", formula?.Id, formula?.Name);
+                
+                if (formula == null)
+                {
+                    Logger.LogWarning("验方对象为null，无法查看详情");
+                    return;
+                }
+
+                var parameters = new NavigationParameters
+                {
+                    { "FormulaId", formula.Id },
+                    { "ReadOnly", true }
+                };
+                
+                Logger.LogInformation("准备导航到FormulaDetailView，参数: FormulaId={FormulaId}", formula.Id);
+                NavigateTo("ContentRegion", "FormulaDetailView", parameters);
+                Logger.LogInformation("导航命令已发送");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "查看验方详情失败");
+                HandleError(ex, "查看验方详情");
+            }
         }
 
         /// <summary>
@@ -265,24 +295,51 @@ namespace LYBT.Desktop.Formula.ViewModels
 
             var parameters = new NavigationParameters
             {
-                { "FormulaId", formula.Id }
+                { "FormulaId", formula.Id },
+                { "ReadOnly", false } // 明确指定编辑模式
             };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+            NavigateTo("ContentRegion", "FormulaDetailView", parameters);
         }
 
         /// <summary>
-        /// 复制配方
+        /// 复制配方（Issue #2080: 使用DataManager.CreateFormulaCopy）
         /// </summary>
         private void CopyFormula(FormulaDto formula)
         {
-            if (formula == null) return;
-
-            var parameters = new NavigationParameters
+            if (formula == null)
             {
-                { "SourceFormulaId", formula.Id },
-                { "Mode", "Copy" }
-            };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+                Logger.LogWarning("复制配方失败：formula参数为null");
+                return;
+            }
+
+            try
+            {
+                Logger.LogInformation("开始复制验方: {FormulaId}, Name: {FormulaName}", formula.Id, formula.Name);
+
+                // 1. 获取当前用户名
+                var currentUserName = SessionManager?.CurrentUser?.UserName ?? "Unknown";
+                Logger.LogDebug("当前用户: {UserName}", currentUserName);
+
+                // 2. 调用DataManager创建副本
+                var copiedFormula = _dataManager.CreateFormulaCopy(formula, currentUserName);
+                Logger.LogInformation("验方副本创建成功，包含 {HerbCount} 个药材", copiedFormula.Herbs?.Count ?? 0);
+
+                // 3. 导航至详情页，传递IsCopy=true参数
+                var parameters = new NavigationParameters
+                {
+                    { "Formula", copiedFormula },
+                    { "IsCopy", true }
+                };
+
+                Logger.LogInformation("准备导航到FormulaDetailView（复制模式），FormulaName: {FormulaName}", copiedFormula.Name);
+                NavigateTo("ContentRegion", "FormulaDetailView", parameters);
+                Logger.LogInformation("导航命令已发送");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "复制验方时发生异常: {FormulaId}", formula.Id);
+                HandleError(ex, "复制验方");
+            }
         }
 
         /// <summary>
@@ -290,7 +347,10 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private bool CanViewDetail(FormulaDto formula)
         {
-            return formula != null && !IsBusy;
+            var canView = formula != null && !IsBusy;
+            Logger.LogDebug("CanViewDetail: formula={FormulaId}, IsBusy={IsBusy}, Result={CanView}", 
+                formula?.Id, IsBusy, canView);
+            return canView;
         }
 
         /// <summary>

@@ -2,22 +2,123 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
+using Prism.Mvvm;
 
 namespace LYBT.Desktop.Formula.ViewModels.Components
 {
     /// <summary>
     /// 配方命令处理器 - 组件化架构实现
     /// Issue #1153: 负责配方的命令操作（保存、复制、打印等）
+    /// Issue #2074: 新增8列DataGrid行操作命令（添加行、删除行、清空）
     /// </summary>
-    public class FormulaCommandHandler
+    public class FormulaCommandHandler : BindableBase
     {
         private readonly IFormulaRepository _repository;
         private readonly ILogger<FormulaCommandHandler> _logger;
+
+        #region 私有字段
+
+        private bool _isReadOnly;
+        private bool _isLoading;
+
+        #endregion
+
+        #region 状态属性（Issue #2074: 命令CanExecute状态管理）
+
+        /// <summary>
+        /// 是否只读模式
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set => SetProperty(ref _isReadOnly, value);
+        }
+
+        /// <summary>
+        /// 是否正在加载
+        /// </summary>
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
+        #endregion
+
+        #region 命令（Issue #2074: 8列DataGrid行操作）
+
+        /// <summary>
+        /// 添加药材行命令
+        /// </summary>
+        public DelegateCommand AddHerbCommand { get; }
+
+        /// <summary>
+        /// 删除药材行命令
+        /// </summary>
+        public DelegateCommand RemoveHerbCommand { get; }
+
+        /// <summary>
+        /// 清空药材列表命令
+        /// </summary>
+        public DelegateCommand ClearAllCommand { get; }
+
+        #endregion
+
+        #region 事件（Issue #2074: 事件通知模式）
+
+        /// <summary>
+        /// 添加药材行事件
+        /// </summary>
+        public event Action? OnHerbAdded;
+
+        /// <summary>
+        /// 删除药材行事件
+        /// </summary>
+        public event Action? OnHerbRemoved;
+
+        /// <summary>
+        /// 清空药材列表事件
+        /// </summary>
+        public event Action? OnHerbsCleared;
+
+        #endregion
 
         public FormulaCommandHandler(IFormulaRepository repository, ILogger<FormulaCommandHandler> logger)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            // Issue #2074: 初始化8列DataGrid行操作命令
+            AddHerbCommand = new DelegateCommand(
+                () =>
+                {
+                    _logger.LogDebug("执行AddHerbCommand");
+                    OnHerbAdded?.Invoke();
+                },
+                () => !IsReadOnly && !IsLoading)
+                .ObservesProperty(() => IsReadOnly)
+                .ObservesProperty(() => IsLoading);
+
+            RemoveHerbCommand = new DelegateCommand(
+                () =>
+                {
+                    _logger.LogDebug("执行RemoveHerbCommand");
+                    OnHerbRemoved?.Invoke();
+                },
+                () => !IsReadOnly && !IsLoading)
+                .ObservesProperty(() => IsReadOnly)
+                .ObservesProperty(() => IsLoading);
+
+            ClearAllCommand = new DelegateCommand(
+                () =>
+                {
+                    _logger.LogDebug("执行ClearAllCommand");
+                    OnHerbsCleared?.Invoke();
+                },
+                () => !IsReadOnly && !IsLoading)
+                .ObservesProperty(() => IsReadOnly)
+                .ObservesProperty(() => IsLoading);
         }
 
         #region 保存操作
@@ -28,6 +129,8 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         public async Task<(bool success, FormulaDto? formula, string? errorMessage)> SaveFormulaAsync(
             FormulaDto currentFormula,
             string formulaName,
+            string? pinYinCode,
+            string property,
             string effect,
             string usage,
             string remark,
@@ -42,15 +145,20 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                 {
                     Id = currentFormula.Id,
                     Name = formulaName.Trim(),
-                    Effect = string.IsNullOrWhiteSpace(effect) ? null! : effect.Trim(),
-                    Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
-                    Remark = string.IsNullOrWhiteSpace(remark) ? null! : remark.Trim(),
+                    PinYinCode = string.IsNullOrWhiteSpace(pinYinCode) ? null : pinYinCode.Trim(),
+                    Property = string.IsNullOrWhiteSpace(property) ? null : property.Trim(),
+                    Effect = string.IsNullOrWhiteSpace(effect) ? string.Empty : effect.Trim(),
+                    Usage = string.IsNullOrWhiteSpace(usage) ? string.Empty : usage.Trim(),
+                    Remark = string.IsNullOrWhiteSpace(remark) ? null : remark.Trim(),
                     IsShared = isShared,
+                    Status = currentFormula.Status,
                     Herbs = herbItems.Select(h => new FormulaHerbItemInputDto
                     {
                         Id = h.Id,
                         HerbId = h.HerbId,
+                        HerbName = h.Herb?.Name ?? h.HerbName ?? string.Empty,
                         Quantity = h.Quantity,
+                        Unit = h.Unit ?? "g",
                         Preparation = h.Preparation,
                         Usage = h.Usage,
                         SortOrder = h.SortOrder

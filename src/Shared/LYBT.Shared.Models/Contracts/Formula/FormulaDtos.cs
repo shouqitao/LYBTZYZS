@@ -16,6 +16,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
         [DisplayName("功效")]
         public string? Effect { get; set; }
 
@@ -214,6 +217,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [StringLength(100, ErrorMessage = "验方名称不能超过100个字符")]
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
+
+        [StringLength(50, ErrorMessage = "拼音码不能超过50个字符")]
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
 
         [StringLength(200, ErrorMessage = "功效描述不能超过200个字符")]
         [DisplayName("功效")]
