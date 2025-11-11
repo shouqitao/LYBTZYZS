@@ -5,6 +5,7 @@ using LYBT.Desktop.Models.ViewModels.Base;
 // Epic #1773: 已移除LYBT.Desktop.Herbs.Interfaces using（不再需要IHerbRepository）
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Text;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -70,6 +71,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (SetProperty(ref _name, value))
                 {
                     ValidateProperty();
+                    // 自动更新拼音码（仅当名称发生变化时）
+                    PinYinCode = PinYinHelper.GetPinYinCode(value);
                 }
             }
         }
