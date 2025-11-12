@@ -1,6 +1,6 @@
 # Auth API 参考文档
 
-**版本**: v1
+**文档版本**:  v1
 **基础路径**: `/api/v1/auth`
 **认证方式**: Bearer Token (JWT) / AllowAnonymous
 **最后更新**: 2025-11-07（Token认证安全重构）

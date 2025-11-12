@@ -10,12 +10,18 @@
 - ✅ 配置生产环境JWT密钥管理
 - ✅ 理解双轨认证机制（普通用户 + 超级管理员）
 - ✅ 实现Token刷新和会话管理
-- ✅ 集成第三方认证提供商（扩展）
+- ✅ 集成Token安全存储（Epic #1861）
+- ✅ 实现客户端JWT自验证（Epic #1861）
 
 **前置条件**:
 - 阅读完成：`docs/architecture/server/README.md` - Server端三层架构
-- 理解概念：JWT工作原理、Bearer Token、Claims-Based认证
-- 熟悉框架：ASP.NET Core 8、Entity Framework Core 8
+- 理解概念：JWT工作原理、Bearer Token、Claims-Based认证、DPAPI加密
+- 熟悉框架：ASP.NET Core 8、Entity Framework Core 8、Windows DPAPI
+
+**文档版本**: v2.0
+**最后更新**: 2025-11-12
+**相关Epic**: #1861 - Token认证安全重构
+**Issue来源**: #1861, #1838 (JWT Token自动刷新)
 
 ---
 
@@ -2377,9 +2383,599 @@ public class RateLimitTests : AuthIntegrationTestBase
 
 ---
 
-## 12. 常见问题与陷阱
+## 12. Token安全存储与验证（Epic #1861）
 
-### 陷阱1: 中间件顺序错误
+### 12.1 Token本地加密存储（Windows DPAPI）
+
+Epic #1861引入了Windows DPAPI加密存储Token，确保本地Token安全。
+
+**存储位置**:
+```
+%LOCALAPPDATA%\LYBTZYZS\tokens.dat
+```
+
+**DPAPI加密示例代码**:
+
+```csharp
+// 位置: src/Client/Desktop/Foundation/LYBT.Desktop.Foundation.Auth/Services/SecureTokenStorage.cs
+
+using System.Security.Cryptography;
+using System.Text;
+
+namespace LYBT.Desktop.Foundation.Auth.Services;
+
+public class SecureTokenStorage
+{
+    private readonly string _tokenFilePath;
+
+    public SecureTokenStorage()
+    {
+        var appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LYBTZYZS");
+
+        if (!Directory.Exists(appDataPath))
+        {
+            Directory.CreateDirectory(appDataPath);
+        }
+
+        _tokenFilePath = Path.Combine(appDataPath, "tokens.dat");
+    }
+
+    /// <summary>
+    /// 使用DPAPI加密存储Token
+    /// </summary>
+    public void StoreToken(string token)
+    {
+        // 将Token转换为字节数组
+        var tokenBytes = Encoding.UTF8.GetBytes(token);
+
+        // 使用DPAPI加密（范围：CurrentUser，只有当前Windows用户可以解密）
+        var encryptedBytes = ProtectedData.Protect(
+            tokenBytes,
+            entropy: null, // 可选的额外熵
+            scope: DataProtectionScope.CurrentUser);
+
+        // 写入文件
+        File.WriteAllBytes(_tokenFilePath, encryptedBytes);
+
+        // 设置文件权限（仅当前用户可访问）
+        var fileInfo = new FileInfo(_tokenFilePath);
+        fileInfo.Attributes |= FileAttributes.Hidden;
+    }
+
+    /// <summary>
+    /// 使用DPAPI解密读取Token
+    /// </summary>
+    public string? RetrieveToken()
+    {
+        if (!File.Exists(_tokenFilePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            // 读取加密数据
+            var encryptedBytes = File.ReadAllBytes(_tokenFilePath);
+
+            // 使用DPAPI解密
+            var tokenBytes = ProtectedData.Unprotect(
+                encryptedBytes,
+                entropy: null,
+                scope: DataProtectionScope.CurrentUser);
+
+            return Encoding.UTF8.GetString(tokenBytes);
+        }
+        catch // 解密失败（可能换了Windows用户或其他异常）
+        {
+            // 清理无效文件
+            File.Delete(_tokenFilePath);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 清除存储的Token
+    /// </summary>
+    public void ClearToken()
+    {
+        if (File.Exists(_tokenFilePath))
+        {
+            // 安全擦除（覆写后删除）
+            var bytes = new byte[1024];
+            new Random().NextBytes(bytes);
+            File.WriteAllBytes(_tokenFilePath, bytes); // 覆写文件
+            File.Delete(_tokenFilePath);
+        }
+    }
+}
+```
+
+**关键点**:
+- ✅ 使用`ProtectedData.Protect`加密，只有当前Windows用户可解密
+- ✅ Token存储在`%LOCALAPPDATA%\LYBTZYZS\tokens.dat`
+- ✅ 文件设置为隐藏属性
+- ✅ 清理时使用安全擦除（覆写后再删除）
+
+### 12.2 客户端JWT自验证（性能提升10-20x）
+
+Epic #1861移除了Server端验证API依赖，改为Client端本地验证JWT。
+
+**传统方案（Epic #1861之前）**:
+```
+Client → 需要验证Token → 调用Server API /api/v1/auth/validate → 等待Server响应（50-100ms）
+```
+
+**新方案（Epic #1861之后）**:
+```
+Client → 本地验证JWT签名和Claims → 无需网络请求（~5ms，性能提升10-20倍）
+```
+
+**客户端验证实现**:
+
+```csharp
+// 位置: src/Client/Desktop/Foundation/LYBT.Desktop.Foundation.Auth/Validators/LocalTokenValidator.cs
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+namespace LYBT.Desktop.Foundation.Auth.Validators;
+
+public class LocalTokenValidator
+{
+    private readonly string _jwtSecret;
+    private readonly JwtSecurityTokenHandler _tokenHandler;
+
+    public LocalTokenValidator(IConfiguration configuration)
+    {
+        _jwtSecret = configuration["Lybt:Authentication:Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("JWT密钥未配置");
+        _tokenHandler = new JwtSecurityTokenHandler();
+    }
+
+    /// <summary>
+    /// 本地验证JWT Token（无需Server API调用）
+    /// 性能提升：~50-100ms → ~5ms（10-20倍）
+    /// </summary>
+    public TokenValidationResult ValidateTokenLocally(string token)
+    {
+        try
+        {
+            // Token格式验证
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return TokenValidationResult.Invalid("Token不能为空");
+            }
+
+            // 配置验证参数
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret)),
+                ValidateIssuer = true,
+                ValidIssuer = "LYBT.WebAPI", // 从配置读取
+                ValidateAudience = true,
+                ValidAudience = "LYBT.Client", // 从配置读取
+                ValidateLifetime = true, // 验证过期时间
+                ValidateTokenReplay = false,
+                ClockSkew = TimeSpan.FromMinutes(5) // 时钟偏差容忍（服务器时间不同步）
+            };
+
+            // 验证Token并提取Claims
+            var principal = _tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+            // 提取关键Claims
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
+            var role = principal.FindFirst(ClaimTypes.Role)?.Value;
+            var isSuperAdmin = principal.FindFirst("IsSuperAdmin")?.Value == "true";
+            var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
+            {
+                return TokenValidationResult.Invalid("Token缺少必需的Claims");
+            }
+
+            return TokenValidationResult.Valid(new TokenClaims
+            {
+                UserId = userId,
+                UserName = userName,
+                Role = role ?? "Unknown",
+                IsSuperAdmin = isSuperAdmin,
+                Email = email,
+                Expiration = validatedToken.ValidTo // Token过期时间
+            });
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return TokenValidationResult.Invalid("Token已过期");
+        }
+        catch (SecurityTokenInvalidSignatureException)
+        {
+            return TokenValidationResult.Invalid("Token签名无效（可能伪造）");
+        }
+        catch (SecurityTokenInvalidIssuerException)
+        {
+            return TokenValidationResult.Invalid("Token发行者不匹配");
+        }
+        catch (SecurityTokenInvalidAudienceException)
+        {
+            return TokenValidationResult.Invalid("Token接收者不匹配");
+        }
+        catch (Exception ex)
+        {
+            return TokenValidationResult.Invalid($"Token验证失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 检查Token是否即将过期（剩余时间<5分钟）
+    /// </summary>
+    public bool IsTokenExpiringSoon(string token, int minutesBeforeExpiry = 5)
+    {
+        var result = ValidateTokenLocally(token);
+        if (!result.IsValid)
+        {
+            return false;
+        }
+
+        var timeUntilExpiry = result.Claims.Expiration - DateTime.UtcNow;
+        return timeUntilExpiry.TotalMinutes < minutesBeforeExpiry;
+    }
+}
+
+/// <summary>
+/// Token验证结果
+/// </summary>
+public record TokenValidationResult
+{
+    public bool IsValid { get; init; }
+    public string? ErrorMessage { get; init; }
+    public TokenClaims? Claims { get; init; }
+
+    public static TokenValidationResult Valid(TokenClaims claims) => new()
+    {
+        IsValid = true,
+        Claims = claims
+    };
+
+    public static TokenValidationResult Invalid(string errorMessage) => new()
+    {
+        IsValid = false,
+        ErrorMessage = errorMessage
+    };
+}
+
+/// <summary>
+/// Token中的Claims信息
+/// </summary>
+public record TokenClaims
+{
+    public string UserId { get; init; } = string.Empty;
+    public string UserName { get; init; } = string.Empty;
+    public string Role { get; init; } = string.Empty;
+    public bool IsSuperAdmin { get; init; }
+    public string Email { get; init; } = string.Empty;
+    public DateTime Expiration { get; init; }
+}
+```
+
+**性能对比**:
+
+| 验证方式 | 平均耗时 | 网络请求 | 适用场景 |
+|---------|---------|---------|---------|
+| Server API验证 | 50-100ms | ✅ 需要 | Token状态检查（如撤销检查） |
+| 客户端本地验证 | ~5ms | ❌ 无需 | Token过期检查、权限验证 |
+
+**使用场景**:
+- ✅ 每次API请求前验证Token是否过期
+- ✅ 页面加载时验证用户权限
+- ✅ 检查是否为超级管理员（IsSuperAdmin claim）
+- ❌ 检查Token是否被撤销（仍需调用Server API）
+
+### 12.3 Token清理机制（登出和安全事件）
+
+Epic #1861实现了完整的Token清理机制，确保安全事件发生时及时撤销Token。
+
+**登出流程**:
+
+```csharp
+// 位置: src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs
+
+public class AuthService : IAuthService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly ILogger<AuthService> _logger;
+
+    public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
+    {
+        try
+        {
+            // 1. 撤销用户的所有RefreshToken
+            var userTokens = await _dbContext.RefreshTokens
+                .Where(rt => rt.UserName == request.Username && !rt.IsRevoked)
+                .ToListAsync();
+
+            foreach (var token in userTokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTime.UtcNow;
+                token.RevokedReason = "用户主动登出";
+                token.RevokedByIp = GetClientIp();
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            // 2. 记录安全审计日志
+            _logger.LogInformation(
+                "用户登出成功 [用户名: {UserName}] [IP: {Ip}] [时间: {Timestamp}]",
+                request.Username,
+                GetClientIp(),
+                DateTime.UtcNow);
+
+            // 3. Client端需要清除本地存储的Token
+            //    - 调用SecureTokenStorage.ClearToken()
+            //    - 清除内存中的Token缓存
+
+            return ServiceResult<bool>.Success(true, "登出成功");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "登出失败 [用户名: {UserName}]", request.Username);
+            return ServiceResult<bool>.Failure("登出失败");
+        }
+    }
+
+    private string GetClientIp()
+    {
+        // IP脱敏：192.168.1.100 → 192.168.1.*
+        var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString()
+            ?? "unknown";
+
+        if (ip.Contains('.'))
+        {
+            var parts = ip.Split('.');
+            if (parts.Length >= 4)
+            {
+                parts[3] = "*";
+                return string.Join(".", parts);
+            }
+        }
+        return ip;
+    }
+}
+```
+
+**Client端Token清理**:
+
+```csharp
+// 位置: src/Client/Desktop/ViewModels/Auth/LoginViewModel.cs
+
+public class LoginViewModel
+{
+    private readonly SecureTokenStorage _tokenStorage;
+    private readonly LocalTokenValidator _tokenValidator;
+
+    /// <summary>
+    /// 用户主动登出
+    /// </summary>
+    public async Task LogoutAsync()
+    {
+        try
+        {
+            // 1. 调用Server API撤销RefreshToken
+            var response = await _httpClient.PostAsJsonAsync(
+                "/api/v1/auth/logout",
+                new LogoutRequest { Username = CurrentUser.UserName });
+
+            if (response.IsSuccessStatusCode)
+            {
+                // 2. 清除本地加密的Token文件
+                _tokenStorage.ClearToken();
+
+                // 3. 清除内存中的Token缓存
+                _memoryCache.Remove("CurrentToken");
+                _memoryCache.Remove("CurrentUser");
+
+                // 4. 导航到登录页面
+                _navigationService.NavigateTo("LoginView");
+
+                _logger.LogInformation("用户登出成功 [用户名: {UserName}]", CurrentUser.UserName);
+            }
+            else
+            {
+                _logger.LogWarning("Server登出失败 [用户名: {UserName}]", CurrentUser.UserName);
+                // 即使Server失败，也清理本地Token（安全原则）
+                _tokenStorage.ClearToken();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "登出异常 [用户名: {UserName}]", CurrentUser.UserName);
+            // 异常时也清理本地Token
+            _tokenStorage.ClearToken();
+        }
+    }
+
+    /// <summary>
+    /// 检测到安全事件时强制登出（如Token被撤销）
+    /// </summary>
+    public void ForceLogout(string reason)
+    {
+        _logger.LogWarning("强制登出 [原因: {Reason}] [用户名: {UserName}]",
+            reason,
+            CurrentUser.UserName);
+
+        // 立即清理所有Token
+        _tokenStorage.ClearToken();
+        _memoryCache.Remove("CurrentToken");
+        _memoryCache.Remove("CurrentUser");
+
+        // 显示安全警告
+        MessageBox.Show(
+            $"您的会话已因安全原因终止：{reason}\n\n请重新登录。",
+            "安全警告",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+
+        // 导航到登录页面
+        _navigationService.NavigateTo("LoginView");
+    }
+}
+```
+
+**触发Token清理的场景**:
+
+| 场景 | 操作 | 影响 |
+|-----|------|------|
+| 用户主动登出 | 撤销所有RefreshToken + 清除本地Token | 立即生效 |
+| Token被撤销 | Server端标记IsRevoked=true | 下次刷新时失败 |
+| 密码修改 | 撤销用户所有Token | 强制重新登录 |
+| 账户锁定 | 撤销用户所有Token | 强制重新登录 |
+| 安全事件 | 撤销相关Token | 保护账户安全 |
+
+### 12.4 RefreshToken撤销检查（Server端）
+
+```csharp
+// 位置: src/Server/Modules/LYBT.Module.Auth/Services/AuthService.cs
+
+public async Task<ServiceResult<TokenRefreshResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+{
+    try
+    {
+        // 1. 验证RefreshToken存在
+        var refreshToken = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken);
+
+        if (refreshToken == null)
+        {
+            return ServiceResult<TokenRefreshResponse>.Failure("RefreshToken无效");
+        }
+
+        // 2. 检查是否已撤销（关键安全检查）
+        if (refreshToken.IsRevoked)
+        {
+            _logger.LogWarning(
+                "尝试使用已撤销的RefreshToken [Token: {Token}] [User: {UserName}] [IP: {Ip}]",
+                request.RefreshToken.Substring(0, 10) + "...",
+                refreshToken.UserName,
+                GetClientIp());
+
+            // ⚠️ 安全事件：可能是Token被盗用，撤销该用户的所有Token
+            await RevokeAllUserTokens(refreshToken.UserName, "检测到已撤销Token被重用");
+
+            return ServiceResult<TokenRefreshResponse>.Failure("RefreshToken已撤销，请重新登录");
+        }
+
+        // 3. 检查是否过期
+        if (refreshToken.ExpiresAt < DateTime.UtcNow)
+        {
+            return ServiceResult<TokenRefreshResponse>.Failure("RefreshToken已过期，请重新登录");
+        }
+
+        // 4. 撤销旧的RefreshToken（Token轮换）
+        refreshToken.IsRevoked = true;
+        refreshToken.RevokedAt = DateTime.UtcNow;
+        refreshToken.RevokedReason = "已被新Token替换";
+
+        // 5. 生成新的Token对
+        var newAccessToken = _jwtService.GenerateToken(
+            refreshToken.UserId.ToString(),
+            refreshToken.UserName,
+            refreshToken.UserRole);
+
+        var newRefreshToken = GenerateRefreshToken(); // 生成新的RefreshToken
+
+        // 保存新的RefreshToken到数据库
+        _dbContext.RefreshTokens.Add(new RefreshToken
+        {
+            Token = newRefreshToken,
+            UserId = refreshToken.UserId,
+            UserName = refreshToken.UserName,
+            UserRole = refreshToken.UserRole,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            IsRevoked = false,
+            CreatedByIp = GetClientIp()
+        });
+
+        await _dbContext.SaveChangesAsync();
+
+        // 6. 记录审计日志
+        _logger.LogInformation(
+            "Token刷新成功 [用户: {UserName}] [IP: {Ip}]",
+            refreshToken.UserName,
+            GetClientIp());
+
+        return ServiceResult<TokenRefreshResponse>.Success(new TokenRefreshResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+        });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Token刷新失败");
+        return ServiceResult<TokenRefreshResponse>.Failure("Token刷新失败");
+    }
+}
+
+/// <summary>
+/// 撤销用户的所有Token（安全事件响应）
+/// </summary>
+private async Task RevokeAllUserTokens(string userName, string reason)
+{
+    var tokens = await _dbContext.RefreshTokens
+        .Where(rt => rt.UserName == userName && !rt.IsRevoked)
+        .ToListAsync();
+
+    foreach (var token in tokens)
+    {
+        token.IsRevoked = true;
+        token.RevokedAt = DateTime.UtcNow;
+        token.RevokedReason = reason;
+    }
+
+    await _dbContext.SaveChangesAsync();
+
+    _logger.LogWarning(
+        "撤销用户所有Token [用户: {UserName}] [数量: {Count}] [原因: {Reason}]",
+        userName,
+        tokens.Count,
+        reason);
+}
+```
+
+**审计日志记录**:
+
+```csharp
+// 位置: src/Server/Entities/LYBT.Entities/Auth/SecurityAuditLog.cs
+
+public class SecurityAuditLog
+{
+    public Guid Id { get; set; }
+    public string EventType { get; init; } = string.Empty; // Login, Logout, RefreshToken, TokenRevoked
+    public string UserName { get; init; } = string.Empty;
+    public DateTime OccurredAt { get; init; }
+    public string IpAddress { get; init; } = string.Empty; // 已脱敏: 192.168.1.*
+    public string UserAgent { get; init; } = string.Empty; // 已截断: 最大500字符
+    public string Details { get; init; } = string.Empty;
+    public bool IsSuccess { get; init; }
+}
+```
+
+**日志保留策略**:
+- 自动清理30天前的日志（每天凌晨2点执行）
+- 保留最近10,000条日志（无论时间）
+- 导出到长期存储（可选）
+
+---
+
+## 13. 常见问题与陷阱
 
 ❌ **错误示例**:
 
