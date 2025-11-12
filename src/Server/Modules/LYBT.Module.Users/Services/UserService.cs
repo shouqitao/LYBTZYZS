@@ -134,18 +134,10 @@ namespace LYBT.Module.Users.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // Issue #2087: 修复keyword参数未传递到Repository的Bug
+                // 移除内存过滤，改为数据库层过滤（与HerbService、PatientService保持一致）
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
                 var dtos = _mapper.Map<List<UserDto>>(pagedResult.Items);
-
-                // 应用筛选条件（MVP阶段内存过滤）
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    dtos = dtos.Where(u =>
-                        u.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                        u.RealName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                        (u.Email != null && u.Email.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                    ).ToList();
-                }
 
                 // Issue #1162: 按角色筛选
                 if (role.HasValue)
@@ -159,12 +151,14 @@ namespace LYBT.Module.Users.Services
                     dtos = dtos.Where(u => u.Status == status.Value).ToList();
                 }
 
+                // Issue #2087: TotalCount逻辑修复
+                // keyword过滤现在在数据库层完成，只有role/status是内存过滤
                 var result = new PagedResult<UserDto>
                 {
                     Items = dtos,
-                    TotalCount = keyword == null && !role.HasValue && !status.HasValue
-                        ? pagedResult.TotalCount
-                        : dtos.Count,
+                    TotalCount = role.HasValue || status.HasValue
+                        ? dtos.Count // role/status内存过滤后的总数
+                        : pagedResult.TotalCount, // keyword数据库过滤后的总数
                     CurrentPage = page,
                     PageSize = pageSize
                 };

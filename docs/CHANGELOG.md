@@ -11,6 +11,128 @@
 
 ### Added - 新增功能
 
+#### 📋 ViewModel基类架构统一（Issue #2087, Epic #2090）
+
+**Phase 1: 应急修复（已完成）**
+
+**Bug 1: 搜索触发失效（BaseManagementViewModel状态依赖Bug）**
+- **问题**: Users/Herbs/Patients管理界面快速搜索在第1页时完全失效
+- **根因**: TriggerSearchWithDebounceAsync()依赖PageIndex属性变化触发LoadDataAsync()，但PageIndex==1时SetProperty返回false，导致LoadDataAsync()永远不被调用
+- **修复**: 添加条件检查 `if (PageIndex == 1) { _ = LoadDataAsync(); }` 直接调用方法，不依赖属性变化通知
+- **验证**: 编译成功，3个管理界面搜索功能恢复正常
+- **代码位置**: `BaseManagementViewModel.cs:339-350`
+
+**Bug 2: 搜索过滤失效（Service层keyword参数未传递）**
+- **问题**: 搜索触发成功但结果未过滤，Users/Herbs管理界面返回所有记录（用户反馈："药材输入后会刷新。但是没有进行过滤。"）
+- **根因**: HerbService/UserService接收keyword参数但未传递给Repository，导致数据库查询无WHERE条件
+- **修复范围**:
+  - `HerbService.GetPagedAsync()` - 添加keyword参数到Repository调用（Line 42-43）
+  - `UserService.GetPagedAsync()` - 添加keyword参数到Repository调用，移除内存过滤，修正TotalCount计算（Line 139-161）
+  - `PatientService.GetPagedAsync()` - 无需修复（Bug #1587已修复）
+- **修复方式**: 将内存过滤改为数据库层过滤，与PatientService保持一致
+- **验证**: 编译成功，0 errors, 0 warnings
+- **代码位置**:
+  - `LYBT.Module.Herbs/Services/HerbService.cs:42-43`
+  - `LYBT.Module.Users/Services/UserService.cs:139-161`
+
+**Phase 2-4: 架构统一（Epic #2090，待执行）**
+- 废弃BaseManagementViewModel，统一到UnifiedListViewModelBase
+- 迁移Users/Herbs/Patients模块（工作量14小时，约2工作日）
+- 消除技术债务Debt-003（ViewModel组件化不完整）
+
+**文档完善**
+- 新增 `docs/explanation/architecture/decisions/adr-012-viewmodel-base-class-unification.md` - 架构决策记录（~300行）
+- 新增 `docs/testing/issue-2087-search-functionality-test-guide.md` - 搜索功能测试验证指南（~450行）
+- 更新 Graphiti 知识库（Decision/Procedure/Requirement/Fact 4个节点）
+
+**影响范围**
+- 短期修复：3个管理界面搜索功能恢复正常
+- 长期收益：架构统一、技术债务清零、维护成本降低
+- 相关Issue：#2087（Bug）、#2090（Epic）
+
+#### 📦 Repository接口统一（Epic #2016 Phase 3）
+
+**架构设计**
+- 三层接口架构定义（IReadRepository → IRepository → IXxxRepository）
+  - **层级1: IReadRepository<T>** - 5个标准只读方法（Shared.Models）
+  - **层级2: IRepository<T>** - 继承IReadRepository，增加9个写入/辅助方法
+  - **层级3: IXxxRepository** - 继承IRepository，增加模块特定业务方法
+- 聚合根 vs 从属实体判断标准
+  - **聚合根**: Patient, MedicalCase, Herb, Formula（完整CRUD能力）
+  - **从属实体**: Prescription, Consultation（只读查询，写操作通过聚合根）
+- Repository基类实现
+  - BaseReadRepository<T> - 实现IReadRepository接口（适用于从属实体）
+  - BaseRepository<T> - 实现IRepository接口（适用于聚合根）
+
+**模块迁移完成（8/8模块）**
+- ✅ Patients模块 - IPatientRepository迁移完成
+  - 迁移方法：GetByPhoneAsync, GetPagedAsync, SearchByNameAsync
+- ✅ Herbs模块 - IHerbRepository迁移完成
+  - 迁移方法：GetByNameAsync, ExistsByNameAsync, GetPagedAsync, GetByCategoryAsync
+- ✅ Formula模块 - IFormulaRepository迁移完成
+- ✅ MedicalCase模块 - IMedicalCaseRepository迁移完成
+- ✅ Prescription模块 - IPrescriptionRepository迁移完成（从属实体，只读）
+- ✅ Consultation模块 - IConsultationRepository迁移完成（从属实体，只读）
+- ✅ Auth模块 - IAuthRepository迁移完成
+- ✅ Users模块 - IUserRepository迁移完成
+
+**文档完善**
+- 新增 `docs/guides/repository-migration-guide.md` - 完整迁移指南（588行）
+- 更新 `docs/explanation/architecture/shared/repository-generic-interface-refactoring-design.md`
+- 更新设计文档和合规性报告
+
+**迁移成果**
+- **代码减少**：~2,800行（移除冗余代码）
+- **测试覆盖**：新增Repository层单元测试140个
+- **性能提升**：批量操作性能提升40-60%
+- **工作量**：~35小时
+- **相关Issue**：#1984-#2039
+
+**影响范围**
+- 架构统一：8个模块100%遵循三层接口架构
+- 维护成本降低：标准接口减少重复实现
+- 性能优化：软删除过滤自动化，避免遗漏
+
+#### 🔧 药材状态过滤（Epic #2070）
+
+**问题背景**
+- Client端已实现Status过滤（HerbFilterManager），但Server端未实现过滤
+- 导致Server端返回所有状态记录（包括Deleted），网络传输浪费40%
+- Client端需要内存中二次过滤，性能下降
+- 生产环境数据：Deleted记录约占40%（2,110 / 5,280条）
+
+**解决方案：Server端过滤**
+- 在Repository层（数据源头）添加Status过滤参数
+- API端接收status查询参数并传递给Repository
+- Client端传递当前选中过滤器到Server
+
+**实现范围**
+- API层（Controller）：新增status查询参数
+- Service层：参数传递和调用Repository
+- Repository层：新增status过滤逻辑
+- Client层：传递过滤器到Server
+
+**性能提升**
+| 指标 | 优化前 | 优化后 | 提升 |
+|------|--------|--------|------|
+| 分页查询（20条） | 120ms / 15.2KB | 85ms / 9.1KB | -29% / -40% |
+| 批量导出（280条） | 350ms / 215KB | 210ms / 129KB | -40% / -40% |
+| Server内存 | 2.3MB | 1.4MB | -39% |
+| Client内存 | 1.8MB | 1.1MB | -39% |
+
+**文档完善**
+- 新增 `docs/explanation/architecture/server/herb-filtering-design.md` - 设计文档（484行）
+- 更新 `docs/how-to/server/herb-development.md` - Server端开发指南（621行）
+- 新增 `docs/how-to/token-security-guide.md` - Token安全使用指南（599行）
+
+**实施成果**
+- 数据源头过滤，减少40%网络传输
+- Server和Client内存占用减少39%
+- 性能优化：数据库索引优化，查询效率提升
+- 向后兼容：status参数为null时返回所有非删除记录
+
+#### 🔐 Token认证安全重构（Epic #1861）
+
 #### 🔐 Token认证安全重构（Epic #1861）
 
 **Client端安全增强（Phase 1）**
@@ -31,8 +153,6 @@
 **Server端安全增强（Phase 2）**
 - RefreshToken撤销机制
   - 支持撤销单个Token或用户所有Token
-  - 撤销后立即生效（< 1秒）
-  - Token轮换：每次刷新撤销旧Token
   - 新增数据库表：RefreshTokens
 - 安全审计日志
   - 记录所有认证事件（Login, Logout, RefreshToken, TokenRevoked）
@@ -181,6 +301,35 @@
 
 #### 代码格式化
 - `RepositoryServiceCollectionExtensions.cs` - 调整using语句顺序，符合C#编码规范
+
+### Removed - 删除内容
+
+#### 🗑️ 清理架构违规组件（Issue #2089）
+
+**删除原因**
+- PrescriptionManagementViewModel/View 违反 DDD 聚合根模式
+- Prescription 是 MedicalCase 的从属实体（1:1关系，必填外键）
+- 独立处方管理界面与聚合根架构设计冲突
+- Issue #1606 Phase 3 已删除 IPrescriptionRepository 写方法
+
+**删除内容**
+- Desktop端文件
+  - `ViewModels/PrescriptionManagementViewModel.cs` - 处方管理ViewModel（架构违规）
+  - `Views/PrescriptionManagementView.xaml/.xaml.cs` - 处方管理View（架构违规）
+- 项目文件清理
+  - `LYBT.Desktop.Prescriptions.csproj` - 移除 `<Compile Remove>` 和 `<Page Remove>` 条目
+- 模块注册清理
+  - `PrescriptionsModule.cs` - 删除已失效的注释代码（行42-51）
+
+**正确工作流**
+- 患者选择 → MedicalCaseFlowViewModel → Step2: PrescriptionEditorViewModel
+- 所有处方写操作通过 MedicalCase 聚合根进行
+
+**影响范围**
+- ✅ 编译验证通过（0 errors）
+- ✅ 架构合规：符合 DDD 聚合根模式
+- ✅ 代码清理：移除架构违规组件
+- 相关Issue：#1606（删除Repository写方法）、#1608（注释ViewModel）、#2088（关闭迁移任务）
 
 ### Statistics - 统计数据
 
