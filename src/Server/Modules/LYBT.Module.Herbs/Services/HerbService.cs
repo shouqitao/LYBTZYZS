@@ -39,7 +39,8 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // Issue #2087: 修复keyword参数未传递到Repository的Bug
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
                 var dtos = _mapper.Map<List<HerbDto>>(pagedResult.Items);
 
                 // Issue #1164: 应用分类筛选（在DTO级别过滤）
