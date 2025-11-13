@@ -1,372 +1,307 @@
-﻿# CLAUDE.md
+# CLAUDE.md v8.0 - Graphiti优先版
 
-本文件定义 Claude Code 在仓库中的工作约束与执行流程，确保所有改动可追踪、可验证、符合项目标准。
-
-## 🚀 快速导航
-
-### 📚 完整文档索引
-**文档中心** → [.claude/README.md](.claude/README.md)
-
-### 🎯 按场景快速查找
-
-| 场景 | 推荐文档 | 时间 |
-|-----|---------|------|
-| 🆕 首次使用 | [getting-started.md](.claude/guides/getting-started.md) | 5分钟 |
-| 🐛 修复Bug | [issue-workflow.md](.claude/guides/issue-workflow.md) | 参考 |
-| ✨ 开发功能 | [spec-workflow.md](.claude/guides/spec-workflow.md) | 参考 |
-| 🔍 代码审查 | [code-review.md](.claude/modes/code-review.md) | 工作模式 |
-| 📝 更新文档 | [documentation.md](.claude/guides/documentation.md) | 参考 |
-| 🧪 编写测试 | [testing.md](.claude/guides/testing.md) | 参考 |
-
-### 🔗 核心资源
-
-- **项目概览**: [README.md](README.md)
-- **文档导航**: [docs/index.md](docs/index.md)
-- **项目结构**: [.spec-workflow/steering/structure.md](.spec-workflow/steering/structure.md)
-- **Constitution**: [.spec-workflow/steering/constitution.md](.spec-workflow/steering/constitution.md)
+本文件定义 Claude Code 在仓库中的工作约束与执行流程，**核心原则：Graphiti作为"第一大脑"**。
 
 ---
 
-## 📋 模块化架构说明
+## 🚀 核心原则
 
-本文档采用模块化设计，详细规则存放在 `.claude/` 目录：
+### ⭐ Graphiti 优先工作流（强制执行）
 
-**核心规则**: `.claude/core/` - RULES.md, PRINCIPLES.md, FLAGS.md, WORKFLOW.md 等
+```
+任务开始
+  ↓
+📖 RETRIEVE（知识检索） → 🛠️ EXECUTE（遵循规则） → 💾 STORE（知识沉淀）
+  ↓                        ↓                        ↓
+检索项目知识              严格遵循检索结果          沉淀新知识
+  ↓
+任务完成
+```
 
-**工作模式**: `.claude/modes/` - code-review, architecture, performance, refactoring 等
-
-**项目Skills**: `.claude/skills/` - mvp-compliance, arch-compliance, doc-sync 等
-
-> **💡 提示**: Skills通过符号链接同步到全局目录（首次需运行`scripts/setup-skills.ps1`）
+**核心规则**：
+- ✅ **任务前必须检索**：从 Graphiti 检索 Preference、Procedure、Requirement
+- ✅ **执行中严格遵循**：冲突时优先级 Preference > Procedure > Requirement
+- ✅ **任务后必须存储**：决策、新规则、历史教训存入 Graphiti
 
 ---
 
 ## 0. 核心信息速查
 
-### 📦 GitHub仓库（MCP工具必需参数）
+### 📦 GitHub 仓库（MCP 工具必需参数）
 
 ```python
 owner = "shouqitao"
 repo = "LYBTZYZS"
 ```
 
-> ⚠️ GitHub MCP工具不支持默认仓库，每次调用必须显式提供owner和repo参数
+> ⚠️ GitHub MCP 工具不支持默认仓库，每次调用必须显式提供 owner 和 repo
 
 ### 🔧 技术栈
 
-**核心框架**: .NET 8.0, WPF, ASP.NET Core, EF Core 8.0, Prism 8.x, Avalonia 11.2
+**核心框架**：.NET 8.0, WPF, ASP.NET Core, EF Core 8.0, Prism 8.x
 
-**数据库**: SQL Server 2022
+**数据库**：SQL Server 2022
 
-**MCP工具**: serena, filesystem, github, context7, microsoft_docs_mcp, sequential-thinking, graphiti-memory
-
-**完整信息** → [.claude/reference/project-info.md](.claude/reference/project-info.md)
+**MCP 工具**（按优先级排序）：
+1. **graphiti-memory**（⭐第一大脑）：项目长期知识库
+2. **serena**：代码语义分析与编辑
+3. **filesystem**：文件系统操作
+4. **github**：Issue/PR管理
+5. **context7**：技术文档查询（最新官方文档）
+6. **sequential-thinking**：深度推理分析
 
 ---
 
-## 1. 工作流
+## 1. ⭐ Graphiti 优先原则（元规则）
 
-### 1.1 必读文档（任务前）
+### 1.1 三阶段工作流（强制）
 
-**核心三文档**:
-- `README.md` - 项目权威概览
-- `docs/index.md` - 文档导航中心（v5.0三层对齐架构）
-- `.spec-workflow/steering/structure.md` - 项目结构指南
+#### 阶段1：RETRIEVE（任务前检索）
 
-**架构指南**（三层对齐）:
-- `docs/explanation/architecture/server/README.md` - Server端三层架构
-- `docs/explanation/architecture/client/README.md` - Client端MVVM架构
+**何时检索**：任何任务开始前
+
+**检索步骤**：
+```markdown
+1. 确定任务类型（新功能/Bug修复/架构调整/代码审查/文档更新/性能优化）
+2. 使用 search_nodes 检索相关实体
+   - Preference（偏好）：编码规范、命名规范、技术栈选择
+   - Procedure（流程）：Issue工作流、验证流程、PR流程
+   - Requirement（约束）：MVP黑名单、架构触发指标、质量标准
+3. 使用 search_facts 检索实体关系
+   - 模块依赖、架构层次、文档位置
+4. 过滤实体类型，获取精准结果
+5. 整理为"任务上下文"
+```
+
+**检索策略矩阵**：
+
+| 任务类型 | 检索实体类型 | 关键词示例 | 过滤器 |
+|---------|------------|-----------|--------|
+| 新功能开发 | Preference, Procedure, Requirement | "编码规范", "Issue工作流", "MVP约束" | category: coding_style, issue_workflow, mvp_constraint |
+| Bug修复 | Procedure, Decision | "验证流程", "历史Bug模式" | category: testing, predicate: "修复" |
+| 架构调整 | Requirement, Fact | "架构触发指标", "模块依赖" | category: architecture_rule, dependency |
+| 代码审查 | Preference, Procedure | "命名规范", "代码审查流程" | category: naming, code_review |
+| 文档更新 | Procedure, Fact | "文档同步流程", "文档位置" | category: documentation, location |
+| 性能优化 | Requirement, Decision | "性能指标", "历史优化决策" | category: quality_standard, impact: "性能" |
+
+**检索示例**：
+```python
+# 示例1：新功能开发
+search_nodes(
+    query="编码规范 命名规范",
+    entity_types=["Preference"],
+    max_nodes=10
+)
+
+search_nodes(
+    query="Issue工作流 验证流程",
+    entity_types=["Procedure"],
+    max_nodes=5
+)
+
+search_nodes(
+    query="MVP约束 技术黑名单",
+    entity_types=["Requirement"],
+    max_nodes=5
+)
+
+# 示例2：检索模块依赖关系
+search_facts(
+    query="模块依赖 架构层次",
+    max_facts=20
+)
+```
+
+---
+
+#### 阶段2：EXECUTE（遵循规则）
+
+**执行原则**：
+1. **严格遵循**检索到的 Preference 和 Procedure
+2. **冲突时优先级**：Preference > Procedure > Requirement
+3. **发现新规则**时，实时记录（add_memory）
+4. **遇到例外情况**时，记录 Decision 并说明理由
+
+**禁止行为**：
+- ❌ 未从 Graphiti 检索就开始任务
+- ❌ 忽略检索到的 Preference 或 Procedure
+- ❌ 只编译通过就关闭 Issue（必须运行时验证）
+
+---
+
+#### 阶段3：STORE（知识沉淀）
+
+**何时存储**：
+- ✅ 用户表达偏好、需求、流程时 → 立即存储
+- ✅ 任务完成后 → 存储决策理由、新发现的规则
+- ✅ 遇到 Bug 后 → 存储修复模式、根因分析
+- ✅ 架构调整后 → 更新模块依赖、架构层次
+
+**⚠️ 强制更新要求**（Critical）：
+1. **必须成功**：Graphiti 知识库更新是**强制性的**，不是可选的
+   - ❌ 禁止跳过 Graphiti 更新步骤
+   - ❌ 禁止"稍后更新"或"手动更新"
+   - ✅ 任务完成前必须确认 Graphiti 更新成功
+
+2. **异常处理**：
+   - **服务不可访问**：唯一允许跳过的情况（先调用 `get_status` 验证）
+   - **参数错误**：分析错误原因，修正参数后**立即重试**，直到成功
+   - **JSON 格式错误**：改用 `source="text"` 纯文本格式重试
+   - **连接超时**：重试 3 次，失败后记录到本地文件并通知用户
+
+3. **验证机制**：
+   - 调用 `add_memory` 后，等待返回 "queued for processing" 消息
+   - 如果返回错误，**立即分析错误类型并重试**
+   - 不允许"部分成功"状态 - 要么全部成功，要么全部重试
+
+**存储策略**：
+```python
+# 示例1：存储新偏好
+add_memory(
+    name="编码偏好",
+    episode_body='{"name": "异步规范", "category": "coding_style", "description": "I/O操作必须使用async/await", "priority": 9, "applies_to": ["Server", "Client"]}',
+    source="json",
+    source_description="用户偏好",
+    group_id="lybtzyzs_project"
+)
+
+# 示例2：存储决策记录
+add_memory(
+    name="Issue决策",
+    episode_body='{"issue_number": 1234, "decision": "使用EF Core而非Dapper", "rationale": "项目规模小,EF Core开发效率高", "impact": "Repository层", "timestamp": "2025-11-11T10:00:00Z"}',
+    source="json",
+    source_description="Issue #1234 技术选型决策",
+    group_id="lybtzyzs_project"
+)
+
+# 示例3：存储Bug修复模式
+add_memory(
+    name="Bug修复模式",
+    episode_body='{"bug_type": "NullReferenceException", "root_cause": "未检查导航属性为null", "solution": "使用?.运算符或显式Include", "affected_modules": ["Patients", "MedicalCase"]}',
+    source="json",
+    source_description="Bug修复历史教训",
+    group_id="lybtzyzs_project"
+)
+```
+
+**长文本拆分规则**：
+- 每条 episode_body 不超过 200 字（中文）
+- 复杂内容使用 JSON 结构化存储
+- 使用 add_episode_bulk 批量存储
+
+---
+
+### 1.2 实体类型说明
+
+Graphiti 知识图谱中的 5 种核心实体类型：
+
+| 实体类型 | 用途 | 示例 | 检索关键词 |
+|---------|-----|------|-----------|
+| **Preference** | 项目开发偏好 | 编码规范、命名规范、技术栈 | "编码规范", "命名规范", "技术栈" |
+| **Procedure** | 开发流程规范 | Issue工作流、验证流程、PR流程 | "工作流", "验证流程", "PR流程" |
+| **Requirement** | 项目约束限制 | MVP技术黑名单、架构触发指标 | "MVP约束", "技术黑名单", "架构触发指标" |
+| **Fact** | 项目事实关系 | 模块依赖、架构层次、文件位置 | "模块依赖", "架构层次", "文档位置" |
+| **Decision** | 项目决策记录 | Issue决策、重构决策、Bug修复 | "Issue决策", "重构历史", "Bug模式" |
+
+---
+
+## 2. 快速导航
+
+### 2.1 必读文档（任务前查阅）
+
+**核心三文档**（⭐优先级最高）：
+1. **README.md** - 项目权威概览
+2. **docs/index.md** - 文档导航中心（v5.0 三层对齐架构）
+3. **.spec-workflow/steering/structure.md** - 项目结构指南
+
+**架构指南**（三层对齐）：
+- `docs/explanation/architecture/server/README.md` - Server 端三层架构
+- `docs/explanation/architecture/client/README.md` - Client 端 MVVM 架构
 - `docs/explanation/architecture/shared/README.md` - 共享架构
 
-> ⚠️ **强制要求**: 处理任务前必须先查阅 `docs/index.md` 定位相关文档，未理解文档禁止开始编码
+> ⚠️ **强制要求**：处理任务前必须先查阅 `docs/index.md` 定位相关文档，未理解文档禁止开始编码
 
-**📐 Server/Client 职责划分原则**（⭐ 项目宗旨）:
-
-**核心原则**: 业务模块的业务实现需要综合 Server 端和 Client 端考虑，**不是所有功能都放在 Server 端实现**。
-
-**职责划分**:
-- **Server 端**: 负责数据持久化、核心业务规则、数据校验、实体关系维护
-- **Client 端**: 负责工作流编排、UI 逻辑、用户交互流程、业务流程控制
-
-**设计决策时考虑**:
-- ✅ 数据一致性约束 → Server 端
-- ✅ 多步骤业务流程 → Client 端协调
-- ✅ 用户交互逻辑 → Client 端
-- ✅ 实体聚合根操作 → Server 端
-
-> 💡 **示例**: 三步诊疗流程（辨证→开方标记→处方）由 Client 端 ViewModel 编排，Server 端提供原子化的数据操作接口
-
-
-### 1.2 双轨工作流（小需求 vs 大需求）
-
-**核心规则**:
-- ✅ **所有改动必须有GitHub Issue** - 无Issue禁止任何代码变更
-- ✅ **小需求 → 直接修改**（90%）: <5文件, <200行, <2小时，直接编码实现
-- ✅ **大需求 → 自动化流程**（10%）: 跨模块, >200行, >2小时，启用自动化工作流系统
-
-#### 小需求：直接修改模式
-
-**适用场景**:
-- Bug修复（<5文件修改）
-- 简单功能调整（<200行代码）
-- 文档更新
-- 配置调整
-
-**执行流程**:
-1. 创建GitHub Issue描述问题
-2. 直接修改代码（使用serena/filesystem等MCP工具）
-3. 验证（编译 + 测试 + 运行）
-4. 提交代码到master分支
-
-**标准提交格式**:
-```bash
-git commit -m "fix(module): 修复XXX问题
-
-Fixes #1234
-
-- 具体改动1
-- 具体改动2
-- 验证：功能已正常工作
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-```
-
-#### 大需求：自动化工作流模式
-
-**适用场景**:
-- 新功能开发（跨多个模块）
-- 架构重构（>200行代码）
-- Epic级任务（需拆分为多个子Issue）
-
-**执行流程**:
-```bash
-用户提需求
-  → 调用 lybtzyzs-workflow-orchestrator skill
-  → 14状态自动化流程（需求→设计→任务→实施→质量→归档）
-  → 5个人工确认点（需求确认、设计审查、任务审查、质量把关、反思审查）
-  → 完成
-```
-
-**自动化工作流系统**:
-- **Orchestrator**: lybtzyzs-workflow-orchestrator（14状态编排引擎）
-- **自动化率**: 85%（仅5个必要人工确认点）
-- **预期提效**: 需求→Issue耗时从4-6小时降至30分钟
-- **完整文档**: [AUTOMATION-SYSTEM-SUMMARY.md](.claude/skills/AUTOMATION-SYSTEM-SUMMARY.md)
-
-**触发方式**:
-用户明确说明是"复杂需求"、"新功能开发"、"Epic任务"时，调用 lybtzyzs-workflow-orchestrator skill
+**完整文档索引** → `.claude/README.md`
 
 ---
 
-## 2. 核心标准
+## 3. 双轨工作流（小需求 vs 大需求）
 
-### 2.1 执行原则（10条）
+**核心规则**：
+- ✅ **所有改动必须有 GitHub Issue** - 无 Issue 禁止任何代码变更
 
-**完整定义** → [.claude/core/PRINCIPLES.md](.claude/core/PRINCIPLES.md)
-
-1. **验证优先**: 先验证问题真实性再实施修复
-2. **文档先行**: 以 `docs/` 现有规范为最高准则
-3. **最小充分交付**: 完成导向、够用即好
-4. **增量优化**: 禁止无指令的推倒重写
-5. **记录与可追溯**: 决策须回写至Issue/文档
-6. **文档归位**: 按规范存放，过时文档归档
-7. **MVP约束**: 禁止私自扩展或新增功能
-8. **输出归档**: 报告/日志写入指定目录
-9. **安全与合规**: 严格遵守技术黑名单
-10. **立足长期目标**: 架构调整立足3-5年演进（ADR-005）
-
-**长期目标原则**: 渐进式演进（5-15天/次） + 6个量化触发指标 + Constitution可调整（需ADR）
-
-### 2.2 编码与验证标准
-
-**详细规范** → [.claude/reference/coding-standards.md](.claude/reference/coding-standards.md), [.claude/guides/testing.md](.claude/guides/testing.md)
-
-**核心质量标准**:
-- **编译**: 0 errors, 0 warnings
-- **运行时验证（⚠️强制）**:
-  1. 启动应用（Client + Server）
-  2. 执行真实操作场景
-  3. 验证数据库状态
-  4. 从用户视角确认功能完整可用
-
-**禁止行为**:
-- ❌ 只编译通过就认为完成
-- ❌ 部分功能可用就关闭Issue
-- ❌ 未测试边界条件
-
-**代码规范要点**:
-- 语言: 中文（注释、输出、提交信息）
-- 编码: UTF-8 with BOM
-- 命名: PascalCase（类型）、_camelCase（私有字段）
-- 依赖注入: 仅构造函数注入
-- 异步: I/O必须async/await
-
-### 2.3 版本管理
-
-**详细规范** → [.claude/guides/issue-workflow.md#版本管理规范](.claude/guides/issue-workflow.md#版本管理规范)
-
-**核心策略**:
-- ✅ MVP阶段保持 **1.x.x.x** 系列稳定演进
-- ✅ 通过功能扩展而非版本升级
-- ❌ 避免大版本频繁跳跃
-
-**升级触发条件**: 重大架构重构、破坏性API变更、技术栈重大升级、MVP发布后里程碑
-
-### 2.4 Repository架构规范
-
-**完整说明** → [repository-pattern.md](docs/explanation/architecture/patterns/repository-pattern.md)
-
-#### 三层接口架构（Epic #2016 Phase 3）
-
-**设计理念**: 统一共性 + 保持特性 + 渐进式扩展
-
+**小需求（90%）**：<5 文件, <200 行, <2 小时 → 直接修改
 ```
-层级1: IReadRepository<T>     ← 5个标准只读方法（Shared层）
-       ↓ 继承
-层级2: IRepository<T>         ← +9个写入/辅助方法（Shared层）
-       ↓ 继承
-层级3: IXxxRepository         ← +模块特定业务方法（各Module层）
+创建 Issue → 从 Graphiti 检索规则 → 修改代码 → 验证 → 提交
 ```
 
-**核心接口**:
-
-| 接口 | 方法数 | 用途 | 位置 |
-|-----|-------|------|------|
-| `IReadRepository<T>` | 5个 | 只读操作基础接口 | `Shared.Models/Interfaces` |
-| `IRepository<T>` | 14个 | 完整CRUD接口 | `Shared.Models/Interfaces` |
-| `IXxxRepository` | 5+N个 | 模块特定接口 | `Module.Xxx/Interfaces` |
-
-**标准实现**:
-
-| 基类 | 实现接口 | 用途 | 位置 |
-|-----|---------|------|------|
-| `BaseReadRepository<T>` | `IReadRepository<T>` | 只读仓储基类 | `Infrastructure/Repositories` |
-| `BaseRepository<T>` | `IRepository<T>` | 完整仓储基类 | `Infrastructure/Repositories` |
-
-#### 使用指南
-
-**选择决策树**:
-
+**大需求（10%）**：跨模块, >200 行, >2 小时 → 自动化流程
 ```
-是否需要通过Repository直接写入?
-  ├─ 否 → 从属实体 → 继承 BaseReadRepository<T> + IReadRepository<T>
-  │        示例: Prescription, Consultation
-  │        原因: 所有写操作必须通过MedicalCase聚合根
-  │
-  └─ 是 → 聚合根实体 → 继承 BaseRepository<T> + IRepository<T>
-           示例: Patient, MedicalCase, Herb, Formula
-           原因: 独立业务实体,需要完整CRUD能力
+创建 Issue → 调用 lybtzyzs-workflow-orchestrator skill → 14 状态自动化流程
 ```
 
-**模块分类表**:
-
-| 模块 | Repository类型 | 接口继承 | 基类继承 | 原因 |
-|-----|---------------|---------|---------|------|
-| **聚合根实体** | | | | |
-| Patients | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立业务实体 |
-| MedicalCase | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 聚合根(管理Prescription/Consultation) |
-| Herbs | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立中药管理 |
-| Formula | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 独立方剂管理 |
-| Users | 完整Repository | `IRepository<T>` | `BaseRepository<T>` | 用户管理 |
-| **从属实体** | | | | |
-| Prescriptions | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
-| Consultation | 只读Repository | `IReadRepository<T>` | `BaseReadRepository<T>` | MedicalCase的从属实体 |
-
-**代码示例**:
-
-```csharp
-// 1. 从属实体的只读Repository（Prescription示例）
-namespace LYBT.Module.Prescriptions.Interfaces
-{
-    /// <summary>
-    /// 处方仓储接口 - 继承IReadRepository标准接口
-    /// </summary>
-    public interface IPrescriptionRepository : IReadRepository<Prescription>
-    {
-        // 继承5个标准只读方法:
-        // - Task<T?> GetByIdAsync(Guid id)
-        // - Task<IEnumerable<T>> GetAllAsync()
-        // - Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-        // - Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate)
-        // - Task<long> CountAsync()
-        
-        // 添加模块特定方法:
-        Task<Prescription?> GetByIdWithItemsAsync(Guid id);
-        Task<PagedResult<Prescription>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
-        Task<List<Prescription>> GetByPatientIdAsync(Guid patientId);
-        Task<List<Prescription>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
-    }
-}
-
-namespace LYBT.Module.Prescriptions.Repositories
-{
-    /// <summary>
-    /// 处方仓储实现 - 继承BaseReadRepository标准实现
-    /// </summary>
-    internal class PrescriptionRepository : BaseReadRepository<Prescription>, IPrescriptionRepository
-    {
-        public PrescriptionRepository(AppDbContext context) : base(context) { }
-        
-        // 5个标准方法由BaseReadRepository自动提供（自动过滤软删除）
-        
-        // 实现模块特定方法:
-        public async Task<Prescription?> GetByIdWithItemsAsync(Guid id)
-        {
-            return await DbSet
-                .AsNoTracking()
-                .Include(p => p.Items)  // 预加载关联数据
-                .Where(p => p.Id == id && !p.IsDeleted)
-                .SingleOrDefaultAsync();
-        }
-        // ... 其他特定方法
-    }
-}
-
-// 2. 聚合根实体的完整Repository（Patient示例）
-namespace LYBT.Module.Patients.Interfaces
-{
-    public interface IPatientRepository : IRepository<Patient>
-    {
-        // 继承14个标准方法(5个读+6个写+3个辅助)
-        // 添加模块特定方法:
-        Task<PagedResult<Patient>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
-    }
-}
-
-namespace LYBT.Module.Patients.Repositories
-{
-    internal class PatientRepository : BaseRepository<Patient>, IPatientRepository
-    {
-        public PatientRepository(AppDbContext context, ILogger<PatientRepository> logger) 
-            : base(context, logger) { }
-        
-        // 14个标准方法由BaseRepository自动提供
-        // 实现模块特定方法...
-    }
-}
-```
-
-**关键特性**:
-
-1. **自动软删除过滤**: 所有读方法自动过滤 `IsDeleted = true` 记录
-2. **Repository可见性**: 实现类为 `internal`，仅Service层可访问（Epic #1600 Phase 3）
-3. **测试访问**: 通过 `InternalsVisibleTo` 属性允许单元测试访问
-4. **Include策略**: 模块特定方法负责预加载关联数据，避免N+1查询
-
-**详细文档**:
-- 完整Repository模式说明: [repository-pattern.md](docs/explanation/architecture/patterns/repository-pattern.md)
-- Server端Repository层架构: [server/README.md](docs/explanation/architecture/server/README.md)
-- 接口定义位置: [shared/README.md](docs/explanation/architecture/shared/README.md)
+**触发关键词**："复杂需求"、"新功能开发"、"Epic 任务"、"跨模块重构"
 
 ---
 
-## 3. 工具快速参考
+## 4. MCP 工具协同
 
-### 3.1 常用命令
+### 4.1 工具优先级
 
-**完整参考** → [.claude/reference/commands.md](.claude/reference/commands.md)
+**工具链**（按优先级）：
+```
+检索知识        分析代码        查文档        提交代码
+    ↓              ↓              ↓             ↓
+Graphiti  →    Serena    →   Context7   →   GitHub
+（第一大脑）   （代码分析）   （技术文档）   （版本控制）
+```
+
+**使用原则**：
+1. **Graphiti 优先**：任务前先检索，任务后先存储
+2. **Serena 辅助**：代码语义分析、符号级编辑
+3. **Context7 补充**：查询最新官方文档（.NET、WPF、EF Core）
+4. **GitHub 强制**：所有代码变更必须关联 Issue
+
+---
+
+### 4.2 Graphiti 工具使用
+
+**可用工具**：
+- `add_memory`：存储知识（支持 text、JSON、message 格式）
+- `search_nodes`：搜索实体节点（Preference、Procedure、Requirement 等）
+- `search_facts`：搜索事实关系（模块依赖、架构层次等）
+- `get_episodes`：获取历史 episodes
+- `delete_episode`：删除 episode
+- `clear_graph`：清空图谱（⚠️谨慎使用）
+
+**最佳实践**：
+```python
+# 1. 任务前检索（组合查询）
+preferences = search_nodes(query="编码规范", entity_types=["Preference"], max_nodes=10)
+procedures = search_nodes(query="验证流程", entity_types=["Procedure"], max_nodes=5)
+facts = search_facts(query="模块依赖", max_facts=20)
+
+# 2. 任务后存储（JSON格式）
+add_memory(
+    name="Issue决策",
+    episode_body='{"issue": 1234, "decision": "...", "rationale": "..."}',
+    source="json",
+    group_id="lybtzyzs_project"
+)
+
+# 3. 批量存储（高效）
+from graphiti_core.utils.bulk_utils import RawEpisode
+add_episode_bulk(
+    bulk_episodes=[RawEpisode(...), RawEpisode(...)],
+    group_id="lybtzyzs_project"
+)
+```
+
+---
+
+## 5. 紧急参考
+
+### 5.1 常用命令
 
 ```bash
 # 统一使用 LYBT.All.sln
@@ -375,222 +310,70 @@ dotnet build LYBT.All.sln -c Release --no-restore
 dotnet test LYBT.All.sln -c Release --settings tests/.runsettings
 ```
 
-### 3.2 工具优先级
+### 5.2 禁止行为（⚠️严格执行）
 
-**详细说明** → [.claude/core/TOOL-ENVIRONMENT.md](.claude/core/TOOL-ENVIRONMENT.md)
+**工作流违规**：
+- ❌ 未从 Graphiti 检索就开始任务
+- ❌ 未创建 Issue 就修改代码
+- ❌ 只编译通过就关闭 Issue（必须运行时验证）
 
-```
-⭐⭐⭐ MCP工具（filesystem, serena, github, context7） - 跨平台，优先使用
-⭐⭐ Bash工具（cat, grep, find） - 标准Unix命令
-⚠️ PowerShell命令（Get-*, Select-*） - 仅项目环境可用
-```
+**代码质量违规**：
+- ❌ 编译有 errors 或 warnings
+- ❌ 未测试边界条件
+- ❌ 部分功能可用就提交
 
-### 3.3 MCP工具协同
-
-**完整参考** → [.claude/reference/mcp-tools.md](.claude/reference/mcp-tools.md)
-
-**核心工具**:
-- **graphiti-memory**: 时序感知知识图谱（⭐ 项目知识"第二大脑"，唯一长期知识库）
-- **serena**: 代码语义分析与编辑（含项目特定记忆，用于当前会话上下文）
-- **filesystem**: 文件系统操作
-- **github**: GitHub API（⚠️必须显式owner/repo）
-- **context7**: 技术文档查询（最新官方文档）
-- **sequential-thinking**: 深度推理分析
-
-**协同模式**:
-```
-深度分析: sequential-thinking → graphiti-memory（查询历史）→ context7 → serena
-快速开发: serena → context7 → graphiti-memory（存储决策）
-知识积累: graphiti-memory（决策→存储→查询→复用）← 唯一长期知识库
-```
-
-**工具定位**:
-- **Graphiti Memory**: 项目唯一"第二大脑"，跨会话长期知识图谱，所有重要决策必须存储
-- **Serena Memory**: 项目特定记忆（如编码规范、命令速查），仅用于当前会话快速参考
-
-#### Graphiti Memory 工具（⭐ 项目唯一"第二大脑"）
-
-**定位**: 项目长期知识图谱，唯一的跨会话知识存储系统
-
-**核心能力**: 时序感知知识图谱，自动追踪时间戳，混合语义搜索，关系推理
-
-**强制使用场景** (⚠️必须实时使用):
-1. **长期对话上下文** - 跨会话知识连续性（替代临时记忆方案）
-2. **技术决策记录** - 架构选型、设计方案、ADR决策
-3. **问题诊断历史** - Bug根因、解决方案、修复模式
-4. **代码关系映射** - 模块依赖、接口调用、数据流向
-5. **用户偏好学习** - 编码风格、命名习惯、工作流偏好
-6. **重构历史追踪** - 架构演进、重构决策、技术债务
-
-**存储触发**: 决策后、完成Issue后、遇Bug后、架构讨论后、Review发现模式后、重构完成后
-
-**查询时机**: 新任务前、遇类似问题、架构设计、Code Review、技术选型前
-
-> 💡 **核心原则**: Graphiti 是项目知识的"第二大脑"，所有重要信息必须实时归档
-> 
-> ⚠️ **重要变更（2025-11-11）**: Graphiti 已调试成功，现为项目唯一长期知识库。Serena memory 仅用于项目特定记忆（如命令速查），不再作为临时"第二大脑"方案
-
-**详细使用指南** → [graphiti-memory.md](.claude/reference/graphiti-memory.md)
+**知识管理违规**：
+- ❌ 任务完成后未存储决策到 Graphiti
+- ❌ 发现新规则未立即记录
+- ❌ Bug 修复后未沉淀修复模式
 
 ---
 
-## 4. 工作模式与Skills
+## 6. 核心标准（从 Graphiti 检索详细规则）
 
-### 4.1 工作模式（7种）
+### 6.1 执行原则（10条）
 
-**详细定义** → [.claude/modes/](.claude/modes/)
+**完整定义** → Graphiti 检索 `Preference: "执行原则"`
 
-| 模式 | 触发命令 | 用途 |
-|-----|---------|------|
-| 🔍 Code Review | `/code-review` | 规范、架构、安全检查 |
-| 🏗️ Architecture | `/review-arch` | 三层架构验证 |
-| ⚡ Performance | `/analyze-perf` | 性能分析与优化 |
-| 🔄 Refactoring | `/refactor-plan` | 重构规划与Phase拆分 |
-| 🧪 Testing | `/generate-tests` | 测试生成与验证 |
-| 📝 Documentation | `/update-docs` | 文档同步与更新 |
-| 🧠 Research | `/deep-research` | 深度技术研究 |
+速查版本：
+1. 验证优先
+2. 文档先行
+3. 最小充分交付
+4. 增量优化
+5. 记录与可追溯
+6. 文档归位
+7. MVP 约束
+8. 输出归档
+9. 安全与合规
+10. 立足长期目标
 
-### 4.2 Claude Skills（13个）
+### 6.2 编码与验证标准
 
-**完整指南** → [.claude/guides/skills-usage.md](.claude/guides/skills-usage.md)
+**完整规范** → Graphiti 检索 `Preference: "编码规范"`
 
-#### ⭐ 核心编排引擎
+速查版本：
+- 语言：中文（注释、输出、提交信息）
+- 编码：UTF-8 with BOM
+- 命名：PascalCase（类型）、_camelCase（私有字段）
+- 依赖注入：仅构造函数注入
+- 异步：I/O 必须 async/await
 
-**lybtzyzs-workflow-orchestrator** - 自动化工作流编排引擎 🔴 核心
-- **功能**: 14状态自动化流程（需求→设计→任务→实施→质量→归档）
-- **触发**: 大需求开发（用户明确说明"复杂需求"、"新功能"、"Epic任务"）
-- **自动化率**: 85%（仅5个人工确认点）
-- **人工确认点**: 需求确认、设计审查、任务审查、质量把关、反思审查
-- **配置**: `.claude/config/workflow-orchestrator.json`（4种场景配置）
-- **完整文档**: [AUTOMATION-SYSTEM-SUMMARY.md](.claude/skills/AUTOMATION-SYSTEM-SUMMARY.md)
+**验证流程** → Graphiti 检索 `Procedure: "验证流程"`
 
-#### 业务Skills（11个）
-
-**需求与设计**:
-- **lybtzyzs-requirements-generator**: 需求文档生成（用户需求→需求讨论文档）
-- **lybtzyzs-design-generator**: 设计文档生成（需求→设计）
-- **lybtzyzs-design-arch-validator**: 设计架构验证
-
-**合规与质量**:
-- **lybtzyzs-mvp-compliance**: MVP合规检查（技术黑名单、过度设计）
-- **lybtzyzs-arch-compliance**: 架构合规检查（三层架构、依赖方向）
-- **lybtzyzs-doc-sync**: 文档同步检查（强制读取规则、变更检测）
-- **lybtzyzs-quality-reporter**: 质量报告生成（PR质量评分、自动合并决策）
-
-**任务管理**:
-- **lybtzyzs-task-breakdown**: 任务分解（设计文档→task清单）
-- **lybtzyzs-issue-template**: Issue批量生成（task文档→GitHub Issues）
-- **lybtzyzs-task-executor**: 任务自动执行（Issue→代码→验证→提交）
-- **lybtzyzs-task-tracker**: 任务状态追踪（GitHub双向同步、Epic进度）
-- **lybtzyzs-task-reflector**: 任务反思改进（技术债务、知识归档）
-
-#### 使用指南
-
-**小需求（90%）**: 无需调用Skills，直接使用serena/filesystem等MCP工具修改代码
-
-**大需求（10%）**: 自动调用 **lybtzyzs-workflow-orchestrator**，启动完整自动化流程
-
-**触发关键词**: "复杂需求"、"新功能开发"、"Epic任务"、"跨模块重构"
+速查版本：
+1. 编译：0 errors, 0 warnings
+2. 启动应用（Client + Server）
+3. 执行真实操作场景
+4. 验证数据库状态
+5. 从用户视角确认功能完整可用
 
 ---
 
-## 5. 架构哲学
+**最后更新**：2025-11-13（v8.0 Graphiti优先精简版）
 
-### 5.1 三层对齐架构
-
-**完整说明** → [.claude/explanation/architecture-philosophy.md](.claude/explanation/architecture-philosophy.md)
-
-**核心理念**: Server端（三层） + Client端（MVVM五层） + Shared（跨端共享）
-
-**演进路径**: Service层协调 → 富领域模型 → 领域事件 → CQRS
-
-**6个触发指标**:
-1. 业务规则: >20条 → 富领域模型
-2. Service方法: >200行 → 领域服务拆分
-3. 聚合根关系: >3层 → 重新设计边界
-4. 状态机: >8状态 → 状态机模式
-5. 团队规模: >5人 → CQRS分离读写
-6. 数据量: >100万 → 缓存/读写分离
-
-**当前状态**: MVP阶段（业务规则~14条，Service<100行，团队1人，数据<1万）
-
-### 5.2 MVP约束
-
-**完整说明** → [.claude/explanation/mvp-philosophy.md](.claude/explanation/mvp-philosophy.md)
-
-**核心原则**: 够用即好 + 拒绝超前设计 + 简单直接 + 快速交付
-
-**技术黑名单（MVP阶段严格禁止）**:
-- ❌ 分布式: Redis, RabbitMQ/Kafka, Docker, 微服务
-- ❌ 过度设计: CQRS, MediatR, Event Sourcing, DDD富领域模型
-- ❌ 过度抽象: 多层抽象接口, 过度工厂/策略模式
-- ❌ 前端框架: GraphQL, React/Vue（Desktop）, Blazor（Desktop）
-
-**允许技术栈**: .NET 8, EF Core, SQL Server, WPF, Prism, ASP.NET Core, xUnit, NSubstitute
-
-**Constitution可调整条件**: 充分业务证据 + MVP替代方案评估 + ROI >2倍
-
-### 5.3 长期愿景（3-5年）
-
-**完整路径图** → [.claude/explanation/long-term-vision.md](.claude/explanation/long-term-vision.md)
-
-**演进路径**: MVP（2025）→ 富领域模型（2026）→ 领域事件（2027）→ CQRS（2028）
-
-**渐进式演进**: 每次演进5-15天（可控） + 明确触发条件 + Constitution可调整
-
----
-
-## 6. 文档维护
-
-### 6.1 文档同步（强制）
-
-**完整指南** → [.claude/guides/documentation.md](.claude/guides/documentation.md)
-
-**强制流程**:
-- 实施前: 列出文档更新清单
-- 开发中: 代码变更后立即更新文档
-- 完成前: 确认所有文档已更新
-
-**更新范围**: 架构文档、开发指南、API文档、快速参考、导航索引
-
-### 6.2 环境清理
-
-**完整指南** → [.claude/guides/testing.md#验证后的环境清理](.claude/guides/testing.md#验证后的环境清理)
-
-**清理清单**: 终止临时进程 + 释放资源缓存 + 还原配置 + 关闭外部连接 + 证据归档 + 端口检查
-
-### 6.3 约束调整流程
-
-**详细流程** → [.claude/explanation/mvp-philosophy.md#附录](.claude/explanation/mvp-philosophy.md#附录)
-
-**调整流程**: GitHub Issue提出并获批 → 创建ADR → 更新Constitution → 同步更新相关文档
-
----
-
-## 📚 快速索引
-
-### 按任务类型
-
-| 任务 | 推荐文档 |
-|-----|---------|
-| 🆕 首次使用 | [getting-started.md](.claude/guides/getting-started.md) |
-| 🐛 修复Bug | [issue-workflow.md](.claude/guides/issue-workflow.md) |
-| ✨ 开发功能 | [spec-workflow.md](.claude/guides/spec-workflow.md) |
-| 🔄 代码重构 | [refactoring.md](.claude/modes/refactoring.md) |
-| 🧪 编写测试 | [testing.md](.claude/guides/testing.md) |
-| 📝 更新文档 | [documentation.md](.claude/guides/documentation.md) |
-| 🔍 代码审查 | [code-review.md](.claude/modes/code-review.md) |
-| 🏗️ 架构设计 | [architecture-philosophy.md](.claude/explanation/architecture-philosophy.md) |
-| 🧠 知识管理 | [graphiti-memory.md](.claude/reference/graphiti-memory.md) |
-
----
-
-**最后更新**: 2025-11-11（v6.3 Graphiti完全集成版 - 唯一"第二大脑"）
-
-**变更历史**:
-- v6.3（2025-11-11）: ⭐ Graphiti Memory调试成功，成为项目唯一长期知识库，明确Serena memory仅用于项目特定记忆
-- v6.2（2025-11-11）: 集成Graphiti Memory知识图谱，移除停用MCP工具（shrimp/interactive-feedback/spec-workflow），优化底部导航
-- v6.1.1（2025-10-28）: 平衡精简优化，再减少25%，保留关键示例
-- v6.1（2025-10-28）: 重构为模块化架构，创建15个专门文档，主文档精简94%
-- v6.0（2025-10-20）: 新增版本管理规范、验证优先策略、长期目标原则
-- v5.0（2025-10-15）: 文档架构三层对齐、新增Spec-Driven工作流
+**核心变更**：
+- ✅ 精简到200行以内
+- ✅ 重点针对Graphiti调用指南
+- ✅ 强化三阶段工作流（RETRIEVE → EXECUTE → STORE）
+- ✅ 明确强制更新要求
+- ✅ 通过context7和ref查询最佳实践
