@@ -1,4 +1,8 @@
-# 🔄 LYBTZYZS工作流程调度
+# 🔄 凌隐宝堂中医诊所项目 (LYBTZYZS) 工作流程调度
+
+> **项目全称**: 凌隐宝堂中医诊所管理系统
+> **项目简称**: LYBTZYZS
+> **说明**: 在描述性场合统一使用"凌隐宝堂中医诊所项目"，技术文档中使用LYBTZYZS简称
 
 ## 📋 标准流程
 **需求驱动开发流程**
@@ -14,7 +18,7 @@
 → **模板**: `docs/templates/` (需求确认和方案设计模板)
 → **技能**: 调用相应LYBTZYZS Skills自动化生成文档
 
-## 🛠️ 核心Skills调用
+## 🛠️ 核心Skills调用 (凌隐宝堂中医诊所项目专用)
 - `lybtzyzs-requirements-generator` - 生成需求确认文档
 - `lybtzyzs-design-generator` - 生成方案设计文档
 - `lybtzyzs-task-executor` - 自动执行GitHub Issue
@@ -31,5 +35,8 @@
 - **PR检查**: 大需求合并PR后，检查Issues是否自动关闭，未关闭则手动关闭
 
 ## 📦 项目配置信息
+- **项目全称**: 凌隐宝堂中医诊所管理系统
+- **项目简称**: LYBTZYZS
 - **GitHub账户**: shouqitao (TonyShou)
 - **仓库路径**: https://github.com/shouqitao/LYBTZYZS
+- **项目类型**: 企业级中医诊所管理系统
