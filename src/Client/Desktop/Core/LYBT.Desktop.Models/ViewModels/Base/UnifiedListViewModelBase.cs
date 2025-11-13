@@ -25,6 +25,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         private int _currentPage = 1;
         private int _pageSize = 20;
         private bool _hasSelection = false;
+        
+        // 防抖相关字段
+        private CancellationTokenSource? _searchCancellationTokenSource;
+    
 
         /// <summary>
         /// 列表项集合
@@ -76,7 +80,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    _ = SearchAsync();
+                    _ = SearchWithDebounceAsync();
                 }
             }
         }
@@ -259,11 +263,16 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// <summary>
         /// 加载当前页数据
         /// </summary>
-        public async Task LoadPageAsync()
+        public async Task LoadPageAsync(bool showLoading = true)
         {
             await ExecuteSafelyAsync(async () =>
             {
-                IsLoading = true;
+                // 智能加载状态：仅在首次加载或明确要求时显示加载蒙板
+                // 搜索时分页通常很快，避免不必要的闪烁
+                if (showLoading)
+                {
+                    IsLoading = true;
+                }
 
                 try
                 {
@@ -271,18 +280,19 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
                     RunOnUIThread(() =>
                     {
-                        Items.Clear();
-                        foreach (var item in items)
-                        {
-                            Items.Add(item);
-                        }
+                        // 批量更新Items，避免UI多次重绘
+                        var newItems = new ObservableCollection<T>(items);
+                        Items = newItems;
 
                         RefreshPagingProperties();
                     });
                 }
                 finally
                 {
-                    IsLoading = false;
+                    if (showLoading)
+                    {
+                        IsLoading = false;
+                    }
                 }
 
             }, "加载数据");
@@ -294,7 +304,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public async Task SearchAsync()
         {
             CurrentPage = 1; // 重置到第一页
-            await LoadPageAsync();
+            await LoadPageAsync(false); // 搜索时不显示加载蒙板，避免闪烁
         }
 
         /// <summary>
@@ -308,6 +318,29 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #endregion
 
         #region 私有方法
+        
+        /// <summary>
+        /// 防抖搜索 - 延迟500ms后执行搜索，避免频繁请求
+        /// </summary>
+        private async Task SearchWithDebounceAsync()
+        {
+            // 取消之前的搜索任务
+            _searchCancellationTokenSource?.Cancel();
+            _searchCancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                // 等待500ms防抖
+                await Task.Delay(500, _searchCancellationTokenSource.Token);
+                
+                // 执行搜索
+                await SearchAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // 搜索被取消，忽略
+            }
+        }
 
         /// <summary>
         /// 刷新分页属性
