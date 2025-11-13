@@ -304,7 +304,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public async Task SearchAsync()
         {
             CurrentPage = 1; // 重置到第一页
-            await LoadPageAsync(false); // 搜索时不显示加载蒙板，避免闪烁
+            await LoadPageAsync(true); // 搜索时显示加载状态，确保数据正常加载
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         #region 私有方法
         
         /// <summary>
-        /// 防抖搜索 - 延迟500ms后执行搜索，避免频繁请求
+        /// 防抖搜索 - 延迟200ms后执行搜索，避免频繁请求
         /// </summary>
         private async Task SearchWithDebounceAsync()
         {
@@ -330,8 +330,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
             try
             {
-                // 等待500ms防抖
-                await Task.Delay(500, _searchCancellationTokenSource.Token);
+                // 等待200ms防抖，减少延迟感
+                await Task.Delay(200, _searchCancellationTokenSource.Token);
                 
                 // 执行搜索
                 await SearchAsync();
@@ -341,7 +341,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 // 搜索被取消，忽略
             }
         }
-
+        
+  
         /// <summary>
         /// 刷新分页属性
         /// </summary>
