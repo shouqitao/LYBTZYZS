@@ -121,6 +121,8 @@ graph TB
 **✅ 15. Epic关闭**
 - 验收完成确认
 - Epic Issue关闭
+- **关键检查**: 验证所有子Issues是否通过PR自动关闭
+- **手动操作**: 未自动关闭的Issues必须手动关闭
 - 项目归档
 - 经验总结
 
@@ -200,8 +202,11 @@ graph TB
 - 提交相关更改
 
 **✅ 11. Issue关闭**
-- 验收完成
-- Issue关闭
+- 验收完成确认
+- **手动关闭**: GitHub Issue状态设置为Closed
+- **关闭原因**: 选择completed（完成）或not_planned（取消）
+- **状态更新**: 添加关闭评论说明完成情况
+- **流程闭环**: 确保Issue生命周期完整
 
 ---
 
@@ -247,6 +252,18 @@ lybtzyzs-workload-estimator "需求描述"
 3. 记录到Graphiti记忆
 4. 更新相关文档
 
+### 5. Issue关闭控制点
+**为什么必须手动关闭Issue**：
+- **流程完整性**: 确保每个需求都有明确的生命周期终点
+- **工作追踪**: 避免开放的Issues影响项目进度统计
+- **责任闭环**: 明确任务完成状态和交付成果
+- **项目治理**: 维护项目管理的规范性和透明度
+
+**关键检查**：
+- 大需求：PR合并后检查所有子Issues是否自动关闭
+- 小需求：任务完成后手动关闭对应的Issue
+- 关闭原因：必须明确选择（completed/not_planned/duplicate）
+
 ---
 
 ## 🔧 Skill调用指南
@@ -288,6 +305,7 @@ PR创建 → pr-generator
 - [ ] PR已创建并审查
 - [ ] 文档已更新
 - [ ] Graphiti已同步
+- [ ] **关键**: 检查所有子Issues是否通过PR自动关闭
 - [ ] Epic已关闭
 
 ### 小需求检查清单
@@ -299,7 +317,7 @@ PR创建 → pr-generator
 - [ ] 用户已确认
 - [ ] 文档已更新
 - [ ] Graphiti已同步
-- [ ] Issue已关闭
+- [ ] **必须**: Issue已手动关闭（状态：Closed，原因：Completed/Not Planned）
 
 ---
 
