@@ -39,7 +39,8 @@ namespace LYBT.Module.Herbs.Services
         {
             try
             {
-                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                // 修复：传递keyword参数到Repository进行数据库级别搜索
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
                 var dtos = _mapper.Map<List<HerbDto>>(pagedResult.Items);
 
                 // Issue #1164: 应用分类筛选（在DTO级别过滤）

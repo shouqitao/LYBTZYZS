@@ -1,203 +1,198 @@
-﻿<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseManagementView"
+<!--
+    MedicalCaseManagementView - 医案管理视图
+    Issue #1999 - Task 2.6: 应用BaseMasterDataListView模板
+
+    重构说明：
+    - 使用 BaseMasterDataListView 替代原有的三行布局
+    - 移除重复的工具栏、数据表格、分页控件代码
+    - 通过 Columns 和 ActionButtons 属性定义医案特定内容
+-->
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseManagementView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
     <UserControl.Resources>
-        <!-- 枚举描述转换器 -->
+        <!-- 转换器资源 -->
         <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />  <!-- 工具栏 -->
-            <RowDefinition Height="*" />      <!-- 表格 -->
-            <RowDefinition Height="Auto" />  <!-- 分页栏 -->
-        </Grid.RowDefinitions>
+    <!-- Issue #1999: 应用 BaseMasterDataListView 模板 -->
+    <views:BaseMasterDataListView
+        ItemsSource="{Binding Items}"
+        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SearchText="{Binding SearchText, Mode=TwoWay}"
+        SearchCommand="{Binding SearchCommand}"
+        CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
+        TotalPages="{Binding TotalPages}"
+        PageSize="{Binding PageSize, Mode=TwoWay}"
+        TotalCount="{Binding TotalCount}"
+        FirstPageCommand="{Binding FirstPageCommand}"
+        PreviousPageCommand="{Binding PreviousPageCommand}"
+        NextPageCommand="{Binding NextPageCommand}"
+        LastPageCommand="{Binding LastPageCommand}"
+        IsBusy="{Binding IsBusy}"
+        BusyMessage="{Binding BusyMessage}"
+        EmptyStateText="暂无病案数据">
 
-        <!-- Issue #1840: 统一工具栏 -->
-        <controls:UnifiedManagementToolBar
-            Grid.Row="0"
-            SearchText="{Binding SearchText, Mode=TwoWay}"
-            SearchCommand="{Binding SearchCommand}">
+        <!-- 定义医案特定的 DataGrid 列 -->
+        <views:BaseMasterDataListView.Columns>
+            <!-- 案例编号 -->
+            <DataGridTextColumn Header="案例编号"
+                                Binding="{Binding CaseNumber}"
+                                Width="120" />
 
-            <!-- 筛选区 - 状态和日期范围 -->
-            <controls:UnifiedManagementToolBar.FilterContent>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="状态："
-                               Style="{StaticResource LabelText}"
-                               VerticalAlignment="Center"
-                               Margin="{StaticResource SpacingMedium}" />
-                    <ComboBox SelectedItem="{Binding FilterStatus}"
-                              Style="{StaticResource FilterComboBox}"
-                              Width="120"
-                              Margin="{StaticResource SpacingSmall}">
-                        <ComboBoxItem Content="全部状态" />
-                        <ComboBoxItem Content="已登记" />
-                        <ComboBoxItem Content="进行中" />
-                        <ComboBoxItem Content="已完成" />
-                        <ComboBoxItem Content="已取消" />
-                    </ComboBox>
+            <!-- 创建时间 -->
+            <DataGridTextColumn Header="创建时间"
+                                Binding="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                Width="150" />
 
-                    <TextBlock Text="日期："
-                               Style="{StaticResource LabelText}"
-                               VerticalAlignment="Center"
-                               Margin="{StaticResource SpacingMedium}" />
-                    <DatePicker SelectedDate="{Binding StartDate}"
-                                Width="120"
-                                Margin="{StaticResource SpacingSmall}" />
-                    <TextBlock Text="至"
-                               Style="{StaticResource LabelText}"
-                               VerticalAlignment="Center"
-                               Margin="{StaticResource SpacingSmall}" />
-                    <DatePicker SelectedDate="{Binding EndDate}"
-                                Width="120"
-                                Margin="{StaticResource SpacingSmall}" />
-                </StackPanel>
-            </controls:UnifiedManagementToolBar.FilterContent>
+            <!-- 患者信息 -->
+            <DataGridTextColumn Header="患者姓名"
+                                Binding="{Binding PatientName}"
+                                Width="100" />
 
-            <!-- 操作按钮区 -->
-            <controls:UnifiedManagementToolBar.ActionButtons>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="+ 新建案例"
-                            Style="{StaticResource SuccessButton}"
-                            Command="{Binding AddCommand}"
+            <DataGridTextColumn Header="性别"
+                                Binding="{Binding PatientGender}"
+                                Width="60" />
+
+            <DataGridTextColumn Header="年龄"
+                                Binding="{Binding PatientAge}"
+                                Width="60" />
+
+            <!-- 接诊医生 -->
+            <DataGridTextColumn Header="接诊医生"
+                                Binding="{Binding DoctorName}"
+                                Width="100" />
+
+            <!-- 主诉 -->
+            <DataGridTextColumn Header="主诉症状"
+                                Binding="{Binding ChiefComplaint}"
+                                Width="200" />
+
+            <!-- 诊断 -->
+            <DataGridTextColumn Header="诊断结果"
+                                Binding="{Binding Diagnosis}"
+                                Width="150" />
+
+            <!-- 状态 - 使用UnifiedStatusBadge -->
+            <DataGridTemplateColumn Header="状态" Width="80">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <controls:UnifiedStatusBadge
+                            Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
+                            Type="Success" />
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <!-- 操作 -->
+            <DataGridTemplateColumn Header="操作" Width="400">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="查看详情"
+                                    Style="{StaticResource InfoButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="编辑"
+                                    Style="{StaticResource SuccessButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="诊疗记录"
+                                    Style="{StaticResource InfoButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="开具处方"
+                                    Style="{StaticResource WarningButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="打印"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="删除"
+                                    Style="{StaticResource DangerButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+        </views:BaseMasterDataListView.Columns>
+
+        <!-- 筛选内容区域 -->
+        <views:BaseMasterDataListView.FilterContent>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="状态："
+                           Style="{StaticResource LabelText}"
+                           VerticalAlignment="Center"
+                           Margin="{StaticResource SpacingMedium}" />
+                <ComboBox SelectedItem="{Binding FilterStatus}"
+                          Style="{StaticResource FilterComboBox}"
+                          Width="120"
+                          Margin="{StaticResource SpacingSmall}">
+                    <ComboBoxItem Content="全部状态" />
+                    <ComboBoxItem Content="已登记" />
+                    <ComboBoxItem Content="进行中" />
+                    <ComboBoxItem Content="已完成" />
+                    <ComboBoxItem Content="已取消" />
+                </ComboBox>
+
+                <TextBlock Text="日期："
+                           Style="{StaticResource LabelText}"
+                           VerticalAlignment="Center"
+                           Margin="{StaticResource SpacingMedium}" />
+                <DatePicker SelectedDate="{Binding StartDate}"
+                            Width="120"
                             Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="刷新"
-                            Style="{StaticResource SecondaryButton}"
-                            Command="{Binding RefreshCommand}"
+                <TextBlock Text="至"
+                           Style="{StaticResource LabelText}"
+                           VerticalAlignment="Center"
+                           Margin="{StaticResource SpacingSmall}" />
+                <DatePicker SelectedDate="{Binding EndDate}"
+                            Width="120"
                             Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="🏠 返回主页"
-                            Style="{StaticResource PrimaryButton}"
-                            Command="{Binding NavigateToHomeCommand}"
-                            ToolTip="返回管理员主页" />
-                </StackPanel>
-            </controls:UnifiedManagementToolBar.ActionButtons>
-        </controls:UnifiedManagementToolBar>
+            </StackPanel>
+        </views:BaseMasterDataListView.FilterContent>
 
-        <!-- Issue #1840: 统一数据表格 -->
-        <controls:UnifiedManagementTable
-            Grid.Row="1"
-            ItemsSource="{Binding Items}"
-            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-            EmptyStateText="暂无病案数据">
-
-            <controls:UnifiedManagementTable.Columns>
-                <!-- 案例编号 -->
-                <DataGridTextColumn Header="案例编号"
-                                    Binding="{Binding CaseNumber}"
-                                    Width="120" />
-
-                <!-- 创建时间 -->
-                <DataGridTextColumn Header="创建时间"
-                                    Binding="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
-                                    Width="150" />
-
-                <!-- 患者信息 -->
-                <DataGridTextColumn Header="患者姓名"
-                                    Binding="{Binding PatientName}"
-                                    Width="100" />
-
-                <DataGridTextColumn Header="性别"
-                                    Binding="{Binding PatientGender}"
-                                    Width="60" />
-
-                <DataGridTextColumn Header="年龄"
-                                    Binding="{Binding PatientAge}"
-                                    Width="60" />
-
-                <!-- 接诊医生 -->
-                <DataGridTextColumn Header="接诊医生"
-                                    Binding="{Binding DoctorName}"
-                                    Width="100" />
-
-                <!-- 主诉 -->
-                <DataGridTextColumn Header="主诉症状"
-                                    Binding="{Binding ChiefComplaint}"
-                                    Width="200" />
-
-                <!-- 诊断 -->
-                <DataGridTextColumn Header="诊断结果"
-                                    Binding="{Binding Diagnosis}"
-                                    Width="150" />
-
-                <!-- 状态 - Issue #1840: 使用UnifiedStatusBadge -->
-                <DataGridTemplateColumn Header="状态" Width="80">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <controls:UnifiedStatusBadge
-                                Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
-                                Type="Success" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="400">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="查看详情"
-                                        Style="{StaticResource InfoButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="编辑"
-                                        Style="{StaticResource SuccessButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="诊疗记录"
-                                        Style="{StaticResource InfoButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="开具处方"
-                                        Style="{StaticResource WarningButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="打印"
-                                        Style="{StaticResource SecondaryButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="删除"
-                                        Style="{StaticResource DangerButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </controls:UnifiedManagementTable.Columns>
-        </controls:UnifiedManagementTable>
-
-        <!-- Issue #1840: 统一分页栏 -->
-        <controls:UnifiedPaginationBar
-            Grid.Row="2"
-            CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
-            TotalPages="{Binding TotalPages}"
-            PageSize="{Binding PageSize, Mode=TwoWay}"
-            TotalCount="{Binding TotalCount}"
-            FirstPageCommand="{Binding FirstPageCommand}"
-            PreviousPageCommand="{Binding PreviousPageCommand}"
-            NextPageCommand="{Binding NextPageCommand}"
-            LastPageCommand="{Binding LastPageCommand}" />
-    </Grid>
+        <!-- 操作按钮区域 -->
+        <views:BaseMasterDataListView.ActionButtons>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="+ 新建案例"
+                        Style="{StaticResource SuccessButton}"
+                        Command="{Binding AddCommand}"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="刷新"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding RefreshCommand}"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="🏠 返回主页"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding NavigateToHomeCommand}"
+                        ToolTip="返回管理员主页" />
+            </StackPanel>
+        </views:BaseMasterDataListView.ActionButtons>
+    </views:BaseMasterDataListView>
 </UserControl>

@@ -59,9 +59,10 @@ public static class DatabaseServiceCollectionExtensions
             options.AddBasePolicy(builder =>
                 builder.Expire(TimeSpan.FromMinutes(5)));
 
-            // 草药数据缓存1小时
+            // 草材数据智能缓存：支持搜索参数区分，缓存30分钟
+            // 不同搜索条件(page, pageSize, keyword, category)会有独立缓存
             options.AddPolicy("HerbsCache", builder =>
-                builder.Expire(TimeSpan.FromHours(1))
+                builder.Expire(TimeSpan.FromMinutes(30))
                        .Tag("herbs"));
 
             // 配方模板缓存2小时

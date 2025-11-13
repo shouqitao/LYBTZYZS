@@ -10,7 +10,7 @@ namespace LYBT.Desktop.Contracts.Api
     public interface IHerbApi
     {
         /// <summary>
-        /// 获取草药列表（支持分页和查询）
+        /// 获取草药列表（支持分页和查询）- 有缓存
         /// </summary>
         [Refit.Get("/api/v1/herbs")]
         Task<ApiResponse<PagedResult<HerbDto>>> GetHerbsAsync(
@@ -18,6 +18,7 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
 
+  
         /// <summary>
         /// 获取草药详情
         /// </summary>

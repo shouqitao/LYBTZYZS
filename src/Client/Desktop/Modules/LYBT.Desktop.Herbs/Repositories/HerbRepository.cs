@@ -48,6 +48,8 @@ namespace LYBT.Desktop.Herbs.Repositories
 
         protected override Task<ApiResponse<PagedResult<HerbDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
+            // 使用统一的GetHerbsAsync接口，支持关键词缓存
+            _logger.LogInformation("=== API调用（带缓存搜索） === GetHerbsAsync(Page={Page}, Size={Size}, Keyword='{Keyword}')", page, pageSize, keyword);
             return _api.GetHerbsAsync(page, pageSize, keyword);
         }
 

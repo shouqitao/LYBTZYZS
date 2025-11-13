@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:views="clr-namespace:LYBT.Desktop.Infrastructure.Views;assembly=LYBT.Desktop.Infrastructure"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.Formula.ViewModels"
@@ -16,157 +17,142 @@
         <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource BackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />  <!-- 工具栏 -->
-            <RowDefinition Height="*" />      <!-- 表格 -->
-            <RowDefinition Height="Auto" />  <!-- 分页栏 -->
-        </Grid.RowDefinitions>
+    <!-- Issue #2002: 应用 BaseMasterDataListView 模板 -->
+    <views:BaseMasterDataListView
+        ItemsSource="{Binding Items}"
+        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SearchText="{Binding SearchText, Mode=TwoWay}"
+        SearchCommand="{Binding SearchCommand}"
+        CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
+        TotalPages="{Binding TotalPages}"
+        PageSize="{Binding PageSize, Mode=TwoWay}"
+        TotalCount="{Binding TotalCount}"
+        FirstPageCommand="{Binding FirstPageCommand}"
+        PreviousPageCommand="{Binding PreviousPageCommand}"
+        NextPageCommand="{Binding NextPageCommand}"
+        LastPageCommand="{Binding LastPageCommand}"
+        IsBusy="{Binding IsBusy}"
+        BusyMessage="{Binding BusyMessage}"
+        EmptyStateText="暂无验方数据">
 
-        <!-- Issue #1840: 统一工具栏 -->
-        <controls:UnifiedManagementToolBar
-            Grid.Row="0"
-            SearchText="{Binding SearchText, Mode=TwoWay}"
-            SearchCommand="{Binding SearchCommand}">
+        <!-- 定义验方特定的 DataGrid 列 -->
+        <views:BaseMasterDataListView.Columns>
+            <!-- 验方名称 -->
+            <DataGridTextColumn Header="验方名称"
+                                Binding="{Binding Name}"
+                                Width="150" />
 
-            <!-- 筛选区(暂不添加筛选,保持简洁) -->
-            <controls:UnifiedManagementToolBar.FilterContent>
-                <StackPanel Orientation="Horizontal" />
-            </controls:UnifiedManagementToolBar.FilterContent>
+            <!-- 分类 -->
+            <DataGridTextColumn Header="分类"
+                                Binding="{Binding Category}"
+                                Width="100" />
 
-            <!-- 操作按钮区 -->
-            <controls:UnifiedManagementToolBar.ActionButtons>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="📥 导入模板"
-                            Style="{StaticResource SecondaryButton}"
-                            Command="{Binding ImportFormulasCommand}"
-                            ToolTip="从Excel/CSV文件导入验方模板"
-                            Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="📄 导出模板"
-                            Style="{StaticResource InfoButton}"
-                            Command="{Binding ExportTemplateCommand}"
-                            ToolTip="下载验方模板导入格式"
-                            Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="📤 导出验方"
-                            Style="{StaticResource WarningButton}"
-                            Command="{Binding ExportFormulasCommand}"
-                            ToolTip="导出验方数据到Excel文件"
-                            Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="+ 新增验方"
-                            Style="{StaticResource SuccessButton}"
-                            Command="{Binding AddFormulaCommand}"
-                            Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="刷新"
-                            Style="{StaticResource SecondaryButton}"
-                            Command="{Binding RefreshCommand}"
-                            Margin="{StaticResource SpacingSmall}" />
-                    <Button Content="🏠 返回主页"
-                            Style="{StaticResource PrimaryButton}"
-                            Command="{Binding NavigateToHomeCommand}"
-                            ToolTip="返回管理员主页" />
-                </StackPanel>
-            </controls:UnifiedManagementToolBar.ActionButtons>
-        </controls:UnifiedManagementToolBar>
+            <!-- 功效 -->
+            <DataGridTextColumn Header="功效"
+                                Binding="{Binding Effect}"
+                                Width="*" />
 
-        <!-- Issue #1840: 统一数据表格 -->
-        <controls:UnifiedManagementTable
-            Grid.Row="1"
-            ItemsSource="{Binding Items}"
-            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-            EmptyStateText="暂无验方数据">
+            <!-- 来源 -->
+            <DataGridTextColumn Header="来源"
+                                Binding="{Binding Source}"
+                                Width="120" />
 
-            <controls:UnifiedManagementTable.Columns>
-                <!-- 验方名称 -->
-                <DataGridTextColumn Header="验方名称"
-                                    Binding="{Binding Name}"
-                                    Width="150" />
+            <!-- 价格信息 -->
+            <DataGridTextColumn Header="总价(元)"
+                                Binding="{Binding TotalPrice, StringFormat='{}{0:F2}'}"
+                                Width="80" />
 
-                <!-- 分类 -->
-                <DataGridTextColumn Header="分类"
-                                    Binding="{Binding Category}"
-                                    Width="100" />
+            <!-- 药材数量 -->
+            <DataGridTextColumn Header="药材数"
+                                Binding="{Binding HerbCount}"
+                                Width="60" />
 
-                <!-- 功效 -->
-                <DataGridTextColumn Header="功效"
-                                    Binding="{Binding Effect}"
-                                    Width="*" />
+            <!-- 状态 - 使用UnifiedStatusBadge -->
+            <DataGridTemplateColumn Header="状态" Width="80">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <controls:UnifiedStatusBadge
+                            Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
+                            Type="Success" />
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
 
-                <!-- 来源 -->
-                <DataGridTextColumn Header="来源"
-                                    Binding="{Binding Source}"
-                                    Width="120" />
+            <!-- 操作 -->
+            <DataGridTemplateColumn Header="操作" Width="280">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Content="查看"
+                                    Style="{StaticResource InfoButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="编辑"
+                                    Style="{StaticResource SuccessButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="复制"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <Button Content="删除"
+                                    Style="{StaticResource DangerButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+        </views:BaseMasterDataListView.Columns>
 
-                <!-- 价格信息 -->
-                <DataGridTextColumn Header="总价(元)"
-                                    Binding="{Binding TotalPrice, StringFormat='{}{0:F2}'}"
-                                    Width="80" />
+        <!-- 筛选内容区域(暂不添加筛选,保持简洁) -->
+        <views:BaseMasterDataListView.FilterContent>
+            <StackPanel Orientation="Horizontal" />
+        </views:BaseMasterDataListView.FilterContent>
 
-                <!-- 药材数量 -->
-                <DataGridTextColumn Header="药材数"
-                                    Binding="{Binding HerbCount}"
-                                    Width="60" />
-
-                <!-- 状态 - Issue #1840: 使用UnifiedStatusBadge -->
-                <DataGridTemplateColumn Header="状态" Width="80">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <controls:UnifiedStatusBadge
-                                Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
-                                Type="Success" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-
-                <!-- 操作 -->
-                <DataGridTemplateColumn Header="操作" Width="280">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Button Content="查看"
-                                        Style="{StaticResource InfoButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="编辑"
-                                        Style="{StaticResource SuccessButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="复制"
-                                        Style="{StaticResource SecondaryButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                                <Button Content="删除"
-                                        Style="{StaticResource DangerButton}"
-                                        Padding="8,4"
-                                        FontSize="12"
-                                        Margin="2"
-                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        CommandParameter="{Binding}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </controls:UnifiedManagementTable.Columns>
-        </controls:UnifiedManagementTable>
-
-        <!-- Issue #1840: 统一分页栏 -->
-        <controls:UnifiedPaginationBar
-            Grid.Row="2"
-            CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
-            TotalPages="{Binding TotalPages}"
-            PageSize="{Binding PageSize, Mode=TwoWay}"
-            TotalCount="{Binding TotalCount}"
-            FirstPageCommand="{Binding FirstPageCommand}"
-            PreviousPageCommand="{Binding PreviousPageCommand}"
-            NextPageCommand="{Binding NextPageCommand}"
-            LastPageCommand="{Binding LastPageCommand}" />
-    </Grid>
+        <!-- 操作按钮区域 -->
+        <views:BaseMasterDataListView.ActionButtons>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="📥 导入模板"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding ImportFormulasCommand}"
+                        ToolTip="从Excel/CSV文件导入验方模板"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="📄 导出模板"
+                        Style="{StaticResource InfoButton}"
+                        Command="{Binding ExportTemplateCommand}"
+                        ToolTip="下载验方模板导入格式"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="📤 导出验方"
+                        Style="{StaticResource WarningButton}"
+                        Command="{Binding ExportFormulasCommand}"
+                        ToolTip="导出验方数据到Excel文件"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="+ 新增验方"
+                        Style="{StaticResource SuccessButton}"
+                        Command="{Binding AddFormulaCommand}"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="刷新"
+                        Style="{StaticResource SecondaryButton}"
+                        Command="{Binding RefreshCommand}"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="🏠 返回主页"
+                        Style="{StaticResource PrimaryButton}"
+                        Command="{Binding NavigateToHomeCommand}"
+                        ToolTip="返回管理员主页" />
+            </StackPanel>
+        </views:BaseMasterDataListView.ActionButtons>
+    </views:BaseMasterDataListView>
 </UserControl>

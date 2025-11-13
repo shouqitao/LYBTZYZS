@@ -284,7 +284,7 @@ namespace LYBT.Desktop.Herbs.Components
         {
             try
             {
-                _logger.LogDebug("分页获取药材: Page={Page}, Size={Size}, Keyword={Keyword}",
+                _logger.LogInformation("=== DataManager调用 === Page={Page}, Size={Size}, Keyword='{Keyword}'",
                     pageNumber, pageSize, searchKeyword);
                 var result = await _herbRepository.GetPagedAsync(pageNumber, pageSize, searchKeyword);
                 _logger.LogInformation("药材列表获取成功: Count={Count}", result.TotalCount);
@@ -298,10 +298,10 @@ namespace LYBT.Desktop.Herbs.Components
         }
 
         /// <summary>
-        /// 删除药材（Repository方法）
+        /// 删除指定药材（Repository方法）
         /// Epic #1773: 为HerbManagementViewModel提供删除功能
         /// </summary>
-        public virtual async Task<bool> DeleteAsync(Guid herbId)
+        public virtual async Task<bool> DeleteHerbAsync(Guid herbId)
         {
             try
             {

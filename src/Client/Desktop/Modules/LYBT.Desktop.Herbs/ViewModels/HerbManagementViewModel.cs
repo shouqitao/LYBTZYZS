@@ -14,11 +14,11 @@ using Prism.Regions;
 namespace LYBT.Desktop.Herbs.ViewModels
 {
     /// <summary>
-    /// 药材管理视图模型 - 基于BaseManagementViewModel实现
-    /// Issue #1997 - Task 2.4: 重构继承BaseManagementViewModel<HerbDto>
+    /// 药材管理视图模型 - 基于UnifiedListViewModelBase实现
+    /// Issue #1997 - Task 2.4: 重构继承UnifiedListViewModelBase<HerbDto>
     /// Epic #1773: 使用HerbDataManager处理数据操作
     /// </summary>
-    public class HerbManagementViewModel : BaseManagementViewModel<HerbDto>
+    public class HerbManagementViewModel : UnifiedListViewModelBase<HerbDto>
     {
         #region 服务依赖
 
@@ -68,7 +68,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private void InitializeHerbCommands()
         {
-            // Issue #1997: 基类不提供AddCommand，需要子类自行实现
+            // Issue #1997: UnifiedListViewModelBase提供AddCommand，子类使用new关键字隐藏
             AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy)
                 .ObservesProperty(() => IsLoading)
                 .ObservesProperty(() => IsBusy);
@@ -100,72 +100,47 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 () => !IsBusy && !IsLoading && Items.Count > 0
             ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
 
-            // Issue #1997: 使用基类提供的 HasPreviousPage 和 HasNextPage
-            // Issue #2011: 使用 ObservesProperty 避免 CanExecute 无限循环
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => HasPreviousPage && !IsLoading && !IsBusy)
-                .ObservesProperty(() => PageIndex)
-                .ObservesProperty(() => IsLoading)
-                .ObservesProperty(() => IsBusy);
-
-            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => HasNextPage && !IsLoading && !IsBusy)
-                .ObservesProperty(() => PageIndex)
-                .ObservesProperty(() => IsLoading)
-                .ObservesProperty(() => IsBusy);
-        }
+            
+                    }
 
         #endregion
 
-        #region 实现基类抽象方法
+        #region 实现UnifiedListViewModelBase抽象方法
 
         /// <summary>
-        /// 加载药材分页数据（实现基类抽象方法）
-        /// Issue #1997: 返回PagedResult而非IEnumerable，由基类自动管理分页属性
+        /// 获取药材列表数据（实现基类抽象方法）
+        /// Issue #1997: 返回IEnumerable，由基类自动管理分页属性
         /// </summary>
-        protected override async Task<PagedResult<HerbDto>> LoadDataAsync(int pageIndex, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<HerbDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            Logger.LogDebug("加载药材列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", pageIndex, pageSize, searchText);
+            Logger.LogInformation("=== 药材搜索调试 === 第{Page}页, 每页{PageSize}条, 搜索关键词: '{SearchText}'", page, pageSize, searchText);
 
             try
             {
                 // Epic #1773: 使用DataManager包装Repository方法
-                var pagedData = await _dataManager.GetPagedAsync(pageIndex, pageSize, searchText);
+                var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
 
                 if (pagedData != null)
                 {
-                    // 返回PagedResult（基类会自动管理TotalCount等分页属性）
-                    return new PagedResult<HerbDto>
-                    {
-                        Items = pagedData.Items,
-                        TotalCount = pagedData.TotalCount,
-                        CurrentPage = pageIndex,
-                        PageSize = pageSize
-                    };
+                    // 基类会自动管理TotalCount等分页属性，这里只需返回数据项
+                    TotalCount = pagedData.TotalCount;
+                    return pagedData.Items;
                 }
                 else
                 {
-                    Logger.LogWarning("加载药材列表失败: DataManager返回null");
-                    return new PagedResult<HerbDto>
-                    {
-                        Items = new List<HerbDto>(),
-                        TotalCount = 0,
-                        CurrentPage = pageIndex,
-                        PageSize = pageSize
-                    };
+                    Logger.LogWarning("获取药材列表失败: DataManager返回null");
+                    TotalCount = 0;
+                    return new List<HerbDto>();
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载药材列表时发生异常");
-                var contextMessage = $"加载药材列表 - 模块:{nameof(HerbManagementViewModel)}";
+                Logger.LogError(ex, "获取药材列表时发生异常");
+                var contextMessage = $"获取药材列表 - 模块:{nameof(HerbManagementViewModel)}";
                 await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
 
-                return new PagedResult<HerbDto>
-                {
-                    Items = new List<HerbDto>(),
-                    TotalCount = 0,
-                    CurrentPage = pageIndex,
-                    PageSize = pageSize
-                };
+                TotalCount = 0;
+                return new List<HerbDto>();
             }
         }
 
@@ -175,9 +150,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         /// <summary>
         /// 执行添加操作 - CRUD统一模式（Region Navigation）
-        /// Issue #1997: BaseManagementViewModel不提供AddCommand，子类自行实现
+        /// Issue #1997: UnifiedListViewModelBase提供AddCommand，子类重写实现
         /// </summary>
-        protected virtual async Task OnExecuteAddAsync()
+        protected override async Task OnExecuteAddAsync()
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建药材视图");
@@ -186,15 +161,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
         }
 
         /// <summary>
-        /// 删除药材（实现基类抽象方法）
-        /// Issue #1997: 返回bool表示删除成功与否
+        /// 删除药材（实现基类虚方法）
+        /// Issue #1997: 统一删除方法签名
         /// </summary>
-        protected override async Task<bool> DeleteItemAsync(HerbDto item)
+        protected override async Task OnExecuteDeleteAsync(HerbDto item)
         {
             if (item == null)
             {
-                Logger.LogWarning("DeleteItemAsync: 药材对象为null");
-                return false;
+                Logger.LogWarning("OnExecuteDeleteAsync: 药材对象为null");
+                return;
             }
 
             Logger.LogDebug("删除药材: {HerbId} - {HerbName}", item.Id, item.Name);
@@ -209,22 +184,20 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (!confirmed)
                 {
                     Logger.LogDebug("用户取消删除, HerbId: {HerbId}", item.Id);
-                    return false;
+                    return;
                 }
 
                 // Epic #1773: 使用DataManager删除
-                var success = await _dataManager.DeleteAsync(item.Id);
+                var success = await _dataManager.DeleteHerbAsync(item.Id);
                 if (success)
                 {
                     Logger.LogInformation("成功删除药材: {HerbName}", item.Name);
                     await ShowSuccessMessageAsync($"药材 [{item.Name}] 已删除");
-                    return true;
                 }
                 else
                 {
                     Logger.LogError("删除药材失败: {HerbName}", item.Name);
                     ErrorMessage = $"删除药材 {item.Name} 失败";
-                    return false;
                 }
             }
             catch (Exception ex)
@@ -232,7 +205,6 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 Logger.LogError(ex, "删除药材时发生异常: {HerbName}", item.Name);
                 var contextMessage = $"删除药材 - 模块:{nameof(HerbManagementViewModel)}";
                 await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
-                return false;
             }
         }
 
@@ -255,9 +227,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         /// <summary>
         /// 添加药材命令
-        /// Issue #1997: BaseManagementViewModel不提供AddCommand，需要子类自行实现
+        /// Issue #1997: UnifiedListViewModelBase提供AddCommand，子类使用new关键字隐藏
         /// </summary>
-        public DelegateCommand AddCommand { get; private set; } = null!;
+        public new DelegateCommand AddCommand { get; private set; } = null!;
 
         /// <summary>
         /// 查看药材详情命令
@@ -294,18 +266,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         public DelegateCommand ExportHerbsCommand { get; private set; } = null!;
 
-        /// <summary>
-        /// 第一页命令
-        /// Issue #1997: BaseManagementViewModel提供此命令
-        /// </summary>
-        public DelegateCommand FirstPageCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 最后一页命令
-        /// Issue #1997: BaseManagementViewModel提供此命令
-        /// </summary>
-        public DelegateCommand LastPageCommand { get; private set; } = null!;
-
+        
         #endregion
 
         #region 自定义功能
@@ -554,13 +515,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         /// <summary>
         /// 执行跳转到第一页
-        /// Issue #1997: BaseManagementViewModel提供PageIndex属性
+        /// Issue #1997: UnifiedListViewModelBase提供CurrentPage属性
         /// </summary>
         private void ExecuteFirstPage()
         {
-            if (HasPreviousPage)
+            if (CanGoPreviousPage)
             {
-                PageIndex = 1;
+                CurrentPage = 1;
             }
         }
 
@@ -570,12 +531,13 @@ namespace LYBT.Desktop.Herbs.ViewModels
         /// </summary>
         private void ExecuteLastPage()
         {
-            if (HasNextPage && TotalPages > 0)
+            if (CanGoNextPage && TotalPages > 0)
             {
-                PageIndex = TotalPages;
+                CurrentPage = TotalPages;
             }
         }
 
+        
         #endregion
     }
 }

@@ -18,7 +18,7 @@
                 <!-- 搜索框 - Issue #1840: 优化搜索触发，避免每次按键都查询 -->
                 <TextBox x:Name="SearchBox"
                          Width="280"
-                         Text="{Binding SearchText, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=LostFocus}"
+                         Text="{Binding SearchText, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource SearchTextBox}"
                          VerticalAlignment="Center">
                     <!-- Enter键触发搜索 -->
