@@ -77,15 +77,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand<object> PrintCommand { get; }
 
-        /// <summary>
-        /// 首页命令（Issue #1839: 添加UI绑定命令，避免WPF绑定警告）
-        /// </summary>
-        public DelegateCommand FirstPageCommand { get; }
-
-        /// <summary>
-        /// 末页命令（Issue #1839: 添加UI绑定命令，避免WPF绑定警告）
-        /// </summary>
-        public DelegateCommand LastPageCommand { get; }
+        // Epic #1832 Phase 4: FirstPageCommand, LastPageCommand已由基类提供，删除重复定义
 
         // Epic #1832 Phase 4: DeleteCommand, PreviousPageCommand, NextPageCommand已由基类提供
 
@@ -115,8 +107,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             PrintCommand = new DelegateCommand<object>(ExecutePrint);
 
             // Issue #1839: 初始化分页命令（暂为stub实现，避免UI绑定警告）
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage);
-            LastPageCommand = new DelegateCommand(ExecuteLastPage);
+            
+            
 
             // Epic #1832 Phase 4: DeleteCommand和其他分页命令已由基类提供，无需初始化
         }
@@ -297,20 +289,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 跳转到首页（Issue #1839: Stub实现，暂不提供功能）
         /// </summary>
-        private void ExecuteFirstPage()
-        {
-            // TODO: 待实现 - 调用基类或DataManager的首页跳转功能
-            Logger.LogInformation("首页命令被调用（暂未实现）");
-        }
-
-        /// <summary>
-        /// 跳转到末页（Issue #1839: Stub实现，暂不提供功能）
-        /// </summary>
-        private void ExecuteLastPage()
-        {
-            // TODO: 待实现 - 调用基类或DataManager的末页跳转功能
-            Logger.LogInformation("末页命令被调用（暂未实现）");
-        }
+  
 
         #endregion
     }
