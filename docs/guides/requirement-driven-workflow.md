@@ -54,7 +54,7 @@ graph TB
 - 使用 `docs/templates/design-proposal-template.md`
 
 **📝 4. Epic创建**
-- GitHub创建Epic Issue
+- 使用 `mcp__github__issue_write` 创建Epic Issue
 - 明确验收标准和范围
 - 设置里程碑和依赖关系
 - 标签: `Epic`, `Module-[名称]`
@@ -86,6 +86,7 @@ graph TB
 **🔀 9. PR创建**
 - 汇总所有相关commits
 - 调用 `lybtzyzs-pr-generator` 生成PR描述
+- 使用 `mcp__github__pull_request_write` 创建PR
 - 关联Epic和相关Issues
 - 标记为Ready for Review
 
@@ -164,7 +165,7 @@ graph TB
 - 使用设计文档模板
 
 **📝 4. Issue创建**
-- GitHub创建Issue
+- 使用 `mcp__github__issue_write` 创建Issue
 - 明确验收标准
 - 设置标签和优先级
 - 标签: `Enhancement`/`Bug`/`Feature`, `Module-[名称]`
@@ -204,7 +205,7 @@ graph TB
 
 **✅ 11. Issue关闭**
 - 验收完成确认
-- **手动关闭**: GitHub Issue状态设置为Closed
+- **MCP工具关闭**: 使用 `mcp__github__issue_write` 设置state=closed
 - **关闭原因**: 选择completed（完成）或not_planned（取消）
 - **状态更新**: 添加关闭评论说明完成情况
 - **流程闭环**: 确保Issue生命周期完整
@@ -267,7 +268,7 @@ lybtzyzs-workload-estimator "需求描述"
 
 ---
 
-## 🔧 Skill调用指南
+## 🔧 工具调用指南
 
 ### 必须调用的Skills
 - **需求确认**: `lybtzyzs-requirements-generator`
@@ -275,6 +276,14 @@ lybtzyzs-workload-estimator "需求描述"
 - **任务执行**: `lybtzyzs-task-executor`
 - **PR生成**: `lybtzyzs-pr-generator`
 - **任务反思**: `lybtzyzs-task-reflector`
+
+### GitHub MCP工具 (默认使用)
+- **Issue管理**: `mcp__github__issue_write` (创建/更新/关闭)
+- **PR管理**: `mcp__github__pull_request_write`, `mcp__github__pull_request_read`
+- **仓库查询**: `mcp__github__list_issues`, `mcp__github__search_issues`
+- **分支管理**: `mcp__github__list_branches`, `mcp__github__create_branch`
+- **提交管理**: `mcp__github__list_commits`, `mcp__github__get_commit`
+- **代码搜索**: `mcp__github__search_code`
 
 ### 可选调用的Skills
 - **工作量估算**: `lybtzyzs-workload-estimator`
@@ -286,8 +295,9 @@ lybtzyzs-workload-estimator "需求描述"
 ```
 需求分析 → requirements-generator
 方案设计 → design-generator
-任务实施 → task-executor
-PR创建 → pr-generator
+任务实施 → task-executor + GitHub MCP工具
+PR创建 → pr-generator + mcp__github__pull_request_write
+Issue管理 → mcp__github__issue_write (默认)
 完成总结 → task-reflector
 ```
 

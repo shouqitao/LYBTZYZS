@@ -25,6 +25,13 @@
 - `lybtzyzs-pr-generator` - 生成Pull Request描述
 - `lybtzyzs-task-reflector` - 任务完成反思总结
 
+## 🔧 GitHub操作规范
+- **默认工具**: 使用GitHub MCP工具进行所有GitHub操作
+- **Issue管理**: `mcp__github__issue_write` (创建/更新/关闭)
+- **PR管理**: `mcp__github__pull_request_*` 系列工具
+- **仓库操作**: `mcp__github_*` 系列工具
+- **认证要求**: 确保GitHub token有足够权限
+
 ## 🚨 核心约束
 - **需求驱动**: 所有工作从需求确认开始
 - **文档生成**: 重要文档必须调用skill生成
