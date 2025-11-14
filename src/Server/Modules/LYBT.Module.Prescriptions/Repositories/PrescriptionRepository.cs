@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Prescriptions.Interfaces;
@@ -109,6 +110,25 @@ namespace LYBT.Module.Prescriptions.Repositories
                 .AsNoTracking()
                 .Where(p => !p.IsDeleted && p.PrescriptionNumber != null && p.PrescriptionNumber.StartsWith(prefix))
                 .Select(p => p.PrescriptionNumber!)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 批量获取处方详情（包含处方项和药材信息）
+        /// Task 1.5: 解决N+1查询问题
+        /// </summary>
+        /// <param name="prescriptionIds">处方ID列表</param>
+        /// <returns>处方详情列表（按ID匹配，不存在的ID不返回）</returns>
+        public async Task<List<Prescription>> GetByIdsWithItemsAsync(IEnumerable<Guid> prescriptionIds)
+        {
+            var idList = prescriptionIds.ToList();
+            if (!idList.Any())
+                return new List<Prescription>();
+
+            return await DbSet
+                .AsNoTracking()
+                .Include(p => p.Items)
+                .Where(p => idList.Contains(p.Id) && !p.IsDeleted)
                 .ToListAsync();
         }
     }

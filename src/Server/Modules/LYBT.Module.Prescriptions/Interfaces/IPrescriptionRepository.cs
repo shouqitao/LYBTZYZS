@@ -50,5 +50,13 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <param name="prefix">编号前缀（例如：RX-20251021-）</param>
         /// <returns>匹配的处方编号列表</returns>
         Task<List<string>> GetPrescriptionNumbersByPrefixAsync(string prefix);
+
+        /// <summary>
+        /// 批量获取处方详情（包含处方项和药材信息）
+        /// Task 1.5: 解决N+1查询问题
+        /// </summary>
+        /// <param name="prescriptionIds">处方ID列表</param>
+        /// <returns>处方详情列表（按ID匹配，不存在的ID不返回）</returns>
+        Task<List<Prescription>> GetByIdsWithItemsAsync(IEnumerable<Guid> prescriptionIds);
     }
 }
