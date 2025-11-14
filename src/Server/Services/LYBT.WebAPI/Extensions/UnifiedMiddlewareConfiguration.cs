@@ -68,6 +68,10 @@ public static class UnifiedMiddlewareConfiguration
         // 4.2 Claims标准化（在认证后，授权前）
         app.UseClaimsNormalization();
 
+        // 4.2.1 MedicalCase权限验证（在Claims标准化后，授权前）
+        // Epic #1612: MedicalCase模块权限优化 - Phase 2 Task 2.1
+        app.UseMedicalCasePermission();
+
         // 4.3 授权
         app.UseAuthorization();
 
