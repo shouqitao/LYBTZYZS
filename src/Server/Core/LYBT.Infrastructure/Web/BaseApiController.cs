@@ -173,11 +173,11 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 验证GUID参数（带泛型）- 兼容旧版本方法
         /// </summary>
-        protected ActionResult<ApiResponse>? ValidateGuid<T>(Guid id, string paramName = "ID")
+        protected ActionResult<ApiResponse<T>>? ValidateGuid<T>(Guid id, string paramName = "ID")
         {
             if (id == Guid.Empty)
             {
-                return ValidationFail($"{paramName}不能为空");
+                return ValidationFail<T>($"{paramName}不能为空");
             }
             return null; // 验证通过返回null
         }
@@ -198,14 +198,26 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 验证模型（带泛型）- 兼容旧版本方法
         /// </summary>
-        protected ActionResult<ApiResponse>? ValidateModel<T>()
+        protected ActionResult<ApiResponse<T>>? ValidateModel<T>()
         {
             if (!ModelState.IsValid)
             {
                 var errors = string.Join("; ", GetModelErrors());
-                return ValidationFail($"参数验证失败: {errors}");
+                return ValidationFail<T>($"参数验证失败: {errors}");
             }
             return null; // 验证通过返回null
+        }
+
+        /// <summary>
+        /// 处理布尔服务结果 - 兼容旧版本方法
+        /// </summary>
+        protected ActionResult<ApiResponse> HandleBoolServiceResult(ServiceResult<bool> result, string successMessage = "操作成功")
+        {
+            if (result.IsSuccess)
+            {
+                return Success(successMessage);
+            }
+            return BusinessFail(result.ErrorMessage ?? "操作失败");
         }
 
         /// <summary>
