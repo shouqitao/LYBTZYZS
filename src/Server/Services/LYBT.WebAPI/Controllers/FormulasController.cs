@@ -45,15 +45,15 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFailPaged<FormulaDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFail<PagedResult<FormulaDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 var result = await _service.GetPagedAsync(page, pageSize, keyword, category);
-                return HandlePagedServiceResult(result, "查询成功");
+                return HandlePagedResult(result, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<FormulaDto>(ex, "获取验方列表", new { page, pageSize, keyword, category });
+                return HandleException<PagedResult<FormulaDto>>(ex, "获取验方列表", new { page, pageSize, keyword, category });
             }
         }
 
@@ -65,16 +65,15 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (validationResult != null)
+                if (id == Guid.Empty)
                 {
-                    return validationResult;
+                    return ValidationFail<FormulaDto>("验方ID不能为空");
                 }
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<FormulaDto>(result.ErrorMessage ?? "验方不存在", ApiErrorCodes.FORMULANOTFOUND);
+                    return NotFound<FormulaDto>(result.ErrorMessage ?? "验方不存在");
                 }
 
                 return Success(result.Data, "查询成功");
@@ -93,16 +92,15 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateModel<FormulaDto>();
-                if (validationResult != null)
+                if (!ModelState.IsValid)
                 {
-                    return validationResult;
+                    return ValidationFail<FormulaDto>("参数验证失败");
                 }
 
                 var result = await _service.CreateAsync(dto);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "新增验方失败", ApiErrorCodes.DATASAVEFAILED);
+                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "新增验方失败");
                 }
 
                 LogOperation("新增验方成功", result.Data, result.Data.Id);
@@ -122,22 +120,20 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var idValidation = ValidateGuid<FormulaDto>(id, "验方ID");
-                if (idValidation != null)
+                if (id == Guid.Empty)
                 {
-                    return idValidation;
+                    return ValidationFail<FormulaDto>("验方ID不能为空");
                 }
 
-                var modelValidation = ValidateModel<FormulaDto>();
-                if (modelValidation != null)
+                if (!ModelState.IsValid)
                 {
-                    return modelValidation;
+                    return ValidationFail<FormulaDto>("参数验证失败");
                 }
 
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "更新验方失败", ApiErrorCodes.DATAUPDATEFAILED);
+                    return BusinessFail<FormulaDto>(result.ErrorMessage ?? "更新验方失败");
                 }
 
                 LogOperation("更新验方成功", result.Data, id);
@@ -166,7 +162,7 @@ namespace LYBT.WebAPI.Controllers
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
                 {
-                    return NotFound("验方不存在", ApiErrorCodes.FORMULANOTFOUND);
+                    return NotFound("验方不存在");
                 }
 
                 LogOperation("删除验方成功", null, id);
@@ -174,7 +170,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "删除验方", id);
+                return HandleException(ex, "删除验方", new { Id = id });
             }
         }
 
@@ -208,9 +204,10 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("批量删除验方",
                         new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                         null);
+                    return Success(result.Data, result.Data.Message ?? "批量删除完成");
                 }
 
-                return HandleServiceResult(result, result.Data?.Message ?? "批量删除完成");
+                return BusinessFail<BatchOperationResultDto>(result.ErrorMessage ?? "批量删除失败");
             }
             catch (Exception ex)
             {
@@ -241,9 +238,7 @@ namespace LYBT.WebAPI.Controllers
 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<FormulaImportResultDto>(
-                        result.ErrorMessage ?? "导入失败",
-                        ApiErrorCodes.DATASAVEFAILED);
+                    return BusinessFail<FormulaImportResultDto>(result.ErrorMessage ?? "导入失败");
                 }
 
                 // 记录操作日志
@@ -326,9 +321,7 @@ namespace LYBT.WebAPI.Controllers
 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<List<FormulaDto>>(
-                        result.ErrorMessage ?? "获取待校验验方列表失败",
-                        ApiErrorCodes.DATAQUERYFAILED);
+                    return BusinessFail<List<FormulaDto>>(result.ErrorMessage ?? "获取待校验验方列表失败");
                 }
 
                 return Success(result.Data, $"查询成功，共{result.Data.Count}个待校验验方");
@@ -355,29 +348,26 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var formulaValidation = ValidateGuid(formulaId, "验方ID");
-                if (formulaValidation != null)
+                if (formulaId == Guid.Empty)
                 {
-                    return formulaValidation;
+                    return ValidationFail("验方ID不能为空");
                 }
 
-                var herbItemValidation = ValidateGuid(herbItemId, "药材项ID");
-                if (herbItemValidation != null)
+                if (herbItemId == Guid.Empty)
                 {
-                    return herbItemValidation;
+                    return ValidationFail("药材项ID不能为空");
                 }
 
-                var selectedHerbValidation = ValidateGuid(selectedHerbId, "系统药材ID");
-                if (selectedHerbValidation != null)
+                if (selectedHerbId == Guid.Empty)
                 {
-                    return selectedHerbValidation;
+                    return ValidationFail("系统药材ID不能为空");
                 }
 
                 var result = await _service.ValidateFormulaHerbAsync(formulaId, herbItemId, selectedHerbId);
 
                 if (!result.IsSuccess)
                 {
-                    return BusinessFail(result.ErrorMessage ?? "验证药材失败", ApiErrorCodes.DATAUPDATEFAILED);
+                    return BusinessFail(result.ErrorMessage ?? "验证药材失败");
                 }
 
                 // 记录操作日志
