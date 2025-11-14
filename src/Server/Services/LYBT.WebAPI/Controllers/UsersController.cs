@@ -47,11 +47,11 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status);
-                return HandlePagedResult(result);
+                return Success(result.Data!, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<UserDto>(ex, "获取用户列表");
+                return HandleException<PagedResult<UserDto>>(ex, "获取用户列表");
             }
         }
 
@@ -68,7 +68,7 @@ namespace LYBT.WebAPI.Controllers
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 {
-                    return Unauthorized<UserDto>("无法获取当前用户信息");
+                    return Unauthorized("无法获取当前用户信息");
                 }
 
                 // 特殊处理超级管理员
@@ -96,7 +96,11 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 var result = await _userService.GetByIdAsync(userId);
-                return HandleResult(result);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<UserDto>(result.ErrorMessage ?? "用户不存在");
+                }
+                return Success(result.Data);
             }
             catch (Exception ex)
             {
@@ -114,11 +118,17 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid<UserDto>(id, "用户ID");
-                if (validationResult != null) return validationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail<UserDto>("用户ID不能为空");
+                }
 
                 var result = await _userService.GetByIdAsync(id);
-                return HandleResult(result);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<UserDto>(result.ErrorMessage ?? "用户不存在");
+                }
+                return Success(result.Data);
             }
             catch (Exception ex)
             {
@@ -136,8 +146,10 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateModel<UserDto>();
-                if (validationResult != null) return validationResult;
+                if (!ModelState.IsValid)
+                {
+                    return ValidationFail<UserDto>("参数验证失败");
+                }
 
                 var result = await _userService.CreateAsync(dto);
 
@@ -147,10 +159,10 @@ namespace LYBT.WebAPI.Controllers
                     // Issue #1262: 添加 version 参数以匹配版本化路由
                     return CreatedAtAction(nameof(GetUser),
                         new { id = result.Data.Id, version = "1" },
-                        ApiResponse<UserDto>.CreateSuccess(result.Data));
+                        Success(result.Data));
                 }
 
-                return HandleResult(result);
+                return BusinessFail<UserDto>(result.ErrorMessage ?? "创建用户失败");
             }
             catch (Exception ex)
             {
@@ -168,20 +180,25 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var guidValidationResult = ValidateGuid<UserDto>(id, "用户ID");
-                if (guidValidationResult != null) return guidValidationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail<UserDto>("用户ID不能为空");
+                }
 
-                var modelValidationResult = ValidateModel<UserDto>();
-                if (modelValidationResult != null) return modelValidationResult;
+                if (!ModelState.IsValid)
+                {
+                    return ValidationFail<UserDto>("参数验证失败");
+                }
 
                 var result = await _userService.UpdateAsync(id, dto);
 
-                if (result.IsSuccess)
+                if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("更新用户", dto, id);
+                    return Success(result.Data, "用户更新成功");
                 }
 
-                return HandleResult(result);
+                return BusinessFail<UserDto>(result.ErrorMessage ?? "更新用户失败");
             }
             catch (Exception ex)
             {
@@ -199,17 +216,20 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid(id, "用户ID");
-                if (validationResult != null) return validationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail("用户ID不能为空");
+                }
 
                 var result = await _userService.DeleteAsync(id);
 
                 if (result.IsSuccess)
                 {
                     LogOperation("删除用户", null, id);
+                    return Success("删除成功");
                 }
 
-                return HandleResult(result, "删除成功");
+                return NotFound(result.ErrorMessage ?? "用户不存在");
             }
             catch (Exception ex)
             {
@@ -247,9 +267,10 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("批量删除用户",
                         new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                         null);
+                    return Success(result.Data, result.Data.Message ?? "批量删除完成");
                 }
 
-                return HandleResult(result, result.Data?.Message ?? "批量删除完成");
+                return BusinessFail<BatchOperationResultDto>(result.ErrorMessage ?? "批量删除失败");
             }
             catch (Exception ex)
             {
@@ -271,17 +292,20 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid<ResetPasswordResponseDto>(id, "用户ID");
-                if (validationResult != null) return validationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail<ResetPasswordResponseDto>("用户ID不能为空");
+                }
 
                 var result = await _userService.ResetPasswordAsync(id, request);
 
-                if (result.IsSuccess)
+                if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("重置用户密码", new { AutoGenerated = string.IsNullOrEmpty(request.NewPassword) }, id);
+                    return Success(result.Data, "密码重置成功");
                 }
 
-                return HandleResult(result);
+                return BusinessFail<ResetPasswordResponseDto>(result.ErrorMessage ?? "密码重置失败");
             }
             catch (Exception ex)
             {
@@ -300,17 +324,20 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid<UserDto>(id, "用户ID");
-                if (validationResult != null) return validationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail<UserDto>("用户ID不能为空");
+                }
 
                 var result = await _userService.ToggleStatusAsync(id);
 
-                if (result.IsSuccess)
+                if (result.IsSuccess && result.Data != null)
                 {
-                    LogOperation("切换用户状态", new { NewStatus = result.Data?.Status }, id);
+                    LogOperation("切换用户状态", new { NewStatus = result.Data.Status }, id);
+                    return Success(result.Data, "状态切换成功");
                 }
 
-                return HandleResult(result);
+                return BusinessFail<UserDto>(result.ErrorMessage ?? "状态切换失败");
             }
             catch (Exception ex)
             {
@@ -334,22 +361,27 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 // 验证用户ID
-                var guidValidationResult = ValidateGuid<UserDto>(id, "用户ID");
-                if (guidValidationResult != null) return guidValidationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail<UserDto>("用户ID不能为空");
+                }
 
                 // 验证模型
-                var modelValidationResult = ValidateModel<UserDto>();
-                if (modelValidationResult != null) return modelValidationResult;
+                if (!ModelState.IsValid)
+                {
+                    return ValidationFail<UserDto>("参数验证失败");
+                }
 
                 // 调用服务
                 var result = await _userService.ChangeProfileAsync(id, dto);
 
-                if (result.IsSuccess)
+                if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("修改个人资料", new { RealName = dto.RealName, PhoneNumber = dto.PhoneNumber }, id);
+                    return Success(result.Data, "个人资料修改成功");
                 }
 
-                return HandleResult(result);
+                return BusinessFail<UserDto>(result.ErrorMessage ?? "个人资料修改失败");
             }
             catch (Exception ex)
             {
@@ -374,12 +406,16 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 // 验证用户ID
-                var guidValidationResult = ValidateGuid(id, "用户ID");
-                if (guidValidationResult != null) return guidValidationResult;
+                if (id == Guid.Empty)
+                {
+                    return ValidationFail("用户ID不能为空");
+                }
 
                 // 验证模型
-                var modelValidationResult = ValidateModel();
-                if (modelValidationResult != null) return modelValidationResult;
+                if (!ModelState.IsValid)
+                {
+                    return ValidationFail("参数验证失败");
+                }
 
                 // 调用服务
                 var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
@@ -387,9 +423,10 @@ namespace LYBT.WebAPI.Controllers
                 if (result.IsSuccess)
                 {
                     LogOperation("修改密码", new { UserId = id }, id);
+                    return Success("密码修改成功");
                 }
 
-                return HandleResult(result, "密码修改成功");
+                return Error(result.ErrorMessage ?? "密码修改失败");
             }
             catch (Exception ex)
             {

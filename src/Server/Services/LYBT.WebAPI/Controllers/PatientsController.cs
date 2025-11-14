@@ -40,15 +40,15 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFailPaged<PatientDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFail<PagedResult<PatientDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 var result = await _service.GetPagedAsync(page, pageSize, keyword);
-                return HandlePagedResult(result, "查询成功");
+                return Success(result.Data!, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<PatientDto>(ex, "获取患者列表", new { page, pageSize, keyword });
+                return HandleException<PagedResult<PatientDto>>(ex, "获取患者列表", new { page, pageSize, keyword });
             }
         }
 
@@ -60,16 +60,15 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateGuid<PatientDto>(id, "患者ID");
-                if (validationResult != null)
+                if (id == Guid.Empty)
                 {
-                    return validationResult;
+                    return ValidationFail<PatientDto>("患者ID不能为空");
                 }
 
                 var result = await _service.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<PatientDto>(result.ErrorMessage ?? "患者不存在", ApiErrorCodes.PATIENTNOTFOUND);
+                    return NotFound<PatientDto>(result.ErrorMessage ?? "患者不存在");
                 }
 
                 return Success(result.Data, "查询成功");
@@ -88,16 +87,15 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validationResult = ValidateModel<PatientDto>();
-                if (validationResult != null)
+                if (!ModelState.IsValid)
                 {
-                    return validationResult;
+                    return ValidationFail<PatientDto>("参数验证失败");
                 }
 
                 var result = await _service.CreateAsync(dto);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<PatientDto>(result.ErrorMessage ?? "新增患者失败", ApiErrorCodes.DATASAVEFAILED);
+                    return BusinessFail<PatientDto>(result.ErrorMessage ?? "新增患者失败");
                 }
 
                 LogOperation("新增患者成功", result.Data, result.Data.Id);
@@ -117,22 +115,20 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var idValidation = ValidateGuid<PatientDto>(id, "患者ID");
-                if (idValidation != null)
+                if (id == Guid.Empty)
                 {
-                    return idValidation;
+                    return ValidationFail<PatientDto>("患者ID不能为空");
                 }
 
-                var modelValidation = ValidateModel<PatientDto>();
-                if (modelValidation != null)
+                if (!ModelState.IsValid)
                 {
-                    return modelValidation;
+                    return ValidationFail<PatientDto>("参数验证失败");
                 }
 
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<PatientDto>(result.ErrorMessage ?? "更新患者失败", ApiErrorCodes.DATAUPDATEFAILED);
+                    return BusinessFail<PatientDto>(result.ErrorMessage ?? "更新患者失败");
                 }
 
                 LogOperation("更新患者成功", result.Data, id);
@@ -161,7 +157,7 @@ namespace LYBT.WebAPI.Controllers
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
                 {
-                    return NotFound("患者不存在", ApiErrorCodes.PATIENTNOTFOUND);
+                    return NotFound("患者不存在");
                 }
 
                 LogOperation("删除患者成功", null, id);
@@ -215,9 +211,7 @@ namespace LYBT.WebAPI.Controllers
 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<BatchImportResultDto>(
-                        result.ErrorMessage ?? "导入失败",
-                        ApiErrorCodes.DATASAVEFAILED);
+                    return BusinessFail<BatchImportResultDto>(result.ErrorMessage ?? "导入失败");
                 }
 
                 // 记录操作日志
