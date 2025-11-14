@@ -83,8 +83,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, patient => patient != null);
             EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit, patient => patient != null);
-
-                    }
+        }
 
         #endregion
 

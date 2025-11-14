@@ -25,6 +25,11 @@ namespace LYBT.Module.Users.Repositories
         private readonly DbSet<User> _dbSet;
         private readonly ILogger<UserRepository>? _logger;
 
+        /// <summary>
+        /// 初始化用户仓储实例
+        /// </summary>
+        /// <param name="context">数据库上下文</param>
+        /// <param name="logger">日志记录器</param>
         public UserRepository(AppDbContext context, ILogger<UserRepository>? logger = null)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

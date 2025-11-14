@@ -99,9 +99,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 async () => await ExportHerbsAsync(),
                 () => !IsBusy && !IsLoading && Items.Count > 0
             ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
-
-            
-                    }
+        }
 
         #endregion
 
