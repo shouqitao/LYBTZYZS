@@ -25,7 +25,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         private int _currentPage = 1;
         private int _pageSize = 20;
         private bool _hasSelection = false;
-        
+        private string _busyMessage = "正在加载...";
+
         // 防抖相关字段
         private CancellationTokenSource? _searchCancellationTokenSource;
     
@@ -142,6 +143,15 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// </summary>
         public bool CanGoNextPage => CurrentPage < TotalPages;
 
+        /// <summary>
+        /// 忙碌状态消息
+        /// </summary>
+        public string BusyMessage
+        {
+            get => _busyMessage;
+            set => SetProperty(ref _busyMessage, value);
+        }
+
         #endregion
 
         #region 命令
@@ -165,6 +175,16 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 删除命令
         /// </summary>
         public DelegateCommand<T> DeleteCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 首页命令
+        /// </summary>
+        public DelegateCommand FirstPageCommand { get; private set; } = null!;
+
+        /// <summary>
+        /// 末页命令
+        /// </summary>
+        public DelegateCommand LastPageCommand { get; private set; } = null!;
 
         /// <summary>
         /// 批量删除命令
@@ -220,6 +240,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             BatchDeleteCommand = new DelegateCommand(async () => await ExecuteBatchDeleteAsync(), CanExecuteBatchDelete);
             PreviousPageCommand = new DelegateCommand(ExecutePreviousPage, () => CanGoPreviousPage && !IsLoading);
             NextPageCommand = new DelegateCommand(ExecuteNextPage, () => CanGoNextPage && !IsLoading);
+            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
+            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
             ClearSearchCommand = new DelegateCommand(ExecuteClearSearch, () => !string.IsNullOrEmpty(SearchText));
         }
 
@@ -304,15 +326,23 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public async Task SearchAsync()
         {
             CurrentPage = 1; // 重置到第一页
-            await LoadPageAsync(true); // 搜索时显示加载状态，确保数据正常加载
+            await LoadPageAsync(false); // 搜索时不显示加载状态，避免UI闪烁
         }
 
         /// <summary>
-        /// 刷新
+        /// 刷新（不显示加载状态）
         /// </summary>
         public async Task RefreshAsync()
         {
-            await LoadPageAsync();
+            await LoadPageAsync(false);
+        }
+
+        /// <summary>
+        /// 强制刷新（显示加载状态）
+        /// </summary>
+        public async Task ForceRefreshAsync()
+        {
+            await LoadPageAsync(true);
         }
 
         #endregion
@@ -403,6 +433,28 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             if (CanGoNextPage)
             {
                 CurrentPage++;
+            }
+        }
+
+        /// <summary>
+        /// 首页
+        /// </summary>
+        private void ExecuteFirstPage()
+        {
+            if (CanGoPreviousPage)
+            {
+                CurrentPage = 1;
+            }
+        }
+
+        /// <summary>
+        /// 末页
+        /// </summary>
+        private void ExecuteLastPage()
+        {
+            if (CanGoNextPage && TotalPages > 0)
+            {
+                CurrentPage = TotalPages;
             }
         }
 
@@ -510,8 +562,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         {
             await base.InitializeAsync(parameters);
 
-            // 自动加载第一页数据
-            await LoadPageAsync();
+            // 自动加载第一页数据，不显示加载状态避免页面切换闪烁
+            await LoadPageAsync(false);
         }
 
         #endregion

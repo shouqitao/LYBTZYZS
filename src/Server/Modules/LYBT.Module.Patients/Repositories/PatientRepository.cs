@@ -1,63 +1,39 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Repositories;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Module.Patients.Repositories
 {
     /// <summary>
-    /// 患者仓储实现 - 实现IRepository<Patient>标准接口
-    /// Phase 1 Task 1.3: 基础数据模块Repository层统一重构
+    /// 患者仓储实现 - 继承BaseRepository并实现IPatientRepository
+    /// Task 1.2: PatientRepository重构，适配新的简化Repository设计
     /// </summary>
     /// <remarks>
     /// 设计原则：
-    /// - 统一共性：实现IRepository<Patient>的11个标准CRUD方法
-    /// - 保持特性：保留患者模块特定业务方法
+    /// - 继承BaseRepository：复用11个标准CRUD方法
+    /// - 业务扩展：实现患者特定的业务查询方法
     /// - 软删除模式：所有查询自动过滤IsDeleted=true的数据
     /// - 查询优化：只读查询使用AsNoTracking提升性能
     /// </remarks>
-    internal class PatientRepository : IPatientRepository
+    internal class PatientRepository : BaseRepository<Patient>, IPatientRepository
     {
-        private readonly AppDbContext _context;
-        private readonly DbSet<Patient> _dbSet;
-
-        public PatientRepository(AppDbContext context)
+        public PatientRepository(AppDbContext context, ILogger<PatientRepository> logger)
+            : base(context, logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _dbSet = _context.Set<Patient>();
         }
 
-        #region IRepository<Patient> 标准方法实现
+        #region BaseRepository GetPagedAsync 重写 - 支持患者关键字搜索
 
         /// <summary>
-        /// 根据ID获取患者（包含软删除过滤）
+        /// 分页查询患者（重写基类方法，支持姓名/拼音码搜索）
         /// </summary>
-        public async Task<Patient?> GetByIdAsync(Guid id)
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
-        }
-
-        /// <summary>
-        /// 获取所有患者（⚠️ 仅用于下拉列表等小数据量场景）
-        /// </summary>
-        public async Task<IEnumerable<Patient>> GetAllAsync()
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted)
-                .OrderBy(p => p.Name)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// 分页查询患者（支持姓名/拼音码搜索）
-        /// </summary>
-        public async Task<PagedResult<Patient>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        public override async Task<PagedResult<Patient>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -84,229 +60,65 @@ namespace LYBT.Module.Patients.Repositories
             return new PagedResult<Patient>(items, totalCount, pageNumber, pageSize);
         }
 
-        /// <summary>
-        /// 条件查询（⚠️ 谨慎使用，建议使用具体业务方法）
-        /// </summary>
-        public async Task<IEnumerable<Patient>> FindAsync(Expression<Func<Patient, bool>> predicate)
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted)
-                .Where(predicate)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// 获取单个患者（条件查询）
-        /// </summary>
-        public async Task<Patient?> GetSingleAsync(Expression<Func<Patient, bool>> predicate)
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted)
-                .FirstOrDefaultAsync(predicate);
-        }
-
-        /// <summary>
-        /// 新增患者
-        /// </summary>
-        public async Task<Patient> AddAsync(Patient entity)
-        {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
-
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-            return entity;
-        }
-
-        /// <summary>
-        /// 更新患者
-        /// </summary>
-        public async Task<Patient> UpdateAsync(Patient entity)
-        {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
-
-            entity.UpdatedAt = DateTime.UtcNow;
-            _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
-            return entity;
-        }
-
-        /// <summary>
-        /// 批量新增患者
-        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
-        /// </summary>
-        public async Task<IEnumerable<Patient>> AddRangeAsync(IEnumerable<Patient> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            var entityList = entities.ToList();
-            foreach (var entity in entityList)
-            {
-                entity.Id = entity.Id == Guid.Empty ? Guid.NewGuid() : entity.Id;
-            }
-
-            await _dbSet.AddRangeAsync(entityList);
-            await SaveChangesAsync();
-
-            return entityList;
-        }
-
-        /// <summary>
-        /// 删除患者（软删除）
-        /// </summary>
-        public async Task<bool> DeleteAsync(Guid id)
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null) return false;
-
-            entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        /// <summary>
-        /// 批量软删除患者（根据实体集合）
-        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
-        /// </summary>
-        public async Task<int> DeleteRangeAsync(IEnumerable<Patient> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            var entityList = entities.ToList();
-            var deletedCount = 0;
-
-            foreach (var entity in entityList)
-            {
-                if (!entity.IsDeleted)
-                {
-                    entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
-                    deletedCount++;
-                }
-            }
-
-            if (deletedCount > 0)
-            {
-                _dbSet.UpdateRange(entityList.Where(e => e.IsDeleted));
-                await SaveChangesAsync();
-            }
-
-            return deletedCount;
-        }
-
-        /// <summary>
-        /// 批量软删除患者（根据ID集合）
-        /// Phase 6: IRepository批量操作方法实现（Epic #2016）
-        /// </summary>
-        public async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
-        {
-            if (ids == null)
-                throw new ArgumentNullException(nameof(ids));
-
-            var idList = ids.ToList();
-            if (!idList.Any())
-                return 0;
-
-            var entities = await _dbSet
-                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
-                .ToListAsync();
-
-            if (!entities.Any())
-                return 0;
-
-            foreach (var entity in entities)
-            {
-                entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
-            }
-
-            _dbSet.UpdateRange(entities);
-            await SaveChangesAsync();
-
-            return entities.Count;
-        }
-
-        /// <summary>
-        /// 检查患者是否存在
-        /// </summary>
-        public async Task<bool> ExistsAsync(Guid id)
-        {
-            return await _dbSet.AnyAsync(p => p.Id == id && !p.IsDeleted);
-        }
-
-        /// <summary>
-        /// 获取患者总数
-        /// </summary>
-        public async Task<int> CountAsync()
-        {
-            return await _dbSet.CountAsync(p => !p.IsDeleted);
-        }
-
-        /// <summary>
-        /// 保存更改（⚠️ 通常由Service层调用）
-        /// </summary>
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         #endregion
 
         #region IPatientRepository 特定业务方法
 
         /// <summary>
-        /// 搜索患者（支持多条件和分页）
+        /// 根据姓名获取患者（支持模糊匹配）
         /// </summary>
-        public async Task<PaginatedList<Patient>> SearchPatientsAsync(
-            string? searchTerm,
-            int pageIndex,
-            int pageSize)
+        /// <param name="name">患者姓名</param>
+        /// <returns>患者列表，不存在返回空列表</returns>
+        public async Task<List<Patient>> GetByNameAsync(string name)
         {
-            var query = _dbSet.AsNoTracking().Where(p => !p.IsDeleted);
+            if (string.IsNullOrWhiteSpace(name))
+                return new List<Patient>();
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                var term = searchTerm.ToLower();
-                query = query.Where(p =>
-                    p.Name.ToLower().Contains(term) ||
-                    (p.PinYinCode != null && p.PinYinCode.ToLower().Contains(term)) ||
-                    (p.PhoneNumber != null && p.PhoneNumber.Contains(term)) ||
-                    (p.IdNumber != null && p.IdNumber.Contains(term)));
-            }
-
-            var totalCount = await query.CountAsync();
-            var items = await query
+            return await _dbSet
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted && p.Name.Contains(name))
                 .OrderBy(p => p.Name)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
-
-            return new PaginatedList<Patient>(items, totalCount, pageIndex, pageSize);
         }
 
-        
+        /// <summary>
+        /// 检查患者姓名是否已存在
+        /// </summary>
+        /// <param name="name">患者姓名</param>
+        /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
+        /// <returns>存在返回true，否则返回false</returns>
+        public async Task<bool> ExistsAsync(string name, Guid? excludeId = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            var query = _dbSet.Where(p => !p.IsDeleted && p.Name == name);
+
+            if (excludeId.HasValue)
+                query = query.Where(p => p.Id != excludeId.Value);
+
+            return await query.AnyAsync();
+        }
 
         /// <summary>
-        /// 批量创建患者（Epic #1934 FR-001）
-        /// 使用AddRangeAsync批量添加，减少数据库往返次数
+        /// 根据日期范围获取患者（按创建日期）
         /// </summary>
-        /// <param name="patients">待创建的患者列表</param>
-        /// <returns>创建成功的患者列表</returns>
-        public async Task<List<Patient>> BatchCreateAsync(IEnumerable<Patient> patients)
+        /// <param name="startDate">开始日期</param>
+        /// <param name="endDate">结束日期</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>患者列表</returns>
+        public async Task<List<Patient>> GetByDateRangeAsync(
+            DateTime startDate,
+            DateTime endDate,
+            CancellationToken cancellationToken = default)
         {
-            var patientList = patients.ToList();
-
-            // 批量添加到DbSet（性能优化：单次操作）
-            await _dbSet.AddRangeAsync(patientList);
-
-            // 保存到数据库
-            await _context.SaveChangesAsync();
-
-            return patientList;
+            return await _dbSet
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted &&
+                           p.CreatedAt >= startDate &&
+                           p.CreatedAt <= endDate)
+                .OrderBy(p => p.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
 
         /// <summary>

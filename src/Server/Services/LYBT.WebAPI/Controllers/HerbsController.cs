@@ -31,6 +31,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 获取药材分页列表（Issue #1164: 扩展支持分类筛选）
+        /// 修复：仅在无搜索参数时使用缓存，有搜索时实时查询
         /// </summary>
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页数量</param>
@@ -60,6 +61,7 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
+    
         /// <summary>
         /// 根据ID获取药材详情
         /// </summary>

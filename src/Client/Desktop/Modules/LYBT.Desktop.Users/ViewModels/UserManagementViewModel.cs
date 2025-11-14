@@ -20,7 +20,7 @@ namespace LYBT.Desktop.Users.ViewModels
     /// 用户管理视图模型 - Phase 2统一架构版本
     /// Issue #1995: 继承BaseManagementViewModel泛型基类，享受500ms搜索防抖等统一功能
     /// </summary>
-    public class UserManagementViewModel : BaseManagementViewModel<UserDto>
+    public class UserManagementViewModel : UnifiedListViewModelBase<UserDto>
     {
         #region 服务依赖
 
@@ -53,7 +53,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (SetProperty(ref _selectedRole, value))
                 {
                     // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
-                    PageIndex = 1;
+                    CurrentPage = 1;
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (SetProperty(ref _selectedStatus, value))
                 {
                     // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
-                    PageIndex = 1;
+                    CurrentPage = 1;
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (SetProperty(ref _showInactiveUsers, value))
                 {
                     // Issue #1995: 触发重新加载（基类会自动调用 LoadDataAsync）
-                    PageIndex = 1;
+                    CurrentPage = 1;
                 }
             }
         }
@@ -110,7 +110,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 新建用户命令
         /// </summary>
-        public DelegateCommand AddCommand { get; private set; } = null!;
+        public new DelegateCommand AddCommand { get; private set; } = null!;
 
         public DelegateCommand<UserDto> EditCommand { get; private set; } = null!;
 
@@ -134,16 +134,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
 
-        /// <summary>
-        /// 首页命令
-        /// </summary>
-        public DelegateCommand FirstPageCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 末页命令
-        /// </summary>
-        public DelegateCommand LastPageCommand { get; private set; } = null!;
-
+        
         #endregion
 
         #region Issue #2003: 批量导入/导出功能
@@ -232,14 +223,7 @@ namespace LYBT.Desktop.Users.ViewModels
             EditCommand = new DelegateCommand<UserDto>(ExecuteEditUser, CanExecuteEditUser);
 
             // Issue #2011: 使用 ObservesProperty 防止构造期间无限循环
-            FirstPageCommand = new DelegateCommand(ExecuteFirstPage, () => HasPreviousPage && !IsLoading)
-                .ObservesProperty(() => PageIndex)
-                .ObservesProperty(() => IsLoading);
-
-            LastPageCommand = new DelegateCommand(ExecuteLastPage, () => HasNextPage && !IsLoading)
-                .ObservesProperty(() => PageIndex)
-                .ObservesProperty(() => IsLoading);
-
+            
             ResetPasswordCommand = new DelegateCommand<UserDto>(async user => await ExecuteResetPasswordAsync(user), CanExecuteResetPassword);
             ToggleUserStatusCommand = new DelegateCommand<UserDto>(async user => await ExecuteToggleUserStatusAsync(user), CanExecuteToggleUserStatus);
             ViewDetailsCommand = new DelegateCommand<UserDto>(ExecuteViewDetails, user => user != null);
@@ -248,33 +232,8 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 暴露基类命令 - Issue #1995: BaseManagementViewModel 提供的命令
-
-        /// <summary>
-        /// 刷新命令 - 基类提供
-        /// </summary>
-        public new DelegateCommand RefreshCommand => base.RefreshCommand;
-
-        /// <summary>
-        /// 删除命令 - 基类提供
-        /// </summary>
-        public new DelegateCommand<UserDto> DeleteCommand => base.DeleteCommand;
-
-        /// <summary>
-        /// 上一页命令 - 基类提供
-        /// </summary>
-        public new DelegateCommand PreviousPageCommand => base.PreviousPageCommand;
-
-        /// <summary>
-        /// 下一页命令 - 基类提供
-        /// </summary>
-        public new DelegateCommand NextPageCommand => base.NextPageCommand;
-
-        // Issue #1995 注意: BaseManagementViewModel 没有 SearchCommand 和 AddCommand
-        // SearchText 属性变化会自动触发搜索（500ms防抖）
-        // AddCommand 需要在子类中自行实现（未来 Task 可能统一）
-
-        #endregion
+        // Issue #1995 注意: UnifiedListViewModelBase 已提供所有必要的命令
+        // SearchCommand, RefreshCommand, DeleteCommand, PreviousPageCommand, NextPageCommand 等无需重复定义
 
         #region 数据加载 - Issue #1995: 实现BaseManagementViewModel抽象方法
 
@@ -285,7 +244,7 @@ namespace LYBT.Desktop.Users.ViewModels
         /// <summary>
         /// 执行新建用户命令
         /// </summary>
-        protected virtual async Task OnExecuteAddAsync()
+        protected override async Task OnExecuteAddAsync()
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建用户视图");
@@ -293,39 +252,25 @@ namespace LYBT.Desktop.Users.ViewModels
             await Task.CompletedTask;
         }
 
-        protected override async Task<PagedResult<UserDto>> LoadDataAsync(int pageIndex, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", pageIndex, pageSize, searchText);
+            Logger.LogDebug("加载用户列表: 第{Page}页, 每页{PageSize}条, 关键词: {SearchText}", page, pageSize, searchText);
 
             try
             {
                 // Issue #1785: 使用CommandHandler获取分页数据
-                var cmdResult = await _commandHandler.GetPagedAsync(pageIndex, pageSize, searchText);
+                var cmdResult = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
 
                 if (cmdResult.success && cmdResult.data != null)
                 {
                     // 应用客户端筛选（角色、状态）
                     var filteredItems = ApplyFilters(cmdResult.data.Items);
-
-                    // 返回 PagedResult（注意：客户端筛选可能导致实际返回数量少于 pageSize）
-                    return new PagedResult<UserDto>
-                    {
-                        Items = filteredItems.ToList(),
-                        TotalCount = cmdResult.data.TotalCount,
-                        CurrentPage = pageIndex,
-                        PageSize = pageSize
-                    };
+                    return filteredItems;
                 }
                 else
                 {
                     Logger.LogWarning("加载用户列表失败: {ErrorMessage}", cmdResult.errorMessage);
-                    return new PagedResult<UserDto>
-                    {
-                        Items = new List<UserDto>(),
-                        TotalCount = 0,
-                        CurrentPage = pageIndex,
-                        PageSize = pageSize
-                    };
+                    return new List<UserDto>();
                 }
             }
             catch (Exception ex)
@@ -333,14 +278,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 Logger.LogError(ex, "加载用户列表时发生异常");
                 var contextMessage = $"加载用户列表 - 模块:{nameof(UserManagementViewModel)}";
                 await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
-
-                return new PagedResult<UserDto>
-                {
-                    Items = new List<UserDto>(),
-                    TotalCount = 0,
-                    CurrentPage = pageIndex,
-                    PageSize = pageSize
-                };
+                return new List<UserDto>();
             }
         }
 
@@ -348,17 +286,17 @@ namespace LYBT.Desktop.Users.ViewModels
         /// 删除数据项（实现基类抽象方法）
         /// Issue #1995: 从OnExecuteDeleteAsync重构为DeleteItemAsync
         /// </summary>
-        protected override async Task<bool> DeleteItemAsync(UserDto item)
+        protected override async Task OnExecuteDeleteAsync(UserDto item)
         {
             if (item == null)
             {
-                Logger.LogWarning("DeleteItemAsync: 用户对象为null");
-                return false;
+                Logger.LogWarning("OnExecuteDeleteAsync: 用户对象为null");
+                return;
             }
 
             Logger.LogDebug("删除用户: {UserId} - {UserName}", item.Id, item.UserName);
 
-            try
+            await ExecuteSafelyAsync(async () =>
             {
                 // 确认删除
                 var confirmed = await ShowConfirmationAsync(
@@ -368,7 +306,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (!confirmed)
                 {
                     Logger.LogDebug("用户取消删除, UserId: {UserId}", item.Id);
-                    return false;
+                    return;
                 }
 
                 // Issue #1785: 使用CommandHandler删除
@@ -377,22 +315,13 @@ namespace LYBT.Desktop.Users.ViewModels
                 {
                     Logger.LogInformation("成功删除用户: {UserName}", item.UserName);
                     await ShowSuccessMessageAsync($"用户 [{item.RealName ?? item.UserName}] 已删除");
-                    return true;
                 }
                 else
                 {
                     Logger.LogError("删除用户失败: {UserName}, {ErrorMessage}", item.UserName, result.errorMessage);
                     ErrorMessage = result.errorMessage ?? "删除用户失败";
-                    return false;
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "删除用户时发生异常: {UserName}", item.UserName);
-                var contextMessage = $"删除用户 - 模块:{nameof(UserManagementViewModel)}";
-                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
-                return false;
-            }
+            }, "删除用户");
         }
 
         /// <summary>
@@ -619,7 +548,7 @@ namespace LYBT.Desktop.Users.ViewModels
         private void ExecuteFirstPage()
         {
             // Issue #1995: 使用基类提供的 PageIndex
-            PageIndex = 1;
+            CurrentPage = 1;
         }
 
         /// <summary>
@@ -627,8 +556,8 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         private void ExecuteLastPage()
         {
-            // Issue #1995: 使用基类提供的 PageIndex 和 TotalPages
-            PageIndex = TotalPages;
+            // Issue #1995: 使用基类提供的 CurrentPage 和 TotalPages
+            CurrentPage = TotalPages;
         }
 
         /// <summary>

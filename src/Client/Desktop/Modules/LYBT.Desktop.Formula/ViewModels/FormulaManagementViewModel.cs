@@ -210,6 +210,16 @@ namespace LYBT.Desktop.Formula.ViewModels
         public new DelegateCommand NextPageCommand => base.NextPageCommand;
 
         /// <summary>
+        /// 首页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand FirstPageCommand => base.FirstPageCommand;
+
+        /// <summary>
+        /// 末页命令 - 暴露基类实现
+        /// </summary>
+        public new DelegateCommand LastPageCommand => base.LastPageCommand;
+
+        /// <summary>
         /// 添加配方命令 - 别名指向 AddCommand
         /// </summary>
         public DelegateCommand AddFormulaCommand => AddCommand;
@@ -309,18 +319,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             return formula != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
         }
 
-        /// <summary>
-        /// 首页命令
-        /// </summary>
-        public DelegateCommand FirstPageCommand =>
-            new DelegateCommand(ExecuteFirstPage, () => CanGoPreviousPage && !IsLoading);
-
-        /// <summary>
-        /// 末页命令
-        /// </summary>
-        public DelegateCommand LastPageCommand =>
-            new DelegateCommand(ExecuteLastPage, () => CanGoNextPage && !IsLoading);
-
+  
         /// <summary>
         /// 导入配方命令
         /// </summary>
@@ -345,22 +344,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand ClearFiltersCommand =>
             new DelegateCommand(ExecuteClearFilters, () => !string.IsNullOrEmpty(SearchText));
 
-        /// <summary>
-        /// 跳转首页
-        /// </summary>
-        private void ExecuteFirstPage()
-        {
-            CurrentPage = 1;
-        }
-
-        /// <summary>
-        /// 跳转末页
-        /// </summary>
-        private void ExecuteLastPage()
-        {
-            CurrentPage = TotalPages;
-        }
-
+  
         /// <summary>
         /// 导入配方
         /// </summary>
@@ -456,8 +440,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             EditCommand?.RaiseCanExecuteChanged();
             CopyCommand?.RaiseCanExecuteChanged();
             DeleteCommand?.RaiseCanExecuteChanged();
-            FirstPageCommand?.RaiseCanExecuteChanged();
-            LastPageCommand?.RaiseCanExecuteChanged();
             ImportFormulasCommand?.RaiseCanExecuteChanged();
             ExportTemplateCommand?.RaiseCanExecuteChanged();
             ExportFormulasCommand?.RaiseCanExecuteChanged();

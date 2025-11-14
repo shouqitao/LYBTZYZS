@@ -274,8 +274,9 @@ namespace LYBT.Module.Prescriptions.Services
                 // Epic #1725 Phase 3: 使用统一方法加载关联数据（消除重复代码）
                 var (medicalCaseDict, consultationDict, _) = await LoadRelatedDataAsync(includePatients: false);
 
-                // 内存过滤：找到该患者的所有处方
+                // 内存过滤：找到该患者的处方
                 var patientPrescriptions = new List<PrescriptionSearchResultDto>();
+                var targetPrescriptionIds = new List<Guid>();
 
                 foreach (var prescription in allPrescriptions)
                 {
@@ -291,13 +292,33 @@ namespace LYBT.Module.Prescriptions.Services
                         continue; // 不是该患者的处方，跳过
                     }
 
+                    // 收集需要查询详细信息的处方ID
+                    targetPrescriptionIds.Add(prescription.Id);
+                }
+
+                // Task 1.5: 批量查询处方详情，解决N+1查询问题
+                var prescriptionsWithItems = await _repository.GetByIdsWithItemsAsync(targetPrescriptionIds);
+                var prescriptionsDict = prescriptionsWithItems.ToDictionary(p => p.Id);
+
+                foreach (var prescription in allPrescriptions)
+                {
+                    // 关联病历（重新验证）
+                    if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
+                    {
+                        continue;
+                    }
+
+                    // 筛选该患者的处方（重新验证）
+                    if (medicalCase.PatientId != patientId)
+                    {
+                        continue;
+                    }
+
                     // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
                     consultationDict.TryGetValue(medicalCase.Id, out var consultation);
 
-                    // ⚠️ N+1查询（已知MVP限制）：循环内查询处方Items
-                    // Issue #1370 ENTRY-12 新增需求：获取处方项以计算药材数量
-                    // TODO (Phase 4+): 添加Repository.GetByIdsWithItemsAsync批量查询方法
-                    var prescriptionWithItems = await _repository.GetByIdWithItemsAsync(prescription.Id);
+                    // ✅ 优化后：从批量查询结果中获取处方详情
+                    var prescriptionWithItems = prescriptionsDict.GetValueOrDefault(prescription.Id);
                     var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
 
                     // 构建搜索结果

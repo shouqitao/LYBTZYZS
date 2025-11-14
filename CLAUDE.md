@@ -1,162 +1,49 @@
-# CLAUDE.md v9.0 - Graphiti优先精简版
+# 🔄 凌隐宝堂中医诊所项目 (LYBTZYZS) 工作流程调度
 
-**核心原则：Graphiti作为项目"第一大脑"，协调整个开发过程，做到不懂就问，不随便猜测。**
+> **项目全称**: 凌隐宝堂中医诊所管理系统
+> **项目简称**: LYBTZYZS
+> **说明**: 在描述性场合统一使用"凌隐宝堂中医诊所项目"，技术文档中使用LYBTZYZS简称
 
----
+## 📋 标准流程
+**需求驱动开发流程**
 
-## 🚀 Graphiti 优先工作流（强制）
+### 🔄 大需求 (Epic) 流程
+📋 需求分析 → 📝 需求确认 → 🎯 方案设计 → 📝 Epic创建 → 🔍 Issue分解 → ⚡ 任务执行 → ✅ 验证测试 → 👤 用户确认 → 🔀 PR创建 → 👀 PR审查 → 🔀 PR合并 → 📚 文档同步 → 🧠 Graphiti更新 → 🧹 环境清理 → ✅ Epic关闭
 
-```
-任务开始 → 📖 RETRIEVE → 🛠️ EXECUTE → 💾 STORE → 任务完成
-           检索知识    遵循规则    存储决策
-```
+### 🔄 小需求 (Issue) 流程
+📋 需求确认 → 🎯 方案设计 → 📝 Issue创建 → ⚡ 任务执行 → ✅ 验证测试 → 👤 用户确认 → 📚 文档同步 → 🧠 Graphiti更新 → 🧹 环境清理 → ✅ Issue关闭
 
-### 核心规则
-- ✅ 任务前：search_nodes + search_facts 检索项目知识
-- ✅ 执行中：严格遵循检索到的 Preference > Procedure > Requirement
-- ✅ 任务后：add_memory 存储决策、新规则、Bug模式
+## 📖 详细流程指南
+→ **查看**: `docs/guides/requirement-driven-workflow.md` (完整需求驱动流程)
+→ **模板**: `docs/templates/` (需求确认和方案设计模板)
+→ **技能**: 调用相应LYBTZYZS Skills自动化生成文档
 
----
+## 🛠️ 核心Skills调用 (凌隐宝堂中医诊所项目专用)
+- `lybtzyzs-requirements-generator` - 生成需求确认文档
+- `lybtzyzs-design-generator` - 生成方案设计文档
+- `lybtzyzs-task-executor` - 自动执行GitHub Issue
+- `lybtzyzs-pr-generator` - 生成Pull Request描述
+- `lybtzyzs-task-reflector` - 任务完成反思总结
 
-## 📊 项目信息
+## 🔧 GitHub操作规范
+- **默认工具**: 使用GitHub MCP工具进行所有GitHub操作
+- **Issue管理**: `mcp__github__issue_write` (创建/更新/关闭)
+- **PR管理**: `mcp__github__pull_request_*` 系列工具
+- **仓库操作**: `mcp__github_*` 系列工具
+- **认证要求**: 确保GitHub token有足够权限
 
-### GitHub参数
-```python
-owner = "shouqitao"
-repo = "LYBTZYZS"
-```
+## 🚨 核心约束
+- **需求驱动**: 所有工作从需求确认开始
+- **文档生成**: 重要文档必须调用skill生成
+- **Graphiti记忆**: 决策和经验存储到第一大脑
+- **用户确认**: 重要变更需要用户同意后再执行
+- **环境清理**: 任务完成必须执行清理流程
+- **Issue闭环**: 所有Issues必须手动关闭，确保流程完整
+- **PR检查**: 大需求合并PR后，检查Issues是否自动关闭，未关闭则手动关闭
 
-### 技术栈
-- .NET 8.0, WPF, ASP.NET Core, EF Core 8.0, Prism 8.x
-- SQL Server 2022
-
-### MCP工具优先级
-1. **graphiti-memory** (⭐第一大脑)
-2. serena (代码分析)
-3. filesystem (文件操作)
-4. github (Issue/PR)
-5. context7 (官方文档)
-
----
-
-## 🔍 Graphiti 三阶段工作流
-
-### 1. RETRIEVE (任务前检索)
-```python
-# 检索编码规范
-search_nodes(query="编码规范", entity_types=["Preference"], max_nodes=10)
-
-# 检索流程规范
-search_nodes(query="验证流程", entity_types=["Procedure"], max_nodes=5)
-
-# 检索约束条件
-search_nodes(query="MVP约束", entity_types=["Requirement"], max_nodes=5)
-
-# 检索模块依赖
-search_facts(query="模块依赖", max_facts=20)
-```
-
-### 2. EXECUTE (执行阶段)
-**执行原则**：
-- 严格遵循检索结果
-- 优先级：Preference > Procedure > Requirement
-- 发现新规则时实时存储
-
-### 3. STORE (任务后存储)
-**强制存储时机**：
-- ✅ 用户表达偏好、需求、流程
-- ✅ 任务完成决策
-- ✅ Bug修复模式
-- ✅ 架构调整记录
-
-**存储示例**：
-```python
-# JSON结构化存储
-add_memory(
-    name="编码规范决策",
-    episode_body='{"decision": "I/O操作使用async/await", "rationale": "性能优化", "applies_to": ["Server", "Client"]}',
-    source="json",
-    group_id="lybtzyzs_project"
-)
-```
-
----
-
-## 📚 实体类型 (5种)
-
-| 类型 | 用途 | 检索关键词 |
-|-----|-----|-----------|
-| **Preference** | 开发偏好 | "编码规范", "命名规范", "技术栈" |
-| **Procedure** | 流程规范 | "工作流", "验证流程", "PR流程" |
-| **Requirement** | 项目约束 | "MVP约束", "技术黑名单", "架构触发指标" |
-| **Fact** | 事实关系 | "模块依赖", "架构层次", "文档位置" |
-| **Decision** | 决策记录 | "Issue决策", "重构历史", "Bug模式" |
-
----
-
-## ⚡ 双轨工作流
-
-**核心规则**：所有改动必须有GitHub Issue
-
-### 小需求 (90%) - 直接修改
-```
-Issue创建 → Graphiti检索 → 代码修改 → 验证 → 提交
-```
-
-### 大需求 (10%) - 自动化流程
-```
-Issue创建 → lybtzyzs-workflow-orchestrator skill → 14状态自动化
-```
-
----
-
-## 🛠️ Graphiti 工具
-
-### 核心工具
-- `add_memory`：存储知识
-- `search_nodes`：搜索实体节点
-- `search_facts`：搜索事实关系
-- `get_episodes`：获取历史
-- `delete_episode`：删除episode
-
-### 强制更新要求
-- 必须成功更新
-- 异常时立即重试
-- 等待"queued for processing"确认
-- 失败时记录本地文件
-
----
-
-## 📋 质量标准 (从Graphiti检索)
-
-### 编码规范
-- 语言：中文
-- 编码：UTF-8 with BOM
-- 命名：PascalCase/_camelCase
-- 异步：I/O必须async/await
-
-### 验证流程
-1. 编译：0 errors, 0 warnings
-2. 启动：Client + Server
-3. 测试：真实操作场景
-4. 验证：数据库状态
-5. 确认：用户视角功能完整
-
----
-
-## ⚠️ 禁止行为
-
-### 工作流
-- ❌ 未检索就开始任务
-- ❌ 无Issue就修改代码
-- ❌ 只编译通过就关闭Issue
-
-### 知识管理
-- ❌ 任务后不存储决策
-- ❌ 发现新规则不记录
-- ❌ Bug修复后不沉淀模式
-
----
-
-**最后更新**：2025-11-13 (v9.0 200行内精简版)
-**核心特色**：Graphiti协调整个开发过程，知识图谱驱动，不懂就问
+## 📦 项目配置信息
+- **项目全称**: 凌隐宝堂中医诊所管理系统
+- **项目简称**: LYBTZYZS
+- **GitHub账户**: shouqitao (TonyShou)
+- **仓库路径**: https://github.com/shouqitao/LYBTZYZS
+- **项目类型**: 企业级中医诊所管理系统

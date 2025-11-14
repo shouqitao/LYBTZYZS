@@ -25,7 +25,8 @@
         ItemsSource="{Binding Items}"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
         SearchText="{Binding SearchText, Mode=TwoWay}"
-        CurrentPage="{Binding PageIndex, Mode=TwoWay}"
+        SearchCommand="{Binding SearchCommand}"
+        CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
         TotalPages="{Binding TotalPages}"
         PageSize="{Binding PageSize, Mode=TwoWay}"
         TotalCount="{Binding TotalCount}"
@@ -148,7 +149,7 @@
                         Command="{Binding ExportHerbsCommand}"
                         ToolTip="导出药材数据到Excel文件"
                         Margin="{StaticResource SpacingSmall}" />
-                <Button Content="+ 新增中药材"
+                                <Button Content="+ 新增中药材"
                         Style="{StaticResource SuccessButton}"
                         Command="{Binding AddCommand}"
                         Margin="{StaticResource SpacingSmall}" />
