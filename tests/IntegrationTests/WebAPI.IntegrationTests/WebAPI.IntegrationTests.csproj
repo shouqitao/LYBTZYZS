@@ -35,12 +35,6 @@
     </None>
   </ItemGroup>
 
-  <!-- 临时排除其他模块测试文件（Issue #1667） -->
-  <ItemGroup>
-    <Compile Remove="HealthCheckTests.cs" />
-    <Compile Remove="HerbApiTests.cs" />
-    <Compile Remove="Controllers\PatientsControllerIntegrationTests.cs" />
-    <Compile Remove="Controllers\MedicalCaseControllerIntegrationTests.cs" />
-  </ItemGroup>
+  <!-- 已移除临时排除，集成测试已启用（Phase 5 Task 5.2）-->
 
 </Project>

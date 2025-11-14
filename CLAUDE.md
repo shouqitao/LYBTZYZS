@@ -24,6 +24,7 @@
 - `lybtzyzs-task-executor` - 自动执行GitHub Issue
 - `lybtzyzs-pr-generator` - 生成Pull Request描述
 - `lybtzyzs-task-reflector` - 任务完成反思总结
+- `lybtzyzs-context-builder` - 构建任务执行所需的完整上下文
 
 ## 🔧 GitHub操作规范
 - **默认工具**: 使用GitHub MCP工具进行所有GitHub操作
@@ -35,7 +36,7 @@
 ## 🚨 核心约束
 - **需求驱动**: 所有工作从需求确认开始
 - **文档生成**: 重要文档必须调用skill生成
-- **Graphiti记忆**: 决策和经验存储到第一大脑
+- **Graphiti记忆系统**: 决策和经验存储到Graphiti第一大脑
 - **用户确认**: 重要变更需要用户同意后再执行
 - **环境清理**: 任务完成必须执行清理流程
 - **Issue闭环**: 所有Issues必须手动关闭，确保流程完整

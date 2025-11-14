@@ -49,15 +49,15 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFailPaged<HerbDto>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFail<PagedResult<HerbDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 var result = await _herbService.GetPagedAsync(page, pageSize, keyword, category);
-                return HandlePagedResult(result, "查询成功");
+                return Success(result.Data!, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleExceptionPaged<HerbDto>(ex, "获取药材列表", new { page, pageSize, keyword, category });
+                return HandleException<PagedResult<HerbDto>>(ex, "获取药材列表", new { page, pageSize, keyword, category });
             }
         }
 
@@ -70,14 +70,17 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validation = ValidateGuid<HerbDto>(id, "药材ID");
-                if (validation != null)
+                if (id == Guid.Empty)
                 {
-                    return validation;
+                    return ValidationFail<HerbDto>("药材ID不能为空");
                 }
 
                 var result = await _herbService.GetByIdAsync(id);
-                return HandleResult(result, "查询成功");
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return NotFound<HerbDto>(result.ErrorMessage ?? "药材不存在");
+                }
+                return Success(result.Data, "查询成功");
             }
             catch (Exception ex)
             {
@@ -93,19 +96,19 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validation = ValidateModel<HerbDto>();
-                if (validation != null)
+                if (!ModelState.IsValid)
                 {
-                    return validation;
+                    return ValidationFail<HerbDto>("参数验证失败");
                 }
 
                 var result = await _herbService.CreateAsync(dto);
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("创建药材", result.Data, result.Data.Id);
+                    return Success(result.Data, "药材创建成功");
                 }
 
-                return HandleResult(result, "药材创建成功");
+                return BusinessFail<HerbDto>(result.ErrorMessage ?? "创建药材失败");
             }
             catch (Exception ex)
             {
@@ -121,16 +124,14 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var idValidation = ValidateGuid<HerbDto>(id, "药材ID");
-                if (idValidation != null)
+                if (id == Guid.Empty)
                 {
-                    return idValidation;
+                    return ValidationFail<HerbDto>("药材ID不能为空");
                 }
 
-                var modelValidation = ValidateModel<HerbDto>();
-                if (modelValidation != null)
+                if (!ModelState.IsValid)
                 {
-                    return modelValidation;
+                    return ValidationFail<HerbDto>("参数验证失败");
                 }
 
                 // 确保使用路由中的ID
@@ -140,9 +141,10 @@ namespace LYBT.WebAPI.Controllers
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("更新药材信息", result.Data, id);
+                    return Success(result.Data, "药材信息更新成功");
                 }
 
-                return HandleResult(result, "药材信息更新成功");
+                return BusinessFail<HerbDto>(result.ErrorMessage ?? "更新药材信息失败");
             }
             catch (Exception ex)
             {
@@ -158,14 +160,19 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validation = ValidateGuid(id, "药材ID");
-                if (validation != null)
+                if (id == Guid.Empty)
                 {
-                    return validation;
+                    return ValidationFail("药材ID不能为空");
                 }
 
                 var result = await _herbService.DeleteAsync(id);
-                return HandleResult(result, "删除成功");
+                if (!result.IsSuccess)
+                {
+                    return NotFound(result.ErrorMessage ?? "药材不存在");
+                }
+
+                LogOperation("删除药材", null, id);
+                return Success("删除成功");
             }
             catch (Exception ex)
             {
@@ -203,9 +210,10 @@ namespace LYBT.WebAPI.Controllers
                     LogOperation("批量删除药材",
                         new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
                         null);
+                    return Success(result.Data, result.Data.Message ?? "批量删除完成");
                 }
 
-                return HandleResult(result, result.Data?.Message ?? "批量删除完成");
+                return BusinessFail<BatchOperationResultDto>(result.ErrorMessage ?? "批量删除失败");
             }
             catch (Exception ex)
             {
@@ -387,7 +395,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleResult(result, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
+                return Success(result.Data!, $"批量导入完成: 成功{result.Data?.SuccessCount ?? 0}条");
             }
             catch (Exception ex)
             {
@@ -432,7 +440,7 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleResult(result, "导出数据查询成功");
+                return Success(result.Data!, "导出数据查询成功");
             }
             catch (Exception ex)
             {
@@ -477,14 +485,17 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var validation = ValidateGuid<HerbReferenceCheckDto>(id, "药材ID");
-                if (validation != null)
+                if (id == Guid.Empty)
                 {
-                    return validation;
+                    return ValidationFail<HerbReferenceCheckDto>("药材ID不能为空");
                 }
 
                 var result = await _herbService.CheckReferenceAsync(id);
-                return HandleResult(result, "引用检查完成");
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<HerbReferenceCheckDto>(result.ErrorMessage ?? "引用检查失败");
+                }
+                return Success(result.Data, "引用检查完成");
             }
             catch (Exception ex)
             {
@@ -548,7 +559,11 @@ namespace LYBT.WebAPI.Controllers
                         null);
                 }
 
-                return HandleResult(result, "批量引用检查完成");
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail<List<HerbReferenceCheckDto>>(result.ErrorMessage ?? "批量引用检查失败");
+                }
+                return Success(result.Data, "批量引用检查完成");
             }
             catch (Exception ex)
             {
