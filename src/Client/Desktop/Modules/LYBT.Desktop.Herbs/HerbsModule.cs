@@ -25,8 +25,8 @@ namespace LYBT.Desktop.Herbs
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IHerbRepository, HerbRepository>();
 
-            // Epic #1773: 注册Component组件
-            containerRegistry.Register<HerbDataManager>();
+            // Epic #1773: 注册Component组件（Issue #2149: 注册接口以支持跨模块访问）
+            containerRegistry.Register<IHerbDataManager, HerbDataManager>();
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbManagementViewModel>();

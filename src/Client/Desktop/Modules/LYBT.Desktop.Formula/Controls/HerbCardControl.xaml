@@ -119,9 +119,9 @@
                           Foreground="#666"/>
             </StackPanel>
 
-            <!-- 第三行：特殊说明（可选显示 - 如"先煎"、"后下"等） -->
+            <!-- 第三行：特殊说明（可选显示 - 如"先煎"、"后下"等） - Issue #2149: 修正为Remark属性 -->
             <TextBlock Grid.Row="2"
-                      Text="{Binding ProcessingMethod}"
+                      Text="{Binding Remark}"
                       FontSize="12"
                       Foreground="#999"
                       Margin="0,4,0,0"
@@ -130,10 +130,10 @@
                     <Style TargetType="TextBlock">
                         <Setter Property="Visibility" Value="Visible"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ProcessingMethod}" Value="{x:Null}">
+                            <DataTrigger Binding="{Binding Remark}" Value="{x:Null}">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding ProcessingMethod}" Value="">
+                            <DataTrigger Binding="{Binding Remark}" Value="">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
                         </Style.Triggers>

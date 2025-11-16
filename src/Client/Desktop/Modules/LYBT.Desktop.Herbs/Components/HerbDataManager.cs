@@ -9,13 +9,14 @@ namespace LYBT.Desktop.Herbs.Components
     /// <summary>
     /// 药材数据管理器
     /// Epic #1773: Herbs模块组件化改造
+    /// Issue #2149: 实现IHerbDataManager接口以支持跨模块访问
     ///
     /// 职责:
     /// - 管理药材实体数据
     /// - 保存药材信息（CreateAsync/UpdateAsync）
     /// - 变更检测
     /// </summary>
-    public class HerbDataManager : IDataManager<HerbDto>
+    public class HerbDataManager : IHerbDataManager
     {
         #region 字段
 

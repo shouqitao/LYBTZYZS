@@ -27,6 +27,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         // Issue #1787: 使用Component组件（通过DI注入）
         private readonly IFormulaDataManager _dataManager; // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
         private readonly IFormulaCommandHandler _commandHandler; // Desktop层架构重构 Phase 1: 接口化
+        private readonly IContainerProvider _containerProvider; // Issue #2149: 用于延迟解析跨模块依赖
 
         #endregion
 
@@ -242,6 +243,11 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
 
+        /// <summary>
+        /// 所有药材列表 - Issue #2149: 供HerbCardControl拼音码过滤使用
+        /// </summary>
+        public ObservableCollection<HerbDto> AllHerbs => _allHerbs;
+
         #endregion
 
         #region 命令
@@ -309,6 +315,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #1787: 注入Component组件
             IFormulaDataManager dataManager, // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
             IFormulaCommandHandler commandHandler, // Desktop层架构重构 Phase 1: 接口化
+            IContainerProvider containerProvider, // Issue #2149: 延迟解析跨模块依赖
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -319,6 +326,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #1787: 通过DI注入组件
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
@@ -393,42 +401,56 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 数据操作
 
         /// <summary>
-        /// 加载所有药材列表 - Issue #2149 - 暂时禁用
-        /// TODO: 后续通过其他方式实现跨模块AllHerbs加载
+        /// 加载所有药材列表 - Issue #2149: 通过IContainerProvider延迟解析跨模块依赖
         /// </summary>
         private async Task LoadAllHerbsAsync()
         {
-            // Issue #2149: 暂时注释掉跨模块依赖，先恢复导航功能
-            // TODO: 后续通过ServiceLocator或其他模式实现
-            await Task.CompletedTask;
+            try
+            {
+                Logger.LogDebug("开始加载所有药材列表");
 
-            //try
-            //{
-            //    Logger.LogDebug("开始加载所有药材列表");
-            //
-            //    // 使用足够大的pageSize加载所有药材（假设不超过1000个）
-            //    var pagedResult = await herbDataManager.GetPagedAsync(1, 1000);
-            //
-            //    if (pagedResult?.Items != null)
-            //    {
-            //        _allHerbs.Clear();
-            //        foreach (var herb in pagedResult.Items)
-            //        {
-            //            _allHerbs.Add(herb);
-            //        }
-            //
-            //        Logger.LogInformation("成功加载 {Count} 个药材", _allHerbs.Count);
-            //    }
-            //    else
-            //    {
-            //        Logger.LogWarning("加载药材列表返回空结果");
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Logger.LogError(ex, "加载药材列表时发生异常");
-            //    // 不阻断主流程，仅记录日志
-            //}
+                // Issue #2149: 使用IContainerProvider延迟解析IHerbDataManager（避免构造函数强依赖）
+                var herbDataManager = _containerProvider.Resolve<IHerbDataManager>();
+
+                _allHerbs.Clear();
+
+                // 分页加载所有药材（Server端限制pageSize最大100）
+                const int pageSize = 100;
+                int currentPage = 1;
+                int totalLoaded = 0;
+
+                while (true)
+                {
+                    var pagedResult = await herbDataManager.GetPagedAsync(currentPage, pageSize);
+
+                    if (pagedResult?.Items == null || !pagedResult.Items.Any())
+                    {
+                        break; // 没有更多数据
+                    }
+
+                    foreach (var herb in pagedResult.Items)
+                    {
+                        _allHerbs.Add(herb);
+                    }
+
+                    totalLoaded += pagedResult.Items.Count;
+
+                    // 如果当前页数据不足pageSize，说明已经是最后一页
+                    if (pagedResult.Items.Count < pageSize)
+                    {
+                        break;
+                    }
+
+                    currentPage++;
+                }
+
+                Logger.LogInformation("成功分页加载 {Count} 个药材", totalLoaded);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "加载药材列表时发生异常");
+                // 不阻断主流程，仅记录日志
+            }
         }
 
         /// <summary>
@@ -446,7 +468,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载配方详情...");
 
-                var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
+                // Issue #2149: 并行加载配方详情和药材列表（提升性能）
+                var loadFormulaTask = _dataManager.LoadFormulaAsync(FormulaId);
+                var loadHerbsTask = LoadAllHerbsAsync();
+
+                await Task.WhenAll(loadFormulaTask, loadHerbsTask);
+
+                var (success, formula, errorMessage) = await loadFormulaTask;
 
                 if (success && formula != null)
                 {
@@ -899,11 +927,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                 HerbId = Guid.Empty,
                 HerbName = string.Empty,
                 Dosage = 0,
-                Unit = "g"
+                Unit = "g",
+                // Issue #2149: 注入AllHerbs引用以支持拼音码过滤
+                AllHerbs = _allHerbs
             };
-
-            // Issue #2149: AllHerbs功能需要跨模块DI重构，暂时注释
-            // herbItem.AllHerbs = _allHerbs;
 
             return herbItem;
         }

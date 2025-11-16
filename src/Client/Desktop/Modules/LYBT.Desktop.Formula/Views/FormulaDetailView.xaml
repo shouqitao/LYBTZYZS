@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Formula.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200">
@@ -155,10 +156,7 @@
 
                             <TextBlock FontSize="14" Foreground="#64748B" Margin="0,4,0,0">
                                 <TextBlock.Text>
-                                    <MultiBinding StringFormat="总价: ¥{0:F2} · 难度: {1}">
-                                        <Binding Path="TotalPrice" />
-                                        <Binding Path="Difficulty" />
-                                    </MultiBinding>
+                                    <Binding Path="TotalPrice" StringFormat="总价: ¥{0:F2}" />
                                 </TextBlock.Text>
                             </TextBlock>
                         </StackPanel>
@@ -224,18 +222,7 @@
                                      FontSize="15"
                                      Margin="0,12,16,12" />
 
-                            <TextBlock Grid.Row="0" Grid.Column="2"
-                                       Text="配制难度:"
-                                       FontSize="15"
-                                       FontWeight="Bold"
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"
-                                       Margin="0,12" />
-                            <TextBox Grid.Row="0" Grid.Column="3"
-                                     Text="{Binding Formula.Difficulty, Mode=TwoWay}"
-                                     IsReadOnly="{Binding IsReadOnly}"
-                                     FontSize="15"
-                                     Margin="0,12" />
+                            <!-- Issue #2149: Formula模块不涉及配制难度，已删除 -->
 
                             <!-- 第二行 -->
                             <TextBlock Grid.Row="1" Grid.Column="0"
@@ -294,7 +281,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,12" />
                             <TextBlock Grid.Row="4" Grid.Column="1"
-                                       Text="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding Formula.CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                        FontSize="15"
                                        Foreground="#6B7280"
                                        VerticalAlignment="Center"
@@ -308,7 +295,7 @@
                                        VerticalAlignment="Center"
                                        Margin="0,12" />
                             <TextBlock Grid.Row="4" Grid.Column="3"
-                                       Text="{Binding UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                       Text="{Binding Formula.UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                        FontSize="15"
                                        Foreground="#6B7280"
                                        VerticalAlignment="Center"
@@ -344,42 +331,28 @@
                                            Foreground="#3B82F6" />
                             </StackPanel>
 
-                            <!-- 药材列表 -->
-                            <DataGrid Grid.Row="1"
-                                      ItemsSource="{Binding HerbItems}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="False"
-                                      CanUserDeleteRows="False"
-                                      IsReadOnly="{Binding IsReadOnly}"
-                                      GridLinesVisibility="Horizontal"
-                                      HeadersVisibility="Column"
-                                      SelectionMode="Single"
-                                      AlternationCount="2"
-                                      MaxHeight="300">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="序号"
-                                                        Binding="{Binding SortOrder}"
-                                                        Width="60" />
-                                    <DataGridTextColumn Header="药材名称"
-                                                        Binding="{Binding HerbName}"
-                                                        Width="120" />
-                                    <DataGridTextColumn Header="用量"
-                                                        Binding="{Binding Quantity, StringFormat=F1}"
-                                                        Width="80" />
-                                    <DataGridTextColumn Header="单位"
-                                                        Binding="{Binding Unit}"
-                                                        Width="60" />
-                                    <DataGridTextColumn Header="单价"
-                                                        Binding="{Binding Price, StringFormat=F2}"
-                                                        Width="80" />
-                                    <DataGridTextColumn Header="炮制方法"
-                                                        Binding="{Binding Preparation}"
-                                                        Width="100" />
-                                    <DataGridTextColumn Header="用法"
-                                                        Binding="{Binding Usage}"
-                                                        Width="*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <!-- 药材列表 - Issue #2149: 改用UniformGrid 4列卡片布局 -->
+                            <ScrollViewer Grid.Row="1"
+                                         VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Disabled"
+                                         MaxHeight="400">
+                                <ItemsControl ItemsSource="{Binding HerbItems}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <controls:HerbCardControl
+                                                IsEditMode="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                HerbSelectedCommand="{Binding DataContext.HerbSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
                         </Grid>
                     </Expander>
                 </Border>
