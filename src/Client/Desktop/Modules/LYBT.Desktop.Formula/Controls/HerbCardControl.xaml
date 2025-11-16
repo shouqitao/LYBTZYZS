@@ -1,0 +1,145 @@
+﻿<UserControl x:Class="LYBT.Desktop.Formula.Controls.HerbCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="100" d:DesignWidth="250">
+    <Border BorderBrush="#E0E0E0"
+            BorderThickness="1"
+            CornerRadius="4"
+            Background="White"
+            Margin="5"
+            Padding="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 第一行：药材名称ComboBox -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ComboBox x:Name="HerbNameComboBox"
+                          Grid.Column="0"
+                          IsEditable="True"
+                          IsTextSearchEnabled="False"
+                          StaysOpenOnEdit="True"
+                          Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
+                          ItemsSource="{Binding FilteredHerbs}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding HerbId, Mode=TwoWay}"
+                          PreviewKeyDown="OnHerbNameKeyDown"
+                          SelectionChanged="OnHerbNameSelectionChanged"
+                          IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                          FontSize="14"
+                          Height="32">
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="ComboBoxItem">
+                            <Setter Property="Padding" Value="8,4"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+
+                <!-- 删除按钮 -->
+                <Button x:Name="DeleteButton"
+                        Grid.Column="1"
+                        Content="✕"
+                        Width="24"
+                        Height="24"
+                        Margin="4,0,0,0"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        Foreground="#DC3545"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="OnDeleteButtonClick"
+                        IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                        ToolTip="删除 (Shift+Delete)">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="12">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FFF0F0"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#FFE0E0"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- 第二行：剂量输入区 -->
+            <StackPanel Grid.Row="1"
+                       Orientation="Horizontal"
+                       HorizontalAlignment="Left">
+                <TextBlock Text="剂量："
+                          VerticalAlignment="Center"
+                          Margin="0,0,4,0"
+                          FontSize="13"
+                          Foreground="#666"/>
+
+                <TextBox x:Name="DosageTextBox"
+                         Width="60"
+                         Height="28"
+                         Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}"
+                         PreviewKeyDown="OnDosageKeyDown"
+                         GotFocus="OnDosageGotFocus"
+                         IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                         FontSize="13"
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Right"/>
+
+                <TextBlock Text="{Binding Unit, FallbackValue=g}"
+                          VerticalAlignment="Center"
+                          Margin="4,0,0,0"
+                          FontSize="13"
+                          Foreground="#666"/>
+            </StackPanel>
+
+            <!-- 第三行：特殊说明（可选显示 - 如"先煎"、"后下"等） -->
+            <TextBlock Grid.Row="2"
+                      Text="{Binding ProcessingMethod}"
+                      FontSize="12"
+                      Foreground="#999"
+                      Margin="0,4,0,0"
+                      TextTrimming="CharacterEllipsis">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ProcessingMethod}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ProcessingMethod}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+    </Border>
+</UserControl>

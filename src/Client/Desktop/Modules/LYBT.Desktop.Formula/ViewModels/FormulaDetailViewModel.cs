@@ -84,10 +84,17 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
+                    RaisePropertyChanged(nameof(IsReadOnly)); // 通知IsReadOnly属性变更
                     UpdateCommandStates();
                 }
             }
         }
+
+        /// <summary>
+        /// 是否为只读模式（与IsEditMode相反）
+        /// 用于XAML按钮可见性绑定
+        /// </summary>
+        public bool IsReadOnly => !IsEditMode;
 
         #endregion
 
@@ -222,7 +229,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 药材数量
         /// </summary>
-        public int HerbCount => HerbItems.Count(h => h.HerbId.HasValue && h.HerbId.Value != Guid.Empty);
+        public int HerbCount => HerbItems.Count(h => h.HerbId != Guid.Empty);
 
         /// <summary>
         /// 总价格 - Formula不涉及价格，已废弃
@@ -483,7 +490,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                 foreach (var herb in Formula.Herbs)
                 {
                     var herbViewModel = CreateBlankHerbItem();
-                    herbViewModel.LoadFromDto(herb);
+                    herbViewModel.HerbId = herb.HerbId ?? Guid.Empty;
+                    herbViewModel.HerbName = herb.HerbName;
+                    herbViewModel.Dosage = herb.Quantity;
+                    herbViewModel.Unit = herb.Unit;
+                    herbViewModel.Remark = herb.ProcessingMethod;
                     HerbItems.Add(herbViewModel);
                 }
             }
@@ -511,7 +522,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
                 // Issue #2149: 将 ViewModel 转换为 DTO 列表
                 var herbDtos = HerbItems
-                    .Where(h => h.HerbId.HasValue && h.HerbId.Value != Guid.Empty)
+                    .Where(h => h.HerbId != Guid.Empty)
                     .Select(h => h.ToDto())
                     .ToList();
 
@@ -610,7 +621,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         private void NavigateBack()
         {
-            NavigateTo("MainRegion", "FormulaManagementView");
+            Logger.LogInformation("返回配方管理列表");
+            NavigateTo("ContentRegion", "FormulaManagementView");
         }
 
         /// <summary>
@@ -781,7 +793,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             try
             {
                 // 1. 检测重复药材
-                if (herbItem.HerbId.HasValue && herbItem.HerbId.Value != Guid.Empty)
+                if (herbItem.HerbId != Guid.Empty)
                 {
                     var duplicates = HerbItems
                         .Where(h => h.HerbId == herbItem.HerbId && h != herbItem)
@@ -833,7 +845,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 // 查找当前正在编辑的HerbItem
                 var currentItem = HerbItems.FirstOrDefault(h =>
                     h.HerbId == selectedHerb.Id ||
-                    (string.IsNullOrEmpty(h.HerbName) && !h.HerbId.HasValue));
+                    (string.IsNullOrEmpty(h.HerbName) && h.HerbId == Guid.Empty));
 
                 if (currentItem != null)
                 {
@@ -861,7 +873,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             const int minBlankSlots = 4;
 
             // 统计空槽位数量（未选择药材的槽位）
-            var blankSlots = HerbItems.Count(h => !h.HerbId.HasValue || h.HerbId.Value == Guid.Empty);
+            var blankSlots = HerbItems.Count(h => h.HerbId == Guid.Empty);
 
             // 如果空槽位不足4个，补充到4个
             while (blankSlots < minBlankSlots)
@@ -878,21 +890,20 @@ namespace LYBT.Desktop.Formula.ViewModels
         private FormulaHerbItemViewModel CreateBlankHerbItem()
         {
             var herbItem = new FormulaHerbItemViewModel(
-                _dataManager,
                 EventAggregator,
                 LoggerFactory,
                 RegionManager,
                 SessionManager,
                 UserNotificationService)
             {
-                HerbId = null,
+                HerbId = Guid.Empty,
                 HerbName = string.Empty,
-                Quantity = 0,
+                Dosage = 0,
                 Unit = "g"
             };
 
-            // Issue #2149: 设置药材列表供拼音码过滤使用
-            herbItem.AllHerbs = _allHerbs;
+            // Issue #2149: AllHerbs功能需要跨模块DI重构，暂时注释
+            // herbItem.AllHerbs = _allHerbs;
 
             return herbItem;
         }

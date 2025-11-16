@@ -9,10 +9,16 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
     /// 配方数据管理器 - 组件化架构实现
     /// Issue #1153: 负责配方数据的加载、刷新和状态管理
     /// </summary>
-    public class FormulaDataManager
+    public class FormulaDataManager : IFormulaDataManager
     {
         private readonly IFormulaRepository _repository;
         private readonly ILogger<FormulaDataManager> _logger;
+
+        /// <summary>
+        /// 当前配方数据（实现IFormulaDataManager接口）
+        /// Desktop层架构重构 Phase 3: 为Validator接口化提供数据支持
+        /// </summary>
+        public FormulaDto? CurrentFormula { get; private set; }
 
         public FormulaDataManager(IFormulaRepository repository, ILogger<FormulaDataManager> logger)
         {
@@ -42,6 +48,9 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                 {
                     return (false, null, "未找到指定的配方");
                 }
+
+                // 更新当前配方数据
+                CurrentFormula = formula;
 
                 return (true, formula, null);
             }

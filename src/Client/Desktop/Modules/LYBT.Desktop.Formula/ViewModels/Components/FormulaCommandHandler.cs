@@ -9,7 +9,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
     /// 配方命令处理器 - 组件化架构实现
     /// Issue #1153: 负责配方的命令操作（保存、复制、打印等）
     /// </summary>
-    public class FormulaCommandHandler
+    public class FormulaCommandHandler : IFormulaCommandHandler
     {
         private readonly IFormulaRepository _repository;
         private readonly ILogger<FormulaCommandHandler> _logger;
@@ -24,6 +24,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
 
         /// <summary>
         /// 保存配方
+        /// Issue #2149: 优化双重映射，直接接收InputDto以提升性能
         /// </summary>
         public async Task<(bool success, FormulaDto? formula, string? errorMessage)> SaveFormulaAsync(
             FormulaDto currentFormula,
@@ -32,7 +33,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             string usage,
             string remark,
             bool isShared,
-            IEnumerable<FormulaHerbItemDto> herbItems)
+            List<FormulaHerbItemInputDto> herbInputDtos)
         {
             try
             {
@@ -46,15 +47,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
                     Remark = string.IsNullOrWhiteSpace(remark) ? null! : remark.Trim(),
                     IsShared = isShared,
-                    Herbs = herbItems.Select(h => new FormulaHerbItemInputDto
-                    {
-                        Id = h.Id,
-                        HerbId = h.HerbId,
-                        Quantity = h.Quantity,
-                        Preparation = h.Preparation,
-                        Usage = h.Usage,
-                        SortOrder = h.SortOrder
-                    }).ToList()
+                    Herbs = herbInputDtos
                 };
 
                 var updatedFormula = await _repository.UpdateAsync(updateDto);

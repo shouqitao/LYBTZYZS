@@ -25,8 +25,8 @@ namespace LYBT.Desktop.Formula
             containerRegistry.RegisterSingleton<IFormulaRepository, FormulaRepository>();
 
             // Issue #1787: 注册Formula模块组件化组件（Epic #1773 Component-Based架构）
-            containerRegistry.Register<ViewModels.Components.FormulaDataManager>();
-            containerRegistry.Register<ViewModels.Components.FormulaCommandHandler>();
+            containerRegistry.Register<IFormulaDataManager, ViewModels.Components.FormulaDataManager>();
+            containerRegistry.Register<IFormulaCommandHandler, ViewModels.Components.FormulaCommandHandler>();
             containerRegistry.Register<ViewModels.Components.FormulaValidator>();
             containerRegistry.Register<ViewModels.Components.FormulaCalculator>();
 

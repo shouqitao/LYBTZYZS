@@ -108,5 +108,24 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         #endregion
+
+        #region 公共方法
+
+        /// <summary>
+        /// 转换为DTO用于保存
+        /// </summary>
+        public LYBT.Shared.Models.Contracts.Formula.FormulaHerbItemInputDto ToDto()
+        {
+            return new LYBT.Shared.Models.Contracts.Formula.FormulaHerbItemInputDto
+            {
+                HerbId = HerbId == Guid.Empty ? null : HerbId,
+                HerbName = HerbName,
+                Quantity = Dosage,
+                Unit = Unit,
+                ProcessingMethod = Remark
+            };
+        }
+
+        #endregion
     }
 }
