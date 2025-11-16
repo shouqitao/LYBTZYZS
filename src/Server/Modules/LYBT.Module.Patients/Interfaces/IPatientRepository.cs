@@ -10,35 +10,45 @@ namespace LYBT.Module.Patients.Interfaces
     /// </summary>
     /// <summary>
 /// 患者仓储接口 - 继承IRepository<Patient>标准接口
-/// Phase 1 Task 1.3: 实现基础数据模块统一Repository规范
+/// Task 1.2: PatientRepository重构，适配新的简化Repository设计
 /// </summary>
 /// <remarks>
 /// 设计原则：
-/// - ⭐ 统一共性：继承IRepository<Patient>获得11个标准CRUD方法
-/// - ⭐ 保持特性：保留患者模块特定业务方法
-/// 
+/// - ⭐ 继承BaseRepository：复用11个标准CRUD方法
+/// - ⭐ 业务扩展：实现患者特定的业务查询方法
+/// - ⭐ 接口隔离：职责单一，符合ISP原则
+///
 /// 特定业务方法说明：
-/// - SearchPatientsAsync: 多条件搜索（姓名/拼音码/电话/身份证）
-/// - BatchCreateAsync: 批量导入患者（Epic #1934）
+/// - GetByNameAsync: 根据姓名模糊查询患者
+/// - ExistsAsync: 检查患者姓名唯一性（支持排除ID）
+/// - GetByDateRangeAsync: 按创建日期范围查询患者
 /// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
 /// </remarks>
 public interface IPatientRepository : IRepository<Patient>
 {
     /// <summary>
-    /// 搜索患者（支持多条件和分页）
+    /// 根据姓名获取患者（支持模糊匹配）
     /// </summary>
-    /// <param name="searchTerm">搜索词（姓名/拼音码/电话/身份证）</param>
-    /// <param name="pageIndex">页码（从1开始）</param>
-    /// <param name="pageSize">每页大小</param>
-    /// <returns>分页搜索结果</returns>
-    Task<PaginatedList<Patient>> SearchPatientsAsync(string? searchTerm, int pageIndex, int pageSize);
+    /// <param name="name">患者姓名</param>
+    /// <returns>患者列表，不存在返回空列表</returns>
+    Task<List<Patient>> GetByNameAsync(string name);
 
     /// <summary>
-    /// 批量创建患者（Epic #1934 FR-001）
+    /// 检查患者姓名是否已存在
     /// </summary>
-    /// <param name="patients">待创建的患者列表</param>
-    /// <returns>创建成功的患者列表</returns>
-    Task<List<Patient>> BatchCreateAsync(IEnumerable<Patient> patients);
+    /// <param name="name">患者姓名</param>
+    /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
+    /// <returns>存在返回true，否则返回false</returns>
+    Task<bool> ExistsAsync(string name, Guid? excludeId = null);
+
+    /// <summary>
+    /// 根据日期范围获取患者（按创建日期）
+    /// </summary>
+    /// <param name="startDate">开始日期</param>
+    /// <param name="endDate">结束日期</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>患者列表</returns>
+    Task<List<Patient>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 根据手机号查询患者（Epic #1934 BR-004重复检查）

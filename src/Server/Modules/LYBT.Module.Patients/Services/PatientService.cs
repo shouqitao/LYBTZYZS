@@ -182,13 +182,12 @@ namespace LYBT.Module.Patients.Services
                     return Result<List<PatientDto>>.Success(new List<PatientDto>());
                 }
 
-                // 搜索匹配关键字的患者（姓名、电话或身份证号）
-                var allPatients = await _repository.GetAllAsync();
-                var patients = allPatients.Where(p =>
-                    p.Name.Contains(keyword)).ToList();
+                // Task 2.1: 优化搜索逻辑 - 使用Repository的GetPagedAsync方法避免全量加载
+                // 搜索前100条匹配关键字的患者（姓名、电话或身份证号）
+                var searchResult = await _repository.GetPagedAsync(1, 100, keyword);
 
                 // 转换为DTO
-                var patientDtos = _mapper.Map<List<PatientDto>>(patients);
+                var patientDtos = _mapper.Map<List<PatientDto>>(searchResult.Items);
 
                 return Result<List<PatientDto>>.Success(patientDtos);
             }
@@ -326,8 +325,8 @@ namespace LYBT.Module.Patients.Services
                 // 批量保存患者
                 if (patientsToCreate.Count > 0)
                 {
-                    var savedPatients = await _repository.BatchCreateAsync(patientsToCreate);
-                    result.SuccessCount = savedPatients.Count;
+                    var savedPatients = await _repository.AddRangeAsync(patientsToCreate);
+                    result.SuccessCount = savedPatients.Count();
                 }
 
                 return Result<BatchImportResultDto>.Success(result);
@@ -471,9 +470,10 @@ namespace LYBT.Module.Patients.Services
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             // 获取患者数据（使用分页查询，最大10000条）
-            var patients = string.IsNullOrWhiteSpace(keyword)
-                ? await _repository.SearchPatientsAsync(null, 1, 10000)
-                : await _repository.SearchPatientsAsync(keyword, 1, 10000);
+            var patientResult = string.IsNullOrWhiteSpace(keyword)
+                ? await _repository.GetPagedAsync(1, 10000)
+                : await _repository.GetPagedAsync(1, 10000, keyword);
+            var patients = patientResult.Items;
 
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("患者数据");
@@ -503,7 +503,7 @@ namespace LYBT.Module.Patients.Services
 
             // 填充数据
             int row = 2;
-            foreach (var patient in patients.Items)
+            foreach (var patient in patients)
             {
                 worksheet.Cells[row, 1].Value = patient.Name;
                 worksheet.Cells[row, 2].Value = patient.Gender.ToString();

@@ -10,10 +10,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace LYBT.Infrastructure.Repositories
 {
     /// <summary>
-    /// 仓储基类
-    /// 提供通用的CRUD操作和查询功能
+    /// 仓储基类 - 简化版本
+    /// 提供标准CRUD操作和基础查询功能
+    /// 遵循接口隔离原则，只保留核心11个方法
+    /// Issue #2103: Server端重构 - BaseRepository简化
     /// </summary>
-    /// Issue #1766: 删除IRepository - 未被任何地方使用，简化接口层次
     public abstract class BaseRepository<TEntity> : IRepository<TEntity>
         where TEntity : BaseEntity
     {
