@@ -1,13 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using LYBT.Desktop.Formula.Interfaces; // Desktop层架构重构 Phase 1: 接口化
 using LYBT.Desktop.Formula.ViewModels.Components;
+using LYBT.Desktop.Herbs.Interfaces; // Issue #2149: IHerbDataManager for loading herbs
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Contracts.Herbs; // Issue #2149: HerbDto for HerbSelectedCommand
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc; // Issue #2149: IContainerProvider for lazy resolution
 using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
@@ -21,8 +25,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 服务依赖与组件
 
         // Issue #1787: 使用Component组件（通过DI注入）
-        private readonly FormulaDataManager _dataManager;
-        private readonly FormulaCommandHandler _commandHandler;
+        private readonly IFormulaDataManager _dataManager; // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
+        private readonly IFormulaCommandHandler _commandHandler; // Desktop层架构重构 Phase 1: 接口化
 
         #endregion
 
@@ -38,6 +42,9 @@ namespace LYBT.Desktop.Formula.ViewModels
         private string _remark = string.Empty;
         private bool _isShared;
         private string _category = string.Empty;
+
+        // Issue #2149: 缓存所有药材列表，供拼音码过滤使用
+        private ObservableCollection<HerbDto> _allHerbs = new();
 
         #endregion
 
@@ -215,17 +222,18 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// <summary>
         /// 药材数量
         /// </summary>
-        public int HerbCount => _dataManager.GetHerbItemCount(HerbItems);
+        public int HerbCount => HerbItems.Count(h => h.HerbId.HasValue && h.HerbId.Value != Guid.Empty);
 
         /// <summary>
-        /// 总价格
+        /// 总价格 - Formula不涉及价格，已废弃
         /// </summary>
-        public decimal TotalPrice => _dataManager.CalculateTotalPrice(HerbItems);
+        [Obsolete("Formula模块不涉及价格计算")]
+        public decimal TotalPrice => 0m;
 
         /// <summary>
-        /// 药材组成集合
+        /// 药材组成集合 - Issue #2149: 改用ViewModel支持拼音码过滤
         /// </summary>
-        public ObservableCollection<FormulaHerbItemDto> HerbItems { get; } = new();
+        public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
 
         #endregion
 
@@ -271,14 +279,29 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand ViewUsageHistoryCommand { get; }
 
+        /// <summary>
+        /// 删除药材命令 - Issue #2149
+        /// </summary>
+        public DelegateCommand<FormulaHerbItemViewModel> DeleteHerbCommand { get; }
+
+        /// <summary>
+        /// 剂量输入完成命令 - Issue #2149（重复检测+跳转）
+        /// </summary>
+        public DelegateCommand<FormulaHerbItemViewModel> DosageCompletedCommand { get; }
+
+        /// <summary>
+        /// 药材选择完成命令 - Issue #2149（自动填充单位）
+        /// </summary>
+        public DelegateCommand<HerbDto> HerbSelectedCommand { get; }
+
         #endregion
 
         #region 构造函数
 
         public FormulaDetailViewModel(
             // Issue #1787: 注入Component组件
-            FormulaDataManager dataManager,
-            FormulaCommandHandler commandHandler,
+            IFormulaDataManager dataManager, // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
+            IFormulaCommandHandler commandHandler, // Desktop层架构重构 Phase 1: 接口化
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -299,6 +322,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), CanCopyFormula);
             PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
             ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, CanViewUsageHistory);
+
+            // Issue #2149: 药材编辑命令初始化
+            DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
+            DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
+            HerbSelectedCommand = new DelegateCommand<HerbDto>(OnHerbSelected);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -333,6 +361,9 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             await base.InitializeAsync(parameters);
 
+            // Issue #2149: 加载所有药材列表，供拼音码过滤使用
+            await LoadAllHerbsAsync();
+
             if (FormulaId != Guid.Empty)
             {
                 await LoadDataAsync();
@@ -353,6 +384,45 @@ namespace LYBT.Desktop.Formula.ViewModels
         #endregion
 
         #region 数据操作
+
+        /// <summary>
+        /// 加载所有药材列表 - Issue #2149 - 暂时禁用
+        /// TODO: 后续通过其他方式实现跨模块AllHerbs加载
+        /// </summary>
+        private async Task LoadAllHerbsAsync()
+        {
+            // Issue #2149: 暂时注释掉跨模块依赖，先恢复导航功能
+            // TODO: 后续通过ServiceLocator或其他模式实现
+            await Task.CompletedTask;
+
+            //try
+            //{
+            //    Logger.LogDebug("开始加载所有药材列表");
+            //
+            //    // 使用足够大的pageSize加载所有药材（假设不超过1000个）
+            //    var pagedResult = await herbDataManager.GetPagedAsync(1, 1000);
+            //
+            //    if (pagedResult?.Items != null)
+            //    {
+            //        _allHerbs.Clear();
+            //        foreach (var herb in pagedResult.Items)
+            //        {
+            //            _allHerbs.Add(herb);
+            //        }
+            //
+            //        Logger.LogInformation("成功加载 {Count} 个药材", _allHerbs.Count);
+            //    }
+            //    else
+            //    {
+            //        Logger.LogWarning("加载药材列表返回空结果");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Logger.LogError(ex, "加载药材列表时发生异常");
+            //    // 不阻断主流程，仅记录日志
+            //}
+        }
 
         /// <summary>
         /// 加载配方数据
@@ -406,8 +476,20 @@ namespace LYBT.Desktop.Formula.ViewModels
             IsShared = Formula.IsShared;
             Category = Formula.Category ?? string.Empty;
 
-            // 使用 DataManager 加载药材组成
-            _dataManager.LoadHerbItems(HerbItems, Formula.Herbs);
+            // Issue #2149: 手动加载药材项到 ViewModel 集合
+            HerbItems.Clear();
+            if (Formula.Herbs?.Any() == true)
+            {
+                foreach (var herb in Formula.Herbs)
+                {
+                    var herbViewModel = CreateBlankHerbItem();
+                    herbViewModel.LoadFromDto(herb);
+                    HerbItems.Add(herbViewModel);
+                }
+            }
+
+            // 确保至少有4个空白槽位
+            EnsureMinimumBlankRows();
 
             // 刷新显示属性
             RefreshDisplayProperties();
@@ -427,6 +509,12 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在保存配方...");
 
+                // Issue #2149: 将 ViewModel 转换为 DTO 列表
+                var herbDtos = HerbItems
+                    .Where(h => h.HerbId.HasValue && h.HerbId.Value != Guid.Empty)
+                    .Select(h => h.ToDto())
+                    .ToList();
+
                 var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
                     Formula,
                     FormulaName,
@@ -434,7 +522,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     Usage,
                     Remark,
                     IsShared,
-                    HerbItems);
+                    herbDtos);
 
                 if (success && updatedFormula != null)
                 {
@@ -648,6 +736,165 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
 
             return !HasErrors;
+        }
+
+        #endregion
+
+        #region Issue #2149: 药材编辑命令实现
+
+        /// <summary>
+        /// 删除药材命令实现（带自动前移）
+        /// </summary>
+        private void DeleteHerb(FormulaHerbItemViewModel? herbItem)
+        {
+            if (herbItem == null || !IsEditMode)
+                return;
+
+            try
+            {
+                // 删除指定药材
+                HerbItems.Remove(herbItem);
+
+                // 刷新HerbCount显示
+                RaisePropertyChanged(nameof(HerbCount));
+
+                // 确保至少有4个空槽位
+                EnsureMinimumBlankRows();
+
+                Logger.LogInformation("删除药材: {HerbName}", herbItem.HerbName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "删除药材时发生异常");
+                _ = ShowErrorMessageAsync("删除药材失败");
+            }
+        }
+
+        /// <summary>
+        /// 剂量输入完成命令实现（重复检测+自动前移）
+        /// </summary>
+        private void OnDosageCompleted(FormulaHerbItemViewModel? herbItem)
+        {
+            if (herbItem == null || !IsEditMode)
+                return;
+
+            try
+            {
+                // 1. 检测重复药材
+                if (herbItem.HerbId.HasValue && herbItem.HerbId.Value != Guid.Empty)
+                {
+                    var duplicates = HerbItems
+                        .Where(h => h.HerbId == herbItem.HerbId && h != herbItem)
+                        .ToList();
+
+                    if (duplicates.Any())
+                    {
+                        // 取较大的剂量
+                        var maxQuantity = Math.Max(herbItem.Quantity, duplicates.Max(d => d.Quantity));
+                        herbItem.Quantity = maxQuantity;
+
+                        // 删除重复项
+                        foreach (var duplicate in duplicates)
+                        {
+                            HerbItems.Remove(duplicate);
+                        }
+
+                        // 提示用户
+                        _ = ShowWarningMessageAsync($"{herbItem.HerbName}有重复，剂量改为{maxQuantity}g（取较大值）");
+
+                        Logger.LogInformation("合并重复药材: {HerbName}, 剂量: {Quantity}",
+                            herbItem.HerbName, maxQuantity);
+                    }
+                }
+
+                // 2. 刷新HerbCount
+                RaisePropertyChanged(nameof(HerbCount));
+
+                // 3. 确保至少有4个空槽位
+                EnsureMinimumBlankRows();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "剂量输入完成处理时发生异常");
+                _ = ShowErrorMessageAsync("处理剂量输入失败");
+            }
+        }
+
+        /// <summary>
+        /// 药材选择完成命令实现（自动填充单位）
+        /// </summary>
+        private void OnHerbSelected(HerbDto? selectedHerb)
+        {
+            if (selectedHerb == null || !IsEditMode)
+                return;
+
+            try
+            {
+                // 查找当前正在编辑的HerbItem
+                var currentItem = HerbItems.FirstOrDefault(h =>
+                    h.HerbId == selectedHerb.Id ||
+                    (string.IsNullOrEmpty(h.HerbName) && !h.HerbId.HasValue));
+
+                if (currentItem != null)
+                {
+                    // 自动填充药材信息
+                    currentItem.HerbId = selectedHerb.Id;
+                    currentItem.HerbName = selectedHerb.Name ?? string.Empty;
+                    currentItem.Unit = selectedHerb.Unit ?? "g";
+
+                    Logger.LogInformation("选择药材: {HerbName}, 单位: {Unit}",
+                        selectedHerb.Name, selectedHerb.Unit);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "药材选择处理时发生异常");
+                _ = ShowErrorMessageAsync("处理药材选择失败");
+            }
+        }
+
+        /// <summary>
+        /// 确保至少有4个空白槽位（一行）
+        /// </summary>
+        private void EnsureMinimumBlankRows()
+        {
+            const int minBlankSlots = 4;
+
+            // 统计空槽位数量（未选择药材的槽位）
+            var blankSlots = HerbItems.Count(h => !h.HerbId.HasValue || h.HerbId.Value == Guid.Empty);
+
+            // 如果空槽位不足4个，补充到4个
+            while (blankSlots < minBlankSlots)
+            {
+                var newItem = CreateBlankHerbItem();
+                HerbItems.Add(newItem);
+                blankSlots++;
+            }
+        }
+
+        /// <summary>
+        /// 创建空白药材项
+        /// </summary>
+        private FormulaHerbItemViewModel CreateBlankHerbItem()
+        {
+            var herbItem = new FormulaHerbItemViewModel(
+                _dataManager,
+                EventAggregator,
+                LoggerFactory,
+                RegionManager,
+                SessionManager,
+                UserNotificationService)
+            {
+                HerbId = null,
+                HerbName = string.Empty,
+                Quantity = 0,
+                Unit = "g"
+            };
+
+            // Issue #2149: 设置药材列表供拼音码过滤使用
+            herbItem.AllHerbs = _allHerbs;
+
+            return herbItem;
         }
 
         #endregion

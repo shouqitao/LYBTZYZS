@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
+﻿using LYBT.Desktop.Formula.Interfaces; // Desktop层架构重构 Phase 1: 接口化
+using LYBT.Desktop.Formula.ViewModels.Components; // Issue #1787: 添加Component命名空间
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -19,14 +20,14 @@ namespace LYBT.Desktop.Formula.ViewModels
         #region 服务依赖
 
         // Issue #1787: 使用CommandHandler替代直接Repository访问
-        private readonly FormulaCommandHandler _commandHandler;
+        private readonly IFormulaCommandHandler _commandHandler; // Desktop层架构重构 Phase 1: 接口化
 
         #endregion
 
         #region 构造函数
 
         public FormulaManagementViewModel(
-            FormulaCommandHandler commandHandler, // Issue #1787: 注入CommandHandler
+            IFormulaCommandHandler commandHandler, // Desktop层架构重构 Phase 1: 接口化
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -85,7 +86,7 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            NavigateTo("MainRegion", "FormulaDetailView");
+            NavigateTo("ContentRegion", "FormulaDetailView");
             await Task.CompletedTask;
         }
 
@@ -263,7 +264,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 { "FormulaId", formula.Id },
                 { "ReadOnly", true }
             };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+            NavigateTo("ContentRegion", "FormulaDetailView", parameters);
         }
 
         /// <summary>
@@ -277,7 +278,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 { "FormulaId", formula.Id }
             };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+            NavigateTo("ContentRegion", "FormulaDetailView", parameters);
         }
 
         /// <summary>
@@ -292,7 +293,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                 { "SourceFormulaId", formula.Id },
                 { "Mode", "Copy" }
             };
-            NavigateTo("MainRegion", "FormulaDetailView", parameters);
+            NavigateTo("ContentRegion", "FormulaDetailView", parameters);
         }
 
         /// <summary>
