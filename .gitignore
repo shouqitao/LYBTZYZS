@@ -165,6 +165,7 @@ ai-starter/
 # IDE和工具生成的文件 - 更新规则
 .vscode/
 *.code-workspace
+.obsidian/
 
 # 项目需求文档（PRP） - 本地开发使用
 PRPs/
