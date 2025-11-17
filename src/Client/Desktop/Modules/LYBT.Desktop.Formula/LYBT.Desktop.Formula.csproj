@@ -69,11 +69,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
-  <!-- Excel Parsing (Issue #1758) -->
-  <ItemGroup Label="Excel Parsing">
-    <PackageReference Include="EPPlus" />
-  </ItemGroup>
-
   <!-- Project References -->
   <ItemGroup Label="Infrastructure Dependencies - UltraThink三层架构">
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />

@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using Moq;
+using AutoMapper;
+using Asp.Versioning;
 using LYBT.WebAPI.Controllers;
+using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Common;
 using LYBT.Tests.Common;
 using FluentAssertions;
 using Xunit;
@@ -20,13 +25,17 @@ namespace LYBT.Module.Patients.Tests.Controllers
     {
         private readonly PatientsController _controller;
         private readonly Mock<IPatientService> _mockService;
+        private readonly Mock<IPatientServiceOptimized> _mockServiceOptimized;
+        private readonly Mock<IMapper> _mockMapper;
 
         public PatientsControllerTests()
         {
             _mockService = CreateMock<IPatientService>();
+            _mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
+            _mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
 
-            _controller = new PatientsController(_mockService.Object, mockLogger.Object);
+            _controller = new PatientsController(_mockService.Object, _mockServiceOptimized.Object, _mockMapper.Object, mockLogger.Object);
         }
 
         #region Constructor Tests
@@ -36,8 +45,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
         {
             // Act
             var mockService = CreateMock<IPatientService>();
+            var mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
+            var mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
-            var controller = new PatientsController(mockService.Object, mockLogger.Object);
+            var controller = new PatientsController(mockService.Object, mockServiceOptimized.Object, mockMapper.Object, mockLogger.Object);
 
             // Assert
             controller.Should().NotBeNull();
@@ -47,8 +58,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
         public void Constructor_WithNullService_ShouldThrowArgumentNullException()
         {
             // Act & Assert
+            var mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
+            var mockMapper = CreateMock<IMapper>();
             Assert.Throws<ArgumentNullException>(() =>
-                new PatientsController(null!, CreateLoggerMock<PatientsController>().Object));
+                new PatientsController(null!, mockServiceOptimized.Object, mockMapper.Object, CreateLoggerMock<PatientsController>().Object));
         }
 
         [Fact]
@@ -69,7 +82,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var invalidPageNumber = 0;
 
             // Act
-            var result = await _controller.GetList(pageNumber: invalidPageNumber);
+            var result = await _controller.GetList(page: invalidPageNumber);
 
             // Assert
             var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -122,12 +135,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var pageSize = 20;
             var keyword = "测试";
 
-            var mockResult = new Mock<ServiceResult<PagedResult<PatientDto>>>();
-            mockResult.Setup(r => r.IsSuccess).Returns(true);
-            mockResult.Setup(r => r.Data).Returns(new PagedResult<PatientDto>());
+            var mockResult = Result<PagedResult<PatientDto>>.Success(new PagedResult<PatientDto>());
 
             _mockService.Setup(s => s.GetPagedAsync(pageNumber, pageSize, keyword))
-                       .ReturnsAsync(mockResult.Object);
+                       .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList(pageNumber, pageSize, keyword);
@@ -140,12 +151,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
         public async Task GetList_WithDefaultParameters_ShouldCallServiceWithDefaults()
         {
             // Arrange
-            var mockResult = new Mock<ServiceResult<PagedResult<PatientDto>>>();
-            mockResult.Setup(r => r.IsSuccess).Returns(true);
-            mockResult.Setup(r => r.Data).Returns(new PagedResult<PatientDto>());
+            var mockResult = Result<PagedResult<PatientDto>>.Success(new PagedResult<PatientDto>());
 
             _mockService.Setup(s => s.GetPagedAsync(1, 20, null))
-                       .ReturnsAsync(mockResult.Object);
+                       .ReturnsAsync(mockResult);
 
             // Act
             await _controller.GetList();
@@ -179,7 +188,7 @@ namespace LYBT.Module.Patients.Tests.Controllers
                                                    .FirstOrDefault() as ApiVersionAttribute;
 
             apiVersionAttribute.Should().NotBeNull();
-            apiVersionAttribute!.Versions.Should().Contain(1.0);
+            apiVersionAttribute!.Versions.Should().Contain(new Asp.Versioning.ApiVersion(1, 0));
         }
 
         [Fact]

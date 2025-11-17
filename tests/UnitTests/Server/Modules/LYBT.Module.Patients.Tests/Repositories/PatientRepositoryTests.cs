@@ -33,7 +33,7 @@ namespace LYBT.Module.Patients.Tests.Repositories
 
             _mockLogger = CreateLoggerMock<PatientRepository>();
 
-            _repository = new PatientRepository(_mockContext.Object);
+            _repository = new PatientRepository(_mockContext.Object, _mockLogger.Object);
         }
 
         #region Constructor Tests
@@ -41,8 +41,11 @@ namespace LYBT.Module.Patients.Tests.Repositories
         [Fact]
         public void Constructor_WithValidContext_ShouldCreateInstance()
         {
+            // Arrange
+            var logger = CreateLoggerMock<PatientRepository>();
+
             // Act
-            var repository = new PatientRepository(_mockContext.Object);
+            var repository = new PatientRepository(_mockContext.Object, logger.Object);
 
             // Assert
             repository.Should().NotBeNull();
@@ -51,8 +54,11 @@ namespace LYBT.Module.Patients.Tests.Repositories
         [Fact]
         public void Constructor_WithNullContext_ShouldThrowArgumentNullException()
         {
+            // Arrange
+            var logger = CreateLoggerMock<PatientRepository>();
+
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PatientRepository(null!));
+            Assert.Throws<ArgumentNullException>(() => new PatientRepository(null!, logger.Object));
         }
 
         #endregion

@@ -239,6 +239,52 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
     }
 
     /// <summary>
+    /// 处方输入DTO - 统一创建和更新
+    /// Phase 3 Task 3.4: 合并PrescriptionCreateDto和PrescriptionEditDto
+    /// 参考Formula模块的FormulaInputDto模式
+    /// </summary>
+    public class PrescriptionInputDto : PrescriptionInputBaseDto, IIdentifiable<Guid>
+    {
+        /// <summary>处方ID（更新时必填，创建时为null）</summary>
+        [DisplayName("处方ID")]
+        public Guid? Id { get; set; }
+
+        [DisplayName("医疗案例ID")]
+        public Guid MedicalCaseId { get; set; }
+
+        [Required(ErrorMessage = "患者ID不能为空")]
+        [DisplayName("患者ID")]
+        public Guid PatientId { get; set; }
+
+        [Required(ErrorMessage = "医生ID不能为空")]
+        [DisplayName("医生ID")]
+        public Guid UserId { get; set; }
+
+        [StringLength(500, ErrorMessage = "主治长度不能超过500个字符")]
+        [DisplayName("主治")]
+        public string? Indication { get; set; }
+
+        [StringLength(200, ErrorMessage = "验方来源长度不能超过200个字符")]
+        [DisplayName("验方来源")]
+        public string? FormulaSource { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "总价格必须大于等于0")]
+        [DisplayName("总价格")]
+        public decimal TotalPrice { get; set; }
+
+        [Range(0, 1, ErrorMessage = "折扣必须在0-1之间")]
+        [DisplayName("折扣")]
+        public decimal Discount { get; set; } = 1.0m;
+
+        /// <summary>实现IIdentifiable接口</summary>
+        Guid IIdentifiable<Guid>.Id
+        {
+            get => Id ?? Guid.Empty;
+            set => Id = value;
+        }
+    }
+
+    /// <summary>
     /// 处方项目DTO - 继承基础DTO提供ID字段
     /// </summary>
     public class PrescriptionItemDto : BaseDto, IRemarkable

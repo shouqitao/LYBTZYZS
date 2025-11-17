@@ -3,6 +3,8 @@ using LYBT.Entities.Herbs;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace LYBT.Module.Herbs.Tests.Repositories;
@@ -23,7 +25,8 @@ public class HerbRepositoryTests : IDisposable
             .Options;
 
         _context = new AppDbContext(options);
-        _sut = new HerbRepository(_context);
+        var logger = new Mock<ILogger<HerbRepository>>().Object;
+        _sut = new HerbRepository(_context, logger);
     }
 
     public void Dispose()
@@ -405,7 +408,7 @@ public class HerbRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _sut.GetPagedAsync(1, 20);
+        var result = await _sut.GetPagedAsync(1, 20, keyword: null);
 
         // Assert
         result.Should().NotBeNull();
@@ -509,7 +512,7 @@ public class HerbRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act - 获取第2页，每页3条
-        var result = await _sut.GetPagedAsync(2, 3);
+        var result = await _sut.GetPagedAsync(2, 3, keyword: null);
 
         // Assert
         result.Should().NotBeNull();
@@ -541,9 +544,9 @@ public class HerbRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act - 分页获取（每页20条）
-        var page1 = await _sut.GetPagedAsync(1, 20);
-        var page5 = await _sut.GetPagedAsync(5, 20);
-        var page15 = await _sut.GetPagedAsync(15, 20); // 最后一页
+        var page1 = await _sut.GetPagedAsync(1, 20, keyword: null);
+        var page5 = await _sut.GetPagedAsync(5, 20, keyword: null);
+        var page15 = await _sut.GetPagedAsync(15, 20, keyword: null); // 最后一页
 
         // Assert - 第1页
         page1.Should().NotBeNull();
@@ -578,7 +581,7 @@ public class HerbRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _sut.GetPagedAsync(1, 20);
+        var result = await _sut.GetPagedAsync(1, 20, keyword: null);
 
         // Assert
         result.Should().NotBeNull();
@@ -602,7 +605,7 @@ public class HerbRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _sut.GetPagedAsync(1, 20);
+        var result = await _sut.GetPagedAsync(1, 20, keyword: null);
 
         // Assert
         result.Should().NotBeNull();
@@ -618,7 +621,7 @@ public class HerbRepositoryTests : IDisposable
         // Arrange - 空数据库
 
         // Act
-        var result = await _sut.GetPagedAsync(1, 20);
+        var result = await _sut.GetPagedAsync(1, 20, keyword: null);
 
         // Assert
         result.Should().NotBeNull();

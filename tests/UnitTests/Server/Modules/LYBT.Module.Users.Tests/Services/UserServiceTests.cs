@@ -40,7 +40,7 @@ namespace LYBT.Module.Users.Tests.Services
 
             // Phase 1 Task 1.6: 默认设置 validator 返回成功
             _validatorMock.Setup(x => x.ValidateAsync(It.IsAny<UserInputDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
+                .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
             // 创建UserService实例，使用基类提供的Mapper
             _userService = new UserService(
