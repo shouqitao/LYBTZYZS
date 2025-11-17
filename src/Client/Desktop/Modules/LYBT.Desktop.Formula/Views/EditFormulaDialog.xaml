@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.Formula.ViewModels"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Formula.Controls"
              xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
@@ -85,51 +86,23 @@
                 <!-- 药材组成 -->
                 <GroupBox Grid.Row="1" Header="药材组成" Margin="0,0,0,15">
                     <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="200" />
-                        </Grid.RowDefinitions>
-
-                        <!-- 工具栏 -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                            <Button Content="添加药材" Command="{Binding AddHerbCommand}"
-                                    Padding="10,5" Margin="0,0,5,0"
-                                    Background="{DynamicResource SuccessColorBrush}"
-                                    Foreground="White" />
-                        </StackPanel>
-
-                        <!-- 药材列表 -->
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding HerbItems}"
-                                  SelectedItem="{Binding SelectedHerbItem}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  GridLinesVisibility="Horizontal">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="药材名称" Binding="{Binding HerbName}" Width="150" />
-                                <DataGridTextColumn Header="用量" Binding="{Binding Quantity}" Width="80" />
-                                <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="60" />
-                                <DataGridTextColumn Header="处理方法" Binding="{Binding ProcessingMethod}" Width="100" />
-                                <DataGridTextColumn Header="特殊说明" Binding="{Binding SpecialInstructions}" Width="*" />
-                                <DataGridTemplateColumn Header="操作" Width="120">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Button Content="编辑"
-                                                        Command="{Binding DataContext.EditHerbCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding}"
-                                                        Padding="5,2" Margin="2,0" />
-                                                <Button Content="删除"
-                                                        Command="{Binding DataContext.RemoveHerbCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                        CommandParameter="{Binding}"
-                                                        Padding="5,2"
-                                                        Background="{DynamicResource DangerColorBrush}"
-                                                        Foreground="White" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <!-- 药材卡片列表 - Issue #2149: 使用UniformGrid 4列布局 + HerbCardControl -->
+                        <ItemsControl ItemsSource="{Binding HerbItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:HerbCardControl
+                                        IsEditMode="True"
+                                        DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        HerbSelectedCommand="{Binding DataContext.HerbSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </GroupBox>
 
