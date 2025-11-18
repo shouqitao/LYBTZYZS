@@ -10,18 +10,15 @@
              d:DesignHeight="700" d:DesignWidth="1200">
 
     <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Resources/Converters.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
+        <!-- BooleanToVisibilityConverter -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-            <!-- 卡片阴影 -->
-            <DropShadowEffect x:Key="CardShadow"
-                              BlurRadius="16"
-                              ShadowDepth="2"
-                              Opacity="0.08"
-                              Color="#000000"/>
-        </ResourceDictionary>
+        <!-- 卡片阴影 -->
+        <DropShadowEffect x:Key="CardShadow"
+                          BlurRadius="16"
+                          ShadowDepth="2"
+                          Opacity="0.08"
+                          Color="#000000"/>
     </UserControl.Resources>
 
     <Grid>
