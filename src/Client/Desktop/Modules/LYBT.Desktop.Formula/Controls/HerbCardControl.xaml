@@ -13,88 +13,46 @@
             Padding="10">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>  <!-- 主行：名称 | 剂量 | 删除 -->
+                <RowDefinition Height="Auto"/>  <!-- Remark行（可选显示） -->
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>      <!-- 名称ComboBox -->
+                <ColumnDefinition Width="Auto"/>   <!-- 剂量区域 -->
+                <ColumnDefinition Width="Auto"/>   <!-- 删除按钮 -->
+            </Grid.ColumnDefinitions>
 
-            <!-- 第一行：药材名称ComboBox -->
-            <Grid Grid.Row="0" Margin="0,0,0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- Column 0: 药材名称ComboBox -->
+            <ComboBox x:Name="HerbNameComboBox"
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Margin="0,0,8,0"
+                      IsEditable="True"
+                      IsTextSearchEnabled="False"
+                      StaysOpenOnEdit="True"
+                      Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
+                      ItemsSource="{Binding FilteredHerbs}"
+                      DisplayMemberPath="Name"
+                      SelectedValuePath="Id"
+                      SelectedValue="{Binding HerbId, Mode=TwoWay}"
+                      PreviewKeyDown="OnHerbNameKeyDown"
+                      SelectionChanged="OnHerbNameSelectionChanged"
+                      IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                      FontSize="14"
+                      Height="32">
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Padding" Value="8,4"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
 
-                <ComboBox x:Name="HerbNameComboBox"
-                          Grid.Column="0"
-                          IsEditable="True"
-                          IsTextSearchEnabled="False"
-                          StaysOpenOnEdit="True"
-                          Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding FilteredHerbs}"
-                          DisplayMemberPath="Name"
-                          SelectedValuePath="Id"
-                          SelectedValue="{Binding HerbId, Mode=TwoWay}"
-                          PreviewKeyDown="OnHerbNameKeyDown"
-                          SelectionChanged="OnHerbNameSelectionChanged"
-                          IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                          FontSize="14"
-                          Height="32">
-                    <ComboBox.ItemContainerStyle>
-                        <Style TargetType="ComboBoxItem">
-                            <Setter Property="Padding" Value="8,4"/>
-                        </Style>
-                    </ComboBox.ItemContainerStyle>
-                </ComboBox>
-
-                <!-- 删除按钮 -->
-                <Button x:Name="DeleteButton"
-                        Grid.Column="1"
-                        Content="✕"
-                        Width="24"
-                        Height="24"
-                        Margin="4,0,0,0"
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Foreground="#DC3545"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        Click="OnDeleteButtonClick"
-                        IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                        ToolTip="删除 (Shift+Delete)">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="12">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FFF0F0"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#FFE0E0"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </Grid>
-
-            <!-- 第二行：剂量输入区 -->
-            <StackPanel Grid.Row="1"
+            <!-- Column 1: 剂量输入区 -->
+            <StackPanel Grid.Row="0"
+                       Grid.Column="1"
                        Orientation="Horizontal"
-                       HorizontalAlignment="Left">
+                       Margin="0,0,8,0"
+                       VerticalAlignment="Center">
                 <TextBlock Text="剂量："
                           VerticalAlignment="Center"
                           Margin="0,0,4,0"
@@ -119,8 +77,53 @@
                           Foreground="#666"/>
             </StackPanel>
 
-            <!-- 第三行：特殊说明（可选显示 - 如"先煎"、"后下"等） - Issue #2149: 修正为Remark属性 -->
-            <TextBlock Grid.Row="2"
+            <!-- Column 2: 删除按钮 -->
+            <Button x:Name="DeleteButton"
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Content="✕"
+                    Width="24"
+                    Height="24"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="#DC3545"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="OnDeleteButtonClick"
+                    IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                    ToolTip="删除 (Shift+Delete)">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="12">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFF0F0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#FFE0E0"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <!-- Row 1: 特殊说明（可选显示 - 如"先煎"、"后下"等） - Issue #2149: 修正为Remark属性 -->
+            <TextBlock Grid.Row="1"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="3"
                       Text="{Binding Remark}"
                       FontSize="12"
                       Foreground="#999"
