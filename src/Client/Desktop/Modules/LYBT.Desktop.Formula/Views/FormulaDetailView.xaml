@@ -11,6 +11,10 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Resources/Converters.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
             <!-- 卡片阴影 -->
             <DropShadowEffect x:Key="CardShadow"
                               BlurRadius="16"
