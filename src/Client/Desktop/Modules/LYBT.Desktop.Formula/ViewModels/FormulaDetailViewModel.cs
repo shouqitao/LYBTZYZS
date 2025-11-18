@@ -467,13 +467,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在加载配方详情...");
 
-                // Issue #2149: 并行加载配方详情和药材列表（提升性能）
-                var loadFormulaTask = _dataManager.LoadFormulaAsync(FormulaId);
-                var loadHerbsTask = LoadAllHerbsAsync();
-
-                await Task.WhenAll(loadFormulaTask, loadHerbsTask);
-
-                var (success, formula, errorMessage) = await loadFormulaTask;
+                // 加载配方详情（药材列表已在InitializeAsync中加载）
+                var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
 
                 if (success && formula != null)
                 {
