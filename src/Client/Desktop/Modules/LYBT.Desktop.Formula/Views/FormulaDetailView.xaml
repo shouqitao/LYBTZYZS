@@ -153,12 +153,6 @@
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
-
-                            <TextBlock FontSize="14" Foreground="#64748B" Margin="0,4,0,0">
-                                <TextBlock.Text>
-                                    <Binding Path="TotalPrice" StringFormat="总价: ¥{0:F2}" />
-                                </TextBlock.Text>
-                            </TextBlock>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" VerticalAlignment="Center">
@@ -323,12 +317,7 @@
                                 <TextBlock Text="{Binding HerbCount, StringFormat='共{0}味药材'}"
                                            FontSize="15"
                                            FontWeight="Bold"
-                                           Foreground="#374151"
-                                           Margin="0,0,20,0" />
-                                <TextBlock Text="{Binding TotalPrice, StringFormat='总价: ¥{0:F2}'}"
-                                           FontSize="15"
-                                           FontWeight="Bold"
-                                           Foreground="#3B82F6" />
+                                           Foreground="#374151" />
                             </StackPanel>
 
                             <!-- 药材列表 - Issue #2149: 改用UniformGrid 4列卡片布局 -->

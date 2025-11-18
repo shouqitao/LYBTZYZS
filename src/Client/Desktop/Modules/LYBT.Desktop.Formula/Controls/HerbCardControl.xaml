@@ -12,10 +12,6 @@
             Margin="5"
             Padding="10">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 主行：名称 | 剂量 | 删除 -->
-                <RowDefinition Height="Auto"/>  <!-- Remark行（可选显示） -->
-            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>      <!-- 名称ComboBox -->
                 <ColumnDefinition Width="Auto"/>   <!-- 剂量区域 -->
@@ -24,7 +20,6 @@
 
             <!-- Column 0: 药材名称ComboBox -->
             <ComboBox x:Name="HerbNameComboBox"
-                      Grid.Row="0"
                       Grid.Column="0"
                       Margin="0,0,8,0"
                       IsEditable="True"
@@ -48,8 +43,7 @@
             </ComboBox>
 
             <!-- Column 1: 剂量输入区 -->
-            <StackPanel Grid.Row="0"
-                       Grid.Column="1"
+            <StackPanel Grid.Column="1"
                        Orientation="Horizontal"
                        Margin="0,0,8,0"
                        VerticalAlignment="Center">
@@ -79,7 +73,6 @@
 
             <!-- Column 2: 删除按钮 -->
             <Button x:Name="DeleteButton"
-                    Grid.Row="0"
                     Grid.Column="2"
                     Content="✕"
                     Width="24"
@@ -119,30 +112,6 @@
                     </Style>
                 </Button.Style>
             </Button>
-
-            <!-- Row 1: 特殊说明（可选显示 - 如"先煎"、"后下"等） - Issue #2149: 修正为Remark属性 -->
-            <TextBlock Grid.Row="1"
-                      Grid.Column="0"
-                      Grid.ColumnSpan="3"
-                      Text="{Binding Remark}"
-                      FontSize="12"
-                      Foreground="#999"
-                      Margin="0,4,0,0"
-                      TextTrimming="CharacterEllipsis">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Visibility" Value="Visible"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Remark}" Value="{x:Null}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Remark}" Value="">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
         </Grid>
     </Border>
 </UserControl>

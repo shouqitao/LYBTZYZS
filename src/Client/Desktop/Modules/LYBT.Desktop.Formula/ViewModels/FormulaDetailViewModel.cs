@@ -233,12 +233,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         public int HerbCount => HerbItems.Count(h => h.HerbId != Guid.Empty);
 
         /// <summary>
-        /// 总价格 - Formula不涉及价格，已废弃
-        /// </summary>
-        [Obsolete("Formula模块不涉及价格计算")]
-        public decimal TotalPrice => 0m;
-
-        /// <summary>
         /// 药材组成集合 - Issue #2149: 改用ViewModel支持拼音码过滤
         /// </summary>
         public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
@@ -948,7 +942,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             RaisePropertyChanged(nameof(UpdatedAtDisplay));
             RaisePropertyChanged(nameof(StatusDisplay));
             RaisePropertyChanged(nameof(HerbCount));
-            RaisePropertyChanged(nameof(TotalPrice));
         }
 
         #endregion

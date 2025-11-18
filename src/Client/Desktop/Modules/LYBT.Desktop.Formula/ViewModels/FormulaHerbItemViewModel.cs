@@ -23,7 +23,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         private decimal _dosage;
         private string _unit = "g";
         private decimal _quantity = 1;
-        private decimal _unitPrice;
         private string? _remark;
 
         // Issue #2149: 药材列表和过滤集合
@@ -102,15 +101,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         /// <summary>
-        /// 单价
-        /// </summary>
-        public decimal UnitPrice
-        {
-            get => _unitPrice;
-            set => SetProperty(ref _unitPrice, value);
-        }
-
-        /// <summary>
         /// 备注
         /// </summary>
         public string? Remark
@@ -118,6 +108,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
+
+        /// <summary>
+        /// 单价 - Formula模块不涉及价格，固定返回0
+        /// </summary>
+        public decimal UnitPrice => 0m;
 
         #endregion
 

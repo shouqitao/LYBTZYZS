@@ -295,27 +295,6 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         }
 
         /// <summary>
-        /// 获取配方总价格
-        /// </summary>
-        public decimal CalculateTotalPrice(IEnumerable<FormulaHerbItemDto>? items)
-        {
-            if (items == null || !items.Any())
-            {
-                return 0m;
-            }
-
-            try
-            {
-                return items.Sum(h => h.Price * h.Quantity);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "计算配方总价格时发生异常");
-                return 0m;
-            }
-        }
-
-        /// <summary>
         /// 创建配方数据快照（用于取消编辑时恢复）
         /// </summary>
         public FormulaDataSnapshot CreateSnapshot(FormulaDto formula)
@@ -342,8 +321,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Quantity = h.Quantity,
                     Preparation = h.Preparation,
                     Usage = h.Usage,
-                    SortOrder = h.SortOrder,
-                    Price = h.Price
+                    SortOrder = h.SortOrder
                 }).ToList() ?? new List<FormulaHerbItemDto>()
             };
         }

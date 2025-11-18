@@ -57,11 +57,6 @@
                                 Binding="{Binding Source}"
                                 Width="120" />
 
-            <!-- 价格信息 -->
-            <DataGridTextColumn Header="总价(元)"
-                                Binding="{Binding TotalPrice, StringFormat='{}{0:F2}'}"
-                                Width="80" />
-
             <!-- 药材数量 -->
             <DataGridTextColumn Header="药材数"
                                 Binding="{Binding HerbCount}"

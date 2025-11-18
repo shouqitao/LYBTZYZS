@@ -77,17 +77,6 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         }
 
         /// <summary>
-        /// 计算配方预估成本
-        /// </summary>
-        public decimal CalculateFormulaCost(IEnumerable<FormulaHerbItemViewModel> items, int servings = 1)
-        {
-            if (items == null || !items.Any()) return 0;
-
-            var singleCost = CalculateTotalPrice(items);
-            return singleCost * servings;
-        }
-
-        /// <summary>
         /// 分析配方用量合理性
         /// </summary>
         public FormulaAnalysisResult AnalyzeFormula(IEnumerable<FormulaHerbItemViewModel> items)
