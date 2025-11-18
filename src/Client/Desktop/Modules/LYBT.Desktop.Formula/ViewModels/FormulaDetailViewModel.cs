@@ -357,9 +357,16 @@ namespace LYBT.Desktop.Formula.ViewModels
                 FormulaId = parameters.GetValue<Guid>("FormulaId");
             }
 
-            if (parameters.ContainsKey("EditMode"))
+            // Issue #2149修复: 根据ReadOnly参数判断是否为编辑模式
+            // 查看模式：传递ReadOnly=true → IsEditMode=false
+            // 新建/编辑模式：无ReadOnly参数或ReadOnly=false → IsEditMode=true
+            if (parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"))
             {
-                IsEditMode = parameters.GetValue<bool>("EditMode");
+                IsEditMode = false;  // 查看模式
+            }
+            else
+            {
+                IsEditMode = true;   // 新建或编辑模式
             }
         }
 
