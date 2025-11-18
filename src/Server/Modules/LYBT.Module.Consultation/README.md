@@ -1,4 +1,4 @@
-# LYBT.Module.Consultation - 看诊管理模块
+﻿# LYBT.Module.Consultation - 看诊管理模块
 
 ## 📦 项目定位
 
@@ -74,7 +74,7 @@ LYBT.Module.Consultation/
 - **LINQ**: 复杂查询表达式(分页、过滤、Include关联)
 - **异步编程**: 全异步方法(async/await),提升性能
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为后端服务的一部分被 `LYBT.WebAPI` 项目引用和托管。无法独立运行。
 

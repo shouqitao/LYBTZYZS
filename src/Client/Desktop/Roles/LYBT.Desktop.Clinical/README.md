@@ -1,4 +1,4 @@
-# LYBT.Desktop.Clinical - 临床医生角色模块
+﻿# LYBT.Desktop.Clinical - 临床医生角色模块
 
 ## 📦 项目定位
 
@@ -59,7 +59,7 @@ LYBT.Desktop.Clinical/
 - **MVVM模式**: Model-View-ViewModel架构
 - **INavigationAware**: Prism导航感知接口
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为Prism模块被Shell层加载,无法独立运行。
 

@@ -1,4 +1,4 @@
-# LYBT.Desktop.Consultation - 诊疗管理模块
+﻿# LYBT.Desktop.Consultation - 诊疗管理模块
 
 ## 📦 项目定位
 
@@ -68,7 +68,7 @@ LYBT.Desktop.Consultation/
 - **Repository模式**: 三层架构数据访问(ViewModel → Repository → BaseApiRepository → IApiService)
 - **接口契约模式**: ISaveable/IValidatable确保与流程编排器的一致性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库（Prism模块），作为Desktop客户端的一部分被 `LYBT.Desktop.Shell` 加载和托管。无法独立运行。
 

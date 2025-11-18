@@ -1,4 +1,4 @@
-# LYBT.Desktop.Foundation - 桌面端技术基础层
+﻿# LYBT.Desktop.Foundation - 桌面端技术基础层
 
 ## 📦 项目定位
 
@@ -121,7 +121,7 @@ LYBT.Desktop.Foundation/
 - **System.Diagnostics**: 诊断追踪、性能监控
 - **异步编程**: 全异步API（async/await），提升响应性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，作为Desktop端技术基础设施被其他模块引用。无法独立运行。
 

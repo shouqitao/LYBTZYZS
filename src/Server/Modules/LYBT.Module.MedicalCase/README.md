@@ -1,4 +1,4 @@
-# LYBT.Module.MedicalCase - 医疗案例管理模块
+﻿# LYBT.Module.MedicalCase - 医疗案例管理模块
 
 ## 📦 项目定位
 
@@ -110,7 +110,7 @@ LYBT.Module.MedicalCase/
 - **异步编程**: 全异步方法(async/await),提升性能
 - **聚合根模式**: DDD聚合根设计,确保业务一致性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为后端服务的一部分被 `LYBT.WebAPI` 项目引用和托管。无法独立运行。
 

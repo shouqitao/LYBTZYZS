@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using LYBT.Desktop.Infrastructure.Constants;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -152,7 +152,7 @@ public class NavigationManager
     {
         region.NavigationService.Navigating += (s, e) =>
         {
-            System.Diagnostics.Debug.WriteLine($"🚀 导航中: Region={region.Name}, Target={e.Uri}");
+            System.Diagnostics.Debug.WriteLine($" 导航中: Region={region.Name}, Target={e.Uri}");
         };
 
         region.NavigationService.Navigated += (s, e) =>

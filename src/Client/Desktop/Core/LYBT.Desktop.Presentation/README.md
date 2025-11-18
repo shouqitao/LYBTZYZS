@@ -1,4 +1,4 @@
-# LYBT.Desktop.Presentation - Desktop端UI基础设施层
+﻿# LYBT.Desktop.Presentation - Desktop端UI基础设施层
 
 ## 📦 项目定位
 
@@ -84,7 +84,7 @@ LYBT.Desktop.Presentation/
 - **System.Windows.Threading**: UI线程调度器（确保UI线程安全）
 - **System.ComponentModel**: INotifyPropertyChanged支持（MVVM数据绑定）
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，作为Desktop端应用的一部分被 `LYBT.Desktop.Shell` 项目引用和托管。无法独立运行。
 

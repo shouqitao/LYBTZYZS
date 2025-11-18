@@ -1,4 +1,4 @@
-# LYBT.Desktop.Shell - WPF应用程序外壳
+﻿# LYBT.Desktop.Shell - WPF应用程序外壳
 
 ## 📦 项目定位
 
@@ -116,7 +116,7 @@ LYBT.Desktop.Shell/
 - **Microsoft.Extensions.Configuration 9.0.x**: 配置管理
 - **Microsoft.Extensions.Logging 9.0.x**: 日志框架
 
-## 🚀 核心功能详解
+##  核心功能详解
 
 ### 1. Prism应用程序启动与模块编排
 
@@ -1763,7 +1763,7 @@ public class MainWindowViewModelTests
 }
 ```
 
-## 🚀 快速开始
+##  快速开始
 
 ### 环境准备
 - ✅ 安装 .NET 8.0 SDK

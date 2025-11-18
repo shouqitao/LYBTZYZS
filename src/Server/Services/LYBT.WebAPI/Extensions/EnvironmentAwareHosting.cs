@@ -104,7 +104,7 @@ public static class EnvironmentAwareHosting
 
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("🚀 服务启动完成！按 Ctrl+C 停止服务");
+        Console.WriteLine(" 服务启动完成！按 Ctrl+C 停止服务");
         Console.ResetColor();
         Console.WriteLine();
         Console.WriteLine("=== 实时日志 ===");

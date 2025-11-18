@@ -1,4 +1,4 @@
-# LYBT.Shared.Components - 跨端共享组件库
+﻿# LYBT.Shared.Components - 跨端共享组件库
 
 ## 📦 项目定位
 
@@ -80,7 +80,7 @@ public abstract class HerbValidatorBase<T> where T : IHerbItem
 - **接口隔离原则(ISP)**:IHerbItem定义最小接口契约
 - **策略模式**:计算器和验证器可继承扩展不同策略
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,无法独立运行。
 

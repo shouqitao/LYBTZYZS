@@ -262,7 +262,7 @@ public class PatientService
 - [WebAPI服务](../../Services/LYBT.WebAPI/README.md) - Web API接口文档
 - [数据库设计](./Data/DATABASE_DESIGN.md) - 数据库结构设计文档
 
-## 🚀 开发指南
+##  开发指南
 
 ### 添加新Repository
 
@@ -333,7 +333,7 @@ LYBT.Infrastructure/
 - **AutoMapper**: 对象映射框架
 - **IMemoryCache**: 进程内缓存（适合小型部署）
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，不包含可执行文件，但包含了数据库迁移的核心逻辑。可以通过解决方案或以下命令进行构建：
 

@@ -1,4 +1,4 @@
-# LYBT.Module.Patients - 患者档案管理模块
+﻿# LYBT.Module.Patients - 患者档案管理模块
 
 ## 📦 项目定位
 
@@ -81,7 +81,7 @@ LYBT.Module.Patients/
 - **LINQ**: 复杂查询表达式(分页、搜索、统计)
 - **异步编程**: 全异步方法(async/await),提升性能
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为后端服务的一部分被 `LYBT.WebAPI` 项目引用和托管。无法独立运行。
 

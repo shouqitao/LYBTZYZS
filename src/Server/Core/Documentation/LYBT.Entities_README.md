@@ -340,7 +340,7 @@ LYBT.Entities/
 - **Entity Framework Core 8**: ORM框架，用于定义数据实体与数据库的映射关系
 - **Data Annotations**: 数据验证特性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，不包含可执行文件。可以通过解决方案或以下命令进行构建：
 

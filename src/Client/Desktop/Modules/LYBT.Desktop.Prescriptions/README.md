@@ -1,4 +1,4 @@
-# LYBT.Desktop.Prescriptions - 处方管理模块
+﻿# LYBT.Desktop.Prescriptions - 处方管理模块
 
 ## 📦 项目定位
 
@@ -111,7 +111,7 @@ LYBT.Desktop.Prescriptions/
 - **Async/Await Pattern**: 全异步I/O操作,保证UI响应性
 - **IsBusy Pattern**: 加载状态管理,防止重复操作
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个Prism模块库,作为Desktop端的一部分被 `LYBT.Desktop.Shell` 在启动时动态加载。无法独立运行。
 

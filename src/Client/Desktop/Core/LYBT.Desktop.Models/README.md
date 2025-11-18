@@ -1,4 +1,4 @@
-# LYBT.Desktop.Models - ViewModels基类与映射服务
+﻿# LYBT.Desktop.Models - ViewModels基类与映射服务
 
 ## 📦 项目定位
 
@@ -113,7 +113,7 @@ LYBT.Desktop.Models/
 - **IDisposable**: 资源清理接口（ViewModelBase实现）
 - **Reactive Extensions (Rx.NET)**: 响应式编程支持
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，无法独立运行。
 

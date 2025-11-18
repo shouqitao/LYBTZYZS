@@ -377,6 +377,11 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 await LoadDataAsync();
             }
+            else
+            {
+                // 新建模式：初始化4个空白药材槽位
+                EnsureMinimumBlankRows();
+            }
         }
 
         /// <inheritdoc/>

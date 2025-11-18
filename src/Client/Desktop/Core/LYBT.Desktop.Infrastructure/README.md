@@ -1,4 +1,4 @@
-# LYBT.Desktop.Infrastructure - WPF基础设施库
+﻿# LYBT.Desktop.Infrastructure - WPF基础设施库
 
 ## 📦 项目定位
 
@@ -143,7 +143,7 @@ LYBT.Desktop.Infrastructure/
 - **Reactive Extensions (Rx.NET)**: 响应式编程支持
 - **Microsoft.Extensions.Configuration**: 配置管理框架
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，无法独立运行。
 

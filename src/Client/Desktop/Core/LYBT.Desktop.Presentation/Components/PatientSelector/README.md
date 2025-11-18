@@ -1,4 +1,4 @@
-# PatientSelector 组件
+﻿# PatientSelector 组件
 
 ## 📋 组件概览
 
@@ -21,7 +21,7 @@
 
 ---
 
-## 🚀 快速开始
+##  快速开始
 
 ### 1. XAML 嵌入示例
 

@@ -1,4 +1,4 @@
-# LYBT.Shared.Utilities
+﻿# LYBT.Shared.Utilities
 
 > **共享工具类库** - .NET 8通用工具与扩展方法
 > 配置管理 | 安全工具 | 扩展方法 | 中间件配置
@@ -655,7 +655,7 @@ public static class MiddlewareConfigurationExtensions
 - 开发环境CORS配置（`app.UseConfiguredCors()`）
 - 统一错误响应格式（ApiResponse<T>）
 
-## 🚀 使用示例
+##  使用示例
 
 ### 场景1: Startup配置（WebAPI项目）
 
@@ -1026,7 +1026,7 @@ public class Startup
 - **环境变量**: 生产环境使用环境变量或Azure Key Vault
 - **最小权限原则**: 数据库连接字符串使用专用账号，授予最小权限
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库，作为工具库被其他项目引用。无法独立运行。
 

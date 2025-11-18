@@ -1,4 +1,4 @@
-# LYBT.Desktop.MedicalCase - 医案管理模块
+﻿# LYBT.Desktop.MedicalCase - 医案管理模块
 
 ## 📦 项目定位
 
@@ -91,7 +91,7 @@ LYBT.Desktop.MedicalCase/
 - **Repository Pattern**: 三层架构(ViewModel → Repository → ApiClient)
 - **异步编程**: 全异步方法(async/await)提升UI响应性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个Prism模块库，由 `LYBT.Desktop.Shell` 在启动时加载。无法独立运行。
 

@@ -96,7 +96,7 @@ LYBT.Desktop.Users/
 - **Microsoft.Extensions.Logging**: 结构化日志记录
 - **异步编程**: async/await提升UI响应性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个Prism模块库，由 `LYBT.Desktop.Shell` 在启动时加载。无法独立运行。
 

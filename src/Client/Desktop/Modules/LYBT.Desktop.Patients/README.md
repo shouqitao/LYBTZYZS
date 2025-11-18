@@ -1,4 +1,4 @@
-# LYBT.Desktop.Patients - 患者管理模块
+﻿# LYBT.Desktop.Patients - 患者管理模块
 
 ## 📦 项目定位
 
@@ -81,7 +81,7 @@ LYBT.Desktop.Patients/
 - **Repository Pattern**: 三层架构(ViewModel → Repository → Foundation.BaseApiRepository → IApiService)
 - **异步编程**: async/await异步模式,避免阻塞UI线程
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为Prism模块被 `LYBT.Desktop.Shell` 加载和托管。无法独立运行。
 

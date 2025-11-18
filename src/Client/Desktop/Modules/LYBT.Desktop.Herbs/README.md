@@ -1,4 +1,4 @@
-# LYBT.Desktop.Herbs - 中药材管理模块
+﻿# LYBT.Desktop.Herbs - 中药材管理模块
 
 ## 📦 项目定位
 
@@ -75,7 +75,7 @@ LYBT.Desktop.Herbs/
 - **LINQ**: 用于集合过滤、分页、排序
 - **Async/Await**: 全异步方法,提升UI响应性
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个Prism模块库,由 `LYBT.Desktop.Shell` 在启动时加载。无法独立运行。
 

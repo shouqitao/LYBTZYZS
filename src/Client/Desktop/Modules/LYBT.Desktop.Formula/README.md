@@ -1,4 +1,4 @@
-# LYBT.Desktop.Formula - 验方管理模块
+﻿# LYBT.Desktop.Formula - 验方管理模块
 
 ## 📦 项目定位
 
@@ -87,7 +87,7 @@ LYBT.Desktop.Formula/
 - **IsBusy模式**: Loading状态管理，避免重复提交
 - **返回裸类型**: Repository返回FormulaDto而非Result<FormulaDto>（Client端不需要Result包装）
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个Prism模块库，由 `LYBT.Desktop.Shell` 在启动时通过模块目录（WhenAvailable）自动加载。无法独立运行。
 

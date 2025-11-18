@@ -1,4 +1,4 @@
-# LYBT.WebAPI - Web API核心服务
+﻿# LYBT.WebAPI - Web API核心服务
 
 ## 📦 项目定位
 
@@ -93,7 +93,7 @@ LYBT.WebAPI/
 - **FluentValidation**: 通过各模块间接集成，DTO验证
 - **AutoMapper**: 通过各模块间接集成，Entity ↔ DTO映射
 
-## 🚀 核心功能详解
+##  核心功能详解
 
 ### 1. Program.cs - 应用程序启动流程
 
@@ -2007,7 +2007,7 @@ namespace LYBT.WebAPI.IntegrationTests
 }
 ```
 
-## 🚀 快速开始
+##  快速开始
 
 ### 开发环境启动
 

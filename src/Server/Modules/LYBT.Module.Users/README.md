@@ -1,4 +1,4 @@
-# LYBT.Module.Users - 用户管理模块
+﻿# LYBT.Module.Users - 用户管理模块
 
 ## 📦 项目定位
 
@@ -113,7 +113,7 @@ LYBT.Module.Users/
 | 角色字段 | string类型 | UserRole枚举 | ✅ 类型安全 |
 | 编译状态 | 存在类型不匹配 | 零错误零警告 | ✅ 生产就绪 |
 
-## 🚀 快速开始
+##  快速开始
 
 此项目是一个类库,作为后端服务的一部分被 `LYBT.WebAPI` 项目引用和托管。无法独立运行。
 
