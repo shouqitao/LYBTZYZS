@@ -899,7 +899,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 HerbId = Guid.Empty,
                 HerbName = string.Empty,
-                Quantity = 1,  // Issue #Bug修复: 剂量默认值改为1
+                Quantity = 0,  // 空白槽位初始剂量为0
                 Unit = "g",
                 // Issue #2149: 注入AllHerbs引用以支持拼音码过滤
                 AllHerbs = _allHerbs
