@@ -122,8 +122,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
-            ISessionManager sessionManager,
-            IUserNotificationService userNotificationService)
+            ISessionManager? sessionManager,
+            IUserNotificationService? userNotificationService)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
         }
