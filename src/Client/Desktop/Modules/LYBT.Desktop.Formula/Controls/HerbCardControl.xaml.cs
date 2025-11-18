@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LYBT.Desktop.Formula.ViewModels;
 using LYBT.Shared.Models.Contracts.Herbs;
 
 namespace LYBT.Desktop.Formula.Controls
@@ -62,22 +63,6 @@ namespace LYBT.Desktop.Formula.Controls
             set => SetValue(DosageCompletedCommandProperty, value);
         }
 
-        /// <summary>
-        /// 药材选择完成命令（用于自动填充单位等信息）
-        /// </summary>
-        public static readonly DependencyProperty HerbSelectedCommandProperty =
-            DependencyProperty.Register(
-                nameof(HerbSelectedCommand),
-                typeof(ICommand),
-                typeof(HerbCardControl),
-                new PropertyMetadata(null));
-
-        public ICommand? HerbSelectedCommand
-        {
-            get => (ICommand?)GetValue(HerbSelectedCommandProperty);
-            set => SetValue(HerbSelectedCommandProperty, value);
-        }
-
         #endregion
 
         #region Constructor
@@ -85,55 +70,220 @@ namespace LYBT.Desktop.Formula.Controls
         public HerbCardControl()
         {
             InitializeComponent();
+
+            // 订阅全局鼠标按下事件，用于点击外部时关闭Popup
+            this.PreviewMouseDown += OnControlPreviewMouseDown;
         }
 
         #endregion
 
-        #region Event Handlers - Herb Name ComboBox
+        #region Global Mouse Handler
 
         /// <summary>
-        /// 药材名称ComboBox键盘事件
-        /// Enter键：跳转到剂量输入框
+        /// 全局鼠标按下事件 - 点击控件外部时关闭建议框
+        /// Issue #Bug修复: StaysOpen=True时需要手动处理外部点击
         /// </summary>
-        private void OnHerbNameKeyDown(object sender, KeyEventArgs e)
+        private void OnControlPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.Key == Key.Enter)
-            {
-                // 检查是否有选中的药材
-                if (HerbNameComboBox.SelectedItem is HerbDto selectedHerb)
-                {
-                    e.Handled = true;
+            if (!SuggestionsPopup.IsOpen)
+                return;
 
-                    // 跳转到剂量输入框
-                    DosageTextBox.Focus();
-                    DosageTextBox.SelectAll();
-                }
-                else if (!string.IsNullOrWhiteSpace(HerbNameComboBox.Text))
+            // 检查点击是否在Popup内部
+            var clickedElement = e.OriginalSource as DependencyObject;
+            if (clickedElement != null)
+            {
+                // 检查是否点击了TextBox或ListBox
+                var isTextBox = IsDescendantOf(clickedElement, HerbNameTextBox);
+                var isListBox = IsDescendantOf(clickedElement, SuggestionsListBox);
+
+                // 如果点击在外部，关闭Popup
+                if (!isTextBox && !isListBox)
                 {
-                    // 如果输入了文本但没有选中，尝试自动选择第一个匹配项
-                    if (HerbNameComboBox.Items.Count > 0)
-                    {
-                        HerbNameComboBox.SelectedIndex = 0;
-                        e.Handled = true;
-                    }
+                    SuggestionsPopup.IsOpen = false;
                 }
             }
         }
 
         /// <summary>
-        /// 药材选择变更事件
-        /// 自动填充单位等信息
+        /// 检查元素是否是指定父元素的后代
         /// </summary>
-        private void OnHerbNameSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private bool IsDescendantOf(DependencyObject child, DependencyObject parent)
         {
-            if (HerbNameComboBox.SelectedItem is HerbDto selectedHerb)
+            if (parent == null)
+                return false;
+
+            var current = child;
+            while (current != null)
             {
-                // 触发药材选择完成命令（ViewModel层处理数据填充）
-                if (HerbSelectedCommand?.CanExecute(selectedHerb) == true)
-                {
-                    HerbSelectedCommand.Execute(selectedHerb);
-                }
+                if (current == parent)
+                    return true;
+                current = System.Windows.Media.VisualTreeHelper.GetParent(current);
             }
+            return false;
+        }
+
+        #endregion
+
+        #region Event Handlers - TextBox (Herb Name Input)
+
+        /// <summary>
+        /// TextBox键盘事件处理
+        /// Down/Up键：在建议列表中导航（焦点保持在TextBox）
+        /// Enter键：选择当前高亮项或关闭建议框
+        /// Escape键：关闭建议框
+        /// Issue #重设计: 焦点保持在TextBox，手动控制ListBox选择（CodeProject最佳实践）
+        /// </summary>
+        private void OnTextBoxPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!SuggestionsPopup.IsOpen || SuggestionsListBox == null || SuggestionsListBox.Items.Count == 0)
+            {
+                // 建议框未打开或无数据时，只处理基本键
+                if (e.Key == Key.Escape)
+                {
+                    SuggestionsPopup.IsOpen = false;
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            // 建议框打开时的键盘处理
+            if (e.Key == Key.Down)
+            {
+                // Down键：向下移动选择（焦点保持在TextBox）
+                if (SuggestionsListBox.SelectedIndex < SuggestionsListBox.Items.Count - 1)
+                {
+                    SuggestionsListBox.SelectedIndex++;
+                }
+                else
+                {
+                    // 循环到第一项
+                    SuggestionsListBox.SelectedIndex = 0;
+                }
+                SuggestionsListBox.ScrollIntoView(SuggestionsListBox.SelectedItem);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Up)
+            {
+                // Up键：向上移动选择（焦点保持在TextBox）
+                if (SuggestionsListBox.SelectedIndex > 0)
+                {
+                    SuggestionsListBox.SelectedIndex--;
+                }
+                else
+                {
+                    // 循环到最后一项
+                    SuggestionsListBox.SelectedIndex = SuggestionsListBox.Items.Count - 1;
+                }
+                SuggestionsListBox.ScrollIntoView(SuggestionsListBox.SelectedItem);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter)
+            {
+                // Enter键：选择当前高亮项
+                if (SuggestionsListBox.SelectedItem is HerbDto selected)
+                {
+                    UpdateSelectedHerb(selected);
+                }
+                else
+                {
+                    // 无选中项时，关闭建议框，跳转到剂量输入
+                    SuggestionsPopup.IsOpen = false;
+                    DosageTextBox.Focus();
+                    DosageTextBox.SelectAll();
+                }
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                // Escape键：关闭建议框
+                SuggestionsPopup.IsOpen = false;
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// TextBox文本变化事件 - 自动打开/关闭建议框
+        /// Issue #重设计: 基于过滤结果自动控制Popup显示
+        /// </summary>
+        private void OnTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is not FormulaHerbItemViewModel viewModel)
+                return;
+
+            // 有过滤结果且输入框有内容，打开建议框
+            if (viewModel.FilteredHerbs?.Count > 0 && !string.IsNullOrWhiteSpace(HerbNameTextBox.Text))
+            {
+                SuggestionsPopup.IsOpen = true;
+            }
+            else
+            {
+                // 无过滤结果或输入框为空，关闭建议框
+                SuggestionsPopup.IsOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// TextBox获得焦点事件 - 可选的自动打开建议框
+        /// </summary>
+        private void OnTextBoxGotFocus(object sender, RoutedEventArgs e)
+        {
+            // 如果有过滤结果，自动打开建议框
+            if (DataContext is FormulaHerbItemViewModel viewModel &&
+                viewModel.FilteredHerbs?.Count > 0 &&
+                !string.IsNullOrWhiteSpace(HerbNameTextBox.Text))
+            {
+                SuggestionsPopup.IsOpen = true;
+            }
+        }
+
+        /// <summary>
+        /// TextBox失去焦点事件 - 关闭建议框
+        /// Issue #重设计: 焦点保持在TextBox，简化失去焦点处理
+        /// </summary>
+        private void OnTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            // 延迟检查，避免立即关闭导致ListBox点击失效
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                // 失去焦点时关闭建议框
+                SuggestionsPopup.IsOpen = false;
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        #endregion
+
+        #region Event Handlers - ListBox (Suggestions)
+
+        /// <summary>
+        /// ListBox鼠标点击事件 - 确认选择
+        /// Issue #重设计: 焦点保持在TextBox，ListBox仅处理鼠标点击
+        /// </summary>
+        private void OnListBoxMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (SuggestionsListBox.SelectedItem is HerbDto selected)
+            {
+                UpdateSelectedHerb(selected);
+            }
+        }
+
+        /// <summary>
+        /// 更新选中的药材 - 统一处理鼠标和键盘选择
+        /// Issue #重设计: 通过SelectedHerb属性触发自动填充
+        /// </summary>
+        private void UpdateSelectedHerb(HerbDto herb)
+        {
+            if (DataContext is not FormulaHerbItemViewModel viewModel)
+                return;
+
+            // 通过ViewModel的SelectedHerb属性触发自动填充
+            viewModel.SelectedHerb = herb;
+
+            // 关闭建议框
+            SuggestionsPopup.IsOpen = false;
+
+            // 跳转到剂量输入框
+            DosageTextBox.Focus();
+            DosageTextBox.SelectAll();
         }
 
         #endregion
@@ -201,7 +351,8 @@ namespace LYBT.Desktop.Formula.Controls
         #region Focus Management
 
         /// <summary>
-        /// 移动焦点到下一个药材卡片的ComboBox（水平优先遍历）
+        /// 移动焦点到下一个药材卡片的TextBox（水平优先遍历）
+        /// Issue #重设计: 更新为TextBox控件引用
         /// </summary>
         private void MoveFocusToNextHerbName()
         {
@@ -229,14 +380,14 @@ namespace LYBT.Desktop.Formula.Controls
                 var nextContainer = itemsControl.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ContentPresenter;
                 if (nextContainer != null)
                 {
-                    // 查找下一个HerbCardControl中的ComboBox
+                    // 查找下一个HerbCardControl中的TextBox
                     var nextHerbCard = FindVisualChild<HerbCardControl>(nextContainer);
                     if (nextHerbCard != null)
                     {
                         // 延迟执行Focus，确保UI已渲染
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            nextHerbCard.HerbNameComboBox.Focus();
+                            nextHerbCard.HerbNameTextBox.Focus();
                         }), System.Windows.Threading.DispatcherPriority.Loaded);
                     }
                 }

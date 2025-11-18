@@ -27,6 +27,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         // Issue #2149: 药材列表和过滤集合
         private ObservableCollection<HerbDto> _filteredHerbs = new();
+        private HerbDto? _selectedHerb;
 
         /// <summary>
         /// 药材ID
@@ -113,6 +114,27 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// 单价 - Formula模块不涉及价格，固定返回0
         /// </summary>
         public decimal UnitPrice => 0m;
+
+        /// <summary>
+        /// 选中的药材 - 自动填充HerbId、HerbName、Unit
+        /// Issue #2149 Bug修复: 通过双向绑定自动触发药材信息填充
+        /// </summary>
+        public HerbDto? SelectedHerb
+        {
+            get => _selectedHerb;
+            set
+            {
+                if (SetProperty(ref _selectedHerb, value) && value != null)
+                {
+                    HerbId = value.Id;
+                    HerbName = value.Name ?? string.Empty;
+                    Unit = value.Unit;  // Unit为必填项，不需要 ?? "g"
+
+                    Logger.LogInformation("选择药材: {HerbName}, 单位: {Unit}",
+                        value.Name, value.Unit);
+                }
+            }
+        }
 
         #endregion
 

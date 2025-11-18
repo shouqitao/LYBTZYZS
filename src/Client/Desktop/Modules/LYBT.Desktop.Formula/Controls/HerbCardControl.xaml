@@ -18,29 +18,59 @@
                 <ColumnDefinition Width="Auto"/>   <!-- 删除按钮 -->
             </Grid.ColumnDefinitions>
 
-            <!-- Column 0: 药材名称ComboBox -->
-            <ComboBox x:Name="HerbNameComboBox"
-                      Grid.Column="0"
-                      Margin="0,0,8,0"
-                      IsEditable="True"
-                      IsTextSearchEnabled="False"
-                      StaysOpenOnEdit="True"
-                      Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
-                      ItemsSource="{Binding FilteredHerbs}"
-                      DisplayMemberPath="Name"
-                      SelectedValuePath="Id"
-                      SelectedValue="{Binding HerbId, Mode=TwoWay}"
-                      PreviewKeyDown="OnHerbNameKeyDown"
-                      SelectionChanged="OnHerbNameSelectionChanged"
-                      IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
-                      FontSize="14"
-                      Height="32">
-                <ComboBox.ItemContainerStyle>
-                    <Style TargetType="ComboBoxItem">
-                        <Setter Property="Padding" Value="8,4"/>
-                    </Style>
-                </ComboBox.ItemContainerStyle>
-            </ComboBox>
+            <!-- Column 0: 药材名称AutoSuggestBox (TextBox + Popup + ListBox) -->
+            <Grid Grid.Column="0" Margin="0,0,8,0">
+                <!-- 文本输入框 -->
+                <TextBox x:Name="HerbNameTextBox"
+                         Text="{Binding HerbName, UpdateSourceTrigger=PropertyChanged}"
+                         PreviewKeyDown="OnTextBoxPreviewKeyDown"
+                         TextChanged="OnTextBoxTextChanged"
+                         GotFocus="OnTextBoxGotFocus"
+                         LostFocus="OnTextBoxLostFocus"
+                         IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                         FontSize="14"
+                         Height="32"
+                         Padding="8,4"
+                         VerticalContentAlignment="Center"/>
+
+                <!-- 建议列表Popup -->
+                <Popup x:Name="SuggestionsPopup"
+                       PlacementTarget="{Binding ElementName=HerbNameTextBox}"
+                       Placement="Bottom"
+                       StaysOpen="True"
+                       AllowsTransparency="True"
+                       PopupAnimation="Slide">
+                    <Border Background="White"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            MaxHeight="200"
+                            MinWidth="{Binding ActualWidth, ElementName=HerbNameTextBox}">
+                        <ListBox x:Name="SuggestionsListBox"
+                                 ItemsSource="{Binding FilteredHerbs}"
+                                 DisplayMemberPath="Name"
+                                 MouseUp="OnListBoxMouseUp"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Focusable="False"
+                                 IsHitTestVisible="True">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="8,4"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F0F0"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                            <Setter Property="Foreground" Value="Black"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Border>
+                </Popup>
+            </Grid>
 
             <!-- Column 1: 剂量输入区 -->
             <StackPanel Grid.Column="1"

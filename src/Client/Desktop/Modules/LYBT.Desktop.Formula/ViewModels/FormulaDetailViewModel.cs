@@ -6,7 +6,7 @@ using LYBT.Desktop.Herbs.Interfaces; // Issue #2149: IHerbDataManager for loadin
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs; // Issue #2149: HerbDto for HerbSelectedCommand
+using LYBT.Shared.Models.Contracts.Herbs; // Issue #2149: HerbDto for herb operations
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -296,11 +296,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand<FormulaHerbItemViewModel> DosageCompletedCommand { get; }
 
-        /// <summary>
-        /// 药材选择完成命令 - Issue #2149（自动填充单位）
-        /// </summary>
-        public DelegateCommand<HerbDto> HerbSelectedCommand { get; }
-
         #endregion
 
         #region 构造函数
@@ -335,7 +330,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #2149: 药材编辑命令初始化
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
             DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
-            HerbSelectedCommand = new DelegateCommand<HerbDto>(OnHerbSelected);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -451,6 +445,17 @@ namespace LYBT.Desktop.Formula.ViewModels
                 }
 
                 Logger.LogInformation("成功分页加载 {Count} 个药材", totalLoaded);
+
+                // 调试日志：输出前5个药材的Name和PinYinCode
+                if (_allHerbs.Any())
+                {
+                    Logger.LogInformation("=== 前5个药材数据 ===");
+                    foreach (var herb in _allHerbs.Take(5))
+                    {
+                        Logger.LogInformation("Name: {Name}, PinYinCode: {PinYinCode}, Unit: {Unit}",
+                            herb.Name, herb.PinYinCode ?? "(空)", herb.Unit);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -862,39 +867,6 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         /// <summary>
-        /// 药材选择完成命令实现（自动填充单位）
-        /// </summary>
-        private void OnHerbSelected(HerbDto? selectedHerb)
-        {
-            if (selectedHerb == null || !IsEditMode)
-                return;
-
-            try
-            {
-                // 查找当前正在编辑的HerbItem
-                var currentItem = HerbItems.FirstOrDefault(h =>
-                    h.HerbId == selectedHerb.Id ||
-                    (string.IsNullOrEmpty(h.HerbName) && h.HerbId == Guid.Empty));
-
-                if (currentItem != null)
-                {
-                    // 自动填充药材信息
-                    currentItem.HerbId = selectedHerb.Id;
-                    currentItem.HerbName = selectedHerb.Name ?? string.Empty;
-                    currentItem.Unit = selectedHerb.Unit ?? "g";
-
-                    Logger.LogInformation("选择药材: {HerbName}, 单位: {Unit}",
-                        selectedHerb.Name, selectedHerb.Unit);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "药材选择处理时发生异常");
-                _ = ShowErrorMessageAsync("处理药材选择失败");
-            }
-        }
-
-        /// <summary>
         /// 确保至少有4个空白槽位（一行）
         /// </summary>
         private void EnsureMinimumBlankRows()
@@ -927,7 +899,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 HerbId = Guid.Empty,
                 HerbName = string.Empty,
-                Dosage = 0,
+                Quantity = 1,  // Issue #Bug修复: 剂量默认值改为1
                 Unit = "g",
                 // Issue #2149: 注入AllHerbs引用以支持拼音码过滤
                 AllHerbs = _allHerbs

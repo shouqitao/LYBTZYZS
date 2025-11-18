@@ -98,8 +98,7 @@
                                     <controls:HerbCardControl
                                         IsEditMode="True"
                                         DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        HerbSelectedCommand="{Binding DataContext.HerbSelectedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
