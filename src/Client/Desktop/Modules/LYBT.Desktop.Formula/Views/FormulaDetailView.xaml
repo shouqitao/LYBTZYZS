@@ -84,7 +84,6 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="100" />
@@ -100,7 +99,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
                         <TextBox Grid.Row="0" Grid.Column="1"
-                                 Text="{Binding Formula.Name, Mode=TwoWay}"
+                                 Text="{Binding FormulaName, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  Margin="0,8,12,8" />
@@ -111,7 +110,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
                         <TextBox Grid.Row="0" Grid.Column="3"
-                                 Text="{Binding Formula.Category, Mode=TwoWay}"
+                                 Text="{Binding Category, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  Margin="0,8" />
@@ -123,7 +122,7 @@
                                    VerticalAlignment="Top"
                                    Margin="0,8" />
                         <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
-                                 Text="{Binding Formula.Property, Mode=TwoWay}"
+                                 Text="{Binding Property, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  TextWrapping="Wrap"
@@ -137,7 +136,7 @@
                                    VerticalAlignment="Top"
                                    Margin="0,8" />
                         <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
-                                 Text="{Binding Formula.Effect, Mode=TwoWay}"
+                                 Text="{Binding Effect, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  TextWrapping="Wrap"
@@ -151,60 +150,46 @@
                                    VerticalAlignment="Top"
                                    Margin="0,8" />
                         <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                                 Text="{Binding Formula.Usage, Mode=TwoWay}"
+                                 Text="{Binding Usage, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  TextWrapping="Wrap"
                                  MinHeight="50"
                                  Margin="0,8" />
 
-                        <!-- 第五行: 描述 -->
+                        <!-- 第四行: 备注 -->
                         <TextBlock Grid.Row="4" Grid.Column="0"
-                                   Text="描述:"
-                                   FontSize="14"
-                                   VerticalAlignment="Top"
-                                   Margin="0,8" />
-                        <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
-                                 Text="{Binding Formula.Description, Mode=TwoWay}"
-                                 IsReadOnly="{Binding IsReadOnly}"
-                                 FontSize="14"
-                                 TextWrapping="Wrap"
-                                 MinHeight="50"
-                                 Margin="0,8" />
-
-                        <!-- 第六行: 备注 -->
-                        <TextBlock Grid.Row="5" Grid.Column="0"
                                    Text="备注:"
                                    FontSize="14"
                                    VerticalAlignment="Top"
                                    Margin="0,8" />
-                        <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"
-                                 Text="{Binding Formula.Remark, Mode=TwoWay}"
+                        <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
+                                 Text="{Binding Remark, Mode=TwoWay}"
                                  IsReadOnly="{Binding IsReadOnly}"
                                  FontSize="14"
                                  TextWrapping="Wrap"
                                  MinHeight="40"
                                  Margin="0,8" />
 
-                        <!-- 第七行: 创建时间 + 更新时间 -->
-                        <TextBlock Grid.Row="6" Grid.Column="0"
+                        <!-- 第五行: 创建时间 + 更新时间 -->
+                        <TextBlock Grid.Row="5" Grid.Column="0"
                                    Text="创建时间:"
                                    FontSize="14"
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
-                        <TextBlock Grid.Row="6" Grid.Column="1"
+                        <TextBlock Grid.Row="5" Grid.Column="1"
                                    Text="{Binding Formula.CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
                                    Foreground="#6B7280"
                                    VerticalAlignment="Center"
                                    Margin="0,8,12,8" />
 
-                        <TextBlock Grid.Row="6" Grid.Column="2"
+                        <TextBlock Grid.Row="5" Grid.Column="2"
                                    Text="更新时间:"
                                    FontSize="14"
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
-                        <TextBlock Grid.Row="6" Grid.Column="3"
+                        <TextBlock Grid.Row="5" Grid.Column="3"
                                    Text="{Binding Formula.UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
                                    Foreground="#6B7280"
