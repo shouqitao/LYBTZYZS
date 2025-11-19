@@ -219,6 +219,13 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             InitializeListCommands();
+
+            // Bug Fix: 订阅SelectedItems集合变更事件,更新HasSelection和命令状态
+            _selectedItems.CollectionChanged += (s, e) =>
+            {
+                HasSelection = _selectedItems.Count > 0;
+                RefreshCanExecuteChanged();
+            };
         }
 
         #endregion
