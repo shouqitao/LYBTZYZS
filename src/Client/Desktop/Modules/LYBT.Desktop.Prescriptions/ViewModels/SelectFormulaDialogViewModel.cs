@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             ConfirmCommand = new DelegateCommand(Confirm, CanConfirm);
             CancelCommand = new DelegateCommand(Cancel);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ViewDetailsCommand = new DelegateCommand(ViewDetails, CanViewDetails);
+            ViewDetailsCommand = new DelegateCommand(async () => await ViewDetailsAsync(), CanViewDetails);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -270,7 +270,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开选择验方对话框时发生异常");
-                ShowErrorMessage("初始化失败，请稍后重试");
+                _ = ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
 
@@ -489,12 +489,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 查看详情
         /// </summary>
-        private void ViewDetails()
+        private async Task ViewDetailsAsync()
         {
             if (SelectedFormula != null)
             {
                 var detailInfo = GenerateDetailInfo(SelectedFormula);
-                ShowInfoMessage($"验方详情\n\n{detailInfo}");
+                await ShowSuccessMessageAsync($"验方详情\n\n{detailInfo}");
             }
         }
 

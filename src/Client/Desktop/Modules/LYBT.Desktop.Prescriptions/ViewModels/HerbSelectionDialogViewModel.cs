@@ -244,7 +244,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开药材选择对话框时发生异常");
-                ShowErrorMessage("初始化失败，请稍后重试");
+                _ = ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
 
@@ -366,7 +366,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "添加药材时发生异常");
-                ShowErrorMessage("添加药材失败");
+                _ = ShowErrorMessageAsync("添加药材失败");
             }
         }
 
@@ -389,7 +389,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "移除药材时发生异常");
-                ShowErrorMessage("移除药材失败");
+                _ = ShowErrorMessageAsync("移除药材失败");
             }
         }
 

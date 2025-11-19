@@ -312,12 +312,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 Logger.LogInformation("编辑病历功能开发中");
-                ShowInfoMessage("编辑病历功能开发中");
+                _ = ShowSuccessMessageAsync("编辑病历功能开发中");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "编辑病历时发生异常");
-                ShowErrorMessage("编辑病历失败");
+                _ = ShowErrorMessageAsync("编辑病历失败");
             }
         }
 
@@ -337,12 +337,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 Logger.LogInformation("打印病历: {MedicalCaseId}", MedicalCase?.Id);
-                ShowInfoMessage("打印病历功能开发中");
+                _ = ShowSuccessMessageAsync("打印病历功能开发中");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打印病历时发生异常");
-                ShowErrorMessage("打印病历失败");
+                _ = ShowErrorMessageAsync("打印病历失败");
             }
         }
 
@@ -362,12 +362,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             try
             {
                 Logger.LogInformation("打印处方: {MedicalCaseId}", MedicalCase?.Id);
-                ShowInfoMessage("打印处方功能开发中");
+                _ = ShowSuccessMessageAsync("打印处方功能开发中");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打印处方时发生异常");
-                ShowErrorMessage("打印处方失败");
+                _ = ShowErrorMessageAsync("打印处方失败");
             }
         }
 
@@ -424,7 +424,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 if (MedicalCase == null)
                 {
-                    ShowErrorMessage("无法开始诊疗：病历数据无效");
+                    _ = ShowErrorMessageAsync("无法开始诊疗：病历数据无效");
                     return;
                 }
 
@@ -440,7 +440,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "开始诊疗时发生异常");
-                ShowErrorMessage("开始诊疗失败，请稍后重试");
+                _ = ShowErrorMessageAsync("开始诊疗失败，请稍后重试");
             }
         }
 

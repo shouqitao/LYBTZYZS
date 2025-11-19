@@ -233,7 +233,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开验方模板对话框时发生异常");
-                ShowErrorMessage("初始化失败，请稍后重试");
+                _ = ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
 
@@ -368,7 +368,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             if (SelectedFormula != null)
             {
                 var previewInfo = GeneratePreviewInfo(SelectedFormula);
-                ShowInfoMessage($"验方预览\n\n{previewInfo}");
+                _ = ShowSuccessMessageAsync($"验方预览\n\n{previewInfo}");
             }
         }
 

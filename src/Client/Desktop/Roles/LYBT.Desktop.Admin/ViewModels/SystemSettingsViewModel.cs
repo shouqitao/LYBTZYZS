@@ -86,7 +86,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await ExecuteSaveAsync());
             ResetCommand = new DelegateCommand(async () => await ExecuteResetAsync());
-            BrowseBackupPathCommand = new DelegateCommand(ExecuteBrowseBackupPath);
+            BrowseBackupPathCommand = new DelegateCommand(async () => await ExecuteBrowseBackupPathAsync());
         }
 
         #endregion
@@ -200,7 +200,7 @@ namespace LYBT.Desktop.Admin.ViewModels
         /// <summary>
         /// 浏览备份路径
         /// </summary>
-        private void ExecuteBrowseBackupPath()
+        private async Task ExecuteBrowseBackupPathAsync()
         {
             try
             {
@@ -221,7 +221,7 @@ namespace LYBT.Desktop.Admin.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "选择备份路径失败");
-                ShowErrorMessage($"选择备份路径失败：{ex.Message}");
+                await ShowErrorMessageAsync($"选择备份路径失败：{ex.Message}");
             }
         }
 

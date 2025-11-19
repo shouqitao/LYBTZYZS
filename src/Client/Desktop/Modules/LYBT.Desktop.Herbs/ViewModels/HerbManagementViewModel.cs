@@ -449,7 +449,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             try
             {
                 Logger.LogInformation("切换药材状态: {HerbId}", herb.Id);
-                ShowInfoMessage($"切换药材 '{herb.Name}' 状态功能开发中");
+                _ = ShowSuccessMessageAsync($"切换药材 '{herb.Name}' 状态功能开发中");
                 await Task.CompletedTask;
             }
             catch (Exception ex)

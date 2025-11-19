@@ -473,21 +473,8 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             });
         }
 
-        /// <summary>
-        /// 显示错误消息（同步版本）
-        /// </summary>
-        protected void ShowErrorMessage(string message)
-        {
-            ShowErrorMessageAsync(message).Wait();
-        }
-
-        /// <summary>
-        /// 显示信息消息（同步版本）
-        /// </summary>
-        protected void ShowInfoMessage(string message)
-        {
-            ShowSuccessMessageAsync(message).Wait();
-        }
+        // Issue #2146: ShowErrorMessage和ShowInfoMessage同步方法已删除
+        // 所有调用已替换为异步版本或fire-and-forget模式
 
         /// <summary>
         /// 显示确认消息（异步版本）

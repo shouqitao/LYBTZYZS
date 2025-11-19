@@ -234,7 +234,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void ExecuteViewDetails(object item)
         {
             Logger.LogInformation("查看病历详情功能开发中");
-            ShowInfoMessage("查看详情功能开发中");
+            _ = ShowSuccessMessageAsync("查看详情功能开发中");
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void ExecuteEdit(object item)
         {
             Logger.LogInformation("编辑病历功能开发中");
-            ShowInfoMessage("编辑功能开发中");
+            _ = ShowSuccessMessageAsync("编辑功能开发中");
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void ExecuteViewConsultation(object item)
         {
             Logger.LogInformation("查看诊疗记录功能开发中");
-            ShowInfoMessage("查看诊疗记录功能开发中");
+            _ = ShowSuccessMessageAsync("查看诊疗记录功能开发中");
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void ExecuteCreatePrescription(object item)
         {
             Logger.LogInformation("创建处方功能开发中");
-            ShowInfoMessage("创建处方功能开发中");
+            _ = ShowSuccessMessageAsync("创建处方功能开发中");
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private void ExecutePrint(object item)
         {
             Logger.LogInformation("打印病历功能开发中");
-            ShowInfoMessage("打印功能开发中");
+            _ = ShowSuccessMessageAsync("打印功能开发中");
         }
 
         // Epic #1832 Phase 4: ExecuteDeleteAsync、分页方法已由基类提供，删除空占位符
@@ -291,7 +291,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导航到病历详情时发生异常，病历ID: {MedicalCaseId}", medicalCaseId);
-                ShowErrorMessage("打开病历详情失败，请稍后重试");
+                _ = ShowErrorMessageAsync("打开病历详情失败，请稍后重试");
             }
         }
 

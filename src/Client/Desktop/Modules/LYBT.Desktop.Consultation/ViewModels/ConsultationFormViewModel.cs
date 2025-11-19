@@ -553,7 +553,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
                 // REQ-003: 导航到其他病案查询页（Phase 3实现）
                 // 暂时显示提示信息
-                ShowInfoMessage("其他病案查询功能将在Phase 3实现");
+                _ = ShowSuccessMessageAsync("其他病案查询功能将在Phase 3实现");
 
                 // 未来实现代码：
                 // var parameters = new NavigationParameters

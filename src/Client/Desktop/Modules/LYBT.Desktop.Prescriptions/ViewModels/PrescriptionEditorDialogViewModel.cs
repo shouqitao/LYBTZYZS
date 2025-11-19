@@ -312,8 +312,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
             // 初始化命令
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
-            CancelCommand = new DelegateCommand(Cancel);
-            ResetCommand = new DelegateCommand(Reset, CanReset);
+            CancelCommand = new DelegateCommand(async () => await CancelAsync());
+            ResetCommand = new DelegateCommand(async () => await ResetAsync(), CanReset);
             ValidateCommand = new DelegateCommand(ValidateAllWrapper);
 
             // Phase 4B 骨架命令
@@ -340,12 +340,14 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 
         /// <summary>
         /// 是否可以关闭对话框
+        /// Issue #2146: IDialogAware接口约束必须返回bool，无法异步化
         /// </summary>
         public bool CanCloseDialog()
         {
             if (HasChanges)
             {
                 // 如果有未保存的更改，询问用户
+                // Issue #2146: 由于接口约束，此处必须使用同步方法
                 return ShowConfirmMessage("有未保存的更改，确定要关闭吗？");
             }
             return true;
@@ -391,7 +393,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "打开处方编辑对话框时发生异常");
-                ShowErrorMessage("初始化失败，请稍后重试");
+                _ = ShowErrorMessageAsync("初始化失败，请稍后重试");
             }
         }
 
@@ -549,11 +551,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 取消
         /// </summary>
-        private void Cancel()
+        private async Task CancelAsync()
         {
             if (HasChanges)
             {
-                var confirmed = ShowConfirmMessage("有未保存的更改，确定要取消吗？");
+                var confirmed = await ShowConfirmationAsync("有未保存的更改，确定要取消吗？");
                 if (!confirmed) return;
             }
 
@@ -563,11 +565,11 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// <summary>
         /// 重置
         /// </summary>
-        private void Reset()
+        private async Task ResetAsync()
         {
             if (OriginalPrescription != null)
             {
-                var confirmed = ShowConfirmMessage("确定要重置所有更改吗？");
+                var confirmed = await ShowConfirmationAsync("确定要重置所有更改吗？");
                 if (confirmed)
                 {
                     LoadFromPrescription(OriginalPrescription);

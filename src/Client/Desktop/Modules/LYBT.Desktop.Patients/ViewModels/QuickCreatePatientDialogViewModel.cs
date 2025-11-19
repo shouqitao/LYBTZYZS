@@ -176,7 +176,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 // 验证表单
                 if (!ValidateForm(out string errorMessage))
                 {
-                    ShowErrorMessage(errorMessage);
+                    _ = ShowErrorMessageAsync(errorMessage);
                     return;
                 }
 

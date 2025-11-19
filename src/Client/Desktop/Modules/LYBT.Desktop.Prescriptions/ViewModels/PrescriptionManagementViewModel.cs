@@ -432,7 +432,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 Logger.LogInformation("打印处方: {PrescriptionId}", SelectedPrescription.Id);
                 // 实现打印逻辑
-                ShowInfoMessage("打印功能暂未实现");
+                _ = ShowSuccessMessageAsync("打印功能暂未实现");
             }
         }
 
@@ -493,7 +493,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             if (prescription != null)
             {
                 Logger.LogInformation("查看患者历史功能开发中: PatientId={PatientId}", prescription.PatientId);
-                ShowInfoMessage("查看患者历史功能开发中");
+                _ = ShowSuccessMessageAsync("查看患者历史功能开发中");
             }
         }
 
@@ -517,7 +517,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             if (prescription != null)
             {
                 Logger.LogInformation("复制处方功能开发中: {PrescriptionId}", prescription.Id);
-                ShowInfoMessage("复制处方功能开发中");
+                _ = ShowSuccessMessageAsync("复制处方功能开发中");
             }
         }
 

@@ -719,12 +719,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             try
             {
                 Logger.LogInformation("保存处方草稿");
-                ShowInfoMessage("保存草稿功能开发中");
+                _ = ShowSuccessMessageAsync("保存草稿功能开发中");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存草稿时发生异常");
-                ShowErrorMessage("保存草稿失败");
+                _ = ShowErrorMessageAsync("保存草稿失败");
             }
         }
 
@@ -746,12 +746,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             try
             {
                 Logger.LogInformation("编辑药材: {HerbName}", item.HerbName);
-                ShowInfoMessage("编辑药材功能开发中");
+                _ = ShowSuccessMessageAsync("编辑药材功能开发中");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "编辑药材时发生异常");
-                ShowErrorMessage("编辑药材失败");
+                _ = ShowErrorMessageAsync("编辑药材失败");
             }
         }
 
@@ -770,7 +770,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError(ex, "从历史处方复制时发生异常");
-                ShowErrorMessage("复制历史处方失败");
+                _ = ShowErrorMessageAsync("复制历史处方失败");
             }
         }
 
@@ -789,7 +789,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             // 清空选择（避免重复触发）
             SelectedRecentPrescription = null;
 
-            ShowInfoMessage($"已从历史处方复制 {e.ItemCount} 味药材");
+            _ = ShowSuccessMessageAsync($"已从历史处方复制 {e.ItemCount} 味药材");
         }
 
         #endregion
