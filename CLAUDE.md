@@ -36,10 +36,23 @@ docs/reference/mvp-constraints.md
         task-executor → pr-generator → task-reflector
 小需求: task-executor → task-reflector
 
-# 2. 使用TodoWrite生成任务清单
+# 2. 使用TodoWrite生成任务清单（必须）
+# ⚠️ 重要：复杂任务必须使用TodoWrite工具创建任务清单，以便跟踪进度和保持专注
 TodoWrite: [深度思考] → [任务规划] → [需求确认] → [方案设计] →
           [渐进执行] → [验证测试] → [用户确认] → [文档同步] →
           [Graphiti更新] → [环境清理] → [Issue关闭]
+
+# TodoWrite使用时机：
+# - 任务需要3个或以上步骤
+# - 任务预计耗时超过30分钟
+# - 用户明确要求创建任务清单
+# - 跨会话的长时任务
+
+# TodoWrite更新原则：
+# - 每完成一个子任务立即标记为completed
+# - 始终保持1个任务为in_progress状态
+# - 发现新子任务时立即添加到清单
+# - 任务完成后清空清单
 ```
 
 ### 阶段3: EXECUTE（渐进执行与持续记录）
@@ -89,6 +102,14 @@ mcp__graphiti-memory__add_memory
   - `LYBTZYZS-记忆管理操作规范-2025-01-18`
 
 ## 🛠️ 核心工具
+
+### 任务管理工具
+- **`TodoWrite`** - 任务清单管理（⚠️ 核心工具，复杂任务必用）
+  - 创建任务清单，跟踪多步骤任务进度
+  - 保持专注，防止遗漏关键步骤
+  - 支持三种状态：pending, in_progress, completed
+  - 使用场景：≥3步骤任务、≥30分钟任务、跨会话任务
+  - 更新原则：完成即标记、始终1个in_progress、任务完成后清空
 
 ### LYBTZYZS专用Skills
 - `lybtzyzs-requirements-generator` - 需求确认文档
@@ -146,6 +167,7 @@ add_memory(
 
 ## 🚨 核心约束
 
+- **TodoWrite必用**: 复杂任务（≥3步骤或≥30分钟）必须使用TodoWrite工具跟踪进度，保持专注
 - **需求驱动**: 所有工作从需求确认开始
 - **文档生成**: 重要文档必须调用skill生成
 - **Graphiti第一大脑**: 决策和经验必须存储
