@@ -189,14 +189,23 @@ namespace LYBT.Desktop.Formula.ViewModels
                     return;
                 }
 
-                var searchText = HerbName.Trim().ToLower();
+                var searchText = HerbName.Trim();
+
+                // Issue #Bug修复: 如果HerbName与某个药材精确匹配（忽略大小写），说明是用户选择后的结果
+                // 不显示建议列表，避免Popup一直显示
+                if (AllHerbs.Any(h => string.Equals(h.Name, searchText, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
+                var searchTextLower = searchText.ToLower();
 
                 // 对所有药材计算匹配分数并排序
                 var matchedHerbs = AllHerbs
                     .Select(herb => new
                     {
                         Herb = herb,
-                        Score = GetMatchScore(herb, searchText)
+                        Score = GetMatchScore(herb, searchTextLower)
                     })
                     .Where(x => x.Score > 0) // 只保留有匹配的
                     .OrderByDescending(x => x.Score) // 分数从高到低排序

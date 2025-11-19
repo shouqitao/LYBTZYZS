@@ -19,6 +19,8 @@ namespace LYBT.Desktop.Formula.Interfaces
             string formulaName,
             string effect,
             string usage,
+            string property,
+            string category,
             string remark,
             bool isShared,
             List<FormulaHerbItemInputDto> herbInputDtos);

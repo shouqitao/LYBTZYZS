@@ -5,6 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="250">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
     <Border BorderBrush="#E0E0E0"
             BorderThickness="1"
             CornerRadius="4"
@@ -86,7 +89,7 @@
                 <TextBox x:Name="DosageTextBox"
                          Width="60"
                          Height="28"
-                         Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}"
+                         Text="{Binding Dosage, UpdateSourceTrigger=PropertyChanged, StringFormat=F1}"
                          PreviewKeyDown="OnDosageKeyDown"
                          GotFocus="OnDosageGotFocus"
                          IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
@@ -114,7 +117,7 @@
                     BorderThickness="0"
                     Cursor="Hand"
                     Click="OnDeleteButtonClick"
-                    IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode}"
+                    Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
                     ToolTip="删除 (Shift+Delete)">
                 <Button.Style>
                     <Style TargetType="Button">

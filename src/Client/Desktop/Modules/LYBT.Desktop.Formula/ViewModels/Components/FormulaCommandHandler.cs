@@ -31,6 +31,8 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             string formulaName,
             string effect,
             string usage,
+            string property,
+            string category,
             string remark,
             bool isShared,
             List<FormulaHerbItemInputDto> herbInputDtos)
@@ -39,12 +41,20 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
             {
                 _logger.LogInformation("保存配方: {FormulaId}", currentFormula.Id);
 
+                // 验证至少有一味药材
+                if (herbInputDtos == null || herbInputDtos.Count == 0)
+                {
+                    return (false, null, "验方必须包含至少一味中药材");
+                }
+
                 var updateDto = new FormulaInputDto
                 {
                     Id = currentFormula.Id,
                     Name = formulaName.Trim(),
                     Effect = string.IsNullOrWhiteSpace(effect) ? null! : effect.Trim(),
                     Usage = string.IsNullOrWhiteSpace(usage) ? null! : usage.Trim(),
+                    Property = string.IsNullOrWhiteSpace(property) ? null : property.Trim(),
+                    Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim(),
                     Remark = string.IsNullOrWhiteSpace(remark) ? null! : remark.Trim(),
                     IsShared = isShared,
                     Herbs = herbInputDtos

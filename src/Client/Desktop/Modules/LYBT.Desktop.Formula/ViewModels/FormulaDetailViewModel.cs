@@ -296,6 +296,11 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand<FormulaHerbItemViewModel> DosageCompletedCommand { get; }
 
+        /// <summary>
+        /// 添加新行命令 - Issue #自动添加空行（到达末尾时添加一行4个空槽位）
+        /// </summary>
+        public DelegateCommand AddNewRowCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -330,6 +335,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             // Issue #2149: 药材编辑命令初始化
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
             DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
+            AddNewRowCommand = new DelegateCommand(AddNewRow);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
@@ -533,8 +539,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                 }
             }
 
-            // 确保至少有4个空白槽位
-            EnsureMinimumBlankRows();
+            // 只在编辑模式下添加空白槽位
+            if (IsEditMode)
+            {
+                EnsureMinimumBlankRows();
+            }
 
             // 刷新显示属性
             RefreshDisplayProperties();
@@ -554,25 +563,50 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 SetIsBusy(true, "正在保存配方...");
 
+                // 调试日志：输出HerbItems原始数据
+                Logger.LogInformation("=== 保存配方药材数据（原始） ===");
+                Logger.LogInformation("HerbItems总数: {Count}", HerbItems.Count);
+                for (int i = 0; i < HerbItems.Count; i++)
+                {
+                    var item = HerbItems[i];
+                    Logger.LogInformation("  [{Index}] HerbId: {HerbId}, HerbName: '{HerbName}', Dosage: {Dosage}, Unit: '{Unit}'",
+                        i, item.HerbId, item.HerbName ?? "(null)", item.Dosage, item.Unit ?? "(null)");
+                }
+
                 // Issue #2149: 将 ViewModel 转换为 DTO 列表
+                // 只保留有效的药材项：HerbId不为空、HerbName不为空、Dosage > 0
                 var herbDtos = HerbItems
-                    .Where(h => h.HerbId != Guid.Empty)
+                    .Where(h => h.HerbId != Guid.Empty
+                        && !string.IsNullOrWhiteSpace(h.HerbName)
+                        && h.Dosage > 0)
                     .Select(h => h.ToDto())
                     .ToList();
+
+                // 调试日志：输出转换后的DTO信息
+                Logger.LogInformation("=== 保存配方药材数据（过滤后） ===");
+                Logger.LogInformation("有效药材数量: {Count}", herbDtos.Count);
+                foreach (var dto in herbDtos)
+                {
+                    Logger.LogInformation("药材: {HerbName}, HerbId: {HerbId}, Quantity: {Quantity}, Unit: {Unit}",
+                        dto.HerbName, dto.HerbId, dto.Quantity, dto.Unit);
+                }
 
                 var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
                     Formula,
                     FormulaName,
                     Effect,
                     Usage,
+                    Property,
+                    Category,
                     Remark,
                     IsShared,
                     herbDtos);
 
                 if (success && updatedFormula != null)
                 {
-                    Formula = updatedFormula;
+                    // 重要：先退出编辑模式，再更新Formula（避免LoadFormulaData添加空白槽位）
                     IsEditMode = false;
+                    Formula = updatedFormula;
                     await ShowSuccessMessageAsync("配方保存成功");
                 }
                 else
@@ -638,6 +672,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void EnableEdit()
         {
             IsEditMode = true;
+            // 进入编辑模式时，确保有空白槽位供用户添加新药材
+            EnsureMinimumBlankRows();
         }
 
         /// <summary>
@@ -856,13 +892,39 @@ namespace LYBT.Desktop.Formula.ViewModels
                 // 2. 刷新HerbCount
                 RaisePropertyChanged(nameof(HerbCount));
 
-                // 3. 确保至少有4个空槽位
-                EnsureMinimumBlankRows();
+                // 3. Issue #自动添加空行: 移除自动添加逻辑
+                // 添加空行的逻辑由MoveFocusToNextHerbName在到达末尾时处理
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "剂量输入完成处理时发生异常");
                 _ = ShowErrorMessageAsync("处理剂量输入失败");
+            }
+        }
+
+        /// <summary>
+        /// 添加新的一行空白药材槽位（4个）
+        /// Issue #自动添加空行: 到达末尾时调用
+        /// </summary>
+        private void AddNewRow()
+        {
+            if (!IsEditMode)
+                return;
+
+            try
+            {
+                // 添加一行（4个空白槽位）
+                for (int i = 0; i < 4; i++)
+                {
+                    var newItem = CreateBlankHerbItem();
+                    HerbItems.Add(newItem);
+                }
+
+                Logger.LogInformation("添加新的一行空白药材槽位（4个）");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "添加新行时发生异常");
             }
         }
 
