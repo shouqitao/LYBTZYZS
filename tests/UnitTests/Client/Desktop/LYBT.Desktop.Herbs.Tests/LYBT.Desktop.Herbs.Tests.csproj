@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Modules\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
   </ItemGroup>
