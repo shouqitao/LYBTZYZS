@@ -59,6 +59,17 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_mockLogger.Object);
 
+            // Setup EventAggregator to return real event instances (Fix NullReferenceException)
+            _mockEventAggregator
+                .Setup(x => x.GetEvent<LYBT.Desktop.Users.Events.UserCreatedEvent>())
+                .Returns(new LYBT.Desktop.Users.Events.UserCreatedEvent());
+            _mockEventAggregator
+                .Setup(x => x.GetEvent<LYBT.Desktop.Users.Events.UserUpdatedEvent>())
+                .Returns(new LYBT.Desktop.Users.Events.UserUpdatedEvent());
+            _mockEventAggregator
+                .Setup(x => x.GetEvent<LYBT.Desktop.Users.Events.UserPasswordResetEvent>())
+                .Returns(new LYBT.Desktop.Users.Events.UserPasswordResetEvent());
+
             // Create ViewModel instance (Issue #2003: 添加IUserRepository和ICommonDialogService参数)
             _viewModel = new UserManagementViewModel(
                 _mockCommandHandler.Object,
