@@ -16,7 +16,10 @@
         <DataGrid x:Name="DataGrid"
                   ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
-                  Style="{StaticResource BaseDataGridStyle}" />
+                  SelectionMode="Extended"
+                  SelectionUnit="FullRow"
+                  Style="{StaticResource BaseDataGridStyle}"
+                  AutoGenerateColumns="False" />
 
         <!-- 空状态提示 -->
         <Border Background="White"

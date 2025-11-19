@@ -325,6 +325,103 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
+        /// 批量删除用户（实现基类抽象方法）
+        /// Issue #2159: BR-001（权限控制 - 不能删除当前用户）、BR-003（结果反馈）、BR-004（失败不影响其他）
+        /// </summary>
+        /// <remarks>
+        /// 基类ExecuteBatchDeleteAsync已处理确认对话框（BR-002），此方法只负责执行删除逻辑
+        /// </remarks>
+        protected override async Task OnExecuteBatchDeleteAsync(List<UserDto> items)
+        {
+            if (items == null || items.Count == 0)
+            {
+                Logger.LogWarning("OnExecuteBatchDeleteAsync: 用户列表为空");
+                return;
+            }
+
+            Logger.LogInformation("开始批量删除用户，数量: {Count}", items.Count);
+
+            // BR-003: 统计删除结果
+            var successCount = 0;
+            var failureCount = 0;
+            var failedItems = new List<string>();
+
+            // BR-001: 获取当前登录用户，防止删除自己
+            var currentUser = SessionManager?.CurrentUser;
+            if (currentUser == null)
+            {
+                Logger.LogWarning("无法获取当前登录用户信息，跳过批量删除");
+                await ShowWarningMessageAsync("无法获取当前登录用户信息，操作已取消");
+                return;
+            }
+
+            // BR-004: 逐个删除，部分失败不影响其他
+            foreach (var item in items)
+            {
+                try
+                {
+                    // BR-001: 检查不能删除当前登录用户
+                    if (item.Id == currentUser.Id)
+                    {
+                        failureCount++;
+                        failedItems.Add($"{item.RealName ?? item.UserName}（不能删除当前登录用户）");
+                        Logger.LogWarning("跳过删除当前登录用户: {UserName}", item.UserName);
+                        continue;
+                    }
+
+                    // BR-001: 调用CommandHandler.DeleteAsync（包含权限检查）
+                    var result = await _commandHandler.DeleteAsync(item.Id);
+                    if (result.success)
+                    {
+                        successCount++;
+                        Logger.LogInformation("成功删除用户: {UserName}, 角色: {Role}",
+                            item.UserName, item.Role);
+                    }
+                    else
+                    {
+                        failureCount++;
+                        failedItems.Add($"{item.RealName ?? item.UserName}（{result.errorMessage}）");
+                        Logger.LogWarning("删除用户失败: {UserName}, {ErrorMessage}",
+                            item.UserName, result.errorMessage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failureCount++;
+                    failedItems.Add(item.RealName ?? item.UserName);
+                    Logger.LogError(ex, "删除用户时发生异常: {UserName}", item.UserName);
+                }
+            }
+
+            // BR-003: 生成结果消息
+            var message = $"批量删除完成！\n\n" +
+                          $"成功：{successCount}个\n" +
+                          $"失败：{failureCount}个";
+
+            if (failureCount > 0 && failedItems.Count > 0)
+            {
+                message += $"\n\n失败的用户：\n{string.Join("、", failedItems.Take(5))}";
+                if (failedItems.Count > 5)
+                {
+                    message += $"等{failedItems.Count}个";
+                }
+            }
+
+            // BR-003: 显示结果反馈
+            if (failureCount > 0)
+            {
+                await ShowWarningMessageAsync(message);
+            }
+            else
+            {
+                await ShowSuccessMessageAsync(message);
+            }
+
+            Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
+                successCount, failureCount);
+        }
+
+        /// <summary>
         /// 应用角色和状态筛选条件
         /// Issue #1794: 从GetItemsAsync提取
         /// </summary>

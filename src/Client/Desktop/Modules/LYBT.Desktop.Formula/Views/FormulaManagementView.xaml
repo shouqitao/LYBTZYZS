@@ -21,6 +21,8 @@
     <views:BaseMasterDataListView
         ItemsSource="{Binding Items}"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+        ShowCheckBoxColumn="True"
         SearchText="{Binding SearchText, Mode=TwoWay}"
         SearchCommand="{Binding SearchCommand}"
         CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
@@ -120,7 +122,12 @@
         <!-- 操作按钮区域 -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
-                <Button Content="📥 导入模板"
+                <Button Content="批量删除"
+                        Style="{StaticResource DangerButton}"
+                        Command="{Binding BatchDeleteCommand}"
+                        ToolTip="删除选中的验方"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="导入模板"
                         Style="{StaticResource SecondaryButton}"
                         Command="{Binding ImportFormulasCommand}"
                         ToolTip="从Excel/CSV文件导入验方模板"

@@ -18,6 +18,8 @@
     <views:BaseMasterDataListView
         ItemsSource="{Binding Items}"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+        ShowCheckBoxColumn="True"
         SearchText="{Binding SearchText, Mode=TwoWay}"
         SearchCommand="{Binding SearchCommand}"
         CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
@@ -101,6 +103,11 @@
         <!-- 定义操作按钮区域 -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
+                <Button Content="批量删除"
+                        Style="{StaticResource DangerButton}"
+                        Command="{Binding BatchDeleteCommand}"
+                        ToolTip="删除选中的患者"
+                        Margin="{StaticResource SpacingSmall}" />
                 <Button Command="{Binding AddCommand}"
                         Style="{StaticResource SuccessButton}"
                         Margin="{StaticResource SpacingSmall}">

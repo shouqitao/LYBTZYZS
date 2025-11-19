@@ -118,48 +118,91 @@ namespace LYBT.Desktop.Formula.ViewModels
         }
 
         /// <summary>
-        /// 执行批量删除操作
+        /// 批量删除验方（实现基类虚方法）
         /// </summary>
         protected override async Task OnExecuteBatchDeleteAsync(List<FormulaDto> items)
         {
+            if (items == null || items.Count == 0)
+            {
+                Logger.LogWarning("OnExecuteBatchDeleteAsync: 验方列表为空");
+                return;
+            }
+
+            Logger.LogDebug("批量删除验方，数量: {Count}", items.Count);
+
             try
             {
-                var selectedIds = items.Select(f => f.Id).ToList();
+                // 确认删除
+                var confirmed = await ShowConfirmationAsync(
+                    $"确认删除选中的 {items.Count} 个验方吗？此操作不可恢复。",
+                    "批量删除确认");
 
-                // 循环调用DeleteAsync（Repository暂无BatchDeleteAsync）
-                int successCount = 0;
-                List<string> errors = new();
-                foreach (var id in selectedIds)
+                if (!confirmed)
+                {
+                    Logger.LogDebug("用户取消批量删除");
+                    return;
+                }
+
+                // 执行批量删除
+                var successCount = 0;
+                var failureCount = 0;
+                var failedItems = new List<string>();
+
+                foreach (var item in items)
                 {
                     try
                     {
-                        // Issue #1787: 使用CommandHandler删除
-                        var success = await _commandHandler.DeleteAsync(id);
+                        var success = await _commandHandler.DeleteAsync(item.Id);
                         if (success)
+                        {
                             successCount++;
+                            Logger.LogInformation("成功删除验方: {FormulaName}", item.Name);
+                        }
                         else
-                            errors.Add($"删除配方 {id} 失败");
+                        {
+                            failureCount++;
+                            failedItems.Add(item.Name);
+                            Logger.LogWarning("删除验方失败: {FormulaName}", item.Name);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        errors.Add($"删除配方 {id} 异常: {ex.Message}");
+                        failureCount++;
+                        failedItems.Add(item.Name);
+                        Logger.LogError(ex, "删除验方时发生异常: {FormulaName}", item.Name);
                     }
                 }
 
-                if (successCount == selectedIds.Count)
+                // 显示结果汇总
+                var message = $"批量删除完成！\n\n" +
+                              $"成功：{successCount}个\n" +
+                              $"失败：{failureCount}个";
+
+                if (failureCount > 0 && failedItems.Count > 0)
                 {
-                    await ShowSuccessMessageAsync($"成功删除 {items.Count} 个配方");
-                    await LoadPageAsync(); // 重新加载数据
+                    message += $"\n\n失败的验方：\n{string.Join("、", failedItems.Take(5))}";
+                    if (failedItems.Count > 5)
+                    {
+                        message += $"等{failedItems.Count}个";
+                    }
+                }
+
+                if (failureCount > 0)
+                {
+                    await ShowWarningMessageAsync(message);
                 }
                 else
                 {
-                    await ShowErrorMessageAsync($"批量删除完成，成功 {successCount} 个，失败 {errors.Count} 个");
+                    await ShowSuccessMessageAsync(message);
                 }
+
+                Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
+                    successCount, failureCount);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "批量删除配方时发生异常");
-                await ShowErrorMessageAsync("批量删除配方时发生系统错误");
+                Logger.LogError(ex, "批量删除验方时发生异常");
+                await ShowErrorMessageAsync("批量删除验方时发生系统错误");
             }
         }
 

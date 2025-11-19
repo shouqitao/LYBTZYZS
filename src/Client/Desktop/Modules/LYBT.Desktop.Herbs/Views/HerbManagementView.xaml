@@ -1,4 +1,4 @@
-<!--
+﻿<!--
     HerbManagementView - 药材管理视图
     Issue #2001 - Task 2.8: 应用BaseMasterDataListView模板
 
@@ -24,6 +24,8 @@
     <views:BaseMasterDataListView
         ItemsSource="{Binding Items}"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+        ShowCheckBoxColumn="True"
         SearchText="{Binding SearchText, Mode=TwoWay}"
         SearchCommand="{Binding SearchCommand}"
         CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
@@ -134,7 +136,12 @@
         <!-- 定义操作按钮区域 -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
-                <Button Content="📥 导入药材"
+                <Button Content="批量删除"
+                        Style="{StaticResource DangerButton}"
+                        Command="{Binding BatchDeleteCommand}"
+                        ToolTip="删除选中的药材"
+                        Margin="{StaticResource SpacingSmall}" />
+                <Button Content="导入药材"
                         Style="{StaticResource InfoButton}"
                         Command="{Binding ImportHerbsCommand}"
                         ToolTip="从Excel文件批量导入中药材信息"

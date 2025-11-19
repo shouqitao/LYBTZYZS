@@ -174,6 +174,97 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
+        /// <summary>
+        /// 批量删除患者（实现基类虚方法）
+        /// </summary>
+        protected override async Task OnExecuteBatchDeleteAsync(List<PatientDto> items)
+        {
+            if (items == null || items.Count == 0)
+            {
+                Logger.LogWarning("OnExecuteBatchDeleteAsync: 患者列表为空");
+                return;
+            }
+
+            Logger.LogDebug("批量删除患者，数量: {Count}", items.Count);
+
+            try
+            {
+                // 确认删除
+                var confirmed = await ShowConfirmationAsync(
+                    $"确认删除选中的 {items.Count} 个患者吗？此操作不可恢复。",
+                    "批量删除确认");
+
+                if (!confirmed)
+                {
+                    Logger.LogDebug("用户取消批量删除");
+                    return;
+                }
+
+                // 执行批量删除
+                var successCount = 0;
+                var failureCount = 0;
+                var failedItems = new List<string>();
+
+                foreach (var item in items)
+                {
+                    try
+                    {
+                        var result = await _commandHandler.DeletePatientAsync(item.Id);
+                        if (result.IsSuccess)
+                        {
+                            successCount++;
+                            Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
+                        }
+                        else
+                        {
+                            failureCount++;
+                            failedItems.Add($"{item.Name}({result.ErrorMessage})");
+                            Logger.LogWarning("删除患者失败: {PatientName}, {ErrorMessage}", 
+                                item.Name, result.ErrorMessage);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        failureCount++;
+                        failedItems.Add(item.Name);
+                        Logger.LogError(ex, "删除患者时发生异常: {PatientName}", item.Name);
+                    }
+                }
+
+                // 显示结果汇总
+                var message = $"批量删除完成！\n\n" +
+                              $"成功：{successCount}个\n" +
+                              $"失败：{failureCount}个";
+
+                if (failureCount > 0 && failedItems.Count > 0)
+                {
+                    message += $"\n\n失败的患者：\n{string.Join("、", failedItems.Take(5))}";
+                    if (failedItems.Count > 5)
+                    {
+                        message += $"等{failedItems.Count}个";
+                    }
+                }
+
+                if (failureCount > 0)
+                {
+                    await ShowWarningMessageAsync(message);
+                }
+                else
+                {
+                    await ShowSuccessMessageAsync(message);
+                }
+
+                Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
+                    successCount, failureCount);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "批量删除患者时发生异常");
+                var contextMessage = $"批量删除患者 - 模块:{nameof(PatientManagementViewModel)}";
+                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+            }
+        }
+
         #endregion
 
         #region 重写基类虚方法
