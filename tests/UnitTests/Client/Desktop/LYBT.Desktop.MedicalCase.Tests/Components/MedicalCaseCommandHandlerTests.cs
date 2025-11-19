@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Api; // Issue #2164: 添加Api接口引用
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -26,9 +27,11 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         public MedicalCaseCommandHandlerTests()
         {
+            // Issue #2164: 添加IMedicalCaseApi参数
             _mockDataManager = new Mock<MedicalCaseDataManager>(
                 MockBehavior.Loose,
                 Mock.Of<IMedicalCaseRepository>(),
+                Mock.Of<IMedicalCaseApi>(),
                 Mock.Of<ILogger<MedicalCaseDataManager>>());
 
             _mockValidator = new Mock<MedicalCaseValidator>(
@@ -41,12 +44,12 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockRegionManager = new Mock<IRegionManager>();
             _mockEventAggregator = new Mock<IEventAggregator>();
 
+            // Issue #2164: 构造函数只需要4个参数（移除IEventAggregator）
             _sut = new MedicalCaseCommandHandler(
                 _mockDataManager.Object,
                 _mockValidator.Object,
                 _mockLogger.Object,
-                _mockRegionManager.Object,
-                _mockEventAggregator.Object);
+                _mockRegionManager.Object);
         }
 
         #region SaveAsync Tests

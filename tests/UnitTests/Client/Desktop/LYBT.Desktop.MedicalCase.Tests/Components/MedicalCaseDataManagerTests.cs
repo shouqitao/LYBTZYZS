@@ -1,4 +1,5 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Api; // Issue #2164: 添加Api接口引用
 using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -17,14 +18,16 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
     public class MedicalCaseDataManagerTests
     {
         private readonly Mock<IMedicalCaseRepository> _mockRepository;
+        private readonly Mock<IMedicalCaseApi> _mockApi; // Issue #2164: 添加Api mock
         private readonly Mock<ILogger<MedicalCaseDataManager>> _mockLogger;
         private readonly MedicalCaseDataManager _sut;
 
         public MedicalCaseDataManagerTests()
         {
             _mockRepository = new Mock<IMedicalCaseRepository>();
+            _mockApi = new Mock<IMedicalCaseApi>(); // Issue #2164: 初始化Api mock
             _mockLogger = new Mock<ILogger<MedicalCaseDataManager>>();
-            _sut = new MedicalCaseDataManager(_mockRepository.Object, _mockLogger.Object);
+            _sut = new MedicalCaseDataManager(_mockRepository.Object, _mockApi.Object, _mockLogger.Object); // Issue #2164: 添加api参数
         }
 
         #region InitializeAsync Tests

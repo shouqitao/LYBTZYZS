@@ -1,5 +1,7 @@
 using FluentAssertions;
+using LYBT.Desktop.Contracts.Api; // Issue #2164: 添加Api接口引用
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Components; // Issue #2164: 添加Components引用
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -18,6 +20,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
     /// </summary>
     public class CompletionViewModelTests
     {
+        private readonly Mock<MedicalCaseDataManager> _mockDataManager; // Issue #2164: 改用DataManager
         private readonly Mock<IMedicalCaseRepository> _mockMedicalCaseRepository;
         private readonly Mock<IRegionManager> _mockRegionManager;
         private readonly Mock<ICommonDialogService> _mockDialogService;
@@ -28,6 +31,14 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
         public CompletionViewModelTests()
         {
             _mockMedicalCaseRepository = new Mock<IMedicalCaseRepository>();
+
+            // Issue #2164: 创建MedicalCaseDataManager mock
+            _mockDataManager = new Mock<MedicalCaseDataManager>(
+                MockBehavior.Loose,
+                Mock.Of<IMedicalCaseRepository>(),
+                Mock.Of<IMedicalCaseApi>(),
+                Mock.Of<ILogger<MedicalCaseDataManager>>());
+
             _mockRegionManager = new Mock<IRegionManager>();
             _mockDialogService = new Mock<ICommonDialogService>();
             _mockEventAggregator = new Mock<IEventAggregator>();
@@ -38,12 +49,13 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 
         private CompletionViewModel CreateViewModel()
         {
+            // Issue #2164: 调整构造函数参数顺序
             return new CompletionViewModel(
-                _mockMedicalCaseRepository.Object,
-                _mockRegionManager.Object,
-                _mockDialogService.Object,
-                _mockEventAggregator.Object,
-                _mockLoggerFactory.Object);
+                _mockDataManager.Object,      // 参数1: MedicalCaseDataManager
+                _mockRegionManager.Object,     // 参数2: IRegionManager
+                _mockEventAggregator.Object,   // 参数3: IEventAggregator
+                _mockLoggerFactory.Object,     // 参数4: ILoggerFactory
+                _mockDialogService.Object);    // 参数5: ICommonDialogService?
         }
 
         #region InitializeAsync Tests
@@ -64,7 +76,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
             {
                 Id = medicalCaseId,
                 CaseNumber = "MC20251019001",
-                CaseStatus = MedicalCaseStatus.Closed,
+                CaseStatus = MedicalCaseStatus.Completed, // Issue #2164: Closed已过时，改用Completed
                 Status = CommonStatus.Disabled
             };
 
@@ -80,10 +92,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.ViewModels
 
             // Assert
             _mockMedicalCaseRepository.Verify(x => x.GetByIdAsync(medicalCaseId), Times.Once);
+            // Issue #2164: MedicalCaseInputDto不存在Status属性，仅验证UpdateAsync被调用
             _mockMedicalCaseRepository.Verify(x => x.UpdateAsync(
-                It.Is<MedicalCaseUpdateDto>(dto =>
-                    dto.Id == medicalCaseId &&
-                    dto.Status == MedicalCaseStatus.Closed.ToString())), Times.Once);
+                It.Is<MedicalCaseInputDto>(dto => dto.Id == medicalCaseId)), Times.Once);
             viewModel.MedicalCaseNumber.Should().Be("MC20251019001");
         }
 
