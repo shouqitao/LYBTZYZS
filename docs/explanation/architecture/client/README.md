@@ -118,6 +118,174 @@ Server API (REST Endpoint)
 
 ---
 
+## 🎯 Desktop层核心架构模式
+
+基于实际代码验证（2025-11-19），LYBTZYZS Desktop层采用以下四种架构模式：
+
+### 1. 标准架构（聚合根模块）✅
+
+**数据流**：
+```
+ViewModel (UnifiedListViewModelBase<T>)
+    ↓
+Repository (RepositoryBase<TDto, TCreateDto, TUpdateDto, TApi>)
+    ↓
+Refit API (IXxxApi)
+```
+
+**适用模块**：
+- Users（用户管理）
+- Patients（患者管理）
+- MedicalCase（医案管理 - 聚合根）
+- Herbs（药材管理）
+- Formula（方剂管理）
+
+**特点**：
+- 使用统一的ViewModel基类和Repository基类
+- 通过Refit进行HTTP API调用
+- 清晰的职责分离，遵循MVVM模式
+
+**代码示例**（UserRepository.cs）：
+```csharp
+/// <summary>
+/// 用户数据仓储实现 - RepositoryBase统一架构
+/// Project Standardization 3.0 - 迁移到统一RepositoryBase
+/// </summary>
+public class UserRepository : RepositoryBase<UserDto, UserInputDto, UserInputDto, IUserApi>, IUserRepository
+{
+    public UserRepository(IUserApi userApi, ILogger<UserRepository> logger)
+        : base(userApi, logger)
+    {
+    }
+}
+```
+
+---
+
+### 2. 认证服务架构（无Repository）✅
+
+**数据流**：
+```
+ViewModel (UnifiedViewModelBase)
+    ↓
+Refit API (IAuthenticationApi)
+```
+
+**适用模块**：
+- Auth（JWT认证）
+
+**设计理由**：
+- JWT认证是**无状态RPC服务**，不涉及数据实体持久化
+- 无需Repository层，直接调用API更简洁
+- 符合认证服务的特性（验证而非数据管理）
+
+**代码证据**：
+```csharp
+// AuthModule.cs中无Repository注册
+// 原因：认证服务本身不需要仓储设计（RPC调用，非数据实体管理）
+```
+
+---
+
+### 3. DDD聚合根架构（从属实体无Repository）✅
+
+**数据流**：
+```
+ViewModel (UnifiedViewModelBase)
+    ↓
+聚合根Repository (MedicalCaseRepository)
+    ↓
+Refit API (IMedicalCaseApi)
+```
+
+**适用模块**：
+- Consultation（诊断 - MedicalCase的从属实体）
+- Prescriptions（处方 - MedicalCase的从属实体）
+
+**设计理由**（Issue #1606 DDD聚合根模式）：
+- MedicalCase是**聚合根**，Consultation和Prescription是**从属实体**
+- 所有写操作通过MedicalCaseRepository统一管理，保证聚合一致性
+- 读操作可直接使用各自的API接口（灵活查询）
+
+**代码证据**：
+```csharp
+// ConsultationModule.cs Line 8
+/// Issue #1606 Phase 3: 移除ConsultationRepository/ApiClient（已迁移至MedicalCaseRepository聚合根）
+
+// PrescriptionsModule.cs Line 13
+/// Issue #1606 Phase 3: 移除IPrescriptionRepository（已迁移至MedicalCaseRepository聚合根）
+```
+
+---
+
+### 4. Epic #1773组件化架构（可选增强）✅
+
+**数据流**：
+```
+ViewModel
+    ↓
+CommandHandler（业务命令协调）
+    ↓ ↓ ↓
+DataManager + Validator + Repository
+    ↓
+Refit API
+```
+
+**组件职责**：
+- **CommandHandler** - 业务命令协调者（Save/Delete/Navigate）
+- **DataManager** - 数据管理封装（Repository/API调用）
+- **Validator** - 业务规则验证
+
+**已实施模块**（6个）：
+- Consultation, Formula, MedicalCase, Patients, Prescriptions, Users
+
+**设计理由**：
+- 将业务逻辑从ViewModel抽离，提高可测试性
+- 使用命令模式统一业务操作接口
+- 支持复杂业务场景的扩展
+
+**代码证据**（ICommandHandler.cs）：
+```csharp
+/// <summary>
+/// 命令处理器接口 - 组件化MVVM架构核心接口
+/// Issue #1776 Task 3: 组件化基础设施搭建
+/// </summary>
+public interface ICommandHandler
+{
+    Task<bool> ExecuteAsync(string commandName, object? parameter = null);
+    bool CanExecute(string commandName);
+}
+```
+
+---
+
+### 5. ❌ 废弃架构（已验证不存在）
+
+**UltraThink双层架构**（已废弃）：
+```
+Module委托层 + QueryService/BusinessService
+```
+
+**废弃原因**：
+- UltraThink架构在项目早期规划中提出，但**从未在代码中实施**
+- 代码搜索`QueryService|BusinessService`返回空结果
+- 为避免文档误导，正式标记为废弃
+
+**详见**：[ADR-015: 废弃UltraThink双层架构](../../../adr/ADR-015-deprecate-ultrathink-architecture.md)
+
+---
+
+### 架构选择指南
+
+| 场景 | 推荐架构 | 原因 |
+|------|---------|------|
+| 新增聚合根模块（如Patient） | 标准架构 | 简单直接，职责清晰 |
+| 新增认证/授权功能 | 无Repository架构 | RPC服务特性 |
+| 新增从属实体（如处方项） | DDD聚合根架构 | 保证聚合一致性 |
+| 复杂业务逻辑模块 | 组件化架构 | 提高可测试性和扩展性 |
+
+---
+
 ## 📐 架构层次详解
 
 ### 1. Shell层 - 应用程序容器

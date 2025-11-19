@@ -183,3 +183,16 @@ add_memory(
 - **GitHub账户**: shouqitao (TonyShou)
 - **仓库路径**: https://github.com/shouqitao/LYBTZYZS
 - **项目类型**: 企业级中医诊所管理系统
+
+### 技术栈
+- **前端**: WPF (.NET 8), Prism.DryIoc 9.0, Refit
+- **后端**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0
+- **数据库**: SQL Server
+
+### 架构特点
+- **前端**: MVVM + 组件化架构 (ViewModel → Repository → Refit API)
+  - Epic #1773组件化: DataManager + Validator + CommandHandler三件套
+- **后端**: 传统三层架构 (Controller → Service → Repository)
+- **统一接口**: IService接口，无重复IModule
+
+> **注**: UltraThink双层架构（QueryService/BusinessService）已废弃，详见 `docs/adr/ADR-015-deprecate-ultrathink-architecture.md`
