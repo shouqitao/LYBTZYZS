@@ -41,7 +41,7 @@ namespace LYBT.Desktop.Users
             containerRegistry.RegisterForNavigation<Views.UserEditView, ViewModels.UserEditViewModel>();
 
             // Issue #1928: Sprint 2 - ResetPassword迁移为Navigation模式
-            containerRegistry.RegisterForNavigation<Views.ResetPasswordView, ViewModels.ResetPasswordViewModel>();
+            // Issue #2167: ResetPasswordView已删除（改用按钮触发直接API调用）
 
             // Issue #1929: Sprint 3 - ChangePassword/UserProfile迁移为Navigation模式
             containerRegistry.RegisterForNavigation<Views.ChangePasswordView, ViewModels.ChangePasswordViewModel>();

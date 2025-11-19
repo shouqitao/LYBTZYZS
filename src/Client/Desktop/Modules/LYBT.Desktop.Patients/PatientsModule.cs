@@ -52,7 +52,7 @@ namespace LYBT.Desktop.Patients
 
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();
-            containerRegistry.Register<ViewModels.PatientImportWizardViewModel>();
+            // Issue #2167: PatientImportWizardViewModel已删除（改用直接API调用）
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
             containerRegistry.Register<ViewModels.PatientManagementViewModel>();  // 患者管理视图模型
             containerRegistry.Register<ViewModels.PatientCreateViewModel>();  // CRUD统一模式：创建视图模型
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Patients
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
-            containerRegistry.RegisterForNavigation<Views.PatientImportWizardView>();
+            // Issue #2167: PatientImportWizardView已删除（改用直接API调用）
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
 

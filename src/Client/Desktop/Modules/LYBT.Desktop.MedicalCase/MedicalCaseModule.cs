@@ -59,6 +59,7 @@ namespace LYBT.Desktop.MedicalCase
             // Issue #1799: 删除OtherCasesQueryViewModel（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListViewModel（功能与ManagementView重复）
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
+            containerRegistry.Register<ViewModels.MedicalCaseDetailViewModel>();  // Issue #2167: 医案详情视图模型
 
             // 注册视图用于导航 - 需要对应视图文件存在
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
@@ -70,6 +71,7 @@ namespace LYBT.Desktop.MedicalCase
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();  // Issue #1799: 保留作为唯一医案管理入口
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseDetailView>();  // Issue #2167: 医案详情视图
         }
     }
 }

@@ -52,13 +52,7 @@
   <!-- Issue #1606 Phase 3: 临时排除待重构的ViewModel和View（Issue #1608） -->
   <ItemGroup>
     <!-- 所有ViewModel已重构完成 (Issue #1608 Phase 3) -->
-    <!-- 仍保留View排除，因为对应ViewModel需要进一步测试 -->
-    <Compile Remove="Views\PrescriptionView.xaml.cs" />
-    <Compile Remove="Views\PrescriptionManagementView.xaml.cs" />
-    <Compile Remove="Repositories\**" />
-    <Page Remove="Views\PrescriptionView.xaml" />
-    <Page Remove="Views\PrescriptionManagementView.xaml" />
-  </ItemGroup>
+    <!-- 仍保留View排除，因为对应ViewModel需要进一步测试 -->    <Compile Remove="Repositories\**" />  </ItemGroup>
 
   <ItemGroup>
     <None Remove="LYBT.Desktop.Prescriptions.csproj.Backup.tmp" />
