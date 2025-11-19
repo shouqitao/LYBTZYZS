@@ -11,6 +11,11 @@
         <converters:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
     </UserControl.Resources>
 
+    <!-- Issue #2160: 添加Ctrl+A全选快捷键 -->
+    <UserControl.InputBindings>
+        <KeyBinding Key="A" Modifiers="Control" Command="{Binding SelectAllCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+    </UserControl.InputBindings>
+
     <Grid>
         <!-- 数据表格 -->
         <DataGrid x:Name="DataGrid"
