@@ -5,6 +5,7 @@ using System.Windows.Input;
 using LYBT.Desktop.Contracts.Models;
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
+using LYBT.Desktop.Infrastructure.Interfaces; // Issue #2147: 添加ICommonDialogService命名空间
 using LYBT.Desktop.Patients.Models;
 using LYBT.Desktop.Patients.Services;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly PatientImportExecutor _importExecutor;
         private readonly IExcelParserService _excelParserService;
         private readonly ILogger<PatientImportWizardViewModel> _logger;
+        // Issue #2147: 注入ICommonDialogService，替代MessageBox.Show直接调用
+        private readonly ICommonDialogService _dialogService;
 
         private ImportWizardStep _currentStep = ImportWizardStep.TemplateDownload;
         private string _selectedFilePath = string.Empty;
@@ -215,15 +218,19 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         // Issue #1790: 注入PatientImportExecutor替代BackgroundWorker
         // Issue #1781 Task 8 Phase 1: 注入ExcelParserService
+        // Issue #2147: 注入ICommonDialogService
         public PatientImportWizardViewModel(
             PatientImportExecutor importExecutor,
             IExcelParserService excelParserService,
+            ICommonDialogService dialogService,
             ILogger<PatientImportWizardViewModel> logger)
         {
             // Issue #1790: 注入Executor
             _importExecutor = importExecutor ?? throw new ArgumentNullException(nameof(importExecutor));
             _excelParserService = excelParserService;
             _logger = logger;
+            // Issue #2147: 注入ICommonDialogService
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 订阅Executor事件
             _importExecutor.ProgressChanged += OnImportProgressChanged;
@@ -335,7 +342,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "下载模板失败");
-                MessageBox.Show($"下载模板失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}", "错误");
             }
         }
 
@@ -475,7 +483,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (string.IsNullOrEmpty(SelectedFilePath) || !File.Exists(SelectedFilePath))
             {
-                MessageBox.Show("请选择有效的Excel文件", "文件选择", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService（fire-and-forget模式）
+                _ = _dialogService.ShowWarningAsync("请选择有效的Excel文件", "文件选择");
                 return false;
             }
 
@@ -500,7 +509,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "加载数据预览失败");
-                MessageBox.Show($"加载数据失败: {ex.Message}", "数据预览", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                await _dialogService.ShowErrorAsync($"加载数据失败: {ex.Message}", "数据预览");
             }
             finally
             {
@@ -540,12 +550,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                     "• 证件号：建议15位或18位\n\n" +
                     "请按照模板格式填写患者数据，然后使用导入功能。";
 
-                MessageBox.Show(successMessage, "模板下载成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                await _dialogService.ShowInfoAsync(successMessage, "模板下载成功");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "下载模板失败: {FilePath}", filePath);
-                MessageBox.Show($"下载模板失败: {ex.Message}\n\n请检查文件路径是否正确，或选择其他保存位置。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                await _dialogService.ShowErrorAsync($"下载模板失败: {ex.Message}\n\n请检查文件路径是否正确，或选择其他保存位置。", "下载失败");
                 throw;
             }
         }
@@ -601,7 +613,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 IsImporting = false;
                 UpdateButtonStates();
 
-                MessageBox.Show(e.Message, e.Title, MessageBoxButton.OK, e.MessageType);
+                // Issue #2147: 替换MessageBox.Show为ICommonDialogService（根据MessageType动态选择方法）
+                _ = e.MessageType switch
+                {
+                    MessageBoxImage.Error => _dialogService.ShowErrorAsync(e.Message, e.Title),
+                    MessageBoxImage.Warning => _dialogService.ShowWarningAsync(e.Message, e.Title),
+                    _ => _dialogService.ShowInfoAsync(e.Message, e.Title)
+                };
 
                 // 只有在有成功导入的情况下才触发刷新事件
                 if (e.SuccessCount > 0)

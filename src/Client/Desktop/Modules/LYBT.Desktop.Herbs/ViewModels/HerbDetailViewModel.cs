@@ -23,6 +23,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         // Epic #1773: 使用DataManager替代Repository依赖
         private readonly HerbDataManager _dataManager;
+        // Issue #2147: 注入ICommonDialogService，替代MessageBox.Show直接调用
+        private readonly ICommonDialogService _dialogService;
 
         #endregion
 
@@ -258,6 +260,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         public HerbDetailViewModel(
             HerbDataManager dataManager, // Epic #1773: 注入DataManager
+            ICommonDialogService dialogService, // Issue #2147: 注入ICommonDialogService
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -267,6 +270,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             // Epic #1773: 注入DataManager
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            // Issue #2147: 注入ICommonDialogService
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化选项
             StatusOptions = Enum.GetValues<CommonStatus>();
@@ -316,7 +321,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     // Epic #1773: 使用DataManager包装Repository方法
                     var createdHerb = await _dataManager.CreateAsync(createDto);
                     StatusMessage = "药材创建成功";
-                    System.Windows.MessageBox.Show("药材创建成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                    await _dialogService.ShowInfoAsync("药材创建成功", "成功");
                     NavigateToHerbManagement();
                 }
                 else
@@ -340,7 +346,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     // Epic #1773: 使用DataManager包装Repository方法
                     var updatedHerb = await _dataManager.UpdateAsync(updateDto);
                     StatusMessage = "药材更新成功";
-                    System.Windows.MessageBox.Show("药材更新成功", "成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    // Issue #2147: 替换MessageBox.Show为ICommonDialogService
+                    await _dialogService.ShowInfoAsync("药材更新成功", "成功");
                     NavigateToHerbManagement();
                 }
             }
