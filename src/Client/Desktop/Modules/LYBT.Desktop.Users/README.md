@@ -28,10 +28,10 @@ LYBT.Desktop.Users/
 │   ├── UserCreateViewModel.cs                # 用户创建视图模型
 │   ├── UserEditViewModel.cs                  # 用户编辑视图模型
 │   ├── UserDetailViewModel.cs                # 用户详情视图模型
-│   ├── ChangePasswordDialogViewModel.cs      # 修改密码对话框视图模型
-│   ├── ResetPasswordDialogViewModel.cs       # 重置密码对话框视图模型
-│   └── UserProfileDialogViewModel.cs         # 用户资料对话框视图模型
-├── Views/                                     # WPF视图层(12个文件)
+│   ├── ChangePasswordViewModel.cs            # 修改密码视图模型
+│   ├── ResetPasswordViewModel.cs             # 重置密码视图模型
+│   └── UserProfileViewModel.cs               # 用户资料视图模型
+├── Views/                                     # WPF视图层(14个文件)
 │   ├── UserManagementView.xaml               # 用户管理主视图
 │   ├── UserManagementView.xaml.cs            # UserManagementView代码后置
 │   ├── UserCreateView.xaml                   # 用户创建视图
@@ -40,12 +40,12 @@ LYBT.Desktop.Users/
 │   ├── UserEditView.xaml.cs                  # UserEditView代码后置
 │   ├── UserDetailView.xaml                   # 用户详情视图
 │   ├── UserDetailView.xaml.cs                # UserDetailView代码后置
-│   ├── ChangePasswordDialog.xaml             # 修改密码对话框
-│   ├── ChangePasswordDialog.xaml.cs          # ChangePasswordDialog代码后置
-│   ├── ResetPasswordDialog.xaml              # 重置密码对话框（管理员功能）
-│   ├── ResetPasswordDialog.xaml.cs           # ResetPasswordDialog代码后置
-│   ├── UserProfileDialog.xaml                # 用户资料对话框
-│   └── UserProfileDialog.xaml.cs             # UserProfileDialog代码后置
+│   ├── ChangePasswordView.xaml               # 修改密码视图
+│   ├── ChangePasswordView.xaml.cs            # ChangePasswordView代码后置
+│   ├── ResetPasswordView.xaml                # 重置密码视图
+│   ├── ResetPasswordView.xaml.cs             # ResetPasswordView代码后置
+│   ├── UserProfileView.xaml                  # 用户资料视图
+│   └── UserProfileView.xaml.cs               # UserProfileView代码后置
 ├── Repositories/                              # 数据仓储层(1个)
 │   └── UserRepository.cs                      # 用户仓储实现(继承BaseApiRepository)
 ├── Interfaces/                                # 接口定义层(1个)
@@ -62,7 +62,7 @@ LYBT.Desktop.Users/
 **说明**:
 - **UserManagementViewModel**:继承自UnifiedViewModelBase，提供分页、搜索、排序、批量操作等19属性+20方法
 - **7个ViewModels**:覆盖用户管理全流程（列表、创建、编辑、详情、密码管理、资料维护）
-- **12个Views**:主视图(UserManagementView) + 3个子视图(Create/Edit/Detail) + 3个对话框(ChangePassword/ResetPassword/UserProfile)
+- **14个Views**:主视图(UserManagementView) + 6个子视图(Create/Edit/Detail/ChangePassword/ResetPassword/UserProfile)
 - **Repository模式**:UserRepository继承BaseApiRepository，提供9个数据访问方法
 - **UserItem模型**:DataGrid专用列表项模型，优化UI绑定性能
 
@@ -767,10 +767,10 @@ public class UsersModule : IModule
         containerRegistry.RegisterForNavigation<UserEditView>();
         containerRegistry.RegisterForNavigation<UserDetailView>();
 
-        // 注册Dialogs（用于对话框）
-        containerRegistry.RegisterDialog<ChangePasswordDialog, ChangePasswordDialogViewModel>();
-        containerRegistry.RegisterDialog<ResetPasswordDialog, ResetPasswordDialogViewModel>();
-        containerRegistry.RegisterDialog<UserProfileDialog, UserProfileDialogViewModel>();
+        // 注册Views（用于导航）
+        containerRegistry.RegisterForNavigation<ChangePasswordView, ChangePasswordViewModel>();
+        containerRegistry.RegisterForNavigation<ResetPasswordView, ResetPasswordViewModel>();
+        containerRegistry.RegisterForNavigation<UserProfileView, UserProfileViewModel>();
 
         // 注册ViewModels（自动绑定到Views）
         containerRegistry.Register<UserManagementViewModel>();
