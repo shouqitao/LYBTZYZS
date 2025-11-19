@@ -25,6 +25,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- 顶部操作栏 -->
@@ -230,7 +231,8 @@
                                     <controls:HerbCardControl
                                         IsEditMode="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -239,8 +241,94 @@
             </Grid>
         </ScrollViewer>
 
+        <!-- 底部按钮栏 -->
+        <Border Grid.Row="2"
+                Background="White"
+                BorderThickness="0,1,0,0"
+                BorderBrush="#E5E7EB"
+                Padding="40,16">
+            <Grid>
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Right">
+                    <!-- 取消按钮（编辑模式显示） -->
+                    <Button Command="{Binding CancelEditCommand}"
+                            Content="取消"
+                            Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Background="#F3F4F6"
+                            Foreground="#374151"
+                            FontSize="14"
+                            FontWeight="Medium"
+                            Cursor="Hand"
+                            Padding="24,10"
+                            Margin="0,0,12,0"
+                            BorderThickness="0"
+                            MinWidth="100">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E5E7EB" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- 保存修改按钮（编辑模式显示） -->
+                    <Button Command="{Binding SaveCommand}"
+                            Content="保存修改"
+                            Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Background="#3B82F6"
+                            Foreground="White"
+                            FontSize="14"
+                            FontWeight="Medium"
+                            Cursor="Hand"
+                            Padding="24,10"
+                            BorderThickness="0"
+                            MinWidth="120">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#2563EB" />
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#94A3B8" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- 加载遮罩 -->
-        <Grid Grid.Row="0" Grid.RowSpan="2"
+        <Grid Grid.Row="0" Grid.RowSpan="3"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
               Background="#80000000">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">

@@ -16,22 +16,22 @@ LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心�
 
 | 实体类 | 功能描述 | 关系 | 状态 |
 | ------------------------- | ---------------------- | ---------------------- | ---- |
-| **UserModel** | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase | ✅ 完成 |
-| **PatientModel** | 患者档案基本信息 | 1:N → MedicalCase | ✅ 完成 |
-| **MedicalCaseModel** | 医疗案例(看诊流程容器) | 1:1 → Consultation | ✅ 完成 |
-| **ConsultationModel** | 看诊诊断(中医四诊记录) | 1:0..1 → Prescription | ✅ 完成 |
-| **PrescriptionModel** | 处方管理(中药配方) | N:M → Herbs | ✅ 完成 |
-| **PrescriptionItemModel** | 处方条目(药材用量) | N:1 → Prescription | ✅ 完成 |
-| **HerbModel** | 中药材信息管理 | 1:N → PrescriptionItem | ✅ 完成 |
-| **FormulaModel** | 验方模板管理 | 1:N → FormulaHerbItem | ✅ 完成 |
+| **UserModel** | 用户账户信息(Admin/Doctor角色) | 1:N → MedicalCase |  完成 |
+| **PatientModel** | 患者档案基本信息 | 1:N → MedicalCase |  完成 |
+| **MedicalCaseModel** | 医疗案例(看诊流程容器) | 1:1 → Consultation |  完成 |
+| **ConsultationModel** | 看诊诊断(中医四诊记录) | 1:0..1 → Prescription |  完成 |
+| **PrescriptionModel** | 处方管理(中药配方) | N:M → Herbs |  完成 |
+| **PrescriptionItemModel** | 处方条目(药材用量) | N:1 → Prescription |  完成 |
+| **HerbModel** | 中药材信息管理 | 1:N → PrescriptionItem |  完成 |
+| **FormulaModel** | 验方模板管理 | 1:N → FormulaHerbItem |  完成 |
 
 ### 支持实体
 
 | 实体类 | 功能描述 | 关系 | 状态 |
 | -------------------- | ------ | ------------- | ---- |
-| **FormulaHerbItem** | 验方药材条目 | N:1 → Formula | ✅ 完成 |
-| **AuthSessionModel** | 用户会话管理 | N:1 → User | ✅ 完成 |
-| **AdminSecretModel** | 管理员密钥表 | 独立表 | ✅ 完成 |
+| **FormulaHerbItem** | 验方药材条目 | N:1 → Formula |  完成 |
+| **AuthSessionModel** | 用户会话管理 | N:1 → User |  完成 |
+| **AdminSecretModel** | 管理员密钥表 | 独立表 |  完成 |
 
 ## 🔗 实体关系架构
 
@@ -294,11 +294,11 @@ CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 
 **适合小型中医诊所(<20人)的精简设计**:
 
-- ✅ **实体精简**: 8个核心实体覆盖完整业务流程，避免过度设计
-- ✅ **关系清晰**: 业务关系映射直观，易于理解和维护
-- ✅ **中医特色**: 四诊合参、辨证论治的中医诊疗流程支持
-- ✅ **类型安全**: 强类型枚举和验证规则，确保数据一致性
-- ✅ **扩展友好**: 基础架构完善，支持业务功能逐步扩展
+-  **实体精简**: 8个核心实体覆盖完整业务流程，避免过度设计
+-  **关系清晰**: 业务关系映射直观，易于理解和维护
+-  **中医特色**: 四诊合参、辨证论治的中医诊疗流程支持
+-  **类型安全**: 强类型枚举和验证规则，确保数据一致性
+-  **扩展友好**: 基础架构完善，支持业务功能逐步扩展
 
 ## 📚 相关文档
 

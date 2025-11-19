@@ -202,7 +202,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public string Step2CompletedAtText =>
             Step2CompletedAt.HasValue
-                ? $"✅ Step 2已完成 ({Step2CompletedAt.Value:yyyy-MM-dd HH:mm:ss})"
+                ? $" Step 2已完成 ({Step2CompletedAt.Value:yyyy-MM-dd HH:mm:ss})"
                 : string.Empty;
 
         /// <summary>

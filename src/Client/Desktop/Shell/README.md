@@ -1444,14 +1444,14 @@ public class ApiClientService
 ### 1. Prism模块化架构原则
 
 **模块独立性**：
-- ✅ 每个模块都是独立的程序集（DLL）
-- ✅ 模块间通过EventAggregator通信，避免直接依赖
-- ✅ 模块职责单一，只关注自己的业务领域
+-  每个模块都是独立的程序集（DLL）
+-  模块间通过EventAggregator通信，避免直接依赖
+-  模块职责单一，只关注自己的业务领域
 - ❌ 禁止模块间循环引用
 
 **模块注册规范**：
 ```csharp
-// ✅ 正确：在App.xaml.cs中集中注册
+//  正确：在App.xaml.cs中集中注册
 protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
 {
     // 按业务逻辑顺序注册
@@ -1471,7 +1471,7 @@ protected override IModuleCatalog CreateModuleCatalog()
 
 **服务注册规范**：
 ```csharp
-// ✅ 正确：使用合适的生命周期
+//  正确：使用合适的生命周期
 containerRegistry.RegisterSingleton<IDialogService, DialogService>();      // 单例
 containerRegistry.Register<IPatientService, PatientService>();            // 瞬态
 containerRegistry.RegisterScoped<IUserSessionManager, UserSessionManager>(); // 作用域
@@ -1481,8 +1481,8 @@ containerRegistry.RegisterSingleton<IPatientService, PatientService>(); // 可�
 ```
 
 **依赖注入原则**：
-- ✅ 构造函数注入（推荐）
-- ✅ 属性注入（仅用于可选依赖）
+-  构造函数注入（推荐）
+-  属性注入（仅用于可选依赖）
 - ❌ 禁止使用 `Container.Resolve<T>()` 直接解析（服务定位器反模式）
 - ❌ 禁止在构造函数中执行复杂逻辑
 
@@ -1490,10 +1490,10 @@ containerRegistry.RegisterSingleton<IPatientService, PatientService>(); // 可�
 
 **Region导航规范**：
 ```csharp
-// ✅ 正确：使用命名Region
+//  正确：使用命名Region
 _regionManager.RequestNavigate("ContentRegion", "PatientsManagement");
 
-// ✅ 正确：带参数导航
+//  正确：带参数导航
 var parameters = new NavigationParameters
 {
     { "PatientId", selectedPatientId }
@@ -1506,7 +1506,7 @@ _regionManager.RequestNavigate("Region1", "View1"); // 不清晰
 
 **导航回调处理**：
 ```csharp
-// ✅ 正确：处理导航结果
+//  正确：处理导航结果
 _regionManager.RequestNavigate("ContentRegion", "PatientsManagement", result =>
 {
     if (!result.Result)
@@ -1524,7 +1524,7 @@ _regionManager.RequestNavigate("ContentRegion", "PatientsManagement"); // 可能
 
 **对话框注册规范**：
 ```csharp
-// ✅ 正确：在App.xaml.cs中注册
+//  正确：在App.xaml.cs中注册
 containerRegistry.RegisterDialog<ConfirmationDialog, ConfirmationDialogViewModel>();
 containerRegistry.RegisterDialog<ErrorDetailsDialog, ErrorDetailsDialogViewModel>();
 containerRegistry.RegisterDialog<InformationDialog, InformationDialogViewModel>();
@@ -1532,7 +1532,7 @@ containerRegistry.RegisterDialog<InformationDialog, InformationDialogViewModel>(
 
 **对话框调用规范**：
 ```csharp
-// ✅ 正确：使用参数传递数据
+//  正确：使用参数传递数据
 var parameters = new DialogParameters
 {
     { "message", "确定要删除吗？" },
@@ -1555,7 +1555,7 @@ dialog.ShowDialog();
 
 **事件定义规范**：
 ```csharp
-// ✅ 正确：强类型事件
+//  正确：强类型事件
 public class UserLoggedInEvent : PubSubEvent<UserDto> { }
 public class PatientSelectedEvent : PubSubEvent<Guid> { }
 
@@ -1565,10 +1565,10 @@ public class GenericEvent : PubSubEvent<object> { } // 类型不安全
 
 **事件发布与订阅规范**：
 ```csharp
-// ✅ 正确：订阅事件（在构造函数中）
+//  正确：订阅事件（在构造函数中）
 _eventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
 
-// ✅ 正确：取消订阅（在Dispose中）
+//  正确：取消订阅（在Dispose中）
 _eventAggregator.GetEvent<UserLoggedInEvent>().Unsubscribe(OnUserLoggedIn);
 
 // ❌ 错误：忘记取消订阅（可能导致内存泄漏）
@@ -1585,11 +1585,11 @@ appsettings.Production.json   # 生产环境配置（覆盖默认）
 
 **配置访问规范**：
 ```csharp
-// ✅ 正确：使用IConfiguration接口
+//  正确：使用IConfiguration接口
 var apiUrl = _configuration["ApiBaseUrl"];
 var timeout = _configuration.GetValue<int>("ConnectionTimeout", 30);
 
-// ✅ 正确：绑定到强类型对象
+//  正确：绑定到强类型对象
 var uiSettings = new UISetting();
 _configuration.GetSection("UI").Bind(uiSettings);
 
@@ -1601,7 +1601,7 @@ const string ApiUrl = "http://localhost:5001"; // 不灵活
 
 **全局异常处理**：
 ```csharp
-// ✅ 正确：在App.xaml.cs中配置
+//  正确：在App.xaml.cs中配置
 private void ConfigureGlobalExceptionHandling()
 {
     DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -1612,7 +1612,7 @@ private void ConfigureGlobalExceptionHandling()
 
 **局部异常处理**：
 ```csharp
-// ✅ 正确：在ViewModel中捕获异常
+//  正确：在ViewModel中捕获异常
 private async void ExecuteDeletePatient(Guid patientId)
 {
     try
@@ -1655,7 +1655,7 @@ _moduleManager.LoadModule("HerbsModule");
 ### 3. 异步操作
 
 ```csharp
-// ✅ 正确：异步加载数据
+//  正确：异步加载数据
 public async Task LoadPatientsAsync()
 {
     IsBusy = true;
@@ -1685,7 +1685,7 @@ var patients = _patientService.GetPaged(1, 50); // 阻塞UI线程
   "Database": "Server=localhost;Password=123456"
 }
 
-// ✅ 正确：使用环境变量
+//  正确：使用环境变量
 {
   "Database": "${DB_CONNECTION_STRING}"
 }
@@ -1766,8 +1766,8 @@ public class MainWindowViewModelTests
 ##  快速开始
 
 ### 环境准备
-- ✅ 安装 .NET 8.0 SDK
-- ✅ 安装 Visual Studio 2022（推荐）或 Rider
+-  安装 .NET 8.0 SDK
+-  安装 Visual Studio 2022（推荐）或 Rider
 
 ### 还原依赖
 ```bash

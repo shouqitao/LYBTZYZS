@@ -13,7 +13,7 @@ namespace LYBT.Desktop.MedicalCase
     [Module(ModuleName = nameof(MedicalCaseModule))]
     [ModuleDependency("PatientsModule")] // 病历依赖患者
     [ModuleDependency("PrescriptionsModule")] // Task #1499: 处方编辑器依赖处方模块
-    // ✅ 移除ConsultationModule依赖 - MedicalCase是聚合根，不应依赖子实体模块 (Issue #1463)
+    //  移除ConsultationModule依赖 - MedicalCase是聚合根，不应依赖子实体模块 (Issue #1463)
     public class MedicalCaseModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

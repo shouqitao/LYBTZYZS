@@ -63,6 +63,22 @@ namespace LYBT.Desktop.Formula.Controls
             set => SetValue(DosageCompletedCommandProperty, value);
         }
 
+        /// <summary>
+        /// 添加新行命令（到达末尾时触发）
+        /// </summary>
+        public static readonly DependencyProperty AddNewRowCommandProperty =
+            DependencyProperty.Register(
+                nameof(AddNewRowCommand),
+                typeof(ICommand),
+                typeof(HerbCardControl),
+                new PropertyMetadata(null));
+
+        public ICommand? AddNewRowCommand
+        {
+            get => (ICommand?)GetValue(AddNewRowCommandProperty);
+            set => SetValue(AddNewRowCommandProperty, value);
+        }
+
         #endregion
 
         #region Constructor
@@ -353,6 +369,7 @@ namespace LYBT.Desktop.Formula.Controls
         /// <summary>
         /// 移动焦点到下一个药材卡片的TextBox（水平优先遍历）
         /// Issue #重设计: 更新为TextBox控件引用
+        /// Issue #自动添加空行: 到达末尾时等待新槽位被添加
         /// </summary>
         private void MoveFocusToNextHerbName()
         {
@@ -391,6 +408,33 @@ namespace LYBT.Desktop.Formula.Controls
                         }), System.Windows.Threading.DispatcherPriority.Loaded);
                     }
                 }
+            }
+            else
+            {
+                // 到达末尾时，触发添加新行命令
+                if (AddNewRowCommand?.CanExecute(null) == true)
+                {
+                    AddNewRowCommand.Execute(null);
+                }
+
+                // 等待UI更新后，焦点移动到新添加的第一个槽位
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // 重新获取ItemsControl（确保获取最新状态）
+                    var updatedItemsControl = FindParentItemsControl(this);
+                    if (updatedItemsControl != null && nextIndex < updatedItemsControl.Items.Count)
+                    {
+                        var nextContainer = updatedItemsControl.ItemContainerGenerator.ContainerFromIndex(nextIndex) as ContentPresenter;
+                        if (nextContainer != null)
+                        {
+                            var nextHerbCard = FindVisualChild<HerbCardControl>(nextContainer);
+                            if (nextHerbCard != null)
+                            {
+                                nextHerbCard.HerbNameTextBox.Focus();
+                            }
+                        }
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
 

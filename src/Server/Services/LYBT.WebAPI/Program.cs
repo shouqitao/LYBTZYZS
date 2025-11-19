@@ -66,7 +66,7 @@ public class Program
                 try
                 {
                     validator.ValidateOrThrow();
-                    Log.Information("✅ Production 配置验证通过");
+                    Log.Information(" Production 配置验证通过");
                 }
                 catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
                 {

@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Modules;
@@ -341,7 +341,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IsLoggedIn = true;
         CurrentUser = user;
 
-        System.Diagnostics.Debug.WriteLine("✅ IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
+        System.Diagnostics.Debug.WriteLine(" IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
 
         _ = Task.Run(async () =>
         {
@@ -532,7 +532,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             UnsubscribeLoginEvent();
             _navigationManager.UnsubscribeFromRegionCollection();
 
-            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 资源清理完成 - 内存泄漏风险已消除");
         }
         catch (Exception ex)
         {
@@ -555,7 +555,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
             _clockTimer.Stop();
             _clockTimer.Tick -= OnClockTick;
             _clockTimer = null!;
-            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] DispatcherTimer已清理");
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
         }
     }
 
@@ -569,7 +569,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         {
             _healthCheckTimer.Stop();
             _healthCheckTimer = null!;
-            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] 健康检查定时器已清理");
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
         }
     }
 
@@ -582,7 +582,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess);
-            System.Diagnostics.Debug.WriteLine("✅ [MainWindowViewModel] LoginSuccessEvent订阅已取消");
+            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] LoginSuccessEvent订阅已取消");
         }
         catch (Exception ex)
         {

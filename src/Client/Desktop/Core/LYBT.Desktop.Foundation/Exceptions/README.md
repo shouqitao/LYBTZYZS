@@ -15,8 +15,8 @@ throw new ApiException(response.StatusCode, content);
 ```
 
 **原则**：
-- ✅ 将HTTP错误转换为`ApiException`
-- ✅ 保留完整的错误上下文（状态码、响应内容）
+-  将HTTP错误转换为`ApiException`
+-  保留完整的错误上下文（状态码、响应内容）
 - ❌ 不吞掉异常
 - ❌ 不记录日志（由上层处理）
 
@@ -32,8 +32,8 @@ public virtual async Task<T> GetByIdAsync(Guid id)
 ```
 
 **原则**：
-- ✅ 让异常自然传播到Service层
-- ✅ 只记录关键信息日志（可选）
+-  让异常自然传播到Service层
+-  只记录关键信息日志（可选）
 - ❌ 不使用try-catch包裹API调用
 - ❌ 不将异常转换为null或空集合
 
@@ -81,9 +81,9 @@ public class UserService : IUserService
 ```
 
 **原则**：
-- ✅ 添加业务逻辑验证，抛出有意义的异常
-- ✅ 记录业务操作日志
-- ✅ 让Repository异常自然传播
+-  添加业务逻辑验证，抛出有意义的异常
+-  记录业务操作日志
+-  让Repository异常自然传播
 - ❌ 不在Service层处理HTTP异常
 - ❌ 不将异常转换为ServiceResult（由ViewModel层负责）
 
@@ -115,9 +115,9 @@ public class UserManagementViewModel : ViewModelBase
 ```
 
 **原则**：
-- ✅ 使用`IExceptionHandler.SafeExecuteAsync`包裹操作
-- ✅ 将异常转换为用户友好的消息
-- ✅ 显示错误提示给用户
+-  使用`IExceptionHandler.SafeExecuteAsync`包裹操作
+-  将异常转换为用户友好的消息
+-  显示错误提示给用户
 - ❌ 不让异常传播到UI线程外
 
 ## 🔧 工具类
@@ -149,7 +149,7 @@ TimeoutException → "请求超时，请检查网络连接"
 ArgumentException → "输入参数无效，请检查输入内容"
 ```
 
-## ✅ 完整示例
+##  完整示例
 
 ### 场景：用户管理功能
 
@@ -290,7 +290,7 @@ catch (Exception ex) { _logger.LogError(ex, ...); throw; }
 // ViewModel:
 catch (Exception ex) { _logger.LogError(ex, ...); }
 
-// ✅ 正确：只在ViewModel层统一记录
+//  正确：只在ViewModel层统一记录
 await _exceptionHandler.SafeExecuteAsync(...)
 ```
 

@@ -33,7 +33,7 @@ public class DatabaseStartupDiagnostics : IHostedService
                 return;
             }
 
-            _logger.LogInformation("✅ [DatabaseStartupDiagnostics] 连接字符串已加载");
+            _logger.LogInformation(" [DatabaseStartupDiagnostics] 连接字符串已加载");
 
             // 2. 解析连接字符串
             var builder = new SqlConnectionStringBuilder(connectionString);
@@ -50,14 +50,14 @@ public class DatabaseStartupDiagnostics : IHostedService
             using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync(cancellationToken);
-                _logger.LogInformation("✅ [DatabaseStartupDiagnostics] 数据库连接成功！");
+                _logger.LogInformation(" [DatabaseStartupDiagnostics] 数据库连接成功！");
 
                 // 4. 验证数据库存在
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = "SELECT DB_NAME()";
                     var result = await command.ExecuteScalarAsync(cancellationToken);
-                    _logger.LogInformation($"✅ [DatabaseStartupDiagnostics] 当前数据库: {result}");
+                    _logger.LogInformation($" [DatabaseStartupDiagnostics] 当前数据库: {result}");
                 }
 
                 // 5. 检查连接池状态
@@ -67,7 +67,7 @@ public class DatabaseStartupDiagnostics : IHostedService
                 _logger.LogInformation($"   - Connection Timeout: {builder.ConnectTimeout}秒");
             }
 
-            _logger.LogInformation("✅ [DatabaseStartupDiagnostics] 数据库诊断完成，系统可正常启动");
+            _logger.LogInformation(" [DatabaseStartupDiagnostics] 数据库诊断完成，系统可正常启动");
         }
         catch (SqlException ex)
         {

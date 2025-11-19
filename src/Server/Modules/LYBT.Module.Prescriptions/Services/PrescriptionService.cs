@@ -317,7 +317,7 @@ namespace LYBT.Module.Prescriptions.Services
                     // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
                     consultationDict.TryGetValue(medicalCase.Id, out var consultation);
 
-                    // ✅ 优化后：从批量查询结果中获取处方详情
+                    //  优化后：从批量查询结果中获取处方详情
                     var prescriptionWithItems = prescriptionsDict.GetValueOrDefault(prescription.Id);
                     var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
 

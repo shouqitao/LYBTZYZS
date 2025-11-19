@@ -5,13 +5,13 @@
 `PatientSelector` 是一个可复用的 WPF UserControl，用于患者搜索、选择和快速创建功能。该组件采用 MVVM 架构，基于 Prism 事件聚合器实现松耦合通信。
 
 **主要功能：**
-- ✅ 患者关键字搜索（支持防抖）
-- ✅ 搜索结果列表展示
-- ✅ 患者选择并发布事件
-- ✅ 快速创建新患者
-- ✅ 输入验证（姓名、性别、手机号）
-- ✅ 加载状态和错误提示
-- ✅ MaterialDesign 风格 UI
+-  患者关键字搜索（支持防抖）
+-  搜索结果列表展示
+-  患者选择并发布事件
+-  快速创建新患者
+-  输入验证（姓名、性别、手机号）
+-  加载状态和错误提示
+-  MaterialDesign 风格 UI
 
 **架构特性：**
 - **层级位置**：Presentation 层公共组件
@@ -254,9 +254,9 @@ Console.WriteLine($"CanExecute: {QuickCreateCommand.CanExecute()}");
 **症状**：搜索结果超过 100 条时滚动卡顿。
 
 **已实现优化**：
-- ✅ XAML 中使用 `VirtualizingStackPanel.IsVirtualizing="True"`
-- ✅ `ScrollViewer.CanContentScroll="True"`（启用虚拟化）
-- ✅ 搜索防抖 300ms
+-  XAML 中使用 `VirtualizingStackPanel.IsVirtualizing="True"`
+-  `ScrollViewer.CanContentScroll="True"`（启用虚拟化）
+-  搜索防抖 300ms
 
 **进一步优化建议**：
 1. 后端分页加载（每次仅返回前 50 条）
@@ -272,9 +272,9 @@ Console.WriteLine($"CanExecute: {QuickCreateCommand.CanExecute()}");
 **原因**：Presentation 层不能引用 Modules 层（会导致循环依赖）。
 
 **解决方案**：
-- ✅ 已采用反射手动映射（见 `PatientSelectorViewModel.CreatePatientSelectedPayload()`）
+-  已采用反射手动映射（见 `PatientSelectorViewModel.CreatePatientSelectedPayload()`）
 - ❌ 不要尝试使用 AutoMapper 映射 Modules 层类型
-- ✅ 使用 `dynamic` 类型或基类接口作为中间层
+-  使用 `dynamic` 类型或基类接口作为中间层
 
 **正确的映射代码示例**：
 ```csharp
@@ -305,13 +305,13 @@ private PatientSelectedPayload CreatePatientSelectedPayload(dynamic patient)
 - 测试文件：`tests/IntegrationTests/Client/Desktop/LYBT.Desktop.PatientSelector.IntegrationTests/PatientSelectorIntegrationTests.cs`
 - 测试用例：7 个
 - 测试场景：
-  - ✅ 初始化正确性
-  - ✅ 搜索和选择工作流
-  - ✅ 快速创建工作流
-  - ✅ 输入验证
-  - ✅ 错误状态处理
-  - ✅ 加载状态
-  - ✅ 无结果状态
+  -  初始化正确性
+  -  搜索和选择工作流
+  -  快速创建工作流
+  -  输入验证
+  -  错误状态处理
+  -  加载状态
+  -  无结果状态
 
 ---
 

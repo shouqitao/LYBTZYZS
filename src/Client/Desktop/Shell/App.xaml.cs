@@ -50,7 +50,7 @@ public partial class App : PrismApplication
         _splashScreen.Show();
         _splashScreen.UpdateStatus("正在初始化应用程序...");
 
-        // 2. ✅ 同步调用 base.OnStartup（触发 Prism 生命周期）
+        // 2.  同步调用 base.OnStartup（触发 Prism 生命周期）
         // Prism 会依次调用：CreateShell → InitializeShell → OnInitialized
         base.OnStartup(e);
     }
@@ -151,7 +151,7 @@ public partial class App : PrismApplication
             }
         }
 
-        // ✅ 在 Prism 生命周期中执行异步初始化
+        //  在 Prism 生命周期中执行异步初始化
         _ = InitializeApplicationAsync();
     }
 

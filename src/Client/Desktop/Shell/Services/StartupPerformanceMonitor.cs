@@ -96,7 +96,7 @@ public class StartupPerformanceMonitor
         // 性能评估
         if (totalMs < 2000)
         {
-            _logger.LogInformation("✅ 启动性能: 优秀 (< 2秒)");
+            _logger.LogInformation(" 启动性能: 优秀 (< 2秒)");
         }
         else if (totalMs < 5000)
         {

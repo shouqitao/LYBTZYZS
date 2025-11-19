@@ -122,7 +122,7 @@ public class NavigationManager
         try
         {
             _regionManager.Regions.CollectionChanged -= OnRegionsCollectionChanged;
-            System.Diagnostics.Debug.WriteLine("✅ [NavigationManager] Region 导航监控已取消");
+            System.Diagnostics.Debug.WriteLine(" [NavigationManager] Region 导航监控已取消");
         }
         catch (Exception ex)
         {
@@ -157,7 +157,7 @@ public class NavigationManager
 
         region.NavigationService.Navigated += (s, e) =>
         {
-            System.Diagnostics.Debug.WriteLine($"✅ 导航完成: Region={region.Name}, Uri={e.Uri}");
+            System.Diagnostics.Debug.WriteLine($" 导航完成: Region={region.Name}, Uri={e.Uri}");
         };
 
         region.NavigationService.NavigationFailed += (s, e) =>

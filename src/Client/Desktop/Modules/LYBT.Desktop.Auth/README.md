@@ -285,7 +285,7 @@ private async Task CheckApiHealthAsync()
             switch (healthStatus.Status)
             {
                 case ApiHealthStatus.Healthy:
-                    ApiStatusMessage = "✅ API连接正常";
+                    ApiStatusMessage = " API连接正常";
                     _logger.LogInformation("API健康检查成功");
                     break;
                 case ApiHealthStatus.Degraded:
@@ -579,7 +579,7 @@ private void LoginButton_Click(object sender, RoutedEventArgs e)
 ### 3. 用户体验优化
 
 **启动时体验**：
-- 自动执行API健康检查，显示连接状态（✅ 正常 / ⚠️ 不稳定 / ❌ 失败）
+- 自动执行API健康检查，显示连接状态（ 正常 / ⚠️ 不稳定 / ❌ 失败）
 - 自动加载保存的用户名和密码（如果用户曾勾选记住）
 - 健康检查异常不阻塞UI显示（CheckApiHealthAsyncSafe）
 

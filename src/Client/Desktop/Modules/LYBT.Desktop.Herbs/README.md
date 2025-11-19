@@ -1050,9 +1050,9 @@ public class HerbManagementViewModel : UnifiedViewModelBase
 - **ApiService层**: HTTP通信封装,返回裸类型（非Result<T>）
 
 **优势**:
-- ✅ ViewModel与Server解耦,易于单元测试（Mock IHerbRepository）
-- ✅ Repository集中管理API调用,统一错误处理
-- ✅ 返回裸类型简化ViewModel逻辑（无需Result<T>拆包）
+-  ViewModel与Server解耦,易于单元测试（Mock IHerbRepository）
+-  Repository集中管理API调用,统一错误处理
+-  返回裸类型简化ViewModel逻辑（无需Result<T>拆包）
 
 **示例**:
 ```csharp
@@ -1091,9 +1091,9 @@ public class HerbRepository : BaseApiRepository<HerbDto>, IHerbRepository
 - **即时搜索**: TextBox输入即触发SearchCommand
 
 **优势**:
-- ✅ 中医师快速输入（输入"dg"秒匹配"当归"）
-- ✅ 减少鼠标操作,提升开方效率
-- ✅ 支持名称/拼音/功效多字段搜索
+-  中医师快速输入（输入"dg"秒匹配"当归"）
+-  减少鼠标操作,提升开方效率
+-  支持名称/拼音/功效多字段搜索
 
 **示例**:
 ```csharp
@@ -1127,9 +1127,9 @@ public async Task<List<HerbModel>> GetByNameOrPinyinAsync(string keyword)
 - **ProfitMargin（利润率）**: (Price - CostPrice) / Price × 100%
 
 **业务逻辑**:
-- ✅ 保存时自动计算利润率
-- ✅ 售价低于成本价时弹出警告（但允许保存）
-- ✅ 支持成本价为0（赠送药材或自采）
+-  保存时自动计算利润率
+-  售价低于成本价时弹出警告（但允许保存）
+-  支持成本价为0（赠送药材或自采）
 
 **示例**:
 ```csharp
@@ -1165,9 +1165,9 @@ private async Task SaveHerbAsync()
 - **导入模板**: 下载Excel导入模板（GET /api/v1/herbs/template）
 
 **错误处理**:
-- ✅ 导入失败行号+错误信息展示
-- ✅ 成功/失败统计展示
-- ✅ Server端验证（名称重复、必填项校验）
+-  导入失败行号+错误信息展示
+-  成功/失败统计展示
+-  Server端验证（名称重复、必填项校验）
 
 **示例**:
 ```csharp
@@ -1201,9 +1201,9 @@ private async Task ImportHerbsAsync()
 - **ViewUsageHistoryCommand**: 查询药材在处方中的使用情况
 
 **业务逻辑**:
-- ✅ 禁用药材不影响历史处方（只读）
-- ✅ 禁用药材不可添加到新处方（HerbSelectionDialog过滤）
-- ✅ 使用历史显示处方编号、患者姓名、用量、日期
+-  禁用药材不影响历史处方（只读）
+-  禁用药材不可添加到新处方（HerbSelectionDialog过滤）
+-  使用历史显示处方编号、患者姓名、用量、日期
 
 **示例**:
 ```csharp

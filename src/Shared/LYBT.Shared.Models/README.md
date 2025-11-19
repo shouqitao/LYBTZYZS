@@ -2,7 +2,7 @@
 
 > **共享数据模型库** - .NET 8 DTO与契约定义
 > DTO优化完成 | 类型安全 | 前后端一致 | 验证增强
-> **模块状态**: ✅ **生产就绪** | 🎆 **DTO三阶段优化完成** | **零编译错误** | **2025-10-29更新**
+> **模块状态**:  **生产就绪** | 🎆 **DTO三阶段优化完成** | **零编译错误** | **2025-10-29更新**
 
 ## 📦 项目定位
 
@@ -134,17 +134,17 @@ LYBT.Shared.Models/ (16目录, 70文件)
 
 ## 🎆 DTO优化三阶段成果
 
-### 第一阶段：查询命名标准化 ✅
+### 第一阶段：查询命名标准化 
 - 统一查询DTO命名模式：`QueryDto`（基础）和`SearchDto`（高级）
 - 所有查询DTO继承`PagedQueryBaseDto`基类
 - 统一分页、排序、关键词搜索参数
 
-### 第二阶段：操作结果基类抽取 ✅
+### 第二阶段：操作结果基类抽取 
 - 创建`StatusDto`基类（BaseDto + Status字段）
 - 所有业务DTO继承自`StatusDto`
 - 统一状态管理模式（CommonStatus枚举）
 
-### 第三阶段：继承层次优化 ✅
+### 第三阶段：继承层次优化 
 - 完全分离`CreateDto`和`UpdateDto`
 - 提取`InputBaseDto`共享字段
 - 实现`IIdentifiable<T>`接口
@@ -1224,43 +1224,43 @@ var displayName = user.GetDisplayName(); // "张医生" or "admin"
 ## 🎯 最佳实践
 
 ### 1. DTO设计原则
-- ✅ **使用继承优化代码复用** - 统一基类减少重复代码
-- ✅ **分离创建和更新DTO** - 创建不包含ID，更新包含ID
-- ✅ **使用DataAnnotations验证** - 前后端统一验证规则
-- ✅ **提供计算属性而非冗余字段** - 避免数据不一致
-- ✅ **使用可空类型表示可选字段** - 明确必填/可选语义
-- ✅ **接口驱动设计** - 通过接口（IRemarkable、ICodeable等）实现功能组合
+-  **使用继承优化代码复用** - 统一基类减少重复代码
+-  **分离创建和更新DTO** - 创建不包含ID，更新包含ID
+-  **使用DataAnnotations验证** - 前后端统一验证规则
+-  **提供计算属性而非冗余字段** - 避免数据不一致
+-  **使用可空类型表示可选字段** - 明确必填/可选语义
+-  **接口驱动设计** - 通过接口（IRemarkable、ICodeable等）实现功能组合
 
 ### 2. 命名规范
-- ✅ **DTO后缀**：`UserDto`（实体DTO）
-- ✅ **创建DTO**：`UserCreateDto`（创建操作）
-- ✅ **更新DTO**：`UserUpdateDto`（更新操作）
-- ✅ **查询DTO**：`UserQueryDto`（基础查询）、`UserSearchDto`（高级搜索）
-- ✅ **响应DTO**：`LoginResponse`、`OperationResult`（特定响应）
+-  **DTO后缀**：`UserDto`（实体DTO）
+-  **创建DTO**：`UserCreateDto`（创建操作）
+-  **更新DTO**：`UserUpdateDto`（更新操作）
+-  **查询DTO**：`UserQueryDto`（基础查询）、`UserSearchDto`（高级搜索）
+-  **响应DTO**：`LoginResponse`、`OperationResult`（特定响应）
 
 ### 3. 验证规则
-- ✅ **使用DataAnnotations属性** - Required、StringLength、RegularExpression等
-- ✅ **提供清晰的错误消息** - ErrorMessage明确说明验证失败原因
-- ✅ **前后端验证保持一致** - Client端和Server端使用相同的验证规则
-- ✅ **使用FluentValidation处理复杂验证** - 跨字段验证、业务规则验证
+-  **使用DataAnnotations属性** - Required、StringLength、RegularExpression等
+-  **提供清晰的错误消息** - ErrorMessage明确说明验证失败原因
+-  **前后端验证保持一致** - Client端和Server端使用相同的验证规则
+-  **使用FluentValidation处理复杂验证** - 跨字段验证、业务规则验证
 
 ### 4. JSON序列化
-- ✅ **使用camelCase命名** - [JsonPropertyName("success")]
-- ✅ **枚举序列化为字符串** - [JsonConverter(typeof(JsonStringEnumConverter))]
-- ✅ **忽略null值** - JsonIgnoreCondition.WhenWritingNull
-- ✅ **使用UTC时间** - DateTime.UtcNow避免时区问题
+-  **使用camelCase命名** - [JsonPropertyName("success")]
+-  **枚举序列化为字符串** - [JsonConverter(typeof(JsonStringEnumConverter))]
+-  **忽略null值** - JsonIgnoreCondition.WhenWritingNull
+-  **使用UTC时间** - DateTime.UtcNow避免时区问题
 
 ### 5. 性能优化
-- ✅ **轻量级DTO** - 仅包含必要字段，避免过度包含
-- ✅ **计算属性** - 避免存储冗余数据，按需计算
-- ✅ **延迟加载** - 导航属性按需加载，避免N+1查询
-- ✅ **投影查询** - 使用AutoMapper ProjectTo优化查询性能
+-  **轻量级DTO** - 仅包含必要字段，避免过度包含
+-  **计算属性** - 避免存储冗余数据，按需计算
+-  **延迟加载** - 导航属性按需加载，避免N+1查询
+-  **投影查询** - 使用AutoMapper ProjectTo优化查询性能
 
 ### 6. 安全考虑
-- ✅ **密码处理** - 密码字段仅在创建/修改时传输，不在UserDto中暴露
-- ✅ **敏感信息** - 避免在DTO中暴露敏感数据（如PasswordHash、Salt等）
-- ✅ **权限控制** - 根据角色过滤返回字段
-- ✅ **输入验证** - 严格的输入验证防止注入攻击
+-  **密码处理** - 密码字段仅在创建/修改时传输，不在UserDto中暴露
+-  **敏感信息** - 避免在DTO中暴露敏感数据（如PasswordHash、Salt等）
+-  **权限控制** - 根据角色过滤返回字段
+-  **输入验证** - 严格的输入验证防止注入攻击
 
 ## 📈 性能优化
 
@@ -1271,7 +1271,7 @@ var displayName = user.GetDisplayName(); // "张医生" or "admin"
 var users = await _context.Users.ToListAsync();
 var userDtos = _mapper.Map<List<UserDto>>(users);
 
-// ✅ 推荐：使用ProjectTo直接投影
+//  推荐：使用ProjectTo直接投影
 var userDtos = await _context.Users
     .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
     .ToListAsync();
@@ -1280,7 +1280,7 @@ var userDtos = await _context.Users
 ### 2. 分页查询优化
 
 ```csharp
-// ✅ 先计数再查询
+//  先计数再查询
 var totalCount = await query.CountAsync();
 var items = await query
     .Skip((pageIndex - 1) * pageSize)
@@ -1292,7 +1292,7 @@ var items = await query
 ### 3. 计算属性优化
 
 ```csharp
-// ✅ 使用只读计算属性
+//  使用只读计算属性
 public decimal TotalPrice => SingleDosePrice * DosageCount;
 
 // ❌ 避免存储冗余字段
@@ -1304,14 +1304,14 @@ public decimal TotalPrice => SingleDosePrice * DosageCount;
 ### 1. 密码安全
 
 ```csharp
-// ✅ 创建DTO包含密码（仅传输一次）
+//  创建DTO包含密码（仅传输一次）
 public class UserCreateDto
 {
     public string Password { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
-// ✅ 查询DTO不包含密码
+//  查询DTO不包含密码
 public class UserDto : StatusDto
 {
     // ❌ 不包含 PasswordHash
@@ -1324,7 +1324,7 @@ public class UserDto : StatusDto
 ### 2. 敏感信息过滤
 
 ```csharp
-// ✅ 根据角色过滤敏感字段
+//  根据角色过滤敏感字段
 public class PatientDto
 {
     public Guid Id { get; set; }
@@ -1339,7 +1339,7 @@ public class PatientDto
 ### 3. 输入验证防护
 
 ```csharp
-// ✅ 严格的输入验证
+//  严格的输入验证
 public class UserCreateDto
 {
     [Required]

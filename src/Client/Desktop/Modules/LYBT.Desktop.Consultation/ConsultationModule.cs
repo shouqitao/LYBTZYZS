@@ -31,12 +31,12 @@ namespace LYBT.Desktop.Consultation
             // 注册视图模型 - MVP核心功能
             // Issue #1800: 删除ConsultationManagementViewModel（违反AR-001聚合根约束）
             containerRegistry.Register<ViewModels.ConsultationFormViewModel>();  // Issue #1607, #1784: 已重构使用Components (Issue #1557: 看诊流程Step 2)
-            // ✅ Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
+            //  Issue #1463: ConsultationEntryViewModel已迁移到MedicalCaseModule.MedicalCaseEntryViewModel
 
             // Phase 2: 启用 Region Navigation 注册
             // Issue #1800: 删除ConsultationManagementView（违反AR-001聚合根约束）
             containerRegistry.RegisterForNavigation<Views.ConsultationFormView>();  // Issue #1607: 已重构 (Issue #1557: 看诊流程Step 2)
-            // ✅ Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
+            //  Issue #1463: ConsultationEntryView已迁移到MedicalCaseModule.MedicalCaseEntryView
         }
     }
 }

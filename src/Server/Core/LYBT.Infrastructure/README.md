@@ -37,17 +37,17 @@ public class AppDbContext : DbContext
 
 | 组件 | 功能描述 | 状态 |
 |------|----------|------|
-| **AppDbContext** | 统一数据库上下文，管理所有实体 | ✅ 完成 |
-| **AppDbContextFactory** | 设计时DbContext工厂，支持迁移 | ✅ 完成 |
-| **DatabaseInitializationService** | 数据库初始化和种子数据管理 | ✅ 完成 |
+| **AppDbContext** | 统一数据库上下文，管理所有实体 |  完成 |
+| **AppDbContextFactory** | 设计时DbContext工厂，支持迁移 |  完成 |
+| **DatabaseInitializationService** | 数据库初始化和种子数据管理 |  完成 |
 
 ### 2. 配置管理层 (Configuration/)
 
 | 组件 | 功能描述 | 状态 |
 |------|----------|------|
-| **Options/** | 所有配置选项类(Auth, Database, JWT等) | ✅ 完成 |
-| **Extensions/** | 配置扩展方法 | ✅ 完成 |
-| **Validation/** | 生产环境配置验证 | ✅ 完成 |
+| **Options/** | 所有配置选项类(Auth, Database, JWT等) |  完成 |
+| **Extensions/** | 配置扩展方法 |  完成 |
+| **Validation/** | 生产环境配置验证 |  完成 |
 
 #### 配置选项体系
 
@@ -85,17 +85,17 @@ public class CacheOptions
 
 | 组件 | 功能描述 | 状态 |
 |------|----------|------|
-| **IBaseRepository** | Repository接口定义 | ✅ 完成 |
-| **BaseRepository** | 基础Repository实现 | ✅ 完成 |
+| **IBaseRepository** | Repository接口定义 |  完成 |
+| **BaseRepository** | 基础Repository实现 |  完成 |
 
 ### 5. Web基础设施 (Web/)
 
 | 组件 | 功能描述 | 状态 |
 |------|----------|------|
-| **BaseControllerCore** | 控制器核心基类 | ✅ 完成 |
-| **BaseApiController** | 业务API控制器基类 | ✅ 完成 |
-| **BaseSystemController** | 系统管理控制器基类 | ✅ 完成 |
-| **ApiErrorCodes** | 统一错误码定义 | ✅ 完成 |
+| **BaseControllerCore** | 控制器核心基类 |  完成 |
+| **BaseApiController** | 业务API控制器基类 |  完成 |
+| **BaseSystemController** | 系统管理控制器基类 |  完成 |
+| **ApiErrorCodes** | 统一错误码定义 |  完成 |
 
 ## 🗃️ 数据库迁移管理
 
@@ -209,12 +209,12 @@ Infrastructure层的服务注册通过多个扩展方法分离管理，详见：
 ## 🎯 分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
-- ✅ **结构清晰**: 按功能模块组织，易于理解和维护
-- ✅ **智能缓存**: IMemoryCache适合小规模部署，无需Redis
-- ✅ **统一数据访问**: 单一AppDbContext管理所有实体
-- ✅ **安全配置**: ASP.NET Core DataProtection支持
-- ✅ **性能优化**: 连接池、批量操作、缓存策略优化
-- ✅ **配置简化**: IOptions模式，环境变量支持
+-  **结构清晰**: 按功能模块组织，易于理解和维护
+-  **智能缓存**: IMemoryCache适合小规模部署，无需Redis
+-  **统一数据访问**: 单一AppDbContext管理所有实体
+-  **安全配置**: ASP.NET Core DataProtection支持
+-  **性能优化**: 连接池、批量操作、缓存策略优化
+-  **配置简化**: IOptions模式，环境变量支持
 
 ## 🧪 使用示例
 

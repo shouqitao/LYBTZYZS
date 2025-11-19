@@ -147,6 +147,11 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand<HerbDto> HerbSelectedCommand { get; }
 
+        /// <summary>
+        /// Issue #自动添加空行: 添加新行命令（到达末尾时添加一行4个空槽位）
+        /// </summary>
+        public DelegateCommand AddNewRowCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -178,6 +183,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
             DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
             HerbSelectedCommand = new DelegateCommand<HerbDto>(OnHerbSelected);
+            AddNewRowCommand = new DelegateCommand(AddNewRow);
 
             // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => SaveCommand.RaiseCanExecuteChanged();
@@ -456,13 +462,36 @@ namespace LYBT.Desktop.Formula.ViewModels
                 // 2. 刷新HerbCount
                 RaisePropertyChanged(nameof(HerbCount));
 
-                // 3. 确保至少有4个空槽位
-                EnsureMinimumBlankRows();
+                // 3. Issue #自动添加空行: 移除自动添加逻辑
+                // 添加空行的逻辑由MoveFocusToNextHerbName在到达末尾时处理
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "剂量输入完成处理时发生异常");
                 _ = ShowErrorMessageAsync("处理剂量输入失败");
+            }
+        }
+
+        /// <summary>
+        /// 添加新的一行空白药材槽位（4个）
+        /// Issue #自动添加空行: 到达末尾时调用
+        /// </summary>
+        private void AddNewRow()
+        {
+            try
+            {
+                // 添加一行（4个空白槽位）
+                for (int i = 0; i < 4; i++)
+                {
+                    var newItem = CreateBlankHerbItem();
+                    HerbItems.Add(newItem);
+                }
+
+                Logger.LogInformation("添加新的一行空白药材槽位（4个）");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "添加新行时发生异常");
             }
         }
 

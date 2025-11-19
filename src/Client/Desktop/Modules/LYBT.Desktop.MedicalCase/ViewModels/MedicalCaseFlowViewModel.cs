@@ -630,7 +630,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                             return true; // 失败，需要中止
                         }
 
-                        Logger.LogInformation("✅ MedicalCase创建成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                        Logger.LogInformation(" MedicalCase创建成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
                     }
                     catch (Exception ex)
                     {

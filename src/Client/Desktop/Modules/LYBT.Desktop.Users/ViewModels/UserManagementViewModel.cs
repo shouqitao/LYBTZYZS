@@ -1,4 +1,4 @@
-using System.IO; // Issue #2003: 文件操作
+﻿using System.IO; // Issue #2003: 文件操作
 using System.Windows.Input; // Issue #2003: ICommand
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
@@ -666,7 +666,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
                 // 显示导入结果
                 var message = $"导入完成！\n\n" +
-                              $"✅ 成功：{result.SuccessCount}条\n" +
+                              $" 成功：{result.SuccessCount}条\n" +
                               $"❌ 失败：{result.FailureCount}条\n" +
                               $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
                               $"成功率：{result.SuccessRate:F1}%";

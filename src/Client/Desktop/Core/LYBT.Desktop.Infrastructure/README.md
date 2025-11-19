@@ -384,10 +384,10 @@ public class YourViewModel : BindableBase
 ```
 
 **性能优势**：
-- ✅ 虚拟化行渲染（仅渲染可见行）
-- ✅ 延迟加载列内容
-- ✅ 支持大数据量（10,000+行）
-- ✅ 滚动性能优化
+-  虚拟化行渲染（仅渲染可见行）
+-  延迟加载列内容
+-  支持大数据量（10,000+行）
+-  滚动性能优化
 
 ### 示例3：数据转换器 - XAML绑定
 
@@ -580,13 +580,13 @@ public class ExportService
 ```
 
 **ExcelHelper能力**：
-- ✅ 创建Excel工作簿（.xlsx）
-- ✅ 创建多个Sheet
-- ✅ 设置单元格样式（字体、颜色、边框）
-- ✅ 合并单元格
-- ✅ 自动调整列宽
-- ✅ 读取Excel文件
-- ✅ 支持大数据量导出（10,000+行）
+-  创建Excel工作簿（.xlsx）
+-  创建多个Sheet
+-  设置单元格样式（字体、颜色、边框）
+-  合并单元格
+-  自动调整列宽
+-  读取Excel文件
+-  支持大数据量导出（10,000+行）
 
 ### 示例6：RepositoryBase - 客户端数据访问
 
@@ -623,10 +623,10 @@ public class LocalPatientRepository : RepositoryBase<PatientDto>
 ```
 
 **RepositoryBase特点**：
-- ✅ 统一的客户端数据访问接口
-- ✅ JSON文件持久化
-- ✅ 支持CRUD操作
-- ✅ 异步操作
+-  统一的客户端数据访问接口
+-  JSON文件持久化
+-  支持CRUD操作
+-  异步操作
 
 ### 示例7：功能开关 - FeatureToggleService
 
@@ -758,54 +758,54 @@ public class YourModule : IModule
 ### 2. 会话管理原则
 
 **核心设计**：
-- ✅ 单例模式（全局唯一）
-- ✅ 线程安全（ConcurrentDictionary）
-- ✅ 事件驱动（SessionChanged, SessionExpired）
-- ✅ 缓存优化（_cachedUser, _cachedToken）
+-  单例模式（全局唯一）
+-  线程安全（ConcurrentDictionary）
+-  事件驱动（SessionChanged, SessionExpired）
+-  缓存优化（_cachedUser, _cachedToken）
 
 **权限检查策略**：
-- ✅ 基于角色（HasRole）
-- ✅ 基于权限（HasPermission）
-- ✅ 组合检查（HasPermission + HasRole）
+-  基于角色（HasRole）
+-  基于权限（HasPermission）
+-  组合检查（HasPermission + HasRole）
 
 ### 3. 错误处理原则
 
 **全局异常捕获**：
-- ✅ AppDomain.CurrentDomain.UnhandledException
-- ✅ TaskScheduler.UnobservedTaskException
-- ✅ Dispatcher.UnhandledException（WPF）
+-  AppDomain.CurrentDomain.UnhandledException
+-  TaskScheduler.UnobservedTaskException
+-  Dispatcher.UnhandledException（WPF）
 
 **友好错误消息**：
-- ✅ 网络错误："请检查网络连接"
-- ✅ 验证错误："输入数据不符合要求"
-- ✅ 业务错误：显示业务规则消息
-- ✅ 系统错误："请联系管理员"
+-  网络错误："请检查网络连接"
+-  验证错误："输入数据不符合要求"
+-  业务错误：显示业务规则消息
+-  系统错误："请联系管理员"
 
 ### 4. 虚拟化性能优化
 
 **VirtualizedDataGrid/ListView**：
-- ✅ 仅渲染可见行（减少DOM元素）
-- ✅ 延迟加载列内容
-- ✅ 支持大数据量（10,000+行）
-- ✅ 滚动性能优化
+-  仅渲染可见行（减少DOM元素）
+-  延迟加载列内容
+-  支持大数据量（10,000+行）
+-  滚动性能优化
 
 **适用场景**：
-- ✅ 患者列表（数千条记录）
-- ✅ 医案列表（长期积累）
-- ✅ 处方列表（大量历史）
+-  患者列表（数千条记录）
+-  医案列表（长期积累）
+-  处方列表（大量历史）
 
 ### 5. 事件系统设计
 
 **Prism EventAggregator模式**：
-- ✅ 解耦模块（发布者/订阅者）
-- ✅ 类型安全（强类型Payload）
-- ✅ 线程安全（ThreadOption.UIThread）
-- ✅ 弱引用（防止内存泄漏）
+-  解耦模块（发布者/订阅者）
+-  类型安全（强类型Payload）
+-  线程安全（ThreadOption.UIThread）
+-  弱引用（防止内存泄漏）
 
 **事件命名规范**：
-- ✅ 过去时态：PatientSelectedEvent, LoginSuccessEvent
-- ✅ 清晰描述：MedicalCaseFlowCancelledEvent
-- ✅ 避免缩写：PrescriptionCompletedEvent（非PrxCompEvent）
+-  过去时态：PatientSelectedEvent, LoginSuccessEvent
+-  清晰描述：MedicalCaseFlowCancelledEvent
+-  避免缩写：PrescriptionCompletedEvent（非PrxCompEvent）
 
 ## 📚 详细文档
 

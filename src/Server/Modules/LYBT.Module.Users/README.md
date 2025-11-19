@@ -100,7 +100,7 @@ LYBT.Module.Users/
 
 ## 🎉 2025-09-20 DTO优化成果
 
-### ✅ 三阶段优化完成
+###  三阶段优化完成
 - **第一阶段**: UserMutationDto拆分为UserCreateDto和UserUpdateDto，职责分离
 - **第二阶段**: UserPagedQueryDto重命名为UserSearchDto，查询命名规范统一
 - **第三阶段**: UserDto.Role从string改为UserRole枚举，类型安全增强
@@ -108,10 +108,10 @@ LYBT.Module.Users/
 ### 🎯 优化前后对比
 | 方面 | 优化前 | 优化后 | 改进 |
 |------|--------|--------|------|
-| DTO命名 | UserPagedQueryDto | UserSearchDto | ✅ 查询命名统一 |
-| 创建更新 | UserMutationDto (单一DTO) | UserCreateDto + UserUpdateDto | ✅ 职责分离 |
-| 角色字段 | string类型 | UserRole枚举 | ✅ 类型安全 |
-| 编译状态 | 存在类型不匹配 | 零错误零警告 | ✅ 生产就绪 |
+| DTO命名 | UserPagedQueryDto | UserSearchDto |  查询命名统一 |
+| 创建更新 | UserMutationDto (单一DTO) | UserCreateDto + UserUpdateDto |  职责分离 |
+| 角色字段 | string类型 | UserRole枚举 |  类型安全 |
+| 编译状态 | 存在类型不匹配 | 零错误零警告 |  生产就绪 |
 
 ##  快速开始
 
@@ -619,13 +619,13 @@ public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
 ## 🎯 架构优势
 
 **适合小型中医诊所(<20人)的精简设计**:
-- ✅ **标准三层架构**: Controller → Service → Repository，职责清晰
-- ✅ **类型安全**: UserRole枚举替代字符串，编译时检查
-- ✅ **DTO规范**: Create/Update分离，查询命名统一
-- ✅ **角色简化**: Admin/Doctor双角色体系，满足小诊所需求
-- ✅ **功能完整**: CRUD、搜索、统计、密码管理、批量操作全覆盖
-- ✅ **数据验证**: FluentValidation + 业务逻辑双重验证
-- ✅ **安全性**: ASP.NET Core Identity密码哈希，强密码策略
+-  **标准三层架构**: Controller → Service → Repository，职责清晰
+-  **类型安全**: UserRole枚举替代字符串，编译时检查
+-  **DTO规范**: Create/Update分离，查询命名统一
+-  **角色简化**: Admin/Doctor双角色体系，满足小诊所需求
+-  **功能完整**: CRUD、搜索、统计、密码管理、批量操作全覆盖
+-  **数据验证**: FluentValidation + 业务逻辑双重验证
+-  **安全性**: ASP.NET Core Identity密码哈希，强密码策略
 
 ## 📚 详细文档
 

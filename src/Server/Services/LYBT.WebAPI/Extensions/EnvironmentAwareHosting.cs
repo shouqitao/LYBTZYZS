@@ -84,16 +84,16 @@ public static class EnvironmentAwareHosting
         var addresses = app.Urls;
         var primaryUrl = addresses.FirstOrDefault() ?? "https://localhost:5001";
 
-        Console.WriteLine($"[启动] ✅ 环境: {app.Environment.EnvironmentName}");
-        Console.WriteLine($"[启动] ✅ 服务地址: {primaryUrl}");
-        Console.WriteLine($"[启动] ✅ Swagger文档: {primaryUrl}/swagger");
-        Console.WriteLine($"[启动] ✅ 启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"[启动]  环境: {app.Environment.EnvironmentName}");
+        Console.WriteLine($"[启动]  服务地址: {primaryUrl}");
+        Console.WriteLine($"[启动]  Swagger文档: {primaryUrl}/swagger");
+        Console.WriteLine($"[启动]  启动时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
         // 检查数据库连接状态
         try
         {
             // 这里可以添加数据库连接检查逻辑
-            Console.WriteLine("[启动] ✅ 数据库连接正常");
+            Console.WriteLine("[启动]  数据库连接正常");
         }
         catch (Exception ex)
         {
@@ -188,7 +188,7 @@ public static class EnvironmentAwareHosting
         catch (OperationCanceledException)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("✅ 服务已安全停止");
+            Console.WriteLine(" 服务已安全停止");
             Console.ResetColor();
         }
         finally

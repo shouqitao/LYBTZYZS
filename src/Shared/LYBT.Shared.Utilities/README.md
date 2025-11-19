@@ -2,7 +2,7 @@
 
 > **共享工具类库** - .NET 8通用工具与扩展方法
 > 配置管理 | 安全工具 | 扩展方法 | 中间件配置
-> **模块状态**: ✅ **生产就绪** | 🎆 **工具集完善** | **零编译错误** | **2025-09-20更新**
+> **模块状态**:  **生产就绪** | 🎆 **工具集完善** | **零编译错误** | **2025-09-20更新**
 
 ## 📦 项目定位
 
@@ -950,34 +950,34 @@ public class Startup
 ## 🎯 最佳实践
 
 ### 1. 配置管理
-- ✅ **使用强类型配置类**: `ConfigurationHelper.GetSection<JwtSettings>("JwtSettings")`
-- ✅ **验证必需配置项**: `GetRequiredValue()` 启动时检查配置完整性
-- ✅ **环境特定配置分离**: `appsettings.Development.json` vs. `appsettings.Production.json`
-- ✅ **敏感信息使用Secret Manager**: 开发环境 `dotnet user-secrets set "ApiKey" "value"`
+-  **使用强类型配置类**: `ConfigurationHelper.GetSection<JwtSettings>("JwtSettings")`
+-  **验证必需配置项**: `GetRequiredValue()` 启动时检查配置完整性
+-  **环境特定配置分离**: `appsettings.Development.json` vs. `appsettings.Production.json`
+-  **敏感信息使用Secret Manager**: 开发环境 `dotnet user-secrets set "ApiKey" "value"`
 
 ### 2. 安全原则
-- ✅ **密码必须哈希存储**: 使用 `PasswordHelper.Hash()`，禁止明文存储
-- ✅ **强制密码复杂度要求**: `CheckPasswordStrength()` ≥ Good
-- ✅ **JWT令牌定期刷新**: AccessToken 60分钟 + RefreshToken 7天
-- ✅ **基于角色的访问控制**: 使用 `[Authorize(Policy = "AdminOnly")]`
+-  **密码必须哈希存储**: 使用 `PasswordHelper.Hash()`，禁止明文存储
+-  **强制密码复杂度要求**: `CheckPasswordStrength()` ≥ Good
+-  **JWT令牌定期刷新**: AccessToken 60分钟 + RefreshToken 7天
+-  **基于角色的访问控制**: 使用 `[Authorize(Policy = "AdminOnly")]`
 
 ### 3. 扩展方法
-- ✅ **保持方法简洁单一**: 每个扩展方法只做一件事
-- ✅ **提供默认参数值**: `AddMemoryCacheService()` 提供默认缓存配置
-- ✅ **异常处理完善**: `GetConnectionString()` 配置缺失时抛出清晰异常
-- ✅ **返回链式调用支持**: `services.AddJwtAuthentication().AddRoleBasedAuthorization()`
+-  **保持方法简洁单一**: 每个扩展方法只做一件事
+-  **提供默认参数值**: `AddMemoryCacheService()` 提供默认缓存配置
+-  **异常处理完善**: `GetConnectionString()` 配置缺失时抛出清晰异常
+-  **返回链式调用支持**: `services.AddJwtAuthentication().AddRoleBasedAuthorization()`
 
 ### 4. 工具类设计
-- ✅ **静态类 + 静态方法**: 无状态工具类使用 `static class`
-- ✅ **线程安全**: `PasswordHasher<object>` 使用线程安全的静态实例
-- ✅ **参数验证**: 所有公共方法验证参数（null/empty检查）
-- ✅ **文档注释**: 所有公共方法提供XML文档注释
+-  **静态类 + 静态方法**: 无状态工具类使用 `static class`
+-  **线程安全**: `PasswordHasher<object>` 使用线程安全的静态实例
+-  **参数验证**: 所有公共方法验证参数（null/empty检查）
+-  **文档注释**: 所有公共方法提供XML文档注释
 
 ### 5. 依赖管理
-- ✅ **最小依赖**: 仅依赖必需的NuGet包
-- ✅ **可选依赖**: Redis缓存可选，降级为内存缓存
-- ✅ **版本锁定**: 使用明确的NuGet包版本（8.0.x）
-- ✅ **定期更新**: 跟随.NET版本更新依赖包
+-  **最小依赖**: 仅依赖必需的NuGet包
+-  **可选依赖**: Redis缓存可选，降级为内存缓存
+-  **版本锁定**: 使用明确的NuGet包版本（8.0.x）
+-  **定期更新**: 跟随.NET版本更新依赖包
 
 ## 📈 性能优化
 

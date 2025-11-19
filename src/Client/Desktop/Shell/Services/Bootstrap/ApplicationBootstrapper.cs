@@ -42,7 +42,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
         {
             _logger.LogInformation("开始初始化核心服务");
 
-            // ✅ 不捕获异常，让异常向上传播到 App.InitializeApplicationAsync
+            //  不捕获异常，让异常向上传播到 App.InitializeApplicationAsync
             await _initializationService.InitializeCoreServicesAsync();
 
             _logger.LogInformation("核心服务初始化完成");
@@ -77,7 +77,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
         {
             _logger.LogInformation("注册全局异常处理器");
 
-            // ✅ 不捕获异常，让错误处理服务初始化失败时直接终止应用
+            //  不捕获异常，让错误处理服务初始化失败时直接终止应用
             // 这是关键的基础设施，初始化失败应该触发 Fail-Fast
             _errorHandlingService.RegisterGlobalExceptionHandlers();
 

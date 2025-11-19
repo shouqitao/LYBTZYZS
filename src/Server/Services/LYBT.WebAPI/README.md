@@ -1270,7 +1270,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: 数据库更新失败
 
 **RESTful风格**:
 ```csharp
-// ✅ 正确：遵循RESTful规范
+//  正确：遵循RESTful规范
 [HttpGet]                     // GET /api/v1/patients (查询列表)
 [HttpGet("{id}")]             // GET /api/v1/patients/{id} (查询单个)
 [HttpPost]                    // POST /api/v1/patients (创建)
@@ -1285,7 +1285,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: 数据库更新失败
 
 **统一返回格式**:
 ```csharp
-// ✅ 所有API都返回ApiResponse<T>
+//  所有API都返回ApiResponse<T>
 public async Task<IActionResult> GetById(Guid id)
 {
     var patient = await _patientService.GetByIdAsync(id);
@@ -1311,7 +1311,7 @@ public async Task<IActionResult> GetById(Guid id)
 
 **依赖注入原则**:
 ```csharp
-// ✅ 正确：通过构造函数注入
+//  正确：通过构造函数注入
 public class PatientsController : ControllerBase
 {
     private readonly IPatientService _patientService;
@@ -1339,7 +1339,7 @@ public class PatientsController : ControllerBase
 
 **异步编程规范**:
 ```csharp
-// ✅ 正确：所有I/O操作使用async/await
+//  正确：所有I/O操作使用async/await
 [HttpGet("{id}")]
 public async Task<IActionResult> GetById(Guid id)
 {
@@ -1360,7 +1360,7 @@ public IActionResult GetById(Guid id)
 
 **业务逻辑异常**:
 ```csharp
-// ✅ 正确：明确的异常类型
+//  正确：明确的异常类型
 public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
 {
     try
@@ -1392,7 +1392,7 @@ public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
 
 **结构化日志**:
 ```csharp
-// ✅ 正确：使用结构化日志（可查询）
+//  正确：使用结构化日志（可查询）
 _logger.LogInformation(
     "创建患者成功: {PatientId}, {PatientName}, {Age}",
     patient.Id,
@@ -1425,7 +1425,7 @@ _logger.LogCritical(ex, "应用程序启动失败");
 
 **输入验证**:
 ```csharp
-// ✅ 正确：使用FluentValidation验证DTO
+//  正确：使用FluentValidation验证DTO
 public class CreatePatientDtoValidator : AbstractValidator<CreatePatientDto>
 {
     public CreatePatientDtoValidator()
@@ -1442,7 +1442,7 @@ public class CreatePatientDtoValidator : AbstractValidator<CreatePatientDto>
     }
 }
 
-// ✅ 在Controller中自动触发验证
+//  在Controller中自动触发验证
 [HttpPost]
 public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
 {
@@ -1465,7 +1465,7 @@ public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
 
 **授权策略**:
 ```csharp
-// ✅ 正确：使用授权策略保护端点
+//  正确：使用授权策略保护端点
 [HttpDelete("{id}")]
 [Authorize(Policy = "AdminOnly")] // 仅管理员可删除
 public async Task<IActionResult> Delete(Guid id)
@@ -1535,7 +1535,7 @@ builder.Services.AddCors(options =>
 
 **添加XML注释**:
 ```csharp
-// ✅ 在Controller方法上添加XML注释
+//  在Controller方法上添加XML注释
 /// <summary>
 /// 创建患者
 /// </summary>
@@ -1571,7 +1571,7 @@ builder.Services.AddSwaggerGen(options =>
 
 **全异步I/O操作**:
 ```csharp
-// ✅ 正确：所有I/O操作使用async/await
+//  正确：所有I/O操作使用async/await
 public async Task<IActionResult> GetPaged(int pageIndex, int pageSize)
 {
     var result = await _patientService.GetPagedAsync(pageIndex, pageSize);
@@ -1590,7 +1590,7 @@ public IActionResult GetPaged(int pageIndex, int pageSize)
 
 **分页查询**:
 ```csharp
-// ✅ 正确：使用Skip/Take分页
+//  正确：使用Skip/Take分页
 public async Task<PagedResult<PatientDto>> GetPagedAsync(int pageIndex, int pageSize)
 {
     var query = _dbContext.Patients
@@ -1622,7 +1622,7 @@ public async Task<List<PatientDto>> GetAllAsync()
 
 **Select投影优化**:
 ```csharp
-// ✅ 正确：只查询需要的字段
+//  正确：只查询需要的字段
 public async Task<List<PatientSummaryDto>> GetSummariesAsync()
 {
     return await _dbContext.Patients
@@ -1674,7 +1674,7 @@ public async Task<IActionResult> GetPaged(int pageIndex, int pageSize)
 
 **DbContext生命周期管理**:
 ```csharp
-// ✅ 正确：使用Scoped生命周期（每个请求一个实例）
+//  正确：使用Scoped生命周期（每个请求一个实例）
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")),
     ServiceLifetime.Scoped); // 默认Scoped
@@ -1691,7 +1691,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 **Token安全存储** (Desktop客户端):
 ```csharp
-// ✅ 正确：使用DPAPI加密存储Token
+//  正确：使用DPAPI加密存储Token
 using System.Security.Cryptography;
 
 public class TokenStorage
@@ -1755,7 +1755,7 @@ export ConnectionStrings__DefaultConnection="your-connection-string"
 
 **防止SQL注入** (通过EF Core参数化查询):
 ```csharp
-// ✅ 正确：EF Core自动参数化
+//  正确：EF Core自动参数化
 public async Task<List<PatientDto>> SearchAsync(string keyword)
 {
     return await _dbContext.Patients

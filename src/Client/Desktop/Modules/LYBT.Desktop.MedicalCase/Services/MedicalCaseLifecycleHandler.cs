@@ -1,4 +1,4 @@
-using LYBT.Desktop.MedicalCase.Components;
+﻿using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
@@ -46,7 +46,7 @@ public class MedicalCaseLifecycleHandler
                 return (false, Guid.Empty, errorMessage);
             }
 
-            _logger.LogInformation("✅ SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
+            _logger.LogInformation(" SessionManager验证通过，当前用户：{UserName}（ID: {UserId}）",
                 _sessionManager!.CurrentUser!.UserName, _sessionManager.CurrentUser.Id);
 
             // 构建MedicalCaseInputDto（Epic #1961: 统一InputDto）
@@ -72,7 +72,7 @@ public class MedicalCaseLifecycleHandler
                 return (false, Guid.Empty, "创建医案失败：服务返回空结果");
             }
 
-            _logger.LogInformation("✅ MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
+            _logger.LogInformation(" MedicalCase创建成功，ID: {MedicalCaseId}", createdDto.Id);
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs

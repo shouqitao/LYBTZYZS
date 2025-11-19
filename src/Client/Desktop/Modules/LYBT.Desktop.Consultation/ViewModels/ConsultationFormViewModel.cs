@@ -225,7 +225,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
         /// </summary>
         public string Step1CompletedAtText =>
             Step1CompletedAt.HasValue
-                ? $"✅ Step1已完成（{Step1CompletedAt.Value:yyyy-MM-dd HH:mm}）"
+                ? $" Step1已完成（{Step1CompletedAt.Value:yyyy-MM-dd HH:mm}）"
                 : string.Empty;
 
         /// <summary>

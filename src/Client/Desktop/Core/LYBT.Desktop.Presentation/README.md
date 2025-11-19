@@ -617,10 +617,10 @@ PrescriptionViewModel（处方视图）
 ### 错误处理分级策略
 | 错误类别 | 用户提示 | 日志级别 | 是否可重试 |
 |---------|---------|---------|-----------|
-| Network | "网络连接失败，请检查网络" | Warning | ✅ 是 |
+| Network | "网络连接失败，请检查网络" | Warning |  是 |
 | Validation | "输入数据不符合要求" | Info | ❌ 否 |
 | Business | "操作失败：{业务规则}" | Warning | ❌ 否 |
-| System | "系统错误，请联系管理员" | Error | ✅ 视情况 |
+| System | "系统错误，请联系管理员" | Error |  视情况 |
 | Critical | "严重错误，应用将退出" | Critical | ❌ 否 |
 
 ## 📚 详细文档
@@ -633,16 +633,16 @@ PrescriptionViewModel（处方视图）
 ## 🔄 版本历史
 
 ### v2.0 (2025-10-10) - 模块化重构
-- ✅ 从LYBT.Desktop.Infrastructure迁移UI基础设施服务
-- ✅ 新增Navigation/导航服务
-- ✅ 新增Notifications/通知服务（13个方法+2个事件）
-- ✅ 新增UnifiedErrorHandlingService/统一错误处理服务（20个方法+2个事件）
-- ✅ 新增Theming/主题服务
-- ✅ 新增UserExperience/用户体验服务（29个方法/属性/事件）
-- ✅ 新增Components/PatientSelector跨模块组件（34个成员）
-- ✅ 新增Mapping/AutoMapper配置（支持跨模块组件的DTO转换）
-- ✅ 新增DependencyInjection/Prism容器扩展（支持ViewModel注册）
-- ✅ 实施Issue #1114: Desktop端模块化架构重构
+-  从LYBT.Desktop.Infrastructure迁移UI基础设施服务
+-  新增Navigation/导航服务
+-  新增Notifications/通知服务（13个方法+2个事件）
+-  新增UnifiedErrorHandlingService/统一错误处理服务（20个方法+2个事件）
+-  新增Theming/主题服务
+-  新增UserExperience/用户体验服务（29个方法/属性/事件）
+-  新增Components/PatientSelector跨模块组件（34个成员）
+-  新增Mapping/AutoMapper配置（支持跨模块组件的DTO转换）
+-  新增DependencyInjection/Prism容器扩展（支持ViewModel注册）
+-  实施Issue #1114: Desktop端模块化架构重构
 
 ---
 

@@ -152,7 +152,7 @@ namespace LYBT.Tests.Common
             // 集成测试使用真实的Serilog logger（已在Program.cs中配置）
             // MockLogger仅供单元测试使用
 
-            // ✅ Issue #1668 Solution A：使用真实JWT Token（在GenerateTestToken中生成）
+            //  Issue #1668 Solution A：使用真实JWT Token（在GenerateTestToken中生成）
             // 不需要自定义认证处理器，直接使用Program.cs中配置的JWT认证
 
             // 子类可重写此方法来添加额外的服务配置
