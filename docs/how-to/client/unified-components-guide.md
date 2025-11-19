@@ -216,28 +216,33 @@
 
 ### UnifiedManagementTable
 
-**用途**: 统一的数据表格组件,支持虚拟化、选中绑定、空状态显示。
+**用途**: 统一的数据表格组件,支持虚拟化、选中绑定、空状态显示、批量选择。
 
 **位置**: `LYBT.Desktop.Infrastructure.Controls.UnifiedManagementTable`
+
+**Issue #2150**: 添加批量删除功能支持(checkbox列、全选、Ctrl+A快捷键)
 
 #### 依赖属性
 
 | 属性 | 类型 | 说明 | 绑定模式 |
 |-----|------|------|---------|
 | `ItemsSource` | `IEnumerable` | 数据源 | OneWay |
-| `SelectedItem` | `object` | 选中项 | TwoWay |
+| `SelectedItem` | `object` | 单选选中项 | TwoWay |
+| `SelectedItems` | `IList` | 多选选中项集合(批量操作) | TwoWay |
+| `ShowCheckBoxColumn` | `bool` | 是否显示CheckBox选择列 | OneWay |
 | `ShowEmptyState` | `bool` | 是否显示空状态 | OneWay |
 | `EmptyStateText` | `string` | 空状态文本 | OneWay |
+| `SelectAllCommand` | `ICommand` | 全选/取消全选命令 | OneWay |
 
 #### 使用示例
 
+**基础示例(单选模式)**:
 ```xaml
 <controls:UnifiedManagementTable
     ItemsSource="{Binding Patients}"
     SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
     EmptyStateText="暂无患者数据">
 
-    <!-- 注意: Columns 通过 DataGrid 的 Columns 属性定义 -->
     <controls:UnifiedManagementTable.Columns>
         <DataGridTextColumn Header="姓名" Binding="{Binding Name}" Width="120" />
         <DataGridTextColumn Header="性别" Binding="{Binding Gender}" Width="80" />
@@ -258,9 +263,83 @@
 </controls:UnifiedManagementTable>
 ```
 
+**批量删除模式(Issue #2150)**:
+```xaml
+<!-- 表格 - 启用批量选择 -->
+<controls:UnifiedManagementTable
+    ItemsSource="{Binding Items}"
+    SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+    ShowCheckBoxColumn="True"
+    EmptyStateText="暂无数据">
+
+    <controls:UnifiedManagementTable.Columns>
+        <!-- 数据列定义 -->
+        <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" />
+        <DataGridTextColumn Header="描述" Binding="{Binding Description}" Width="2*" />
+    </controls:UnifiedManagementTable.Columns>
+</controls:UnifiedManagementTable>
+
+<!-- 批量操作按钮 -->
+<StackPanel Orientation="Horizontal" Margin="{StaticResource SpacingMedium}">
+    <TextBlock Text="{Binding SelectedItems.Count, StringFormat='已选择 {0} 项'}"
+               VerticalAlignment="Center"
+               Margin="{StaticResource SpacingSmall}" />
+    <Button Content="批量删除"
+            Command="{Binding BatchDeleteCommand}"
+            Style="{StaticResource DangerButton}"
+            Padding="{StaticResource SpacingSmall}" />
+</StackPanel>
+```
+
+**ViewModel示例**:
+```csharp
+using System.Collections.ObjectModel;
+using LYBT.Desktop.Models.ViewModels.Base;
+
+public class HerbManagementViewModel : UnifiedListViewModelBase<HerbDto>
+{
+    // 继承自UnifiedListViewModelBase的SelectedItems属性会自动绑定
+
+    // 批量删除命令已由基类提供: BatchDeleteCommand
+    // 只需实现抽象方法OnExecuteBatchDeleteAsync
+
+    protected override async Task OnExecuteBatchDeleteAsync(List<HerbDto> items)
+    {
+        // 业务逻辑: 逐个删除
+        var successCount = 0;
+        var failureCount = 0;
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var success = await _herbRepository.DeleteAsync(item.Id);
+                if (success) successCount++;
+                else failureCount++;
+            }
+            catch (Exception ex)
+            {
+                failureCount++;
+                Logger.LogError(ex, "删除中药材失败: {Name}", item.Name);
+            }
+        }
+
+        // 显示结果反馈
+        var message = $"批量删除完成!\\n\\n成功：{successCount}个\\n失败：{failureCount}个";
+        await ShowSuccessMessageAsync(message);
+    }
+}
+```
+
+**快捷键支持(Issue #2160)**:
+- **Ctrl+A**: 全选/取消全选(自动启用)
+- **表头CheckBox**: 点击全选/部分选中/未选中三态切换
+
 **⚠️ 重要提示**:
-- DataGrid的Columns是通过UserControl内部的DataGrid公开的,不需要额外的Columns依赖属性
-- 空状态在ItemsSource为null时自动显示
+- 设置`ShowCheckBoxColumn="True"`自动添加checkbox列和全选功能
+- `SelectedItems`绑定到ViewModel的ObservableCollection<T>
+- 继承`UnifiedListViewModelBase`即可获得批量删除基础支持
+- 子类只需实现`OnExecuteBatchDeleteAsync`方法
 
 ---
 
