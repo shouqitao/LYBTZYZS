@@ -1388,10 +1388,10 @@ public class FormulaManagementViewModel : UnifiedViewModelBase
 - **Repository**:封装数据访问逻辑，ViewModel通过接口依赖Repository
 
 **设计优势**:
-- ✅ UI与业务逻辑完全分离，易于单元测试（ViewModel可独立测试）
-- ✅ ObservableCollection自动触发UI更新，无需手动刷新
-- ✅ AsyncDelegateCommand支持CanExecute逻辑，自动管理按钮禁用状态
-- ✅ Prism RegionManager支持模块化导航，避免View间直接依赖
+-  UI与业务逻辑完全分离，易于单元测试（ViewModel可独立测试）
+-  ObservableCollection自动触发UI更新，无需手动刷新
+-  AsyncDelegateCommand支持CanExecute逻辑，自动管理按钮禁用状态
+-  Prism RegionManager支持模块化导航，避免View间直接依赖
 
 **反模式（禁止）**:
 - ❌ ViewModel中直接操作UI控件（如MessageBox.Show）
@@ -1400,13 +1400,13 @@ public class FormulaManagementViewModel : UnifiedViewModelBase
 
 **代码示例**:
 ```csharp
-// ✅ 正确: ViewModel通过IDialogService显示消息
+//  正确: ViewModel通过IDialogService显示消息
 await _dialogService.ShowAlertAsync("提示", "保存成功");
 
 // ❌ 错误: ViewModel直接操作UI
 MessageBox.Show("保存成功");
 
-// ✅ 正确: ViewModel依赖IFormulaRepository接口
+//  正确: ViewModel依赖IFormulaRepository接口
 private readonly IFormulaRepository _formulaRepository;
 
 // ❌ 错误: ViewModel依赖具体实现
@@ -1421,10 +1421,10 @@ private readonly FormulaRepository _formulaRepository;
 - **ApiService层**:封装HTTP通信，统一处理认证、错误、序列化
 
 **设计优势**:
-- ✅ ViewModel不关心数据来源（HTTP API、本地缓存、Mock数据等）
-- ✅ Repository返回裸类型（FormulaDto），Client端不需要Result<T>包装
-- ✅ ApiService统一处理JWT认证、错误码映射、重试机制
-- ✅ 易于切换数据源（如离线模式、Mock测试）
+-  ViewModel不关心数据来源（HTTP API、本地缓存、Mock数据等）
+-  Repository返回裸类型（FormulaDto），Client端不需要Result<T>包装
+-  ApiService统一处理JWT认证、错误码映射、重试机制
+-  易于切换数据源（如离线模式、Mock测试）
 
 **调用链**:
 ```
@@ -1451,10 +1451,10 @@ FormulaManagementViewModel
 - **FormulaValidator**:验证器（封装必填项、药材数量验证等逻辑）
 
 **设计优势**:
-- ✅ 降低ViewModel复杂度（FormulaDetailViewModel从1000+行降至675行）
-- ✅ 提高代码复用性（多个ViewModel共享计算器、验证器）
-- ✅ 易于单元测试（辅助类可独立测试）
-- ✅ 符合单一职责原则（每个类只负责一件事）
+-  降低ViewModel复杂度（FormulaDetailViewModel从1000+行降至675行）
+-  提高代码复用性（多个ViewModel共享计算器、验证器）
+-  易于单元测试（辅助类可独立测试）
+-  符合单一职责原则（每个类只负责一件事）
 
 **反模式（禁止）**:
 - ❌ 所有逻辑都写在ViewModel中（导致ViewModel过于庞大）
@@ -1468,9 +1468,9 @@ FormulaManagementViewModel
 - **数据一致性**:克隆后的验方独立存储，修改不影响原验方
 
 **设计优势**:
-- ✅ 减少重复录入工作（复制验方比重新创建快10倍）
-- ✅ 支持个性化调整（克隆后可修改药材用量、添加/删除药材）
-- ✅ 验方库积累（将处方转换为验方，形成个人经验库）
+-  减少重复录入工作（复制验方比重新创建快10倍）
+-  支持个性化调整（克隆后可修改药材用量、添加/删除药材）
+-  验方库积累（将处方转换为验方，形成个人经验库）
 
 **代码示例**:
 ```csharp
@@ -1489,9 +1489,9 @@ POST /api/v1/formulas/{id}/clone?newName=六味地黄丸_副本
 - **数据完整性保护**:防止使用包含无效药材的验方创建处方
 
 **设计优势**:
-- ✅ 及时发现数据问题（药材被删除后及时通知医生）
-- ✅ 提高处方质量（避免使用无效药材）
-- ✅ 支持批量验证（一次性检查所有待验证验方）
+-  及时发现数据问题（药材被删除后及时通知医生）
+-  提高处方质量（避免使用无效药材）
+-  支持批量验证（一次性检查所有待验证验方）
 
 **代码示例**:
 ```csharp
@@ -1516,10 +1516,10 @@ POST /api/v1/formulas/{id}/validate-herbs
 - **批量操作**:支持一次性导入/导出数百个验方
 
 **设计优势**:
-- ✅ 快速批量录入（从Excel导入比手动录入快100倍）
-- ✅ 降低学习成本（医生熟悉Excel，无需学习新界面）
-- ✅ 支持离线编辑（在Excel中编辑验方，完成后一次性导入）
-- ✅ 智能容错（别名匹配减少导入失败率）
+-  快速批量录入（从Excel导入比手动录入快100倍）
+-  降低学习成本（医生熟悉Excel，无需学习新界面）
+-  支持离线编辑（在Excel中编辑验方，完成后一次性导入）
+-  智能容错（别名匹配减少导入失败率）
 
 **代码示例**:
 ```csharp
@@ -1551,9 +1551,9 @@ GET /api/v1/formulas/export
 - **AsyncDelegateCommand**:Prism异步命令，支持自动禁用按钮
 
 **设计优势**:
-- ✅ UI始终保持响应（即使数据加载耗时5秒，用户仍可操作其他按钮）
-- ✅ 防止重复提交（IsBusy=true时自动禁用保存按钮）
-- ✅ 用户体验更好（显示Loading动画而不是界面卡顿）
+-  UI始终保持响应（即使数据加载耗时5秒，用户仍可操作其他按钮）
+-  防止重复提交（IsBusy=true时自动禁用保存按钮）
+-  用户体验更好（显示Loading动画而不是界面卡顿）
 
 **反模式（禁止）**:
 - ❌ 同步阻塞方法（如`Task.Wait()`、`.Result`）
@@ -1562,7 +1562,7 @@ GET /api/v1/formulas/export
 
 **代码示例**:
 ```csharp
-// ✅ 正确: 使用AsyncDelegateCommand
+//  正确: 使用AsyncDelegateCommand
 public AsyncDelegateCommand SaveCommand { get; }
 
 private async Task SaveAsync()
@@ -1594,7 +1594,38 @@ private void Save()
 - **开发指南**:[docs/how-to-guides/client/formula-development.md](../../../../docs/how-to-guides/client/formula-development.md) *(待创建)*
 - **Server端Formula模块**:[docs/reference/modules/formula/server.md](../../../../docs/reference/modules/formula/server.md) *(待创建)*
 
+## 🐛 Bug修复记录
+
+### 2025-11-19: 验方编辑功能5个关键Bug修复 (Commit: b1d8c0065)
+
+**1. 修复保存验证失败 (400 Bad Request)**
+- **问题**: SaveFormulaAsync缺少Property和Category必填字段
+- **修复**: 添加property和category参数到SaveFormulaAsync方法
+- **文件**: IFormulaCommandHandler.cs, FormulaCommandHandler.cs, FormulaDetailViewModel.cs
+
+**2. 修复剂量数据丢失**
+- **问题**: 剂量TextBox绑定到Quantity属性，但ToDto()读取Dosage，导致所有剂量为0
+- **修复**: HerbCardControl.xaml:89 绑定从Quantity改为Dosage
+- **文件**: HerbCardControl.xaml
+
+**3. 修复保存后显示空白卡片**
+- **问题**: SaveAsync中Formula赋值触发LoadFormulaData，IsEditMode=true导致添加空白槽位
+- **修复**: 调整执行顺序，先设置IsEditMode=false，再赋值Formula
+- **文件**: FormulaDetailViewModel.cs
+
+**4. 修复选择药材后弹出建议列表**
+- **问题**: SelectedHerb设置HerbName触发FilterHerbs()重新填充，导致Popup保持显示
+- **修复**: FilterHerbs()添加精确匹配检测，选择后的药材不添加到建议列表
+- **文件**: FormulaHerbItemViewModel.cs
+
+**5. 修复查看模式下删除按钮显示**
+- **问题**: 查看模式下删除按钮应该隐藏而不是禁用
+- **修复**: 删除按钮绑定从IsEnabled改为Visibility，添加BooleanToVisibilityConverter
+- **文件**: HerbCardControl.xaml
+
+**技术要点**: WPF数据绑定属性名必须精确匹配，Property setter执行顺序影响UI状态，Popup显示由FilteredHerbs.Count控制
+
 ---
 
-**最后更新**:2025-10-29
+**最后更新**:2025-11-19
 **维护负责**:Client端开发组
