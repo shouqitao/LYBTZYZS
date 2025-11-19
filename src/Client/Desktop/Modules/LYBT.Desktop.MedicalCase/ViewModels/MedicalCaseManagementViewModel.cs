@@ -198,6 +198,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <summary>
+        /// 批量删除病历（实现基类抽象方法）
+        /// TODO: MedicalCase模块批量删除功能待实现
+        /// </summary>
+        protected override async Task OnExecuteBatchDeleteAsync(List<MedicalCaseDto> items)
+        {
+            // TODO: 待实现批量删除逻辑
+            await Task.CompletedTask;
+            Logger.LogWarning("MedicalCase模块批量删除功能尚未实现");
+        }
+
         #endregion
 
         #region 生命周期

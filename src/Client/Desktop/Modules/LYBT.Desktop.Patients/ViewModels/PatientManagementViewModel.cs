@@ -175,8 +175,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
-        /// 批量删除患者（实现基类虚方法）
+        /// 批量删除患者（实现基类抽象方法）
+        /// Issue #2157: BR-001（权限控制）、BR-003（结果反馈）、BR-004（失败不影响其他）
         /// </summary>
+        /// <remarks>
+        /// 基类ExecuteBatchDeleteAsync已处理确认对话框（BR-002），此方法只负责执行删除逻辑
+        /// </remarks>
         protected override async Task OnExecuteBatchDeleteAsync(List<PatientDto> items)
         {
             if (items == null || items.Count == 0)
@@ -185,84 +189,67 @@ namespace LYBT.Desktop.Patients.ViewModels
                 return;
             }
 
-            Logger.LogDebug("批量删除患者，数量: {Count}", items.Count);
+            Logger.LogInformation("开始批量删除患者，数量: {Count}", items.Count);
 
-            try
+            // BR-003: 统计删除结果
+            var successCount = 0;
+            var failureCount = 0;
+            var failedItems = new List<string>();
+
+            // BR-004: 逐个删除，部分失败不影响其他
+            foreach (var item in items)
             {
-                // 确认删除
-                var confirmed = await ShowConfirmationAsync(
-                    $"确认删除选中的 {items.Count} 个患者吗？此操作不可恢复。",
-                    "批量删除确认");
-
-                if (!confirmed)
+                try
                 {
-                    Logger.LogDebug("用户取消批量删除");
-                    return;
-                }
-
-                // 执行批量删除
-                var successCount = 0;
-                var failureCount = 0;
-                var failedItems = new List<string>();
-
-                foreach (var item in items)
-                {
-                    try
+                    // BR-001: 调用CommandHandler.DeletePatientAsync（包含权限检查）
+                    var result = await _commandHandler.DeletePatientAsync(item.Id);
+                    if (result.IsSuccess)
                     {
-                        var result = await _commandHandler.DeletePatientAsync(item.Id);
-                        if (result.IsSuccess)
-                        {
-                            successCount++;
-                            Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
-                        }
-                        else
-                        {
-                            failureCount++;
-                            failedItems.Add($"{item.Name}({result.ErrorMessage})");
-                            Logger.LogWarning("删除患者失败: {PatientName}, {ErrorMessage}", 
-                                item.Name, result.ErrorMessage);
-                        }
+                        successCount++;
+                        Logger.LogInformation("成功删除患者: {PatientName}", item.Name);
                     }
-                    catch (Exception ex)
+                    else
                     {
                         failureCount++;
-                        failedItems.Add(item.Name);
-                        Logger.LogError(ex, "删除患者时发生异常: {PatientName}", item.Name);
+                        failedItems.Add($"{item.Name}（{result.ErrorMessage}）");
+                        Logger.LogWarning("删除患者失败: {PatientName}, {ErrorMessage}",
+                            item.Name, result.ErrorMessage);
                     }
                 }
-
-                // 显示结果汇总
-                var message = $"批量删除完成！\n\n" +
-                              $"成功：{successCount}个\n" +
-                              $"失败：{failureCount}个";
-
-                if (failureCount > 0 && failedItems.Count > 0)
+                catch (Exception ex)
                 {
-                    message += $"\n\n失败的患者：\n{string.Join("、", failedItems.Take(5))}";
-                    if (failedItems.Count > 5)
-                    {
-                        message += $"等{failedItems.Count}个";
-                    }
+                    failureCount++;
+                    failedItems.Add(item.Name);
+                    Logger.LogError(ex, "删除患者时发生异常: {PatientName}", item.Name);
                 }
-
-                if (failureCount > 0)
-                {
-                    await ShowWarningMessageAsync(message);
-                }
-                else
-                {
-                    await ShowSuccessMessageAsync(message);
-                }
-
-                Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
-                    successCount, failureCount);
             }
-            catch (Exception ex)
+
+            // BR-003: 生成结果消息
+            var message = $"批量删除完成！\n\n" +
+                          $"成功：{successCount}个\n" +
+                          $"失败：{failureCount}个";
+
+            if (failureCount > 0 && failedItems.Count > 0)
             {
-                Logger.LogError(ex, "批量删除患者时发生异常");
-                var contextMessage = $"批量删除患者 - 模块:{nameof(PatientManagementViewModel)}";
-                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+                message += $"\n\n失败的患者：\n{string.Join("、", failedItems.Take(5))}";
+                if (failedItems.Count > 5)
+                {
+                    message += $"等{failedItems.Count}个";
+                }
             }
+
+            // BR-003: 显示结果反馈
+            if (failureCount > 0)
+            {
+                await ShowWarningMessageAsync(message);
+            }
+            else
+            {
+                await ShowSuccessMessageAsync(message);
+            }
+
+            Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
+                successCount, failureCount);
         }
 
         #endregion
