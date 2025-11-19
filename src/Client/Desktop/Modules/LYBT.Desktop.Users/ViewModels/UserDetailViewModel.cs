@@ -174,7 +174,8 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private bool CanExecuteEditUser()
         {
-            return User != null && !IsLoading;
+            // Issue #2163: 添加IsBusy检查，防止繁忙时执行编辑操作
+            return User != null && !IsLoading && !IsBusy;
         }
 
         /// <summary>
@@ -281,6 +282,16 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             EditUserCommand.RaiseCanExecuteChanged();
             ToggleStatusCommand.RaiseCanExecuteChanged();
+        }
+
+        /// <summary>
+        /// 重写基类的 RefreshCommands 方法，响应 IsBusy 等属性变化
+        /// Issue #2163: 当 IsBusy 改变时，自动刷新命令状态
+        /// </summary>
+        protected override void RefreshCommands()
+        {
+            base.RefreshCommands();
+            RaiseCanExecuteChanged();
         }
     }
 }
