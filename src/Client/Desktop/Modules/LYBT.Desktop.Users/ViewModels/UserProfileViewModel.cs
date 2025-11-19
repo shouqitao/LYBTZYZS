@@ -1,6 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Events;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
@@ -312,9 +311,6 @@ namespace LYBT.Desktop.Users.ViewModels
                 if (result.success && result.user != null)
                 {
                     await ShowSuccessMessageAsync("个人资料保存成功");
-
-                    // 发布个人资料更新事件
-                    EventAggregator.GetEvent<UserProfileUpdatedEvent>().Publish(result.user);
 
                     // 返回上一页
                     NavigateBack("ContentRegion");
