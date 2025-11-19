@@ -1,6 +1,5 @@
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Events; // Issue #1928: 添加Events命名空间
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
@@ -365,17 +364,19 @@ namespace LYBT.Desktop.Users.ViewModels
                     $"新密码: {response.TemporaryPassword}\n\n" +
                     $"请妥善保管并告知用户。");
 
-                // Issue #1928: 发布事件通知订阅者
-                EventAggregator.GetEvent<UserPasswordResetEvent>().Publish(User);
-
                 Logger.LogInformation(
                     "用户 {UserId} 密码重置成功 (要求修改密码: {RequireChange}, 发送通知: {SendNotification})",
                     _targetUserId,
                     RequirePasswordChange,
                     SendNotification);
 
-                // 返回上一页
-                NavigateBack("ContentRegion");
+                // 返回上一页并传递刷新参数
+                NavigateBack("ContentRegion", new NavigationParameters
+                {
+                    { "RefreshRequired", true },
+                    { "Operation", "PasswordReset" },
+                    { "User", User }
+                });
             }
             catch (Exception ex)
             {

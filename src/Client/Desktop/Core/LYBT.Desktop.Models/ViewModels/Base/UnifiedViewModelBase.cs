@@ -114,6 +114,63 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
+        /// 导航回退（带参数）
+        /// Issue #2166: 支持在回退时传递参数给上一个页面
+        /// </summary>
+        protected virtual void NavigateBack(string regionName, NavigationParameters parameters)
+        {
+            try
+            {
+                var region = RegionManager.Regions[regionName];
+                if (region?.NavigationService?.Journal?.CanGoBack == true)
+                {
+                    // 获取上一个导航条目
+                    var journal = region.NavigationService.Journal;
+                    var currentEntry = journal.CurrentEntry;
+
+                    if (currentEntry != null && journal.CanGoBack)
+                    {
+                        // 回退一步
+                        journal.GoBack();
+
+                        // 获取回退后的当前页面ViewModel（使用反射访问DataContext）
+                        var currentView = region.ActiveViews.FirstOrDefault();
+                        if (currentView != null)
+                        {
+                            var dataContextProperty = currentView.GetType().GetProperty("DataContext");
+                            var dataContext = dataContextProperty?.GetValue(currentView);
+
+                            if (dataContext is INavigationAware navigationAware)
+                            {
+                                // 创建导航上下文并调用OnNavigatedTo
+                                var navigationContext = new NavigationContext(
+                                    region.NavigationService,
+                                    new Uri(currentEntry.Uri.OriginalString, UriKind.Relative),
+                                    parameters);
+
+                                navigationAware.OnNavigatedTo(navigationContext);
+                                Logger.LogDebug("导航回退成功并传递参数: {RegionName}", regionName);
+                            }
+                            else
+                            {
+                                Logger.LogDebug("导航回退成功: {RegionName}", regionName);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning("无法回退，导航历史为空: {RegionName}", regionName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "导航回退失败");
+                HandleError(ex, "导航回退");
+            }
+        }
+
+        /// <summary>
         /// 导航前进
         /// </summary>
         protected virtual void NavigateForward(string regionName)

@@ -2,7 +2,6 @@
 using System.Windows.Input; // Issue #2003: ICommand
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Events; // Issue #1927: 添加Events命名空间
 using LYBT.Desktop.Users.Interfaces; // Issue #2003: IUserRepository
 using LYBT.Desktop.Users.ViewModels.Components; // Issue #1785: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Common; // Issue #1995: PagedResult<T>
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs; // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -26,9 +24,6 @@ namespace LYBT.Desktop.Users.ViewModels
 
         // Issue #1785: 使用CommandHandler替代直接Repository访问
         private readonly UserCommandHandler _commandHandler;
-
-        // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
-        private readonly IDialogService _dialogService;
 
         // Issue #2003: 批量导入功能依赖
         private readonly IUserRepository _userRepository;
@@ -166,7 +161,6 @@ namespace LYBT.Desktop.Users.ViewModels
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IUserRepository userRepository, // Issue #2003: 批量导入功能
             ICommonDialogService commonDialogService, // Issue #2003: 批量导入功能
-            IDialogService dialogService, // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -180,9 +174,6 @@ namespace LYBT.Desktop.Users.ViewModels
             // Issue #2003: 批量导入功能
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _commonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
-
-            // 临时保留：Sprint 2 (#1928) 将迁移 ResetPassword Dialog
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -198,13 +189,6 @@ namespace LYBT.Desktop.Users.ViewModels
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
-
-            // Issue #1927: 订阅用户创建和更新事件
-            EventAggregator.GetEvent<UserCreatedEvent>().Subscribe(OnUserCreated);
-            EventAggregator.GetEvent<UserUpdatedEvent>().Subscribe(OnUserUpdated);
-
-            // Issue #1928: 订阅密码重置事件
-            EventAggregator.GetEvent<UserPasswordResetEvent>().Subscribe(OnUserPasswordReset);
 
             Logger.LogDebug("用户管理ViewModel已初始化");
         }
@@ -523,9 +507,6 @@ namespace LYBT.Desktop.Users.ViewModels
                     // 显示实际重置的密码（从配置文件读取）
                     var resetPassword = result.response.TemporaryPassword;
                     await ShowSuccessMessageAsync($"用户 [{user.RealName ?? user.UserName}] 的密码已重置\n\n新密码：{resetPassword}");
-
-                    // 发布密码重置事件（如果其他地方需要监听）
-                    EventAggregator.GetEvent<UserPasswordResetEvent>().Publish(user);
                 }
                 else
                 {
@@ -676,37 +657,39 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #endregion
 
-        #region 事件处理 - Issue #1927
+        #region Navigation处理 - Issue #2166
 
         /// <summary>
-        /// 用户创建事件处理 - 刷新列表
+        /// 导航到此页面时处理返回参数
+        /// Issue #2166: 处理从Create/Edit/ResetPassword返回的刷新请求
         /// </summary>
-        private void OnUserCreated(UserDto user)
+        public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            Logger.LogInformation("接收到用户创建事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
-            // Issue #1995: 使用基类提供的 RefreshAsync
-            _ = RefreshAsync();
-        }
+            base.OnNavigatedTo(navigationContext);
 
-        /// <summary>
-        /// 用户更新事件处理 - 刷新列表
-        /// </summary>
-        private void OnUserUpdated(UserDto user)
-        {
-            Logger.LogInformation("接收到用户更新事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
-            // Issue #1995: 使用基类提供的 RefreshAsync
-            _ = RefreshAsync();
-        }
+            var parameters = navigationContext.Parameters;
+            if (parameters.GetValue<bool>("RefreshRequired"))
+            {
+                var operation = parameters.GetValue<string>("Operation");
+                var user = parameters.GetValue<UserDto>("User");
 
-        /// <summary>
-        /// 用户密码重置事件处理 - Issue #1928
-        /// </summary>
-        private void OnUserPasswordReset(UserDto user)
-        {
-            Logger.LogInformation("接收到密码重置事件: UserId={UserId}, UserName={UserName}", user.Id, user.UserName);
-            StatusMessage = $"用户 {user.RealName} 的密码已重置";
+                switch (operation)
+                {
+                    case "UserCreated":
+                        Logger.LogInformation("用户创建成功: {UserName}", user?.UserName);
+                        _ = RefreshAsync();
+                        break;
+                    case "UserUpdated":
+                        Logger.LogInformation("用户更新成功: {UserName}", user?.UserName);
+                        _ = RefreshAsync();
+                        break;
+                    case "PasswordReset":
+                        Logger.LogInformation("密码重置成功: {UserName}", user?.UserName);
+                        StatusMessage = $"用户 {user?.RealName} 的密码已重置";
+                        break;
+                }
+            }
         }
-
 
         #endregion
 

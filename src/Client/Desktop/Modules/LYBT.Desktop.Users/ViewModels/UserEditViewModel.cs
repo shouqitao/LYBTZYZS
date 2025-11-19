@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Users.Events;
 using LYBT.Desktop.Users.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
@@ -291,11 +290,13 @@ namespace LYBT.Desktop.Users.ViewModels
                     Logger.LogInformation("用户更新成功: UserId={UserId}, UserName={UserName}",
                         result.user.Id, result.user.UserName);
 
-                    // 发布事件通知列表刷新
-                    EventAggregator.GetEvent<UserUpdatedEvent>().Publish(result.user);
-
-                    // 导航返回
-                    NavigateBack("ContentRegion");
+                    // 导航返回并传递刷新参数
+                    NavigateBack("ContentRegion", new NavigationParameters
+                    {
+                        { "RefreshRequired", true },
+                        { "Operation", "UserUpdated" },
+                        { "User", result.user }
+                    });
                 }
                 else
                 {
