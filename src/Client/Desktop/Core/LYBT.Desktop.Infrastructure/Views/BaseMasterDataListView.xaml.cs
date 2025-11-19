@@ -78,6 +78,40 @@ namespace LYBT.Desktop.Infrastructure.Views
                 typeof(BaseMasterDataListView),
                 new PropertyMetadata("暂无数据"));
 
+        /// <summary>
+        /// 选中项集合（批量操作）
+        /// </summary>
+        public IList SelectedItems
+        {
+            get => (IList)GetValue(SelectedItemsProperty);
+            set => SetValue(SelectedItemsProperty, value);
+        }
+
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register(
+                nameof(SelectedItems),
+                typeof(IList),
+                typeof(BaseMasterDataListView),
+                new FrameworkPropertyMetadata(
+                    null,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        /// <summary>
+        /// 是否显示CheckBox选择列
+        /// </summary>
+        public bool ShowCheckBoxColumn
+        {
+            get => (bool)GetValue(ShowCheckBoxColumnProperty);
+            set => SetValue(ShowCheckBoxColumnProperty, value);
+        }
+
+        public static readonly DependencyProperty ShowCheckBoxColumnProperty =
+            DependencyProperty.Register(
+                nameof(ShowCheckBoxColumn),
+                typeof(bool),
+                typeof(BaseMasterDataListView),
+                new PropertyMetadata(false));
+
         #endregion
 
         #region 搜索相关依赖属性

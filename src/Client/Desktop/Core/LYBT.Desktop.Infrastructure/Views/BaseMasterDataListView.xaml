@@ -41,6 +41,8 @@
             Grid.Row="1"
             ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
             SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            SelectedItems="{Binding SelectedItems, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
+            ShowCheckBoxColumn="{Binding ShowCheckBoxColumn, RelativeSource={RelativeSource AncestorType=UserControl}}"
             EmptyStateText="{Binding EmptyStateText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
 
         <!-- Row 2: 统一分页栏 -->
