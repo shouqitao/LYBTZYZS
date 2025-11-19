@@ -438,6 +438,43 @@ public async Task<PatientDto> UpdateAsync(Guid id, UpdatePatientDto dto)
 
 **完整API定义**请参考 `IPatientService` 接口和 `PatientsController` 的实现。
 
+## 🐛 Bug修复记录
+
+### 2025-11-19: 修复患者管理模块500错误 - DI注册缺失 (Commit: 5bd5307f9)
+
+**问题描述**:
+- 患者管理模块加载时返回500 Internal Server Error
+- 客户端抛出 `Refit.ValidationApiException: Response status code does not indicate success: 500`
+- 服务端日志显示 `InvalidOperationException` (抛出4次)
+- API端点: `GET /api/v1/patients`
+
+**根因分析**:
+- `PatientsController` 构造函数需要两个接口依赖: `IPatientService` 和 `IPatientServiceOptimized`
+- `PatientsModule.cs` 仅注册了 `IPatientService`，缺少 `IPatientServiceOptimized` 的DI注册
+- ASP.NET Core DI容器无法解析 `IPatientServiceOptimized`，导致Controller激活失败
+- 使用5 Why分析法 + 模块对比法进行系统性排查
+
+**解决方案**:
+- 文件: `src/Server/Modules/LYBT.Module.Patients/PatientsModule.cs`
+- 新增行: 28
+- 代码: `services.AddScoped<IPatientServiceOptimized, PatientService>();  // Phase 3 优化版本接口`
+- 说明: 一个Service类实现多个接口时，需要在DI容器中分别注册每个接口到同一实现类
+
+**架构背景 - Phase 3双轨制优化**:
+- **IPatientService**: 传统DTO映射策略 - 兼容旧代码
+- **IPatientServiceOptimized**: Entity直接返回策略 - 消除双重映射，性能优化
+- `PatientService` 类同时实现两个接口，提供两种查询模式
+
+**经验教训**:
+1. ASP.NET Core DI容器无法自动推断接口关系，必须显式注册每个接口
+2. Controller构造函数的接口依赖必须在Module中完整注册
+3. 实施架构优化时，必须同步更新DI配置
+4. 500错误 + InvalidOperationException通常指向DI解析失败
+
+**影响范围**: 修复患者管理模块完全无法使用的Critical Bug
+
+---
+
 ## 📚 详细文档
 
 - **完整模块文档**:[docs/reference/modules/patients/](../../../../docs/reference/modules/patients/) *(待创建)*
