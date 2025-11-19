@@ -962,7 +962,7 @@ public class MedicalCaseModule : IModule
   7. 完成医案 → Repository.CloseCaseAsync() + 导航回患者列表
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. **流程编排与步骤解耦**
 
@@ -1003,7 +1003,7 @@ private void NavigateToStep(ConsultationStep step)
 
 **反模式(避免)**:
 ```csharp
-// ❌ 硬编码步骤逻辑(紧耦合)
+//  硬编码步骤逻辑(紧耦合)
 if (currentPage == 1)
 {
     CurrentViewModel = new MedicalCaseConsultationViewModel(...);
@@ -1054,7 +1054,7 @@ public class MedicalCaseConsultationViewModel : ISaveable, IValidatable
 
 **反模式(避免)**:
 ```csharp
-// ❌ 类型检查和强制转换(脆弱)
+//  类型检查和强制转换(脆弱)
 if (CurrentStepViewModel is MedicalCaseConsultationViewModel consultation)
 {
     if (string.IsNullOrWhiteSpace(consultation.ChiefComplaint))
@@ -1122,7 +1122,7 @@ public async Task OnNavigatedTo(NavigationContext navigationContext)
 
 **反模式(避免)**:
 ```csharp
-// ❌ 仅保存当前步骤,不保存医案状态(导致无法继续)
+//  仅保存当前步骤,不保存医案状态(导致无法继续)
 private async Task ExecuteSaveDraft()
 {
     if (CurrentStepViewModel is ISaveable saveable)
@@ -1182,7 +1182,7 @@ protected async Task<T?> GetAsync<T>(string url)
 
 **反模式(避免)**:
 ```csharp
-// ❌ Repository返回Result<T>(冗余错误处理)
+//  Repository返回Result<T>(冗余错误处理)
 public async Task<Result<MedicalCaseDto>> GetByIdAsync(Guid id)
 {
     try
@@ -1249,13 +1249,13 @@ public bool IsNavigationTarget(NavigationContext navigationContext)
 
 **反模式(避免)**:
 ```csharp
-// ❌ 使用静态变量传递数据(线程不安全)
+//  使用静态变量传递数据(线程不安全)
 public static class GlobalState
 {
     public static Guid CurrentMedicalCaseId { get; set; }
 }
 
-// ❌ 在ViewModel中直接创建其他ViewModel(紧耦合)
+//  在ViewModel中直接创建其他ViewModel(紧耦合)
 public class MedicalCaseFlowViewModel
 {
     private void NavigateToNextStep()
@@ -1319,14 +1319,14 @@ private async Task ExecuteNextStepAsync()
 
 **反模式(避免)**:
 ```csharp
-// ❌ 同步I/O阻塞UI线程
+//  同步I/O阻塞UI线程
 public void ExecuteNextStep()
 {
     var result = _repository.GetByIdAsync(MedicalCaseId).Result; // 阻塞UI
     // 导航逻辑
 }
 
-// ❌ 无IsBusy状态管理(允许重复操作)
+//  无IsBusy状态管理(允许重复操作)
 private async Task ExecuteNextStepAsync()
 {
     await SaveAsync(); // 可能被重复触发

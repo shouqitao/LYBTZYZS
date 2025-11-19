@@ -32,7 +32,7 @@ public class NavigationManager
         {
             if (_regionManager != null)
             {
-                System.Diagnostics.Debug.WriteLine("📱 ShowLoginDialog: 导航到登录视图");
+                System.Diagnostics.Debug.WriteLine(" ShowLoginDialog: 导航到登录视图");
                 _regionManager.RequestNavigate(RegionNames.LoginRegion, "LoginView");
             }
         });
@@ -126,7 +126,7 @@ public class NavigationManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ [NavigationManager] 取消Region监控失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($" [NavigationManager] 取消Region监控失败: {ex.Message}");
         }
     }
 
@@ -162,7 +162,7 @@ public class NavigationManager
 
         region.NavigationService.NavigationFailed += (s, e) =>
         {
-            System.Diagnostics.Debug.WriteLine($"❌ 导航失败: Region={region.Name}, Uri={e.Uri}, Error={e.Error?.Message}");
+            System.Diagnostics.Debug.WriteLine($" 导航失败: Region={region.Name}, Uri={e.Uri}, Error={e.Error?.Message}");
             _logger.LogError(e.Error, "Region 导航失败: {RegionName} -> {Uri}", region.Name, e.Uri);
         };
     }

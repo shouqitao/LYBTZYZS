@@ -17,8 +17,8 @@ throw new ApiException(response.StatusCode, content);
 **原则**：
 -  将HTTP错误转换为`ApiException`
 -  保留完整的错误上下文（状态码、响应内容）
-- ❌ 不吞掉异常
-- ❌ 不记录日志（由上层处理）
+-  不吞掉异常
+-  不记录日志（由上层处理）
 
 ### 2. Repository层
 **职责**：透明传播异常
@@ -34,12 +34,12 @@ public virtual async Task<T> GetByIdAsync(Guid id)
 **原则**：
 -  让异常自然传播到Service层
 -  只记录关键信息日志（可选）
-- ❌ 不使用try-catch包裹API调用
-- ❌ 不将异常转换为null或空集合
+-  不使用try-catch包裹API调用
+-  不将异常转换为null或空集合
 
 **反例（错误做法）**：
 ```csharp
-// ❌ 错误：掩盖了API异常
+//  错误：掩盖了API异常
 public virtual async Task<T> GetByIdAsync(Guid id)
 {
     try
@@ -84,8 +84,8 @@ public class UserService : IUserService
 -  添加业务逻辑验证，抛出有意义的异常
 -  记录业务操作日志
 -  让Repository异常自然传播
-- ❌ 不在Service层处理HTTP异常
-- ❌ 不将异常转换为ServiceResult（由ViewModel层负责）
+-  不在Service层处理HTTP异常
+-  不将异常转换为ServiceResult（由ViewModel层负责）
 
 ### 4. ViewModel层（Presentation）
 **职责**：使用StandardExceptionHandler统一处理
@@ -118,9 +118,9 @@ public class UserManagementViewModel : ViewModelBase
 -  使用`IExceptionHandler.SafeExecuteAsync`包裹操作
 -  将异常转换为用户友好的消息
 -  显示错误提示给用户
-- ❌ 不让异常传播到UI线程外
+-  不让异常传播到UI线程外
 
-## 🔧 工具类
+##  工具类
 
 ### StandardExceptionHandler
 提供统一的异常处理和转换功能：
@@ -216,7 +216,7 @@ public async Task CreateUserAsync()
 }
 ```
 
-## 📊 异常流转图
+##  异常流转图
 
 ```
 ┌─────────────┐
@@ -248,7 +248,7 @@ public async Task CreateUserAsync()
 
 ### 错误1：在Repository层掩盖异常
 ```csharp
-// ❌ 错误
+//  错误
 public virtual async Task<T> GetByIdAsync(Guid id)
 {
     try
@@ -264,7 +264,7 @@ public virtual async Task<T> GetByIdAsync(Guid id)
 
 ### 错误2：在Service层处理HTTP异常
 ```csharp
-// ❌ 错误
+//  错误
 public async Task<UserDto> GetByIdAsync(Guid id)
 {
     try
@@ -282,7 +282,7 @@ public async Task<UserDto> GetByIdAsync(Guid id)
 
 ### 错误3：多层重复日志
 ```csharp
-// ❌ 错误：每层都记录，导致日志重复
+//  错误：每层都记录，导致日志重复
 // Repository:
 catch (Exception ex) { _logger.LogError(ex, ...); throw; }
 // Service:
@@ -294,7 +294,7 @@ catch (Exception ex) { _logger.LogError(ex, ...); }
 await _exceptionHandler.SafeExecuteAsync(...)
 ```
 
-## 📝 最佳实践总结
+##  最佳实践总结
 
 1. **透明传播**：Repository和Service层让异常自然传播
 2. **统一处理**：ViewModel层使用`StandardExceptionHandler`统一处理

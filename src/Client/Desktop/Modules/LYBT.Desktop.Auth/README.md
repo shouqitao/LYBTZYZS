@@ -289,11 +289,11 @@ private async Task CheckApiHealthAsync()
                     _logger.LogInformation("API健康检查成功");
                     break;
                 case ApiHealthStatus.Degraded:
-                    ApiStatusMessage = "⚠️ API连接不稳定";
+                    ApiStatusMessage = " API连接不稳定";
                     _logger.LogWarning("API处于降级状态");
                     break;
                 case ApiHealthStatus.Unhealthy:
-                    ApiStatusMessage = "❌ API连接失败";
+                    ApiStatusMessage = " API连接失败";
                     _logger.LogError("API健康检查失败");
                     break;
             }
@@ -301,14 +301,14 @@ private async Task CheckApiHealthAsync()
         else
         {
             ApiStatus = ApiHealthStatus.Unhealthy;
-            ApiStatusMessage = $"❌ 无法连接到服务器: {result.ErrorMessage}";
+            ApiStatusMessage = $" 无法连接到服务器: {result.ErrorMessage}";
             _logger.LogError("API健康检查失败: {Error}", result.ErrorMessage);
         }
     }
     catch (Exception ex)
     {
         ApiStatus = ApiHealthStatus.Unhealthy;
-        ApiStatusMessage = $"❌ 健康检查异常: {ex.Message}";
+        ApiStatusMessage = $" 健康检查异常: {ex.Message}";
         _logger.LogError(ex, "API健康检查过程中发生异常");
     }
 }
@@ -536,7 +536,7 @@ public class AuthenticationModule : IModule
       └────────────────────────────────────────┘
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. MVVM架构严格遵循
 
@@ -551,7 +551,7 @@ public class AuthenticationModule : IModule
 
 **反面案例（禁止）**：
 ```csharp
-// ❌ 错误：在View代码后置中处理登录逻辑
+//  错误：在View代码后置中处理登录逻辑
 private void LoginButton_Click(object sender, RoutedEventArgs e)
 {
     var authService = ServiceLocator.Current.GetInstance<IAuthService>();
@@ -579,7 +579,7 @@ private void LoginButton_Click(object sender, RoutedEventArgs e)
 ### 3. 用户体验优化
 
 **启动时体验**：
-- 自动执行API健康检查，显示连接状态（ 正常 / ⚠️ 不稳定 / ❌ 失败）
+- 自动执行API健康检查，显示连接状态（ 正常 /  不稳定 /  失败）
 - 自动加载保存的用户名和密码（如果用户曾勾选记住）
 - 健康检查异常不阻塞UI显示（CheckApiHealthAsyncSafe）
 

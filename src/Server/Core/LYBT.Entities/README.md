@@ -1,4 +1,4 @@
-﻿## 🎯 项目概述
+﻿##  项目概述
 
 LYBT.Entities是系统的数据实体核心模块，定义了所有业务核心实体类、基础模型和数据注释规范。作为整个系统的数据结构基础，为业务逻辑、数据访问和接口传输提供统一的类型安全保障。
 
@@ -139,7 +139,7 @@ public enum Gender
 }
 ```
 
-## 📊 数据库映射
+##  数据库映射
 
 ### EF Core DbContext配置
 
@@ -231,7 +231,7 @@ public class ConsultationModel : BaseEntity
 }
 ```
 
-## 🔧 使用指南
+##  使用指南
 
 ### 新增实体步骤
 
@@ -290,7 +290,7 @@ CREATE INDEX IX_MedicalCases_Status ON MedicalCases(Status);
 CREATE INDEX IX_Prescriptions_MedicalCaseId ON Prescriptions(MedicalCaseId);
 ```
 
-## 🎯 分层架构特点
+##  分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
 

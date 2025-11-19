@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace LYBT.Shared.Models.Interfaces;
 
@@ -47,7 +47,7 @@ public interface IReadRepository<T> where T : class
     /// </summary>
     /// <returns>所有实体的集合</returns>
     /// <remarks>
-    /// ⚠️ 注意：对于大数据集，建议使用分页查询避免性能问题
+    ///  注意：对于大数据集，建议使用分页查询避免性能问题
     /// 自动过滤软删除记录（IsDeleted = true）
     /// </remarks>
     Task<IEnumerable<T>> GetAllAsync();

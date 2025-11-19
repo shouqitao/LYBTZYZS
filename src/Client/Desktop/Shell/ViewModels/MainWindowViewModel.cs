@@ -92,7 +92,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         get => _isLoggedIn;
         set
         {
-            System.Diagnostics.Debug.WriteLine($"🔐 MainWindow.IsLoggedIn设置为 {value} (之前: {_isLoggedIn})");
+            System.Diagnostics.Debug.WriteLine($" MainWindow.IsLoggedIn设置为 {value} (之前: {_isLoggedIn})");
             SetProperty(ref _isLoggedIn, value);
             RaisePropertyChanged(nameof(IsNotLoggedIn));
         }
@@ -317,15 +317,15 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private async Task CheckLoginStatusAsync()
     {
-        System.Diagnostics.Debug.WriteLine("📱 CheckLoginStatusAsync 开始 - Issue #861: 始终显示登录窗口");
+        System.Diagnostics.Debug.WriteLine(" CheckLoginStatusAsync 开始 - Issue #861: 始终显示登录窗口");
         try
         {
-            System.Diagnostics.Debug.WriteLine("📱 显示登录界面，等待用户手动登录");
+            System.Diagnostics.Debug.WriteLine(" 显示登录界面，等待用户手动登录");
             _navigationManager.ShowLoginDialog();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ CheckLoginStatusAsync 异常: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ERROR] CheckLoginStatusAsync 异常: {ex.Message}");
             await ShowErrorMessageAsync($"初始化登录界面失败:{ex.Message}");
             _navigationManager.ShowLoginDialog();
         }
@@ -336,7 +336,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private void OnLoginSuccess(UserDto user)
     {
-        System.Diagnostics.Debug.WriteLine($"📢 OnLoginSuccess 收到事件: {user.UserName}");
+        System.Diagnostics.Debug.WriteLine($" OnLoginSuccess 收到事件: {user.UserName}");
 
         IsLoggedIn = true;
         CurrentUser = user;
@@ -401,18 +401,18 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         _navigationManager.ClearLoginRegion();
 
-        System.Diagnostics.Debug.WriteLine($"📱 准备根据角色 {roleName} 导航（延迟到下一帧）");
+        System.Diagnostics.Debug.WriteLine($" 准备根据角色 {roleName} 导航（延迟到下一帧）");
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"📱 UI更新完成，开始角色导航：{roleName}");
+                System.Diagnostics.Debug.WriteLine($" UI更新完成，开始角色导航：{roleName}");
                 _roleNavigationService.NavigateToRoleHome(roleName);
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message ?? "未知导航错误";
-                System.Diagnostics.Debug.WriteLine($"❌ 角色导航失败：{errorMessage}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] 角色导航失败：{errorMessage}");
                 Logger.LogError(ex, "角色导航失败");
 
                 IsLoggedIn = false;
@@ -536,7 +536,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ [MainWindowViewModel] 资源清理异常: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ERROR] [MainWindowViewModel] 资源清理异常: {ex.Message}");
         }
         finally
         {
@@ -586,7 +586,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ERROR] [MainWindowViewModel] 取消EventAggregator订阅失败: {ex.Message}");
         }
     }
 

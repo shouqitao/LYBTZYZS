@@ -149,7 +149,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
         /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑
-        /// ⚠️ 性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
+        ///  性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
         /// </summary>
         /// <param name="patientName">患者姓名关键字（可空）</param>
         /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
@@ -249,8 +249,8 @@ namespace LYBT.Module.Prescriptions.Services
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
         /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑 + 修复N+1查询
-        /// ⚠️ 性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
-        /// ⚠️ N+1查询（已知MVP限制）：循环内查询处方Items，数据量增大后需优化
+        ///  性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
+        ///  N+1查询（已知MVP限制）：循环内查询处方Items，数据量增大后需优化
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5条）</param>

@@ -202,7 +202,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // Epic #1961: 使用统一的 MedicalCaseInputDto
-                // ⚠️ TODO: InputDto 不包含 Status 字段，应使用专用的状态更新API（如CloseCaseAsync）
+                //  TODO: InputDto 不包含 Status 字段，应使用专用的状态更新API（如CloseCaseAsync）
                 var updateDto = new MedicalCaseInputDto
                 {
                     Id = MedicalCaseId,

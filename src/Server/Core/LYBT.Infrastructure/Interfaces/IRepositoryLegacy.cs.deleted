@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Infrastructure.Interfaces;
@@ -8,7 +8,7 @@ namespace LYBT.Infrastructure.Interfaces;
 /// </summary>
 /// <typeparam name="T">实体类型</typeparam>
 /// <remarks>
-/// ⚠️ 此接口已废弃，请迁移至新的三层Repository架构：
+///  此接口已废弃，请迁移至新的三层Repository架构：
 /// 
 /// 迁移指南：
 /// - 聚合根实体（User, Patient, Herb, Formula, MedicalCase）

@@ -10,7 +10,7 @@
 - **类型**: 通用工具库（Utilities Library）
 - **职责**: 提供配置管理、安全工具、扩展方法、中间件配置等核心功能。为整个系统（Server/Desktop/Mobile）提供统一的工具支持，简化开发流程，提高代码复用性。本项目遵循"工具类分层"原则，按功能分类组织（Configuration/Extensions/Helpers/Security），确保易于查找和维护。
 
-## 🎯 项目概述
+##  项目概述
 
 LYBT.Shared.Utilities 是系统的共享工具类库，提供配置管理、安全工具、扩展方法等核心功能。为整个系统提供统一的工具支持，简化开发流程，提高代码复用性。
 
@@ -100,7 +100,7 @@ LYBT.Shared.Utilities/
 
 **总计**: 6个目录，11个工具类，24+个核心方法
 
-## 🔧 核心功能模块
+##  核心功能模块
 
 ### 1. 配置管理（Configuration）
 
@@ -947,7 +947,7 @@ public class Startup
 }
 ```
 
-## 🎯 最佳实践
+##  最佳实践
 
 ### 1. 配置管理
 -  **使用强类型配置类**: `ConfigurationHelper.GetSection<JwtSettings>("JwtSettings")`

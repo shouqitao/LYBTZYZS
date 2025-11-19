@@ -302,7 +302,7 @@
                             VerticalAlignment="Center"
                             FontSize="11"
                             Foreground="#D97706"
-                            Text="⚠️ 仅在可信设备使用" />
+                            Text=" 仅在可信设备使用" />
                     </StackPanel>
 
                     <!--  连接模式选择  -->

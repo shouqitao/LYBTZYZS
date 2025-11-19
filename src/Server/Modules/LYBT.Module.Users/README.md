@@ -105,7 +105,7 @@ LYBT.Module.Users/
 - **第二阶段**: UserPagedQueryDto重命名为UserSearchDto，查询命名规范统一
 - **第三阶段**: UserDto.Role从string改为UserRole枚举，类型安全增强
 
-### 🎯 优化前后对比
+###  优化前后对比
 | 方面 | 优化前 | 优化后 | 改进 |
 |------|--------|--------|------|
 | DTO命名 | UserPagedQueryDto | UserSearchDto |  查询命名统一 |
@@ -616,7 +616,7 @@ public async Task<ServiceResult<bool>> ValidateUsernameAsync(string username)
 
 **完整API定义**请参考 `IUserService` 接口和 `UsersController` 的实现。
 
-## 🎯 架构优势
+##  架构优势
 
 **适合小型中医诊所(<20人)的精简设计**:
 -  **标准三层架构**: Controller → Service → Repository，职责清晰

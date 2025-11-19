@@ -1378,7 +1378,7 @@ public class FormulaManagementViewModel : UnifiedViewModelBase
 - FormulaValidator: 封装验证逻辑（如必填项、药材数量验证）
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. MVVM架构与数据绑定
 
@@ -1394,22 +1394,22 @@ public class FormulaManagementViewModel : UnifiedViewModelBase
 -  Prism RegionManager支持模块化导航，避免View间直接依赖
 
 **反模式（禁止）**:
-- ❌ ViewModel中直接操作UI控件（如MessageBox.Show）
-- ❌ View CodeBehind中包含业务逻辑
-- ❌ ViewModel直接依赖具体Repository实现（应依赖接口）
+-  ViewModel中直接操作UI控件（如MessageBox.Show）
+-  View CodeBehind中包含业务逻辑
+-  ViewModel直接依赖具体Repository实现（应依赖接口）
 
 **代码示例**:
 ```csharp
 //  正确: ViewModel通过IDialogService显示消息
 await _dialogService.ShowAlertAsync("提示", "保存成功");
 
-// ❌ 错误: ViewModel直接操作UI
+//  错误: ViewModel直接操作UI
 MessageBox.Show("保存成功");
 
 //  正确: ViewModel依赖IFormulaRepository接口
 private readonly IFormulaRepository _formulaRepository;
 
-// ❌ 错误: ViewModel依赖具体实现
+//  错误: ViewModel依赖具体实现
 private readonly FormulaRepository _formulaRepository;
 ```
 
@@ -1438,9 +1438,9 @@ FormulaManagementViewModel
 ```
 
 **反模式（禁止）**:
-- ❌ ViewModel直接调用HttpClient（绕过Repository）
-- ❌ Repository返回Result<T>（Client端不需要）
-- ❌ ViewModel依赖Server端Services（会导致运行时崩溃）
+-  ViewModel直接调用HttpClient（绕过Repository）
+-  Repository返回Result<T>（Client端不需要）
+-  ViewModel依赖Server端Services（会导致运行时崩溃）
 
 ### 3. Components辅助类与职责分离
 
@@ -1457,8 +1457,8 @@ FormulaManagementViewModel
 -  符合单一职责原则（每个类只负责一件事）
 
 **反模式（禁止）**:
-- ❌ 所有逻辑都写在ViewModel中（导致ViewModel过于庞大）
-- ❌ 辅助类包含业务逻辑（应只包含纯计算或验证逻辑）
+-  所有逻辑都写在ViewModel中（导致ViewModel过于庞大）
+-  辅助类包含业务逻辑（应只包含纯计算或验证逻辑）
 
 ### 4. 验方克隆功能与数据复用
 
@@ -1556,9 +1556,9 @@ GET /api/v1/formulas/export
 -  用户体验更好（显示Loading动画而不是界面卡顿）
 
 **反模式（禁止）**:
-- ❌ 同步阻塞方法（如`Task.Wait()`、`.Result`）
-- ❌ 未设置IsBusy导致重复提交
-- ❌ 使用DelegateCommand而非AsyncDelegateCommand（无法自动管理Loading状态）
+-  同步阻塞方法（如`Task.Wait()`、`.Result`）
+-  未设置IsBusy导致重复提交
+-  使用DelegateCommand而非AsyncDelegateCommand（无法自动管理Loading状态）
 
 **代码示例**:
 ```csharp
@@ -1579,11 +1579,11 @@ private async Task SaveAsync()
     }
 }
 
-// ❌ 错误: 使用同步阻塞方法
+//  错误: 使用同步阻塞方法
 private void Save()
 {
     var task = _formulaRepository.UpdateAsync(Formula.Id, updateDto);
-    task.Wait();  // ❌ 阻塞UI线程
+    task.Wait();  //  阻塞UI线程
 }
 ```
 

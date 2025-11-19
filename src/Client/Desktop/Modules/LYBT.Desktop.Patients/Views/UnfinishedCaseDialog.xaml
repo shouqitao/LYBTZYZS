@@ -1,4 +1,4 @@
-<Window x:Class="LYBT.Desktop.Patients.Views.UnfinishedCaseDialog"
+﻿<Window x:Class="LYBT.Desktop.Patients.Views.UnfinishedCaseDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewmodels="clr-namespace:LYBT.Desktop.Patients.ViewModels"
@@ -109,7 +109,7 @@
 
                 <!-- 选项4 -->
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="❌" FontSize="16" Margin="0,0,10,0"/>
+                    <TextBlock Text="" FontSize="16" Margin="0,0,10,0"/>
                     <TextBlock FontSize="14" Foreground="#7F8C8D">
                         <Run Text="取消：" FontWeight="Bold"/>
                         <Run Text="什么都不做，关闭对话框"/>

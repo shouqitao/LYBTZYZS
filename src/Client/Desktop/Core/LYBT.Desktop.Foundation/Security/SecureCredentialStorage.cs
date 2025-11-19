@@ -46,7 +46,7 @@ namespace LYBT.Desktop.Foundation.Security
         {
             try
             {
-                _logger.LogInformation("🔐 [SaveCredentials] 开始保存凭据 - UserName: {UserName}, RememberPassword: {RememberPassword}", username, rememberPassword);
+                _logger.LogInformation(" [SaveCredentials] 开始保存凭据 - UserName: {UserName}, RememberPassword: {RememberPassword}", username, rememberPassword);
 
                 if (rememberPassword && !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                 {
@@ -64,7 +64,7 @@ namespace LYBT.Desktop.Foundation.Security
                     };
 
                     // 3. 序列化为 JSON 并保存
-                    _logger.LogInformation("📝 [SaveCredentials] 准备写入文件: {Path}", _storageFilePath);
+                    _logger.LogInformation(" [SaveCredentials] 准备写入文件: {Path}", _storageFilePath);
                     await SaveStorageToFileAsync(storage);
                     _logger.LogInformation(" [SaveCredentials] 文件写入成功");
 
@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Foundation.Security
                 }
                 else
                 {
-                    _logger.LogWarning("⚠️ [SaveCredentials] 参数校验失败 - RememberPassword: {RememberPassword}, Username空: {UsernameEmpty}, Password空: {PasswordEmpty}",
+                    _logger.LogWarning(" [SaveCredentials] 参数校验失败 - RememberPassword: {RememberPassword}, Username空: {UsernameEmpty}, Password空: {PasswordEmpty}",
                         rememberPassword, string.IsNullOrEmpty(username), string.IsNullOrEmpty(password));
                     // 不记住密码，删除文件
                     await ClearCredentialsAsync();
@@ -234,7 +234,7 @@ namespace LYBT.Desktop.Foundation.Security
         {
             if (!File.Exists(_storageFilePath))
             {
-                _logger.LogWarning("⚠️ [LoadCredentials] 文件不存在: {Path}", _storageFilePath);
+                _logger.LogWarning(" [LoadCredentials] 文件不存在: {Path}", _storageFilePath);
                 return null;
             }
 
@@ -245,7 +245,7 @@ namespace LYBT.Desktop.Foundation.Security
             var storage = JsonSerializer.Deserialize<CredentialStorage>(json);
             if (storage == null || !storage.RememberPassword || string.IsNullOrEmpty(storage.EncryptedPassword))
             {
-                _logger.LogWarning("⚠️ [LoadCredentials] 数据校验失败");
+                _logger.LogWarning(" [LoadCredentials] 数据校验失败");
                 return null;
             }
 

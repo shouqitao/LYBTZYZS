@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Models.Interfaces;
@@ -48,7 +48,7 @@ public interface IRepository<T> where T : class
     Task<T?> GetByIdAsync(Guid id);
 
     /// <summary>
-    /// 获取所有实体（⚠️ 仅用于小数据量场景，如下拉列表）
+    /// 获取所有实体（ 仅用于小数据量场景，如下拉列表）
     /// </summary>
     /// <returns>实体集合</returns>
     Task<IEnumerable<T>> GetAllAsync();
@@ -63,7 +63,7 @@ public interface IRepository<T> where T : class
     Task<PagedResult<T>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null);
 
     /// <summary>
-    /// 条件查询（⚠️ 谨慎使用，建议使用具体业务方法）
+    /// 条件查询（ 谨慎使用，建议使用具体业务方法）
     /// </summary>
     /// <param name="predicate">查询条件表达式</param>
     /// <returns>符合条件的实体集合</returns>
@@ -136,7 +136,7 @@ public interface IRepository<T> where T : class
     Task<int> CountAsync();
 
     /// <summary>
-    /// 保存更改（⚠️ 通常由Service层调用，Repository层实现可选）
+    /// 保存更改（ 通常由Service层调用，Repository层实现可选）
     /// </summary>
     /// <returns>受影响的行数</returns>
     Task<int> SaveChangesAsync();

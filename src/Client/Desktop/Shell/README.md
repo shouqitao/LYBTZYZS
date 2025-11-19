@@ -1439,7 +1439,7 @@ public class ApiClientService
 }
 ```
 
-## 🎯 最佳实践
+##  最佳实践
 
 ### 1. Prism模块化架构原则
 
@@ -1447,7 +1447,7 @@ public class ApiClientService
 -  每个模块都是独立的程序集（DLL）
 -  模块间通过EventAggregator通信，避免直接依赖
 -  模块职责单一，只关注自己的业务领域
-- ❌ 禁止模块间循环引用
+-  禁止模块间循环引用
 
 **模块注册规范**：
 ```csharp
@@ -1460,7 +1460,7 @@ protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
     // ...
 }
 
-// ❌ 错误：模块自动发现（不可控）
+//  错误：模块自动发现（不可控）
 protected override IModuleCatalog CreateModuleCatalog()
 {
     return new DirectoryModuleCatalog { ModulePath = @".\Modules" };
@@ -1476,15 +1476,15 @@ containerRegistry.RegisterSingleton<IDialogService, DialogService>();      // �
 containerRegistry.Register<IPatientService, PatientService>();            // 瞬态
 containerRegistry.RegisterScoped<IUserSessionManager, UserSessionManager>(); // 作用域
 
-// ❌ 错误：所有服务都注册为单例
+//  错误：所有服务都注册为单例
 containerRegistry.RegisterSingleton<IPatientService, PatientService>(); // 可能导致状态污染
 ```
 
 **依赖注入原则**：
 -  构造函数注入（推荐）
 -  属性注入（仅用于可选依赖）
-- ❌ 禁止使用 `Container.Resolve<T>()` 直接解析（服务定位器反模式）
-- ❌ 禁止在构造函数中执行复杂逻辑
+-  禁止使用 `Container.Resolve<T>()` 直接解析（服务定位器反模式）
+-  禁止在构造函数中执行复杂逻辑
 
 ### 3. 导航系统最佳实践
 
@@ -1500,7 +1500,7 @@ var parameters = new NavigationParameters
 };
 _regionManager.RequestNavigate("ContentRegion", "PatientDetail", parameters);
 
-// ❌ 错误：硬编码Region名称
+//  错误：硬编码Region名称
 _regionManager.RequestNavigate("Region1", "View1"); // 不清晰
 ```
 
@@ -1516,7 +1516,7 @@ _regionManager.RequestNavigate("ContentRegion", "PatientsManagement", result =>
     }
 });
 
-// ❌ 错误：忽略导航结果
+//  错误：忽略导航结果
 _regionManager.RequestNavigate("ContentRegion", "PatientsManagement"); // 可能静默失败
 ```
 
@@ -1546,7 +1546,7 @@ _dialogService.ShowDialog("ConfirmationDialog", parameters, result =>
     }
 });
 
-// ❌ 错误：在ViewModel中创建对话框实例
+//  错误：在ViewModel中创建对话框实例
 var dialog = new ConfirmationDialog(); // 破坏模块化
 dialog.ShowDialog();
 ```
@@ -1559,7 +1559,7 @@ dialog.ShowDialog();
 public class UserLoggedInEvent : PubSubEvent<UserDto> { }
 public class PatientSelectedEvent : PubSubEvent<Guid> { }
 
-// ❌ 错误：弱类型事件
+//  错误：弱类型事件
 public class GenericEvent : PubSubEvent<object> { } // 类型不安全
 ```
 
@@ -1571,7 +1571,7 @@ _eventAggregator.GetEvent<UserLoggedInEvent>().Subscribe(OnUserLoggedIn);
 //  正确：取消订阅（在Dispose中）
 _eventAggregator.GetEvent<UserLoggedInEvent>().Unsubscribe(OnUserLoggedIn);
 
-// ❌ 错误：忘记取消订阅（可能导致内存泄漏）
+//  错误：忘记取消订阅（可能导致内存泄漏）
 ```
 
 ### 6. 配置管理最佳实践
@@ -1593,7 +1593,7 @@ var timeout = _configuration.GetValue<int>("ConnectionTimeout", 30);
 var uiSettings = new UISetting();
 _configuration.GetSection("UI").Bind(uiSettings);
 
-// ❌ 错误：硬编码配置
+//  错误：硬编码配置
 const string ApiUrl = "http://localhost:5001"; // 不灵活
 ```
 
@@ -1626,7 +1626,7 @@ private async void ExecuteDeletePatient(Guid patientId)
     }
 }
 
-// ❌ 错误：吞掉异常
+//  错误：吞掉异常
 catch (Exception) { } // 静默失败
 ```
 
@@ -1671,7 +1671,7 @@ public async Task LoadPatientsAsync()
     }
 }
 
-// ❌ 错误：同步阻塞UI
+//  错误：同步阻塞UI
 var patients = _patientService.GetPaged(1, 50); // 阻塞UI线程
 ```
 
@@ -1680,7 +1680,7 @@ var patients = _patientService.GetPaged(1, 50); // 阻塞UI线程
 ### 1. 敏感信息保护
 
 ```json
-// ❌ 错误：appsettings.json中明文存储
+//  错误：appsettings.json中明文存储
 {
   "Database": "Server=localhost;Password=123456"
 }

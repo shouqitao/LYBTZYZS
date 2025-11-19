@@ -2039,15 +2039,15 @@ IDialogAware接口:
  HasChanges模式:变更检测,控制保存按钮启用与对话框关闭确认
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. ISaveable接口契约 - 与MedicalCase集成
 -  **接口解耦**:PrescriptionEditorDialogViewModel实现ISaveable接口,MedicalCaseFlowViewModel通过接口调用处方功能(无需依赖具体类型)
 -  **Validate验证**:处方保存前验证必填项(剂数>0、药材条目>0、剂量有效),返回ValidationMessage错误信息
 -  **SaveAsync保存**:异步保存处方,支持新建(CreateAsync)和更新(UpdateAsync)两种模式
 -  **HasChanges标记**:数据变更检测,控制保存按钮启用与对话框关闭确认(防止意外丢失数据)
-- ❌ **避免紧耦合**:不直接依赖PrescriptionEditorDialogViewModel具体类型,通过ISaveable接口实现松耦合
-- ❌ **避免返回Result<T>**:Repository直接返回DTO裸类型,不使用Result<T>包装(简化调用代码)
+-  **避免紧耦合**:不直接依赖PrescriptionEditorDialogViewModel具体类型,通过ISaveable接口实现松耦合
+-  **避免返回Result<T>**:Repository直接返回DTO裸类型,不使用Result<T>包装(简化调用代码)
 
 ### 2. Dialog-based架构 - 对话框驱动的复杂交互组织方式
 -  **对话框封装**:复杂功能封装为对话框(PrescriptionEditorDialog、HerbSelectionDialog、FormulaTemplateDialog),通过DialogService.ShowDialog调用
@@ -2055,7 +2055,7 @@ IDialogAware接口:
 -  **模态交互**:对话框模态显示,用户完成操作后关闭,触发RequestClose事件并返回DialogResult(ButtonResult.OK或Cancel)
 -  **CanCloseDialog**:对话框关闭前检查HasChanges,如有未保存变更弹出确认对话框(防止意外丢失数据)
 -  **OnDialogOpened**:对话框打开时初始化数据(LoadPrescriptionAsync加载处方、LoadDataAsync加载药材列表)
-- ❌ **避免Region导航**:处方编辑、药材选择、验方模板加载等复杂交互不适合Region导航,应使用Dialog对话框封装
+-  **避免Region导航**:处方编辑、药材选择、验方模板加载等复杂交互不适合Region导航,应使用Dialog对话框封装
 
 ### 3. 价格计算器 - 自动计算总价与单价
 -  **总价计算公式**:TotalAmount = Σ(UnitPrice × Dosage) × DosageCount × Discount(所有药材单价×剂量的总和 × 剂数 × 折扣)
@@ -2063,7 +2063,7 @@ IDialogAware接口:
 -  **单价计算**:PrescriptionItemRow.Subtotal = UnitPrice × Dosage(单个药材的小计金额)
 -  **默认值设置**:DosageCount默认7剂,Discount默认1.0(无折扣),药材剂量默认从HerbDto.DefaultDosage获取
 -  **精度控制**:所有金额使用decimal类型(避免浮点数精度问题),格式化时保留2位小数(F2)
-- ❌ **避免手动计算**:价格计算逻辑集中在CalculateTotalAmount方法,避免在多处重复计算逻辑
+-  **避免手动计算**:价格计算逻辑集中在CalculateTotalAmount方法,避免在多处重复计算逻辑
 
 ### 4. 验方模板支持 - 从Formula模块加载验方并应用到处方
 -  **验方模板加载**:通过FormulaTemplateDialog从Formula模块查询验方列表,选择验方后返回FormulaDto
@@ -2071,7 +2071,7 @@ IDialogAware接口:
 -  **用法医嘱应用**:将FormulaDto.UsageInstructions、Description自动填充到处方的Usage、MedicalAdvice字段
 -  **清空现有条目**:加载验方前先清空HerbItems集合(避免与现有药材混淆)
 -  **智能匹配**:Formula模块的HerbId与Herbs模块的HerbId一致,确保药材正确匹配
-- ❌ **避免手动添加**:使用验方模板时不需要逐个手动添加药材,一次性加载所有验方药材条目
+-  **避免手动添加**:使用验方模板时不需要逐个手动添加药材,一次性加载所有验方药材条目
 
 ### 5. 打印服务 - FlowDocument生成与WPF打印
 -  **FlowDocument构建**:PrescriptionFlowDocumentBuilder生成处方打印文档(包含标题、基础信息、药材表格、总价、用法、医嘱)
@@ -2079,7 +2079,7 @@ IDialogAware接口:
 -  **打印预览**:PreviewAsync方法显示FlowDocument预览窗口(FlowDocumentScrollViewer),用户可预览后再打印
 -  **A4纸适配**:FlowDocument.PageWidth=793.7、PageHeight=1122.5(A4纸像素尺寸),PagePadding=50(边距)
 -  **表格布局**:使用Table、TableRow、TableCell生成药材条目表格(序号、药材名称、剂量、单价、小计)
-- ❌ **避免直接打印**:不直接调用Printer API,统一通过PrintDialog让用户选择打印机和打印选项
+-  **避免直接打印**:不直接调用Printer API,统一通过PrintDialog让用户选择打印机和打印选项
 
 ### 6. Repository模式与三层架构 - ViewModel → Repository → API
 -  **三层分离**:ViewModel → IPrescriptionRepository → BaseApiRepository → IApiService → HttpClient(各层职责清晰)
@@ -2087,7 +2087,7 @@ IDialogAware接口:
 -  **Repository返回裸类型**:Repository直接返回PrescriptionDto、PagedResult<PrescriptionDto>(不使用Result<T>包装)
 -  **BaseApiRepository基类**:IPrescriptionRepository继承IBaseRepository<PrescriptionDto>,自动获得CRUD方法(GetPagedAsync、GetByIdAsync、CreateAsync、UpdateAsync、DeleteAsync)
 -  **异常传播**:Repository层不捕获异常,直接抛出让ViewModel层处理(集中错误处理逻辑)
-- ❌ **避免直接调用Server Service**:Desktop端禁止直接依赖LYBT.Server.Services的Service(会导致运行时崩溃),必须通过Repository → API调用
+-  **避免直接调用Server Service**:Desktop端禁止直接依赖LYBT.Server.Services的Service(会导致运行时崩溃),必须通过Repository → API调用
 
 ### 7. 异步优先与UI响应性 - Async/Await + IsBusy模式
 -  **全异步方法**:所有I/O操作使用async/await(LoadDataAsync、SaveAsync、DeleteAsync、PrintAsync等),避免阻塞UI线程
@@ -2095,7 +2095,7 @@ IDialogAware接口:
 -  **AsyncDelegateCommand**:使用Prism的AsyncDelegateCommand支持异步命令(自动处理CanExecute状态)
 -  **try-finally保证**:IsBusy在finally块中设置为false(确保异常时也能恢复UI状态)
 -  **Task返回类型**:异步方法返回Task或Task<T>(不使用async void,避免异常无法捕获)
-- ❌ **避免同步阻塞**:不使用.Result、.Wait()等同步阻塞方法(会导致UI卡死)
+-  **避免同步阻塞**:不使用.Result、.Wait()等同步阻塞方法(会导致UI卡死)
 
 ---
 

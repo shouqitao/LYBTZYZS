@@ -39,7 +39,7 @@ namespace LYBT.Desktop.Prescriptions
             containerRegistry.Register<PrescriptionHerbFilterManager>();
             containerRegistry.Register<PrescriptionHistoryManager>();
 
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构这些ViewModel
+            //  Issue #1606 Phase 3: 临时注释，待Issue #1608重构这些ViewModel
             // 原因：依赖已删除的IPrescriptionRepository
             // 注册视图模型 - MVP核心功能
             // containerRegistry.Register<PrescriptionManagementViewModel>();  // 待重构 Issue #1608
@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Prescriptions
             // containerRegistry.Register<PrescriptionViewModel>();  // 待重构 Issue #1608 (Issue #1461)
 
             // Phase 2: 启用 Region Navigation 注册
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
+            //  Issue #1606 Phase 3: 临时注释，待Issue #1608重构
             // containerRegistry.RegisterForNavigation<Views.PrescriptionManagementView>();  // 待重构 Issue #1608
             // Issue #1801: PrescriptionsMainView已删除（功能与PrescriptionManagementView重复）
             // containerRegistry.RegisterForNavigation<Views.PrescriptionView>();  // 待重构 Issue #1608 (Issue #1461)
@@ -55,7 +55,7 @@ namespace LYBT.Desktop.Prescriptions
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
             containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
-            // ⚠️ Issue #1606 Phase 3: 临时注释，待Issue #1608重构
+            //  Issue #1606 Phase 3: 临时注释，待Issue #1608重构
             // containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();  // 待重构 Issue #1608
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();
             // Epic #1676 Phase 2: PrescriptionDeleteConfirmDialog已替换为全局ConfirmationDialog（Shell）

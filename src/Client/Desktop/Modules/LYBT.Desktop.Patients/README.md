@@ -1155,7 +1155,7 @@ public class PatientsModule : IModule
   ViewModel → Repository → BaseApiRepository → IApiService → HTTP → WebAPI
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. MVVM架构与Prism导航
 
@@ -1180,9 +1180,9 @@ _regionManager.RequestNavigate(
 ```
 
 **反模式**:
-- ❌ 直接创建视图实例并手动替换(破坏MVVM)
-- ❌ 使用静态变量传递数据(线程不安全)
-- ❌ ViewModel耦合其他模块的ViewModel(违反单一职责)
+-  直接创建视图实例并手动替换(破坏MVVM)
+-  使用静态变量传递数据(线程不安全)
+-  ViewModel耦合其他模块的ViewModel(违反单一职责)
 
 ### 2. Repository模式与三层架构
 
@@ -1214,9 +1214,9 @@ public async Task<List<PatientDto>> SearchAsync(string keyword)
 ```
 
 **反模式**:
-- ❌ ViewModel直接调用IApiService(跳过Repository层)
-- ❌ Repository抛出异常到ViewModel(未处理异常传播)
-- ❌ 在ViewModel中构造HTTP请求URL(职责混乱)
+-  ViewModel直接调用IApiService(跳过Repository层)
+-  Repository抛出异常到ViewModel(未处理异常传播)
+-  在ViewModel中构造HTTP请求URL(职责混乱)
 
 ### 3. 事件驱动通信与模块解耦
 
@@ -1256,9 +1256,9 @@ private void OnMedicalCaseCreated(MedicalCaseCreatedPayload payload)
 ```
 
 **反模式**:
-- ❌ 直接引用其他模块的ViewModel(强耦合)
-- ❌ 使用静态事件(内存泄漏风险)
-- ❌ 在后台线程修改ObservableCollection(跨线程访问异常)
+-  直接引用其他模块的ViewModel(强耦合)
+-  使用静态事件(内存泄漏风险)
+-  在后台线程修改ObservableCollection(跨线程访问异常)
 
 ### 4. 对话框服务与用户交互
 
@@ -1297,9 +1297,9 @@ RequestClose?.Invoke(new DialogResult(
 ```
 
 **反模式**:
-- ❌ 直接创建Window实例(破坏MVVM,难以测试)
-- ❌ 使用MessageBox(不符合Material Design,难以自定义)
-- ❌ 对话框直接修改主ViewModel数据(违反单向数据流)
+-  直接创建Window实例(破坏MVVM,难以测试)
+-  使用MessageBox(不符合Material Design,难以自定义)
+-  对话框直接修改主ViewModel数据(违反单向数据流)
 
 ### 5. 分页优化与虚拟化
 
@@ -1344,9 +1344,9 @@ public string? SearchKeyword
 ```
 
 **反模式**:
-- ❌ 一次性加载所有患者(数据量大时性能崩溃)
-- ❌ 每次输入字符立即搜索(频繁API请求)
-- ❌ 未启用DataGrid虚拟化(大量UI元素渲染阻塞)
+-  一次性加载所有患者(数据量大时性能崩溃)
+-  每次输入字符立即搜索(频繁API请求)
+-  未启用DataGrid虚拟化(大量UI元素渲染阻塞)
 
 ### 6. 异步优先与用户体验
 
@@ -1390,9 +1390,9 @@ private async Task LoadCurrentPageAsync()
 ```
 
 **反模式**:
-- ❌ 同步阻塞UI线程(Thread.Sleep、GetAwaiter().GetResult())
-- ❌ 未设置IsBusy标志(用户可能重复点击按钮)
-- ❌ 异常未捕获向上传播(导致应用崩溃)
+-  同步阻塞UI线程(Thread.Sleep、GetAwaiter().GetResult())
+-  未设置IsBusy标志(用户可能重复点击按钮)
+-  异常未捕获向上传播(导致应用崩溃)
 
 ## 📚 详细文档
 

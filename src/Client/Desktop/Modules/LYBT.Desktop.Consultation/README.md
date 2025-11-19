@@ -894,7 +894,7 @@ public class ConsultationModule : IModule
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
         // Step 1: 注册Repository(数据访问层)
-        // ⚠️ 注意:实际项目中IConsultationRepository继承基类接口,由Foundation层提供实现
+        //  注意:实际项目中IConsultationRepository继承基类接口,由Foundation层提供实现
         // 此处仅作为示例,实际注册可能在Foundation或Services层
 
         // Step 2: 注册ViewModels(MVVM视图模型)
@@ -1009,7 +1009,7 @@ protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
 └──────────────────────────────────────────────────────────┘
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. ISaveable/IValidatable接口契约 - 与MedicalCase流程解耦
 
@@ -1028,7 +1028,7 @@ protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
 
 **反例**：
 ```csharp
-// ❌ 不要在FlowViewModel中硬编码验证逻辑
+//  不要在FlowViewModel中硬编码验证逻辑
 public async Task ExecuteNextStepAsync()
 {
     if (CurrentStepViewModel is ConsultationFormViewModel consultation)

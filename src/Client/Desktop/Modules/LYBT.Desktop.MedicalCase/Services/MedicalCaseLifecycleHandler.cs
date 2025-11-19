@@ -60,7 +60,7 @@ public class MedicalCaseLifecycleHandler
                 // 注意：Status字段由Service层管理，InputDto不包含
             };
 
-            _logger.LogInformation("📝 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, VisitDate: {VisitDate}",
+            _logger.LogInformation(" 准备调用API创建MedicalCase，PatientId: {PatientId}, DoctorId: {DoctorId}, VisitDate: {VisitDate}",
                 createDto.PatientId, createDto.DoctorId, createDto.VisitDate);
 
             // 使用DataManager创建MedicalCase
@@ -68,7 +68,7 @@ public class MedicalCaseLifecycleHandler
 
             if (createdDto == null)
             {
-                _logger.LogError("❌ DataManager返回null，创建失败");
+                _logger.LogError(" DataManager返回null，创建失败");
                 return (false, Guid.Empty, "创建医案失败：服务返回空结果");
             }
 
@@ -86,7 +86,7 @@ public class MedicalCaseLifecycleHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ 创建MedicalCase失败，PatientId: {PatientId}", patientId);
+            _logger.LogError(ex, " 创建MedicalCase失败，PatientId: {PatientId}", patientId);
             var errorMsg = $"创建医案失败：{ex.Message}";
 
             // 触发事件
@@ -253,7 +253,7 @@ public class MedicalCaseLifecycleHandler
                 medicalCaseId, newStatus);
 
             // Epic #1961: 使用统一的 MedicalCaseInputDto
-            // ⚠️ 注意：MedicalCaseInputDto 不包含 Status 字段
+            //  注意：MedicalCaseInputDto 不包含 Status 字段
             // Status 由 Service 层管理，此方法可能需要调用专用的状态更新 API
             // 暂时保留为空 InputDto，运行时可能需要调整业务逻辑
             var updateDto = new MedicalCaseInputDto
@@ -291,14 +291,14 @@ public class MedicalCaseLifecycleHandler
     {
         if (_sessionManager == null)
         {
-            _logger.LogError("❌ SessionManager为null，无法创建MedicalCase");
+            _logger.LogError(" SessionManager为null，无法创建MedicalCase");
             errorMessage = "会话管理器未初始化，无法创建医案";
             return false;
         }
 
         if (_sessionManager.CurrentUser == null)
         {
-            _logger.LogError("❌ SessionManager.CurrentUser为null，无法创建MedicalCase");
+            _logger.LogError(" SessionManager.CurrentUser为null，无法创建MedicalCase");
             errorMessage = "用户信息丢失，无法创建医案";
             return false;
         }

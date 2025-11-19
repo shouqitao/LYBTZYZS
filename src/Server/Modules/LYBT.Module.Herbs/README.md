@@ -251,7 +251,7 @@ public class HerbDto
     public string? PinyinAbbreviation { get; set; } // 拼音首字母（快速检索）
     public string? Notes { get; set; }         // 备注
 
-    // ⚠️ 不包含库存字段（库存管理超出MVP范围）
+    //  不包含库存字段（库存管理超出MVP范围）
 }
 
 // 在Service层更新价格

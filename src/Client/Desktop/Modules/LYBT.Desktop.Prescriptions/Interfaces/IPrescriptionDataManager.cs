@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.Interfaces
     /// 处方数据管理器接口
     /// Desktop层架构重构 Phase 2: DataManager接口化重构
     /// 目的：消除具体类依赖，提升可测试性
-    /// ⚠️ Issue #1608: 待重构完成后完善接口定义
+    ///  Issue #1608: 待重构完成后完善接口定义
     /// </summary>
     public interface IPrescriptionDataManager
     {

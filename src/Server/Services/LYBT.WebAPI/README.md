@@ -1264,7 +1264,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: 数据库更新失败
    at LYBT.Infrastructure.Repositories.BaseRepository.AddAsync(TEntity entity)
 ```
 
-## 🎯 最佳实践
+##  最佳实践
 
 ### 1. API设计原则
 
@@ -1278,7 +1278,7 @@ Microsoft.EntityFrameworkCore.DbUpdateException: 数据库更新失败
 [HttpPatch("{id}")]           // PATCH /api/v1/patients/{id} (部分更新)
 [HttpDelete("{id}")]          // DELETE /api/v1/patients/{id} (删除)
 
-// ❌ 错误：不符合RESTful规范
+//  错误：不符合RESTful规范
 [HttpGet("GetPatient")]       // GET /api/v1/patients/GetPatient (命名不规范)
 [HttpPost("DeletePatient")]   // POST /api/v1/patients/DeletePatient (方法错误)
 ```
@@ -1299,7 +1299,7 @@ public async Task<IActionResult> GetById(Guid id)
     });
 }
 
-// ❌ 错误：直接返回数据（不一致）
+//  错误：直接返回数据（不一致）
 public async Task<IActionResult> GetById(Guid id)
 {
     var patient = await _patientService.GetByIdAsync(id);
@@ -1326,7 +1326,7 @@ public class PatientsController : ControllerBase
     }
 }
 
-// ❌ 错误：使用ServiceLocator反模式
+//  错误：使用ServiceLocator反模式
 public class PatientsController : ControllerBase
 {
     public async Task<IActionResult> GetById(Guid id)
@@ -1347,7 +1347,7 @@ public async Task<IActionResult> GetById(Guid id)
     return Ok(patient);
 }
 
-// ❌ 错误：阻塞调用（影响性能）
+//  错误：阻塞调用（影响性能）
 [HttpGet("{id}")]
 public IActionResult GetById(Guid id)
 {
@@ -1400,7 +1400,7 @@ _logger.LogInformation(
     patient.Age
 );
 
-// ❌ 错误：字符串拼接（难以查询）
+//  错误：字符串拼接（难以查询）
 _logger.LogInformation(
     $"创建患者成功: {patient.Id}, {patient.Name}, {patient.Age}"
 );
@@ -1480,7 +1480,7 @@ public async Task<IActionResult> GetPaged()
     // ...
 }
 
-// ❌ 错误：硬编码角色检查（不灵活）
+//  错误：硬编码角色检查（不灵活）
 [HttpDelete("{id}")]
 public async Task<IActionResult> Delete(Guid id)
 {
@@ -1578,7 +1578,7 @@ public async Task<IActionResult> GetPaged(int pageIndex, int pageSize)
     return Ok(result);
 }
 
-// ❌ 错误：阻塞调用（降低吞吐量）
+//  错误：阻塞调用（降低吞吐量）
 public IActionResult GetPaged(int pageIndex, int pageSize)
 {
     var result = _patientService.GetPagedAsync(pageIndex, pageSize).Result;
@@ -1612,7 +1612,7 @@ public async Task<PagedResult<PatientDto>> GetPagedAsync(int pageIndex, int page
     };
 }
 
-// ❌ 错误：加载所有数据（内存溢出风险）
+//  错误：加载所有数据（内存溢出风险）
 public async Task<List<PatientDto>> GetAllAsync()
 {
     var patients = await _dbContext.Patients.ToListAsync(); // 加载全部
@@ -1637,7 +1637,7 @@ public async Task<List<PatientSummaryDto>> GetSummariesAsync()
         .ToListAsync();
 }
 
-// ❌ 错误：查询所有字段后再投影
+//  错误：查询所有字段后再投影
 public async Task<List<PatientSummaryDto>> GetSummariesAsync()
 {
     var patients = await _dbContext.Patients.ToListAsync();
@@ -1679,7 +1679,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")),
     ServiceLifetime.Scoped); // 默认Scoped
 
-// ❌ 错误：使用Singleton（线程安全问题）
+//  错误：使用Singleton（线程安全问题）
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")),
     ServiceLifetime.Singleton); // 违反DbContext使用规范
@@ -1718,7 +1718,7 @@ public class TokenStorage
     }
 }
 
-// ❌ 错误：明文存储Token（安全风险）
+//  错误：明文存储Token（安全风险）
 public void SaveToken(string token)
 {
     File.WriteAllText("token.txt", token); // 明文存储
@@ -1763,7 +1763,7 @@ public async Task<List<PatientDto>> SearchAsync(string keyword)
         .ToListAsync();
 }
 
-// ❌ 错误：使用原始SQL（SQL注入风险）
+//  错误：使用原始SQL（SQL注入风险）
 public async Task<List<PatientDto>> SearchAsync(string keyword)
 {
     var sql = $"SELECT * FROM Patients WHERE Name LIKE '%{keyword}%'"; // SQL注入

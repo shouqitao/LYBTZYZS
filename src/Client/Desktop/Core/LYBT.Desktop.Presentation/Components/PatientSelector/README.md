@@ -123,7 +123,7 @@ public class PatientSelectedPayload
 
 ---
 
-## 🎯 常见使用场景
+##  常见使用场景
 
 ### 场景1：门诊接诊流程
 
@@ -190,7 +190,7 @@ eventAggregator.GetEvent<PatientSelectedEvent>()
 
 ---
 
-## 🔧 故障排除
+##  故障排除
 
 ### 问题1：事件未触发
 
@@ -273,7 +273,7 @@ Console.WriteLine($"CanExecute: {QuickCreateCommand.CanExecute()}");
 
 **解决方案**：
 -  已采用反射手动映射（见 `PatientSelectorViewModel.CreatePatientSelectedPayload()`）
-- ❌ 不要尝试使用 AutoMapper 映射 Modules 层类型
+-  不要尝试使用 AutoMapper 映射 Modules 层类型
 -  使用 `dynamic` 类型或基类接口作为中间层
 
 **正确的映射代码示例**：
@@ -336,7 +336,7 @@ private PatientSelectedPayload CreatePatientSelectedPayload(dynamic patient)
 
 ---
 
-## 📝 版本历史
+##  版本历史
 
 | 版本 | 日期 | 说明 |
 |------|------|------|

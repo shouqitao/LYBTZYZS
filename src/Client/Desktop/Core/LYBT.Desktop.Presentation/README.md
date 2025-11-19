@@ -518,7 +518,7 @@ public class MedicalCaseCreateViewModel : BindableBase
 
 **完整接口定义**请参考各服务类的源代码和接口定义。
 
-## 📊 核心服务架构
+##  核心服务架构
 
 ### 导航服务架构
 ```
@@ -598,7 +598,7 @@ ConsultationViewModel（诊疗视图）
 PrescriptionViewModel（处方视图）
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### UI基础设施vs技术基础设施
 | 特性 | Foundation（技术基础设施） | Presentation（UI基础设施） |
@@ -618,10 +618,10 @@ PrescriptionViewModel（处方视图）
 | 错误类别 | 用户提示 | 日志级别 | 是否可重试 |
 |---------|---------|---------|-----------|
 | Network | "网络连接失败，请检查网络" | Warning |  是 |
-| Validation | "输入数据不符合要求" | Info | ❌ 否 |
-| Business | "操作失败：{业务规则}" | Warning | ❌ 否 |
+| Validation | "输入数据不符合要求" | Info |  否 |
+| Business | "操作失败：{业务规则}" | Warning |  否 |
 | System | "系统错误，请联系管理员" | Error |  视情况 |
-| Critical | "严重错误，应用将退出" | Critical | ❌ 否 |
+| Critical | "严重错误，应用将退出" | Critical |  否 |
 
 ## 📚 详细文档
 

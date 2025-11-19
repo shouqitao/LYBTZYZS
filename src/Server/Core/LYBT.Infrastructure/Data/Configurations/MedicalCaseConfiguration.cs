@@ -26,7 +26,7 @@ namespace LYBT.Infrastructure.Data.Configurations
             // - Status/CreatedAt: MVP阶段(<10K记录)无需额外索引
 
             // 添加并发控制
-            // ⚠️ Issue #1669 Phase 7: 临时禁用RowVersion验证InMemory数据库并发问题
+            //  Issue #1669 Phase 7: 临时禁用RowVersion验证InMemory数据库并发问题
             // TODO: 生产环境需要恢复此配置！
             // entity.Property(m => m.RowVersion).IsRowVersion().IsConcurrencyToken();
 

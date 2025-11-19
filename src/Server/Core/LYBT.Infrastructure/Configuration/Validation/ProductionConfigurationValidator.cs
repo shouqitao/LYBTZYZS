@@ -155,7 +155,7 @@ public class ProductionConfigurationValidator
         var sb = new StringBuilder();
         sb.AppendLine();
         sb.AppendLine("╔═══════════════════════════════════════════════════════════╗");
-        sb.AppendLine("║  ❌ Production 配置验证失败                               ║");
+        sb.AppendLine("║   Production 配置验证失败                               ║");
         sb.AppendLine("╚═══════════════════════════════════════════════════════════╝");
         sb.AppendLine();
 
@@ -167,7 +167,7 @@ public class ProductionConfigurationValidator
 
         if (criticalErrors.Any())
         {
-            sb.AppendLine("⚠️ CRITICAL 错误（必须修复）:");
+            sb.AppendLine(" CRITICAL 错误（必须修复）:");
             sb.AppendLine();
             foreach (var error in criticalErrors)
             {
@@ -177,7 +177,7 @@ public class ProductionConfigurationValidator
 
         if (importantErrors.Any())
         {
-            sb.AppendLine("⚠️ IMPORTANT 错误（建议修复）:");
+            sb.AppendLine(" IMPORTANT 错误（建议修复）:");
             sb.AppendLine();
             foreach (var error in importantErrors)
             {
@@ -187,7 +187,7 @@ public class ProductionConfigurationValidator
 
         sb.AppendLine("───────────────────────────────────────────────────────────");
         sb.AppendLine("📖 详细配置指南: docs/deployment/production-setup.md");
-        sb.AppendLine("🔧 验证脚本: .\\scripts\\validate-production-config.ps1");
+        sb.AppendLine(" 验证脚本: .\\scripts\\validate-production-config.ps1");
         sb.AppendLine();
 
         return sb.ToString();

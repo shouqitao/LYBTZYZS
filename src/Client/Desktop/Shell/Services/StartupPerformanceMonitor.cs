@@ -43,7 +43,7 @@ public class StartupPerformanceMonitor
 
         _currentStageName = stageName;
         _currentStageStopwatch = Stopwatch.StartNew();
-        _logger.LogInformation("▶ 阶段开始: {StageName}", stageName);
+        _logger.LogInformation(" 阶段开始: {StageName}", stageName);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class StartupPerformanceMonitor
         var elapsedMs = _currentStageStopwatch.ElapsedMilliseconds;
         _stageTimes[_currentStageName] = elapsedMs;
 
-        _logger.LogInformation("◀ 阶段完成: {StageName} - 耗时: {ElapsedMs}ms", _currentStageName, elapsedMs);
+        _logger.LogInformation(" 阶段完成: {StageName} - 耗时: {ElapsedMs}ms", _currentStageName, elapsedMs);
 
         _currentStageStopwatch = null;
         _currentStageName = null;
@@ -100,11 +100,11 @@ public class StartupPerformanceMonitor
         }
         else if (totalMs < 5000)
         {
-            _logger.LogWarning("⚠️ 启动性能: 一般 (2-5秒)");
+            _logger.LogWarning(" 启动性能: 一般 (2-5秒)");
         }
         else
         {
-            _logger.LogWarning("❌ 启动性能: 较慢 (> 5秒)");
+            _logger.LogWarning(" 启动性能: 较慢 (> 5秒)");
         }
     }
 

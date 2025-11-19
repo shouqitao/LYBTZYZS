@@ -1012,7 +1012,7 @@ public class HerbManagementViewModel : UnifiedViewModelBase
 7. 分类搜索（按药材分类筛选）
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. MVVM架构与数据绑定
 
@@ -1038,9 +1038,9 @@ public class HerbManagementViewModel : UnifiedViewModelBase
 ```
 
 **反模式**:
-- ❌ 在ViewModel中直接操作UI控件（如TextBox.Text = "xxx"）
-- ❌ 在View代码隐藏中编写业务逻辑（应该在ViewModel中）
-- ❌ 直接依赖Server Service（应该通过Repository抽象）
+-  在ViewModel中直接操作UI控件（如TextBox.Text = "xxx"）
+-  在View代码隐藏中编写业务逻辑（应该在ViewModel中）
+-  直接依赖Server Service（应该通过Repository抽象）
 
 ### 2. Repository模式与三层架构
 
@@ -1079,9 +1079,9 @@ public class HerbRepository : BaseApiRepository<HerbDto>, IHerbRepository
 ```
 
 **反模式**:
-- ❌ ViewModel直接依赖具体Repository类（应该依赖接口）
-- ❌ 返回Result<T>增加ViewModel复杂度（Client端不需要Result包装）
-- ❌ Repository混入UI逻辑（如MessageBox.Show）
+-  ViewModel直接依赖具体Repository类（应该依赖接口）
+-  返回Result<T>增加ViewModel复杂度（Client端不需要Result包装）
+-  Repository混入UI逻辑（如MessageBox.Show）
 
 ### 3. 拼音快速检索与中医药材特性
 
@@ -1116,8 +1116,8 @@ public async Task<List<HerbModel>> GetByNameOrPinyinAsync(string keyword)
 ```
 
 **反模式**:
-- ❌ 不支持拼音检索,强制全名输入（降低效率）
-- ❌ 拼音字段为空或不维护（失去快速检索能力）
+-  不支持拼音检索,强制全名输入（降低效率）
+-  拼音字段为空或不维护（失去快速检索能力）
 
 ### 4. 双价格体系与利润率计算
 
@@ -1153,8 +1153,8 @@ private async Task SaveHerbAsync()
 ```
 
 **反模式**:
-- ❌ 只存售价,不记录成本（无法分析利润）
-- ❌ 强制要求售价>成本价（赠送药材无法录入）
+-  只存售价,不记录成本（无法分析利润）
+-  强制要求售价>成本价（赠送药材无法录入）
 
 ### 5. 批量操作与Excel导入导出
 
@@ -1190,8 +1190,8 @@ private async Task ImportHerbsAsync()
 ```
 
 **反模式**:
-- ❌ 导入失败不提示具体行号（用户无法定位错误）
-- ❌ 导入失败全部回滚（部分成功数据也丢失）
+-  导入失败不提示具体行号（用户无法定位错误）
+-  导入失败全部回滚（部分成功数据也丢失）
 
 ### 6. 状态管理与使用历史查询
 
@@ -1235,8 +1235,8 @@ private async Task ExecuteViewUsageHistory()
 ```
 
 **反模式**:
-- ❌ 删除药材而非禁用（历史处方引用丢失）
-- ❌ 无使用历史查询（无法分析药材使用频率）
+-  删除药材而非禁用（历史处方引用丢失）
+-  无使用历史查询（无法分析药材使用频率）
 
 ### 7. 异步优先与UI响应性
 
@@ -1267,9 +1267,9 @@ private async Task OnExecuteBatchDeleteAsync()
 ```
 
 **反模式**:
-- ❌ 同步方法阻塞UI线程（用户无法操作）
-- ❌ 无IsBusy标志（用户不知道是否在处理）
-- ❌ 批量操作串行执行（性能低下）
+-  同步方法阻塞UI线程（用户无法操作）
+-  无IsBusy标志（用户不知道是否在处理）
+-  批量操作串行执行（性能低下）
 
 ## 📚 详细文档
 

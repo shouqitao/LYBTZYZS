@@ -416,7 +416,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 // ④ 显示导入结果
                 var message = $"导入完成！\n\n" +
                               $" 成功：{result.SuccessCount}条\n" +
-                              $"❌ 失败：{result.FailureCount}条\n" +
+                              $" 失败：{result.FailureCount}条\n" +
                               $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
                               $"成功率：{result.SuccessRate:F1}%";
 

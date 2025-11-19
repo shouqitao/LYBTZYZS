@@ -178,7 +178,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 // 触发登录成功事件（与密码登录相同的流程）
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Logger.LogInformation("📢 Token 自动登录成功，发布 LoginSuccessEvent");
+                    Logger.LogInformation(" Token 自动登录成功，发布 LoginSuccessEvent");
                     EventAggregator.GetEvent<LoginSuccessEvent>().Publish(loginResponse.User);
                 });
             }
@@ -544,7 +544,7 @@ namespace LYBT.Desktop.Auth.ViewModels
                 Logger.LogInformation($"用户 {user.UserName}（角色: {role}）登录成功");
 
                 // Issue #877: 发布登录成功事件，触发 Shell UI 更新和导航
-                Logger.LogInformation("📢 发布 LoginSuccessEvent，触发 MainWindowViewModel 处理后续导航");
+                Logger.LogInformation(" 发布 LoginSuccessEvent，触发 MainWindowViewModel 处理后续导航");
                 EventAggregator.GetEvent<LoginSuccessEvent>().Publish(user);
 
                 // 导航逻辑由 MainWindowViewModel.OnLoginSuccess() 和 LoadMainContent() 处理

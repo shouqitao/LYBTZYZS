@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.PrescriptionEditorView"
+﻿<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.PrescriptionEditorView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
@@ -283,7 +283,7 @@
                    Margin="0,0,0,15"
                    Visibility="{Binding DuplicateHerbsWarningVisibility}">
                 <StackPanel>
-                    <TextBlock Text="⚠️ 重复药材提示"
+                    <TextBlock Text=" 重复药材提示"
                               FontWeight="Bold"
                               FontSize="13"
                               Foreground="#F57C00"/>

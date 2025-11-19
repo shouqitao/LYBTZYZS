@@ -306,7 +306,7 @@ public abstract class StatisticsDto
 }
 ```
 
-## 📊 DTO继承关系架构图
+##  DTO继承关系架构图
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -637,7 +637,7 @@ public class PatientDto : StatusDto, ICodeable, IRemarkable
 }
 ```
 
-## 🔧 通用响应格式
+##  通用响应格式
 
 ### 1. ApiResponse<T> - API统一响应
 
@@ -785,7 +785,7 @@ public class PagedResult<T>
 }
 ```
 
-## 📊 枚举定义
+##  枚举定义
 
 ### 1. 核心业务枚举
 
@@ -1221,7 +1221,7 @@ if (user.IsAdmin())
 var displayName = user.GetDisplayName(); // "张医生" or "admin"
 ```
 
-## 🎯 最佳实践
+##  最佳实践
 
 ### 1. DTO设计原则
 -  **使用继承优化代码复用** - 统一基类减少重复代码
@@ -1267,7 +1267,7 @@ var displayName = user.GetDisplayName(); // "张医生" or "admin"
 ### 1. DTO投影优化
 
 ```csharp
-// ❌ 不推荐：查询完整实体再映射
+//  不推荐：查询完整实体再映射
 var users = await _context.Users.ToListAsync();
 var userDtos = _mapper.Map<List<UserDto>>(users);
 
@@ -1295,7 +1295,7 @@ var items = await query
 //  使用只读计算属性
 public decimal TotalPrice => SingleDosePrice * DosageCount;
 
-// ❌ 避免存储冗余字段
+//  避免存储冗余字段
 // public decimal TotalPrice { get; set; } // 需要手动维护一致性
 ```
 
@@ -1314,8 +1314,8 @@ public class UserCreateDto
 //  查询DTO不包含密码
 public class UserDto : StatusDto
 {
-    // ❌ 不包含 PasswordHash
-    // ❌ 不包含 Salt
+    //  不包含 PasswordHash
+    //  不包含 Salt
     public string Username { get; set; } = string.Empty;
     public string RealName { get; set; } = string.Empty;
 }

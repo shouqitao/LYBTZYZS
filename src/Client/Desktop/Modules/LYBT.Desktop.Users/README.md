@@ -852,7 +852,7 @@ public class UsersModule : IModule
       └────────────────────────────────────────┘
 ```
 
-## 🎯 设计原则
+##  设计原则
 
 ### 1. MVVM架构与UnifiedViewModelBase
 
@@ -867,7 +867,7 @@ public class UsersModule : IModule
 
 **反面案例（禁止）**：
 ```csharp
-// ❌ 错误：手动实现分页逻辑（重复代码）
+//  错误：手动实现分页逻辑（重复代码）
 public class UserManagementViewModel : BindableBase
 {
     private int _pageIndex = 1;

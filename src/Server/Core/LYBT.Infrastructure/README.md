@@ -1,4 +1,4 @@
-﻿## 🎯 项目概述
+﻿##  项目概述
 
 LYBT.Infrastructure是系统的核心基础设施模块，采用分层架构设计，专为小型中医诊所（<20人）优化。提供数据库访问、配置管理、安全服务等核心基础功能，是所有业务模块的统一底层支撑。
 
@@ -190,7 +190,7 @@ public async Task BatchUpdateStatusAsync(List<Guid> ids, EntityStatus status)
 }
 ```
 
-## 🔧 服务注册
+##  服务注册
 
 ### 统一服务注册
 
@@ -206,7 +206,7 @@ Infrastructure层的服务注册通过多个扩展方法分离管理，详见：
 - **安全配置**: ASP.NET Core DataProtection
 - **数据库初始化**: DatabaseInitializationService
 
-## 🎯 分层架构特点
+##  分层架构特点
 
 **适合小型中医诊所(<20人)的精简设计**:
 -  **结构清晰**: 按功能模块组织，易于理解和维护

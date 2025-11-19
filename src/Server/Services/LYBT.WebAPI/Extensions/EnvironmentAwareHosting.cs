@@ -98,7 +98,7 @@ public static class EnvironmentAwareHosting
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[启动] ❌ 数据库连接失败: {ex.Message}");
+            Console.WriteLine($"[启动]  数据库连接失败: {ex.Message}");
             Console.ResetColor();
         }
 

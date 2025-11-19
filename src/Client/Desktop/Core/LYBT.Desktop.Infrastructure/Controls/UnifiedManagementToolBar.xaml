@@ -1,4 +1,4 @@
-<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.UnifiedManagementToolBar"
+﻿<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.UnifiedManagementToolBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -28,7 +28,7 @@
                 </TextBox>
 
                 <!-- 搜索按钮 -->
-                <Button Content="🔍 搜索"
+                <Button Content=" 搜索"
                         Command="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         Style="{StaticResource SecondaryButton}"
                         Margin="{StaticResource SpacingSmall}"

@@ -419,7 +419,7 @@ public async Task<MedicalCaseDto> CreateMedicalCaseWithConsultationAsync(
     // 创建看诊(使用相同主键)
     var consultation = new Consultation
     {
-        Id = medicalCase.Id,  // ⚠️ 共享主键
+        Id = medicalCase.Id,  //  共享主键
         ChiefComplaint = dto.ChiefComplaint,
         PresentIllness = dto.PresentIllness,
         PrescriptionEnabled = true

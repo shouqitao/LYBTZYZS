@@ -70,7 +70,7 @@ public class Program
                 }
                 catch (LYBT.Infrastructure.Configuration.Validation.ProductionConfigurationException ex)
                 {
-                    Log.Fatal(ex, "❌ Production 配置验证失败");
+                    Log.Fatal(ex, " Production 配置验证失败");
                     Console.Error.WriteLine(ex.Message);
                     Environment.Exit(1);
                 }

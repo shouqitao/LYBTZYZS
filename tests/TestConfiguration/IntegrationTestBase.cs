@@ -26,16 +26,16 @@ namespace LYBT.Tests.Common
         protected readonly IServiceProvider ServiceProvider;
         protected readonly Mock<ILogger> MockLogger;
 
-        // ⚠️ Issue #1669: 固定数据库名，确保同一测试实例的所有HTTP请求使用同一内存数据库
+        //  Issue #1669: 固定数据库名，确保同一测试实例的所有HTTP请求使用同一内存数据库
         protected readonly string TestDatabaseName;
 
-        // ⚠️ Issue #1669 Phase 6: 共享InMemoryDatabaseRoot，确保所有DbContext实例共享同一数据库
+        //  Issue #1669 Phase 6: 共享InMemoryDatabaseRoot，确保所有DbContext实例共享同一数据库
         // 静态字段在整个测试运行期间保持不变，所有测试实例共享
         private static readonly InMemoryDatabaseRoot _sharedDatabaseRoot = new InMemoryDatabaseRoot();
 
         protected IntegrationTestBase()
         {
-            // ⚠️ 必须在创建Factory之前设置环境变量，确保Program.Main正确加载appsettings.Test.json
+            //  必须在创建Factory之前设置环境变量，确保Program.Main正确加载appsettings.Test.json
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
             // 为当前测试实例生成唯一但固定的数据库名
@@ -121,7 +121,7 @@ namespace LYBT.Tests.Common
                 services.Remove(descriptor);
             }
 
-            // ⚠️ Issue #1669 Phase 6-7: 使用固定数据库名和共享DatabaseRoot，禁用RowVersion
+            //  Issue #1669 Phase 6-7: 使用固定数据库名和共享DatabaseRoot，禁用RowVersion
             // 确保测试中创建的数据与API请求时访问的数据在同一数据库实例
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
@@ -129,7 +129,7 @@ namespace LYBT.Tests.Common
                 options.EnableSensitiveDataLogging();
                 options.EnableServiceProviderCaching();
 
-                // ⚠️ Issue #1669 Phase 7: InMemory数据库对RowVersion支持有限，导致DbUpdateConcurrencyException
+                //  Issue #1669 Phase 7: InMemory数据库对RowVersion支持有限，导致DbUpdateConcurrencyException
                 // 解决方案：在测试环境中移除RowVersion的IsConcurrencyToken配置
                 options.ReplaceService<Microsoft.EntityFrameworkCore.Infrastructure.IModelCustomizer, TestModelCustomizer>();
             });
@@ -191,11 +191,11 @@ namespace LYBT.Tests.Common
         protected virtual string GenerateTestToken()
         {
             // 生成真实的JWT Token用于集成测试认证（Issue #1668 Solution A）
-            // ⚠️ 密钥、Issuer、Audience必须与LYBT.WebAPI/appsettings.Test.json完全一致
+            //  密钥、Issuer、Audience必须与LYBT.WebAPI/appsettings.Test.json完全一致
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
 
-            // ⚠️ Issue #1669: NameIdentifier必须是有效的Guid，用于填充CreatedBy审计字段
+            //  Issue #1669: NameIdentifier必须是有效的Guid，用于填充CreatedBy审计字段
             var testUserId = Guid.NewGuid();
 
             var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
