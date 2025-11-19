@@ -271,12 +271,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 执行批量删除操作
+        /// 执行批量删除操作（子类必须实现具体的删除逻辑）
+        /// Issue #2154: 改为抽象方法，强制子类实现
         /// </summary>
-        protected virtual async Task OnExecuteBatchDeleteAsync(List<T> items)
-        {
-            await Task.CompletedTask;
-        }
+        /// <param name="items">要删除的项目列表</param>
+        /// <remarks>
+        /// 子类应实现以下逻辑：
+        /// 1. 逐个删除项目（BR-004: 部分失败不影响其他）
+        /// 2. 统计成功和失败数量
+        /// 3. 调用ShowSuccessMessageAsync或ShowWarningMessageAsync显示结果
+        /// </remarks>
+        protected abstract Task OnExecuteBatchDeleteAsync(List<T> items);
 
         #endregion
 
@@ -399,17 +404,38 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 执行批量删除
+        /// 执行批量删除（模板方法）
+        /// Issue #2154: 添加确认对话框和完整流程
+        /// BR-002: 删除前必须确认
+        /// BR-004: 部分失败不影响其他
+        /// BR-005: 空选择时不执行
         /// </summary>
         private async Task ExecuteBatchDeleteAsync()
         {
+            // BR-005: 空选择检查
+            if (SelectedItems == null || SelectedItems.Count == 0)
+                return;
+
+            // 1. BR-002: 显示确认对话框
+            var confirmed = await ShowConfirmationAsync(
+                $"确认删除选中的 {SelectedItems.Count} 个项目吗？\n此操作不可恢复。",
+                "批量删除确认");
+
+            if (!confirmed)
+                return;
+
+            // 2. 复制选中项列表（避免在迭代中修改集合）
             var itemsToDelete = SelectedItems.ToList();
-            if (itemsToDelete.Count == 0) return;
 
             await ExecuteSafelyAsync(async () =>
             {
+                // 3. 调用子类实现的批量删除逻辑
                 await OnExecuteBatchDeleteAsync(itemsToDelete);
+
+                // 4. 清空选中项
                 SelectedItems.Clear();
+
+                // 5. 刷新列表
                 await RefreshAsync();
             }, $"批量删除{itemsToDelete.Count}个项目");
         }
