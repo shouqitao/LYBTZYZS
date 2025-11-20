@@ -341,6 +341,7 @@ namespace LYBT.Module.Herbs.Services
                         var herb = new Herb
                         {
                             Name = name,
+                            PinYinCode = PinYinHelper.GetPinYinCode(name), // Issue #2174: 自动生成拼音码
                             Unit = unit,
                             Price = price,
                             Origin = origin,
