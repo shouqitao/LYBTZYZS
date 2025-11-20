@@ -229,7 +229,7 @@
 
                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
                             <TextBlock Text="拼音码（自动生成）" Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding PinYinCode}"
+                            <TextBox Text="{Binding PinYinCode, Mode=OneWay}"
                                      IsReadOnly="True"
                                      Background="#F9FAFB"
                                      MinHeight="44"
