@@ -55,8 +55,7 @@ namespace LYBT.Desktop.Patients
             // Issue #2167: PatientImportWizardViewModel已删除（改用直接API调用）
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
             containerRegistry.Register<ViewModels.PatientManagementViewModel>();  // 患者管理视图模型
-            containerRegistry.Register<ViewModels.PatientCreateViewModel>();  // CRUD统一模式：创建视图模型
-            containerRegistry.Register<ViewModels.PatientEditViewModel>();  // CRUD统一模式：编辑视图模型
+            // Issue #2168: CRUD统一架构 - PatientCreateViewModel和PatientEditViewModel已删除
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
@@ -64,9 +63,8 @@ namespace LYBT.Desktop.Patients
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
 
-            // CRUD统一模式：Region Navigation视图
-            containerRegistry.RegisterForNavigation<Views.PatientCreateView>();
-            containerRegistry.RegisterForNavigation<Views.PatientEditView>();
+            // Issue #2168: CRUD统一架构 - PatientDetailView支持Create/Edit/View三种模式
+            // PatientCreateView和PatientEditView已删除，统一使用PatientDetailView
 
             // Issue #1547: PatientSelectionDialog已删除（由MedicalCaseFlowView的Step 1替代）
             // containerRegistry.RegisterDialog<Views.PatientSelectionDialog, ViewModels.PatientSelectionDialogViewModel>();

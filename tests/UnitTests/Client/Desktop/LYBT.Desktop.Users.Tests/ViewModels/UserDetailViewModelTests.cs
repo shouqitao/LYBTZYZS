@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using LYBT.Desktop.Users.Interfaces;
 using LYBT.Desktop.Users.ViewModels;
 using LYBT.Desktop.Users.ViewModels.Components;
@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 {
     /// <summary>
     /// UserDetailViewModel 单元测试
-    /// 测试用户详情ViewModel的基本功能（Issue #1248 完整实现）
+    /// Issue #2168: 测试CRUD统一架构（Create/Edit/View三种模式）
     /// </summary>
     public class UserDetailViewModelTests : IDisposable
     {
@@ -58,89 +58,251 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         {
             // Assert
             _viewModel.Should().NotBeNull();
-            _viewModel.User.Should().BeNull(); // 初始无用户
+            _viewModel.UserId.Should().Be(Guid.Empty); // 初始为空=Create模式
+            _viewModel.IsCreateMode.Should().BeTrue();
+            _viewModel.IsEditMode.Should().BeTrue(); // 默认为编辑模式
+            _viewModel.IsReadOnly.Should().BeFalse();
         }
 
         [Fact]
         public void Constructor_ShouldInitializeCommands()
         {
             // Assert
+            _viewModel.SubmitCommand.Should().NotBeNull();
+            _viewModel.CancelCommand.Should().NotBeNull();
+            _viewModel.SwitchToEditModeCommand.Should().NotBeNull();
             _viewModel.GoBackCommand.Should().NotBeNull();
-            _viewModel.EditUserCommand.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void Constructor_ShouldInitializeOptions()
+        {
+            // Assert
+            _viewModel.RoleOptions.Should().NotBeNull();
+            _viewModel.RoleOptions.Should().HaveCountGreaterThan(0);
+            _viewModel.StatusOptions.Should().NotBeNull();
+            _viewModel.StatusOptions.Should().HaveCountGreaterThan(0);
         }
 
         #endregion
 
-        #region User属性测试
+        #region Create模式测试
 
         [Fact]
-        public void SetUser_ShouldUpdateUserProperty()
+        public void CreateMode_ShouldHaveCorrectProperties()
         {
-            // Arrange
-            var testUser = CreateSampleUserDto();
-
-            // Act
-            _viewModel.User = testUser;
+            // Arrange & Act - 默认构造就是Create模式（无参数导航）
 
             // Assert
-            _viewModel.User.Should().NotBeNull();
-            _viewModel.User.Should().Be(testUser);
-            _viewModel.User!.UserName.Should().Be("testuser");
+            _viewModel.UserId.Should().Be(Guid.Empty);
+            _viewModel.IsCreateMode.Should().BeTrue();
+            _viewModel.IsEditOrViewMode.Should().BeFalse();
+            _viewModel.IsEditMode.Should().BeTrue();
+            _viewModel.IsReadOnly.Should().BeFalse();
+        }
+
+        [Fact]
+        public void CreateMode_FormFields_ShouldBeEmpty()
+        {
+            // Assert
+            _viewModel.UserName.Should().BeEmpty();
+            _viewModel.RealName.Should().BeEmpty();
+            _viewModel.PhoneNumber.Should().BeNull();
+            _viewModel.Email.Should().BeNull();
+            _viewModel.SelectedRole.Should().Be(UserRole.Doctor); // 默认值
+            _viewModel.Status.Should().Be(CommonStatus.Enabled); // 默认值
         }
 
         #endregion
 
-        #region CanExecuteEditUser 测试
+        #region Edit/View模式测试
 
         [Fact]
-        public void CanExecuteEditUser_WithoutUser_ShouldReturnFalse()
+        public void ProcessNavigationParameters_WithUserId_ShouldEnterEditMode()
         {
             // Arrange
-            _viewModel.User = null;
+            var userId = Guid.NewGuid();
+            var parameters = new NavigationParameters
+            {
+                { "UserId", userId }
+            };
 
             // Act
-            var method = typeof(UserDetailViewModel)
-                .GetMethod("CanExecuteEditUser", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var canExecute = (bool)method!.Invoke(_viewModel, null)!;
+            InvokeProcessNavigationParameters(parameters);
 
             // Assert
-            canExecute.Should().BeFalse();
+            _viewModel.UserId.Should().Be(userId);
+            _viewModel.IsCreateMode.Should().BeFalse();
+            _viewModel.IsEditOrViewMode.Should().BeTrue();
+            _viewModel.IsEditMode.Should().BeTrue(); // 有UserId但无ReadOnly=Edit模式
+            _viewModel.IsReadOnly.Should().BeFalse();
         }
 
         [Fact]
-        public void CanExecuteEditUser_WithUserAndNotBusy_ShouldReturnTrue()
+        public void ProcessNavigationParameters_WithUserIdAndReadOnly_ShouldEnterViewMode()
         {
             // Arrange
-            _viewModel.User = CreateSampleUserDto();
-            // IsBusy默认为false
+            var userId = Guid.NewGuid();
+            var parameters = new NavigationParameters
+            {
+                { "UserId", userId },
+                { "ReadOnly", true }
+            };
 
             // Act
-            var method = typeof(UserDetailViewModel)
-                .GetMethod("CanExecuteEditUser", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var canExecute = (bool)method!.Invoke(_viewModel, null)!;
+            InvokeProcessNavigationParameters(parameters);
 
             // Assert
-            canExecute.Should().BeTrue();
+            _viewModel.UserId.Should().Be(userId);
+            _viewModel.IsCreateMode.Should().BeFalse();
+            _viewModel.IsEditOrViewMode.Should().BeTrue();
+            _viewModel.IsEditMode.Should().BeFalse(); // ReadOnly=true → View模式
+            _viewModel.IsReadOnly.Should().BeTrue();
+        }
+
+        #endregion
+
+        #region 模式切换测试
+
+        [Fact]
+        public void SwitchToEditMode_FromViewMode_ShouldChangeToEditMode()
+        {
+            // Arrange - 设置为View模式
+            var userId = Guid.NewGuid();
+            var parameters = new NavigationParameters
+            {
+                { "UserId", userId },
+                { "ReadOnly", true }
+            };
+            InvokeProcessNavigationParameters(parameters);
+            _viewModel.IsReadOnly.Should().BeTrue();
+
+            // Act - 切换到Edit模式
+            _viewModel.SwitchToEditModeCommand.Execute();
+
+            // Assert
+            _viewModel.IsEditMode.Should().BeTrue();
+            _viewModel.IsReadOnly.Should().BeFalse();
         }
 
         [Fact]
-        public void CanExecuteEditUser_WhenBusy_ShouldReturnFalse()
+        public void CanSwitchToEditMode_InViewMode_ShouldReturnTrue()
         {
-            // Arrange
-            _viewModel.User = CreateSampleUserDto();
-
-            // 使用反射设置IsBusy为true
-            var isBusyProperty = typeof(UserDetailViewModel).BaseType!
-                .GetProperty("IsBusy", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            isBusyProperty!.SetValue(_viewModel, true);
+            // Arrange - View模式
+            var userId = Guid.NewGuid();
+            _viewModel.UserId = userId;
+            var isEditModeProperty = typeof(UserDetailViewModel)
+                .GetProperty("IsEditMode", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            isEditModeProperty!.SetValue(_viewModel, false); // View模式
 
             // Act
-            var method = typeof(UserDetailViewModel)
-                .GetMethod("CanExecuteEditUser", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var canExecute = (bool)method!.Invoke(_viewModel, null)!;
+            var canSwitch = _viewModel.SwitchToEditModeCommand.CanExecute();
 
             // Assert
-            canExecute.Should().BeFalse();
+            canSwitch.Should().BeTrue();
+        }
+
+        [Fact]
+        public void CanSwitchToEditMode_InCreateMode_ShouldReturnFalse()
+        {
+            // Arrange - Create模式（UserId=Empty）
+            _viewModel.UserId = Guid.Empty;
+
+            // Act
+            var canSwitch = _viewModel.SwitchToEditModeCommand.CanExecute();
+
+            // Assert
+            canSwitch.Should().BeFalse(); // Create模式不应该有"切换到编辑"按钮
+        }
+
+        #endregion
+
+        #region CanSubmit测试
+
+        [Fact]
+        public void CanSubmit_InViewMode_ShouldReturnFalse()
+        {
+            // Arrange - View模式
+            var userId = Guid.NewGuid();
+            _viewModel.UserId = userId;
+            var isEditModeProperty = typeof(UserDetailViewModel)
+                .GetProperty("IsEditMode", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            isEditModeProperty!.SetValue(_viewModel, false);
+
+            _viewModel.UserName = "testuser";
+            _viewModel.RealName = "测试用户";
+
+            // Act
+            var canSubmit = _viewModel.SubmitCommand.CanExecute();
+
+            // Assert
+            canSubmit.Should().BeFalse(); // View模式不能提交
+        }
+
+        [Fact]
+        public void CanSubmit_WithValidData_ShouldReturnTrue()
+        {
+            // Arrange
+            _viewModel.UserName = "testuser";
+            _viewModel.RealName = "测试用户";
+
+            // Act
+            var canSubmit = _viewModel.SubmitCommand.CanExecute();
+
+            // Assert
+            canSubmit.Should().BeTrue();
+        }
+
+        [Fact]
+        public void CanSubmit_WithEmptyUserName_ShouldReturnFalse()
+        {
+            // Arrange
+            _viewModel.UserName = "";
+            _viewModel.RealName = "测试用户";
+
+            // Act
+            var canSubmit = _viewModel.SubmitCommand.CanExecute();
+
+            // Assert
+            canSubmit.Should().BeFalse();
+        }
+
+        [Fact]
+        public void CanSubmit_WithEmptyRealName_ShouldReturnFalse()
+        {
+            // Arrange
+            _viewModel.UserName = "testuser";
+            _viewModel.RealName = "";
+
+            // Act
+            var canSubmit = _viewModel.SubmitCommand.CanExecute();
+
+            // Assert
+            canSubmit.Should().BeFalse();
+        }
+
+        #endregion
+
+        #region 表单属性测试
+
+        [Fact]
+        public void SetFormProperties_ShouldUpdateProperties()
+        {
+            // Arrange & Act
+            _viewModel.UserName = "testuser";
+            _viewModel.RealName = "测试用户";
+            _viewModel.PhoneNumber = "13800138000";
+            _viewModel.Email = "test@example.com";
+            _viewModel.SelectedRole = UserRole.Admin;
+            _viewModel.Status = CommonStatus.Disabled;
+
+            // Assert
+            _viewModel.UserName.Should().Be("testuser");
+            _viewModel.RealName.Should().Be("测试用户");
+            _viewModel.PhoneNumber.Should().Be("13800138000");
+            _viewModel.Email.Should().Be("test@example.com");
+            _viewModel.SelectedRole.Should().Be(UserRole.Admin);
+            _viewModel.Status.Should().Be(CommonStatus.Disabled);
         }
 
         #endregion
@@ -150,7 +312,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         [Fact]
         public void ExecuteGoBack_ShouldNotThrowException()
         {
-            // Act & Assert - 骨架实现，仅验证不抛出异常
+            // Act & Assert
             Action act = () => _viewModel.GoBackCommand.Execute();
             act.Should().NotThrow();
         }
@@ -159,20 +321,13 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
         #region Helper Methods
 
-        private UserDto CreateSampleUserDto()
+        private void InvokeProcessNavigationParameters(NavigationParameters parameters)
         {
-            return new UserDto
-            {
-                Id = Guid.NewGuid(),
-                UserName = "testuser",
-                RealName = "测试用户",
-                Role = UserRole.Doctor,
-                Status = CommonStatus.Enabled,
-                Email = "test@example.com",
-                PhoneNumber = "13800138000",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            };
+            var method = typeof(UserDetailViewModel)
+                .GetMethod("ProcessNavigationParameters",
+                    System.Reflection.BindingFlags.NonPublic |
+                    System.Reflection.BindingFlags.Instance);
+            method!.Invoke(_viewModel, new object[] { parameters });
         }
 
         #endregion

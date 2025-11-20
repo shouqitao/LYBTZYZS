@@ -36,9 +36,8 @@ namespace LYBT.Desktop.Users
             containerRegistry.RegisterForNavigation<Views.UserManagementView>();
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
-            // Issue #1927: Sprint 1 - Dialog迁移为Navigation模式
-            containerRegistry.RegisterForNavigation<Views.UserCreateView, ViewModels.UserCreateViewModel>();
-            containerRegistry.RegisterForNavigation<Views.UserEditView, ViewModels.UserEditViewModel>();
+            // Issue #1927 & #2168: CRUD统一架构 - UserDetailView支持Create/Edit/View三种模式
+            // UserCreateView和UserEditView已删除，统一使用UserDetailView
 
             // Issue #1928: Sprint 2 - ResetPassword迁移为Navigation模式
             // Issue #2167: ResetPasswordView已删除（改用按钮触发直接API调用）
@@ -51,7 +50,7 @@ namespace LYBT.Desktop.Users
             // - ChangePasswordDialog → ChangePasswordView
             // - ResetPasswordDialog → 重置密码移至列表操作
             // - UserProfileDialog → UserProfileView
-            // - UserFormDialog → UserCreateView + UserEditView
+            // - UserFormDialog → UserDetailView（Issue #2168：统一Create/Edit/View模式）
         }
     }
 }

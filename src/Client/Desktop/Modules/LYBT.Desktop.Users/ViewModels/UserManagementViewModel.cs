@@ -232,7 +232,7 @@ namespace LYBT.Desktop.Users.ViewModels
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建用户视图");
-            NavigateTo("ContentRegion", "UserCreateView");
+            NavigateTo("ContentRegion", "UserDetailView");  // Issue #2168: 统一使用UserDetailView（无参数=Create模式）
             await Task.CompletedTask;
         }
 
@@ -461,7 +461,7 @@ namespace LYBT.Desktop.Users.ViewModels
             {
                 { "UserId", user.Id }
             };
-            NavigateTo("ContentRegion", "UserEditView", parameters);
+            NavigateTo("ContentRegion", "UserDetailView", parameters);  // Issue #2168: 统一使用UserDetailView（有UserId=Edit模式）
         }
 
         /// <summary>
@@ -588,11 +588,11 @@ namespace LYBT.Desktop.Users.ViewModels
 
             Logger.LogDebug("查看用户详情: {UserId} - {UserName}", user.Id, user.UserName);
 
-            // 修复：使用正确的Region名称 ContentRegion
+            // Issue #2168: 统一使用UserDetailView（有UserId + ReadOnly=View模式）
             NavigateTo("ContentRegion", "UserDetailView", new Prism.Regions.NavigationParameters
             {
                 { "UserId", user.Id },
-                { "title", $"用户详情 - {user.RealName}" }
+                { "ReadOnly", true }
             });
         }
 

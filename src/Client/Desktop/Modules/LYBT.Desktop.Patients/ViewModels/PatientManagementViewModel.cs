@@ -264,7 +264,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建患者视图");
-            NavigateTo("ContentRegion", "PatientCreateView");
+            // Issue #2168: CRUD统一架构 - 统一使用PatientDetailView（无参数→Create模式）
+            NavigateTo("ContentRegion", "PatientDetailView");
             await Task.CompletedTask;
         }
 
@@ -484,11 +485,11 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             Logger.LogInformation("查看患者详情：{PatientId} - {PatientName}", patient.Id, patient.Name);
 
-            // 导航到详情视图
+            // Issue #2168: CRUD统一架构 - 添加ReadOnly参数进入View模式
             NavigateTo("ContentRegion", "PatientDetailView", new NavigationParameters
             {
                 { "PatientId", patient.Id },
-                { "title", $"患者详情 - {patient.Name}" }
+                { "ReadOnly", true }
             });
         }
 
@@ -504,8 +505,8 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             Logger.LogInformation("编辑患者：{PatientId} - {PatientName}", patient.Id, patient.Name);
 
-            // 导航到编辑视图
-            NavigateTo("ContentRegion", "PatientEditView", new NavigationParameters
+            // Issue #2168: CRUD统一架构 - 统一使用PatientDetailView（有PatientId→Edit模式）
+            NavigateTo("ContentRegion", "PatientDetailView", new NavigationParameters
             {
                 { "PatientId", patient.Id }
             });

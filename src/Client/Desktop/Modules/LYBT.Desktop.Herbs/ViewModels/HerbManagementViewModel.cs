@@ -74,9 +74,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 .ObservesProperty(() => IsBusy);
 
             // 视图导航命令
-            ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
-            EditCommand = new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
-            CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
+        ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
+        EditCommand = new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
+        CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
 
             // 状态管理命令
             ToggleStatusCommand = new DelegateCommand<HerbDto>(
@@ -154,7 +154,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建药材视图");
-            NavigateTo("ContentRegion", "HerbCreateView");
+            // Issue #2168: CRUD统一架构 - 统一使用HerbDetailView（无参数→Create模式）
+            NavigateTo("ContentRegion", "HerbDetailView");
             await Task.CompletedTask;
         }
 
@@ -312,14 +313,14 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; } = null!;
 
         /// <summary>
-        /// 编辑药材命令
-        /// </summary>
-        public DelegateCommand<HerbDto> EditCommand { get; private set; } = null!;
+    /// 编辑药材命令
+    /// </summary>
+    public DelegateCommand<HerbDto> EditCommand { get; private set; } = null!;
 
-        /// <summary>
-        /// 复制药材命令
-        /// </summary>
-        public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
+    /// <summary>
+    /// 复制药材命令
+    /// </summary>
+    public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
 
         /// <summary>
         /// 切换状态命令
@@ -359,24 +360,25 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 { "ReadOnly", true }
             };
             NavigateTo("ContentRegion", "HerbDetailView", parameters);
-        }
+    }
 
-        /// <summary>
-        /// 编辑药材
-        /// </summary>
-        private void EditHerb(HerbDto herb)
+    /// <summary>
+    /// 编辑药材
+    /// </summary>
+    private void EditHerb(HerbDto herb)
+    {
+        if (herb == null) return;
+
+        var parameters = new NavigationParameters
         {
-            if (herb == null) return;
+            { "HerbId", herb.Id }
+            // 不传ReadOnly参数，默认为编辑模式
+        };
+        NavigateTo("ContentRegion", "HerbDetailView", parameters);
+    }
 
-            var parameters = new NavigationParameters
-            {
-                { "HerbId", herb.Id }
-            };
-            NavigateTo("ContentRegion", "HerbDetailView", parameters);
-        }
-
-        /// <summary>
-        /// 复制药材
+    /// <summary>
+    /// 复制药材
         /// </summary>
         private void CopyHerb(HerbDto herb)
         {
@@ -396,18 +398,18 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private bool CanViewDetail(HerbDto herb)
         {
             return herb != null && !IsBusy;
-        }
+}
 
-        /// <summary>
-        /// 检查是否可以编辑
-        /// </summary>
-        private bool CanEditHerb(HerbDto herb)
-        {
-            return herb != null && !IsBusy;
-        }
+/// <summary>
+/// 检查是否可以编辑
+/// </summary>
+private bool CanEditHerb(HerbDto herb)
+{
+    return herb != null && !IsBusy;
+}
 
-        /// <summary>
-        /// 检查是否可以复制
+/// <summary>
+/// 检查是否可以复制
         /// </summary>
         private bool CanCopyHerb(HerbDto herb)
         {

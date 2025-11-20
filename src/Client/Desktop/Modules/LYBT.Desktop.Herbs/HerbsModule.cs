@@ -31,12 +31,14 @@ namespace LYBT.Desktop.Herbs
             // 注册视图模型 - MVP核心功能
             containerRegistry.Register<ViewModels.HerbManagementViewModel>();
             containerRegistry.Register<ViewModels.HerbDetailViewModel>();
-            containerRegistry.Register<ViewModels.HerbCreateViewModel>();
+            // Issue #2168: CRUD统一架构 - HerbCreateViewModel已删除，统一使用HerbDetailViewModel
 
             // Phase 2: 启用 Region Navigation 注册（试点模块）
             containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
             containerRegistry.RegisterForNavigation<Views.HerbDetailView>();
-            containerRegistry.RegisterForNavigation<Views.HerbCreateView>();
+            
+            // Issue #2168: CRUD统一架构 - HerbDetailView支持Create/Detail两种模式
+            // HerbCreateView已删除，统一使用HerbDetailView
         }
     }
 }

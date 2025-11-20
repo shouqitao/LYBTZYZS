@@ -10,17 +10,36 @@ using Prism.Regions;
 namespace LYBT.Desktop.Users.ViewModels
 {
     /// <summary>
-    /// 用户详情视图模型 - Issue #1248 完整实现
+    /// 用户详情视图模型 - Issue #2168 CRUD统一架构
+    /// 支持三种模式：Create（创建）、Edit（编辑）、View（查看）
     /// </summary>
     public class UserDetailViewModel : UnifiedViewModelBase
     {
-        // Issue #1785: 使用CommandHandler替代直接Repository访问
+        #region 服务依赖
+
         private readonly UserCommandHandler _commandHandler;
+
+        #endregion
+
+        #region 私有字段
+
         private Guid _userId;
-        private UserDto? _user;
+        private bool _isEditMode = true;
+
+        // 表单字段
+        private string _userName = string.Empty;
+        private string _realName = string.Empty;
+        private string? _phoneNumber;
+        private string? _email;
+        private UserRole _selectedRole = UserRole.Doctor;
+        private CommonStatus _status = CommonStatus.Enabled;
+
+        #endregion
+
+        #region 模式控制属性
 
         /// <summary>
-        /// 用户ID
+        /// 用户ID（空=Create模式，非空=Edit/View模式）
         /// </summary>
         public Guid UserId
         {
@@ -29,31 +48,171 @@ namespace LYBT.Desktop.Users.ViewModels
         }
 
         /// <summary>
-        /// 当前用户
+        /// 是否为编辑模式（false=View只读模式）
         /// </summary>
-        public UserDto? User
+        public bool IsEditMode
         {
-            get => _user;
-            set => SetProperty(ref _user, value);
+            get => _isEditMode;
+            set
+            {
+                if (SetProperty(ref _isEditMode, value))
+                {
+                    RaisePropertyChanged(nameof(IsReadOnly));
+                    RaisePropertyChanged(nameof(IsCreateMode));
+                    RaisePropertyChanged(nameof(IsEditOrViewMode));
+                    SubmitCommand?.RaiseCanExecuteChanged();
+                    SwitchToEditModeCommand?.RaiseCanExecuteChanged();
+                }
+            }
         }
+
+        /// <summary>
+        /// 是否为只读模式
+        /// </summary>
+        public bool IsReadOnly => !IsEditMode;
+
+        /// <summary>
+        /// 是否为创建模式
+        /// </summary>
+        public bool IsCreateMode => UserId == Guid.Empty;
+
+        /// <summary>
+        /// 是否为编辑或查看模式（非创建）
+        /// </summary>
+        public bool IsEditOrViewMode => UserId != Guid.Empty;
+
+        #endregion
+
+        #region 表单属性
+
+        /// <summary>
+        /// 用户名（Create可编辑，Edit/View只读）
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "用户名不能为空")]
+        [System.ComponentModel.DataAnnotations.StringLength(32, MinimumLength = 3, ErrorMessage = "用户名长度必须在3-32个字符之间")]
+        public string UserName
+        {
+            get => _userName;
+            set
+            {
+                if (SetProperty(ref _userName, value))
+                {
+                    ValidateProperty();
+                    SubmitCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 真实姓名
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "真实姓名不能为空")]
+        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "真实姓名长度不能超过50个字符")]
+        public string RealName
+        {
+            get => _realName;
+            set
+            {
+                if (SetProperty(ref _realName, value))
+                {
+                    ValidateProperty();
+                    SubmitCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 手机号码
+        /// </summary>
+        public string? PhoneNumber
+        {
+            get => _phoneNumber;
+            set
+            {
+                if (SetProperty(ref _phoneNumber, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 邮箱地址
+        /// </summary>
+        public string? Email
+        {
+            get => _email;
+            set
+            {
+                if (SetProperty(ref _email, value))
+                {
+                    ValidateProperty();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 选中的角色
+        /// </summary>
+        public UserRole SelectedRole
+        {
+            get => _selectedRole;
+            set => SetProperty(ref _selectedRole, value);
+        }
+
+        /// <summary>
+        /// 用户状态
+        /// </summary>
+        public CommonStatus Status
+        {
+            get => _status;
+            set => SetProperty(ref _status, value);
+        }
+
+        #endregion
+
+        #region 选项集合
+
+        /// <summary>
+        /// 角色选项
+        /// </summary>
+        public UserRole[] RoleOptions { get; }
+
+        /// <summary>
+        /// 状态选项
+        /// </summary>
+        public CommonStatus[] StatusOptions { get; }
+
+        #endregion
+
+        #region 命令
+
+        /// <summary>
+        /// 提交命令（创建或更新）
+        /// </summary>
+        public DelegateCommand SubmitCommand { get; }
+
+        /// <summary>
+        /// 取消命令
+        /// </summary>
+        public DelegateCommand CancelCommand { get; }
+
+        /// <summary>
+        /// 切换到编辑模式命令（View→Edit）
+        /// </summary>
+        public DelegateCommand SwitchToEditModeCommand { get; }
 
         /// <summary>
         /// 返回命令
         /// </summary>
         public DelegateCommand GoBackCommand { get; }
 
-        /// <summary>
-        /// 编辑用户命令
-        /// </summary>
-        public DelegateCommand EditUserCommand { get; }
+        #endregion
 
-/// <summary>
-        /// 切换状态命令（Issue #1263: 启用/禁用开关）
-        /// </summary>
-        public DelegateCommand ToggleStatusCommand { get; }
+        #region 构造函数
 
         public UserDetailViewModel(
-            UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
+            UserCommandHandler commandHandler,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -61,32 +220,51 @@ namespace LYBT.Desktop.Users.ViewModels
             LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
 
+            // 初始化选项
+            RoleOptions = Enum.GetValues<UserRole>();
+            StatusOptions = Enum.GetValues<CommonStatus>();
+
+            // 初始化命令
+            SubmitCommand = new DelegateCommand(async () => await SubmitAsync(), CanSubmit);
+            CancelCommand = new DelegateCommand(ExecuteCancel);
+            SwitchToEditModeCommand = new DelegateCommand(ExecuteSwitchToEditMode, CanSwitchToEditMode);
             GoBackCommand = new DelegateCommand(ExecuteGoBack);
-            EditUserCommand = new DelegateCommand(ExecuteEditUser, CanExecuteEditUser);
-            // 异步命令包装（DelegateCommand不直接支持async Task）
-            ToggleStatusCommand = new DelegateCommand(async () => await ExecuteToggleStatusAsync(), CanExecuteToggleStatus);
         }
+
+        #endregion
+
+        #region Navigation模式方法
 
         /// <summary>
         /// 处理导航参数（同步）
-        /// Issue #1240: 立即设置导航参数
+        /// Issue #2168: 根据参数区分Create/Edit/View模式
         /// </summary>
         protected override void ProcessNavigationParameters(NavigationParameters parameters)
         {
             base.ProcessNavigationParameters(parameters);
 
+            // 提取UserId参数（空=Create，非空=Edit/View）
             if (parameters.ContainsKey("UserId"))
             {
                 UserId = parameters.GetValue<Guid>("UserId");
+            }
+
+            // 提取ReadOnly参数（true=View模式）
+            if (parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"))
+            {
+                IsEditMode = false;  // View模式
+            }
+            else
+            {
+                IsEditMode = true;   // Create/Edit模式
             }
         }
 
         /// <summary>
         /// 异步初始化数据
-        /// Issue #1240: 使用 InitializeAsync 模式
+        /// Issue #2168: 根据UserId区分Create/Edit/View模式
         /// </summary>
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
@@ -94,12 +272,27 @@ namespace LYBT.Desktop.Users.ViewModels
 
             if (UserId != Guid.Empty)
             {
+                // Edit/View模式：加载现有数据
                 await LoadUserAsync();
+                PageTitle = IsReadOnly ? $"查看用户 - {RealName}" : $"编辑用户 - {RealName}";
             }
+            else
+            {
+                // Create模式：初始化空表单
+                InitializeEmptyForm();
+                PageTitle = "创建用户";
+            }
+
+            Logger.LogInformation("UserDetailViewModel 初始化完成，模式={Mode}, UserId={UserId}",
+                IsCreateMode ? "Create" : (IsReadOnly ? "View" : "Edit"), UserId);
         }
 
+        #endregion
+
+        #region 数据加载
+
         /// <summary>
-        /// 加载用户数据
+        /// 加载用户数据（Edit/View模式）
         /// </summary>
         private async Task LoadUserAsync()
         {
@@ -112,186 +305,236 @@ namespace LYBT.Desktop.Users.ViewModels
             try
             {
                 IsLoading = true;
+                StatusMessage = "正在加载用户信息...";
 
-                Logger.LogInformation("开始加载用户详情: UserId={UserId}", UserId);
+                Logger.LogInformation("开始加载用户数据: UserId={UserId}", UserId);
 
-                // Issue #1785: 使用CommandHandler查询
                 var result = await _commandHandler.GetByIdAsync(UserId);
 
                 if (result.success && result.user != null)
                 {
-                    User = result.user;
-                    PageTitle = $"用户详情 - {User.RealName}";
-                    Logger.LogInformation("用户详情加载成功: {UserName}", User.UserName);
+                    // 填充表单
+                    UserName = result.user.UserName;
+                    RealName = result.user.RealName;
+                    PhoneNumber = result.user.PhoneNumber;
+                    Email = result.user.Email;
+                    SelectedRole = result.user.Role;
+                    Status = result.user.Status;
+
+                    Logger.LogInformation("用户数据加载成功: UserName={UserName}", UserName);
                 }
                 else
                 {
-                    Logger.LogWarning("未找到用户: UserId={UserId}, ErrorMessage={ErrorMessage}", UserId, result.errorMessage);
-                    ErrorMessage = result.errorMessage ?? "未找到该用户信息";
+                    Logger.LogWarning("未找到用户: UserId={UserId}", UserId);
+                    await ShowErrorMessageAsync(result.errorMessage ?? "未找到用户信息");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载用户详情失败: UserId={UserId}", UserId);
-                ErrorMessage = $"加载用户详情失败: {ex.Message}";
+                Logger.LogError(ex, "加载用户数据失败: UserId={UserId}", UserId);
+                await ShowErrorMessageAsync($"加载用户数据失败：{ex.Message}");
             }
             finally
             {
                 IsLoading = false;
-                // 刷新命令状态（数据加载完成后，按钮应变为可用）
-                RaiseCanExecuteChanged();
+                StatusMessage = string.Empty;
             }
         }
 
         /// <summary>
-        /// 返回用户列表 (Issue #1911修复: Region名称错误)
+        /// 初始化空表单（Create模式）
+        /// </summary>
+        private void InitializeEmptyForm()
+        {
+            UserName = string.Empty;
+            RealName = string.Empty;
+            PhoneNumber = null;
+            Email = null;
+            SelectedRole = UserRole.Doctor;
+            Status = CommonStatus.Enabled;
+
+            Logger.LogDebug("空表单初始化完成");
+        }
+
+        #endregion
+
+        #region 命令实现
+
+        /// <summary>
+        /// 提交表单（创建或更新）
+        /// Issue #2168: 根据UserId区分Create/Update逻辑
+        /// </summary>
+        private async Task SubmitAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                if (UserId == Guid.Empty)
+                {
+                    // Create逻辑
+                    await CreateUserAsync();
+                }
+                else
+                {
+                    // Update逻辑
+                    await UpdateUserAsync();
+                }
+            }
+            finally
+            {
+                IsLoading = false;
+                StatusMessage = string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 创建用户
+        /// </summary>
+        private async Task CreateUserAsync()
+        {
+            StatusMessage = "正在创建用户...";
+
+            var createDto = new UserInputDto
+            {
+                UserName = UserName.Trim(),
+                RealName = RealName.Trim(),
+                PhoneNumber = PhoneNumber?.Trim(),
+                Email = Email?.Trim(),
+                Role = SelectedRole,
+                Status = CommonStatus.Enabled
+            };
+
+            Logger.LogInformation("开始创建用户: UserName={UserName}, RealName={RealName}",
+                createDto.UserName, createDto.RealName);
+
+            var result = await _commandHandler.CreateAsync(createDto);
+
+            if (result.success && result.user != null)
+            {
+                Logger.LogInformation("用户创建成功: UserId={UserId}, UserName={UserName}",
+                    result.user.Id, result.user.UserName);
+
+                // 导航返回并传递刷新参数
+                NavigateBack("ContentRegion", new NavigationParameters
+                {
+                    { "RefreshRequired", true },
+                    { "Operation", "UserCreated" },
+                    { "User", result.user }
+                });
+            }
+            else
+            {
+                Logger.LogError("创建用户失败：{ErrorMessage}", result.errorMessage);
+                await ShowErrorMessageAsync(result.errorMessage ?? "创建用户失败");
+            }
+        }
+
+        /// <summary>
+        /// 更新用户
+        /// </summary>
+        private async Task UpdateUserAsync()
+        {
+            StatusMessage = "正在保存修改...";
+
+            var updateDto = new UserInputDto
+            {
+                Id = UserId,
+                UserName = UserName.Trim(),
+                RealName = RealName.Trim(),
+                PhoneNumber = PhoneNumber?.Trim(),
+                Email = Email?.Trim(),
+                Role = SelectedRole,
+                Status = Status
+            };
+
+            Logger.LogInformation("开始更新用户: UserId={UserId}, UserName={UserName}",
+                UserId, updateDto.UserName);
+
+            var result = await _commandHandler.UpdateAsync(updateDto);
+
+            if (result.success && result.user != null)
+            {
+                Logger.LogInformation("用户更新成功: UserId={UserId}, UserName={UserName}",
+                    result.user.Id, result.user.UserName);
+
+                // 导航返回并传递刷新参数
+                NavigateBack("ContentRegion", new NavigationParameters
+                {
+                    { "RefreshRequired", true },
+                    { "Operation", "UserUpdated" },
+                    { "User", result.user }
+                });
+            }
+            else
+            {
+                Logger.LogError("更新用户失败：{ErrorMessage}", result.errorMessage);
+                await ShowErrorMessageAsync(result.errorMessage ?? "更新用户失败");
+            }
+        }
+
+        /// <summary>
+        /// 取消操作
+        /// </summary>
+        private void ExecuteCancel()
+        {
+            Logger.LogDebug("用户取消操作");
+            NavigateBack("ContentRegion");
+        }
+
+        /// <summary>
+        /// 是否可以提交
+        /// </summary>
+        private bool CanSubmit()
+        {
+            return !IsLoading &&
+                   !IsReadOnly &&  // View模式不能提交
+                   !string.IsNullOrWhiteSpace(UserName) &&
+                   !string.IsNullOrWhiteSpace(RealName) &&
+                   !HasErrors;
+        }
+
+        /// <summary>
+        /// 切换到编辑模式（View→Edit）
+        /// </summary>
+        private void ExecuteSwitchToEditMode()
+        {
+            Logger.LogInformation("切换到编辑模式: UserId={UserId}", UserId);
+            IsEditMode = true;
+            PageTitle = $"编辑用户 - {RealName}";
+        }
+
+        /// <summary>
+        /// 是否可以切换到编辑模式
+        /// </summary>
+        private bool CanSwitchToEditMode()
+        {
+            return IsReadOnly && !IsLoading && UserId != Guid.Empty;
+        }
+
+        /// <summary>
+        /// 返回用户列表
         /// </summary>
         private void ExecuteGoBack()
         {
             Logger.LogInformation("返回用户列表");
-            // 修复：使用正确的Region名称 ContentRegion
             NavigateBack("ContentRegion");
         }
 
-        private void ExecuteEditUser()
-        {
-            if (User == null)
-            {
-                Logger.LogWarning("无法编辑：用户为空");
-                return;
-            }
+        #endregion
 
-            Logger.LogInformation("导航到编辑用户页面: UserId={UserId}", User.Id);
-
-            // Issue #1927: 统一使用ContentRegion
-            var parameters = new NavigationParameters
-            {
-                { "UserId", User.Id }
-            };
-
-            NavigateTo("ContentRegion", "UserEditView", parameters);
-        }
-
-        private bool CanExecuteEditUser()
-        {
-            // Issue #2163: 添加IsBusy检查，防止繁忙时执行编辑操作
-            return User != null && !IsLoading && !IsBusy;
-        }
+        #region 重写基类方法
 
         /// <summary>
-        /// 切换用户状态（启用/禁用）
-        /// Issue #1794: 优化方法长度（58→30行）
-        /// </summary>
-        private async Task ExecuteToggleStatusAsync()
-        {
-            if (User == null)
-            {
-                Logger.LogWarning("无法切换状态：用户为空");
-                return;
-            }
-
-            try
-            {
-                IsLoading = true;
-                var newStatus = CalculateNewStatus();
-                var updateDto = CreateUserUpdateDto(newStatus);
-
-                var result = await _commandHandler.UpdateAsync(updateDto);
-
-                if (result.success && result.user != null)
-                    HandleToggleSuccess(result.user, newStatus);
-                else
-                    HandleToggleFailure(result.errorMessage);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "切换用户状态失败: UserId={UserId}", User?.Id);
-                ErrorMessage = $"切换状态失败: {ex.Message}";
-            }
-            finally
-            {
-                IsLoading = false;
-                RaiseCanExecuteChanged();
-            }
-        }
-
-        /// <summary>
-        /// 计算新状态并记录日志
-        /// Issue #1794: 从ExecuteToggleStatus提取，封装状态计算逻辑
-        /// </summary>
-        private CommonStatus CalculateNewStatus()
-        {
-            var newStatus = User!.Status == CommonStatus.Enabled
-                ? CommonStatus.Disabled
-                : CommonStatus.Enabled;
-
-            Logger.LogInformation("开始切换用户状态: UserId={UserId}, 当前状态={CurrentStatus}, 目标状态={NewStatus}",
-                User.Id, User.Status, newStatus);
-
-            return newStatus;
-        }
-
-        /// <summary>
-        /// 创建用户更新DTO
-        /// Issue #1794: 从ExecuteToggleStatus提取，封装DTO创建逻辑
-        /// </summary>
-        private UserInputDto CreateUserUpdateDto(CommonStatus newStatus)
-        {
-            return new UserInputDto
-            {
-                Id = User!.Id,
-                RealName = User.RealName,
-                Role = User.Role,
-                Status = newStatus,
-                PhoneNumber = User.PhoneNumber,
-                Email = User.Email
-            };
-        }
-
-        /// <summary>
-        /// 处理切换成功结果
-        /// Issue #1794: 从ExecuteToggleStatus提取，封装成功处理逻辑
-        /// </summary>
-        private void HandleToggleSuccess(UserDto updatedUser, CommonStatus newStatus)
-        {
-            User = updatedUser;
-            var statusText = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
-            StatusMessage = $"用户状态已切换为：{statusText}";
-            Logger.LogInformation("用户状态切换成功: UserId={UserId}, 新状态={NewStatus}", User.Id, newStatus);
-        }
-
-        /// <summary>
-        /// 处理切换失败结果
-        /// Issue #1794: 从ExecuteToggleStatus提取，封装失败处理逻辑
-        /// </summary>
-        private void HandleToggleFailure(string? errorMessage)
-        {
-            Logger.LogWarning("切换用户状态失败: {ErrorMessage}", errorMessage);
-            ErrorMessage = errorMessage ?? "切换状态失败";
-        }
-
-        private bool CanExecuteToggleStatus()
-        {
-            return User != null && !IsLoading;
-        }
-
-        /// <summary>
-        /// 刷新所有命令的 CanExecute 状态
-        /// </summary>
-        private void RaiseCanExecuteChanged()
-        {
-            EditUserCommand.RaiseCanExecuteChanged();
-            ToggleStatusCommand.RaiseCanExecuteChanged();
-        }
-
-        /// <summary>
-        /// 重写基类的 RefreshCommands 方法，响应 IsBusy 等属性变化
-        /// Issue #2163: 当 IsBusy 改变时，自动刷新命令状态
+        /// 刷新命令状态
         /// </summary>
         protected override void RefreshCommands()
         {
             base.RefreshCommands();
-            RaiseCanExecuteChanged();
+            SubmitCommand?.RaiseCanExecuteChanged();
+            SwitchToEditModeCommand?.RaiseCanExecuteChanged();
         }
+
+        #endregion
     }
 }
