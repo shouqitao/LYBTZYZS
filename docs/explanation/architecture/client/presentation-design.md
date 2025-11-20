@@ -2002,9 +2002,569 @@ public class MedicalCaseListViewModel : UnifiedViewModelBase
 </TextBlock>
 ```
 
-## 8. 最佳实践
+## 8. Desktop模块CRUD架构模式
 
-### 8.1 View最佳实践
+### 8.1 架构概述
+
+从 Issue #2168 开始，LYBTZYZS项目采用了**统一的CRUD架构模式**，将原本分散的Create/Edit/View视图统一到单一的DetailView中，通过模式控制属性实现三种模式的无缝切换。
+
+**核心设计理念**：
+- **单一视图单一ViewModel**：一个DetailView支持Create、Edit、View三种模式
+- **模式驱动UI**：通过模式控制属性动态控制UI元素的可见性和可编辑性
+- **导航参数驱动**：使用Prism NavigationParameters传递模式信息
+- **统一基类**：所有DetailViewModel继承自UnifiedViewModelBase
+
+**架构优势**：
+- 减少代码重复（40个文件，净减少1250行代码）
+- 统一用户体验（三种模式UI布局一致）
+- 简化导航逻辑（单一导航目标）
+- 易于维护（模式逻辑集中管理）
+
+### 8.2 核心模式控制属性
+
+每个DetailViewModel都实现以下标准模式控制属性：
+
+```csharp
+public class EntityDetailViewModel : UnifiedViewModelBase
+{
+    private Guid _entityId;
+    private bool _isEditMode = true; // 默认为编辑模式
+
+    /// <summary>
+    /// 实体ID（空=Create模式，非空=Edit/View模式）
+    /// </summary>
+    public Guid EntityId
+    {
+        get => _entityId;
+        set => SetProperty(ref _entityId, value);
+    }
+
+    /// <summary>
+    /// 是否为编辑模式（false=View只读模式）
+    /// </summary>
+    public bool IsEditMode
+    {
+        get => _isEditMode;
+        private set
+        {
+            if (SetProperty(ref _isEditMode, value))
+            {
+                RaisePropertyChanged(nameof(IsReadOnly));
+                RaisePropertyChanged(nameof(IsCreateMode));
+                RaisePropertyChanged(nameof(IsEditOrViewMode));
+                SubmitCommand?.RaiseCanExecuteChanged();
+                SwitchToEditModeCommand?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 是否只读模式（计算属性）
+    /// </summary>
+    public bool IsReadOnly => !IsEditMode;
+
+    /// <summary>
+    /// 是否为Create模式（计算属性）
+    /// </summary>
+    public bool IsCreateMode => EntityId == Guid.Empty;
+
+    /// <summary>
+    /// 是否为Edit或View模式（计算属性）
+    /// </summary>
+    public bool IsEditOrViewMode => EntityId != Guid.Empty;
+}
+```
+
+**属性说明**：
+
+| 属性 | 类型 | 说明 | 用途 |
+|------|------|------|------|
+| `EntityId` | Guid | 实体ID，Guid.Empty表示Create模式 | 区分Create与Edit/View模式 |
+| `IsEditMode` | bool | 是否为编辑模式 | 控制表单可编辑性，默认true |
+| `IsReadOnly` | bool | 是否为只读模式 | 绑定到TextBox.IsReadOnly，等于!IsEditMode |
+| `IsCreateMode` | bool | 是否为Create模式 | 控制创建模式特定UI，等于EntityId==Guid.Empty |
+| `IsEditOrViewMode` | bool | 是否为Edit或View模式 | 控制Edit/View模式特定UI，等于EntityId!=Guid.Empty |
+
+### 8.3 导航参数模式
+
+**导航参数结构**：
+
+```csharp
+// Create模式：无参数或EntityId为空
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView));
+
+// Edit模式：传递EntityId
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView), 
+    new NavigationParameters { { "EntityId", entityId } });
+
+// View模式：传递EntityId + ReadOnly=true
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView), 
+    new NavigationParameters 
+    { 
+        { "EntityId", entityId },
+        { "ReadOnly", true }
+    });
+```
+
+**参数处理流程**：
+
+```csharp
+protected override void ProcessNavigationParameters(NavigationParameters parameters)
+{
+    base.ProcessNavigationParameters(parameters);
+
+    // 1. 提取EntityId参数（空=Create，非空=Edit/View）
+    if (parameters.ContainsKey("EntityId"))
+    {
+        EntityId = parameters.GetValue<Guid>("EntityId");
+    }
+
+    // 2. 提取ReadOnly参数（true=View模式）
+    if (parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"))
+    {
+        IsEditMode = false;  // View模式
+    }
+    else
+    {
+        IsEditMode = true;   // Create/Edit模式
+    }
+}
+
+protected override async Task InitializeAsync(NavigationParameters parameters)
+{
+    await base.InitializeAsync(parameters);
+
+    if (EntityId != Guid.Empty)
+    {
+        // Edit/View模式：加载现有数据
+        await LoadEntityAsync();
+        PageTitle = IsReadOnly ? $"查看{实体名} - {Name}" : $"编辑{实体名} - {Name}";
+    }
+    else
+    {
+        // Create模式：初始化空表单
+        InitializeEmptyForm();
+        PageTitle = "创建{实体名}";
+    }
+}
+```
+
+### 8.4 Submit命令路由逻辑
+
+统一的Submit命令根据模式自动路由到Create或Update逻辑：
+
+```csharp
+private async Task SubmitAsync()
+{
+    try
+    {
+        IsLoading = true;
+        StatusMessage = IsCreateMode ? "正在创建..." : "正在保存...";
+
+        if (IsCreateMode)
+        {
+            await CreateEntityAsync();
+        }
+        else
+        {
+            await UpdateEntityAsync();
+        }
+    }
+    finally
+    {
+        IsLoading = false;
+        StatusMessage = string.Empty;
+    }
+}
+
+private bool CanSubmit()
+{
+    // View模式不能提交
+    if (IsReadOnly)
+    {
+        return false;
+    }
+
+    // Create和Edit模式都可以提交
+    return !IsLoading &&
+           !string.IsNullOrWhiteSpace(Name) &&
+           !HasErrors;
+}
+```
+
+### 8.5 View模式到Edit模式切换
+
+支持在View模式下切换到Edit模式，无需重新导航：
+
+```csharp
+private void SwitchToEditMode()
+{
+    Logger.LogInformation("切换到编辑模式: EntityId={EntityId}", EntityId);
+    IsEditMode = true;
+    PageTitle = $"编辑{实体名} - {Name}";
+}
+
+private bool CanSwitchToEditMode()
+{
+    // 只有View模式（有EntityId且IsEditMode=false）才能切换
+    return EntityId != Guid.Empty && !IsEditMode && !IsLoading;
+}
+```
+
+XAML中的切换按钮：
+
+```xml
+<!-- View模式：切换到编辑按钮 -->
+<Button Grid.Column="2"
+        Command="{Binding SwitchToEditModeCommand}"
+        Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}"
+        Style="{StaticResource SecondaryButtonStyle}"
+        Content="✏️ 编辑"
+        Padding="20,10"
+        FontSize="15"
+        VerticalAlignment="Center"/>
+```
+
+### 8.6 三个模块实现对比
+
+#### 8.6.1 Users模块 - UserName字段只读约束
+
+**业务规则**：UserName（用户名）字段仅在Create模式可编辑，Edit/View模式下只读。
+
+**ViewModel实现**：
+
+```csharp
+public class UserDetailViewModel : UnifiedViewModelBase
+{
+    // UserName字段的IsReadOnly绑定使用IsEditOrViewMode
+    // IsEditOrViewMode = UserId != Guid.Empty (Edit或View模式)
+    public bool IsEditOrViewMode => UserId != Guid.Empty;
+}
+```
+
+**XAML绑定**：
+
+```xml
+<!-- 用户名（Create可编辑，Edit/View只读） -->
+<TextBox Grid.Column="1"
+         Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
+         IsReadOnly="{Binding IsEditOrViewMode}">
+    <TextBox.Style>
+        <Style BasedOn="{StaticResource EditableTextBoxStyle}" TargetType="TextBox">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEditOrViewMode}" Value="True">
+                    <Setter Property="Background" Value="#F9FAFB"/>
+                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </TextBox.Style>
+</TextBox>
+```
+
+#### 8.6.2 Patients模块 - 标准三模式
+
+**业务规则**：所有字段在Edit模式下都可编辑。
+
+**ViewModel实现**：
+
+```csharp
+public class PatientDetailViewModel : UnifiedViewModelBase
+{
+    // 所有字段使用标准IsReadOnly控制
+    public bool IsReadOnly => !IsEditMode;
+}
+```
+
+**XAML绑定**：
+
+```xml
+<!-- 患者姓名（标准绑定） -->
+<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+         Style="{StaticResource EditableTextBoxStyle}"
+         IsReadOnly="{Binding IsReadOnly}"
+         MinHeight="44"
+         Padding="12,10"/>
+
+<!-- 身份证号（标准绑定） -->
+<TextBox Text="{Binding IdNumber, UpdateSourceTrigger=PropertyChanged}"
+         Style="{StaticResource EditableTextBoxStyle}"
+         IsReadOnly="{Binding IsReadOnly}"
+         MinHeight="44"
+         Padding="12,10"/>
+```
+
+#### 8.6.3 Herbs模块 - Name字段特殊只读约束
+
+**业务规则**：中药材的Name（药材名称）字段仅在Create模式可编辑，Edit模式下只读（类似Users，但其他字段可编辑）。
+
+**ViewModel实现**：
+
+```csharp
+public class HerbDetailViewModel : UnifiedViewModelBase
+{
+    /// <summary>
+    /// Name字段是否可编辑（仅Create模式可编辑）
+    /// 业务约束：中药材名称创建后不允许修改
+    /// </summary>
+    public bool IsNameEditable => IsCreateMode;
+}
+```
+
+**XAML绑定**：
+
+```xml
+<!-- 药材名称（Create可编辑，Edit/View只读） -->
+<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+         Style="{StaticResource EditableTextBoxStyle}"
+         IsReadOnly="{Binding IsNameEditable, Converter={StaticResource InverseBooleanConverter}}"
+         MinHeight="44"
+         Padding="12,10"/>
+
+<!-- 产地（标准绑定，Edit模式可编辑） -->
+<TextBox Text="{Binding Origin, UpdateSourceTrigger=PropertyChanged}"
+         Style="{StaticResource EditableTextBoxStyle}"
+         IsReadOnly="{Binding IsReadOnly}"
+         MinHeight="44"
+         Padding="12,10"/>
+```
+
+**关键差异**：
+- Herbs的Name字段使用 `IsNameEditable` + `InverseBooleanConverter`
+- 其他字段（Origin、Spec、Effect等）使用标准 `IsReadOnly` 绑定
+- 这样实现了：Create模式所有字段可编辑，Edit模式仅Name只读其他可编辑
+
+### 8.7 模式对比表
+
+| 模块 | Create模式 | Edit模式 | View模式 | 特殊约束 |
+|------|-----------|----------|----------|----------|
+| **Users** | 所有字段可编辑 | UserName只读，其他可编辑 | 所有字段只读 | UserName字段使用IsEditOrViewMode绑定 |
+| **Patients** | 所有字段可编辑 | 所有字段可编辑 | 所有字段只读 | 标准模式，无特殊约束 |
+| **Herbs** | 所有字段可编辑 | Name只读，其他可编辑 | 所有字段只读 | Name字段使用IsNameEditable绑定 |
+
+### 8.8 XAML UI模式控制模式
+
+#### 8.8.1 底部按钮区可见性
+
+```xml
+<!-- 底部操作按钮区 - 仅Edit/Create模式显示，View模式隐藏 -->
+<Grid Grid.Row="2" Margin="40,28,40,28"
+      Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+    <Border Background="White" CornerRadius="16" Padding="32,24">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <!-- 取消按钮 -->
+            <Button Command="{Binding CancelCommand}"
+                    Content="取消"
+                    Style="{StaticResource SecondaryButtonStyle}"/>
+
+            <!-- 提交按钮（动态文本：创建/保存） -->
+            <Button Command="{Binding SubmitCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Margin="16,0,0,0">
+                <Button.Content>
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="保存"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCreateMode}" Value="True">
+                                        <Setter Property="Text" Value="创建"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button.Content>
+            </Button>
+        </StackPanel>
+    </Border>
+</Grid>
+```
+
+#### 8.8.2 Status字段可见性控制
+
+```xml
+<!-- Status字段（仅Edit/View模式显示，Create模式隐藏） -->
+<StackPanel Grid.Row="4" Grid.Column="0" Margin="0,0,0,20"
+            Visibility="{Binding IsEditOrViewMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+    <TextBlock Text="状态" Style="{StaticResource FormLabelStyle}"/>
+    <ComboBox SelectedItem="{Binding Status}"
+              ItemsSource="{Binding StatusOptions}"
+              IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+              MinHeight="44" Padding="12,10"/>
+</StackPanel>
+```
+
+### 8.9 导航返回刷新模式
+
+根据 Issue #2166，废弃了Event-based刷新，改用Navigation参数刷新：
+
+```csharp
+// Create成功后导航返回并传递刷新参数
+if (result != null)
+{
+    Logger.LogInformation("创建成功: EntityId={EntityId}", result.Id);
+
+    // Issue #2166: 使用Navigation参数通知刷新，替代事件
+    NavigateBack("ContentRegion", new NavigationParameters
+    {
+        { "RefreshList", true }
+    });
+}
+```
+
+父视图的OnNavigatedTo方法处理刷新：
+
+```csharp
+public override async void OnNavigatedTo(NavigationContext navigationContext)
+{
+    base.OnNavigatedTo(navigationContext);
+
+    // 检查是否需要刷新
+    if (navigationContext.Parameters.ContainsKey("RefreshList") &&
+        navigationContext.Parameters.GetValue<bool>("RefreshList"))
+    {
+        await LoadDataAsync();
+    }
+}
+```
+
+### 8.10 最佳实践总结
+
+**DO（推荐做法）**：
+
+1. ✅ **统一使用DetailView**：所有CRUD操作使用单一DetailView，不再创建CreateView/EditView
+2. ✅ **继承UnifiedViewModelBase**：所有DetailViewModel继承统一基类
+3. ✅ **标准模式属性**：实现标准的五个模式控制属性（EntityId, IsEditMode, IsReadOnly, IsCreateMode, IsEditOrViewMode）
+4. ✅ **导航参数驱动**：使用NavigationParameters传递EntityId和ReadOnly标志
+5. ✅ **Submit命令路由**：在SubmitAsync中根据IsCreateMode路由到Create或Update逻辑
+6. ✅ **特殊约束属性化**：如Herbs的IsNameEditable，将特殊约束封装为计算属性
+7. ✅ **Navigation参数刷新**：使用NavigationParameters的RefreshList代替Event刷新
+
+**DON'T（禁止做法）**：
+
+1. ❌ **不要创建多个View**：避免CreateView/EditView/DetailView并存
+2. ❌ **不要硬编码模式逻辑**：避免在命令中硬编码if (isCreate)判断，使用计算属性
+3. ❌ **不要使用Event刷新**：废弃EventAggregator发布刷新事件的模式
+4. ❌ **不要重复模式代码**：不要在每个模块重新实现模式控制逻辑，复用UnifiedViewModelBase
+5. ❌ **不要混合命名**：避免IsDetailMode/IsViewMode等非标准命名，统一使用IsCreateMode/IsEditMode/IsReadOnly
+
+### 8.11 迁移指南
+
+如需将现有模块迁移到统一CRUD架构，按以下步骤执行：
+
+**Step 1**：删除冗余视图
+```bash
+# 删除CreateView和EditView相关文件
+rm -f *CreateView.xaml *CreateView.xaml.cs
+rm -f *EditView.xaml *EditView.xaml.cs
+rm -f *CreateViewModel.cs *EditViewModel.cs
+```
+
+**Step 2**：重命名DetailView（如果需要）
+```csharp
+// 确保视图命名为EntityDetailView
+EntityDetailView.xaml
+EntityDetailViewModel.cs
+```
+
+**Step 3**：更新ViewModel继承
+```csharp
+// BEFORE
+public class EntityDetailViewModel : BindableBase, INavigationAware
+
+// AFTER
+public class EntityDetailViewModel : UnifiedViewModelBase
+```
+
+**Step 4**：添加标准模式属性（参见8.2节）
+
+**Step 5**：实现ProcessNavigationParameters（参见8.3节）
+
+**Step 6**：更新Submit命令路由（参见8.4节）
+
+**Step 7**：更新XAML绑定
+```xml
+<!-- 所有TextBox的IsReadOnly绑定 -->
+<TextBox IsReadOnly="{Binding IsReadOnly}" />
+
+<!-- 底部按钮区Visibility -->
+<Grid Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+<!-- 切换编辑按钮 -->
+<Button Command="{Binding SwitchToEditModeCommand}"
+        Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+```
+
+**Step 8**：更新Module注册
+```csharp
+// BEFORE
+containerRegistry.RegisterForNavigation<EntityCreateView>();
+containerRegistry.RegisterForNavigation<EntityEditView>();
+containerRegistry.RegisterForNavigation<EntityDetailView>();
+
+// AFTER
+containerRegistry.RegisterForNavigation<EntityDetailView>();
+```
+
+**Step 9**：更新导航调用
+```csharp
+// BEFORE (Create)
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityCreateView));
+
+// BEFORE (Edit)
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityEditView), 
+    new NavigationParameters { { "EntityId", id } });
+
+// AFTER (Create)
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView));
+
+// AFTER (Edit)
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView), 
+    new NavigationParameters { { "EntityId", id } });
+
+// AFTER (View)
+RegionManager.RequestNavigate("ContentRegion", nameof(EntityDetailView), 
+    new NavigationParameters 
+    { 
+        { "EntityId", id },
+        { "ReadOnly", true }
+    });
+```
+
+**Step 10**：运行测试
+```bash
+dotnet build LYBT.Desktop.sln -c Debug
+dotnet test tests/UnitTests/Client/Desktop/LYBT.Desktop.*.Tests/*.csproj
+```
+
+### 8.12 参考实现
+
+完整的CRUD统一架构实现可参考以下文件：
+
+**Users模块**：
+- ViewModel: `src/Client/Desktop/Modules/LYBT.Desktop.Users/ViewModels/UserDetailViewModel.cs`
+- View: `src/Client/Desktop/Modules/LYBT.Desktop.Users/Views/UserDetailView.xaml`
+- 特点：UserName字段Edit/View模式只读
+
+**Patients模块**：
+- ViewModel: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/ViewModels/PatientDetailViewModel.cs`
+- View: `src/Client/Desktop/Modules/LYBT.Desktop.Patients/Views/PatientDetailView.xaml`
+- 特点：标准三模式，所有字段Edit模式可编辑
+
+**Herbs模块**：
+- ViewModel: `src/Client/Desktop/Modules/LYBT.Desktop.Herbs/ViewModels/HerbDetailViewModel.cs`
+- View: `src/Client/Desktop/Modules/LYBT.Desktop.Herbs/Views/HerbDetailView.xaml`
+- 特点：Name字段Edit模式只读，其他字段可编辑
+
+**基类实现**：
+- `src/Client/Desktop/LYBT.Desktop.Models/ViewModels/Base/UnifiedViewModelBase.cs`
+
+---
+
+## 9. 最佳实践
+
+### 9.1 View最佳实践
 
 **1. 使用ViewModelLocator自动绑定**：
 ```xml
@@ -2074,7 +2634,7 @@ public class MedicalCaseListViewModel : UnifiedViewModelBase
 <Grid Visibility="{Binding CanAccessContent, Converter={StaticResource BooleanToVisibilityConverter}}" />
 ```
 
-### 8.2 ViewModel最佳实践
+### 9.2 ViewModel最佳实践
 
 **1. 继承UnifiedViewModelBase**：
 ```csharp
@@ -2223,7 +2783,7 @@ private async Task ShowMessageAsync()
 }
 ```
 
-### 8.3 Prism最佳实践
+### 9.3 Prism最佳实践
 
 **1. Region名称约定**：
 ```csharp
@@ -2312,7 +2872,7 @@ public class PrescriptionsModule : IModule
 }
 ```
 
-### 8.4 样式系统最佳实践
+### 9.4 样式系统最佳实践
 
 **1. 使用全局样式资源**：
 ```xml
@@ -2361,7 +2921,7 @@ Shell/Styles/
 └── CommonStyles.xaml    # 通用样式
 ```
 
-### 8.5 性能最佳实践
+### 9.5 性能最佳实践
 
 **1. 使用VirtualizingStackPanel**：
 ```xml
@@ -2447,9 +3007,9 @@ foreach (var item in newItems)
 }
 ```
 
-## 9. 总结
+## 10. 总结
 
-### 9.1 核心优势
+### 10.1 核心优势
 
 **呈现层架构优势**：
 1. ✅ **MVVM模式**：实现View和业务逻辑的完全解耦
@@ -2461,7 +3021,7 @@ foreach (var item in newItems)
 7. ✅ **依赖注入**：通过Prism.Ioc实现松耦合
 8. ✅ **模块化设计**：业务模块独立开发、独立部署
 
-### 9.2 关键技术
+### 10.2 关键技术
 
 **必须掌握的技术栈**：
 - ✅ WPF XAML（布局、控件、样式、数据绑定）
@@ -2473,7 +3033,7 @@ foreach (var item in newItems)
 - ✅ 依赖注入（构造函数注入）
 - ✅ 异步编程（async/await）
 
-### 9.3 维护规范
+### 10.3 维护规范
 
 **开发规范**：
 1. ✅ **View零逻辑**：所有业务逻辑在ViewModel中实现
