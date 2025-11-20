@@ -75,8 +75,8 @@
 
             <!-- Row 1: 步骤完成时间提示（新增，Issue #1590）-->
             <TextBlock Grid.Row="1"
-                      Text="{Binding Step1CompletedAtText}"
-                      Visibility="{Binding Step1CompletedAtVisibility}"
+                      Text="{Binding Step1CompletedAtText, Mode=OneWay}"
+                      Visibility="{Binding Step1CompletedAtVisibility, Mode=OneWay}"
                       Foreground="Green"
                       FontSize="14"
                       FontWeight="SemiBold"
@@ -178,7 +178,7 @@
                                 FontSize="14"
                                 Margin="0,0,30,0"/>
                     <RadioButton Content="不开处方"
-                                IsChecked="{Binding PrescriptionDisabled}"
+                                IsChecked="{Binding PrescriptionDisabled, Mode=OneWay}"
                                 GroupName="PrescriptionGroup"
                                 FontSize="14"/>
                 </StackPanel>

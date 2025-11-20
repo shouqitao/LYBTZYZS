@@ -179,7 +179,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
                         <TextBlock Grid.Row="5" Grid.Column="1"
-                                   Text="{Binding Formula.CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                   Text="{Binding Formula.CreatedAt, Mode=OneWay, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
                                    Foreground="#6B7280"
                                    VerticalAlignment="Center"
@@ -191,7 +191,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
                         <TextBlock Grid.Row="5" Grid.Column="3"
-                                   Text="{Binding Formula.UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                   Text="{Binding Formula.UpdatedAt, Mode=OneWay, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
                                    Foreground="#6B7280"
                                    VerticalAlignment="Center"
@@ -212,7 +212,7 @@
 
                         <!-- 药材区标题 -->
                         <TextBlock Grid.Row="0"
-                                   Text="{Binding HerbCount, StringFormat='药材组成 (共{0}味)'}"
+                                   Text="{Binding HerbCount, Mode=OneWay, StringFormat='药材组成 (共{0}味)'}"
                                    FontSize="16"
                                    FontWeight="SemiBold"
                                    Foreground="#1E293B"
