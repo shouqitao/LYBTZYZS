@@ -22,41 +22,60 @@ LYBT.Desktop.MedicalCase/
 │   └── MedicalCaseItem.cs                # 医案列表项
 ├── Repositories/                          # 数据仓储实现(1个)
 │   └── MedicalCaseRepository.cs          # 医案仓储实现(20个方法)
-├── ViewModels/                            # MVVM视图模型(8个)
+├── Services/                              # 组件化服务(Epic #1773 + Epic #2175 Phase 2)
+│   ├── MedicalCaseDataManager.cs         # 医案数据管理组件
+│   ├── MedicalCaseFlowManager.cs         # 医案流程管理组件
+│   ├── MedicalCaseLifecycleHandler.cs    # 医案生命周期处理组件
+│   ├── MedicalCaseDataLoader.cs          # 医案数据加载组件
+│   ├── PrescriptionEditorHerbFilterManager.cs # 处方药材过滤管理组件
+│   ├── PrescriptionEditorValidator.cs    # 处方验证组件
+│   ├── PrescriptionCalculator.cs         # 处方价格计算组件
+│   ├── FormulaImportHandler.cs           # 经验方导入处理组件
+│   └── HerbSelectionManager.cs           # 药材选择管理组件
+├── Controls/                              # 自定义控件(Epic #2175 BF-002)
+│   └── HerbCardControl.xaml/.xaml.cs     # 处方药材卡片控件
+├── ViewModels/                            # MVVM视图模型(9个)
 │   ├── CompletionViewModel.cs            # 完成视图模型
-│   ├── MedicalCaseConsultationViewModel.cs # 诊断视图模型(Step 1)
 │   ├── MedicalCaseDetailViewModel.cs     # 医案详情视图模型
-│   ├── MedicalCaseFlowViewModel.cs       # 流程编排核心(792行)
-│   ├── MedicalCaseListViewModel.cs       # 医案列表视图模型
+│   ├── MedicalCaseFlowViewModel.cs       # 流程编排核心
+│   ├── MedicalCaseFormViewModel.cs       # 一体化病案编辑器ViewModel (Epic #2175 BF-002)
 │   ├── MedicalCaseManagementViewModel.cs # 医案管理视图模型
-│   ├── OtherCasesQueryViewModel.cs       # 历史病案查询视图模型
-│   └── PrescriptionEditorViewModel.cs    # 处方编辑视图模型(Step 2)
-├── Views/                                 # WPF视图(8对16个文件)
+│   ├── PrescriptionEditorViewModel.cs    # 处方编辑视图模型
+│   ├── PrescriptionItemViewModel.cs      # 处方药材项ViewModel (Epic #2175 BF-002)
+│   ├── FormulaSelectionDialogViewModel.cs # 经验方选择对话框ViewModel
+│   ├── HistoryPrescriptionSelectionDialogViewModel.cs # 历史处方选择对话框ViewModel
+│   └── DuplicateHerbAlertDialogViewModel.cs # 重复药材聚合提醒对话框ViewModel
+├── Views/                                 # WPF视图(7对14个文件 + 3个对话框)
 │   ├── CompletionView.xaml/.xaml.cs
-│   ├── MedicalCaseConsultationView.xaml/.xaml.cs
 │   ├── MedicalCaseDetailView.xaml/.xaml.cs
+│   ├── MedicalCaseEditorView.xaml/.xaml.cs # 一体化病案编辑器View (Epic #2175 BF-002)
 │   ├── MedicalCaseFlowView.xaml/.xaml.cs
-│   ├── MedicalCaseListView.xaml/.xaml.cs
 │   ├── MedicalCaseManagementView.xaml/.xaml.cs
-│   ├── OtherCasesQueryView.xaml/.xaml.cs
-│   └── PrescriptionEditorView.xaml/.xaml.cs
+│   ├── PrescriptionEditorView.xaml/.xaml.cs
+│   ├── FormulaSelectionDialog.xaml/.xaml.cs
+│   ├── HistoryPrescriptionSelectionDialog.xaml/.xaml.cs
+│   └── DuplicateHerbAlertDialog.xaml/.xaml.cs
 └── MedicalCaseModule.cs                   # Prism模块注册
 
-总计: 6个目录，34个文件
+总计: 9个目录，约50个文件
 - 1个Converter
 - 3个Interface
 - 3个Model
 - 1个Repository
-- 8个ViewModel
-- 8对View(16个文件)
+- 9个组件化Service
+- 1个自定义Control
+- 9个ViewModel
+- 7对View(14个文件) + 3个对话框(6个文件)
 - 1个Module配置
 ```
 
 **说明**:
-- **MedicalCaseFlowViewModel**: 792行，流程编排核心，管理3步诊疗流程(诊断→处方→完成)
+- **Epic #2175 BF-002核心功能**: 一体化病案编辑器（MedicalCaseFormViewModel + MedicalCaseEditorView），整合诊断录入和处方开具到单一界面
+- **PrescriptionItemViewModel**: 7级拼音过滤算法 + 性能优化（缓存小写字符串，避免重复ToLower()）
+- **组件化架构**: Epic #1773引入9个Service组件，实现ViewModel轻量化，单一职责原则
+- **对话框功能**: 经验方导入、历史处方导入、重复药材聚合提醒
 - **IMedicalCaseRepository**: 20个方法，覆盖医案CRUD、诊断/处方管理、暂存/继续等完整功能
 - **ISaveable/IValidatable**: 步骤ViewModel契约接口，确保流程一致性
-- **3步诊疗流程**: Step1诊断 → Step2处方 → Step3完成(可选跳过处方)
 
 ## 🔗 依赖关系
 
@@ -1339,9 +1358,11 @@ private async Task ExecuteNextStepAsync()
 - **完整模块文档**:[docs/reference/modules/medical-case/](../../../../docs/reference/modules/medical-case/) *(待创建)*
 - **架构设计**:[docs/explanation/architecture/client/medical-case-design.md](../../../../docs/explanation/architecture/client/medical-case-design.md) *(待创建)*
 - **开发指南**:[docs/how-to-guides/client/medical-case-development.md](../../../../docs/how-to-guides/client/medical-case-development.md) *(待创建)*
+- **性能优化**:[docs/explanation/performance/repository-include-strategy.md](../../../../docs/explanation/performance/repository-include-strategy.md) - Repository Include预加载策略
+- **单元测试**:[tests/UnitTests/Client/Desktop/LYBT.Desktop.MedicalCase.Tests/](../../../../tests/UnitTests/Client/Desktop/LYBT.Desktop.MedicalCase.Tests/) - ViewModel单元测试 (Epic #2175 Phase 4)
 - **流程图参考**:[docs/deep/medical-case-flow-diagram.md](../../../../docs/deep/medical-case-flow-diagram.md) *(待创建)*
 
 ---
 
-**最后更新**:2025-10-29
+**最后更新**:2025-11-20 (Epic #2175 BF-002 Phase 4: 一体化病案编辑器 + 测试与优化)
 **维护负责**:Client端开发组

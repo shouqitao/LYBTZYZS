@@ -81,6 +81,13 @@
     <ProjectReference Include="..\..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Module Dependencies - Epic #2175">
+    <!-- Task 3.7: MedicalCase需要Herbs模块以支持药材拼音码过滤 -->
+    <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
+    <!-- Task 3.8: MedicalCase需要Formula模块以支持经验方导入 -->
+    <ProjectReference Include="..\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+  </ItemGroup>
+
   <!-- Epic #1676 Phase 4 Task 4.5: 移除循环依赖 - MedicalCase不需要引用Patients -->
   <!-- Prism [ModuleDependency] 只需要运行时加载顺序，不需要编译时项目引用 -->
 

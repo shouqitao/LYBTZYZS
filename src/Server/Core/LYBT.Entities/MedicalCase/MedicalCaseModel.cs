@@ -52,9 +52,14 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("状态")]
         public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
 
-        /// <summary>是否需要开处方（用于动态流程控制）</summary>
+        /// <summary>
+        /// 是否需要开处方（Epic #2175 BF-002动态流程控制）
+        /// null: 未标记（用户还未做Step 2决策）
+        /// true: 需要开处方
+        /// false: 不需要开处方
+        /// </summary>
         [DisplayName("是否需要开处方")]
-        public bool NeedsPrescription { get; set; } = false;
+        public bool? NeedsPrescription { get; set; }
 
         /// <summary>备注</summary>
         [StringLength(500)]

@@ -48,9 +48,9 @@ public class MedicalCaseDetailResponse
     public MedicalCaseStatus Status { get; set; }
 
     /// <summary>
-    /// 是否需要开处方
+    /// 是否需要开处方 (Epic #2175 BF-002字段, nullable表示未标记)
     /// </summary>
-    public bool NeedsPrescription { get; set; }
+    public bool? NeedsPrescription { get; set; }
 
     /// <summary>
     /// 诊疗时间

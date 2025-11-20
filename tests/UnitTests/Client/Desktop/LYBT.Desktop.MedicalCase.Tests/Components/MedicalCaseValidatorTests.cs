@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             _mockDataManager = new Mock<MedicalCaseDataManager>(
                 MockBehavior.Loose,
                 Mock.Of<IMedicalCaseRepository>(),
+                Mock.Of<IMedicalCaseApi>(),
                 Mock.Of<ILogger<MedicalCaseDataManager>>());
             _mockLogger = new Mock<ILogger<MedicalCaseValidator>>();
 

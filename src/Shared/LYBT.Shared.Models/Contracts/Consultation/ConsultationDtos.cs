@@ -69,6 +69,14 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
 
+        /// <summary>辨证完成时间戳 (Epic #2175 BF-002 Step 1)</summary>
+        [DisplayName("辨证完成时间")]
+        public DateTime? Step1CompletedAt { get; set; }
+
+        /// <summary>处方需求标记时间戳 (Epic #2175 BF-002 Step 2)</summary>
+        [DisplayName("处方需求标记时间")]
+        public DateTime? Step2CompletedAt { get; set; }
+
         /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "备注长度不能超过{1}个字符")]

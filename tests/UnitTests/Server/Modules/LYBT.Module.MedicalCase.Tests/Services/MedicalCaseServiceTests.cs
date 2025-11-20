@@ -224,6 +224,123 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 () => _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, Guid.NewGuid(), isAdmin: true));
         }
 
+        /// <summary>
+        /// Epic #2175 BF-002: 验证首次标记时自动设置Step2CompletedAt
+        /// </summary>
+        [Fact]
+        public async Task SetPrescriptionFlagAsync_FirstTimeMarking_ShouldSetStep2CompletedAt()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var needsPrescription = true;
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = null, // 未标记状态
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = null, // Step2未完成
+                    PrescriptionEnabled = false
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, needsPrescription, Guid.NewGuid(), isAdmin: true);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.NeedsPrescription.Should().BeTrue();
+            result.Consultation!.Step2CompletedAt.Should().NotBeNull();
+            result.Consultation.PrescriptionEnabled.Should().BeTrue();
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证重复标记时不改变Step2CompletedAt
+        /// </summary>
+        [Fact]
+        public async Task SetPrescriptionFlagAsync_SecondTimeMarking_ShouldNotChangeStep2CompletedAt()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var originalStep2Time = DateTime.Now.AddMinutes(-10);
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now.AddMinutes(-15),
+                    Step2CompletedAt = originalStep2Time, // 已标记
+                    PrescriptionEnabled = true
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act - 修改为false
+            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, false, Guid.NewGuid(), isAdmin: true);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.NeedsPrescription.Should().BeFalse();
+            result.Consultation!.Step2CompletedAt.Should().Be(originalStep2Time); // 时间戳不变
+            result.Consultation.PrescriptionEnabled.Should().BeFalse();
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证NeedsPrescription三态语义 - 设置为false
+        /// </summary>
+        [Fact]
+        public async Task SetPrescriptionFlagAsync_SetToFalse_ShouldMarkAsNotNeeded()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = null, // 未标记
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = null
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act - 明确标记为"不需要开处方"
+            var result = await _service.SetPrescriptionFlagAsync(medicalCaseId, false, Guid.NewGuid(), isAdmin: true);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.NeedsPrescription.Should().BeFalse(); // false = 明确不需要
+            result.Consultation!.Step2CompletedAt.Should().NotBeNull();
+        }
+
         #endregion
 
         #region Write Layer Tests - CreatePrescriptionAsync
@@ -250,7 +367,8 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    Step1CompletedAt = DateTime.Now
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now // Epic #2175 BF-002: Step2完成标记
                 }
             };
 
@@ -302,7 +420,8 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    Step1CompletedAt = DateTime.Now
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now // Epic #2175 BF-002: Step2完成标记
                 }
             };
 
@@ -312,6 +431,165 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _service.CreatePrescriptionAsync(medicalCaseId, request));
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证Step2未完成时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CreatePrescriptionAsync_WhenStep2NotCompleted_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var request = new PrescriptionCreateDto();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true,
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = null // Step2未完成
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreatePrescriptionAsync(medicalCaseId, request));
+
+            exception.Message.Should().Contain("Step2");
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证NeedsPrescription为null时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CreatePrescriptionAsync_WhenNeedsPrescriptionIsNull_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var request = new PrescriptionCreateDto();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = null, // 未标记状态
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreatePrescriptionAsync(medicalCaseId, request));
+
+            exception.Message.Should().Contain("未标记需要开处方");
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证NeedsPrescription为false时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CreatePrescriptionAsync_WhenNeedsPrescriptionIsFalse_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var request = new PrescriptionCreateDto();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = false, // 明确标记不需要
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreatePrescriptionAsync(medicalCaseId, request));
+
+            exception.Message.Should().Contain("未标记需要开处方");
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证完整的BF-002流程 - Step1+Step2都完成
+        /// </summary>
+        [Fact]
+        public async Task CreatePrescriptionAsync_WithCompleteBF002Flow_ShouldSucceed()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var request = new PrescriptionCreateDto
+            {
+                Items = new List<PrescriptionItemInputDto>()
+            };
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                PatientId = patientId,
+                DoctorId = doctorId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true, // Step2标记为需要
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now.AddMinutes(-10), // Step1已完成
+                    Step2CompletedAt = DateTime.Now.AddMinutes(-5)  // Step2已完成
+                }
+            };
+
+            var prescription = new PrescriptionEntity
+            {
+                Id = Guid.NewGuid(),
+                MedicalCaseId = medicalCaseId,
+                PatientId = patientId,
+                UserId = doctorId,
+                Status = PrescriptionStatus.Draft
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _mapperMock.Setup(x => x.Map<PrescriptionEntity>(request))
+                .Returns(prescription);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CreatePrescriptionAsync(medicalCaseId, request);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.MedicalCaseId.Should().Be(medicalCaseId);
         }
 
         #endregion
@@ -622,6 +900,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 {
                     Id = medicalCaseId,
                     Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now, // Epic #2175 BF-002: Step2完成标记
                     Step3CompletedAt = null
                 }
             };
@@ -697,7 +976,8 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
-                    Step1CompletedAt = DateTime.Now
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now // Epic #2175 BF-002: Step2完成标记
                 }
             };
 
@@ -707,6 +987,152 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _service.CompleteAsync(medicalCaseId));
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证NeedsPrescription为null时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CompleteAsync_WhenNeedsPrescriptionIsNull_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = null, // 未标记状态
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = DateTime.Now // Epic #2175 BF-002: Step2完成标记
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CompleteAsync(medicalCaseId));
+
+            exception.Message.Should().Contain("是否需要开处方");
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证Step2未完成时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CompleteAsync_WhenStep2NotCompleted_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = false, // 已标记不需要
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now,
+                    Step2CompletedAt = null // Step2未完成
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CompleteAsync(medicalCaseId));
+
+            exception.Message.Should().Contain("Step2");
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证NeedsPrescription=false时可以完成（不需要处方）
+        /// </summary>
+        [Fact]
+        public async Task CompleteAsync_WhenNeedsPrescriptionIsFalse_ShouldCompleteSuccessfully()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = false, // 明确标记不需要处方
+                Prescription = null,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now.AddMinutes(-10),
+                    Step2CompletedAt = DateTime.Now.AddMinutes(-5),
+                    Step3CompletedAt = null
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CompleteAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result.Consultation!.Step3CompletedAt.Should().NotBeNull();
+        }
+
+        /// <summary>
+        /// Epic #2175 BF-002: 验证完整的三步流程 - 需要处方且处方已开具
+        /// </summary>
+        [Fact]
+        public async Task CompleteAsync_WithCompleteBF002FlowAndPrescription_ShouldSucceed()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                Status = MedicalCaseStatus.Active,
+                NeedsPrescription = true, // 需要处方
+                Prescription = new PrescriptionEntity // 处方已开具
+                {
+                    Id = Guid.NewGuid(),
+                    IsDeleted = false
+                },
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId,
+                    Step1CompletedAt = DateTime.Now.AddMinutes(-15), // Step1完成
+                    Step2CompletedAt = DateTime.Now.AddMinutes(-10), // Step2完成
+                    Step3CompletedAt = null
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(medicalCase))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.CompleteAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result.Consultation!.Step3CompletedAt.Should().NotBeNull();
         }
 
         #endregion

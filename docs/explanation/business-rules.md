@@ -73,6 +73,28 @@
 
 ---
 
+### DC-004: 处方药材项剂量约束
+
+**规则描述**：
+- **剂量范围**：0.1g - 500g
+- **默认值**：10g
+- **验证时机**：剂量输入时实时验证
+
+**实现位置**（Epic #2175 BF-002 Phase 4）：
+- `Desktop`: `LYBT.Desktop.MedicalCase/ViewModels/PrescriptionItemViewModel.cs:ValidateDosage()`
+- `Desktop`: `LYBT.Desktop.MedicalCase/Views/HerbCardControl.xaml` - UI绑定验证
+
+**违规处理**：
+- 剂量 < 0.1g：显示错误提示"剂量不能小于0.1g"
+- 剂量 > 500g：显示错误提示"剂量不能大于500g"，记录警告日志
+- UI禁用保存按钮直到剂量有效
+
+**测试覆盖**（Epic #2175 Phase 4）：
+- ✅ 单元测试：15个测试，100%通过率
+- ✅ 边界条件测试：负数剂量、超大剂量、零剂量
+
+---
+
 ## 🔄 三、流程规则（BF-XXX）
 
 ### BF-001: 医案状态流转规则
@@ -377,6 +399,41 @@ decimal CalculateTotalAmount(IEnumerable<PrescriptionItem> items, int dosageCoun
 
 ---
 
+### CR-003: 处方药材项价格计算
+
+**规则描述**（Epic #2175 BF-002）：
+- **单项金额计算**：ItemAmount = Dosage × UnitPrice
+- **实时计算**：剂量或单价变更时自动重新计算
+- **精度**：保留2位小数
+
+**计算公式（C#）**：
+```csharp
+// PrescriptionItemViewModel.cs
+private void CalculateAmount()
+{
+    ItemAmount = Dosage * UnitPrice;
+}
+```
+
+**实现位置**：
+- `Desktop`: `LYBT.Desktop.MedicalCase/ViewModels/PrescriptionItemViewModel.cs:CalculateAmount()`
+- `Desktop`: `LYBT.Desktop.MedicalCase/Services/PrescriptionCalculator.cs` - 处方总价计算
+
+**触发时机**：
+- 用户选择药材时（UnitPrice自动填充）
+- 用户修改剂量时（Dosage属性Changed事件）
+- 用户修改单价时（UnitPrice属性Changed事件）
+
+**关联规则**：
+- **DC-004**：剂量必须在有效范围（0.1g - 500g）
+- **CR-001**：处方总价 = Σ(各药材项ItemAmount) × 剂数 × 折扣
+
+**测试覆盖**（Epic #2175 Phase 4）：
+- ✅ 单元测试：7个价格计算测试，100%通过率
+- ✅ 边界条件测试：零价格、小数剂量、小数单价
+
+---
+
 ## 🔐 六、权限规则（AC-XXX）
 
 ### AC-001: 医生只能查看自己的医案
@@ -530,6 +587,7 @@ decimal CalculateTotalAmount(IEnumerable<PrescriptionItem> items, int dosageCoun
 | 日期 | 版本 | 变更内容 | 作者 |
 |-----|------|---------|------|
 | 2025-01-24 | v1.0 | 初始版本,整合三模块核心业务规则 | Claude Code |
+| 2025-11-20 | v1.1 | 添加Epic #2175 BF-002规则：DC-004处方药材项剂量约束、CR-003处方药材项价格计算 | Claude Code |
 
 ---
 

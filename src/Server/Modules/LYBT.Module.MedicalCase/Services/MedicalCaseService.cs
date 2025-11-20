@@ -223,6 +223,14 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     medicalCase.Consultation.PrescriptionEnabled = needsPrescription;
                     medicalCase.Consultation.UpdatedAt = DateTime.Now;
+                    
+                    // Epic #2175 BF-002: 标记Step2完成时间戳
+                    if (medicalCase.Consultation.Step2CompletedAt == null)
+                    {
+                        medicalCase.Consultation.Step2CompletedAt = DateTime.Now;
+                        _logger.LogInformation("标记Step2完成,MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+                            medicalCaseId, needsPrescription);
+                    }
                 }
 
                 // 保存
@@ -261,10 +269,22 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 业务规则验证：BF-002（必须先设置处方标志）
-                if (!medicalCase.NeedsPrescription)
+                if (medicalCase.Consultation?.Step1CompletedAt == null)
                 {
-                    _logger.LogWarning("病案未标记需要开处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("病案未标记需要开处方，请先设置处方标志");
+                    _logger.LogWarning("辨证未完成（Step1），无法创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("请先完成辨证信息填写（Step1）");
+                }
+
+                if (medicalCase.NeedsPrescription != true)
+                {
+                    _logger.LogWarning("病案未标记需要开处方（Step2），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("病案未标记需要开处方，请先设置处方标志（Step2）");
+                }
+
+                if (medicalCase.Consultation?.Step2CompletedAt == null)
+                {
+                    _logger.LogWarning("处方需求标记未完成（Step2），无法创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("处方需求标记未完成（Step2），无法创建处方");
                 }
 
                 // 业务规则验证：AR-003（一诊一方约束）
@@ -509,8 +529,21 @@ namespace LYBT.Module.MedicalCase.Services
                     throw new InvalidOperationException("辨证信息未完成（Step1），无法完成病案");
                 }
 
-                // 如果标记需要开处方，验证处方存在
-                if (medicalCase.NeedsPrescription)
+                // Step 2: 处方需求标记验证（Epic #2175 BF-002）
+                if (medicalCase.NeedsPrescription == null)
+                {
+                    _logger.LogWarning("未标记处方需求（Step2），无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("请先标记是否需要开处方（Step2）");
+                }
+
+                if (medicalCase.Consultation?.Step2CompletedAt == null)
+                {
+                    _logger.LogWarning("Step2未完成，无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("处方需求标记未完成（Step2），无法完成病案");
+                }
+
+                // Step 3: 如果标记需要开处方，验证处方存在
+                if (medicalCase.NeedsPrescription == true)
                 {
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                     {

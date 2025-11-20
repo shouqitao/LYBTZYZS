@@ -43,8 +43,8 @@ LYBT.Module.MedicalCase/
 │       └── ValidateCaseUpdate()        # 验证医案更新
 ├── Repositories/                       # 数据仓储实现
 │   └── MedicalCaseRepository.cs        # 医案仓储(11个方法)
-│       ├── GetBaseQuery()              # 基础查询(Include Consultation)
-│       ├── GetDetailQuery()            # 详情查询(Include Consultation+Prescription)
+│       ├── GetBaseQuery()              # 基础查询(无Include,仅Where过滤)
+│       ├── GetDetailQuery()            # 详情查询(Include Consultation+Prescription.ThenInclude(Items))
 │       ├── GetByPatientIdAsync()       # 按患者ID查询医案列表
 │       ├── GetByIdWithDetailsAsync()   # 查询医案详情(含关联数据)
 │       ├── GetPagedWithDetailsAsync()  # 分页查询详情(含统计)
@@ -353,9 +353,10 @@ public async Task UpdateStatusAsync(Guid id, MedicalCaseStatus newStatus)
 - **完整模块文档**:[docs/reference/modules/medical-case/](../../../../docs/reference/modules/medical-case/) *(待创建)*
 - **架构设计**:[docs/explanation/architecture/server/medical-case-design.md](../../../../docs/explanation/architecture/server/medical-case-design.md) *(待创建)*
 - **开发指南**:[docs/how-to-guides/server/medical-case-development.md](../../../../docs/how-to-guides/server/medical-case-development.md) *(待创建)*
+- **性能优化**:[docs/explanation/performance/repository-include-strategy.md](../../../../docs/explanation/performance/repository-include-strategy.md) - Repository Include预加载策略
 - **业务规则**:[docs/business-rules.md](../../../../docs/business-rules.md) - 参见"医案管理规则"章节
 
 ---
 
-**最后更新**:2025-10-29
+**最后更新**:2025-11-20 (Epic #2175 Phase 4: Repository Include策略优化)
 **维护负责**:Server端开发组

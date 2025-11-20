@@ -53,6 +53,8 @@ namespace LYBT.Desktop.MedicalCase
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
             // containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入（已废弃）
             // Epic #1583: PatientSelectionViewModel已移至PatientsModule（三区域布局）
+            containerRegistry.Register<ViewModels.PrescriptionItemViewModel>();  // Epic #2175 BF-002 Task 3.5: 处方药材项ViewModel
+            containerRegistry.Register<ViewModels.MedicalCaseFormViewModel>();  // Epic #2175 BF-002 Task 3.2: 一体化病案编辑器ViewModel
             containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();   // Epic #1494 - Task #1496: 医案流程主视图模型
             containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
             containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
@@ -61,10 +63,20 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
             containerRegistry.Register<ViewModels.MedicalCaseDetailViewModel>();  // Issue #2167: 医案详情视图模型
 
+            // Epic #2175 BF-002 Task 3.8: 注册经验方选择对话框
+            containerRegistry.RegisterDialog<Views.FormulaSelectionDialog, ViewModels.FormulaSelectionDialogViewModel>();
+
+            // Epic #2175 BF-002 Task 3.9: 注册历史处方选择对话框
+            containerRegistry.RegisterDialog<Views.HistoryPrescriptionSelectionDialog, ViewModels.HistoryPrescriptionSelectionDialogViewModel>();
+
+            // Epic #2175 BF-002 Task 3.10: 注册重复药材聚合提醒对话框
+            containerRegistry.RegisterDialog<Views.DuplicateHerbAlertDialog, ViewModels.DuplicateHerbAlertDialogViewModel>();
+
             // 注册视图用于导航 - 需要对应视图文件存在
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
             // containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图（已废弃）
             // Epic #1583: PatientSelectionView已移至PatientsModule（三区域布局）
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseEditorView>();  // Epic #2175 BF-002 Task 3.1: 一体化病案编辑器视图
             containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图
             containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();  // Task #1499: 处方编辑器视图
             containerRegistry.RegisterForNavigation<Views.CompletionView>();        // Epic #1494 - Task #1500: Step 4 完成医案视图

@@ -16,10 +16,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
 
-            // Epic #1612: NeedsPrescription字段配置(支持动态流程控制)
+            // Epic #2175 BF-002: NeedsPrescription字段配置（nullable支持三态）
+            // null: 未标记（用户还未做Step 2决策）, true: 需要开处方, false: 不需要开处方
             entity.Property(m => m.NeedsPrescription)
-                  .IsRequired()
-                  .HasDefaultValue(false);
+                  .IsRequired(false);  // 允许NULL
 
             // Issue #1765: 删除4个多余索引
             // - PatientId/DoctorId: EF Core外键自动创建索引
