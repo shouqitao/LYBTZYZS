@@ -267,7 +267,7 @@
                                      Padding="12,10">
                                 <TextBox.Text>
                                     <MultiBinding StringFormat="{}{0} 岁">
-                                        <Binding Path="Age"/>
+                                        <Binding Path="Age" Mode="OneWay"/>
                                     </MultiBinding>
                                 </TextBox.Text>
                             </TextBox>
