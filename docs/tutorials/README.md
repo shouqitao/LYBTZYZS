@@ -1,241 +1,175 @@
-# Tutorial（教程）总览
+# Tutorials (教程) - 新手上路
 
-**目标**：通过循序渐进的引导式教程，帮助新手快速掌握凌隐宝堂中医诊所系统的开发
+> **学习导向**: 面向零基础用户，提供手把手的学习指导
+> **适合人群**: 新手开发者、业务用户、系统管理员
+> **学习方式**: 端到端、实践导向、循序渐进
 
-**创建日期**：2025-10-29
-**维护者**：项目团队
+## 🎓 学习路径推荐
 
----
+### 🆕 完全新手 (推荐路径)
+如果你是第一次接触LYBTZYZS系统：
 
-## 🎓 Tutorial vs 其他文档类型
+1. **📖 [5分钟快速开始](quick-start/)** - 最简单的系统体验
+2. **🚀 [开发环境搭建](getting-started/)** - 建立开发环境
+3. **📚 [核心模块教程](module-specific/)** - 逐个学习业务模块
+4. **🏥 [业务领域知识](business-domain/)** - 理解中医诊所业务
 
-### Tutorial（本目录）
-- ✅ **学习导向** - 引导式、逐步教学
-- ✅ **实践导向** - 边学边做，快速上手
-- ✅ **明确目标** - 完成教程后能独立开发
-- ⚠️ **不追求全面** - 只覆盖最核心的工作流
+### 💼 业务用户 (快速上手)
+如果你主要是业务用户：
 
-### 其他文档类型
-- **How-to Guides**（操作指南）- 解决特定问题，假设有基础知识
-- **Reference**（参考手册）- 查阅信息，精确描述
-- **Explanation**（解释说明）- 深入理解架构和概念
+1. **📖 [系统快速入门](quick-start/)** - 基础操作学习
+2. **🏥 [业务流程教程](business-domain/)** - 理解业务概念
+3. **📚 [相关模块教程](module-specific/)** - 学习你使用的模块
 
-> **💡 提示**：如果你已经有开发经验，可能更适合直接查阅[Reference](../reference/quick-reference/)或[Explanation](../explanation/architecture/)文档。Tutorial适合完全新手或需要系统学习的开发者。
+### 🔧 开发者 (技术入门)
+如果你有技术背景但需要学习LYBTZYZS：
 
----
+1. **🚀 [开发环境搭建](getting-started/)** - 建立开发环境
+2. **📖 [系统快速体验](quick-start/)** - 了解系统功能
+3. **📚 [模块开发教程](module-specific/)** - 学习各模块开发
+4. **🛠️ [开发指南](../how-to-guides/development/)** - 深入开发指导
 
-## 📚 教程列表
+## 📚 教程分类
 
-### 🚀 新手入门
+### 🎓 基础教程 (Foundation)
+适合完全没有经验的用户，提供系统性的入门指导：
 
-#### 1. **[5分钟快速开始](quick-start.md)** ⭐ 完全新手必读
-**目标**：让完全新手在5分钟内启动系统并完成首次操作
+- **[系统概览](overview.md)** - 了解LYBTZYZS系统全貌
+- **[安装配置](installation.md)** - 系统安装和基础配置
+- **[用户界面](user-interface.md)** - 学习界面操作
 
-**你将学到**：
-- 环境搭建（.NET 8、SQL Server）
-- 启动Server端（WebAPI）
-- 启动Client端（Desktop WPF）
-- 首次登录和基本操作
+### 🚀 入门教程 (Getting Started)
+帮助用户快速上手，建立基础能力：
 
-**预计时间**：5分钟
-**难度**：⭐（入门）
+- **[开发环境搭建](getting-started/environment-setup.md)** - 配置开发环境
+- **[项目结构理解](getting-started/project-structure.md)** - 理解代码组织
+- **[第一个功能开发](getting-started/first-feature.md)** - 开发第一个功能
 
----
+### 📖 快速开始 (Quick Start)
+5-10分钟的快速体验，建立初步印象：
 
-#### 2. **[开发第一个功能](first-feature.md)** ⭐ 开发者必读
-**目标**：通过完整的端到端示例，掌握系统的开发流程
+- **[5分钟运行系统](quick-start/5-minute-system.md)** - 最快速的系统体验
+- **[10分钟数据操作](quick-start/10-minute-data.md)** - 基础数据操作
+- **[15分钟功能开发](quick-start/15-minute-development.md)** - 简单功能开发
 
-**你将学到**：
-- Server端三层架构开发（Entity → DTO → Service → Controller）
-- Client端MVVM架构开发（Model → ViewModel → View）
-- 完整的测试和提交流程
+### 🏥 业务领域教程 (Business Domain)
+针对中医诊所业务的专门教程：
 
-**预计时间**：1小时
-**难度**：⭐⭐（初级）
+- **[中医基础概念](business-domain/tcm-basics.md)** - 中医基础理论
+- **[诊所业务流程](business-domain/clinic-workflows.md)** - 诊所运营流程
+- **[医疗数据管理](business-domain/medical-data.md)** - 医疗数据规范
+- **[法规合规要求](business-domain/compliance.md)** - 医疗行业法规
 
----
+### 📚 模块专题教程 (Module Specific)
+针对8个业务模块的详细教程：
 
-### 🎯 进阶教程（待补充）
+#### 🔐 认证模块 (Auth)
+- **[Auth模块基础教程](modules/auth/auth-basics-tutorial.md)** - 手把手掌握JWT认证和RBAC权限控制
+  - 45分钟学习，涵盖登录流程、Token管理、权限控制和安全特性
+- **[用户认证基础](module-specific/auth/authentication-basics.md)** - 认证机制
+- **[权限管理](module-specific/auth/authorization.md)** - 权限控制
+- **[安全最佳实践](module-specific/auth/security-best-practices.md)** - 安全规范
 
-以下教程正在规划中，将根据社区反馈优先补充：
+#### 👥 用户管理 (Users)
+- **[User Management Tutorial](modules/users/user-management-tutorial.md)** - 手把手掌握用户生命周期管理
+  - 60分钟学习，涵盖用户CRUD、角色权限、拼音码搜索和批量操作
+- **[用户增删改查](module-specific/users/user-crud.md)** - 基础操作
+- **[医生角色管理](module-specific/users/doctor-roles.md)** - 医生功能
+- **[管理员设置](module-specific/users/admin-setup.md)** - 管理员配置
 
-3. **环境搭建完整指南** - 详细的开发环境配置和常见问题解决
-4. **调试技巧教程** - VS2022/Rider调试技巧和性能分析
-5. **数据库迁移教程** - Entity Framework Core迁移管理和数据初始化
+#### 🏥 患者管理 (Patients)
+- **[患者档案建立](module-specific/patients/patient-registration.md)** - 注册流程
+- **[病史记录](module-specific/patients/medical-history.md)** - 病史管理
+- **[数据隐私保护](module-specific/patients/privacy-protection.md)** - 隐私保护
 
-> **📢 贡献提示**：如果你希望看到特定主题的教程，请在[GitHub Issues](https://github.com/shouqitao/凌隐宝堂中医诊所/issues)提出建议！
+#### 📋 病历管理 (MedicalCase)
+- **[病历创建流程](module-specific/medicalcase/case-creation.md)** - 创建病历
+- **[病历模板使用](module-specific/medicalcase/templates.md)** - 模板应用
+- **[病历数据分析](module-specific/medicalcase/data-analysis.md)** - 数据分析
 
----
+#### 🔍 中医诊断 (Consultation)
+- **[四诊法应用](module-specific/consultation/four-diagnostics.md)** - 望闻问切
+- **[诊断记录](module-specific/consultation/diagnosis-recording.md)** - 诊断流程
+- **[舌诊面诊](module-specific/consultation/visual-diagnosis.md)** - 诊断技术
 
-## 🗺️ 学习路径推荐
+#### 💊 处方管理 (Prescriptions)
+- **[处方开具流程](module-specific/prescriptions/prescription-creation.md)** - 开具处方
+- **[草药配伍](module-specific/prescriptions/herb-combination.md)** - 草药配伍
+- **[处方审核](module-specific/prescriptions/review-process.md)** - 审核流程
 
-### 路径1：完全新手 → 独立开发者
+#### 🌿 中药管理 (Herbs)
+- **[药材信息维护](module-specific/herbs/herb-information.md)** - 药材管理
+- **[库存管理](module-specific/herbs/inventory.md)** - 库存控制
+- **[药材分类](module-specific/herbs/herb-classification.md)** - 分类体系
 
-```
-步骤1: 快速启动
-[5分钟快速开始](quick-start.md) (5分钟)
-  ├─ 验证环境
-  ├─ 启动系统
-  └─ 基本操作
+#### 📜 方剂管理 (Formula)
+- **[方剂创建](module-specific/formula/formula-creation.md)** - 创建方剂
+- **[方剂应用](module-specific/formula/formula-application.md)** - 应用指导
+- **[经典方剂](module-specific/formula/classic-formulas.md)** - 经典方剂库
 
-步骤2: 理解架构
-[架构总览](../explanation/architecture/README.md) (20分钟)
-  ├─ 三层对齐架构
-  ├─ Server端设计
-  └─ Client端设计
+## 🔍 学习辅助工具
 
-步骤3: 实战开发
-[开发第一个功能](first-feature.md) (1小时)
-  ├─ Server端开发
-  ├─ Client端开发
-  └─ 测试提交
+### 🔍 搜索和查找
+- **[按功能查找](#按功能查找)** - 根据你想完成的功能查找教程
+- **[按难度查找](#按难度查找)** - 根据你的技能水平选择教程
+- **[按时间查找](#按时间查找)** - 根据可投入时间选择教程
 
-步骤4: 深入学习
-[Server端开发指南](../how-to-guides/server/README.md) (参考)
-[Client端开发指南](../how-to-guides/client/README.md) (参考)
-  ├─ 代码规范
-  ├─ 最佳实践
-  └─ 常见模式
+### 📋 学习检查清单
+- **[新手检查清单](checklists/beginner.md)** - 新手学习必备技能
+- **[开发者检查清单](checklists/developer.md)** - 开发者必备知识
+- **[业务用户检查清单](checklists/business-user.md)** - 业务用户必备技能
 
-总耗时：约2小时 + 按需深入
-```
+## 🎯 按需求查找教程
 
----
+### 按功能需求
+- **我想快速体验系统** → [5分钟快速开始](quick-start/5-minute-system.md)
+- **我想学习开发环境搭建** → [开发环境搭建](getting-started/environment-setup.md)
+- **我想了解中医业务** → [中医基础概念](business-domain/tcm-basics.md)
+- **我想学习特定模块** → [模块专题教程](#模块专题教程)
 
-### 路径2：有经验开发者 → 快速上手
+### 按技能水平
+- **完全新手** → [快速开始](quick-start/) → [基础教程](#基础教程)
+- **有一定技术背景** → [入门教程](#入门教程) → [模块教程](#模块专题教程)
+- **有业务经验** → [业务领域教程](#业务领域教程) → [相关模块](#模块专题教程)
 
-```
-步骤1: 快速启动
-[5分钟快速开始](quick-start.md) (5分钟)
+### 按时间投入
+- **5-15分钟** → [快速开始](quick-start/)
+- **30-60分钟** → [入门教程](#入门教程)
+- **1-2小时** → [模块教程](#模块专题教程)
+- **深入系统学习** → [完整学习路径](#学习路径推荐)
 
-步骤2: 架构理解
-[架构总览](../explanation/architecture/README.md) (15分钟)
-  ├─ 三层对齐原理
-  └─ 核心设计决策
+## 📈 学习进度追踪
 
-步骤3: 参考文档
-[API快速参考](../reference/quick-reference/api-reference.md)
-[代码模式](../reference/quick-reference/code-patterns.md)
-  └─ 按需查阅
+### 学习里程碑
+- [ ] **L1: 系统初体验** - 完成任意一个快速开始教程
+- [ ] **L2: 环境搭建** - 完成开发环境配置
+- [ ] **L3: 基础操作** - 掌握基本的系统操作
+- [ ] **L4: 模块学习** - 完成至少一个模块的专题教程
+- [ ] **L5: 业务理解** - 理解中医诊所业务流程
+- [ ] **L6: 独立开发** - 能够独立开发新功能
 
-总耗时：约20分钟 + 按需查阅
-```
+### 技能评估
+完成相应教程后，你应该具备：
+- ✅ **系统操作能力** - 熟练使用LYBTZYZS系统
+- ✅ **开发能力** - 能够进行基本的开发工作
+- ✅ **业务理解** - 理解中医诊所业务流程
+- ✅ **问题解决** - 能够解决常见的技术问题
 
----
+## 🆘 获取帮助
 
-## 💡 使用建议
+### 学习过程中遇到问题？
+- **查看常见问题** → [故障排查指南](../how-to-guides/troubleshooting/)
+- **搜索相关文档** → [文档搜索](../reference/)
+- **提交学习问题** → [GitHub Issues](https://github.com/shouqitao/LYBTZYZS/issues)
 
-### 学习Tutorial的最佳方式
-
-1. ✅ **跟随教程逐步操作**，不要跳步
-   - 每完成一步都验证结果
-   - 确保理解每步的目的
-
-2. ✅ **实际操作代码**，不要只看不做
-   - 手动输入代码，不要复制粘贴（加深记忆）
-   - 尝试修改参数，观察效果
-
-3. ✅ **遇到问题先自查**
-   - 查看教程的"常见问题"章节
-   - 对比你的代码和示例代码的差异
-   - 检查错误信息，尝试理解原因
-
-4. ✅ **完成后举一反三**
-   - 尝试在教程基础上扩展功能
-   - 应用到自己的实际需求中
-
----
-
-### Tutorial的局限性
-
-Tutorial设计为引导式学习，有以下局限性：
-
-- ❌ **不覆盖所有功能** - 只展示核心流程
-  - → 需要全面了解请查阅[Reference](../reference/quick-reference/)
-
-- ❌ **不深入解释原理** - 侧重"怎么做"而非"为什么"
-  - → 需要理解设计请查阅[Explanation](../explanation/architecture/)
-
-- ❌ **不解决特定问题** - 是通用学习路径
-  - → 需要解决具体问题请查阅[How-to Guides](../how-to-guides/)
-
----
-
-## 📊 学习进度跟踪
-
-建议在学习过程中跟踪进度：
-
-- [ ] ✅ 完成"5分钟快速开始"
-- [ ] ✅ 成功启动Server和Client
-- [ ] ✅ 完成首次登录和操作
-- [ ] ✅ 理解三层对齐架构
-- [ ] ✅ 完成"开发第一个功能"
-- [ ] ✅ 独立完成Server端开发
-- [ ] ✅ 独立完成Client端开发
-- [ ] ✅ 掌握测试和提交流程
-
-**目标**：完成所有核心Tutorial后，你应该能够独立开发凌隐宝堂中医诊所系统的新功能。
+### 进阶学习资源
+- **深入技术理解** → [Explanation文档](../explanation/)
+- **开发技巧** → [How-to Guides](../how-to-guides/)
+- **技术参考** → [Reference文档](../reference/)
 
 ---
 
-## 📞 获取帮助
-
-如果在学习过程中遇到问题：
-
-1. **查看文档**
-   - [常见问题解决](../reference/quick-reference/troubleshooting.md) - 80%的问题都能找到答案
-   - [API快速参考](../reference/quick-reference/api-reference.md) - 查阅接口用法
-
-2. **搜索Issues**
-   - [GitHub Issues](https://github.com/shouqitao/凌隐宝堂中医诊所/issues) - 搜索类似问题
-   - 如未找到，创建新Issue并详细描述问题
-
-3. **联系团队**
-   - 通过项目Issue系统提交问题
-   - 包含完整的错误信息和复现步骤
-
----
-
-## 🔄 贡献指南
-
-欢迎贡献新的Tutorial！优秀的Tutorial应该符合以下标准：
-
-### 内容标准
-- ✅ **明确的学习目标** - 开头说明"你将学到什么"
-- ✅ **循序渐进的步骤** - 每步都有清晰的操作指令
-- ✅ **丰富的代码示例** - 提供完整可运行的代码
-- ✅ **成功标志** - 每步都有验证方式
-- ✅ **预计时间** - 标注完成所需时间
-- ✅ **常见问题** - 预判可能遇到的问题
-
-### 格式标准
-- ✅ 使用Markdown格式
-- ✅ 代码块标注语言（```csharp、```bash等）
-- ✅ 适当使用Emoji增强可读性
-- ✅ 包含截图或命令输出示例（可选）
-
-### 提交流程
-1. Fork项目仓库
-2. 在`docs/tutorials/`下创建新教程
-3. 更新本README.md的教程列表
-4. 提交Pull Request
-5. 等待团队审核和反馈
-
----
-
-## 📚 相关资源
-
-**其他文档类型**：
-- [How-to Guides](../how-to-guides/) - 操作指南
-- [Reference](../reference/quick-reference/) - 参考手册
-- [Explanation](../explanation/architecture/) - 解释说明
-
-**项目资源**：
-- [项目README](../../README.md) - 项目总览
-- [文档导航中心](../index.md) - 完整文档索引
-- [GitHub仓库](https://github.com/shouqitao/凌隐宝堂中医诊所) - 代码和Issues
-
----
-
-**最后更新**：2025-10-29
-**文档版本**：v1.0（Diátaxis框架重构版）
+**文档类型**: Tutorials Index
+**更新时间**: 2025-11-22
+**维护团队**: 架构组
+**建议反馈**: [提交Issue](https://github.com/shouqitao/LYBTZYZS/issues/new?assignees=&labels=documentation&template=documentation_issue.md)

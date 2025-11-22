@@ -1,0 +1,12 @@
+{
+  "id": "approval_1760454210998_7v21q2x4v",
+  "title": "需求文档审批：中医看诊工作台",
+  "filePath": ".spec-workflow/specs/consultation-workbench/requirements.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-10-14T15:03:30.998Z",
+  "category": "spec",
+  "categoryName": "consultation-workbench",
+  "response": "需要修订",
+  "respondedAt": "2025-10-14T15:05:47.796Z"
+}

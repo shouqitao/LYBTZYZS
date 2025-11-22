@@ -9,7 +9,12 @@
 ### 阶段1: THINK（深度思考与信息收集）
 
 ```bash
-# 1. 查询Graphiti记忆（必须）
+# 1. 启动深度推理（复杂任务优先使用）
+mcp__sequential-thinking__sequentialthinking
+  # 适用场景：架构设计、问题诊断、方案评估等需要严密逻辑推理的场景
+  # 在推理过程中可穿插调用其他工具进行信息检索
+
+# 2. 查询Graphiti记忆（必须）
 mcp__graphiti-memory__search_memory_facts
   query: "[模块名] [功能名] [技术关键词]"
 mcp__graphiti-memory__search_nodes
@@ -17,16 +22,28 @@ mcp__graphiti-memory__search_nodes
 mcp__graphiti-memory__get_episodes
   max_episodes: 10
 
-# 2. 理解项目架构
+# 3. 实时信息检索（按需使用）
+# 3.1 最新技术文档和最佳实践
+mcp__tavily-mcp__tavily-search
+  query: "[技术关键词] [问题描述] best practices"
+
+# 3.2 .NET代码库语义搜索
+mcp__netcontext-server__semantic_search
+  query: "[功能描述] [类名] [方法名]"
+  # 备选：mcp__serena__find_symbol / search_for_pattern
+
+# 4. 理解项目架构
 docs/explanation/architecture/{client|server|shared}/
 docs/guides/requirement-driven-workflow.md
 docs/reference/mvp-constraints.md
 
-# 3. 验证流程一致性
+# 5. 验证流程一致性
 对比 Graphiti记忆流程 vs 文档流程，发现不一致则更新文档
 ```
 
-**详细指南**: 检索Graphiti记忆 `"LYBTZYZS-UltraThink详细执行指南"`
+**工具使用详细指南**: `docs/guides/advanced-tools-usage-guide.md`
+
+**Graphiti详细指南**: 检索Graphiti记忆 `"LYBTZYZS-UltraThink详细执行指南"`
 
 ### 阶段2: PLAN（任务规划与清单生成）
 
@@ -37,35 +54,22 @@ docs/reference/mvp-constraints.md
 小需求: task-executor → task-reflector
 
 # 2. 使用TodoWrite生成任务清单（必须）
-# ⚠️ 重要：复杂任务必须使用TodoWrite工具创建任务清单，以便跟踪进度和保持专注
-TodoWrite: [深度思考] → [任务规划] → [需求确认] → [方案设计] →
-          [渐进执行] → [验证测试] → [用户确认] → [文档同步] →
-          [Graphiti更新] → [环境清理] → [Issue关闭]
-
-# TodoWrite使用时机：
-# - 任务需要3个或以上步骤
-# - 任务预计耗时超过30分钟
-# - 用户明确要求创建任务清单
-# - 跨会话的长时任务
-
-# TodoWrite更新原则：
-# - 每完成一个子任务立即标记为completed
-# - 始终保持1个任务为in_progress状态
-# - 发现新子任务时立即添加到清单
-# - 任务完成后清空清单
+# ⚠️ 复杂任务（≥3步骤或≥30分钟）必须使用TodoWrite跟踪进度
+# 流程：深度思考 → 需求确认 → 方案设计 → 渐进执行 → 验证测试 → 文档同步 → Issue关闭
+# 原则：完成即标记 | 始终1个in_progress | 任务完成后清空
 ```
 
 ### 阶段3: EXECUTE（渐进执行与持续记录）
 
 ```bash
-# 渐进执行原则
-单一职责 + 小步快跑（≤2小时）+ 持续验证 + 及时记录
+# 渐进执行原则：单一职责 + 小步快跑（≤2小时）+ 持续验证 + 及时记录
 
-# 每个子任务完成后立即保存记忆
-mcp__graphiti-memory__add_memory
-  name: "{模块名}-{子任务名}-完成-{日期}"
-  episode_body: "[使用子任务记忆模板]"
+# 执行前：sequential-thinking分析风险 | netcontext-server定位代码
+# 执行中：tavily查技术方案 | sequential-thinking评估架构 | netcontext-server搜索实现
+# 执行后：每完成一个子任务保存记忆到Graphiti
 ```
+
+**执行中的工具使用场景和组合模式**: `docs/guides/advanced-tools-usage-guide.md`
 
 **详细模板**: 检索Graphiti记忆 `"LYBTZYZS-Graphiti记忆管理详细模板"`
 
@@ -75,33 +79,18 @@ mcp__graphiti-memory__add_memory
 # 1. 调用task-reflector生成总结
 lybtzyzs-task-reflector
 
-# 2. 保存完整记忆
-mcp__graphiti-memory__add_memory
-  name: "{模块名}-{任务类型}-完成-{日期}"
-  episode_body: "[使用完整任务记忆模板 - 13部分]"
+# 2. 保存完整记忆（13部分模板）
+add_memory(name="{模块名}-{任务类型}-完成-{日期}")
 
-# 3. 文档更新检查
-架构文档、开发流程、最佳实践、技术约束
+# 3. 文档更新检查：架构文档、开发流程、最佳实践、技术约束
 
-# 4. 自动关闭Issue（满足条件则自动执行）
-# 判断标准：
-# - ✅ 所有验收标准已完成（通过代码检查验证）
-# - ✅ 功能验证通过（用户明确确认或测试通过）
-# - ✅ 文档已同步（相关文档已更新/创建）
-# - ✅ 记忆已保存（Graphiti记忆已归档）
-if (满足所有4条标准) {
-  mcp__github__issue_write(
-    method="update",
-    state="closed",
-    state_reason="completed"
-  )
-}
-# 注意：Epic Issue关闭需谨慎，确认所有子Issue已关闭
+# 4. 自动关闭Issue（满足4条标准）
+# ✅ 验收完成 + ✅ 功能验证 + ✅ 文档同步 + ✅ 记忆保存
+mcp__github__issue_write(method="update", state="closed", state_reason="completed")
+# 注意：Epic Issue需确认所有子Issue已关闭
 
 # 5. 推送代码到远程仓库（必须）
 git push origin master
-# 确保所有本地commits已同步到远程
-# Issue关闭后，相关代码必须在远程仓库可见
 ```
 
 ## 📋 简化流程视图
@@ -115,6 +104,7 @@ git push origin master
 ## 📖 详细文档索引
 
 - **完整流程**: `docs/guides/requirement-driven-workflow.md`
+- **高级工具使用指南**: `docs/guides/advanced-tools-usage-guide.md`
 - **文档模板**: `docs/templates/`
 - **Graphiti记忆**:
   - `LYBTZYZS-UltraThink详细执行指南-2025-01-18`
@@ -123,13 +113,22 @@ git push origin master
 
 ## 🛠️ 核心工具
 
+### 深度推理工具
+- **`sequential-thinking`** - 结构化深度推理（⚠️ 复杂任务核心工具）
+  - 适用场景：架构设计、问题诊断、方案评估、技术选型
+
+### 实时信息检索工具
+- **`tavily-mcp`** - Web实时搜索
+  - 适用场景：技术调研、错误解决方案查询、开源项目示例
+
+### .NET代码分析工具
+- **`netcontext-server`** - .NET代码库语义搜索
+  - 适用场景：代码定位、架构分析、依赖追踪
+  - 备选工具：`serena`（find_symbol、search_for_pattern）
+
 ### 任务管理工具
 - **`TodoWrite`** - 任务清单管理（⚠️ 核心工具，复杂任务必用）
-  - 创建任务清单，跟踪多步骤任务进度
-  - 保持专注，防止遗漏关键步骤
-  - 支持三种状态：pending, in_progress, completed
   - 使用场景：≥3步骤任务、≥30分钟任务、跨会话任务
-  - 更新原则：完成即标记、始终1个in_progress、任务完成后清空
 
 ### LYBTZYZS专用Skills
 - `lybtzyzs-requirements-generator` - 需求确认文档
@@ -144,44 +143,18 @@ git push origin master
 - `mcp__github__pull_request_*` - PR管理
 - `mcp__github_*` - 仓库操作
 
+**详细工具使用说明、决策树、组合模式**: `docs/guides/advanced-tools-usage-guide.md`
+
 ## 🧠 Graphiti记忆管理
 
 ### 三阶段记忆管理
-
-**启动前 - RETRIEVE**:
-```bash
-search_memory_facts(query="{模块名} {技术关键词}")
-search_nodes(query="{组件名} {类名}")
-get_episodes(max_episodes=10)
-```
-
-**执行中 - RECORD**（每完成一个子任务）:
-```bash
-add_memory(
-  name="{模块名}-{子任务名}-完成-{日期}",
-  episode_body="[子任务记忆模板]"
-)
-```
-
-**结束后 - ARCHIVE**:
-```bash
-add_memory(
-  name="{模块名}-{任务类型}-完成-{日期}",
-  episode_body="[完整任务记忆模板 - 13部分]"
-)
-```
+- **RETRIEVE**（启动前）: search_memory_facts + search_nodes + get_episodes
+- **RECORD**（执行中）: 每完成一个子任务保存记忆
+- **ARCHIVE**（结束后）: 保存完整任务记忆（13部分）
 
 ### 记忆命名规范
 格式: `{模块名}-{任务类型}-{简要描述}-{日期}`
-示例: `FormulaDetailView-Bug修复-XAML绑定错误-2025-01-18`
-
-### 记忆检索技巧
-```bash
-# 按模块: "FormulaDetailView"
-# 按技术: "XAML 绑定 TwoWay"
-# 按问题: "Bug NullReferenceException"
-# 按时间: get_episodes(max_episodes=20)
-```
+示例: `FormulaDetailView-Bug修复-XAML绑定错误-2025-11-21`
 
 **详细模板和规范**: 检索Graphiti记忆获取
 
@@ -208,11 +181,4 @@ add_memory(
 - **前端**: WPF (.NET 8), Prism.DryIoc 9.0, Refit
 - **后端**: .NET 8, ASP.NET Core Web API, Entity Framework Core 8.0
 - **数据库**: SQL Server
-
-### 架构特点
-- **前端**: MVVM + 组件化架构 (ViewModel → Repository → Refit API)
-  - Epic #1773组件化: DataManager + Validator + CommandHandler三件套
-- **后端**: 传统三层架构 (Controller → Service → Repository)
-- **统一接口**: IService接口，无重复IModule
-
-> **注**: UltraThink双层架构（QueryService/BusinessService）已废弃，详见 `docs/adr/ADR-015-deprecate-ultrathink-architecture.md`
+- **架构**: 前端MVVM+组件化 | 后端三层架构 | 统一IService接口

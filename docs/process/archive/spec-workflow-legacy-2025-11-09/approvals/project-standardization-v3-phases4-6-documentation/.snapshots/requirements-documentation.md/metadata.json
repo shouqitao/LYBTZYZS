@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/project-standardization-v3-phases4-6/requirements-documentation.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-15T00:18:14.296Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760487494264_34cpclukj",
+      "approvalTitle": "Project Standardization 3.0 Phase 4-6 文档标准化需求审批"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/documentation-system-optimization/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-15T05:02:03.314Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760504523243_vtbb7zokf",
+      "approvalTitle": "统一文档导航门户任务分解文档"
+    }
+  ]
+}

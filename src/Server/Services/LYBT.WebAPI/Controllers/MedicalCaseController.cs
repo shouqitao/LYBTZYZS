@@ -519,7 +519,10 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证病案是否可编辑
         /// Epic #1612: 检查病案状态和权限
+        /// Phase 2.3: 此端点已标记为过时，将在v2.0移除
+        /// 推荐：使用GetById返回的Status字段进行客户端判断（medicalCase.Status == MedicalCaseStatus.Active）
         /// </summary>
+        [Obsolete("此端点将在v2.0移除，请使用GetById返回的Status字段判断是否可编辑", false)]
         [HttpGet("{id}/can-edit")]
         [ProducesResponseType(typeof(ApiResponse<CanEditResponse>), 200)]
         public async Task<ActionResult<ApiResponse<CanEditResponse>>> CanEdit(Guid id)
@@ -539,7 +542,10 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 验证处方是否可删除
         /// Epic #1612: 检查处方打印状态
+        /// Phase 2.3: 此端点已标记为过时，将在v2.0移除
+        /// 推荐：使用GetById返回的Prescription.IsPrinted字段进行客户端判断（medicalCase.Prescription?.IsPrinted == false）
         /// </summary>
+        [Obsolete("此端点将在v2.0移除，请使用GetById返回的Prescription.IsPrinted字段判断是否可删除", false)]
         [HttpGet("{id}/prescriptions/{prescriptionId}/can-delete")]
         [ProducesResponseType(typeof(ApiResponse<CanDeleteResponse>), 200)]
         public async Task<ActionResult<ApiResponse<CanDeleteResponse>>> CanDeletePrescription(

@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/consultation-workbench/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T15:03:31.021Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760454210998_7v21q2x4v",
+      "approvalTitle": "需求文档审批：中医看诊工作台"
+    }
+  ]
+}

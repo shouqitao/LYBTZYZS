@@ -1,237 +1,247 @@
-# Reference（参考手册）总览
+# Reference (参考) - 技术信息
 
-> **文档类型**：Reference（信息导向 + 查阅导向）
-> **适用场景**：快速查找API、配置、命令等技术细节
-> **目标读者**：所有开发者
+> **信息导向**: 面向有经验的开发者，提供准确的技术参考
+> **适合人群**: 开发者、架构师、技术负责人
+> **使用方式**: 精确查询、技术决策、规范遵循
 
-**版本**：v6.0 Diátaxis框架版
-**更新时间**：2025-10-29
-**维护团队**：开发组
+## 🔌 API文档 (API Documentation)
+
+### 核心业务API
+
+#### 🔐 认证模块 (Authentication)
+- **[Auth API参考文档](api/auth.md)** - 完整的认证授权API接口文档
+  - 涵盖登录、登出、Token刷新、权限验证等8个核心API端点
+  - 包含请求/响应格式、状态码、错误处理和配置参数
+- **[权限API参考](api/authorization.md)** - 角色权限、资源访问控制
+- **[安全API参考](api/security.md)** - 密码策略、安全设置
+
+#### 👥 用户管理 (Users)
+- **[Users API参考文档](api/users.md)** - 完整的用户管理API接口文档
+  - 涵盖用户CRUD、搜索筛选、状态管理、批量操作等15个核心API端点
+  - 包含分页查询、拼音码搜索、权限控制和批量处理功能
+- **[用户CRUD API](api/users.md)** - 用户增删改查操作
+- **[角色管理API](api/user-roles.md)** - 医生、管理员角色管理
+- **[用户设置API](api/user-settings.md)** - 个人偏好设置
+
+#### 🏥 患者管理 (Patients)
+- **[患者信息API](api/patients.md)** - 患者档案管理
+- **[病史API](api/medical-history.md)** - 病史记录管理
+- **[患者搜索API](api/patient-search.md)** - 患者查询和筛选
+
+#### 📋 病历管理 (MedicalCase)
+- **[病历API参考](api/medical-case.md)** - 病历创建、更新、查询
+- **[病历模板API](api/case-templates.md)** - 病历模板管理
+- **[病历分析API](api/case-analytics.md)** - 病历数据分析
+
+#### 🔍 中医诊断 (Consultation)
+- **[四诊API](api/consultation.md)** - 望闻问切数据管理
+- **[诊断API](api/diagnosis.md)** - 中医诊断结果管理
+- **[舌诊API](api/tongue-diagnosis.md)** - 舌诊图像和诊断
+
+#### 💊 处方管理 (Prescriptions)
+- **[处方API](api/prescriptions.md)** - 处方开具和管理
+- **[草药配伍API](api/herb-combination.md)** - 草药配伍规则
+- **[处方审核API](api/prescription-review.md)** - 处方审核流程
+
+#### 🌿 中药管理 (Herbs)
+- **[药材API](api/herbs.md)** - 药材信息管理
+- **[库存API](api/inventory.md)** - 库存管理和预警
+- **[药材分类API](api/herb-classification.md)** - 药材分类体系
+
+#### 📜 方剂管理 (Formula)
+- **[方剂API](api/formula.md)** - 方剂创建和管理
+- **[经典方剂API](api/classic-formulas.md)** - 经典方剂库
+- **[方剂应用API](api/formula-application.md)** - 方剂使用指导
+
+### 系统API
+
+#### 系统管理
+- **[系统配置API](api/system-config.md)** - 系统参数配置
+- **[日志管理API](api/logs.md)** - 日志查询和管理
+- **[监控API](api/monitoring.md)** - 系统监控数据
+
+#### 数据导入导出
+- **[数据导入API](api/data-import.md)** - Excel、CSV数据导入
+- **[数据导出API](api/data-export.md)** - 报表和数据导出
+- **[数据同步API](api/data-sync.md)** - 数据同步接口
+
+## ⚙️ 配置参考 (Configuration)
+
+### 应用配置
+
+#### 系统配置
+- **[appsettings.json配置](configuration/appsettings.md)** - 主配置文件详解
+- **[环境变量配置](configuration/environment-variables.md)** - 环境变量设置
+- **[数据库配置](configuration/database.md)** - 数据库连接配置
+
+#### 业务配置
+- **[业务规则配置](configuration/business-rules.md)** - 业务逻辑配置
+- **[工作流配置](configuration/workflows.md)** - 业务流程配置
+- **[中医诊疗配置](configuration/tcm-settings.md)** - 中医特色配置
+
+#### 安全配置
+- **[身份认证配置](configuration/authentication.md)** - 认证系统配置
+- **[数据加密配置](configuration/encryption.md)** - 数据加密设置
+- **[访问控制配置](configuration/access-control.md)** - 访问权限配置
+
+### 开发配置
+
+#### 开发环境
+- **[开发环境配置](configuration/development.md)** - 本地开发环境
+- **[测试环境配置](configuration/testing.md)** - 自动化测试环境
+- **[调试配置](configuration/debugging.md)** - 调试工具和配置
+
+#### 构建配置
+- **[项目构建配置](configuration/build.md)** - MSBuild配置
+- **[依赖包配置](configuration/dependencies.md)** - NuGet包管理
+- **[发布配置](configuration/publishing.md)** - 应用发布配置
+
+## 📋 业务规则 (Business Rules)
+
+### 医疗业务规则
+
+#### 患者管理规则
+- **[患者注册规则](business-rules/patient-registration.md)** - 患者注册条件和流程
+- **[数据隐私规则](business-rules/data-privacy.md)** - 患者隐私保护规则
+- **[医疗数据规范](business-rules/medical-data.md)** - 医疗数据标准化
+
+#### 诊疗业务规则
+- **[四诊规范](business-rules/four-diagnostics.md)** - 望闻问切执行规范
+- **[诊断标准](business-rules/diagnosis-standards.md)** - 中医诊断标准
+- **[病历书写规范](business-rules/medical-record-standards.md)** - 病历书写要求
+
+#### 处方业务规则
+- **[处方开具规则](business-rules/prescription-rules.md)** - 处方开具规范
+- **[草药配伍规则](business-rules/herb-compatibility.md)** - 草药配伍禁忌
+- **[剂量控制规则](business-rules/dosage-control.md)** - 药物剂量管理
+
+### 技术业务规则
+
+#### 数据验证规则
+- **[输入验证规则](business-rules/input-validation.md)** - 用户输入验证
+- **[数据完整性规则](business-rules/data-integrity.md)** - 数据完整性约束
+- **[业务逻辑验证](business-rules/business-logic-validation.md)** - 业务逻辑校验
+
+#### 系统运行规则
+- **[并发控制规则](business-rules/concurrency-control.md)** - 并发访问控制
+- **[事务处理规则](business-rules/transaction-handling.md)** - 事务管理规则
+- **[错误处理规则](business-rules/error-handling.md)** - 异常处理规范
+
+## 📐 技术规范 (Technical Specifications)
+
+### 架构规范
+
+#### 系统架构
+- **[整体架构设计](technical-specs/system-architecture.md)** - 系统架构总览
+- **[微服务架构](technical-specs/microservices.md)** - 服务拆分规范
+- **[数据库架构](technical-specs/database-architecture.md)** - 数据库设计规范
+
+#### 代码规范
+- **[C#编码规范](technical-specs/csharp-coding.md)** - C#代码编写标准
+- **[命名规范](technical-specs/naming-conventions.md)** - 命名约定
+- **[注释规范](technical-specs/commenting.md)** - 代码注释标准
+
+#### 接口规范
+- **[REST API规范](technical-specs/rest-api.md)** - REST接口设计规范
+- **[数据传输规范](technical-specs/data-transfer.md)** - DTO设计规范
+- **[版本控制规范](technical-specs/versioning.md)** - API版本管理
+
+### 数据规范
+
+#### 数据模型
+- **[实体模型设计](technical-specs/entity-models.md)** - 实体设计规范
+- **[数据关系设计](technical-specs/data-relationships.md)** - 关系设计规范
+- **[数据迁移规范](technical-specs/data-migration.md)** - 数据库迁移规范
+
+#### 数据标准
+- **[数据类型标准](technical-specs/data-types.md)** - 数据类型使用规范
+- **[数据格式标准](technical-specs/data-formats.md)** - 数据交换格式
+- **[数据质量标准](technical-specs/data-quality.md)** - 数据质量要求
+
+### 安全规范
+
+#### 应用安全
+- **[认证授权规范](technical-specs/auth-authorization.md)** - 身份认证和授权
+- **[数据加密规范](technical-specs/encryption.md)** - 数据加密标准
+- **[安全审计规范](technical-specs/security-audit.md)** - 安全审计要求
+
+#### 医疗安全
+- **[HIPAA合规规范](technical-specs/hipaa-compliance.md)** - 医疗数据保护
+- **[医疗信息标准](technical-specs/medical-standards.md)** - 医疗信息标准
+- **[隐私保护规范](technical-specs/privacy-protection.md)** - 隐私保护要求
+
+## 🔍 快速查找
+
+### 按功能模块查找
+- **认证授权** → [认证API](api/auth.md) + [权限API](api/authorization.md)
+- **用户管理** → [用户API](api/users.md) + [角色API](api/user-roles.md)
+- **患者管理** → [患者API](api/patients.md) + [病史API](api/medical-history.md)
+- **病历管理** → [病历API](api/medical-case.md) + [模板API](api/case-templates.md)
+- **中医诊断** → [四诊API](api/consultation.md) + [诊断API](api/diagnosis.md)
+- **处方管理** → [处方API](api/prescriptions.md) + [草药API](api/herb-combination.md)
+- **中药管理** → [药材API](api/herbs.md) + [库存API](api/inventory.md)
+- **方剂管理** → [方剂API](api/formula.md) + [经典方剂API](api/classic-formulas.md)
+
+### 按技术类型查找
+- **API接口** → [API文档](api/)
+- **配置参数** → [配置参考](configuration/)
+- **业务规则** → [业务规则](business-rules/)
+- **技术标准** → [技术规范](technical-specs/)
+- **数据模型** → [数据模型](technical-specs/entity-models.md)
+- **安全规范** → [安全规范](technical-specs/auth-authorization.md)
+
+### 按使用场景查找
+- **开发新功能** → [API文档](api/) + [业务规则](business-rules/)
+- **系统配置** → [配置参考](configuration/)
+- **故障排查** → [错误代码参考](troubleshooting/error-codes.md)
+- **性能优化** → [性能分析指南](performance/analysis.md)
+- **安全加固** → [安全规范](technical-specs/security-audit.md)
+- **合规检查** → [合规规范](technical-specs/hipaa-compliance.md)
+
+## 📊 版本信息
+
+### 当前版本
+- **API版本**: v1.0
+- **数据库版本**: v1.0
+- **配置版本**: v1.0
+
+### 版本兼容性
+| 版本 | 发布日期 | 兼容性 | 主要变更 |
+|------|----------|--------|----------|
+| v1.0 | 2025-11-22 | - | 初始版本 |
+| v1.1 | 计划中 | 向后兼容 | [计划变更] |
+
+## 🔗 相关资源
+
+### 内部文档
+- 🎓 **[Tutorials](../tutorials/)** - 学习教程
+- 🛠️ **[How-to Guides](../how-to-guides/)** - 操作指南
+- 🧠 **[Explanation](../explanation/)** - 原理说明
+
+### 外部资源
+- 📚 **[.NET官方文档](https://docs.microsoft.com/dotnet/)** - .NET技术文档
+- 🗄️ **[SQL Server文档](https://docs.microsoft.com/sql/sql-server/)** - 数据库文档
+- 🏥 **[医疗信息标准](https://www.hl7.org/)** - 医疗信息标准
+
+### 工具资源
+- 🔧 **[Postman集合](tools/postman-collection.md)** - API测试工具
+- 📊 **[数据库工具](tools/database-tools.md)** - 数据库管理工具
+- 🛠️ **[开发工具](tools/development-tools.md)** - 开发环境工具
+
+## 📞 获取帮助
+
+### 文档问题
+- 📋 **[文档反馈表单](https://forms.office.com/...)** - 文档问题和改进建议
+- 🐛 **[文档Bug报告](https://github.com/shouqitao/LYBTZYZS/issues/new?labels=documentation)** - 文档错误报告
+
+### 技术支持
+- 💬 **[技术社区](https://github.com/shouqitao/LYBTZYZS/discussions)** - 技术讨论社区
+- 📧 **[架构团队](mailto:architecture@example.com)** - 架构设计咨询
+- 🎯 **[API支持](mailto:api-support@example.com)** - API使用支持
 
 ---
 
-## 🎯 什么是 Reference？
-
-Reference 是**信息导向的参考手册**，提供精确、结构化的技术信息。Reference的核心特点是：
-- ✅ **精确简洁**：只提供事实信息，不解释原理
-- ✅ **结构化**：信息按逻辑分类组织，易于查找
-- ✅ **完整性**：覆盖所有API、配置、命令等技术细节
-- ✅ **最新性**：与代码库实时同步
-
-### 📚 与其他文档类型的区别
-
-| 对比项 | Reference | Tutorial | How-to Guides | Explanation |
-|-------|-----------|----------|---------------|-------------|
-| **目标** | 查阅信息 | 学习 | 解决问题 | 理解概念 |
-| **受众** | 所有人 | 新手 | 实践者 | 架构师 |
-| **场景** | 查找API/配置 | 第一次接触 | 完成特定任务 | 深入理解设计 |
-| **特点** | 精确简洁 | 手把手引导 | 步骤清晰 | 深入解释 |
-
-**何时使用 Reference？**
-- ✅ 你需要查找特定API端点的参数和返回值
-- ✅ 你需要快速查阅配置选项的含义
-- ✅ 你需要验证某个命令的语法和选项
-- ✅ 你需要查找某个模块的完整接口定义
-
----
-
-## 📂 Reference 分类
-
-### 📖 快速参考（Quick Reference）
-
-**入口**：[快速参考目录](quick-reference/)
-
-**适用场景**：80%的日常查阅需求
-
-**包含内容**：
-- **[API参考](quick-reference/api-reference.md)** - 所有API端点速查表
-  - RESTful API端点
-  - 请求/响应格式
-  - 状态码说明
-  - 认证方式
-
-- **[代码模式](quick-reference/code-patterns.md)** - 常用代码模式速查
-  - Repository模式示例
-  - MVVM模式示例
-  - 依赖注入配置示例
-  - 数据绑定模式
-
-- **[问题排查](quick-reference/troubleshooting.md)** - 常见问题解决速查
-  - 编译错误
-  - 运行时错误
-  - 配置问题
-  - 环境问题
-
-- **[开发清单](quick-reference/development-checklist.md)** - 开发流程检查清单
-  - 代码提交前检查
-  - 功能完成检查
-  - PR创建检查
-  - 发布检查
-
-### 🔌 API文档（API Documentation）
-
-**入口**：[API文档目录](api/)
-
-**适用场景**：查找详细的API接口定义
-
-**包含内容**：
-- 各模块的API端点完整定义
-- 请求/响应DTO结构
-- 错误码和异常处理
-- API版本和兼容性说明
-
-**常用API文档**：
-- [Auth API](api/auth-api.md) - 认证和授权API
-- [Patients API](api/patients-api.md) - 患者管理API
-- [MedicalCase API](api/medicalcase-api.md) - 病案管理API
-- [Consultation API](api/consultation-api.md) - 诊断API
-- [Prescription API](api/prescription-api.md) - 处方API
-- [Herbs API](api/herbs-api.md) - 药品管理API
-- [Formula API](api/formula-api.md) - 方剂管理API
-
-### 📦 模块文档（Module Documentation）
-
-**入口**：[模块文档目录](modules/)
-
-**适用场景**：查找特定模块的详细文档
-
-**包含内容**：
-- 模块职责和边界
-- 对外接口定义
-- 模块依赖关系
-- 配置选项说明
-
-**Server端模块**：
-- [Auth模块](modules/auth/) - 认证和授权
-- [Patients模块](modules/patients/) - 患者管理
-- [MedicalCase模块](modules/medicalcase/) - 病案管理
-- [Consultation模块](modules/consultation/) - 诊断
-- [Prescription模块](modules/prescription/) - 处方
-- [Herbs模块](modules/herbs/) - 药品管理
-- [Formula模块](modules/formula/) - 方剂管理
-- [Users模块](modules/users/) - 用户管理
-
-**Client端模块**：
-- [Desktop.Auth](modules/desktop-auth/) - 客户端认证
-- [Desktop.Patients](modules/desktop-patients/) - 患者管理UI
-- [Desktop.MedicalCase](modules/desktop-medicalcase/) - 病案UI
-- [Desktop.Consultation](modules/desktop-consultation/) - 诊断UI
-- [Desktop.Prescriptions](modules/desktop-prescriptions/) - 处方UI
-- [Desktop.Herbs](modules/desktop-herbs/) - 药品UI
-- [Desktop.Formula](modules/desktop-formula/) - 方剂UI
-
----
-
-## 🚀 快速查找
-
-### 我需要查找...（常见查阅任务）
-
-#### API 相关
-- **某个API端点的参数** → [API参考](quick-reference/api-reference.md)
-- **API的完整定义** → [API文档](api/)
-- **API错误码含义** → [API文档](api/) 对应模块
-
-#### 代码相关
-- **Repository模式怎么写** → [代码模式](quick-reference/code-patterns.md)
-- **MVVM模式示例** → [代码模式](quick-reference/code-patterns.md)
-- **依赖注入配置** → [代码模式](quick-reference/code-patterns.md)
-
-#### 配置相关
-- **数据库连接字符串** → [开发清单](quick-reference/development-checklist.md)
-- **环境变量配置** → [开发清单](quick-reference/development-checklist.md)
-- **模块配置选项** → [模块文档](modules/) 对应模块
-
-#### 问题排查
-- **编译错误解决** → [问题排查](quick-reference/troubleshooting.md)
-- **运行时错误** → [问题排查](quick-reference/troubleshooting.md)
-- **环境配置问题** → [问题排查](quick-reference/troubleshooting.md)
-
----
-
-## 📚 相关文档
-
-### 学习系统（新手）
-如果你是第一次接触系统，推荐先学习：
-- [Tutorial总览](../tutorials/README.md) - 学习导向的引导式教程
-- [5分钟快速开始](../tutorials/quick-start.md) - 快速启动系统
-- [开发第一个功能](../tutorials/first-feature.md) - 完整开发流程演示
-
-### 解决具体问题
-需要完成特定开发任务，请查阅：
-- [How-to Guides总览](../how-to-guides/README.md) - 任务导向的操作指南
-- [Server端操作](../how-to-guides/server/README.md) - 后端开发指南
-- [Client端操作](../how-to-guides/client/README.md) - 前端开发指南
-- [共享操作](../how-to-guides/shared/README.md) - 通用开发指南
-
-### 理解架构设计
-需要深入理解系统架构和设计决策，请阅读：
-- [Explanation总览](../explanation/README.md) - 理解导向的概念解释
-- [Server端架构](../explanation/architecture/server/README.md) - 三层架构设计
-- [Client端架构](../explanation/architecture/client/README.md) - MVVM架构设计
-- [架构决策记录](../explanation/architecture/decisions/) - ADR记录
-- [业务规则](../explanation/business-rules.md) - 14条核心业务规则
-
----
-
-## 🎯 使用建议
-
-### 如何使用 Reference
-
-1. **明确查找目标**
-   确定你要查找的具体信息（例如："GetPatientByIdAsync API的返回值类型是什么？"）
-
-2. **选择对应分类**
-   - API信息 → [API参考](quick-reference/api-reference.md) 或 [API文档](api/)
-   - 代码模式 → [代码模式](quick-reference/code-patterns.md)
-   - 问题排查 → [问题排查](quick-reference/troubleshooting.md)
-   - 模块信息 → [模块文档](modules/)
-
-3. **快速定位**
-   使用浏览器的Ctrl+F搜索功能快速定位关键词
-
-4. **需要更多说明**
-   如果Reference信息不足，查阅[Explanation](../explanation/README.md)了解背景知识
-
-### Reference 的局限性
-
-Reference **不适合**以下场景：
-- ❌ 学习如何使用系统 → 请查阅[Tutorial](../tutorials/README.md)
-- ❌ 解决具体开发问题 → 请查阅[How-to Guides](../how-to-guides/README.md)
-- ❌ 理解设计原理 → 请查阅[Explanation](../explanation/README.md)
-
-Reference **只提供**技术信息，**不解释**：
-- ❌ 为什么这样设计
-- ❌ 如何一步步实现
-- ❌ 遇到问题如何排查（除troubleshooting外）
-
----
-
-## 🔄 文档维护
-
-### 贡献指南
-
-欢迎贡献新的Reference内容！优秀的参考手册应该：
-- ✅ **精确性**：信息准确无误，与代码库同步
-- ✅ **完整性**：覆盖所有公开接口和配置
-- ✅ **结构化**：按逻辑分类，易于查找
-- ✅ **简洁性**：只提供必要信息，不解释原理
-- ✅ **示例**：提供简短的代码示例（如需详细示例，放在How-to Guides）
-
-### 更新频率
-
-- **API文档**：随代码变更同步更新（强制）
-- **代码模式**：发现新模式时补充（可选）
-- **问题排查**：发现新问题时补充（可选）
-- **模块文档**：模块结构变化时更新（强制）
-
-### 文档更新记录
-
-- **v6.0 (2025-10-29)**: Diátaxis框架重构，新建Reference分类
-- **v5.0 (2025-10-15)**: 三层对齐架构重组
-- **v4.0 (2025-09-20)**: 完善API文档
-- **v3.0 (2025-08-10)**: 新增快速参考
-
----
-
-**最后更新**：2025-10-29
-**文档版本**：v6.0（Diátaxis框架重构版）
+**文档类型**: Reference Index
+**更新时间**: 2025-11-22
+**维护团队**: 架构组 + 开发团队
+**文档标准**: 遵循Microsoft API文档规范

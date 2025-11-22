@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/project-standardization-v3-phases4-6/design-documentation.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-15T00:25:03.745Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760487903694_6xi1vwcql",
+      "approvalTitle": "文档标准化设计修订版 - 审批请求"
+    }
+  ]
+}

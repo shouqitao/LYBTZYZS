@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/project-standardization-v3-phases4-6/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T22:49:38.775Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760482178749_i6ae7s80a",
+      "approvalTitle": "Project Standardization 3.0 Phase 4-6 - 配置管理、DTO统一、代码质量工具"
+    }
+  ]
+}

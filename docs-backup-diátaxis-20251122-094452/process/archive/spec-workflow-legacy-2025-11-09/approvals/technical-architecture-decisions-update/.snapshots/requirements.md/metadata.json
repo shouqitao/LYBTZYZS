@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/technical-architecture-decisions-update/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T22:50:45.641Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760482245615_qo08pd5su",
+      "approvalTitle": "技术架构决策文档更新需求审批"
+    }
+  ]
+}
