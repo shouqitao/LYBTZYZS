@@ -43,24 +43,36 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 创建新病案
         /// Epic #1612 - AR-001: 通过聚合根创建
+        /// Issue #2212: 提取当前医生ID并传递给Service层
         /// </summary>
         /// <param name="request">创建请求</param>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
         public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> CreateMedicalCase(
             [FromBody] CreateMedicalCaseRequest request)
         {
             try
             {
-                var result = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate);
+                // Issue #2212: 获取当前医生ID
+                var (doctorId, _, _) = GetOperator();
+
+                var result = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("患者不存在"));
 
-                _logger.LogInformation("病案创建成功，ID: {Id}", result.Id);
+                _logger.LogInformation("病案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
+                    result.Id, result.DoctorName, result.PatientName);
                 return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "病案创建成功"));
+            }
+            catch (ArgumentException ex)
+            {
+                // DoctorId参数验证失败
+                _logger.LogWarning(ex, "创建病案失败：参数验证失败");
+                return BadRequest(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
             }
             catch (InvalidOperationException ex)
             {

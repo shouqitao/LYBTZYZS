@@ -409,13 +409,39 @@
         <!-- 底部操作栏 -->
         <Border Grid.Row="2" Background="White" Padding="20"
                BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>    <!-- StatusBar -->
+                    <ColumnDefinition Width="Auto"/> <!-- 开始诊断按钮 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Epic #2210 Issue #2217: StatusBar消息显示 -->
+                <TextBlock Grid.Column="0"
+                          Text="{Binding StatusBarMessage}"
+                          VerticalAlignment="Center"
+                          FontSize="13"
+                          Margin="0,0,20,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <!-- 默认黑色 -->
+                            <Setter Property="Foreground" Value="#2C3E50"/>
+                            <!-- 错误消息时红色 -->
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusBarIsError}" Value="True">
+                                    <Setter Property="Foreground" Value="#E74C3C"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
                 <!-- Epic #1583: IsEnabled由ViewModel的CanExecuteStartConsultation自动管理 -->
-                <Button Content="开始诊断"
+                <Button Grid.Column="1"
+                       Content="开始诊断"
                        Command="{Binding StartConsultationCommand}"
                        Width="120" Height="40"
                        Style="{StaticResource PrimaryButtonStyle}"/>
-            </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

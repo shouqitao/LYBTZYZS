@@ -105,6 +105,7 @@ namespace LYBT.Desktop.Shell.Extensions
         /// <summary>
         /// 注册LoggerFactory
         /// Issue #1789: 从RegisterLogging提取，封装LoggerFactory注册逻辑
+        /// Issue #2182: 添加泛型ILogger<>注册，支持任意类型的Logger解析
         /// </summary>
         private static void RegisterLoggerFactory(IContainerRegistry containerRegistry)
         {
@@ -112,6 +113,10 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 return LoggerFactory.Create(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Information));
             });
+
+            // Issue #2182: 注册泛型ILogger<>，解决PatientSearchManager等服务的Logger依赖
+            // 这样任何需要ILogger<T>的服务都能自动解析，无需手动注册每个类型
+            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
         }
 
         /// <summary>

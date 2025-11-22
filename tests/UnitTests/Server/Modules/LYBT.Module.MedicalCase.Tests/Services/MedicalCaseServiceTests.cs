@@ -14,6 +14,10 @@ using Xunit;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Users.Interfaces;
+using LYBT.Entities.Patients;
+using LYBT.Entities.Users;
 
 namespace LYBT.Module.MedicalCase.Tests.Services
 {
@@ -29,17 +33,23 @@ namespace LYBT.Module.MedicalCase.Tests.Services
     {
         private readonly MedicalCaseService _service;
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
+        private readonly Mock<IPatientRepository> _patientRepositoryMock;
+        private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseService>> _loggerMock;
 
         public MedicalCaseServiceTests()
         {
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
+            _patientRepositoryMock = CreateMock<IPatientRepository>();
+            _userRepositoryMock = CreateMock<IUserRepository>();
             _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseService>();
 
             _service = new MedicalCaseService(
                 _repositoryMock.Object,
+                _patientRepositoryMock.Object,
+                _userRepositoryMock.Object,
                 _mapperMock.Object,
                 _loggerMock.Object);
         }
@@ -51,7 +61,18 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
             var visitDate = DateTime.Now;
+
+            var patient = new Patient { Id = patientId, Name = "张三" };
+            var doctor = new User { Id = doctorId, RealName = "李医生" };
+
+            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+                .ReturnsAsync(patient);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(doctorId))
+                .ReturnsAsync(doctor);
+
             _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
                 .ReturnsAsync(new List<MedicalCaseEntity>());
 
@@ -59,6 +80,9 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
+                PatientName = "张三",
+                DoctorId = doctorId,
+                DoctorName = "李医生",
                 Status = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
             };
@@ -67,11 +91,14 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 .ReturnsAsync(createdMedicalCase);
 
             // Act
-            var result = await _service.CreateAsync(patientId, visitDate);
+            var result = await _service.CreateAsync(patientId, visitDate, doctorId);
 
             // Assert
             result.Should().NotBeNull();
             result!.PatientId.Should().Be(patientId);
+            result.DoctorId.Should().Be(doctorId);
+            result.PatientName.Should().Be("张三");
+            result.DoctorName.Should().Be("李医生");
             result.Status.Should().Be(MedicalCaseStatus.Active);
         }
 
@@ -80,6 +107,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
             var visitDate = DateTime.Now;
             var existingActiveCase = new MedicalCaseEntity
             {
@@ -93,7 +121,117 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _service.CreateAsync(patientId, visitDate));
+                () => _service.CreateAsync(patientId, visitDate, doctorId));
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2215: 验证DoctorId为Guid.Empty时抛出ArgumentException
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_WhenDoctorIdIsEmpty_ShouldThrowArgumentException()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+            var emptyDoctorId = Guid.Empty;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.CreateAsync(patientId, visitDate, emptyDoctorId));
+
+            exception.Message.Should().Contain("DoctorId不能为空");
+            exception.ParamName.Should().Be("doctorId");
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2215: 验证Patient不存在时抛出InvalidOperationException
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_WhenPatientNotFound_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+
+            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+                .ReturnsAsync((Patient?)null);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreateAsync(patientId, visitDate, doctorId));
+
+            exception.Message.Should().Contain("患者不存在");
+            exception.Message.Should().Contain(patientId.ToString());
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2215: 验证Doctor不存在时抛出InvalidOperationException
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_WhenDoctorNotFound_ShouldThrowInvalidOperationException()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+
+            var patient = new Patient { Id = patientId, Name = "张三" };
+
+            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+                .ReturnsAsync(patient);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(doctorId))
+                .ReturnsAsync((User?)null);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreateAsync(patientId, visitDate, doctorId));
+
+            exception.Message.Should().Contain("医生不存在");
+            exception.Message.Should().Contain(doctorId.ToString());
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2215: 验证PatientName和DoctorName正确设置
+        /// </summary>
+        [Fact]
+        public async Task CreateAsync_ShouldSetPatientNameAndDoctorNameCorrectly()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var visitDate = DateTime.Now;
+
+            var patient = new Patient { Id = patientId, Name = "王五" };
+            var doctor = new User { Id = doctorId, RealName = "赵医生" };
+
+            _patientRepositoryMock.Setup(x => x.GetByIdAsync(patientId))
+                .ReturnsAsync(patient);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(doctorId))
+                .ReturnsAsync(doctor);
+
+            _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
+                .ReturnsAsync(new List<MedicalCaseEntity>());
+
+            MedicalCaseEntity? capturedEntity = null;
+            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<MedicalCaseEntity>()))
+                .Callback<MedicalCaseEntity>(entity => capturedEntity = entity)
+                .ReturnsAsync((MedicalCaseEntity entity) => entity);
+
+            // Act
+            var result = await _service.CreateAsync(patientId, visitDate, doctorId);
+
+            // Assert
+            capturedEntity.Should().NotBeNull();
+            capturedEntity!.PatientName.Should().Be("王五");
+            capturedEntity.DoctorName.Should().Be("赵医生");
+            capturedEntity.DoctorId.Should().Be(doctorId);
+
+            // 验证Repository方法被正确调用
+            _patientRepositoryMock.Verify(x => x.GetByIdAsync(patientId), Times.Once);
+            _userRepositoryMock.Verify(x => x.GetByIdAsync(doctorId), Times.Once);
         }
 
         #endregion

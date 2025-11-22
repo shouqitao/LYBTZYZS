@@ -26,8 +26,9 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="visitDate">就诊日期</param>
+        /// <param name="doctorId">医生ID</param>
         /// <returns>创建的病案实体</returns>
-        Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate);
+        Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId);
 
         /// <summary>
         /// 更新辨证信息（三步流程Step 1）

@@ -3,6 +3,8 @@ using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Utilities;
 using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.Patients.Interfaces;
+using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -28,6 +30,8 @@ namespace LYBT.Module.MedicalCase.Services
     public class MedicalCaseService : BaseService<MedicalCaseEntity>, IMedicalCaseService
     {
         private readonly IMedicalCaseRepository _repository;
+        private readonly IPatientRepository _patientRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
         // 显式声明隐藏基类字段以消除警告
@@ -35,13 +39,17 @@ namespace LYBT.Module.MedicalCase.Services
 
         public MedicalCaseService(
             IMedicalCaseRepository repository,
+            IPatientRepository patientRepository,
+            IUserRepository userRepository,
             IMapper mapper,
             ILogger<MedicalCaseService> logger)
             : base(logger)
         {
-            _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // ========== Write Layer（写操作，通过聚合根）==========
@@ -49,13 +57,37 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 创建新病案
         /// Epic #1612: 自动创建Consultation子实体（共享主键）
+        /// Issue #2211: 修复P0 Bug - 添加doctorId参数并设置DoctorId/DoctorName/PatientName
         /// </summary>
-        public async Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate)
+        public async Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
         {
             try
             {
-                _logger.LogInformation("开始创建病案，PatientId: {PatientId}, VisitDate: {VisitDate}",
-                    patientId, visitDate);
+                _logger.LogInformation("开始创建病案，PatientId: {PatientId}, VisitDate: {VisitDate}, DoctorId: {DoctorId}",
+                    patientId, visitDate, doctorId);
+
+                // 参数验证：doctorId不能为Guid.Empty
+                if (doctorId == Guid.Empty)
+                {
+                    _logger.LogWarning("DoctorId不能为空Guid");
+                    throw new ArgumentException("DoctorId不能为空", nameof(doctorId));
+                }
+
+                // 查询Patient获取PatientName
+                var patient = await _patientRepository.GetByIdAsync(patientId);
+                if (patient == null)
+                {
+                    _logger.LogWarning("患者不存在，PatientId: {PatientId}", patientId);
+                    throw new InvalidOperationException($"患者不存在，PatientId: {patientId}");
+                }
+
+                // 查询User获取DoctorName
+                var doctor = await _userRepository.GetByIdAsync(doctorId);
+                if (doctor == null)
+                {
+                    _logger.LogWarning("医生不存在，DoctorId: {DoctorId}", doctorId);
+                    throw new InvalidOperationException($"医生不存在，DoctorId: {doctorId}");
+                }
 
                 // 业务规则验证：BR-001（单患者仅一条未完成病案）- Epic #1731 集成Rules
                 var existingActiveCases = await _repository.GetByPatientIdAsync(patientId);
@@ -72,9 +104,12 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
+                    PatientName = patient.Name,
                     ConsultationDate = visitDate,
                     Status = MedicalCaseStatus.Active,
                     NeedsPrescription = false, // 默认值，用户可后续修改
+                    DoctorId = doctorId,
+                    DoctorName = doctor.RealName,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -94,14 +129,14 @@ namespace LYBT.Module.MedicalCase.Services
                 // EF Core会级联保存Consultation
                 var result = await _repository.AddAsync(medicalCase);
 
-                _logger.LogInformation("病案创建成功，MedicalCaseId: {Id}, ConsultationId: {ConsultationId}",
-                    result.Id, consultation.Id);
+                _logger.LogInformation("病案创建成功，MedicalCaseId: {Id}, ConsultationId: {ConsultationId}, Doctor: {DoctorName}, Patient: {PatientName}",
+                    result.Id, consultation.Id, medicalCase.DoctorName, medicalCase.PatientName);
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建病案失败，PatientId: {PatientId}", patientId);
+                _logger.LogError(ex, "创建病案失败，PatientId: {PatientId}, DoctorId: {DoctorId}", patientId, doctorId);
                 throw;
             }
         }

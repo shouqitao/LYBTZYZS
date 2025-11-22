@@ -168,6 +168,91 @@ git push origin master
 - **环境清理**: 任务完成必须执行清理流程
 - **Issue自动关闭**: 满足4条标准（验收完成+功能验证+文档同步+记忆保存）立即自动关闭，无需询问用户
 - **PR检查**: 大需求PR合并后检查子Issues是否自动关闭
+- **问题清单管理**: 所有开放问题必须保存到Graphiti，问题必须有清单，问题一次提一个等待用户针对性回答
+- **术语规范**: 严格遵守Consultation术语定义（见下文），不得混用
+- **讨论阶段禁止代码**: 需求讨论、方案讨论阶段禁止输出示例代码，影响阅读和输出效率。仅在实现阶段输出代码
+
+## 📝 问题清单管理规范
+
+### 核心原则（用户要求，必须遵守）
+1. ✅ **所有问题必须保存到Graphiti**，避免信息丢失
+2. ✅ **问题必须有清单**，结构化管理
+3. ✅ **问题一次提一个**，等待用户针对性回答
+4. ✅ 每个问题提供明确的选项和推荐方案
+5. ✅ 记录用户确认结果
+
+### 问题管理流程
+```
+发现开放问题 → 保存到Graphiti清单 → 逐个提问 → 记录用户答案 → 更新方案
+```
+
+### 问题格式模板
+```markdown
+## 问题X：[问题标题]
+
+**场景说明**：[详细描述问题背景]
+
+**选项A**：[方案描述]
+- 优点：...
+- 缺点：...
+
+**选项B**：[方案描述]
+- 优点：...
+- 缺点：...
+
+**我的推荐**：选项X
+**理由**：...
+
+**用户确认**：[待确认/已确认选项X]
+```
+
+## 🏥 核心术语规范（严格执行）
+
+### Consultation = 诊断（仅指医案的一部分）
+
+**定义**：
+- Consultation **只表示**医案（MedicalCase）中的"诊断"部分
+- 包含：四诊（望闻问切）、主诉、现病史、诊断结论
+- 对应实体：`ConsultationDto`、`ConsultationPanel`
+
+**❌ 错误用法（严格禁止）**：
+- ❌ 不能用Consultation表示"看诊"（整个过程）
+- ❌ 不能用Consultation表示"看病"
+- ❌ 不能用Consultation表示"接诊"
+- ❌ 不能用Consultation表示"诊疗"
+
+**❌ 错误命名示例**：
+- ❌ ConsultationWorkspace（看诊工作台）
+- ❌ StartConsultation（开始看诊）
+- ❌ CompleteConsultation（完成看诊）
+- ❌ ConsultationFlow（看诊流程）
+
+**✅ 正确用法**：
+- ✅ 看诊/看病 → **MedicalCase**（医案）
+- ✅ 看诊流程 → **MedicalCase Workflow**
+- ✅ 完成看诊 → **Complete MedicalCase**
+- ✅ 开始看诊 → **Start/Create MedicalCase**
+- ✅ 看诊工作台 → **MedicalCaseWorkspaceView**
+
+**✅ 正确命名示例**：
+- ✅ `MedicalCaseWorkspaceView`（医案工作台）
+- ✅ `ConsultationPanel`（诊断区域组件）
+- ✅ `ValidateConsultation()`（验证诊断数据）
+- ✅ `CompleteMedicalCaseAsync()`（完成看诊）
+
+### 医案结构
+```
+MedicalCase（医案 = 完整的一次看诊）
+├─ Consultation（诊断部分）
+│   ├─ 主诉
+│   ├─ 现病史
+│   ├─ 四诊（望闻问切）
+│   └─ 诊断结论
+└─ Prescription（处方部分）
+    └─ 处方药材列表
+```
+
+**详细规范**: 检索Graphiti记忆 `"LYBTZYZS-术语规范-Consultation严格定义"`
 
 ## 📦 项目配置
 

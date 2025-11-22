@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Net.Http;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
@@ -75,6 +76,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 全部患者列表中选中的患者
         /// Epic #1583: 选中后自动更新CurrentPatient
+        /// Epic #2210 Issue #2216: FR-001 双列表互斥选择 - 清除SelectedPendingPatient
         /// </summary>
         public PatientDto? SelectedPatient
         {
@@ -85,9 +87,18 @@ namespace LYBT.Desktop.Patients.ViewModels
                 {
                     SelectPatientCommand.RaiseCanExecuteChanged();
 
-                    // Epic #1583: 全部患者列表选中 → 更新CurrentPatient
+                    // Epic #2210 Issue #2216: FR-001 双列表互斥选择
                     if (value != null)
                     {
+                        // 清除待诊队列选择（避免循环通知：使用_字段赋值）
+                        if (_selectedPendingPatient != null)
+                        {
+                            _selectedPendingPatient = null;
+                            RaisePropertyChanged(nameof(SelectedPendingPatient));
+                            Logger.LogDebug("选择来源：全部患者列表，已清除待诊队列选择");
+                        }
+
+                        // Epic #1583: 全部患者列表选中 → 更新CurrentPatient
                         CurrentPatient = value;
                     }
                 }
@@ -183,6 +194,16 @@ namespace LYBT.Desktop.Patients.ViewModels
                     // 待看诊队列选中患者 → 更新CurrentPatient
                     if (value != null)
                     {
+                        // Epic #2210 Issue #2216: FR-001 双列表互斥选择
+                        // 清除全部患者列表选择（避免循环通知：使用_字段赋值）
+                        if (_selectedPatient != null)
+                        {
+                            _selectedPatient = null;
+                            RaisePropertyChanged(nameof(SelectedPatient));
+                            SelectPatientCommand.RaiseCanExecuteChanged();
+                            Logger.LogDebug("选择来源：待诊队列，已清除全部患者选择");
+                        }
+
                         Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
 
                         // Issue #1790: 异步加载患者详情并设置CurrentPatient（通过事件处理）
@@ -208,6 +229,32 @@ namespace LYBT.Desktop.Patients.ViewModels
                 }
             }
         }
+
+        #region Epic #2210 Issue #2217: StatusBar异常消息显示
+
+        private string _statusBarMessage = string.Empty;
+        /// <summary>
+        /// StatusBar消息内容
+        /// Epic #2210 Issue #2217: FR-002 异常处理优化
+        /// </summary>
+        public string StatusBarMessage
+        {
+            get => _statusBarMessage;
+            set => SetProperty(ref _statusBarMessage, value);
+        }
+
+        private bool _statusBarIsError;
+        /// <summary>
+        /// StatusBar是否为错误消息（控制文本颜色）
+        /// Epic #2210 Issue #2217: FR-002 异常处理优化
+        /// </summary>
+        public bool StatusBarIsError
+        {
+            get => _statusBarIsError;
+            set => SetProperty(ref _statusBarIsError, value);
+        }
+
+        #endregion
 
         #endregion
 
@@ -932,6 +979,26 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
+        /// 显示StatusBar错误消息，3秒后自动清除
+        /// Epic #2210 Issue #2217: FR-002 异常处理优化
+        /// Override基类方法，改用StatusBar而非MessageBox
+        /// </summary>
+        /// <param name="message">错误消息</param>
+        protected override async Task ShowErrorMessageAsync(string message)
+        {
+            StatusBarMessage = message;
+            StatusBarIsError = true;
+
+            // 3秒后自动清除消息（避免覆盖新消息）
+            await Task.Delay(3000);
+            if (StatusBarMessage == message)
+            {
+                StatusBarMessage = string.Empty;
+                StatusBarIsError = false;
+            }
+        }
+
+        /// <summary>
         /// 为待看诊队列选中的患者加载完整信息
         /// Issue #1790: 委托给PendingQueueManager处理（通过事件设置CurrentPatient）
         /// </summary>
@@ -979,14 +1046,31 @@ namespace LYBT.Desktop.Patients.ViewModels
                     // 无搜索关键字，加载第1页数据
                     _ = LoadInitialPatientsAsync();
                 }
-
-                // Epic #1583 - Phase 5: 加载待看诊队列
-                _ = LoadPendingCasesAsync();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "导航到患者选择视图时发生异常");
             }
+
+            // Epic #2210 Issue #2217: FR-002 异常处理优化
+            // 加载待看诊队列（异步独立处理，异常不阻断全部患者列表）
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await LoadPendingCasesAsync();
+                }
+                catch (HttpRequestException ex)
+                {
+                    Logger.LogError(ex, "加载待看诊队列失败：网络请求异常");
+                    await ShowErrorMessageAsync("加载待看诊队列失败：网络连接异常，请检查网络连接");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "加载待看诊队列失败：未知异常");
+                    await ShowErrorMessageAsync("加载待看诊队列失败，请稍后重试");
+                }
+            });
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)
