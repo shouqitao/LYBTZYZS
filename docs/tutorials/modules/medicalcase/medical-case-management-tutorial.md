@@ -1047,7 +1047,7 @@ public class MedicalCaseAnalyticsService
 
 恭喜完成病历管理教程！建议继续学习：
 
-- **深入知识**: [病历管理架构设计](../../../explanation/architecture/medical-case-system/medical-case-architecture.md)
+- **深入知识**: [病历管理架构设计](../../../explanation/architecture/medicalcase-system/overview.md)
 - **问题解决**: [病历管理问题解决指南](../../../how-to-guides/modules/medicalcase/medical-case-issues.md)
 - **技术参考**: [病历管理API文档](../../../reference/api/medical-case.md)
 - **相关模块**: [处方管理](../prescriptions/prescription-management-tutorial.md)、[中医诊断](../consultation/consultation-tutorial.md)
