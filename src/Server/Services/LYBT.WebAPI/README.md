@@ -6,7 +6,7 @@
 - **类型**:Web服务层(ASP.NET Core Web API)
 - **职责**:作为系统的统一API网关，集成8个业务模块（Auth、Users、Patients、MedicalCase、Consultation、Prescriptions、Herbs、Formula），通过RESTful API对外提供完整的中医诊所管理功能。基于ASP.NET Core 8.0构建，采用分层架构设计，支持JWT认证、Swagger文档、全局异常处理、结构化日志、健康检查等企业级特性。专为小型中医诊所(<20人)优化，提供高性能、可靠、安全的后端服务。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.WebAPI/

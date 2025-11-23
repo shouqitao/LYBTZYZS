@@ -593,27 +593,33 @@ namespace LYBT.Desktop.MedicalCase.Components
         /// 获取患者未完成的病案
         /// Epic #1773: 为PatientSelectionViewModel提供跨模块访问
         /// </summary>
-        public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             try
             {
-                _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}", patientId);
-                var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId);
+                _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}, DoctorId={DoctorId}", 
+                    patientId, doctorId);
+                
+                // Epic #2210 Task 3.1.4: 传递doctorId到Repository
+                var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
                 if (unfinishedCase != null)
                 {
-                    _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}", unfinishedCase.Id);
+                    _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}, DoctorId={DoctorId}", 
+                        unfinishedCase.Id, unfinishedCase.DoctorId);
                 }
                 else
                 {
-                    _logger.LogInformation("患者无未完成病案: PatientId={PatientId}", patientId);
+                    _logger.LogInformation("患者无未完成病案: PatientId={PatientId}, DoctorId={DoctorId}", 
+                        patientId, doctorId);
                 }
 
                 return unfinishedCase;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者未完成病案失败: PatientId={PatientId}", patientId);
+                _logger.LogError(ex, "获取患者未完成病案失败: PatientId={PatientId}, DoctorId={DoctorId}", 
+                    patientId, doctorId);
                 throw;
             }
         }

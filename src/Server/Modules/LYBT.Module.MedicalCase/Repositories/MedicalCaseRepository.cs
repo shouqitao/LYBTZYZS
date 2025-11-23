@@ -221,10 +221,13 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// </summary>
-        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync()
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
+            // Epic #2210 Phase 3: 添加doctorId过滤实现多医生数据隔离
             var result = await _dbSet
-                .Where(m => !m.IsDeleted && m.Status == MedicalCaseStatus.Active)
+                .Where(m => !m.IsDeleted 
+                    && m.Status == MedicalCaseStatus.Active
+                    && m.DoctorId == doctorId) // Epic #2210: 按医生过滤
                 .Join(
                     _context.Set<PatientEntity>(),
                     m => m.PatientId,
@@ -242,7 +245,8 @@ namespace LYBT.Module.MedicalCase.Repositories
                 })
                 .ToListAsync();
 
-            _logger?.LogInformation("获取待看诊列表，共 {Count} 条记录", result.Count);
+            _logger?.LogInformation("获取待看诊列表（DoctorId: {DoctorId}），共 {Count} 条记录", 
+                doctorId, result.Count);
             return result ?? new List<PendingMedicalCaseDto>();
         }
 
@@ -312,26 +316,51 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.1: 添加doctorId筛选
         /// </summary>
         /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
-        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
-            _logger?.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+            _logger?.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                patientId, doctorId);
 
-            var result = await GetDetailQuery()
-                .Where(m => m.PatientId == patientId && m.Status != MedicalCaseStatus.Completed)
+            // Epic #2210 Phase 3 P0 Bug修复：详细诊断日志
+            _logger?.LogInformation("[诊断] 开始构建查询，PatientId: {PatientId}, DoctorId: {DoctorId}, DoctorId.IsEmpty: {IsEmpty}",
+                patientId, doctorId, doctorId == Guid.Empty);
+
+            var query = GetDetailQuery()
+                .Where(m => m.PatientId == patientId && m.Status != MedicalCaseStatus.Completed);
+
+            // Epic #2210 Task 3.1.1: Q4医生筛选链 - 仅当doctorId有效时添加筛选条件
+            if (doctorId != Guid.Empty)
+            {
+                _logger?.LogInformation("[诊断] 添加医生ID过滤条件，DoctorId: {DoctorId}", doctorId);
+                query = query.Where(m => m.DoctorId == doctorId);
+            }
+            else
+            {
+                _logger?.LogWarning("[诊断] doctorId为空，未添加医生ID过滤条件");
+            }
+
+            // Epic #2210 Phase 3 P0 Bug修复：记录生成的SQL
+            var sql = query.ToQueryString();
+            _logger?.LogInformation("[诊断] 生成的SQL查询：{Sql}", sql);
+
+            var result = await query
                 .OrderByDescending(m => m.CreatedAt)
                 .FirstOrDefaultAsync();
 
             if (result != null)
             {
-                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                    result.Id, result.Status);
+                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
+                    result.Id, result.Status, result.DoctorId);
             }
             else
             {
-                _logger?.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}", patientId);
+                _logger?.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    patientId, doctorId);
             }
 
             return result;

@@ -35,8 +35,13 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// </summary>
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
+        /// </summary>
         [Refit.Get("/api/v1/medicalcases/pending")]
-        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync();
+        Task<ApiResponse<List<PendingMedicalCaseDto>>> GetPendingCasesAsync([Refit.Query] Guid doctorId);
 
         /// <summary>
         /// 查询病案列表（支持多条件组合查询）
@@ -175,9 +180,12 @@ namespace LYBT.Desktop.Contracts.Api
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.4: 添加doctorId参数
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
-        Task<ApiResponse<MedicalCaseDto>> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+        Task<ApiResponse<MedicalCaseDto>> GetUnfinishedCaseByPatientIdAsync(
+            Guid patientId,
+            [Refit.Query] Guid doctorId);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）

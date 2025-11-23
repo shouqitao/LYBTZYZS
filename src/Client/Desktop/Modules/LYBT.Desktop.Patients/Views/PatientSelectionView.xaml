@@ -3,11 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
-        <!-- Converter：Null判断转Visibility -->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <!-- Converters - Epic #2210 Task 3.2.2 & 3.2.3 -->
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
 
         <!-- 按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
@@ -154,12 +157,28 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- 标题 -->
-                        <TextBlock Grid.Row="0" Text="待看诊队列" FontWeight="Bold" FontSize="14"
-                                  Foreground="#2C3E50" Margin="0,0,0,10"/>
+                        <!-- 标题和刷新按钮 -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="待看诊队列" FontWeight="Bold" FontSize="14"
+                                      Foreground="#2C3E50" VerticalAlignment="Center"/>
+
+                            <!-- Epic #2210 Task 3.2.2: FR-006 手动刷新队列 -->
+                            <Button Grid.Column="1" Content="🔄" ToolTip="刷新待诊队列"
+                                   Command="{Binding RefreshPendingQueueCommand}"
+                                   IsEnabled="{Binding IsRefreshing, Converter={StaticResource InverseBooleanConverter}}"
+                                   Width="30" Height="30" FontSize="16"
+                                   Background="Transparent" BorderThickness="0"
+                                   Cursor="Hand"/>
+                        </Grid>
 
                         <!-- 待看诊列表 -->
                         <DataGrid Grid.Row="1"
+                                 Visibility="{Binding HasNoPendingPatients, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                  ItemsSource="{Binding PendingQueue}"
                                  SelectedItem="{Binding SelectedPendingPatient}"
                                  AutoGenerateColumns="False"
@@ -212,6 +231,24 @@
                                 </Style>
                             </DataGrid.RowStyle>
                         </DataGrid>
+
+                        <!-- Epic #2210 Task 3.2.3: FR-007 空状态UI -->
+                        <StackPanel Grid.Row="1"
+                                   Visibility="{Binding HasNoPendingPatients, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center">
+                            <!-- 图标 -->
+                            <TextBlock Text="📋" FontSize="48" 
+                                      HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                            
+                            <!-- 主标题 -->
+                            <TextBlock Text="暂无待诊患者" FontSize="16" FontWeight="Bold"
+                                      Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            
+                            <!-- 副标题 -->
+                            <TextBlock Text="从左侧选择患者或等待新的挂号" FontSize="12"
+                                      Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
             </Grid>

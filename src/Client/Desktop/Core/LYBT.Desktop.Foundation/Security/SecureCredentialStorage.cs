@@ -100,7 +100,7 @@ namespace LYBT.Desktop.Foundation.Security
         {
             try
             {
-                _logger.LogInformation("📂 [LoadCredentials] 开始加载凭据，文件路径: {Path}", _storageFilePath);
+                _logger.LogInformation(" [LoadCredentials] 开始加载凭据，文件路径: {Path}", _storageFilePath);
 
                 // 1. 优先返回内存缓存
                 if (_cachedCredentials != null && _cachedCredentials.RememberPassword)

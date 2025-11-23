@@ -8,6 +8,7 @@ using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替�
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
 using LYBT.Desktop.Patients.Services; // Issue #1790: 引入Manager服务
+using LYBT.Desktop.Patients.Events; // Issue #2221: 引入PatientUpdatedEvent
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -42,6 +43,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IMedicalCaseApi _medicalCaseApi;
         private System.Threading.Timer? _searchDebounceTimer;
+
+        // Issue #2221: IDisposable相关字段
+        private bool _disposed = false;
+        private Prism.Events.SubscriptionToken? _patientUpdatedToken;
 
         // Issue #1790: 组件化服务 - 搜索、未完成医案、待诊队列逻辑
         private readonly PatientSearchManager _searchManager;
@@ -165,7 +170,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             set => SetProperty(ref _totalCount, value);
         }
 
-        private const int PageSize = 20; // 每页20条记录（Epic #1583）
+        private const int PageSize = 50; // 每页50条记录（Epic #2210 Task 3.2.1）
 
         #endregion
 
@@ -176,6 +181,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// Issue #1790: 委托给PendingQueueManager
         /// </summary>
         public ObservableCollection<PendingMedicalCaseDto> PendingQueue => _pendingQueueManager.PendingQueue;
+
+        /// <summary>
+        /// 是否无待诊患者（用于空状态UI显示）
+        /// Epic #2210 Task 3.2.3: FR-007 空状态UI
+        /// </summary>
+        public bool HasNoPendingPatients => PendingQueue?.Count == 0;
 
         // Issue #1790: _pendingCaseCache已移至UnfinishedCaseHandler
 
@@ -254,6 +265,17 @@ namespace LYBT.Desktop.Patients.ViewModels
             set => SetProperty(ref _statusBarIsError, value);
         }
 
+        private bool _isRefreshing;
+        /// <summary>
+        /// 是否正在刷新待诊队列
+        /// Epic #2210 Task 3.2.2: FR-006 手动刷新队列
+        /// </summary>
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            set => SetProperty(ref _isRefreshing, value);
+        }
+
         #endregion
 
         #endregion
@@ -270,6 +292,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         // Epic #1583: 新增命令
         public DelegateCommand BackToHomeCommand { get; }
         public DelegateCommand StartConsultationCommand { get; }
+        // Epic #2210 Task 3.2.2: FR-006 手动刷新队列
+        public DelegateCommand RefreshPendingQueueCommand { get; }
 
         #endregion
 
@@ -313,12 +337,21 @@ namespace LYBT.Desktop.Patients.ViewModels
             BackToHomeCommand = new DelegateCommand(ExecuteBackToHome);
             StartConsultationCommand = new DelegateCommand(ExecuteStartConsultation, CanExecuteStartConsultation);
 
+            // Epic #2210 Task 3.2.2: FR-006 手动刷新队列
+            RefreshPendingQueueCommand = new DelegateCommand(
+                async () => await RefreshPendingQueueAsync(),
+                () => !IsRefreshing)
+                .ObservesProperty(() => IsRefreshing);
+
             // Issue #1790: 订阅管理器事件
             _searchManager.SearchCompleted += OnSearchCompleted;
             _unfinishedCaseHandler.CaseCheckCompleted += OnCaseCheckCompleted;
             _unfinishedCaseHandler.CaseClosed += OnCaseClosed;
             _pendingQueueManager.PendingQueueLoaded += OnPendingQueueLoaded;
             _pendingQueueManager.PatientLoaded += OnPatientLoaded;
+
+            // Issue #2221: 订阅患者更新事件
+            _patientUpdatedToken = EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(OnPatientUpdated);
 
             Logger.LogInformation("PatientSelectionViewModel已初始化");
         }
@@ -703,8 +736,11 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <returns>未完成的医案，如果没有则返回null</returns>
         private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
         {
+            // Epic #2210 Task 3.1.4: 从SessionManager提取当前医生ID
+            var doctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
+            
             // Issue #1790: 委托给UnfinishedCaseHandler处理
-            return await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId);
+            return await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId, doctorId);
         }
 
         /// <summary>
@@ -942,6 +978,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private async Task LoadInitialPatientsAsync()
         {
+            // Epic #2210 Task 3.2.1: 添加性能监控
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            
             try
             {
                 SetIsBusy(true, "正在加载患者列表...");
@@ -956,10 +995,24 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 PreviousPageCommand.RaiseCanExecuteChanged();
                 NextPageCommand.RaiseCanExecuteChanged();
+                
+                // Epic #2210 Task 3.2.1: 性能监控
+                stopwatch.Stop();
+                var elapsedMs = stopwatch.ElapsedMilliseconds;
+                
+                Logger.LogInformation("患者列表加载完成: 数量={Count}, 耗时={ElapsedMs}ms", 
+                    TotalCount, elapsedMs);
+                
+                // Epic #2210 Task 3.2.1: 性能警告阈值 500ms
+                if (elapsedMs > 500)
+                {
+                    Logger.LogWarning("患者列表加载耗时过长: {ElapsedMs}ms > 500ms阈值", elapsedMs);
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "加载患者列表失败");
+                stopwatch.Stop();
+                Logger.LogError(ex, "加载患者列表失败，耗时={ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
                 await ShowErrorMessageAsync($"加载患者列表失败：{ex.Message}");
             }
             finally
@@ -979,6 +1032,38 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
+        /// 手动刷新待诊队列
+        /// Epic #2210 Task 3.2.2: FR-006 手动刷新队列
+        /// </summary>
+        private async Task RefreshPendingQueueAsync()
+        {
+            try
+            {
+                IsRefreshing = true;
+                Logger.LogInformation("用户手动刷新待诊队列");
+
+                // 调用LoadPendingCasesAsync刷新队列
+                await LoadPendingCasesAsync();
+
+                await ShowSuccessMessageAsync("待诊队列已刷新");
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.LogError(ex, "刷新待诊队列失败: 网络错误");
+                await ShowErrorMessageAsync($"刷新待诊队列失败：网络错误 - {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "刷新待诊队列失败");
+                await ShowErrorMessageAsync($"刷新待诊队列失败：{ex.Message}");
+            }
+            finally
+            {
+                IsRefreshing = false;
+            }
+        }
+
+        /// <summary>
         /// 显示StatusBar错误消息，3秒后自动清除
         /// Epic #2210 Issue #2217: FR-002 异常处理优化
         /// Override基类方法，改用StatusBar而非MessageBox
@@ -995,6 +1080,80 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 StatusBarMessage = string.Empty;
                 StatusBarIsError = false;
+            }
+        }
+
+        /// <summary>
+        /// 显示StatusBar成功消息，3秒后自动清除
+        /// Epic #2210 Issue #2222: FR-004 操作成功反馈
+        /// Override基类方法，改用StatusBar而非MessageBox
+        /// </summary>
+        /// <param name="message">成功消息</param>
+        protected override async Task ShowSuccessMessageAsync(string message)
+        {
+            StatusBarMessage = message;
+            StatusBarIsError = false;
+
+            // 3秒后自动清除消息（避免覆盖新消息）
+            await Task.Delay(3000);
+            if (StatusBarMessage == message)
+            {
+                StatusBarMessage = string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 创建新医案并导航到医案详情
+        /// Epic #2210 Issue #2222: FR-004 操作成功反馈
+        /// </summary>
+        private async Task CreateNewMedicalCaseAndNavigateAsync()
+        {
+            if (CurrentPatient == null)
+            {
+                Logger.LogWarning("当前未选择患者，无法创建医案");
+                return;
+            }
+
+            try
+            {
+                Logger.LogInformation("开始创建新医案: PatientId={PatientId}, PatientName={PatientName}",
+                    CurrentPatient.Id, CurrentPatient.Name);
+
+                // 创建医案输入DTO
+                var dto = new MedicalCaseInputDto
+                {
+                    PatientId = CurrentPatient.Id,
+                    DoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty,
+                    VisitDate = DateTime.Now
+                };
+
+                // 调用DataManager创建医案
+                var medicalCase = await _medicalCaseDataManager.CreateAsync(dto);
+
+                if (medicalCase == null)
+                {
+                    await ShowErrorMessageAsync($"创建医案失败");
+                    return;
+                }
+
+                // Epic #2210 Issue #2222: FR-004 显示成功反馈
+                await ShowSuccessMessageAsync($"已为 {CurrentPatient.Name} 创建新医案");
+
+                Logger.LogInformation("医案创建成功: PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                    CurrentPatient.Id, medicalCase.Id);
+
+                // 导航到医案详情
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseId", medicalCase.Id },
+                    { "MedicalCaseFlowId", MedicalCaseFlowId }
+                };
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "创建医案失败: PatientId={PatientId}", CurrentPatient.Id);
+                await ShowErrorMessageAsync($"创建医案失败: {ex.Message}");
             }
         }
 
@@ -1111,6 +1270,8 @@ namespace LYBT.Desktop.Patients.ViewModels
         private void OnPendingQueueLoaded(object? sender, PendingQueueLoadedEventArgs e)
         {
             Logger.LogInformation("待诊队列加载完成事件：共{Count}条记录", e.QueueCount);
+            // Epic #2210 Task 3.2.3: FR-007 空状态UI - 通知HasNoPendingPatients属性变化
+            RaisePropertyChanged(nameof(HasNoPendingPatients));
         }
 
         private void OnPatientLoaded(object? sender, PatientLoadedEventArgs e)
@@ -1119,6 +1280,85 @@ namespace LYBT.Desktop.Patients.ViewModels
             CurrentPatient = e.Patient;
             Logger.LogInformation("患者加载完成事件：{PatientName}，来源={Source}",
                 e.Patient.Name, e.Source);
+        }
+
+        /// <summary>
+        /// Issue #2221: 患者更新事件处理 - 刷新当前患者数据
+        /// </summary>
+        private async void OnPatientUpdated(PatientDto patient)
+        {
+            Logger.LogInformation("收到患者更新事件：{PatientId} - {PatientName}", patient.Id, patient.Name);
+
+            // 如果当前选中的患者被更新，刷新其数据
+            if (CurrentPatient?.Id == patient.Id)
+            {
+                CurrentPatient = patient;
+                Logger.LogDebug("已更新CurrentPatient数据");
+            }
+
+            // 如果更新的患者在全部患者列表中，刷新列表
+            if (Patients.Any(p => p.Id == patient.Id))
+            {
+                var index = Patients.ToList().FindIndex(p => p.Id == patient.Id);
+                if (index >= 0)
+                {
+                    Patients[index] = patient;
+                    Logger.LogDebug("已更新Patients列表中的患者数据，索引={Index}", index);
+                }
+            }
+
+            await Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region Issue #2221: IDisposable实现
+
+        /// <summary>
+        /// 释放资源 - 隐藏基类Dispose方法（基类Dispose不是virtual）
+        /// </summary>
+        public new void Dispose()
+        {
+            Dispose(true);
+            base.Dispose(); // 调用基类Dispose
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 释放托管和非托管资源 - 重写基类方法
+        /// </summary>
+        /// <param name="disposing">是否释放托管资源</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // 释放托管资源
+
+                // 1. 取消管理器事件订阅
+                _searchManager.SearchCompleted -= OnSearchCompleted;
+                _unfinishedCaseHandler.CaseCheckCompleted -= OnCaseCheckCompleted;
+                _unfinishedCaseHandler.CaseClosed -= OnCaseClosed;
+                _pendingQueueManager.PendingQueueLoaded -= OnPendingQueueLoaded;
+                _pendingQueueManager.PatientLoaded -= OnPatientLoaded;
+
+                // 2. 取消PatientUpdatedEvent订阅
+                if (_patientUpdatedToken != null)
+                {
+                    EventAggregator.GetEvent<PatientUpdatedEvent>().Unsubscribe(_patientUpdatedToken);
+                    _patientUpdatedToken = null;
+                }
+
+                // 3. 释放Timer
+                _searchDebounceTimer?.Dispose();
+                _searchDebounceTimer = null;
+
+                Logger.LogInformation("PatientSelectionViewModel disposed");
+            }
+
+            _disposed = true;
         }
 
         #endregion

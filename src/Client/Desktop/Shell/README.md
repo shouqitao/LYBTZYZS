@@ -6,7 +6,7 @@
 - **类型**: 应用程序入口（Shell）
 - **职责**: 作为整个WPF客户端的统一入口点和容器编排中心，基于Prism.DryIoc 8.1.97构建的模块化架构。负责应用启动、模块自动发现与加载、依赖注入（DI）容器管理、主界面框架、导航系统、对话框服务和全局配置管理。集成8个业务模块（Auth/Users/Patients/MedicalCase/Consultation/Prescriptions/Herbs/Formula）、7个工作台（Core/Admin/Consultation等）和完整的基础服务体系，提供企业级桌面应用用户体验。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.Desktop.Shell/

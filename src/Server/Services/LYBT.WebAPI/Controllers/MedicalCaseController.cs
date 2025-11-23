@@ -4,12 +4,13 @@ using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescr
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using MedicalCaseDto = LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto;
+using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
@@ -44,14 +45,15 @@ namespace LYBT.WebAPI.Controllers
         /// 创建新病案
         /// Epic #1612 - AR-001: 通过聚合根创建
         /// Issue #2212: 提取当前医生ID并传递给Service层
+        /// Epic #2210 Phase 3 P0 Bug修复: Entity→DTO映射避免枚举转换错误
         /// </summary>
         /// <param name="request">创建请求</param>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 400)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 422)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> CreateMedicalCase(
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 422)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> CreateMedicalCase(
             [FromBody] CreateMedicalCaseRequest request)
         {
             try
@@ -59,30 +61,47 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2212: 获取当前医生ID
                 var (doctorId, _, _) = GetOperator();
 
-                var result = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
+                var entity = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
 
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("患者不存在"));
+                if (entity == null)
+                    return NotFound(ApiResponse<MedicalCaseDto>.CreateFail("患者不存在"));
 
                 _logger.LogInformation("病案创建成功，ID: {Id}, Doctor: {DoctorName}, Patient: {PatientName}",
-                    result.Id, result.DoctorName, result.PatientName);
-                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "病案创建成功"));
+                    entity.Id, entity.DoctorName, entity.PatientName);
+
+                // Epic #2210 Phase 3 P0 Bug修复: Entity → MedicalCaseDto 映射
+                var dto = new MedicalCaseDto
+                {
+                    Id = entity.Id,
+                    PatientId = entity.PatientId,
+                    PatientName = entity.PatientName,
+                    DoctorId = entity.DoctorId,
+                    DoctorName = entity.DoctorName,
+                    ConsultationDate = entity.ConsultationDate,
+                    CaseStatus = entity.Status,
+                    Remark = entity.Remark,
+                    Diagnosis = entity.Consultation?.TCMDiagnosis,
+                    Status = (CommonStatus)(int)entity.Status, // MedicalCaseStatus → CommonStatus
+                    CreatedAt = entity.CreatedAt
+                };
+
+                return Ok(ApiResponse<MedicalCaseDto>.CreateSuccess(dto, "病案创建成功"));
             }
             catch (ArgumentException ex)
             {
                 // DoctorId参数验证失败
                 _logger.LogWarning(ex, "创建病案失败：参数验证失败");
-                return BadRequest(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+                return BadRequest(ApiResponse<MedicalCaseDto>.CreateFail(ex.Message));
             }
             catch (InvalidOperationException ex)
             {
                 // BR-001: 单个患者只能有一个Active病案
                 _logger.LogWarning(ex, "创建病案失败：业务规则验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCaseEntity>.CreateFail(ex.Message));
+                return UnprocessableEntity(ApiResponse<MedicalCaseDto>.CreateFail(ex.Message));
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseEntity>(ex, "创建病案", request);
+                return HandleException<MedicalCaseDto>(ex, "创建病案", request);
             }
         }
 
@@ -402,6 +421,126 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取完整的医疗案例（包含所有关联数据）
+        /// Epic #2210 Phase 3 P0 Bug修复: 补充缺失的API端点
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <returns>完整的病案详情（包含Consultation和Prescription）</returns>
+        /// <summary>
+        /// 获取完整的医疗案例（包含所有关联数据）
+        /// Epic #2210 Phase 3 P0 Bug修复: 补充缺失的API端点
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <returns>完整的病案详情（包含Consultation和Prescription）</returns>
+        [HttpGet("{id}/with-details")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetMedicalCaseByIdWithDetails(Guid id)
+        {
+            try
+            {
+                var entity = await _medicalCaseService.GetByIdAsync(id);
+
+                if (entity == null)
+                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+                // Entity → MedicalCaseDetailDto 映射
+                var detailDto = new MedicalCaseDetailDto
+                {
+                    // 基础字段（继承自MedicalCaseDto）
+                    Id = entity.Id,
+                    PatientId = entity.PatientId,
+                    PatientName = entity.PatientName,
+                    DoctorId = entity.DoctorId,
+                    DoctorName = entity.DoctorName,
+                    ConsultationDate = entity.ConsultationDate,
+                    CaseStatus = entity.Status,
+                    Remark = entity.Remark,
+                    Diagnosis = entity.Consultation?.TCMDiagnosis,
+                    Status = (CommonStatus)(int)entity.Status,
+                    CreatedAt = entity.CreatedAt,
+
+                    // 详细字段（MedicalCaseDetailDto扩展）
+                    ChiefComplaint = entity.Consultation?.ChiefComplaint,
+                    PresentIllness = entity.Consultation?.PresentIllness,
+                    DiagnosisResult = entity.Consultation?.TCMDiagnosis,
+                    TreatmentPlan = entity.Consultation?.TreatmentPrinciple,
+
+                    // 关联数据
+                    Consultation = entity.Consultation != null ? new ConsultationDto
+                    {
+                        Id = entity.Consultation.Id,
+                        MedicalCaseId = entity.Id, // 使用医案ID（共享主键）
+                        PatientId = entity.PatientId,
+                        UserId = entity.DoctorId,
+                        PatientName = entity.PatientName,
+                        DoctorName = entity.DoctorName,
+                        ChiefComplaint = entity.Consultation.ChiefComplaint,
+                        PresentIllness = entity.Consultation.PresentIllness,
+                        Inspection = entity.Consultation.Inspection,
+                        AuscultationOlfaction = entity.Consultation.AuscultationOlfaction,
+                        Inquiry = entity.Consultation.Inquiry,
+                        Palpation = entity.Consultation.Palpation,
+                        TCMDiagnosis = entity.Consultation.TCMDiagnosis,
+                        TreatmentPrinciple = entity.Consultation.TreatmentPrinciple,
+                        MedicalAdvice = entity.Consultation.MedicalAdvice,
+                        Step1CompletedAt = entity.Consultation.Step1CompletedAt,
+                        Step2CompletedAt = entity.Consultation.Step2CompletedAt,
+                        Remark = entity.Consultation.Remark,
+                        Status = (CommonStatus)(int)entity.Consultation.Status,
+                        CreatedAt = entity.Consultation.CreatedAt,
+                        UpdatedAt = entity.Consultation.UpdatedAt
+                    } : null,
+
+                    Prescription = entity.Prescription != null ? new PrescriptionDto
+                    {
+                        Id = entity.Prescription.Id,
+                        MedicalCaseId = entity.Id,
+                        PatientId = entity.PatientId,
+                        UserId = entity.DoctorId,
+                        PrescriptionNumber = entity.Prescription.PrescriptionNumber,
+                        Indication = entity.Prescription.Indication,
+                        DosageCount = entity.Prescription.DosageCount,
+                        Usage = null, // 实体没有Usage字段，使用null
+                        Discount = entity.Prescription.Discount,
+                        Advice = entity.Prescription.Advice,
+                        FormulaSource = entity.Prescription.FormulaSource,
+                        ReferencedFormulas = entity.Prescription.ReferencedFormulas,
+                        Remark = entity.Prescription.Remark,
+                        Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
+                        {
+                            Id = item.Id,
+                            HerbId = item.HerbId,
+                            HerbName = item.HerbName,
+                            Quantity = item.Quantity,
+                            Unit = item.Unit,
+                            UnitPrice = item.UnitPrice,
+                            Dosage = item.Quantity, // Entity用Quantity，DTO用Dosage
+                            TotalPrice = item.Amount, // Entity用Amount（计算属性），DTO用TotalPrice
+                            TotalWeight = item.Quantity, // 总重量=用量
+                            Subtotal = item.Amount, // Entity用Amount，DTO用Subtotal
+                            Usage = item.Usage,
+                            Remark = item.Remark
+                        }).ToList() ?? new List<PrescriptionItemDto>(),
+                        // 计算属性（Entity没有这些字段，需要在映射时计算）
+                        SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
+                        TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣
+                        TotalWeight = entity.Prescription.Items?.Sum(x => x.Quantity) ?? 0, // 总重量=所有药材用量之和
+                        Status = (CommonStatus)(int)entity.Prescription.Status,
+                        CreatedAt = entity.Prescription.CreatedAt,
+                        UpdatedAt = entity.Prescription.UpdatedAt
+                    } : null
+                };
+
+                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseDetailDto>(ex, "获取病案详情（含关联数据）", new { id });
+            }
+        }
+
+        /// <summary>
         /// 查询病案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
         /// </summary>
@@ -503,26 +642,139 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.3: 添加doctorId筛选，支持可选参数
         /// </summary>
-        [HttpGet("patient/{patientId}/unfinished")]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCaseEntity>), 404)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseEntity>>> GetUnfinishedCaseByPatientId(
-            Guid patientId)
+        /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">可选医生ID（未传递时使用当前登录医生ID）</param>
+
+        /// <summary>
+        /// 获取待看诊队列（Status = Active的医案患者列表）
+        /// Epic #2210 Phase 3: P0 Bug修复 - 添加缺失的API端点
+        /// 业务规则：返回当前医生的所有Active状态医案的患者信息
+        /// </summary>
+        /// <param name="doctorId">医生ID（可选，默认使用当前登录医生ID）</param>
+        [HttpGet("pending")]
+        [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
+        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases(
+            [FromQuery] Guid? doctorId = null)
         {
             try
             {
-                var result = await _medicalCaseService.GetUnfinishedCaseByPatientIdAsync(patientId);
+                // Epic #2210: 提取当前医生ID
+                Guid currentDoctorId;
+                try
+                {
+                    var (operatorId, operatorName, operatorRole) = GetOperator();
 
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCaseEntity>.CreateFail("未找到该患者的未完成医案"));
+                    // 如果未传递doctorId，使用当前登录医生ID
+                    if (doctorId == null || doctorId == Guid.Empty)
+                    {
+                        // 验证当前用户是医生角色
+                        if (operatorRole != "Doctor")
+                        {
+                            _logger.LogWarning("非医生用户尝试查询待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                                operatorId, operatorRole);
+                            return Forbid();
+                        }
+                        currentDoctorId = operatorId;
+                    }
+                    else
+                    {
+                        // 传递了doctorId（管理员扩展），直接使用
+                        currentDoctorId = doctorId.Value;
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Unauthorized(ApiResponse<List<PendingMedicalCaseDto>>.CreateFail("未登录或用户信息无效"));
+                }
 
-                return Ok(ApiResponse<MedicalCaseEntity>.CreateSuccess(result, "查询成功"));
+                var result = await _medicalCaseService.GetPendingCasesAsync(currentDoctorId);
+
+                _logger.LogInformation("待诊队列查询成功，DoctorId: {DoctorId}, Count: {Count}",
+                    currentDoctorId, result.Count);
+
+                return Ok(ApiResponse<List<PendingMedicalCaseDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseEntity>(ex, "获取患者未完成医案",
-                    new { patientId });
+                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待诊队列", new { doctorId });
+            }
+        }
+
+        [HttpGet("patient/{patientId}/unfinished")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 401)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 403)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> GetUnfinishedCaseByPatientId(
+            Guid patientId,
+            [FromQuery] Guid? doctorId = null)
+        {
+            try
+            {
+                // Epic #2210 Task 3.1.3: Q4医生筛选链 - 提取当前医生ID
+                Guid currentDoctorId;
+                try
+                {
+                    var (operatorId, operatorName, operatorRole) = GetOperator();
+
+                    // 如果未传递doctorId，使用当前登录医生ID
+                    if (doctorId == null || doctorId == Guid.Empty)
+                    {
+                        // 验证当前用户是医生角色
+                        if (operatorRole != "Doctor")
+                        {
+                            _logger.LogWarning("非医生用户尝试查询未完成医案，OperatorId: {OperatorId}, Role: {Role}",
+                                operatorId, operatorRole);
+                            return Forbid();
+                        }
+                        currentDoctorId = operatorId;
+                    }
+                    else
+                    {
+                        // 传递了doctorId（管理员扩展），直接使用
+                        currentDoctorId = doctorId.Value;
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Unauthorized(ApiResponse<MedicalCaseDto>.CreateFail("未登录或用户信息无效"));
+                }
+
+                var entityResult = await _medicalCaseService.GetUnfinishedCaseByPatientIdAsync(patientId, currentDoctorId);
+
+                if (entityResult == null)
+                {
+                    _logger.LogDebug("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                        patientId, currentDoctorId);
+                    return NotFound(ApiResponse<MedicalCaseDto>.CreateFail("未找到该患者的未完成医案"));
+                }
+
+                // Epic #2210 Phase 3 P0 Bug修复: Entity → DTO映射
+                var dtoResult = new MedicalCaseDto
+                {
+                    Id = entityResult.Id,
+                    PatientId = entityResult.PatientId,
+                    PatientName = entityResult.PatientName,
+                    DoctorId = entityResult.DoctorId,
+                    DoctorName = entityResult.DoctorName,
+                    ConsultationDate = entityResult.ConsultationDate,
+                    CaseStatus = entityResult.Status,
+                    Remark = entityResult.Remark,
+                    Diagnosis = entityResult.Consultation?.TCMDiagnosis,
+                    Status = (CommonStatus)(int)entityResult.Status,
+                    CreatedAt = entityResult.CreatedAt
+                };
+
+                return Ok(ApiResponse<MedicalCaseDto>.CreateSuccess(dtoResult, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseDto>(ex, "获取患者未完成医案",
+                    new { patientId, doctorId });
             }
         }
 

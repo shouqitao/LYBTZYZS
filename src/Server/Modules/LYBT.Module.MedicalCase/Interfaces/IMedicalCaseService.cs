@@ -1,6 +1,7 @@
 ﻿using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
@@ -174,10 +175,21 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.2: 添加doctorId参数
         /// </summary>
         /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的病案实体（包含关联数据），若无则返回null</returns>
-        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+
+        /// <summary>
+        /// 获取待看诊队列（Status = Active的医案患者列表）
+        /// Epic #2210 Phase 3: P0 Bug修复 - 添加缺失的API端点
+        /// 业务规则：返回当前医生的所有Active状态医案的患者信息
+        /// </summary>
+        /// <param name="doctorId">医生ID</param>
+        /// <returns>待诊队列列表</returns>
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId);
 
         // ========== Helper Layer（辅助功能）==========
 

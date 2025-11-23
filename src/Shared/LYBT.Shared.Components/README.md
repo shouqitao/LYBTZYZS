@@ -6,7 +6,7 @@
 - **类型**:跨端共享库(组件层)
 - **职责**:提供Server端和Client端通用的业务组件,实现跨端代码复用。专注于中药处方计算和验证逻辑,确保Client端(Desktop/Avalonia)和Server端(WebAPI)使用相同的计算规则和验证规则,避免业务逻辑重复实现。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.Shared.Components/

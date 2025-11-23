@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using LYBT.Desktop.Contracts.Api; // IMedicalCaseApi
+using LYBT.Desktop.Infrastructure.Interfaces; // ISessionManager
 using LYBT.Desktop.Patients.ViewModels.Components; // PatientCommandHandler
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -17,6 +18,7 @@ public class PendingQueueManager
     private readonly PatientCommandHandler _commandHandler;
     private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
     private readonly ILogger<PendingQueueManager> _logger;
+    private readonly ISessionManager _sessionManager;
 
     /// <summary>
     /// 待诊队列（未完成医案的患者列表）
@@ -37,11 +39,13 @@ public class PendingQueueManager
         IMedicalCaseApi medicalCaseApi,
         PatientCommandHandler commandHandler,
         UnfinishedCaseHandler unfinishedCaseHandler,
+        ISessionManager sessionManager,
         ILogger<PendingQueueManager> logger)
     {
         _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
         _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
         _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
+        _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -55,15 +59,27 @@ public class PendingQueueManager
         {
             _logger.LogInformation("开始加载待看诊队列");
 
-            var response = await _medicalCaseApi.GetPendingCasesAsync();
+            // Epic #2210 Phase 3: 获取当前医生ID并传递给API
+            if (_sessionManager.CurrentUserId == null)
+            {
+                _logger.LogWarning("当前用户ID为空，无法加载待看诊队列");
+                return;
+            }
+
+            var doctorId = _sessionManager.CurrentUserId.Value;
+            var response = await _medicalCaseApi.GetPendingCasesAsync(doctorId);
 
             if (response.Success && response.Data != null)
             {
-                PendingQueue.Clear();
-                foreach (var item in response.Data)
+                // Epic #2210 Phase 3: 使用Dispatcher在UI线程更新ObservableCollection
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    PendingQueue.Add(item);
-                }
+                    PendingQueue.Clear();
+                    foreach (var item in response.Data)
+                    {
+                        PendingQueue.Add(item);
+                    }
+                });
 
                 _logger.LogInformation("待看诊队列加载完成，共{Count}条记录", PendingQueue.Count);
 

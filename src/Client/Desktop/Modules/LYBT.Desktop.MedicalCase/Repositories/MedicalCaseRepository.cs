@@ -307,32 +307,36 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.4
         /// </summary>
-        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             if (patientId == Guid.Empty)
                 throw new ArgumentException("患者ID不能为空", nameof(patientId));
 
             try
             {
-                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+                _logger.LogInformation("查询患者未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}", 
+                    patientId, doctorId);
 
-                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId);
+                // Epic #2210 Task 3.1.4: 传递doctorId到API
+                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
-                // 404表示没有未完成医案，这是正常情况
+                // 404表示没有未完成医案,这是正常情况
                 if (response.Data == null)
                 {
-                    _logger.LogInformation("患者无未完成医案，PatientId: {PatientId}", patientId);
+                    _logger.LogInformation("患者无未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}", 
+                        patientId, doctorId);
                     return null;
                 }
 
-                _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                    response.Data.Id, response.Data.Status);
+                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
+                    response.Data.Id, response.Data.Status, response.Data.DoctorId);
 
                 return response.Data;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询未完成医案失败，PatientId: {PatientId}", patientId);
+                _logger.LogError(ex, "查询未完成医案失败,PatientId: {PatientId}, DoctorId: {DoctorId}", 
+                    patientId, doctorId);
                 throw;
             }
         }

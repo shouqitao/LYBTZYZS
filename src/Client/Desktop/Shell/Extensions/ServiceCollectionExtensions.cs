@@ -20,6 +20,7 @@ using LYBT.Desktop.Herbs.Components;
 using LYBT.Desktop.Herbs.Repositories;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.Infrastructure.Services;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.MedicalCase.Components;
@@ -394,6 +395,9 @@ namespace LYBT.Desktop.Shell.Extensions
         {
             // 会话管理器
             containerRegistry.RegisterSingleton<ISessionManager, SessionManager>();
+
+            // 验证服务 - Issue #1776 Task 3: 组件化基础设施（Epic #2210 P0 Bug修复：补充DI注册）
+            containerRegistry.RegisterSingleton<IValidationService, ValidationService>();
 
             // 用户通知服务
             containerRegistry.RegisterSingleton<IUserNotificationService, UserNotificationService>();

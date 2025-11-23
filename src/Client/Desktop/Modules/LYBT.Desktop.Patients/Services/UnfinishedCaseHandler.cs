@@ -37,35 +37,38 @@ public class UnfinishedCaseHandler
     /// 检查患者是否有未完成的医案
     /// Issue #1790: 从PatientSelectionViewModel提取
     /// </summary>
-    public async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
+    public async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId, Guid doctorId)
     {
         try
         {
             // 1. 先查本地缓存
             if (_pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
             {
-                _logger.LogInformation("缓存命中：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                _logger.LogInformation("缓存命中:PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     patientId, cachedMedicalCaseId);
 
-                // 缓存命中，返回一个包含ID的MedicalCaseDto
+                // 缓存命中,返回一个包含ID的MedicalCaseDto
                 return new MedicalCaseDto { Id = cachedMedicalCaseId };
             }
 
-            // 2. 缓存未命中，调用API查询
-            _logger.LogInformation("缓存未命中，调用API查询：PatientId={PatientId}", patientId);
+            // 2. 缓存未命中,调用API查询
+            _logger.LogInformation("缓存未命中,调用API查询:PatientId={PatientId}, DoctorId={DoctorId}", 
+                patientId, doctorId);
 
-            var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId);
+            // Epic #2210 Task 3.1.4: 传递doctorId到DataManager
+            var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
             if (unfinishedCase != null)
             {
-                // 3. 找到未完成医案，更新缓存
+                // 3. 找到未完成医案,更新缓存
                 _pendingCaseCache[patientId] = unfinishedCase.Id;
-                _logger.LogInformation("找到未完成医案，已更新缓存：MedicalCaseId={MedicalCaseId}",
-                    unfinishedCase.Id);
+                _logger.LogInformation("找到未完成医案,已更新缓存:MedicalCaseId={MedicalCaseId}, DoctorId={DoctorId}",
+                    unfinishedCase.Id, unfinishedCase.DoctorId);
             }
             else
             {
-                _logger.LogInformation("患者无未完成医案");
+                _logger.LogInformation("患者无未完成医案:PatientId={PatientId}, DoctorId={DoctorId}", 
+                    patientId, doctorId);
             }
 
             // 触发事件
@@ -79,7 +82,8 @@ public class UnfinishedCaseHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "检查未完成医案失败：PatientId={PatientId}", patientId);
+            _logger.LogError(ex, "检查未完成医案失败:PatientId={PatientId}, DoctorId={DoctorId}", 
+                patientId, doctorId);
             return null;
         }
     }

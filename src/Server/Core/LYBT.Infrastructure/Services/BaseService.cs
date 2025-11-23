@@ -1,7 +1,6 @@
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Models.Enums;
-using System.Security.Claims;
 
 namespace LYBT.Infrastructure.Services
 {

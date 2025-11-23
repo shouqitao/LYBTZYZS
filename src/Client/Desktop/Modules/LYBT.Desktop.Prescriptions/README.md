@@ -6,7 +6,7 @@
 - **类型**:WPF桌面客户端业务模块
 - **职责**:提供中医处方开具和管理的用户界面,支持药材选择、验方模板加载、剂量计算、配伍检查、价格预览和处方打印等核心功能。作为MedicalCase看诊流程的Step2组件,实现ISaveable接口契约与MedicalCaseFlowViewModel集成。采用**Dialog-based架构**,通过对话框（PrescriptionEditorDialog、HerbSelectionDialog、FormulaTemplateDialog）组织复杂交互。支持从Herbs模块选择药材、从Formula模块加载验方模板,提供完整的处方开具与管理能力。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.Desktop.Prescriptions/

@@ -7,6 +7,7 @@ using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -770,30 +771,60 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.2: 添加doctorId参数
         /// </summary>
-        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId)
+        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             try
             {
-                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}", patientId);
+                _logger.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    patientId, doctorId);
 
-                var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId);
+                // Epic #2210 Task 3.1.2: 直接传递doctorId到Repository，无额外业务逻辑
+                var result = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
                 if (result != null)
                 {
-                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                        result.Id, result.Status);
+                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
+                        result.Id, result.Status, result.DoctorId);
                 }
                 else
                 {
-                    _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}", patientId);
+                    _logger.LogInformation("未找到患者的未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                        patientId, doctorId);
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询患者未完成医案失败，PatientId: {PatientId}", patientId);
+                _logger.LogError(ex, "查询患者未完成医案失败，PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    patientId, doctorId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取待看诊队列（Status = Active的医案患者列表）
+        /// Epic #2210 Phase 3: P0 Bug修复 - 实现缺失的Service方法
+        /// </summary>
+        public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
+        {
+            try
+            {
+                _logger.LogInformation("获取待看诊队列，DoctorId: {DoctorId}", doctorId);
+
+                // Epic #2210: 直接委托给Repository，传递doctorId进行数据隔离
+                var result = await _repository.GetPendingCasesAsync(doctorId);
+
+                _logger.LogInformation("待看诊队列查询完成，DoctorId: {DoctorId}, Count: {Count}",
+                    doctorId, result.Count);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取待看诊队列失败，DoctorId: {DoctorId}", doctorId);
                 throw;
             }
         }

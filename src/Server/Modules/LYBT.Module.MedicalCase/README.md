@@ -6,7 +6,7 @@
 - **类型**:业务模块(医疗案例管理 - **核心聚合根**)
 - **职责**:作为整个诊疗流程的**管理容器**和**聚合根**,每一个`MedicalCase`代表一次完整的看诊会话,1:1关联`Consultation`诊断记录,可选关联`Prescription`处方。统一管理患者从接诊到完成的全程诊疗状态,包括状态迁移、权限控制、业务规则验证。采用标准三层架构（Controller → Service → Repository）,配合**MedicalCaseRules业务规则类**确保诊疗流程的完整性和一致性。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.Module.MedicalCase/

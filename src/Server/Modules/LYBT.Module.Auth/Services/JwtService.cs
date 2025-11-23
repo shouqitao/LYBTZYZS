@@ -63,9 +63,9 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
-        // 直接从配置读取 JWT 密钥（解决配置绑定问题）
+        // 使用IOptions模式访问配置（统一配置访问方式）
         // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
+        var secretKey = _options.Jwt?.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
@@ -119,9 +119,9 @@ public class JwtService : IJwtService
         if (string.IsNullOrEmpty(userName))
             throw new ArgumentException("用户名不能为空", nameof(userName));
 
-        // 直接从配置读取 JWT 密钥（解决配置绑定问题）
+        // 使用IOptions模式访问配置（统一配置访问方式）
         // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        var secretKey = _configuration["Lybt:Jwt:SecretKey"];
+        var secretKey = _options.Jwt?.SecretKey;
         if (string.IsNullOrEmpty(secretKey))
         {
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");

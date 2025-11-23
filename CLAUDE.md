@@ -8,90 +8,54 @@
 
 ### 阶段1: THINK（深度思考与信息收集）
 
-```bash
-# 1. 启动深度推理（复杂任务优先使用）
-mcp__sequential-thinking__sequentialthinking
-  # 适用场景：架构设计、问题诊断、方案评估等需要严密逻辑推理的场景
-  # 在推理过程中可穿插调用其他工具进行信息检索
+**核心步骤**:
+1. 启动 `sequential-thinking` 深度推理（复杂任务必用）
+2. 查询 Graphiti记忆（search_memory_facts + search_nodes + get_episodes）
+3. 实时信息检索（tavily-search / microsoft_docs_search）
+4. .NET代码定位（netcontext-server semantic_search / serena find_symbol）
+5. 理解项目架构（读取 docs/explanation/architecture/）
 
-# 2. 查询Graphiti记忆（必须）
-mcp__graphiti-memory__search_memory_facts
-  query: "[模块名] [功能名] [技术关键词]"
-mcp__graphiti-memory__search_nodes
-  query: "[组件名] [类名] [服务名]"
-mcp__graphiti-memory__get_episodes
-  max_episodes: 10
-
-# 3. 实时信息检索（按需使用）
-# 3.1 最新技术文档和最佳实践
-mcp__tavily-mcp__tavily-search
-  query: "[技术关键词] [问题描述] best practices"
-
-# 3.2 .NET代码库语义搜索
-mcp__netcontext-server__semantic_search
-  query: "[功能描述] [类名] [方法名]"
-  # 备选：mcp__serena__find_symbol / search_for_pattern
-
-# 4. 理解项目架构
-docs/explanation/architecture/{client|server|shared}/
-docs/guides/requirement-driven-workflow.md
-docs/reference/mvp-constraints.md
-
-# 5. 验证流程一致性
-对比 Graphiti记忆流程 vs 文档流程，发现不一致则更新文档
-```
-
-**工具使用详细指南**: `docs/guides/advanced-tools-usage-guide.md`
-
-**Graphiti详细指南**: 检索Graphiti记忆 `"LYBTZYZS-UltraThink详细执行指南"`
+**参考文档**:
+- `docs/guides/advanced-tools-usage-guide.md` - 工具使用详细指南
+- `docs/guides/mcp-tools-user-guide.md` - MCP工具完整参数手册
+- Graphiti记忆: `"LYBTZYZS-UltraThink详细执行指南"`
 
 ### 阶段2: PLAN（任务规划与清单生成）
 
-```bash
-# 1. 确定需要调用的Skills
-大需求: requirements-generator → design-generator → task-breakdown →
-        task-executor → pr-generator → task-reflector
-小需求: task-executor → task-reflector
+**Skill选择**:
+- 大需求: requirements-generator → design-generator → task-breakdown → task-executor → pr-generator → task-reflector
+- 小需求: task-executor → task-reflector
 
-# 2. 使用TodoWrite生成任务清单（必须）
-# ⚠️ 复杂任务（≥3步骤或≥30分钟）必须使用TodoWrite跟踪进度
-# 流程：深度思考 → 需求确认 → 方案设计 → 渐进执行 → 验证测试 → 文档同步 → Issue关闭
-# 原则：完成即标记 | 始终1个in_progress | 任务完成后清空
-```
+**TodoWrite使用规范**:
+- ⚠️ 复杂任务（≥3步骤或≥30分钟）必须使用TodoWrite跟踪进度
+- 流程：深度思考 → 需求确认 → 方案设计 → 渐进执行 → 验证测试 → 文档同步 → Issue关闭
+- 原则：完成即标记 | 始终1个in_progress | 任务完成后清空
 
 ### 阶段3: EXECUTE（渐进执行与持续记录）
 
-```bash
-# 渐进执行原则：单一职责 + 小步快跑（≤2小时）+ 持续验证 + 及时记录
+**渐进执行原则**: 单一职责 + 小步快跑（≤2小时）+ 持续验证 + 及时记录
 
-# 执行前：sequential-thinking分析风险 | netcontext-server定位代码
-# 执行中：tavily查技术方案 | sequential-thinking评估架构 | netcontext-server搜索实现
-# 执行后：每完成一个子任务保存记忆到Graphiti
-```
+**执行流程**:
+- 执行前: sequential-thinking分析风险 | netcontext-server定位代码
+- 执行中: tavily查技术方案 | netcontext-server搜索实现 | serena replace_regex修改代码
+- 执行后: 每完成一个子任务保存记忆到Graphiti
 
-**执行中的工具使用场景和组合模式**: `docs/guides/advanced-tools-usage-guide.md`
-
-**详细模板**: 检索Graphiti记忆 `"LYBTZYZS-Graphiti记忆管理详细模板"`
+**参考文档**:
+- `docs/guides/advanced-tools-usage-guide.md` - 工具使用场景和组合模式
+- Graphiti记忆: `"LYBTZYZS-Graphiti记忆管理详细模板"`
 
 ### 阶段4: REFLECT（总结与归档）
 
-```bash
-# 1. 调用task-reflector生成总结
-lybtzyzs-task-reflector
+**总结流程**:
+1. 调用 `lybtzyzs-task-reflector` 生成总结
+2. 保存完整记忆到Graphiti（13部分模板）
+3. 文档更新检查：架构文档、开发流程、最佳实践、技术约束
+4. 自动关闭Issue（满足4条标准：验收+验证+文档+记忆）
+5. 推送代码到远程仓库（`git push origin master`）
 
-# 2. 保存完整记忆（13部分模板）
-add_memory(name="{模块名}-{任务类型}-完成-{日期}")
-
-# 3. 文档更新检查：架构文档、开发流程、最佳实践、技术约束
-
-# 4. 自动关闭Issue（满足4条标准）
-# ✅ 验收完成 + ✅ 功能验证 + ✅ 文档同步 + ✅ 记忆保存
-mcp__github__issue_write(method="update", state="closed", state_reason="completed")
-# 注意：Epic Issue需确认所有子Issue已关闭
-
-# 5. 推送代码到远程仓库（必须）
-git push origin master
-```
+**Issue自动关闭**:
+- 使用 `github issue_write(method="update", state="closed", state_reason="completed")`
+- Epic Issue需确认所有子Issue已关闭
 
 ## 📋 简化流程视图
 
@@ -111,39 +75,21 @@ git push origin master
   - `LYBTZYZS-Graphiti记忆管理详细模板-2025-01-18`
   - `LYBTZYZS-记忆管理操作规范-2025-01-18`
 
-## 🛠️ 核心工具
+## 🛠️ 项目专用工具
 
-### 深度推理工具
-- **`sequential-thinking`** - 结构化深度推理（⚠️ 复杂任务核心工具）
-  - 适用场景：架构设计、问题诊断、方案评估、技术选型
+**LYBTZYZS专用Skills**:
+- requirements-generator: 需求文档生成
+- design-generator: 设计文档生成
+- task-breakdown: 任务分解
+- task-executor: 任务执行
+- pr-generator: PR生成
+- task-reflector: 任务总结
+- context-builder: 上下文构建
 
-### 实时信息检索工具
-- **`tavily-mcp`** - Web实时搜索
-  - 适用场景：技术调研、错误解决方案查询、开源项目示例
-
-### .NET代码分析工具
-- **`netcontext-server`** - .NET代码库语义搜索
-  - 适用场景：代码定位、架构分析、依赖追踪
-  - 备选工具：`serena`（find_symbol、search_for_pattern）
-
-### 任务管理工具
-- **`TodoWrite`** - 任务清单管理（⚠️ 核心工具，复杂任务必用）
-  - 使用场景：≥3步骤任务、≥30分钟任务、跨会话任务
-
-### LYBTZYZS专用Skills
-- `lybtzyzs-requirements-generator` - 需求确认文档
-- `lybtzyzs-design-generator` - 方案设计文档
-- `lybtzyzs-task-executor` - 自动执行Issue
-- `lybtzyzs-pr-generator` - PR描述生成
-- `lybtzyzs-task-reflector` - 任务反思总结
-- `lybtzyzs-context-builder` - 上下文构建
-
-### GitHub MCP工具
-- `mcp__github__issue_write` - Issue管理（创建/更新/关闭）
-- `mcp__github__pull_request_*` - PR管理
-- `mcp__github_*` - 仓库操作
-
-**详细工具使用说明、决策树、组合模式**: `docs/guides/advanced-tools-usage-guide.md`
+**项目参考文档**:
+- `docs/guides/mcp-tools-user-guide.md` - MCP工具完整参数手册
+- `docs/guides/advanced-tools-usage-guide.md` - 工具使用场景和组合模式
+- `docs/guides/requirement-driven-workflow.md` - 完整工作流程
 
 ## 🧠 Graphiti记忆管理
 

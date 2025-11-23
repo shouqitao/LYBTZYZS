@@ -6,7 +6,7 @@
 - **类型**: 技术基础设施层（Foundation）
 - **职责**: 提供平台无关的技术基础能力，包括HTTP通信、缓存、配置、安全、性能优化、诊断监控等横向技术服务。与Desktop.Infrastructure不同，Foundation专注于技术基础设施而非WPF UI组件，确保业务模块能够跨平台复用（如未来支持Avalonia/MAUI）。采用分层架构设计，确保技术能力集中管理、高性能、可观测、可复用。
 
-## 📂 代码结构
+##  代码结构
 
 ```
 LYBT.Desktop.Foundation/

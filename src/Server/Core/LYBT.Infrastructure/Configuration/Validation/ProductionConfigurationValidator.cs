@@ -42,8 +42,8 @@ public class ProductionConfigurationValidator
         },
         new ConfigurationItem
         {
-            Key = "Lybt:Authentication:DefaultPasswords:NewUserPassword",
-            EnvVarName = "Lybt__Authentication__DefaultPasswords__NewUserPassword",
+            Key = "Lybt:DefaultPasswords:NewUserPassword",
+            EnvVarName = "Lybt__DefaultPasswords__NewUserPassword",
             Severity = Severity.Important,
             Description = "新用户默认密码",
             Example = "User@123456"

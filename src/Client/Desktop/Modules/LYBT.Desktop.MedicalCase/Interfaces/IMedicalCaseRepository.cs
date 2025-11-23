@@ -97,8 +97,9 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.4
+        /// Epic #2210 Task 3.1.4: 添加doctorId参数
         /// </summary>
-        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）

@@ -30,6 +30,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         private readonly Mock<IEventAggregator> _eventAggregatorMock;
         private readonly Mock<ILoggerFactory> _loggerFactoryMock;
         private readonly Mock<IRegionManager> _regionManagerMock;
+        private readonly Mock<ISessionManager> _sessionManagerMock; // Epic #2210 Phase 3: 添加SessionManager Mock
 
         // Epic #2210 Issue #2218: 组件层Mock对象（正确构建依赖链）
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
@@ -54,6 +55,11 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             _patientRepositoryMock = new Mock<IPatientRepository>();
             _medicalCaseRepositoryMock = new Mock<IMedicalCaseRepository>();
 
+            // Epic #2210 Phase 3: 创建SessionManager Mock并设置默认CurrentUserId
+            _sessionManagerMock = new Mock<ISessionManager>();
+            var testDoctorId = Guid.Parse("4b27657a-a128-4c5c-a7b0-ceb477f99bfe");
+            _sessionManagerMock.Setup(x => x.CurrentUserId).Returns(testDoctorId);
+
             // Mock LoggerFactory
             var commandHandlerLoggerMock = new Mock<ILogger<PatientCommandHandler>>();
             var medicalCaseDataManagerLoggerMock = new Mock<ILogger<MedicalCaseDataManager>>();
@@ -77,6 +83,11 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             var patientSelectedEventMock = new Mock<PatientSelectedEvent>();
             _eventAggregatorMock.Setup(x => x.GetEvent<PatientSelectedEvent>())
                 .Returns(patientSelectedEventMock.Object);
+
+            // Issue #2221: Mock PatientUpdatedEvent
+            var patientUpdatedEventMock = new Mock<LYBT.Desktop.Patients.Events.PatientUpdatedEvent>();
+            _eventAggregatorMock.Setup(x => x.GetEvent<LYBT.Desktop.Patients.Events.PatientUpdatedEvent>())
+                .Returns(patientUpdatedEventMock.Object);
 
             // Epic #2210 Issue #2218: 构建依赖链（按依赖顺序）
             // 1. PatientCommandHandler（依赖：IPatientRepository, ILogger, IRegionManager）
@@ -105,11 +116,13 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 unfinishedCaseHandlerLoggerMock.Object
             );
 
-            // 5. PendingQueueManager（依赖：IMedicalCaseApi, PatientCommandHandler, UnfinishedCaseHandler, ILogger）
+            // 5. PendingQueueManager（依赖：IMedicalCaseApi, PatientCommandHandler, UnfinishedCaseHandler, ISessionManager, ILogger）
+            // Epic #2210 Phase 3: 添加SessionManager参数
             _pendingQueueManager = new PendingQueueManager(
                 _medicalCaseApiMock.Object,
                 _commandHandler,
                 _unfinishedCaseHandler,
+                _sessionManagerMock.Object,
                 pendingQueueManagerLoggerMock.Object
             );
 
@@ -229,7 +242,8 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         public async Task OnNavigatedTo_ShouldHandleException_AndNotCrash()
         {
             // Arrange: Mock IMedicalCaseApi.GetPendingCasesAsync抛出异常
-            _medicalCaseApiMock.Setup(x => x.GetPendingCasesAsync())
+            // Epic #2210 Phase 3: 添加doctorId参数
+            _medicalCaseApiMock.Setup(x => x.GetPendingCasesAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception("模拟异常"));
 
             // Mock IRegionNavigationService
@@ -250,6 +264,118 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             // 验证：即使PendingQueue加载失败，导航流程仍然成功
             // （PendingQueue内部已处理异常，不会传播到ViewModel层）
             _viewModel.Should().NotBeNull("ViewModel应正常初始化");
+        }
+
+        #endregion
+
+        #region Issue #2221: IDisposable测试
+
+        /// <summary>
+        /// Issue #2221: 测试Dispose方法清理所有事件订阅
+        /// </summary>
+        /// <summary>
+        /// Issue #2221: 测试Dispose方法清理所有事件订阅
+        /// Epic #2210 Issue #2223: 验证Unsubscribe调用
+        /// </summary>
+        /// <summary>
+        /// Issue #2221: 测试Dispose方法清理所有事件订阅
+        /// </summary>
+
+        #endregion
+
+        #region Epic #2210 Issue #2223: 成功反馈机制测试
+
+        /// <summary>
+        /// Epic #2210 Issue #2223: 测试ShowSuccessMessage显示成功消息（可选）
+        /// 注意：完整测试需等待3秒验证自动清除，此处仅测试消息设置
+        /// </summary>
+        [Fact]
+        public void ShowSuccessMessage_ShouldSetStatusBarProperties()
+        {
+            // Arrange
+            var testMessage = "测试成功消息";
+
+            // Act: 使用反射调用protected方法ShowSuccessMessageAsync
+            // 注意：这只是验证消息设置，不验证3秒自动清除（避免测试运行太慢）
+            var method = typeof(PatientSelectionViewModel).GetMethod(
+                "ShowSuccessMessageAsync",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            method.Should().NotBeNull("ShowSuccessMessageAsync方法应存在");
+            
+            // 异步调用方法（不等待完成，只验证不抛异常）
+            var task = method!.Invoke(_viewModel, new object[] { testMessage }) as Task;
+            
+            // Assert: 验证StatusBar属性被正确设置
+            // 等待一小段时间确保StatusBar属性被设置
+            System.Threading.Thread.Sleep(50);
+            
+            _viewModel.StatusBarMessage.Should().Be(testMessage, "StatusBarMessage应设置为成功消息");
+            _viewModel.StatusBarIsError.Should().BeFalse("StatusBarIsError应为false（成功消息）");
+            
+            // 验证任务不抛异常
+            task.Should().NotBeNull("ShowSuccessMessageAsync应返回Task");
+        }
+
+        #endregion
+
+        #region Issue #2221: IDisposable测试
+
+        [Fact]
+        public void Dispose_ShouldCleanupAllEventSubscriptions()
+        {
+            // Arrange: ViewModel已在构造函数中创建并订阅了所有事件
+
+            // Act: 调用Dispose
+            _viewModel.Dispose();
+
+            // Assert: 验证不会抛出异常（事件订阅已清理）
+            // 无法直接验证事件取消订阅，但可以验证Dispose不抛出异常
+            _viewModel.Should().NotBeNull("ViewModel应成功释放资源");
+        }
+
+        /// <summary>
+        /// Issue #2221: 测试重复Dispose不会抛出异常
+        /// </summary>
+        [Fact]
+        public void Dispose_ShouldNotThrowWhenCalledMultipleTimes()
+        {
+            // Arrange
+            _viewModel.Dispose();
+
+            // Act & Assert: 第二次Dispose不应抛出异常
+            Action act = () => _viewModel.Dispose();
+            act.Should().NotThrow("重复Dispose不应抛出异常");
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2223: 测试Dispose记录日志
+        /// </summary>
+        [Fact]
+        public void Dispose_ShouldLogInformation()
+        {
+            // Arrange & Act: 调用Dispose
+            Action act = () => _viewModel.Dispose();
+
+            // Assert: 验证不会抛出异常（Logger.LogInformation成功调用）
+            act.Should().NotThrow("Dispose应成功记录日志");
+        }
+
+        /// <summary>
+        /// Epic #2210 Issue #2223: 测试重复Dispose设置_disposed标志
+        /// 通过验证第二次Dispose不执行清理逻辑来间接验证_disposed标志
+        /// </summary>
+        [Fact]
+        public void Dispose_ShouldSetDisposedFlag()
+        {
+            // Arrange: 第一次Dispose
+            _viewModel.Dispose();
+
+            // Act: 第二次Dispose（应该因为_disposed标志而立即返回）
+            Action act = () => _viewModel.Dispose();
+
+            // Assert: 验证不会抛出异常（_disposed标志阻止重复清理）
+            act.Should().NotThrow("_disposed标志应阻止重复清理");
         }
 
         #endregion

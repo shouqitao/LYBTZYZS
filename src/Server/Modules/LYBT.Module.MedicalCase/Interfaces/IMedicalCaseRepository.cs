@@ -34,7 +34,13 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// </summary>
-        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync();
+        /// <summary>
+        /// 获取待看诊医案列表（Status=Active）
+        /// Epic #1583 - Phase 5
+        /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离
+        /// </summary>
+        /// <param name="doctorId">医生ID</param>
+        Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId);
 
         /// <summary>
         /// 查询病案列表（支持多条件组合查询）
@@ -53,9 +59,11 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
+        /// Epic #2210 Task 3.1.1: 添加doctorId筛选
         /// </summary>
         /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体，若无则返回null</returns>
-        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId);
+        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
     }
 }
