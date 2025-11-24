@@ -205,7 +205,7 @@ namespace LYBT.Shared.Utilities.Security
         }
 
         /// <summary>
-        /// 获取密码强度等级
+        /// 获取密码强度等级（使用统一的PasswordHelper枚举）
         /// </summary>
         /// <param name="password">密码</param>
         /// <returns>强度等级</returns>
@@ -217,9 +217,9 @@ namespace LYBT.Shared.Utilities.Security
             {
                 >= 80 => PasswordStrength.VeryStrong,
                 >= 60 => PasswordStrength.Strong,
-                >= 40 => PasswordStrength.Medium,
-                >= 20 => PasswordStrength.Weak,
-                _ => PasswordStrength.VeryWeak
+                >= 40 => PasswordStrength.Good,
+                >= 20 => PasswordStrength.Fair,
+                _ => PasswordStrength.Weak
             };
         }
 
@@ -291,36 +291,5 @@ namespace LYBT.Shared.Utilities.Security
 
             return commonPasswords.Contains(password);
         }
-    }
-
-    /// <summary>
-    /// 密码强度等级
-    /// </summary>
-    public enum PasswordStrength
-    {
-        /// <summary>
-        /// 非常弱
-        /// </summary>
-        VeryWeak = 0,
-
-        /// <summary>
-        /// 弱
-        /// </summary>
-        Weak = 1,
-
-        /// <summary>
-        /// 中等
-        /// </summary>
-        Medium = 2,
-
-        /// <summary>
-        /// 强
-        /// </summary>
-        Strong = 3,
-
-        /// <summary>
-        /// 非常强
-        /// </summary>
-        VeryStrong = 4
     }
 }

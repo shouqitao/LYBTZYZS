@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using LYBT.Shared.Utilities.Helpers;
+using LYBT.Shared.Utilities.Security;
 using Xunit;
 
 namespace LYBT.Shared.Utilities.Tests.Helpers
@@ -18,7 +18,7 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
             var password = "TestPassword123!";
 
             // Act
-            var hash = PasswordHelper.Hash(password);
+            var hash = PasswordHelper.HashPassword(password);
 
             // Assert
             hash.Should().NotBeNullOrEmpty();
@@ -32,7 +32,7 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
         public void Hash_WithInvalidPassword_ShouldThrowArgumentException(string? password)
         {
             // Act & Assert
-            var act = () => PasswordHelper.Hash(password!);
+            var act = () => PasswordHelper.HashPassword(password!);
             act.Should().Throw<ArgumentException>();
         }
 
@@ -43,8 +43,8 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
             var password = "TestPassword123!";
 
             // Act
-            var hash1 = PasswordHelper.Hash(password);
-            var hash2 = PasswordHelper.Hash(password);
+            var hash1 = PasswordHelper.HashPassword(password);
+            var hash2 = PasswordHelper.HashPassword(password);
 
             // Assert
             hash1.Should().NotBe(hash2);
@@ -59,13 +59,13 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
         {
             // Arrange
             var password = "TestPassword123!";
-            var hash = PasswordHelper.Hash(password);
+            var hash = PasswordHelper.HashPassword(password);
 
             // Act
-            var result = PasswordHelper.Verify(hash, password);
+            var result = PasswordHelper.VerifyPassword(password, hash);
 
             // Assert
-            result.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -74,24 +74,24 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
             // Arrange
             var password = "TestPassword123!";
             var wrongPassword = "WrongPassword456!";
-            var hash = PasswordHelper.Hash(password);
+            var hash = PasswordHelper.HashPassword(password);
 
             // Act
-            var result = PasswordHelper.Verify(hash, wrongPassword);
+            var result = PasswordHelper.VerifyPassword(wrongPassword, hash);
 
             // Assert
-            result.Should().BeFalse();
+            result.IsSuccess.Should().BeFalse();
         }
 
         [Theory]
-        [InlineData("", "password")]
-        [InlineData(null, "password")]
-        [InlineData("hash", "")]
-        [InlineData("hash", null)]
-        public void Verify_WithInvalidInput_ShouldThrowArgumentException(string? hash, string? password)
+        [InlineData("", "hash")]
+        [InlineData(null, "hash")]
+        [InlineData("password", "")]
+        [InlineData("password", null)]
+        public void Verify_WithInvalidInput_ShouldThrowArgumentException(string? password, string? hash)
         {
             // Act & Assert
-            var act = () => PasswordHelper.Verify(hash!, password!);
+            var act = () => PasswordHelper.VerifyPassword(password!, hash!);
             act.Should().Throw<ArgumentException>();
         }
 
@@ -351,25 +351,6 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
 
         #endregion
 
-        #region HasMinimumLength方法测试
-
-        [Theory]
-        [InlineData("12345678", 8, true)]
-        [InlineData("1234567", 8, false)]
-        [InlineData("", 1, false)]
-        [InlineData(null, 1, false)]
-        [InlineData("password", 0, true)]
-        public void HasMinimumLength_WithDifferentInputs_ShouldReturnCorrectResult(string? password, int minLength, bool expected)
-        {
-            // Act
-            var result = PasswordHelper.HasMinimumLength(password!, minLength);
-
-            // Assert
-            result.Should().Be(expected);
-        }
-
-        #endregion
-
         #region GenerateSecurePassword方法测试
 
         [Fact]
@@ -472,7 +453,7 @@ namespace LYBT.Shared.Utilities.Tests.Helpers
         public void PasswordValidationResult_DefaultConstructor_ShouldInitializeCorrectly()
         {
             // Act
-            var result = new PasswordValidationResult();
+            var result = new PasswordHelper.PasswordValidationResult();
 
             // Assert
             result.IsValid.Should().BeFalse();

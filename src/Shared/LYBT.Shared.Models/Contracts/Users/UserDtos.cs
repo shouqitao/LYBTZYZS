@@ -256,13 +256,15 @@ namespace LYBT.Shared.Models.Contracts.Users
 
     /// <summary>
     /// 管理员重置密码请求DTO (Issue #1162)
+    /// 修复：重置密码不需要传递新密码，使用配置文件中的默认密码
     /// </summary>
     public class ResetPasswordRequestDto
     {
-        /// <summary>新密码（可选，不提供则自动生成临时密码）</summary>
+        /// <summary>新密码（已废弃，为了向后兼容保留此属性，实际不使用）</summary>
         [StringLength(128, MinimumLength = 6, ErrorMessage = "密码长度必须在6-128个字符之间")]
         [DisplayName("新密码")]
-        public string? NewPassword { get; set; }
+        [Obsolete("重置密码不再支持传递新密码，将使用配置文件中的默认密码")]
+        public string? NewPassword { get; set; } = null;
 
         /// <summary>是否强制用户下次登录时修改密码</summary>
         [DisplayName("强制修改密码")]

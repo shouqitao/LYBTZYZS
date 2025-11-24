@@ -211,33 +211,33 @@ namespace LYBT.Shared.Utilities.Tests.Security
         #region GetStrengthLevel 测试
 
         [Fact]
-        public void GetStrengthLevel_WithNullPassword_ShouldReturnVeryWeak()
+        public void GetStrengthLevel_WithNullPassword_ShouldReturnWeak()
         {
             // Act
             var level = PasswordPolicyValidator.GetStrengthLevel(null!);
 
             // Assert
-            level.Should().Be(PasswordStrength.VeryWeak);
+            level.Should().Be(PasswordStrength.Weak);
         }
 
         [Fact]
-        public void GetStrengthLevel_WithWeakPassword_ShouldReturnWeakOrVeryWeak()
+        public void GetStrengthLevel_WithWeakPassword_ShouldReturnWeak()
         {
             // Act
             var level = PasswordPolicyValidator.GetStrengthLevel("password");
 
             // Assert
-            level.Should().BeOneOf(PasswordStrength.VeryWeak, PasswordStrength.Weak);
+            level.Should().Be(PasswordStrength.Weak);
         }
 
         [Fact]
-        public void GetStrengthLevel_WithStrongPassword_ShouldReturnStrongOrVeryStrong()
+        public void GetStrengthLevel_WithStrongPassword_ShouldReturnVeryStrong()
         {
             // Act
             var level = PasswordPolicyValidator.GetStrengthLevel("Aa1!abcdef123456");
 
             // Assert
-            level.Should().BeOneOf(PasswordStrength.Strong, PasswordStrength.VeryStrong);
+            level.Should().Be(PasswordStrength.VeryStrong);
         }
 
         #endregion
