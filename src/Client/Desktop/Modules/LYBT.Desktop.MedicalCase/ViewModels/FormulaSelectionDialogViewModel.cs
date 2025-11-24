@@ -51,7 +51,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 是否正在加载
         /// </summary>
-        public bool IsLoading
+        public new bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);

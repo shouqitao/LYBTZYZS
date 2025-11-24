@@ -71,7 +71,7 @@ public class JwtService : IJwtService
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
         }
 
-        var jwtConfig = _options.Jwt;
+        var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
 
         // 创建Claims
         var claims = new[]
@@ -127,7 +127,7 @@ public class JwtService : IJwtService
             throw new InvalidOperationException("JWT SecretKey 配置未找到或为空。请检查 appsettings.json 中的 Lybt:Jwt:SecretKey 配置。");
         }
 
-        var jwtConfig = _options.Jwt;
+        var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
 
         // 创建基础Claims
         var claims = new List<Claim>
@@ -184,7 +184,7 @@ public class JwtService : IJwtService
         try
         {
             // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-            var jwtConfig = _options.Jwt;
+            var jwtConfig = _options.Jwt ?? throw new InvalidOperationException("JWT配置未找到");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey));
 
             var validationParameters = new TokenValidationParameters

@@ -297,10 +297,7 @@ namespace LYBT.Desktop.Users.ViewModels.Components
                 _logger.LogInformation("CommandHandler: 开始重置密码, UserId: {UserId}", userId);
 
                 // 构建请求DTO
-                var request = new ResetPasswordRequestDto
-                {
-                    NewPassword = newPassword
-                };
+                var request = new ResetPasswordRequestDto();
 
                 // 调用Repository
                 var result = await _repository.ResetPasswordAsync(userId, request);

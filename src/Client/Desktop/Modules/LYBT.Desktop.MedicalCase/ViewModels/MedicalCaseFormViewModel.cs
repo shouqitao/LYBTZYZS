@@ -556,7 +556,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             return CanEditPrescription;
         }
 
-        private async void ExecuteImportFormula()
+        private void ExecuteImportFormula()
         {
             try
             {

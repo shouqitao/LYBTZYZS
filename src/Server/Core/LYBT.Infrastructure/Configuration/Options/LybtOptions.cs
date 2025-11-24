@@ -298,13 +298,13 @@ public class DefaultPasswordConfiguration
     /// 系统管理员默认密码
     /// </summary>
     [Required, MinLength(8)]
-    public string SysAdminPassword { get; set; }
+    public string SysAdminPassword { get; set; } = null!;
 
     /// <summary>
     /// 新用户默认密码
     /// </summary>
     [Required, MinLength(8)]
-    public string NewUserPassword { get; set; }
+    public string NewUserPassword { get; set; } = null!;
 
     /// <summary>
     /// 是否强制首次登录修改密码
@@ -558,7 +558,7 @@ public class SystemAdminConfiguration
     /// 系统管理员邮箱
     /// </summary>
     [Required, EmailAddress]
-    public string Email { get; set; }
+    public string Email { get; set; } = null!;
 
     /// <summary>
     /// 系统管理员显示名
