@@ -10,6 +10,7 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using LYBT.Shared.Utilities.Security;
 
 namespace LYBT.Module.Auth.Services
 {
@@ -68,8 +69,9 @@ namespace LYBT.Module.Auth.Services
                 if (userEntity == null)
                     return ServiceResult<string>.Failure("用户名或密码错误");
 
-                // 使用BCrypt验证密码
-                if (BCrypt.Net.BCrypt.Verify(request.Password, userEntity.PasswordHash))
+                // 使用统一密码帮助类验证密码
+                var verificationResult = PasswordHelper.VerifyPassword(request.Password, userEntity.PasswordHash, userEntity.Role, _logger);
+                if (verificationResult.IsSuccess)
                 {
                     _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
                         request.UserName, userEntity.Role, DateTime.UtcNow);

@@ -298,13 +298,13 @@ public class DefaultPasswordConfiguration
     /// 系统管理员默认密码
     /// </summary>
     [Required, MinLength(8)]
-    public string SysAdminPassword { get; set; } = "LybtAdmin2025@SecurePass!";
+    public string SysAdminPassword { get; set; }
 
     /// <summary>
     /// 新用户默认密码
     /// </summary>
     [Required, MinLength(8)]
-    public string NewUserPassword { get; set; } = "Lybt2025@TempPass!";
+    public string NewUserPassword { get; set; }
 
     /// <summary>
     /// 是否强制首次登录修改密码
@@ -558,7 +558,7 @@ public class SystemAdminConfiguration
     /// 系统管理员邮箱
     /// </summary>
     [Required, EmailAddress]
-    public string Email { get; set; } = "admin@lybt.com";
+    public string Email { get; set; }
 
     /// <summary>
     /// 系统管理员显示名

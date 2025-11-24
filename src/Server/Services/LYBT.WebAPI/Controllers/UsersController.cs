@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -19,11 +20,13 @@ namespace LYBT.WebAPI.Controllers
     public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(IUserService userService, ILogger<UsersController> logger)
+        public UsersController(IUserService userService, IConfiguration configuration, ILogger<UsersController> logger)
             : base(logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         /// <summary>
@@ -86,7 +89,7 @@ namespace LYBT.WebAPI.Controllers
                             UserName = username,
                             RealName = "系统超级管理员",
                             Role = UserRole.Admin,
-                            Email = "admin@lybt.com",
+                            Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com",
                             Status = CommonStatus.Enabled,
                             CreatedAt = DateTime.MinValue,
                             UpdatedAt = DateTime.Now

@@ -57,6 +57,10 @@ public class Program
             // 配置主机和服务
             builder.Host.ConfigureEnvironmentAwareHosting();
             builder.Host.UseSerilog();
+            
+            // 验证默认密码配置（所有环境）
+            ValidateDefaultPasswordConfiguration(builder.Configuration);
+            
             builder.Services.RegisterAllApplicationServices(builder.Configuration, builder.Environment);
 
             // 生产环境配置验证
@@ -106,5 +110,74 @@ public class Program
         {
             Log.CloseAndFlush();
         }
+    }
+
+    /// <summary>
+    /// 验证默认密码配置
+    /// 确保必需的密码配置存在，如果缺少则启动失败
+    /// </summary>
+    /// <param name="configuration">应用程序配置</param>
+    /// <exception cref="InvalidOperationException">当缺少必需的密码配置时抛出</exception>
+    private static void ValidateDefaultPasswordConfiguration(IConfiguration configuration)
+    {
+        var sysAdminPassword = configuration["Lybt:DefaultPasswords:SysAdminPassword"];
+        var newUserPassword = configuration["Lybt:DefaultPasswords:NewUserPassword"];
+
+        var missingConfigurations = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(sysAdminPassword))
+        {
+            missingConfigurations.Add("Lybt:DefaultPasswords:SysAdminPassword");
+        }
+
+        if (string.IsNullOrWhiteSpace(newUserPassword))
+        {
+            missingConfigurations.Add("Lybt:DefaultPasswords:NewUserPassword");
+        }
+
+        if (missingConfigurations.Any())
+        {
+            var configList = string.Join(Environment.NewLine, missingConfigurations.Select(config => $"  - {config}"));
+            var errorMessage = $@"缺少必需的默认密码配置，应用程序无法启动。
+
+缺少的配置项：
+{configList}
+
+解决方案：
+1. 在 appsettings.json 中添加以下配置：
+{{
+  ""Lybt"": {{
+    ""DefaultPasswords"": {{
+      ""SysAdminPassword"": ""您的系统管理员默认密码"",
+      ""NewUserPassword"": ""您的新用户默认密码""
+    }}
+  }}
+}}
+
+2. 或者在环境变量中设置：
+  - LYBT__DEFAULTPASSWORDS__SYSADMINPASSWORD
+  - LYBT__DEFAULTPASSWORDS__NEWUSERPASSWORD
+
+3. 或者在 .env 文件中添加：
+  LYBT_DEFAULTPASSWORDS_SYSADMINPASSWORD=您的系统管理员默认密码
+  LYBT_DEFAULTPASSWORDS_NEWUSERPASSWORD=您的新用户默认密码
+
+注意：密码不能为空，密码长度至少8位，建议包含大小写字母、数字和特殊字符。";
+
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        // 验证密码长度
+        if (sysAdminPassword!.Length < 8)
+        {
+            throw new InvalidOperationException("系统管理员默认密码长度不能少于8位");
+        }
+
+        if (newUserPassword!.Length < 8)
+        {
+            throw new InvalidOperationException("新用户默认密码长度不能少于8位");
+        }
+
+        Log.Information("默认密码配置验证通过");
     }
 }
