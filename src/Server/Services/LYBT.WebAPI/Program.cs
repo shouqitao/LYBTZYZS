@@ -6,6 +6,7 @@
 /// Issue #1932: 配置文件整合 - 统一appsettings.json + .env环境变量模式
 /// </summary>
 using LYBT.WebAPI.Extensions;
+using LYBT.Shared.Utilities.Security;
 using Serilog;
 using DotNetEnv;
 
@@ -122,6 +123,7 @@ public class Program
     {
         var sysAdminPassword = configuration["Lybt:DefaultPasswords:SysAdminPassword"];
         var newUserPassword = configuration["Lybt:DefaultPasswords:NewUserPassword"];
+        var systemAdminEmail = configuration["Lybt:SystemAdmin:Email"];
 
         var missingConfigurations = new List<string>();
 
@@ -133,6 +135,11 @@ public class Program
         if (string.IsNullOrWhiteSpace(newUserPassword))
         {
             missingConfigurations.Add("Lybt:DefaultPasswords:NewUserPassword");
+        }
+
+        if (string.IsNullOrWhiteSpace(systemAdminEmail))
+        {
+            missingConfigurations.Add("Lybt:SystemAdmin:Email");
         }
 
         if (missingConfigurations.Any())
@@ -150,6 +157,9 @@ public class Program
     ""DefaultPasswords"": {{
       ""SysAdminPassword"": ""您的系统管理员默认密码"",
       ""NewUserPassword"": ""您的新用户默认密码""
+    }},
+    ""SystemAdmin"": {{
+      ""Email"": ""admin@yourdomain.com""
     }}
   }}
 }}
@@ -157,10 +167,12 @@ public class Program
 2. 或者在环境变量中设置：
   - LYBT__DEFAULTPASSWORDS__SYSADMINPASSWORD
   - LYBT__DEFAULTPASSWORDS__NEWUSERPASSWORD
+  - LYBT__SYSTEMADMIN__EMAIL
 
 3. 或者在 .env 文件中添加：
   LYBT_DEFAULTPASSWORDS_SYSADMINPASSWORD=您的系统管理员默认密码
   LYBT_DEFAULTPASSWORDS_NEWUSERPASSWORD=您的新用户默认密码
+  LYBT_SYSTEMADMIN_EMAIL=admin@yourdomain.com
 
 注意：密码不能为空，密码长度至少8位，建议包含大小写字母、数字和特殊字符。";
 
@@ -176,6 +188,19 @@ public class Program
         if (newUserPassword!.Length < 8)
         {
             throw new InvalidOperationException("新用户默认密码长度不能少于8位");
+        }
+
+        // 验证密码复杂度
+        if (!PasswordPolicyValidator.Validate(sysAdminPassword, out var sysAdminErrors))
+        {
+            var errorMsg = string.Join(", ", sysAdminErrors);
+            throw new InvalidOperationException($"系统管理员默认密码不符合安全策略: {errorMsg}");
+        }
+
+        if (!PasswordPolicyValidator.Validate(newUserPassword, out var newUserErrors))
+        {
+            var errorMsg = string.Join(", ", newUserErrors);
+            throw new InvalidOperationException($"新用户默认密码不符合安全策略: {errorMsg}");
         }
 
         Log.Information("默认密码配置验证通过");

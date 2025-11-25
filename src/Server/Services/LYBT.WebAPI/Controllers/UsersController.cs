@@ -89,7 +89,8 @@ namespace LYBT.WebAPI.Controllers
                             UserName = username,
                             RealName = "系统超级管理员",
                             Role = UserRole.Admin,
-                            Email = _configuration["Lybt:SystemAdmin:Email"] ?? "admin@lybt.com",
+                            Email = _configuration["Lybt:SystemAdmin:Email"]
+                                ?? throw new InvalidOperationException("未配置系统管理员Email: Lybt:SystemAdmin:Email"),
                             Status = CommonStatus.Enabled,
                             CreatedAt = DateTime.MinValue,
                             UpdatedAt = DateTime.Now
