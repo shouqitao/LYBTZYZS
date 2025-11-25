@@ -245,6 +245,7 @@ public class MedicalCaseLifecycleHandler
 
     /// <summary>
     /// 更新MedicalCase状态
+    /// Issue #2243: 使用专用的UpdateStatusAsync API
     /// </summary>
     private async Task<(bool success, string? errorMessage)> UpdateMedicalCaseStatusAsync(Guid medicalCaseId, MedicalCaseStatus newStatus)
     {
@@ -253,25 +254,18 @@ public class MedicalCaseLifecycleHandler
             _logger.LogInformation("更新MedicalCase状态，MedicalCaseId: {MedicalCaseId}, 新状态: {NewStatus}",
                 medicalCaseId, newStatus);
 
-            // Epic #1961: 使用统一的 MedicalCaseInputDto
-            //  注意：MedicalCaseInputDto 不包含 Status 字段
-            // Status 由 Service 层管理，此方法可能需要调用专用的状态更新 API
-            // 暂时保留为空 InputDto，运行时可能需要调整业务逻辑
-            var updateDto = new MedicalCaseInputDto
+            // Issue #2243: 使用专用的状态更新API
+            var request = new UpdateMedicalCaseStatusDto
             {
-                Id = medicalCaseId,
-                PatientId = Guid.Empty, // TODO: 从现有医案加载
-                DoctorId = Guid.Empty, // TODO: 从现有医案加载
-                VisitDate = DateTime.Now // TODO: 从现有医案加载
-                // Status 字段不存在于 InputDto，需要重新设计此方法
+                Status = newStatus,
+                StatusChangeReason = null // 可选的状态变更原因
             };
 
-            // 使用DataManager更新状态
-            var updated = await _dataManager.UpdateSimpleAsync(updateDto);
+            var response = await _dataManager.UpdateStatusAsync(medicalCaseId, request);
 
-            if (updated == null)
+            if (!response.Success)
             {
-                throw new InvalidOperationException("DataManager返回null，状态更新失败");
+                throw new InvalidOperationException(response.Message ?? "状态更新失败");
             }
 
             _logger.LogInformation("MedicalCase状态更新成功，新状态: {NewStatus}", newStatus);

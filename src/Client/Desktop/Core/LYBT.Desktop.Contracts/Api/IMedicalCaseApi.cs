@@ -194,5 +194,14 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Put("/api/v1/medicalcases/{id}/close")]
         Task<ApiResponse> CloseCaseAsync(Guid id);
+
+        /// <summary>
+        /// 更新医案状态
+        /// Issue #2243: 修复SaveDraft和Complete功能
+        /// </summary>
+        [Refit.Put("/api/v1/medicalcases/{id}/status")]
+        Task<ApiResponse<MedicalCaseDto>> UpdateStatusAsync(
+            Guid id,
+            [Refit.Body] UpdateMedicalCaseStatusDto request);
     }
 }

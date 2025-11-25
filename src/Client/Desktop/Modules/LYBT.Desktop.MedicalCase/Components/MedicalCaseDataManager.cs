@@ -733,6 +733,31 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
+        /// <summary>
+        /// 更新医案状态
+        /// Issue #2243: 修复SaveDraft和Complete功能
+        /// </summary>
+        public virtual async Task<ApiResponse<MedicalCaseDto>> UpdateStatusAsync(
+            Guid medicalCaseId,
+            UpdateMedicalCaseStatusDto request)
+        {
+            try
+            {
+                _logger.LogDebug("更新医案状态: MedicalCaseId={MedicalCaseId}, NewStatus={Status}",
+                    medicalCaseId, request.Status);
+                var response = await _api.UpdateStatusAsync(medicalCaseId, request);
+                _logger.LogInformation("医案状态更新成功: MedicalCaseId={MedicalCaseId}, NewStatus={Status}, Success={Success}",
+                    medicalCaseId, request.Status, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新医案状态失败: MedicalCaseId={MedicalCaseId}, TargetStatus={Status}",
+                    medicalCaseId, request.Status);
+                throw;
+            }
+        }
+
         #endregion
 
         #region 聚合根专用方法
