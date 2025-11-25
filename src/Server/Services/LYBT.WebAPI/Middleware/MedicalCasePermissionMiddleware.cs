@@ -102,15 +102,16 @@ namespace LYBT.WebAPI.Middleware
                 c.Type == "unique_name" ||
                 c.Type == "name")?.Value ?? context.User.Identity?.Name;
 
-            // 获取角色
-            var role = claims.FirstOrDefault(c =>
+            // Issue #2241: 获取角色并转换为UserRole枚举
+            var roleStr = claims.FirstOrDefault(c =>
                 c.Type == ClaimTypes.Role ||
                 c.Type == "role" ||
-                c.Type == "roles")?.Value ?? "Unknown";
+                c.Type == "roles")?.Value;
 
-            // 检查是否为管理员
-            var isAdmin = role.Contains("Admin", StringComparison.OrdinalIgnoreCase)
-                         || role.Contains("Administrator", StringComparison.OrdinalIgnoreCase);
+            var role = ParseUserRole(roleStr);
+
+            // Issue #2241: 检查是否为管理员，使用枚举比较
+            var isAdmin = role == UserRole.SuperAdmin || role == UserRole.Admin;
 
             return new MedicalCaseUserInfo
             {
@@ -123,17 +124,55 @@ namespace LYBT.WebAPI.Middleware
             };
         }
 
+        /// <summary>
+        /// 解析用户角色字符串为UserRole枚举
+        /// Issue #2241: 与BaseControllerCore.ParseUserRole保持一致
+        /// </summary>
+        private static UserRole ParseUserRole(string? roleStr)
+        {
+            if (string.IsNullOrWhiteSpace(roleStr))
+            {
+                return UserRole.Doctor;
+            }
+
+            // 处理遗留命名：SysAdmin → SuperAdmin
+            if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
+            {
+                roleStr = "SuperAdmin";
+            }
+
+            // 尝试解析为枚举
+            if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
+            {
+                // 检查是否为已废弃的角色
+                if (role == UserRole.User ||
+                    role == UserRole.Pharmacist ||
+                    role == UserRole.Receptionist ||
+                    role == UserRole.Cashier ||
+                    role == UserRole.Therapist)
+                {
+                    return UserRole.Doctor;
+                }
+
+                return role;
+            }
+
+            // 解析失败，使用默认值
+            return UserRole.Doctor;
+        }
+
         #endregion
     }
 
     /// <summary>
     /// MedicalCase用户权限信息
+    /// Issue #2241: Role改为UserRole枚举类型
     /// </summary>
     public class MedicalCaseUserInfo
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        public UserRole Role { get; set; } = UserRole.Doctor;
         public bool IsAdmin { get; set; }
         public bool CanEditToday { get; set; }
     }

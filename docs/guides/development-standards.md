@@ -596,9 +596,449 @@ if (user == null)
 
 ---
 
-## 2. 代码规范
+## 2. 枚举使用规范（Enum Usage Standards）
 
-（待补充）
+> **架构决策**: 枚举应在共享层定义，业务逻辑使用枚举比较，仅在WebAPI传输时转换为字符串
+>
+> **制定背景**: Issue #2241 发现多处违反枚举设计原则，使用字符串比较代替枚举比较
+
+### 2.1 核心原则
+
+**枚举优先 > 字符串比较**
+
+在整个应用程序中：
+- 枚举在共享层定义（LYBT.Shared.Models/Enums）
+- 业务逻辑使用枚举类型进行比较和判断
+- 仅在WebAPI序列化时转换为字符串（JSON传输）
+- 禁止在业务逻辑中使用字符串进行枚举值比较
+
+### 2.2 枚举定义规范
+
+#### 2.2.1 定义位置
+
+所有枚举必须定义在共享层：
+```
+LYBT.Shared.Models/
+  └── Enums/
+      ├── AuthEnums.cs          # 认证授权相关枚举
+      ├── MedicalCaseEnums.cs   # 医案相关枚举
+      ├── PatientEnums.cs       # 患者相关枚举
+      └── ...
+```
+
+#### 2.2.2 JSON序列化配置
+
+所有枚举必须添加`[JsonConverter]`特性以支持字符串序列化：
+
+```csharp
+using System.Text.Json.Serialization;
+
+/// <summary>
+/// 用户角色枚举
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum UserRole
+{
+    /// <summary>超级管理员（最高权限）</summary>
+    [Description("超级管理员")]
+    SuperAdmin = 100,
+
+    /// <summary>管理员（系统管理、用户管理）</summary>
+    [Description("管理员")]
+    Admin = 10,
+
+    /// <summary>医生（诊疗、记录、查询等业务操作）</summary>
+    [Description("医生")]
+    Doctor = 1
+}
+```
+
+**必需配置**:
+- `[JsonConverter(typeof(JsonStringEnumConverter))]` - 启用字符串序列化
+- `[Description("...")]` - 提供中文描述（用于UI显示）
+- 明确的整数值 - 便于数据库存储和版本兼容
+
+### 2.3 业务逻辑中的枚举使用
+
+#### 2.3.1 禁止的模式
+
+**❌ 禁止1: 字符串相等比较**
+```csharp
+// ❌ 错误：使用字符串比较
+if (operatorRole == "Admin")
+{
+    // ...
+}
+
+// ❌ 错误：使用字符串Contains
+if (operatorRole?.Contains("Admin") == true)
+{
+    // ...
+}
+
+// ❌ 错误：使用字符串不等比较
+if (operatorRole != "Doctor")
+{
+    // ...
+}
+```
+
+**❌ 禁止2: 方法签名使用字符串类型**
+```csharp
+// ❌ 错误：返回值类型为string
+protected (Guid OperatorId, string OperatorName, string OperatorRole) GetOperator()
+{
+    var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
+    return (opId, userName, roleStr); // ❌ 直接返回字符串
+}
+```
+
+#### 2.3.2 推荐的模式
+
+**✅ 推荐1: 枚举相等比较**
+```csharp
+// ✅ 正确：使用枚举比较
+if (operatorRole == UserRole.Admin)
+{
+    // ...
+}
+
+// ✅ 正确：使用枚举逻辑或
+if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
+{
+    // ...
+}
+
+// ✅ 正确：使用枚举不等比较
+if (operatorRole != UserRole.Doctor)
+{
+    // ...
+}
+```
+
+**✅ 推荐2: 方法签名使用枚举类型**
+```csharp
+// ✅ 正确：返回值类型为UserRole枚举
+protected (Guid OperatorId, string OperatorName, UserRole OperatorRole) GetOperator()
+{
+    var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value;
+
+    // ✅ 在数据入口点转换字符串→枚举
+    var role = ParseUserRole(roleStr);
+    return (opId, userName, role);
+}
+```
+
+### 2.4 字符串→枚举转换规范
+
+#### 2.4.1 转换时机
+
+字符串→枚举转换应该在**数据入口点**进行：
+- Controller层：从JWT Claims提取角色后立即转换
+- Middleware层：从HttpContext.User提取角色后立即转换
+- Service层：如需从外部数据源获取枚举值，获取后立即转换
+
+#### 2.4.2 转换模式
+
+**标准转换方法**:
+```csharp
+/// <summary>
+/// 解析用户角色字符串为UserRole枚举
+/// Issue #2241: 处理遗留命名和无效值
+/// </summary>
+private UserRole ParseUserRole(string? roleStr)
+{
+    if (string.IsNullOrWhiteSpace(roleStr))
+    {
+        _logger.LogWarning("角色值为空，默认使用Doctor");
+        return UserRole.Doctor;
+    }
+
+    // 步骤1: 处理遗留命名（SysAdmin → SuperAdmin）
+    if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
+    {
+        roleStr = "SuperAdmin";
+    }
+
+    // 步骤2: 尝试解析为枚举
+    if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
+    {
+        // 步骤3: 检查是否为已废弃的角色
+        if (role == UserRole.User ||
+            role == UserRole.Pharmacist ||
+            role == UserRole.Receptionist ||
+            role == UserRole.Cashier ||
+            role == UserRole.Therapist)
+        {
+            _logger.LogWarning("使用了已废弃的角色 {ObsoleteRole}，统一为Doctor", role);
+            return UserRole.Doctor;
+        }
+
+        return role;
+    }
+
+    // 步骤4: 解析失败，记录警告并使用默认值
+    _logger.LogWarning("无效的角色值: {RoleString}，默认使用Doctor", roleStr);
+    return UserRole.Doctor;
+}
+```
+
+**转换要点**:
+1. **空值处理**: 空字符串/null应返回安全的默认值
+2. **大小写不敏感**: 使用`ignoreCase: true`
+3. **遗留兼容**: 处理历史命名（如SysAdmin→SuperAdmin）
+4. **废弃值处理**: 将废弃的枚举值映射到新值
+5. **日志记录**: 所有边界情况都应记录Warning日志
+6. **安全回退**: 解析失败时返回安全的默认值
+
+### 2.5 遗留兼容性处理
+
+#### 2.5.1 废弃枚举值标记
+
+对于已废弃但需保留兼容性的枚举值，使用`[Obsolete]`特性：
+
+```csharp
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum UserRole
+{
+    SuperAdmin = 100,
+    Admin = 10,
+    Doctor = 1,
+
+    /// <summary>普通用户 - 已统一到Doctor角色</summary>
+    [Description("普通用户")]
+    [Obsolete("Use Doctor instead. User role unified to Doctor in role unification.", false)]
+    User = 20,
+
+    /// <summary>药师 - 已统一到Doctor角色</summary>
+    [Description("药师")]
+    [Obsolete("Use Doctor instead. Pharmacist role unified to Doctor in role unification.", false)]
+    Pharmacist = 2
+}
+```
+
+**处理策略**:
+- 保留废弃值以避免反序列化错误
+- 标记`[Obsolete]`防止新代码使用
+- 在ParseXXX方法中将废弃值映射到新值
+- 记录Warning日志用于监控
+
+#### 2.5.2 遗留命名映射
+
+对于历史原因使用的不同命名，在转换方法中统一映射：
+
+```csharp
+// 遗留命名映射
+if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
+{
+    roleStr = "SuperAdmin";
+}
+```
+
+### 2.6 示例场景
+
+#### 2.6.1 Controller层GetOperator()实现
+
+```csharp
+/// <summary>
+/// 获取当前操作者信息 - 兼容多种Claims标准
+/// Issue #2241: 返回UserRole枚举而非字符串
+/// </summary>
+protected (Guid OperatorId, string OperatorName, UserRole OperatorRole) GetOperator()
+{
+    // 提取用户ID
+    var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                ?? User?.FindFirst("sub")?.Value;
+
+    // 提取用户名
+    var userName = User?.Identity?.Name
+                  ?? User?.FindFirst(ClaimTypes.Name)?.Value
+                  ?? User?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value;
+
+    // 提取角色字符串
+    var roleStr = User?.FindFirst(ClaimTypes.Role)?.Value
+                 ?? User?.FindFirst("role")?.Value;
+
+    if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
+    {
+        // ✅ 在数据入口点转换字符串→枚举
+        var role = ParseUserRole(roleStr);
+        return (opId, userName, role);
+    }
+
+    throw new UnauthorizedAccessException("未登录或用户信息无效");
+}
+```
+
+#### 2.6.2 Middleware层角色检查
+
+```csharp
+/// <summary>
+/// 提取用户权限信息
+/// Issue #2241: 使用UserRole枚举
+/// </summary>
+private static MedicalCaseUserInfo? ExtractUserInfo(HttpContext context)
+{
+    if (context.User?.Identity?.IsAuthenticated != true)
+        return null;
+
+    var claims = context.User.Claims;
+
+    // 获取用户ID
+    var userIdClaim = claims.FirstOrDefault(c =>
+        c.Type == ClaimTypes.NameIdentifier ||
+        c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+
+    if (!Guid.TryParse(userIdClaim, out var userId))
+        return null;
+
+    // 获取用户名
+    var userName = claims.FirstOrDefault(c =>
+        c.Type == ClaimTypes.Name)?.Value ?? "Unknown";
+
+    // Issue #2241: 获取角色并转换为UserRole枚举
+    var roleStr = claims.FirstOrDefault(c =>
+        c.Type == ClaimTypes.Role)?.Value;
+
+    var role = ParseUserRole(roleStr);
+
+    // Issue #2241: 检查是否为管理员，使用枚举比较
+    var isAdmin = role == UserRole.SuperAdmin || role == UserRole.Admin;
+
+    return new MedicalCaseUserInfo
+    {
+        UserId = userId,
+        UserName = userName,
+        Role = role,  // ← UserRole枚举类型
+        IsAdmin = isAdmin
+    };
+}
+```
+
+#### 2.6.3 业务逻辑中的角色判断
+
+```csharp
+/// <summary>
+/// 查询待诊队列 - 根据角色返回不同数据
+/// Issue #2241: 使用UserRole枚举比较
+/// </summary>
+[HttpGet("pending")]
+public async Task<ActionResult<ApiResponse<List<MedicalCaseDto>>>> GetPendingQueue()
+{
+    try
+    {
+        var (operatorId, operatorName, operatorRole) = GetOperator();
+
+        // ✅ 使用UserRole枚举比较，而非字符串比较
+        if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
+        {
+            // 管理员查询所有待诊医案
+            _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                operatorId, operatorRole);
+            result = await _medicalCaseService.GetAllPendingCasesAsync();
+        }
+        else if (operatorRole == UserRole.Doctor)
+        {
+            // 医生只查询自己的待诊医案
+            _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
+                operatorId);
+            result = await _medicalCaseService.GetPendingCasesAsync(operatorId);
+        }
+        else
+        {
+            return Forbid(); // 其他角色禁止访问
+        }
+
+        return Ok(ApiResponse<List<MedicalCaseDto>>.CreateSuccess(result));
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        return Unauthorized(ApiResponse<List<MedicalCaseDto>>.CreateFail(ex.Message));
+    }
+}
+```
+
+### 2.7 Code Review检查清单
+
+#### 2.7.1 枚举定义检查
+
+```markdown
+- [ ] 枚举定义在LYBT.Shared.Models/Enums命名空间中
+- [ ] 枚举标记了[JsonConverter(typeof(JsonStringEnumConverter))]
+- [ ] 每个枚举值都有[Description]特性
+- [ ] 枚举值使用明确的整数值（非自动递增）
+- [ ] 废弃的枚举值标记了[Obsolete]
+```
+
+#### 2.7.2 业务逻辑检查
+
+```markdown
+- [ ] 方法签名使用枚举类型而非string（如UserRole而非string）
+- [ ] 业务逻辑使用枚举比较（role == UserRole.Admin）
+- [ ] 没有使用字符串比较（role == "Admin"）
+- [ ] 没有使用字符串Contains（role?.Contains("Admin")）
+- [ ] 字符串→枚举转换在数据入口点进行
+```
+
+#### 2.7.3 转换方法检查
+
+```markdown
+- [ ] ParseXXX方法处理了null/空字符串情况
+- [ ] ParseXXX方法使用Enum.TryParse(ignoreCase: true)
+- [ ] ParseXXX方法处理了遗留命名（如SysAdmin→SuperAdmin）
+- [ ] ParseXXX方法将废弃枚举值映射到新值
+- [ ] ParseXXX方法对边界情况记录Warning日志
+- [ ] ParseXXX方法有安全的默认返回值
+```
+
+### 2.8 常见问题FAQ
+
+**Q1: 为什么不能在业务逻辑中使用字符串比较？**
+
+A: 字符串比较的问题：
+- **类型不安全**: 拼写错误（"Admin" vs "Admim"）在编译期无法发现
+- **重构困难**: 重命名枚举值时字符串比较不会自动更新
+- **性能较差**: 字符串比较比枚举比较慢
+- **违反设计**: 枚举设计的目的就是提供类型安全的常量值
+
+**Q2: JWT Claims中存储的是字符串，为什么要转换为枚举？**
+
+A: JWT Claims存储字符串是传输层的实现细节，业务逻辑层应该使用枚举：
+- **单一职责**: Controller/Middleware负责数据转换，Service负责业务逻辑
+- **类型安全**: 业务逻辑使用强类型避免错误
+- **关注点分离**: 传输格式（JSON字符串）与业务模型（枚举）分离
+
+**Q3: ParseUserRole方法应该放在哪里？**
+
+A: 根据使用场景放置：
+- **BaseControllerCore**: Controller层GetOperator()使用
+- **Middleware**: Middleware层ExtractUserInfo()使用
+- **共享工具类**: 多处使用时可提取到Shared.Utilities
+
+原则：**避免重复代码，但保持代码内聚性**
+
+**Q4: 如何处理数据库中存储的旧枚举值？**
+
+A: 使用迁移策略：
+1. 标记废弃值为`[Obsolete]`保持反序列化兼容
+2. ParseXXX方法将废弃值映射到新值
+3. 数据迁移脚本更新数据库中的旧值
+4. 监控日志确认无新代码使用废弃值
+5. 一段时间后（如3个月）移除废弃值
+
+**Q5: 枚举值应该使用什么整数值？**
+
+A: 推荐策略：
+- **权限等级递增**: SuperAdmin(100) > Admin(10) > Doctor(1)
+- **避免连续值**: 便于未来插入新值（100, 10, 1而非3, 2, 1）
+- **明确赋值**: 不依赖自动递增，避免添加新值时改变现有值
+
+### 2.9 相关Issue
+
+- Issue #2241: 枚举使用规范 - 全局修复字符串比较违规
+
+---
 
 ---
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LYBT.Shared.Models.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Web;
@@ -87,13 +88,14 @@ public abstract class BaseSystemController : BaseControllerCore
 
     /// <summary>
     /// 验证系统管理员权限
+    /// Issue #2241: 使用UserRole枚举比较
     /// </summary>
     protected bool IsSystemAdmin()
     {
         try
         {
             var (_, _, role) = GetOperator();
-            return role?.Contains("Admin") == true;
+            return role == UserRole.SuperAdmin || role == UserRole.Admin;
         }
         catch
         {

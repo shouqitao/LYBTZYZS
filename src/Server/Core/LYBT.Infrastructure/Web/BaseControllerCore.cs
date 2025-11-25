@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using LYBT.Infrastructure.Utilities;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -24,8 +25,9 @@ public abstract class BaseControllerCore : ControllerBase
 
     /// <summary>
     /// 获取当前操作者信息 - 兼容多种Claims标准
+    /// Issue #2241: 返回UserRole枚举而非字符串
     /// </summary>
-    protected (Guid OperatorId, string OperatorName, string OperatorRole) GetOperator()
+    protected (Guid OperatorId, string OperatorName, UserRole OperatorRole) GetOperator()
     {
         // 尝试多种方式获取用户ID（兼容JwtRegisteredClaimNames和ClaimTypes）
         var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -47,10 +49,52 @@ public abstract class BaseControllerCore : ControllerBase
 
         if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
         {
-            return (opId, userName, roleStr ?? "User");
+            // Issue #2241: 将字符串角色转换为UserRole枚举
+            var role = ParseUserRole(roleStr);
+            return (opId, userName, role);
         }
 
         throw new UnauthorizedAccessException("未登录或用户信息无效");
+    }
+
+    /// <summary>
+    /// 解析用户角色字符串为UserRole枚举
+    /// Issue #2241: 处理遗留命名和无效值
+    /// </summary>
+    private UserRole ParseUserRole(string? roleStr)
+    {
+        if (string.IsNullOrWhiteSpace(roleStr))
+        {
+            _logger.LogWarning("角色值为空，默认使用Doctor");
+            return UserRole.Doctor;
+        }
+
+        // 处理遗留命名：SysAdmin → SuperAdmin
+        if (roleStr.Equals("SysAdmin", StringComparison.OrdinalIgnoreCase))
+        {
+            roleStr = "SuperAdmin";
+        }
+
+        // 尝试解析为枚举
+        if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
+        {
+            // 检查是否为已废弃的角色（User, Pharmacist, Receptionist等）
+            if (role == UserRole.User ||
+                role == UserRole.Pharmacist ||
+                role == UserRole.Receptionist ||
+                role == UserRole.Cashier ||
+                role == UserRole.Therapist)
+            {
+                _logger.LogWarning("使用了已废弃的角色 {ObsoleteRole}，统一为Doctor", role);
+                return UserRole.Doctor;
+            }
+
+            return role;
+        }
+
+        // 解析失败，记录警告并使用默认值
+        _logger.LogWarning("无效的角色值: {RoleString}，默认使用Doctor", roleStr);
+        return UserRole.Doctor;
     }
 
     /// <summary>

@@ -121,7 +121,8 @@ namespace LYBT.WebAPI.Controllers
             {
                 // Epic #1731: 获取当前用户信息以进行权限检查
                 var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+                // Issue #2241: 使用UserRole枚举比较
+                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _medicalCaseService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
 
@@ -158,7 +159,8 @@ namespace LYBT.WebAPI.Controllers
             {
                 // Epic #1731: 获取当前用户信息以进行权限检查
                 var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+                // Issue #2241: 使用UserRole枚举比较
+                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _medicalCaseService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
 
@@ -233,7 +235,8 @@ namespace LYBT.WebAPI.Controllers
             {
                 // Epic #1731: 获取当前用户信息以进行权限检查
                 var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+                // Issue #2241: 使用UserRole枚举比较
+                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, request, operatorId, isAdmin);
 
@@ -273,7 +276,8 @@ namespace LYBT.WebAPI.Controllers
             {
                 // Epic #1731: 获取当前用户信息以进行权限检查
                 var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole?.Contains("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
+                // Issue #2241: 使用UserRole枚举比较
+                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _medicalCaseService.DeletePrescriptionAsync(id, prescriptionId, operatorId, isAdmin);
 
@@ -666,15 +670,15 @@ namespace LYBT.WebAPI.Controllers
                 {
                     var (operatorId, operatorName, operatorRole) = GetOperator();
 
-                    // 根据角色判断查询范围，调用不同的Service方法
-                    if (operatorRole == "SysAdmin" || operatorRole == "Admin")
+                    // Issue #2241: 根据角色判断查询范围，使用UserRole枚举比较
+                    if (operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin)
                     {
                         // 管理员查询所有待诊医案
                         _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
                             operatorId, operatorRole);
                         result = await _medicalCaseService.GetAllPendingCasesAsync();
                     }
-                    else if (operatorRole == "Doctor")
+                    else if (operatorRole == UserRole.Doctor)
                     {
                         // 医生只查询自己的待诊医案
                         _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
@@ -723,8 +727,8 @@ namespace LYBT.WebAPI.Controllers
                     // 如果未传递doctorId，使用当前登录医生ID
                     if (doctorId == null || doctorId == Guid.Empty)
                     {
-                        // 验证当前用户是医生角色
-                        if (operatorRole != "Doctor")
+                        // Issue #2241: 验证当前用户是医生角色，使用UserRole枚举比较
+                        if (operatorRole != UserRole.Doctor)
                         {
                             _logger.LogWarning("非医生用户尝试查询未完成医案，OperatorId: {OperatorId}, Role: {Role}",
                                 operatorId, operatorRole);
