@@ -5,7 +5,7 @@
 -- 日期: 2025-11-25
 -- =============================================
 
-USE [LYBTZYZS_DB]
+USE [LYBTDB]
 GO
 
 BEGIN TRANSACTION;
@@ -77,7 +77,7 @@ GO
 -- 回滚脚本（如需回滚，请执行以下SQL）
 -- =============================================
 /*
-USE [LYBTZYZS_DB]
+USE [LYBTDB]
 GO
 
 BEGIN TRANSACTION;
