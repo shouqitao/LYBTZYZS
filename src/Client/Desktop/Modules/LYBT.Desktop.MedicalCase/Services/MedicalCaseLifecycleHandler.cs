@@ -149,23 +149,24 @@ public class MedicalCaseLifecycleHandler
     }
 
     /// <summary>
-    /// 取消医案
+    /// 取消医案（软删除）
+    /// Issue #2242: 使用软删除（IsDeleted=true）替代Cancelled状态
     /// </summary>
     public async Task<(bool success, string? errorMessage)> CancelAsync(Guid medicalCaseId)
     {
         try
         {
-            _logger.LogInformation("取消医案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("取消医案（软删除），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
-            // 更新MedicalCase状态为Cancelled
-            var result = await UpdateMedicalCaseStatusAsync(medicalCaseId, MedicalCaseStatus.Cancelled);
+            // Issue #2242: 使用软删除替代状态更新为Cancelled
+            var response = await _dataManager.SoftDeleteMedicalCaseAsync(medicalCaseId);
 
-            if (!result.success)
+            if (!response.Success)
             {
-                return result;
+                return (false, response.Message ?? "软删除医案失败");
             }
 
-            _logger.LogInformation("医案已取消");
+            _logger.LogInformation("医案已软删除（取消）");
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs

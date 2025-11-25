@@ -5,8 +5,8 @@ namespace LYBT.Shared.Models.Enums
 {
 
     /// <summary>
-    /// 医疗案例状态枚举 - Epic #1612修正版
-    /// 支持三步流程（辨证→开方标记→处方）和暂存功能
+    /// 医疗案例状态枚举 - Issue #2242简化版
+    /// 简化状态机：Draft ↔ Active → Completed，取消操作使用软删除（IsDeleted）
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum MedicalCaseStatus
@@ -23,8 +23,9 @@ namespace LYBT.Shared.Models.Enums
         [Description("已完成")]
         Completed = 2,
 
-        /// <summary>已取消（用户主动取消）</summary>
+        /// <summary>已取消 - Issue #2242: 已废弃，使用软删除（IsDeleted=true）代替</summary>
         [Description("已取消")]
+        [Obsolete("Use soft delete (IsDeleted=true) instead of Cancelled status. Issue #2242", false)]
         Cancelled = 3,
 
         // ========== 废弃状态（兼容性保留） ==========

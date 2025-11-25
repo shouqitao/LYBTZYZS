@@ -221,26 +221,24 @@ public class MedicalCaseItem : BindableBase
     }
 
     /// <summary>
-    /// 状态显示文本 - Epic #1612修正版
+    /// 状态显示文本 - Issue #2242简化版
     /// </summary>
     public string StatusText => Status switch
     {
         MedicalCaseStatus.Draft => "暂存",
         MedicalCaseStatus.Active => "进行中",
         MedicalCaseStatus.Completed => "已完成",
-        MedicalCaseStatus.Cancelled => "已取消",
         _ => "未知"
     };
 
     /// <summary>
-    /// 状态颜色（用于UI绑定）- Epic #1612修正版
+    /// 状态颜色（用于UI绑定）- Issue #2242简化版
     /// </summary>
     public string StatusColor => Status switch
     {
         MedicalCaseStatus.Draft => "#FFC107",      // 暂存：橙色
         MedicalCaseStatus.Active => "#4CAF50",     // 进行中：绿色
         MedicalCaseStatus.Completed => "#9E9E9E",  // 已完成：灰色
-        MedicalCaseStatus.Cancelled => "#F44336",  // 已取消：红色
         _ => "#757575"
     };
 

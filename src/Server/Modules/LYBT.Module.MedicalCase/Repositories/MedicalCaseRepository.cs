@@ -176,14 +176,14 @@ namespace LYBT.Module.MedicalCase.Repositories
                 }
             }
 
-            // 检测状态变更：从Active变为Completed或Cancelled - Epic #1612修正版
+            // 检测状态变更：从Active/Draft变为Completed - Issue #2242简化版
             bool isMovingToTerminalState =
                 (existingEntity.CaseStatus == MedicalCaseStatus.Active || existingEntity.CaseStatus == MedicalCaseStatus.Draft) &&
-                (entity.CaseStatus == MedicalCaseStatus.Completed || entity.CaseStatus == MedicalCaseStatus.Cancelled);
+                entity.CaseStatus == MedicalCaseStatus.Completed;
 
             if (isMovingToTerminalState)
             {
-                _logger?.LogInformation("检测到医案状态变更为终态（Completed/Cancelled），准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
+                _logger?.LogInformation("检测到医案状态变更为终态（Completed），准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
 
                 // 删除关联的Consultation（如果存在）
                 if (existingEntity.Consultation != null)
