@@ -173,6 +173,17 @@ public class UnfinishedCaseHandler
     }
 
     /// <summary>
+    /// 设置缓存（预填充）
+    /// 用于从待诊队列选择患者时，直接缓存医案ID，避免重复API调用
+    /// </summary>
+    public void SetCache(Guid patientId, Guid medicalCaseId)
+    {
+        _pendingCaseCache[patientId] = medicalCaseId;
+        _logger.LogInformation("缓存已设置：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+            patientId, medicalCaseId);
+    }
+
+    /// <summary>
     /// 清除缓存中的医案
     /// </summary>
     public void ClearCache(Guid patientId)

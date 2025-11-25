@@ -215,7 +215,17 @@ namespace LYBT.Desktop.Patients.ViewModels
                             Logger.LogDebug("选择来源：待诊队列，已清除全部患者选择");
                         }
 
-                        Logger.LogInformation("待看诊队列选中患者：{PatientName}", value.PatientName);
+                        Logger.LogInformation("待看诊队列选中患者：{PatientName}，MedicalCaseId：{MedicalCaseId}",
+                            value.PatientName, value.MedicalCaseId);
+
+                        // Bug修复：将待诊队列的医案ID存入UnfinishedCaseHandler缓存
+                        // 这样在点击"开始看诊"时就能直接从缓存获取，无需再次查询API
+                        if (value.MedicalCaseId.HasValue && value.MedicalCaseId.Value != Guid.Empty)
+                        {
+                            Logger.LogInformation("预填充未完成医案缓存：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
+                                value.PatientId, value.MedicalCaseId.Value);
+                            _unfinishedCaseHandler.SetCache(value.PatientId, value.MedicalCaseId.Value);
+                        }
 
                         // Issue #1790: 异步加载患者详情并设置CurrentPatient（通过事件处理）
                         _ = _pendingQueueManager.LoadPatientForPendingCaseAsync(value.PatientId, Patients);
@@ -738,9 +748,19 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             // Epic #2210 Task 3.1.4: 从SessionManager提取当前医生ID
             var doctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-            
+
+            // 诊断日志：记录SessionManager状态和doctorId
+            Logger.LogInformation("[诊断] 检查未完成医案 - PatientId: {PatientId}, SessionManager!=null: {HasSession}, CurrentUser!=null: {HasUser}, DoctorId: {DoctorId}",
+                patientId, SessionManager != null, SessionManager?.CurrentUser != null, doctorId);
+
             // Issue #1790: 委托给UnfinishedCaseHandler处理
-            return await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId, doctorId);
+            var result = await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId, doctorId);
+
+            // 诊断日志：记录返回结果
+            Logger.LogInformation("[诊断] CheckUnfinishedMedicalCaseAsync返回结果: {HasResult}, MedicalCaseId: {CaseId}",
+                result != null, result?.Id);
+
+            return result;
         }
 
         /// <summary>
