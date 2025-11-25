@@ -178,8 +178,8 @@ namespace LYBT.Module.MedicalCase.Repositories
 
             // 检测状态变更：从Active变为Completed或Cancelled - Epic #1612修正版
             bool isMovingToTerminalState =
-                (existingEntity.Status == MedicalCaseStatus.Active || existingEntity.Status == MedicalCaseStatus.Draft) &&
-                (entity.Status == MedicalCaseStatus.Completed || entity.Status == MedicalCaseStatus.Cancelled);
+                (existingEntity.CaseStatus == MedicalCaseStatus.Active || existingEntity.CaseStatus == MedicalCaseStatus.Draft) &&
+                (entity.CaseStatus == MedicalCaseStatus.Completed || entity.CaseStatus == MedicalCaseStatus.Cancelled);
 
             if (isMovingToTerminalState)
             {
@@ -223,11 +223,11 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
-            // Epic #2210 Phase 3: 添加doctorId过滤实现多医生数据隔离
+            // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
             var result = await _dbSet
-                .Where(m => !m.IsDeleted 
-                    && m.Status == MedicalCaseStatus.Active
-                    && m.DoctorId == doctorId) // Epic #2210: 按医生过滤
+                .Where(m => !m.IsDeleted
+                    && m.CaseStatus == MedicalCaseStatus.Active
+                    && m.DoctorId == doctorId)
                 .Join(
                     _context.Set<PatientEntity>(),
                     m => m.PatientId,
@@ -245,8 +245,36 @@ namespace LYBT.Module.MedicalCase.Repositories
                 })
                 .ToListAsync();
 
-            _logger?.LogInformation("获取待看诊列表（DoctorId: {DoctorId}），共 {Count} 条记录", 
+            _logger?.LogInformation("获取待看诊列表（DoctorId: {DoctorId}），共 {Count} 条记录",
                 doctorId, result.Count);
+            return result ?? new List<PendingMedicalCaseDto>();
+        }
+
+        /// <summary>
+        /// 获取所有待看诊医案列表（管理员专用）
+        /// </summary>
+        public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
+        {
+            var result = await _dbSet
+                .Where(m => !m.IsDeleted && m.CaseStatus == MedicalCaseStatus.Active)
+                .Join(
+                    _context.Set<PatientEntity>(),
+                    m => m.PatientId,
+                    p => p.Id,
+                    (m, p) => new { MedicalCase = m, Patient = p })
+                .OrderBy(r => r.MedicalCase.CreatedAt) // 按创建时间升序
+                .Select(r => new PendingMedicalCaseDto
+                {
+                    PatientId = r.Patient.Id,
+                    PatientName = r.Patient.Name,
+                    PhoneNumber = r.Patient.PhoneNumber ?? string.Empty,
+                    PhoneMasked = MaskPhoneNumber(r.Patient.PhoneNumber ?? string.Empty),
+                    Type = "暂存", // 当前只支持未完成医案
+                    MedicalCaseId = r.MedicalCase.Id
+                })
+                .ToListAsync();
+
+            _logger?.LogInformation("获取所有待看诊列表（管理员），共 {Count} 条记录", result.Count);
             return result ?? new List<PendingMedicalCaseDto>();
         }
 
@@ -331,7 +359,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 patientId, doctorId, doctorId == Guid.Empty);
 
             var query = GetDetailQuery()
-                .Where(m => m.PatientId == patientId && m.Status != MedicalCaseStatus.Completed);
+                .Where(m => m.PatientId == patientId && m.CaseStatus != MedicalCaseStatus.Completed);
 
             // Epic #2210 Task 3.1.1: Q4医生筛选链 - 仅当doctorId有效时添加筛选条件
             if (doctorId != Guid.Empty)

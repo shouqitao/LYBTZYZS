@@ -191,6 +191,13 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>待诊队列列表</returns>
         Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId);
 
+        /// <summary>
+        /// 获取所有待看诊队列（管理员专用）
+        /// 业务规则：返回所有Active状态医案的患者信息，不限定医生
+        /// </summary>
+        /// <returns>待诊队列列表</returns>
+        Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync();
+
         // ========== Helper Layer（辅助功能）==========
 
         /// <summary>

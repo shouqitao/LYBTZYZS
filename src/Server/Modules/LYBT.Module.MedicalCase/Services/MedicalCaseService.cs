@@ -94,7 +94,7 @@ namespace LYBT.Module.MedicalCase.Services
                 var existingActiveCases = await _repository.GetByPatientIdAsync(patientId);
                 if (!MedicalCaseRules.CanCreateNewCase(existingActiveCases))
                 {
-                    var activeCase = existingActiveCases.FirstOrDefault(c => c.Status == MedicalCaseStatus.Active);
+                    var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
                     _logger.LogWarning("患者已有未完成病案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
                         patientId, activeCase?.Id);
                     throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
@@ -107,7 +107,8 @@ namespace LYBT.Module.MedicalCase.Services
                     PatientId = patientId,
                     PatientName = patient.Name,
                     ConsultationDate = visitDate,
-                    Status = MedicalCaseStatus.Active,
+                    CaseStatus = MedicalCaseStatus.Active,
+                    Status = CommonStatus.Enabled,
                     NeedsPrescription = false, // 默认值，用户可后续修改
                     DoctorId = doctorId,
                     DoctorName = doctor.RealName,
@@ -174,7 +175,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 业务规则验证：BF-002（仅Active状态可编辑）
-                if (medicalCase.Status != MedicalCaseStatus.Active)
+                if (medicalCase.CaseStatus != MedicalCaseStatus.Active)
                 {
                     _logger.LogWarning("病案状态不允许编辑，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
                         medicalCaseId, medicalCase.Status);
@@ -514,15 +515,15 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 业务规则验证：状态流转合法性（Issue #1757: 使用ValidationHelper）
-                if (!ValidationHelper.IsValidMedicalCaseStatusTransition(medicalCase.Status, status))
+                if (!ValidationHelper.IsValidMedicalCaseStatusTransition(medicalCase.CaseStatus, status))
                 {
                     _logger.LogWarning("非法的状态流转，从{OldStatus}到{NewStatus}",
-                        medicalCase.Status, status);
-                    throw new InvalidOperationException($"不允许从{medicalCase.Status}状态转换到{status}状态");
+                        medicalCase.CaseStatus, status);
+                    throw new InvalidOperationException($"不允许从{medicalCase.CaseStatus}状态转换到{status}状态");
                 }
 
                 // 更新状态
-                medicalCase.Status = status;
+                medicalCase.CaseStatus = status;
                 medicalCase.UpdatedAt = DateTime.Now;
 
                 // 保存
@@ -589,7 +590,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 更新状态为Completed（三步流程全部完成）
-                medicalCase.Status = MedicalCaseStatus.Completed;
+                medicalCase.CaseStatus = MedicalCaseStatus.Completed;
                 medicalCase.UpdatedAt = DateTime.Now;
 
                 // 标记Consultation.Step3完成（兼容旧逻辑）
@@ -632,7 +633,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 直接更新状态为Completed（不验证三步流程）
-                medicalCase.Status = MedicalCaseStatus.Completed;
+                medicalCase.CaseStatus = MedicalCaseStatus.Completed;
                 medicalCase.UpdatedAt = DateTime.Now;
 
                 // 设置CompletedAt时间戳
@@ -695,7 +696,7 @@ namespace LYBT.Module.MedicalCase.Services
 
                 if (status.HasValue)
                 {
-                    filteredItems = filteredItems.Where(m => m.Status == status.Value);
+                    filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
                 }
 
                 if (patientId.HasValue)
@@ -829,6 +830,29 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 获取所有待看诊队列（管理员专用）
+        /// 业务规则：返回所有Active状态医案的患者信息，不限定医生
+        /// </summary>
+        public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
+        {
+            try
+            {
+                _logger.LogInformation("获取所有待看诊队列（管理员）");
+
+                var result = await _repository.GetAllPendingCasesAsync();
+
+                _logger.LogInformation("待看诊队列查询完成（管理员），Count: {Count}", result.Count);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取所有待看诊队列失败（管理员）");
+                throw;
+            }
+        }
+
         // ========== Helper Layer（辅助功能）==========
 
         /// <summary>
@@ -850,12 +874,12 @@ namespace LYBT.Module.MedicalCase.Services
                     };
                 }
 
-                if (medicalCase.Status != MedicalCaseStatus.Active)
+                if (medicalCase.CaseStatus != MedicalCaseStatus.Active)
                 {
                     return new CanEditResponse
                     {
                         CanEdit = false,
-                        Reason = $"病案状态为{medicalCase.Status}，仅Active状态可编辑"
+                        Reason = $"病案状态为{medicalCase.CaseStatus}，仅Active状态可编辑"
                     };
                 }
 
@@ -1068,7 +1092,7 @@ namespace LYBT.Module.MedicalCase.Services
             }
 
             // 6. 更新状态
-            if (request.Status.HasValue && request.Status.Value != medicalCase.Status)
+            if (request.Status.HasValue && request.Status.Value != medicalCase.CaseStatus)
             {
                 UpdateStatusInternalAsync(medicalCase, request.Status.Value, currentUserId, isAdmin);
                 hasUpdates = true;
@@ -1133,7 +1157,7 @@ namespace LYBT.Module.MedicalCase.Services
             Guid currentUserId,
             bool isAdmin)
         {
-            if (medicalCase.Status != MedicalCaseStatus.Active)
+            if (medicalCase.CaseStatus != MedicalCaseStatus.Active)
             {
                 throw new InvalidOperationException("只有Active状态的病案可以设置处方标记");
             }
@@ -1179,7 +1203,7 @@ namespace LYBT.Module.MedicalCase.Services
             bool isAdmin)
         {
             // 状态流转验证（简化版本）
-            medicalCase.Status = newStatus;
+            medicalCase.CaseStatus = newStatus;
         }
 
         private void CompleteCaseInternalAsync(
@@ -1189,7 +1213,7 @@ namespace LYBT.Module.MedicalCase.Services
             bool isAdmin)
         {
             // BF-002: 三步流程验证（简化版本）
-            medicalCase.Status = MedicalCaseStatus.Completed;
+            medicalCase.CaseStatus = MedicalCaseStatus.Completed;
         }
 
         #endregion

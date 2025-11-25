@@ -78,10 +78,10 @@ namespace LYBT.WebAPI.Controllers
                     DoctorId = entity.DoctorId,
                     DoctorName = entity.DoctorName,
                     ConsultationDate = entity.ConsultationDate,
-                    CaseStatus = entity.Status,
+                    CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    Status = (CommonStatus)(int)entity.Status, // MedicalCaseStatus → CommonStatus
+                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt
                 };
 
@@ -454,10 +454,10 @@ namespace LYBT.WebAPI.Controllers
                     DoctorId = entity.DoctorId,
                     DoctorName = entity.DoctorName,
                     ConsultationDate = entity.ConsultationDate,
-                    CaseStatus = entity.Status,
+                    CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    Status = (CommonStatus)(int)entity.Status,
+                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt,
 
                     // 详细字段（MedicalCaseDetailDto扩展）
@@ -571,10 +571,10 @@ namespace LYBT.WebAPI.Controllers
                     DoctorId = entity.DoctorId,
                     DoctorName = entity.DoctorName,
                     ConsultationDate = entity.ConsultationDate,
-                    CaseStatus = entity.Status,
+                    CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis, // 关联查询诊断信息
-                    Status = (CommonStatus)(int)entity.Status, // 通用状态映射
+                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt
                 }).ToList();
 
@@ -657,33 +657,35 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
-        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases(
-            [FromQuery] Guid? doctorId = null)
+        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases()
         {
             try
             {
-                // Epic #2210: 提取当前医生ID
-                Guid currentDoctorId;
+                List<PendingMedicalCaseDto> result;
                 try
                 {
                     var (operatorId, operatorName, operatorRole) = GetOperator();
 
-                    // 如果未传递doctorId，使用当前登录医生ID
-                    if (doctorId == null || doctorId == Guid.Empty)
+                    // 根据角色判断查询范围，调用不同的Service方法
+                    if (operatorRole == "SysAdmin" || operatorRole == "Admin")
                     {
-                        // 验证当前用户是医生角色
-                        if (operatorRole != "Doctor")
-                        {
-                            _logger.LogWarning("非医生用户尝试查询待诊队列，OperatorId: {OperatorId}, Role: {Role}",
-                                operatorId, operatorRole);
-                            return Forbid();
-                        }
-                        currentDoctorId = operatorId;
+                        // 管理员查询所有待诊医案
+                        _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                            operatorId, operatorRole);
+                        result = await _medicalCaseService.GetAllPendingCasesAsync();
+                    }
+                    else if (operatorRole == "Doctor")
+                    {
+                        // 医生只查询自己的待诊医案
+                        _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
+                            operatorId);
+                        result = await _medicalCaseService.GetPendingCasesAsync(operatorId);
                     }
                     else
                     {
-                        // 传递了doctorId（管理员扩展），直接使用
-                        currentDoctorId = doctorId.Value;
+                        _logger.LogWarning("无权限的用户尝试查询待诊队列，OperatorId: {OperatorId}, Role: {Role}",
+                            operatorId, operatorRole);
+                        return Forbid();
                     }
                 }
                 catch (UnauthorizedAccessException)
@@ -691,16 +693,13 @@ namespace LYBT.WebAPI.Controllers
                     return Unauthorized(ApiResponse<List<PendingMedicalCaseDto>>.CreateFail("未登录或用户信息无效"));
                 }
 
-                var result = await _medicalCaseService.GetPendingCasesAsync(currentDoctorId);
-
-                _logger.LogInformation("待诊队列查询成功，DoctorId: {DoctorId}, Count: {Count}",
-                    currentDoctorId, result.Count);
+                _logger.LogInformation("待诊队列查询成功，Count: {Count}", result.Count);
 
                 return Ok(ApiResponse<List<PendingMedicalCaseDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待诊队列", new { doctorId });
+                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待诊队列", null);
             }
         }
 
@@ -762,10 +761,10 @@ namespace LYBT.WebAPI.Controllers
                     DoctorId = entityResult.DoctorId,
                     DoctorName = entityResult.DoctorName,
                     ConsultationDate = entityResult.ConsultationDate,
-                    CaseStatus = entityResult.Status,
+                    CaseStatus = entityResult.CaseStatus,
                     Remark = entityResult.Remark,
                     Diagnosis = entityResult.Consultation?.TCMDiagnosis,
-                    Status = (CommonStatus)(int)entityResult.Status,
+                    Status = entityResult.Status, // 系统状态（CommonStatus）
                     CreatedAt = entityResult.CreatedAt
                 };
 
