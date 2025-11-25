@@ -1,23 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LYBT.Entities.Users;
+using LYBT.Infrastructure.Configuration.Options;
+using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Utilities.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace LYBT.Infrastructure.Data;
 
 /// <summary>
 /// 简化版数据库初始化服务
 /// 采用最小化设计原则，仅保留必要功能
+/// Issue #2237: 支持系统管理员自动创建
 /// </summary>
 public class DatabaseInitializationService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<DatabaseInitializationService> _logger;
+    private readonly LybtOptions _lybtOptions;
 
     public DatabaseInitializationService(
         AppDbContext context,
-        ILogger<DatabaseInitializationService> logger)
+        ILogger<DatabaseInitializationService> logger,
+        IOptions<LybtOptions> lybtOptions)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _lybtOptions = lybtOptions?.Value ?? throw new ArgumentNullException(nameof(lybtOptions));
     }
 
     /// <summary>
@@ -80,6 +89,16 @@ public class DatabaseInitializationService
                 await _context.Database.EnsureCreatedAsync();
                 _logger.LogInformation("数据库初始化完成（InMemory 数据库）");
             }
+
+            // Issue #2237: 自动创建系统管理员
+            if (_lybtOptions.SystemAdmin.AutoCreateOnStartup)
+            {
+                await EnsureSystemAdminExistsAsync();
+            }
+            else
+            {
+                _logger.LogInformation("AutoCreateOnStartup = false，跳过系统管理员自动创建");
+            }
         }
         catch (Exception ex)
         {
@@ -102,6 +121,65 @@ public class DatabaseInitializationService
         {
             _logger.LogError(ex, "获取数据库信息失败");
             return "数据库状态未知";
+        }
+    }
+
+    /// <summary>
+    /// 确保系统管理员存在（仅创建，不更新）
+    /// Issue #2237: 如果不存在则创建，如果存在则不变（管理员可自行修改密码和邮箱）
+    /// </summary>
+    private async Task EnsureSystemAdminExistsAsync()
+    {
+        try
+        {
+            _logger.LogInformation("开始检查系统管理员是否存在");
+
+            // 检查是否已存在SuperAdmin用户
+            var existingSuperAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.Role == UserRole.SuperAdmin && !u.IsDeleted);
+
+            if (existingSuperAdmin != null)
+            {
+                _logger.LogInformation(
+                    "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}",
+                    existingSuperAdmin.UserName,
+                    existingSuperAdmin.Email);
+                return;
+            }
+
+            // 不存在，创建新的SuperAdmin用户
+            var config = _lybtOptions.SystemAdmin;
+            var defaultPassword = _lybtOptions.DefaultPasswords.SysAdminPassword;
+
+            var superAdmin = new User
+            {
+                Id = Guid.NewGuid(),
+                UserName = config.Username,
+                RealName = config.DisplayName,
+                Email = config.Email,
+                Role = UserRole.SuperAdmin,
+                Status = CommonStatus.Enabled,
+                PasswordHash = PasswordHelper.HashPassword(defaultPassword),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                CreatedBy = Guid.Empty,  // 系统创建
+                UpdatedBy = Guid.Empty,
+                IsDeleted = false
+            };
+
+            _context.Users.Add(superAdmin);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "系统管理员创建成功。UserName: {UserName}, Email: {Email}, Role: {Role}",
+                superAdmin.UserName,
+                superAdmin.Email,
+                superAdmin.Role);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "创建系统管理员失败");
+            throw;
         }
     }
 }
