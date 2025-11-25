@@ -41,14 +41,19 @@ public class JwtServiceTests
 
     private static IConfiguration CreateMockConfiguration()
     {
-        var config = new Mock<IConfiguration>();
-        // Issue #1761 Phase 3.1: Authentication.Jwt → Jwt（完全扁平化）
-        config.Setup(c => c["Lybt:Jwt:SecretKey"]).Returns("ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890");
-        config.Setup(c => c["Lybt:Jwt:Issuer"]).Returns("LYBT");
-        config.Setup(c => c["Lybt:Jwt:Audience"]).Returns("LYBTUsers");
-        config.Setup(c => c["Lybt:Jwt:AccessTokenExpirationMinutes"]).Returns("30");
-        config.Setup(c => c["Lybt:Jwt:RefreshTokenExpirationDays"]).Returns("7");
-        return config.Object;
+        // Issue #2244: 使用真实ConfigurationBuilder替代Mock,避免GetValue<T>扩展方法访问路径不匹配
+        var configValues = new Dictionary<string, string>
+        {
+            ["Lybt:Jwt:SecretKey"] = "ThisIsAVeryStrongSecretKeyForTesting123456789012345678901234567890",
+            ["Lybt:Jwt:Issuer"] = "LYBT",
+            ["Lybt:Jwt:Audience"] = "LYBTUsers",
+            ["Lybt:Jwt:AccessTokenExpirationMinutes"] = "30",
+            ["Lybt:Jwt:RefreshTokenExpirationDays"] = "7"
+        };
+
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues!)
+            .Build();
     }
 
     #region Token 生成测试 (基础重载)
@@ -134,7 +139,8 @@ public class JwtServiceTests
         var jwtToken = handler.ReadJwtToken(token);
 
         // Assert
-        var expectedExpiry = DateTime.UtcNow.AddHours(8);
+        // Issue #2244: 修改期望值匹配配置的30分钟（而非8小时）
+        var expectedExpiry = DateTime.UtcNow.AddMinutes(30);
         jwtToken.ValidTo.Should().BeCloseTo(expectedExpiry, TimeSpan.FromMinutes(1));
     }
 
@@ -198,7 +204,8 @@ public class JwtServiceTests
         var role = LYBT.Shared.Models.Enums.UserRole.Doctor;
 
         // Act
-        var token = _sut.GenerateToken(userId, userName, role, null);
+        // Issue #2244: 强制转换null为Dictionary类型，明确调用5参数版本（避免重载歧义传给userType）
+        var token = _sut.GenerateToken(userId, userName, role, (Dictionary<string, string>)null!);
 
         // Assert
         token.Should().NotBeNullOrEmpty();
