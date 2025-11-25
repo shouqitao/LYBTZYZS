@@ -248,7 +248,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 Name = patient.Name,
                 Gender = patient.Gender,
                 BirthDate = patient.BirthDate,
-                Age = patient.Age,
+                // Issue #2240: Age不再是PatientInputDto的属性，仅BirthDate为输入
                 IdNumber = patient.IdNumber,
                 PhoneNumber = patient.PhoneNumber,
                 Address = patient.Address,

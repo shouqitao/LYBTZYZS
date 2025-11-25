@@ -94,6 +94,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
     /// <summary>
     /// 患者输入DTO - 统一创建和更新
     /// Phase 3: 合并PatientCreateDto和PatientUpdateDto
+    /// Issue #2240 Fix: 移除Age字段（输入DTO只接收BirthDate，Age由Service计算）
     /// </summary>
     public class PatientInputDto
     {
@@ -111,10 +112,6 @@ namespace LYBT.Shared.Models.Contracts.Patients
         /// <summary>出生日期</summary>
         [DisplayName("出生日期")]
         public DateTime? BirthDate { get; set; }
-
-        /// <summary>年龄（由Service层计算）</summary>
-        [DisplayName("年龄")]
-        public int? Age { get; set; }
 
         /// <summary>身份证号</summary>
         [StringLength(18, ErrorMessage = "身份证号长度不能超过18个字符")]
@@ -180,6 +177,7 @@ namespace LYBT.Shared.Models.Contracts.Patients
 
     /// <summary>
     /// 快速创建患者DTO - 用于快速创建患者档案（仅包含必要字段）
+    /// Issue #2240 Fix: 移除Age字段，改为必须提供BirthDate
     /// </summary>
     public class QuickPatientCreateDto
     {
@@ -194,14 +192,10 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;
 
-        /// <summary>年龄（用于估算出生日期）</summary>
-        [Range(ValidationConstants.AgeMinValue, ValidationConstants.AgeMaxValue, ErrorMessage = "年龄必须在{1}-{2}之间")]
-        [DisplayName("年龄")]
-        public int Age { get; set; }
-
-        /// <summary>推算出生日期（由Service层计算）</summary>
-        [DisplayName("推算出生日期")]
-        public DateTime? BirthDate { get; set; }
+        /// <summary>出生日期（必填）</summary>
+        [Required(ErrorMessage = "出生日期不能为空")]
+        [DisplayName("出生日期")]
+        public DateTime BirthDate { get; set; }
 
         /// <summary>手机号码</summary>
         [StringLength(ValidationConstants.PhoneMaxLength, ErrorMessage = "手机号码长度不能超过{1}个字符")]

@@ -13,18 +13,32 @@ public class PatientImportDataMapper
     /// <summary>
     /// 从DataRow创建PatientInputDto
     /// Issue #1789: 从ImportWorker_DoWork提取，封装DTO创建逻辑
+    /// Issue #2240: 改为读取"出生日期"列，不再从"年龄"反算
     /// </summary>
     public PatientInputDto CreatePatientDtoFromRow(DataRow row)
     {
         var name = row["姓名"]?.ToString()?.Trim() ?? string.Empty;
         var gender = row["性别"]?.ToString()?.Trim() ?? string.Empty;
-        var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
+
+        // Issue #2240: 读取出生日期列，如果有"年龄"列则忽略
+        DateTime? birthDate = null;
+        if (row.Table.Columns.Contains("出生日期"))
+        {
+            birthDate = ParseBirthDate(row["出生日期"]?.ToString());
+        }
+        else if (row.Table.Columns.Contains("年龄"))
+        {
+            // 兼容性处理：如果Excel只有"年龄"列但没有"出生日期"列，使用年龄反算
+            // 注意：这是临时兼容措施，建议更新Excel模板为"出生日期"列
+            var age = ParseAge(row["年龄"]?.ToString()) ?? 0;
+            birthDate = age > 0 ? DateTime.Today.AddYears(-age) : null;
+        }
 
         return new PatientInputDto
         {
             Name = name,
             Gender = ParseGender(gender),
-            BirthDate = age > 0 ? DateTime.Today.AddYears(-age) : null,
+            BirthDate = birthDate,
             PhoneNumber = row["电话"]?.ToString()?.Trim(),
             IdNumber = row["证件号"]?.ToString()?.Trim(),
             Address = row["地址"]?.ToString()?.Trim(),
@@ -94,6 +108,30 @@ public class PatientImportDataMapper
         if (int.TryParse(ageText, out var age) && age > 0 && age <= 150)
         {
             return age;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 解析出生日期字符串为DateTime
+    /// Issue #2240: 新增，支持从Excel读取出生日期
+    /// </summary>
+    private DateTime? ParseBirthDate(string? birthDateText)
+    {
+        if (string.IsNullOrWhiteSpace(birthDateText))
+        {
+            return null;
+        }
+
+        // 尝试解析日期（支持多种格式）
+        if (DateTime.TryParse(birthDateText, out var birthDate))
+        {
+            // 验证日期合理性（不能是未来日期，不能超过150年前）
+            if (birthDate <= DateTime.Today && birthDate >= DateTime.Today.AddYears(-150))
+            {
+                return birthDate;
+            }
         }
 
         return null;

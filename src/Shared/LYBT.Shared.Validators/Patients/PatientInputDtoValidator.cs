@@ -28,13 +28,9 @@ namespace LYBT.Shared.Validators.Patients
                 .LessThanOrEqualTo(DateTime.Today).WithMessage("出生日期不能晚于当前日期")
                 .When(x => x.BirthDate.HasValue);
 
-            // 4. Age：如果提供，必须在0-150之间
-            RuleFor(x => x.Age)
-                .InclusiveBetween(ValidationConstants.AgeMinValue, ValidationConstants.AgeMaxValue)
-                .WithMessage($"年龄必须在{ValidationConstants.AgeMinValue}-{ValidationConstants.AgeMaxValue}之间")
-                .When(x => x.Age.HasValue);
+            // Issue #2240: 移除Age验证，因为Age不再是输入属性（改为从BirthDate计算）
 
-            // 5. IdNumber：如果提供，必须符合18位身份证格式
+            // 4. IdNumber：如果提供，必须符合18位身份证格式
             RuleFor(x => x.IdNumber)
                 .Matches(ValidationConstants.IdCardRegex).WithMessage("身份证号格式不正确（应为18位）")
                 .When(x => !string.IsNullOrEmpty(x.IdNumber));

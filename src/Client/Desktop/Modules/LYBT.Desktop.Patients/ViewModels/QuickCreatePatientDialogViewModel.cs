@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private string _name = string.Empty;
         private bool _isMale = true;
         private bool _isFemale;
-        private int _age;
+        private DateTime? _birthDate;
         private string _phoneNumber = string.Empty;
         private string _pinyinCode = string.Empty;
 
@@ -76,16 +76,42 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>性别（根据IsMale/IsFemale计算）</summary>
         public Gender Gender => IsMale ? Gender.Male : (IsFemale ? Gender.Female : Gender.Unknown);
 
-        /// <summary>年龄（必填，1-150）</summary>
-        public int Age
+        /// <summary>
+        /// 出生日期（必填）
+        /// Issue #2240: 改为BirthDate，不再使用Age
+        /// </summary>
+        public DateTime? BirthDate
         {
-            get => _age;
+            get => _birthDate;
             set
             {
-                if (SetProperty(ref _age, value))
+                if (SetProperty(ref _birthDate, value))
                 {
+                    RaisePropertyChanged(nameof(Age));
                     UpdateCommandStates();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 年龄（只读计算属性，从BirthDate计算）
+        /// Issue #2240: Age改为计算属性，仅用于显示
+        /// </summary>
+        public int? Age
+        {
+            get
+            {
+                if (BirthDate.HasValue)
+                {
+                    var today = DateTime.Today;
+                    var age = today.Year - BirthDate.Value.Year;
+                    if (BirthDate.Value.Date > today.AddYears(-age))
+                    {
+                        age--;
+                    }
+                    return age;
+                }
+                return null;
             }
         }
 
@@ -168,6 +194,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 保存患者信息
         /// Issue #1788: 使用CommandHandler.CreatePatientAsync()
+        /// Issue #2240: 直接使用BirthDate，不再从Age反算
         /// </summary>
         private async Task SaveAsync()
         {
@@ -182,15 +209,12 @@ namespace LYBT.Desktop.Patients.ViewModels
 
                 SetIsBusy(true, "正在保存...");
 
-                // 根据年龄推算出生日期
-                var birthDate = DateTime.Today.AddYears(-Age);
-
                 // 创建患者DTO
                 var createDto = new PatientInputDto
                 {
                     Name = Name.Trim(),
                     Gender = Gender,
-                    BirthDate = birthDate,
+                    BirthDate = BirthDate, // Issue #2240: 直接使用BirthDate
                     PhoneNumber = PhoneNumber.Trim(),
                     // TODO: 拼音码功能待后续扩展（需要扩展PatientInputDto）
                     Status = Shared.Models.Enums.CommonStatus.Enabled
@@ -242,7 +266,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         #region 验证逻辑
 
         /// <summary>
-        /// 验证表单（Issue #1487: 必填字段验证）
+        /// 验证表单
+        /// Issue #1487: 必填字段验证
+        /// Issue #2240: 改为验证BirthDate而非Age
         /// </summary>
         private bool ValidateForm(out string errorMessage)
         {
@@ -268,10 +294,23 @@ namespace LYBT.Desktop.Patients.ViewModels
                 return false;
             }
 
-            // 年龄验证
-            if (Age <= 0 || Age > 150)
+            // 出生日期验证（Issue #2240）
+            if (!BirthDate.HasValue)
             {
-                errorMessage = "请输入有效的年龄（1-150）";
+                errorMessage = "请选择出生日期";
+                return false;
+            }
+
+            // 验证出生日期合理性
+            if (BirthDate.Value > DateTime.Today)
+            {
+                errorMessage = "出生日期不能是未来日期";
+                return false;
+            }
+
+            if (BirthDate.Value < DateTime.Today.AddYears(-150))
+            {
+                errorMessage = "出生日期不能超过150年前";
                 return false;
             }
 
@@ -294,12 +333,13 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         /// <summary>
         /// 验证保存命令是否可执行
+        /// Issue #2240: 改为验证BirthDate而非Age
         /// </summary>
         private bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(Name) &&
                    Gender != Gender.Unknown &&
-                   Age > 0 &&
+                   BirthDate.HasValue &&
                    !string.IsNullOrWhiteSpace(PhoneNumber) &&
                    !IsBusy;
         }

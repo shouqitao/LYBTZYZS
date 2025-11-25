@@ -132,19 +132,7 @@ namespace LYBT.Shared.Validators.BusinessRules
                     return Failure("年龄范围不合理，请检查出生日期");
                 }
 
-                // 如果提供了年龄，验证年龄与出生日期的一致性
-                if (input.Age.HasValue && Math.Abs(input.Age.Value - age) > 1)
-                {
-                    return Failure("年龄与出生日期不匹配");
-                }
-            }
-            else if (input.Age.HasValue)
-            {
-                // 如果只提供了年龄，验证年龄范围
-                if (input.Age.Value < 0 || input.Age.Value > 150)
-                {
-                    return Failure("年龄范围不合理");
-                }
+                // Issue #2240: 移除Age一致性验证，因为Age不再是输入属性
             }
 
             return Success();

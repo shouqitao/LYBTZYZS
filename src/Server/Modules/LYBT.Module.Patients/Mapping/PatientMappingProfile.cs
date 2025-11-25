@@ -18,7 +18,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // 患者实体 → PatientDto（API响应）
             CreateMap<Patient, PatientDto>()
-                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Age是只读计算属性，由DTO自己计算
+                // Issue #2240: Patient.Age是从BirthDate计算的只读属性，AutoMapper会自动复制其计算值到PatientDto.Age
                 .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
                 .ForMember(dest => dest.IdNumber, opt => opt.MapFrom(src => src.IdNumber))
                 .ForMember(dest => dest.MedicalHistory, opt => opt.MapFrom(src => src.MedicalHistory)); // Epic #1934新增
@@ -60,6 +60,7 @@ namespace LYBT.Module.Patients.Mapping
 
             // PatientInputDto → PatientDto（用于验证服务）
             CreateMap<PatientInputDto, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.Ignore()) // Issue #2240: Age是只读计算属性，从BirthDate计算
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore()) // 拼音码由系统生成
                 .ForMember(dest => dest.LastVisitTime, opt => opt.Ignore())
                 .ForMember(dest => dest.VisitCount, opt => opt.Ignore())

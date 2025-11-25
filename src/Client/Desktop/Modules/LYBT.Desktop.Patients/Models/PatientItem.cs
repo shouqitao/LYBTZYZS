@@ -32,11 +32,42 @@ public class PatientItem : BindableBase
         set => SetProperty(ref _gender, value);
     }
 
-    private int? _age;
+    private DateTime? _birthDate;
+    /// <summary>
+    /// 出生日期（Issue #2240: 存储BirthDate，Age从此计算）
+    /// </summary>
+    public DateTime? BirthDate
+    {
+        get => _birthDate;
+        set
+        {
+            if (SetProperty(ref _birthDate, value))
+            {
+                RaisePropertyChanged(nameof(Age));
+            }
+        }
+    }
+
+    /// <summary>
+    /// 年龄（只读计算属性，从BirthDate计算）
+    /// Issue #2240: Age不再存储，而是实时计算
+    /// </summary>
     public int? Age
     {
-        get => _age;
-        set => SetProperty(ref _age, value);
+        get
+        {
+            if (BirthDate.HasValue)
+            {
+                var today = DateTime.Today;
+                var age = today.Year - BirthDate.Value.Year;
+                if (BirthDate.Value.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+                return age;
+            }
+            return null;
+        }
     }
 
     private string _phoneNumber = string.Empty;
@@ -111,6 +142,7 @@ public class PatientItem : BindableBase
 
     /// <summary>
     /// 从PatientDto创建PatientItem
+    /// Issue #2240: 直接传递BirthDate，Age自动计算
     /// </summary>
     public static PatientItem FromDto(PatientDto dto)
     {
@@ -119,7 +151,7 @@ public class PatientItem : BindableBase
             Id = dto.Id,
             Name = dto.Name,
             Gender = dto.Gender.ToString(), // 枚举转字符串
-            Age = dto.Age, // 使用计算属性
+            BirthDate = dto.BirthDate, // Issue #2240: 存储BirthDate，Age自动计算
             PhoneNumber = dto.PhoneNumber ?? string.Empty,
             Address = dto.Address,
             IdCard = dto.IdNumber, // PatientDto中是IdNumber
@@ -133,6 +165,7 @@ public class PatientItem : BindableBase
 
     /// <summary>
     /// 转换为PatientDto（用于API调用）
+    /// Issue #2240: 直接传递BirthDate，不再从Age反算
     /// </summary>
     public PatientDto ToDto()
     {
@@ -141,7 +174,7 @@ public class PatientItem : BindableBase
             Id = Id,
             Name = Name,
             Gender = Enum.Parse<Gender>(Gender), // 字符串转枚举
-            BirthDate = Age.HasValue ? DateTime.Today.AddYears(-Age.Value) : null, // 根据年龄推算出生日期
+            BirthDate = BirthDate, // Issue #2240: 直接传递BirthDate，Age在PatientDto中也是计算属性
             PhoneNumber = PhoneNumber,
             Address = Address,
             IdNumber = IdCard, // PatientItem的IdCard对应PatientDto的IdNumber
@@ -156,13 +189,14 @@ public class PatientItem : BindableBase
 
     /// <summary>
     /// 从PatientDto更新当前项
+    /// Issue #2240: 更新BirthDate，Age自动计算
     /// </summary>
     public void UpdateFromDto(PatientDto dto)
     {
         Id = dto.Id;
         Name = dto.Name;
         Gender = dto.Gender.ToString(); // 枚举转字符串
-        Age = dto.Age; // 使用计算属性
+        BirthDate = dto.BirthDate; // Issue #2240: 更新BirthDate，Age自动计算
         PhoneNumber = dto.PhoneNumber ?? string.Empty;
         Address = dto.Address;
         IdCard = dto.IdNumber; // PatientDto中是IdNumber
