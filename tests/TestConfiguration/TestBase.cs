@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using LYBT.Infrastructure.Data;
 
 namespace LYBT.Tests.Common
 {
@@ -135,6 +137,18 @@ namespace LYBT.Tests.Common
             var logger = NullLogger<T>.Instance;
             Services.AddSingleton<ILogger<T>>(logger);
             return logger;
+        }
+
+        /// <summary>
+        /// 创建InMemory数据库上下文（用于Repository测试）
+        /// Issue #2244: AppDbContext无法使用Mock，需要真实的InMemory数据库
+        /// </summary>
+        protected AppDbContext CreateInMemoryContext()
+        {
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            return new AppDbContext(options);
         }
 
         public virtual void Dispose()

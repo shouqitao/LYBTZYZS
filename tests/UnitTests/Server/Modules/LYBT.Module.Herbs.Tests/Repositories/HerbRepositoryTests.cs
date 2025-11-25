@@ -4,7 +4,7 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Herbs.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LYBT.Module.Herbs.Tests.Repositories;
@@ -25,7 +25,7 @@ public class HerbRepositoryTests : IDisposable
             .Options;
 
         _context = new AppDbContext(options);
-        var logger = new Mock<ILogger<HerbRepository>>().Object;
+        var logger = NullLogger<HerbRepository>.Instance;
         _sut = new HerbRepository(_context, logger);
     }
 

@@ -17,8 +17,7 @@ namespace LYBT.Module.Herbs.Tests.Repositories
     /// </summary>
     public class HerbRepositoryTests : TestBase
     {
-        private readonly Mock<AppDbContext> _mockContext;
-        private readonly Mock<DbSet<Herb>> _mockDbSet;
+        private readonly AppDbContext _context;
         private readonly ILogger<HerbRepository> _logger;
         private readonly HerbRepository _repository;
         private readonly List<Herb> _testHerbs;
@@ -26,13 +25,21 @@ namespace LYBT.Module.Herbs.Tests.Repositories
         public HerbRepositoryTests()
         {
             _testHerbs = CreateTestHerbs();
-            _mockDbSet = CreateMockDbSet(_testHerbs);
-            _mockContext = new Mock<AppDbContext>();
-            _mockContext.Setup(c => c.Set<Herb>()).Returns(_mockDbSet.Object);
+            _context = CreateInMemoryContext();
+
+            // 将测试数据添加到InMemory数据库
+            _context.Set<Herb>().AddRange(_testHerbs);
+            _context.SaveChanges();
 
             _logger = CreateLogger<HerbRepository>();
 
-            _repository = new HerbRepository(_mockContext.Object, _logger);
+            _repository = new HerbRepository(_context, _logger);
+        }
+
+        public override void Dispose()
+        {
+            _context?.Dispose();
+            base.Dispose();
         }
 
         #region GetByIdAsync Tests

@@ -18,8 +18,7 @@ namespace LYBT.Module.Patients.Tests.Repositories
     /// </summary>
     public class PatientRepositoryTests : TestBase
     {
-        private readonly Mock<AppDbContext> _mockContext;
-        private readonly Mock<DbSet<Patient>> _mockDbSet;
+        private readonly AppDbContext _context;
         private readonly ILogger<PatientRepository> _logger;
         private readonly IPatientRepository _repository;
         private readonly List<Patient> _testPatients;
@@ -27,13 +26,15 @@ namespace LYBT.Module.Patients.Tests.Repositories
         public PatientRepositoryTests()
         {
             _testPatients = CreateTestPatients();
-            _mockDbSet = new Mock<DbSet<Patient>>();
-            _mockContext = new Mock<AppDbContext>();
-            _mockContext.Setup(c => c.Set<Patient>()).Returns(_mockDbSet.Object);
+            _context = CreateInMemoryContext();
+
+            // 将测试数据添加到InMemory数据库
+            _context.Set<Patient>().AddRange(_testPatients);
+            _context.SaveChanges();
 
             _logger = CreateLogger<PatientRepository>();
 
-            _repository = new PatientRepository(_mockContext.Object, _logger);
+            _repository = new PatientRepository(_context, _logger);
         }
 
         #region Constructor Tests
@@ -42,13 +43,15 @@ namespace LYBT.Module.Patients.Tests.Repositories
         public void Constructor_WithValidContext_ShouldCreateInstance()
         {
             // Arrange
+            var context = CreateInMemoryContext();
             var logger = CreateLogger<PatientRepository>();
 
             // Act
-            var repository = new PatientRepository(_mockContext.Object, logger);
+            var repository = new PatientRepository(context, logger);
 
             // Assert
             repository.Should().NotBeNull();
+            context.Dispose();
         }
 
         [Fact]
@@ -74,49 +77,12 @@ namespace LYBT.Module.Patients.Tests.Repositories
 
         #endregion
 
-        #region Mock Setup Tests
+        #region Dispose
 
-        [Fact]
-        public void MockSetup_VerifyMethodsExist()
+        public override void Dispose()
         {
-            // Arrange & Act & Assert
-            // 测试Mock对象设置正确
-            _mockContext.Verify(c => c.Set<Patient>(), Times.Never);
-            _mockDbSet.Verify(d => d.FindAsync(It.IsAny<object[]>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task GetByIdAsync_WithMockSetup_ShouldCallContext()
-        {
-            // Arrange
-            var patientId = Guid.NewGuid();
-            var expectedPatient = _testPatients.First();
-
-            _mockDbSet.Setup(d => d.FindAsync(It.IsAny<object[]>())).ReturnsAsync(expectedPatient);
-
-            // Act
-            var result = await _repository.GetByIdAsync(patientId);
-
-            // Assert
-            _mockDbSet.Verify(d => d.FindAsync(It.Is<object[]>(ids => ids.First().Equals(patientId))), Times.Once);
-        }
-
-        [Fact]
-        public async Task GetAllAsync_WithMockSetup_ShouldCallDbSet()
-        {
-            // Arrange
-            var queryable = _testPatients.AsQueryable();
-            _mockDbSet.As<IQueryable<Patient>>().Setup(m => m.Provider).Returns(queryable.Provider);
-            _mockDbSet.As<IQueryable<Patient>>().Setup(m => m.Expression).Returns(queryable.Expression);
-            _mockDbSet.As<IQueryable<Patient>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-            _mockDbSet.As<IQueryable<Patient>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
-
-            // Act
-            var result = await _repository.GetAllAsync();
-
-            // Assert
-            result.Should().NotBeNull();
-            _mockDbSet.As<IQueryable<Patient>>().Verify(m => m.GetEnumerator(), Times.Once);
+            _context?.Dispose();
+            base.Dispose();
         }
 
         #endregion
