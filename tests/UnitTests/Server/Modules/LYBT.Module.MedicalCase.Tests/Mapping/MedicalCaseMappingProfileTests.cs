@@ -56,7 +56,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "李医生",
                 ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Remark = "测试备注",
                 CreatedAt = DateTime.Now.AddDays(-1)
             };
@@ -72,7 +72,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             dto.DoctorId.Should().Be(medicalCase.DoctorId);
             dto.DoctorName.Should().Be(medicalCase.DoctorName);
             dto.ConsultationDate.Should().Be(medicalCase.ConsultationDate);
-            dto.CaseStatus.Should().Be(medicalCase.Status);
+            dto.CaseStatus.Should().Be(medicalCase.CaseStatus);
             dto.Remark.Should().Be(medicalCase.Remark);
         }
 
@@ -87,7 +87,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 PatientName = "患者",
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "医生",
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Remark = null
             };
 
@@ -115,7 +115,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "医生A",
                 ConsultationDate = DateTime.Now,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Remark = "详细备注"
             };
 
@@ -127,7 +127,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             detailDto.Id.Should().Be(medicalCase.Id);
             detailDto.PatientId.Should().Be(medicalCase.PatientId);
             detailDto.PatientName.Should().Be(medicalCase.PatientName);
-            detailDto.CaseStatus.Should().Be(medicalCase.Status);
+            detailDto.CaseStatus.Should().Be(medicalCase.CaseStatus);
             detailDto.Remark.Should().Be(medicalCase.Remark);
         }
 
@@ -220,7 +220,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 PatientName = "患者",
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "医生",
-                Status = status
+                CaseStatus = status
             };
 
             // Act
@@ -262,7 +262,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
                 PatientName = "张三（男）",
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "李医生/主治医师",
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Remark = "患者体质偏寒，建议温服；忌食生冷/辛辣\n注意：复诊时间待定"
             };
 

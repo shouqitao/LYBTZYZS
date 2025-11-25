@@ -115,7 +115,7 @@ public static class TestDataFactory
             PastHistory = $"既往史_{Guid.NewGuid():N}",
             PersonalHistory = $"个人史_{Guid.NewGuid():N}",
             FamilyHistory = $"家族史_{Guid.NewGuid():N}",
-            Status = MedicalCaseStatus.InProgress,
+            CaseStatus = MedicalCaseStatus.InProgress,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

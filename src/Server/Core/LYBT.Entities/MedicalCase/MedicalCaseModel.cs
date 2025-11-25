@@ -48,9 +48,13 @@ namespace LYBT.Entities.MedicalCase
         [DisplayName("诊疗时间")]
         public DateTime ConsultationDate { get; set; } = DateTime.Now;
 
-        /// <summary>状态</summary>
+        /// <summary>业务流程状态（原Status字段重命名）</summary>
+        [DisplayName("医案状态")]
+        public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
+
+        /// <summary>系统状态（与其他实体统一：Patient、Herb、Formula等）</summary>
         [DisplayName("状态")]
-        public MedicalCaseStatus Status { get; set; } = MedicalCaseStatus.Active;
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>
         /// 是否需要开处方（Epic #2175 BF-002动态流程控制）

@@ -24,7 +24,8 @@ namespace LYBT.UnitTests.Core.Entities
 
             // Assert
             medicalCase.Id.Should().NotBe(Guid.Empty);
-            medicalCase.Status.Should().Be(MedicalCaseStatus.Active);
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Active);
+            medicalCase.Status.Should().Be(CommonStatus.Enabled);
             medicalCase.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         }
 
@@ -87,11 +88,11 @@ namespace LYBT.UnitTests.Core.Entities
         [Theory]
         [InlineData(MedicalCaseStatus.Active, false)]
         [InlineData(MedicalCaseStatus.Completed, true)]
-        [InlineData(MedicalCaseStatus.Closed, true)]
-        public void IsLocked_ShouldReturnCorrectStatus(MedicalCaseStatus status, bool expected)
+        [InlineData(MedicalCaseStatus.Cancelled, true)]
+        public void IsLocked_ShouldReturnCorrectStatus(MedicalCaseStatus caseStatus, bool expected)
         {
             // Arrange
-            var medicalCase = new MedicalCase { Status = status };
+            var medicalCase = new MedicalCase { CaseStatus = caseStatus };
 
             // Act
             var result = medicalCase.IsLocked();
@@ -184,16 +185,14 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var medicalCase = new MedicalCase
             {
-                Status = MedicalCaseStatus.Active
+                CaseStatus = MedicalCaseStatus.Active
             };
 
             // Act
-            medicalCase.Status = MedicalCaseStatus.Completed;
-            medicalCase.CompletedAt = DateTime.UtcNow;
+            medicalCase.CaseStatus = MedicalCaseStatus.Completed;
 
             // Assert
-            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
-            medicalCase.CompletedAt.Should().NotBeNull();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         [Fact]
@@ -202,15 +201,14 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var medicalCase = new MedicalCase
             {
-                Status = MedicalCaseStatus.Completed,
-                CompletedAt = DateTime.UtcNow
+                CaseStatus = MedicalCaseStatus.Completed
             };
 
             // Act & Assert
             // 实际业务逻辑应该在服务层验证
             Action act = () =>
             {
-                if (medicalCase.Status == MedicalCaseStatus.Completed)
+                if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
                 {
                     throw new InvalidOperationException("已完成的医疗案例不能重新激活");
                 }

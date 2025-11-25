@@ -83,7 +83,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 PatientName = "张三",
                 DoctorId = doctorId,
                 DoctorName = "李医生",
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
             };
 
@@ -99,7 +99,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             result.DoctorId.Should().Be(doctorId);
             result.PatientName.Should().Be("张三");
             result.DoctorName.Should().Be("李医生");
-            result.Status.Should().Be(MedicalCaseStatus.Active);
+            result.CaseStatus.Should().Be(MedicalCaseStatus.Active);
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
-                Status = MedicalCaseStatus.Active
+                CaseStatus = MedicalCaseStatus.Active
             };
 
             _repositoryMock.Setup(x => x.GetByPatientIdAsync(patientId))
@@ -252,7 +252,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
@@ -286,7 +286,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Completed,
+                CaseStatus = MedicalCaseStatus.Completed,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
@@ -312,7 +312,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = false,
                 Consultation = new ConsultationEntity
                 {
@@ -346,7 +346,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
@@ -375,7 +375,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = null, // 未标记状态
                 Consultation = new ConsultationEntity
                 {
@@ -415,7 +415,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Consultation = new ConsultationEntity
                 {
@@ -454,7 +454,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = null, // 未标记
                 Consultation = new ConsultationEntity
                 {
@@ -499,7 +499,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Id = medicalCaseId,
                 PatientId = patientId,
                 DoctorId = doctorId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -552,7 +552,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Prescription = existingPrescription,
                 Consultation = new ConsultationEntity
@@ -584,7 +584,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -618,7 +618,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = null, // 未标记状态
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -652,7 +652,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = false, // 明确标记不需要
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -693,7 +693,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Id = medicalCaseId,
                 PatientId = patientId,
                 DoctorId = doctorId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true, // Step2标记为需要
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -756,7 +756,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -805,7 +805,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = null
             };
 
@@ -837,7 +837,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -868,7 +868,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -901,7 +901,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -946,7 +946,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = null
             };
 
@@ -977,7 +977,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -1007,7 +1007,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Prescription = prescription
             };
 
@@ -1032,7 +1032,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = false,
                 Consultation = new ConsultationEntity
                 {
@@ -1054,7 +1054,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
             result.Consultation!.Step3CompletedAt.Should().NotBeNull();
         }
 
@@ -1083,7 +1083,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity
                 {
                     Id = medicalCaseId,
@@ -1108,7 +1108,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true,
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -1139,7 +1139,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = null, // 未标记状态
                 Consultation = new ConsultationEntity
                 {
@@ -1171,7 +1171,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = false, // 已标记不需要
                 Consultation = new ConsultationEntity
                 {
@@ -1203,7 +1203,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = false, // 明确标记不需要处方
                 Prescription = null,
                 Consultation = new ConsultationEntity
@@ -1226,7 +1226,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
             result.Consultation!.Step3CompletedAt.Should().NotBeNull();
         }
 
@@ -1242,7 +1242,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 NeedsPrescription = true, // 需要处方
                 Prescription = new PrescriptionEntity // 处方已开具
                 {
@@ -1269,7 +1269,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
             result.Consultation!.Step3CompletedAt.Should().NotBeNull();
         }
 
@@ -1285,7 +1285,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = medicalCaseId }
             };
 
@@ -1300,7 +1300,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Assert
             result.Should().BeTrue();
-            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         [Fact]
@@ -1327,7 +1327,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = null, // 未完成三步流程
                 NeedsPrescription = true,
                 Prescription = null  // 未开处方
@@ -1344,7 +1344,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
 
             // Assert - 应该直接关闭，不抛出异常
             result.Should().BeTrue();
-            medicalCase.Status.Should().Be(MedicalCaseStatus.Completed);
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         #endregion
@@ -1362,7 +1362,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 PatientName = "Test Patient",
                 DoctorId = Guid.NewGuid(),
                 DoctorName = "Test Doctor",
-                Status = MedicalCaseStatus.Active
+                CaseStatus = MedicalCaseStatus.Active
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
@@ -1393,8 +1393,8 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             var entities = new List<MedicalCaseEntity>
             {
-                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientName = "Patient1", Status = MedicalCaseStatus.Active },
-                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientName = "Patient2", Status = MedicalCaseStatus.Active }
+                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientName = "Patient1", CaseStatus = MedicalCaseStatus.Active },
+                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientName = "Patient2", CaseStatus = MedicalCaseStatus.Active }
             };
 
             var pagedResult = new PagedResult<MedicalCaseEntity>
@@ -1472,24 +1472,26 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
             var activeCase = new MedicalCaseEntity
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
-                Status = MedicalCaseStatus.Active,
+                DoctorId = doctorId,
+                CaseStatus = MedicalCaseStatus.Active,
                 Consultation = new ConsultationEntity { Id = Guid.NewGuid() }
             };
 
-            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
                 .ReturnsAsync(activeCase);
 
             // Act
-            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
             // Assert
             result.Should().NotBeNull();
             result!.PatientId.Should().Be(patientId);
-            result.Status.Should().Be(MedicalCaseStatus.Active);
+            result.CaseStatus.Should().Be(MedicalCaseStatus.Active);
         }
 
         [Fact]
@@ -1497,22 +1499,24 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
             var draftCase = new MedicalCaseEntity
             {
                 Id = Guid.NewGuid(),
                 PatientId = patientId,
-                Status = MedicalCaseStatus.Draft
+                DoctorId = doctorId,
+                CaseStatus = MedicalCaseStatus.Draft
             };
 
-            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
                 .ReturnsAsync(draftCase);
 
             // Act
-            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
             // Assert
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Draft);
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
         }
 
         [Fact]
@@ -1520,12 +1524,13 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         {
             // Arrange
             var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
 
-            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId))
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
                 .ReturnsAsync((MedicalCaseEntity?)null);
 
             // Act
-            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId);
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
 
             // Assert
             result.Should().BeNull();
@@ -1538,7 +1543,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active
+                CaseStatus = MedicalCaseStatus.Active
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
@@ -1550,7 +1555,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var result = await _service.UpdateStatusAsync(medicalCaseId, MedicalCaseStatus.Completed);
 
             result.Should().NotBeNull();
-            result!.Status.Should().Be(MedicalCaseStatus.Completed);
+            result!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         [Fact]
@@ -1573,7 +1578,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Completed
+                CaseStatus = MedicalCaseStatus.Completed
             };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
@@ -1593,7 +1598,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Active
+                CaseStatus = MedicalCaseStatus.Active
             };
 
             _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
@@ -1615,7 +1620,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var medicalCase = new MedicalCaseEntity
             {
                 Id = medicalCaseId,
-                Status = MedicalCaseStatus.Completed
+                CaseStatus = MedicalCaseStatus.Completed
             };
 
             _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))

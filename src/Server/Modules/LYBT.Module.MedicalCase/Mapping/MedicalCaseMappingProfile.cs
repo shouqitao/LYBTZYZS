@@ -20,7 +20,7 @@ namespace LYBT.Module.MedicalCase.Mapping
 
             // MedicalCase -> MedicalCaseDto
             CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDto>()
-                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
                 .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
@@ -29,7 +29,7 @@ namespace LYBT.Module.MedicalCase.Mapping
 
             // MedicalCase -> MedicalCaseDetailDto
             CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDetailDto>()
-                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
                 .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
@@ -54,6 +54,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 // 以下字段由 Service 层管理
                 .ForMember(dest => dest.PatientName, opt => opt.Ignore())
                 .ForMember(dest => dest.DoctorName, opt => opt.Ignore())
+                .ForMember(dest => dest.CaseStatus, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.NeedsPrescription, opt => opt.Ignore())
                 // 导航属性

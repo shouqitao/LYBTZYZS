@@ -16,7 +16,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <returns>是否可以创建新医案</returns>
         public static bool CanCreateNewCase(IEnumerable<MedicalCaseEntity> existingCases)
         {
-            return !existingCases.Any(c => c.Status == MedicalCaseStatus.Active);
+            return !existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace LYBT.Module.MedicalCase.Services
         public static bool CanComplete(MedicalCaseEntity medicalCase)
         {
             // 简化逻辑：只有进行中的医案可以完成
-            return medicalCase.Status == MedicalCaseStatus.Active;
+            return medicalCase.CaseStatus == MedicalCaseStatus.Active;
         }
 
         /// <summary>

@@ -86,7 +86,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.PatientId.Should().Be(_testPatientId);
-            apiResponse.Data.Status.Should().Be(MedicalCaseStatus.Active);
+            apiResponse.Data.CaseStatus.Should().Be(MedicalCaseStatus.Active);
             apiResponse.Data.Consultation.Should().NotBeNull();
         }
 
@@ -221,10 +221,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new PrescriptionCreateDto
             {
-                Indication = "感冒",
-                Items = new List<PrescriptionItemDto>
+                PatientId = medicalCase.PatientId,
+                DoctorId = medicalCase.DoctorId,
+                Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemDto
+                    new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
                         Quantity = 10
@@ -253,8 +254,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new PrescriptionCreateDto
             {
-                Indication = "测试",
-                Items = new List<PrescriptionItemDto>()
+                PatientId = medicalCase.PatientId,
+                DoctorId = medicalCase.DoctorId,
+                Items = new List<PrescriptionItemInputDto>()
             };
 
             // Act
@@ -278,8 +280,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var request = new PrescriptionEditDto
             {
-                Indication = "更新后的主治",
-                Items = new List<PrescriptionItemDto>
+                Id = prescription.Id,
+                PatientId = medicalCase.PatientId,
+                UserId = medicalCase.DoctorId,
+                Items = new List<PrescriptionItemInputDto>
                 {
                     new() { HerbId = Guid.NewGuid(), Quantity = 6m }
                 }
@@ -322,7 +326,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new { Status = MedicalCaseStatus.Cancelled };
+            var request = new { CaseStatus = MedicalCaseStatus.Cancelled };
 
             // Act
             var response = await Client.PutAsJsonAsync(
@@ -333,7 +337,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
-            apiResponse.Data!.Status.Should().Be(MedicalCaseStatus.Cancelled);
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
         }
 
         #endregion
@@ -355,7 +359,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
-            apiResponse.Data!.Status.Should().Be(MedicalCaseStatus.Completed);
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         [Fact]
@@ -444,7 +448,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Services.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
             apiResponse.Data!.CanEdit.Should().BeTrue();
         }
 
@@ -460,7 +464,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Services.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
             apiResponse.Data!.CanEdit.Should().BeFalse();
         }
 
@@ -580,10 +584,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var prescriptionRequest = new PrescriptionCreateDto
             {
-                Indication = "感冒",
-                Items = new List<PrescriptionItemDto>
+                PatientId = medicalCase.PatientId,
+                DoctorId = medicalCase.DoctorId,
+                Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemDto
+                    new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
                         Quantity = 10
