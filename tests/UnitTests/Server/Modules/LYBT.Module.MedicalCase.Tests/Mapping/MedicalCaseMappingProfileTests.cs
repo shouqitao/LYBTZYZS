@@ -209,7 +209,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         [Theory]
         [InlineData(MedicalCaseStatus.Active)]
         [InlineData(MedicalCaseStatus.Completed)]
-        [InlineData(MedicalCaseStatus.Cancelled)]
+        // Issue #2242: Cancelled状态已废弃，移除测试用例
         public void MedicalCase_To_MedicalCaseDto_ShouldMapAllStatuses(MedicalCaseStatus status)
         {
             // Arrange

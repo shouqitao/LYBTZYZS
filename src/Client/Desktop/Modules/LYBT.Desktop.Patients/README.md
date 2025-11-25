@@ -667,20 +667,15 @@ private async Task CreateNewCaseAfterClosingOldAsync(Guid oldCaseId, Guid patien
     }
 }
 
-// 关闭旧病案
+// 关闭旧病案 - Issue #2242: 使用软删除替代Cancelled状态
 private async Task CloseOldMedicalCaseAsync(Guid caseId)
 {
     try
     {
-        var updateDto = new UpdateMedicalCaseDto
-        {
-            Id = caseId,
-            Status = MedicalCaseStatus.Cancelled
-        };
+        // 使用软删除API
+        await _dataManager.SoftDeleteMedicalCaseAsync(caseId);
 
-        await _medicalCaseRepository.UpdateAsync(updateDto);
-
-        _logger.LogInformation("成功关闭旧病案,ID:{CaseId}", caseId);
+        _logger.LogInformation("成功关闭旧病案(软删除),ID:{CaseId}", caseId);
     }
     catch (Exception ex)
     {

@@ -326,7 +326,8 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            var request = new { CaseStatus = MedicalCaseStatus.Cancelled };
+            // Issue #2242: Cancelled状态已废弃，改用Completed测试状态更新
+            var request = new { CaseStatus = MedicalCaseStatus.Completed };
 
             // Act
             var response = await Client.PutAsJsonAsync(
@@ -337,7 +338,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             response.ShouldBeOk();
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseEntity>();
-            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         #endregion

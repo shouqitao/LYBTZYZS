@@ -35,7 +35,7 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(m => m.CreatedAt).IsRequired();
 
             // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
-            // Status枚举值：Active=1, Completed=2, Cancelled=3
+            // Status枚举值：Draft=0, Active=1, Completed=2 (Issue #2242: Cancelled已废弃，使用软删除)
             entity.HasIndex(m => m.PatientId)
                   .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
                   .IsUnique()

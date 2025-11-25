@@ -88,7 +88,7 @@ namespace LYBT.UnitTests.Core.Entities
         [Theory]
         [InlineData(MedicalCaseStatus.Active, false)]
         [InlineData(MedicalCaseStatus.Completed, true)]
-        [InlineData(MedicalCaseStatus.Cancelled, true)]
+        // Issue #2242: Cancelled状态已废弃，移除测试用例
         public void IsLocked_ShouldReturnCorrectStatus(MedicalCaseStatus caseStatus, bool expected)
         {
             // Arrange

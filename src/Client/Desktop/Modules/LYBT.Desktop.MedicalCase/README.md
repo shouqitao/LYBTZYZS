@@ -1091,8 +1091,8 @@ else if (CurrentStepViewModel is PrescriptionEditorViewModel prescription)
 ### 3. **暂存/继续与状态管理**
 
 **原则说明**:
-- 医案状态使用`MedicalCaseStatus`枚举(Registered/InProgress/Completed/Cancelled)
-- 暂存时保存所有步骤数据 + 更新状态为InProgress
+- 医案状态使用`MedicalCaseStatus`枚举(Draft/Active/Completed) - Issue #2242: 已废弃Cancelled，使用软删除
+- 暂存时保存所有步骤数据 + 更新状态为Active
 - 继续时根据医案数据恢复到正确步骤
 
 **代码示例**:
