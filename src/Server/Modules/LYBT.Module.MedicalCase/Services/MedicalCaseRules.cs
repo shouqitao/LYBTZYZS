@@ -10,13 +10,31 @@ namespace LYBT.Module.MedicalCase.Services
     public static class MedicalCaseRules
     {
         /// <summary>
-        /// 核心规则1：患者同时只能有一个进行中的医案
+        /// 核心规则1：患者同时只能有一个进行中或暂存的医案
+        /// Issue #xxxx: 增加Draft（暂存/挂起）状态检查
         /// </summary>
         /// <param name="existingCases">患者现有的医案列表</param>
         /// <returns>是否可以创建新医案</returns>
         public static bool CanCreateNewCase(IEnumerable<MedicalCaseEntity> existingCases)
         {
-            return !existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active);
+            return !existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active ||
+                                            c.CaseStatus == MedicalCaseStatus.Draft);
+        }
+
+        /// <summary>
+        /// 检查是否有Active状态的医案
+        /// </summary>
+        public static bool HasActiveCase(IEnumerable<MedicalCaseEntity> existingCases)
+        {
+            return existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active);
+        }
+
+        /// <summary>
+        /// 检查是否有Draft（暂存/挂起）状态的医案
+        /// </summary>
+        public static bool HasDraftCase(IEnumerable<MedicalCaseEntity> existingCases)
+        {
+            return existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Draft);
         }
 
         /// <summary>

@@ -94,10 +94,21 @@ namespace LYBT.Module.MedicalCase.Services
                 var existingActiveCases = await _repository.GetByPatientIdAsync(patientId);
                 if (!MedicalCaseRules.CanCreateNewCase(existingActiveCases))
                 {
-                    var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
-                    _logger.LogWarning("患者已有未完成病案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
-                        patientId, activeCase?.Id);
-                    throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
+                    // Issue #xxxx: 区分Active和Draft状态，给出不同的错误提示
+                    if (MedicalCaseRules.HasActiveCase(existingActiveCases))
+                    {
+                        var activeCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Active);
+                        _logger.LogWarning("患者已有进行中的医案，PatientId: {PatientId}, ActiveCaseId: {CaseId}",
+                            patientId, activeCase?.Id);
+                        throw new InvalidOperationException("该患者已有进行中的医案，请先完成现有医案");
+                    }
+                    else if (MedicalCaseRules.HasDraftCase(existingActiveCases))
+                    {
+                        var draftCase = existingActiveCases.FirstOrDefault(c => c.CaseStatus == MedicalCaseStatus.Draft);
+                        _logger.LogWarning("患者已有暂存的医案，PatientId: {PatientId}, DraftCaseId: {CaseId}",
+                            patientId, draftCase?.Id);
+                        throw new InvalidOperationException("该患者已有暂存的医案，请先处理现有医案（继续或关闭）");
+                    }
                 }
 
                 // 创建MedicalCase实体
