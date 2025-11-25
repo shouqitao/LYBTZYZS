@@ -589,6 +589,16 @@ namespace LYBT.Module.Patients.Services
                     return Result<Patient>.Failure(errors);
                 }
 
+                // Issue #2245 Fix: 检查手机号唯一性(防止重复)
+                if (!string.IsNullOrEmpty(dto.PhoneNumber))
+                {
+                    var existingPatient = await _repository.GetByPhoneNumberAsync(dto.PhoneNumber);
+                    if (existingPatient != null && !existingPatient.IsDeleted)
+                    {
+                        return Result<Patient>.Failure($"手机号 {dto.PhoneNumber} 已存在");
+                    }
+                }
+
                 var entity = _mapper.Map<Patient>(dto);
 
                 // 生成拼音码（基于姓名）
@@ -612,8 +622,9 @@ namespace LYBT.Module.Patients.Services
         {
             try
             {
+                // Issue #2245 Fix: 检查实体存在性(包括软删除状态)
                 var entity = await _repository.GetByIdAsync(id);
-                if (entity == null)
+                if (entity == null || entity.IsDeleted)
                     return Result<Patient>.Failure("患者不存在");
 
                 // FluentValidation 验证

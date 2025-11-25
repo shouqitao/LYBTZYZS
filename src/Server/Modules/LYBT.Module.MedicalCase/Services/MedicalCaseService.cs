@@ -200,9 +200,21 @@ namespace LYBT.Module.MedicalCase.Services
                     throw new InvalidOperationException("病案的辨证信息不存在");
                 }
 
-                // 通过AutoMapper更新Consultation子实体（AR-001：通过聚合根操作）
-                _mapper.Map(request, medicalCase.Consultation);
-                medicalCase.Consultation.UpdatedAt = DateTime.Now;
+                // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
+                // 原因：使用AutoMapper的Map(source, destination)会触发EF Core change tracker，
+                // 导致"Consultation.Id is part of a key and so cannot be modified"错误
+                var consultation = medicalCase.Consultation;
+                consultation.ChiefComplaint = request.ChiefComplaint;
+                consultation.PresentIllness = request.PresentIllness;
+                consultation.Inspection = request.Inspection;
+                consultation.AuscultationOlfaction = request.AuscultationOlfaction;
+                consultation.Inquiry = request.Inquiry;
+                consultation.Palpation = request.Palpation;
+                consultation.TCMDiagnosis = request.TCMDiagnosis;
+                consultation.TreatmentPrinciple = request.TreatmentPrinciple;
+                consultation.MedicalAdvice = request.MedicalAdvice;
+                consultation.Remark = request.Remark;
+                consultation.UpdatedAt = DateTime.Now;
 
                 // 标记Step1完成
                 if (medicalCase.Consultation.Step1CompletedAt == null)

@@ -140,7 +140,7 @@ namespace LYBT.WebAPI.Controllers
                 var entityResult = await _optimizedService.CreateEntityAsync(dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    return BusinessFail<PatientDto>(entityResult.ErrorMessage ?? "新增患者失败");
+                    return ValidationFail<PatientDto>(entityResult.ErrorMessage ?? "新增患者失败");
                 }
 
                 // Controller层延迟映射：Entity → DTO
@@ -182,7 +182,12 @@ namespace LYBT.WebAPI.Controllers
                 var entityResult = await _optimizedService.UpdateEntityAsync(id, dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    return BusinessFail<PatientDto>(entityResult.ErrorMessage ?? "更新患者失败");
+                    // Issue #2245: 根据错误类型返回正确的HTTP状态码
+                    if (entityResult.ErrorMessage?.Contains("不存在") == true)
+                    {
+                        return NotFound<PatientDto>(entityResult.ErrorMessage);
+                    }
+                    return ValidationFail<PatientDto>(entityResult.ErrorMessage ?? "更新患者失败");
                 }
 
                 // Controller层延迟映射：Entity → DTO
@@ -205,11 +210,11 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者（软删除）
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Delete(Guid id)
+        public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid(id, "患者ID");
+                var validationResult = ValidateGuid<bool>(id, "患者ID");
                 if (validationResult != null)
                 {
                     return validationResult;
@@ -218,15 +223,15 @@ namespace LYBT.WebAPI.Controllers
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
                 {
-                    return NotFound("患者不存在");
+                    return NotFound<bool>("患者不存在");
                 }
 
                 LogOperation("删除患者成功", null, id);
-                return Success("删除成功");
+                return Success(true, "删除成功");
             }
             catch (Exception ex)
             {
-                return HandleException(ex, "删除患者", id);
+                return HandleException<bool>(ex, "删除患者", id);
             }
         }
 

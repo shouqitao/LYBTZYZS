@@ -71,9 +71,10 @@ namespace LYBT.Module.MedicalCase.Mapping
             // ========== Epic #1612 旧的Request映射（保持兼容性） ==========
 
             // Request映射: ConsultationInputDto -> Consultation (Shared层)
+            // Issue #2231: Consultation使用共享主键，必须忽略Id相关字段以避免EF Core键修改错误
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultation.Consultation>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())  // 共享主键，不可修改
+                .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())  // 导航属性，不可修改
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionEnabled, opt => opt.Ignore())
                 .ForMember(dest => dest.Step1CompletedAt, opt => opt.Ignore())

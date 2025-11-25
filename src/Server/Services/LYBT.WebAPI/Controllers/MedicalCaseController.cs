@@ -82,7 +82,9 @@ namespace LYBT.WebAPI.Controllers
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
                     Status = entity.Status, // 系统状态（CommonStatus）
-                    CreatedAt = entity.CreatedAt
+                    CreatedAt = entity.CreatedAt,
+                    // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
+                    ConsultationId = entity.Id
                 };
 
                 return Ok(ApiResponse<MedicalCaseDto>.CreateSuccess(dto, "病案创建成功"));
