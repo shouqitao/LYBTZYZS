@@ -20,7 +20,7 @@ namespace LYBT.Module.Patients.Tests.Repositories
     {
         private readonly Mock<AppDbContext> _mockContext;
         private readonly Mock<DbSet<Patient>> _mockDbSet;
-        private readonly Mock<ILogger<PatientRepository>> _mockLogger;
+        private readonly ILogger<PatientRepository> _logger;
         private readonly IPatientRepository _repository;
         private readonly List<Patient> _testPatients;
 
@@ -31,9 +31,9 @@ namespace LYBT.Module.Patients.Tests.Repositories
             _mockContext = new Mock<AppDbContext>();
             _mockContext.Setup(c => c.Set<Patient>()).Returns(_mockDbSet.Object);
 
-            _mockLogger = CreateLoggerMock<PatientRepository>();
+            _logger = CreateLogger<PatientRepository>();
 
-            _repository = new PatientRepository(_mockContext.Object, _mockLogger.Object);
+            _repository = new PatientRepository(_mockContext.Object, _logger);
         }
 
         #region Constructor Tests
@@ -42,10 +42,10 @@ namespace LYBT.Module.Patients.Tests.Repositories
         public void Constructor_WithValidContext_ShouldCreateInstance()
         {
             // Arrange
-            var logger = CreateLoggerMock<PatientRepository>();
+            var logger = CreateLogger<PatientRepository>();
 
             // Act
-            var repository = new PatientRepository(_mockContext.Object, logger.Object);
+            var repository = new PatientRepository(_mockContext.Object, logger);
 
             // Assert
             repository.Should().NotBeNull();
@@ -55,10 +55,10 @@ namespace LYBT.Module.Patients.Tests.Repositories
         public void Constructor_WithNullContext_ShouldThrowArgumentNullException()
         {
             // Arrange
-            var logger = CreateLoggerMock<PatientRepository>();
+            var logger = CreateLogger<PatientRepository>();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new PatientRepository(null!, logger.Object));
+            Assert.Throws<ArgumentNullException>(() => new PatientRepository(null!, logger));
         }
 
         #endregion

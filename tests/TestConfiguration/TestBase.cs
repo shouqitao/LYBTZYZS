@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace LYBT.Tests.Common
@@ -123,6 +124,17 @@ namespace LYBT.Tests.Common
             var mock = new Mock<ILogger<T>>();
             Services.AddSingleton(mock.Object);
             return mock;
+        }
+
+        /// <summary>
+        /// 创建指定类型的Logger实例（用于internal类型，避免Moq代理创建失败）
+        /// Issue #2244: Repository类是internal的，Moq无法为强命名程序集创建代理
+        /// </summary>
+        protected ILogger<T> CreateLogger<T>()
+        {
+            var logger = NullLogger<T>.Instance;
+            Services.AddSingleton<ILogger<T>>(logger);
+            return logger;
         }
 
         public virtual void Dispose()

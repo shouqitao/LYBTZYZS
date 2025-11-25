@@ -19,7 +19,7 @@ namespace LYBT.Module.Herbs.Tests.Repositories
     {
         private readonly Mock<AppDbContext> _mockContext;
         private readonly Mock<DbSet<Herb>> _mockDbSet;
-        private readonly Mock<ILogger<HerbRepository>> _mockLogger;
+        private readonly ILogger<HerbRepository> _logger;
         private readonly HerbRepository _repository;
         private readonly List<Herb> _testHerbs;
 
@@ -30,9 +30,9 @@ namespace LYBT.Module.Herbs.Tests.Repositories
             _mockContext = new Mock<AppDbContext>();
             _mockContext.Setup(c => c.Set<Herb>()).Returns(_mockDbSet.Object);
 
-            _mockLogger = CreateLoggerMock<HerbRepository>();
+            _logger = CreateLogger<HerbRepository>();
 
-            _repository = new HerbRepository(_mockContext.Object, _mockLogger.Object);
+            _repository = new HerbRepository(_mockContext.Object, _logger);
         }
 
         #region GetByIdAsync Tests
