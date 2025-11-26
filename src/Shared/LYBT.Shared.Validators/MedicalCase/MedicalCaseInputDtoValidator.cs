@@ -41,7 +41,7 @@ namespace LYBT.Shared.Validators.MedicalCase
             // 就诊日期：始终必填
             RuleFor(x => x.VisitDate)
                 .NotEmpty().WithMessage("就诊日期不能为空")
-                .LessThanOrEqualTo(DateTime.Today).WithMessage("就诊日期不能晚于今天");
+                .Must(x => x.Date <= DateTime.Today).WithMessage("就诊日期不能晚于今天");
 
             // ========== 可选字段验证（有值时验证长度） ==========
 

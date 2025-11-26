@@ -13,7 +13,6 @@ namespace LYBT.Infrastructure.Data.Configurations
         {
             entity.ToTable("MedicalCases");
             entity.HasKey(m => m.Id);
-            entity.Property(m => m.Status).HasConversion<string>();
             entity.Property(m => m.Remark).HasMaxLength(500);
 
             // Epic #2175 BF-002: NeedsPrescription字段配置（nullable支持三态）
@@ -35,11 +34,11 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(m => m.CreatedAt).IsRequired();
 
             // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
-            // Status枚举值：Draft=0, Active=1, Completed=2 (Issue #2242: Cancelled已废弃，使用软删除)
+            // CaseStatus枚举值：Draft=0, Active=1, Completed=2 (Issue #2242: Cancelled已废弃，使用软删除)
             entity.HasIndex(m => m.PatientId)
                   .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
                   .IsUnique()
-                  .HasFilter("[Status] = 'Active'");
+                  .HasFilter("[CaseStatus] = 1");
 
             // 删除PrescriptionId外键关系，改为通过Prescription.MedicalCaseId关联
             // 不再需要下面这行

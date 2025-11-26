@@ -131,6 +131,7 @@ namespace LYBT.Module.MedicalCase.Services
                 var consultation = new ConsultationEntity
                 {
                     Id = medicalCase.Id, // 共享主键（Consultation.Id == MedicalCase.Id）
+                    MedicalCase = medicalCase, // 设置Required导航属性
                     Status = CommonStatus.Enabled,
                     ChiefComplaint = string.Empty, // 初始化为空，待用户填写
                     CreatedAt = DateTime.Now,
