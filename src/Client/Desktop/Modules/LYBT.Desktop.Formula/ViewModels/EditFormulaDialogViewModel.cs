@@ -549,25 +549,18 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         /// <summary>
         /// 创建空白药材项
+        /// Phase 3: FormulaHerbItemViewModel继承HerbItemViewModelBase，简化构造
         /// </summary>
         private FormulaHerbItemViewModel CreateBlankHerbItem()
         {
-            var herbItem = new FormulaHerbItemViewModel(
-                EventAggregator,
-                LoggerFactory,
-                RegionManager,
-                SessionManager,
-                UserNotificationService)
+            return new FormulaHerbItemViewModel
             {
                 HerbId = Guid.Empty,
                 HerbName = string.Empty,
                 Dosage = 0,
                 Unit = "g",
-                // Issue #2149: 注入AllHerbs引用以支持拼音码过滤
                 AllHerbs = _allHerbs
             };
-
-            return herbItem;
         }
 
         /// <summary>

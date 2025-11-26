@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.Formula.ViewModels"
-             xmlns:controls="clr-namespace:LYBT.Desktop.Formula.Controls"
+             xmlns:sharedControls="clr-namespace:LYBT.Desktop.Presentation.Components;assembly=LYBT.Desktop.Presentation"
              xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
@@ -95,8 +95,10 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <controls:HerbCardControl
+                                    <!-- Phase 3: 使用共享层HerbCardControl，ShowPrice=False（经验方不显示价格） -->
+                                    <sharedControls:HerbCardControl
                                         IsEditMode="True"
+                                        ShowPrice="False"
                                         DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
