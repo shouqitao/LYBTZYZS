@@ -798,7 +798,19 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.CanEditAsync(id);
+                // Issue #2233: 添加医生所有权验证 - 提取当前医生ID
+                Guid currentDoctorId;
+                try
+                {
+                    var (operatorId, operatorName, operatorRole) = GetOperator();
+                    currentDoctorId = operatorId;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Unauthorized(ApiResponse<CanEditResponse>.CreateFail("未登录或用户信息无效"));
+                }
+
+                var result = await _medicalCaseService.CanEditAsync(id, currentDoctorId);
 
                 return Ok(ApiResponse<CanEditResponse>.CreateSuccess(result, "验证成功"));
             }

@@ -203,11 +203,13 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <summary>
         /// 验证病案是否可编辑
         /// Epic #1612: 检查病案状态和权限
-        /// 业务规则：仅Active状态可编辑
+        /// Issue #2233: 添加医生所有权验证
+        /// 业务规则：仅Active状态可编辑，且必须是创建医案的医生
         /// </summary>
         /// <param name="id">病案ID</param>
+        /// <param name="currentDoctorId">当前操作医生的ID</param>
         /// <returns>验证结果（可编辑标志 + 原因说明）</returns>
-        Task<CanEditResponse> CanEditAsync(Guid id);
+        Task<CanEditResponse> CanEditAsync(Guid id, Guid currentDoctorId);
 
         /// <summary>
         /// 验证处方是否可删除

@@ -882,9 +882,10 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 验证病案是否可编辑
         /// Epic #1612: 检查病案状态和权限
-        /// 业务规则：仅Active状态可编辑
+        /// Issue #2233: 添加医生所有权验证
+        /// 业务规则：仅Active状态可编辑，且必须是创建医案的医生
         /// </summary>
-        public async Task<CanEditResponse> CanEditAsync(Guid id)
+        public async Task<CanEditResponse> CanEditAsync(Guid id, Guid currentDoctorId)
         {
             try
             {
@@ -895,6 +896,18 @@ namespace LYBT.Module.MedicalCase.Services
                     {
                         CanEdit = false,
                         Reason = "病案不存在"
+                    };
+                }
+
+                // Issue #2233: 验证医生所有权 - 只有创建医案的医生才能编辑
+                if (medicalCase.DoctorId != currentDoctorId)
+                {
+                    _logger.LogWarning("医生尝试编辑他人的医案，MedicalCaseId: {Id}, MedicalCaseDoctorId: {CaseDoctorId}, CurrentDoctorId: {CurrentDoctorId}",
+                        id, medicalCase.DoctorId, currentDoctorId);
+                    return new CanEditResponse
+                    {
+                        CanEdit = false,
+                        Reason = "只能编辑自己创建的医案"
                     };
                 }
 
