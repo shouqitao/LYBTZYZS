@@ -1,0 +1,123 @@
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Dialogs.FormulaImportDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
+             xmlns:prism="http://prismlibrary.com/"
+             mc:Ignorable="d"
+             prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
+             d:DesignHeight="500" d:DesignWidth="650"
+             d:DataContext="{d:DesignInstance Type=viewmodels:FormulaImportDialogViewModel}">
+
+    <!--
+    Issue #2246: 验方导入弹窗
+    用于从经验方库搜索选择验方，批量导入药材到处方
+    -->
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryColorBrush}" Padding="15,10">
+            <TextBlock Text="从验方导入" Foreground="White" FontSize="18" FontWeight="Bold" />
+        </Border>
+
+        <!-- 内容区域 -->
+        <Grid Grid.Row="1" Margin="15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- 搜索框 -->
+                <RowDefinition Height="*"/>      <!-- 验方列表 -->
+                <RowDefinition Height="Auto"/>  <!-- 预览区域 -->
+            </Grid.RowDefinitions>
+
+            <!-- 搜索框 -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8,6"
+                         FontSize="13"/>
+                <TextBlock Text="输入验方名称或拼音码搜索..."
+                           IsHitTestVisible="False"
+                           Foreground="#999"
+                           Padding="10,8"
+                           FontSize="13">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SearchText}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <!-- 验方列表 -->
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding FilteredFormulas}"
+                      SelectedItem="{Binding SelectedFormula}"
+                      BorderBrush="#E0E0E0"
+                      BorderThickness="1">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="验方名称" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="药材数量" Width="80" DisplayMemberBinding="{Binding HerbCount}"/>
+                        <GridViewColumn Header="分类" Width="100" DisplayMemberBinding="{Binding Category}"/>
+                        <GridViewColumn Header="状态" Width="80" DisplayMemberBinding="{Binding StatusDisplay}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <!-- 预览区域 -->
+            <Border Grid.Row="2"
+                    Background="#F5F5F5"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Padding="10"
+                    Margin="0,10,0,0"
+                    MinHeight="60">
+                <StackPanel>
+                    <TextBlock Text="药材组成预览:" FontWeight="Bold" FontSize="12" Foreground="#666"/>
+                    <TextBlock Text="{Binding PreviewText}"
+                               TextWrapping="Wrap"
+                               FontSize="12"
+                               Foreground="#333"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 按钮栏 -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="15,10">
+            <Grid>
+                <TextBlock Text="{Binding StatusMessage}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Foreground="#666" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="取消"
+                            Command="{Binding CancelCommand}"
+                            Width="80"
+                            Margin="0,0,10,0"
+                            Padding="8,6"/>
+                    <Button Content="确认导入"
+                            Command="{Binding ConfirmCommand}"
+                            Width="90"
+                            Padding="8,6"
+                            Background="{DynamicResource PrimaryColorBrush}"
+                            Foreground="White"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
