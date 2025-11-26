@@ -49,6 +49,7 @@
   <ItemGroup Label="Desktop Core">
     <ProjectReference Include="..\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Shared Libraries">

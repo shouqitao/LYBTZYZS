@@ -129,10 +129,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 药材列表
 
         /// <summary>
-        /// 药材项列表（复用PrescriptionItemViewModel，ItemsControl绑定）
-        /// 重构: 使用扁平列表替代行模型，与HerbCardControl配合
+        /// 药材项列表（使用PrescriptionHerbItemViewModel，继承自HerbItemViewModelBase）
+        /// 重构: 使用扁平列表替代行模型，与共享HerbCardControl配合
+        /// Issue: unify-herb-card-control - 统一处方和经验方的药材编辑体验
         /// </summary>
-        public ObservableCollection<PrescriptionItemViewModel> HerbItems { get; } = new();
+        public ObservableCollection<PrescriptionHerbItemViewModel> HerbItems { get; } = new();
 
         #endregion
 
@@ -286,13 +287,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 删除药材命令（HerbCardControl绑定）
+        /// Issue: unify-herb-card-control - 使用HerbItemViewModelBase作为参数类型
         /// </summary>
-        public DelegateCommand<PrescriptionItemViewModel> DeleteHerbCommand { get; }
+        public DelegateCommand<PrescriptionHerbItemViewModel> DeleteHerbCommand { get; }
 
         /// <summary>
         /// 剂量完成命令（HerbCardControl绑定，用于重复检测）
+        /// Issue: unify-herb-card-control - 使用HerbItemViewModelBase作为参数类型
         /// </summary>
-        public DelegateCommand<PrescriptionItemViewModel> DosageCompletedCommand { get; }
+        public DelegateCommand<PrescriptionHerbItemViewModel> DosageCompletedCommand { get; }
 
         /// <summary>
         /// 添加新行命令（HerbCardControl绑定，到达末尾时触发）
@@ -346,9 +349,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
             DeletePrescriptionCommand = new DelegateCommand(ExecuteDeletePrescription);
 
-            // HerbCardControl绑定的命令
-            DeleteHerbCommand = new DelegateCommand<PrescriptionItemViewModel>(ExecuteDeleteHerb);
-            DosageCompletedCommand = new DelegateCommand<PrescriptionItemViewModel>(ExecuteDosageCompleted);
+            // HerbCardControl绑定的命令 (Issue: unify-herb-card-control)
+            DeleteHerbCommand = new DelegateCommand<PrescriptionHerbItemViewModel>(ExecuteDeleteHerb);
+            DosageCompletedCommand = new DelegateCommand<PrescriptionHerbItemViewModel>(ExecuteDosageCompleted);
             AddNewRowCommand = new DelegateCommand(ExecuteAddNewRow);
 
             // Issue #2246: 弹窗模式命令
@@ -392,16 +395,34 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 加载药材列表（注入到每个PrescriptionItemViewModel）
+        /// 后端限制每页最多100条，使用循环分页获取所有药材
         /// </summary>
         private async Task LoadHerbsAsync()
         {
             try
             {
-                var result = await _herbRepository.GetPagedAsync(page: 1, pageSize: 500);
                 _allHerbs.Clear();
-                foreach (var herb in result.Items)
+                const int pageSize = 100; // 后端限制最大100
+                int page = 1;
+                int totalLoaded = 0;
+
+                while (true)
                 {
-                    _allHerbs.Add(herb);
+                    var result = await _herbRepository.GetPagedAsync(page: page, pageSize: pageSize);
+                    if (result.Items == null || !result.Items.Any())
+                        break;
+
+                    foreach (var herb in result.Items)
+                    {
+                        _allHerbs.Add(herb);
+                    }
+                    totalLoaded += result.Items.Count();
+
+                    // 如果返回的数量少于请求的数量，说明已经是最后一页
+                    if (result.Items.Count() < pageSize || totalLoaded >= result.TotalCount)
+                        break;
+
+                    page++;
                 }
 
                 // 注入到所有现有的药材项
@@ -432,6 +453,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             TotalPrice = dto.TotalPrice;
 
             // 加载药材项
+            // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice替代直接赋值
             HerbItems.Clear();
             if (dto.Items != null && dto.Items.Any())
             {
@@ -441,13 +463,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     herbItem.HerbId = item.HerbId;
                     herbItem.HerbName = item.HerbName ?? string.Empty;
                     herbItem.Dosage = item.Dosage;
-                    herbItem.UnitPrice = item.UnitPrice;
+                    herbItem.SetLoadedUnitPrice(item.UnitPrice); // 使用方法设置价格
                     HerbItems.Add(herbItem);
                 }
             }
 
-            // 确保至少有12个槽位（3行4列）
-            EnsureMinimumHerbItems();
+            // N+1行原则：确保至少有4个空槽位
+            EnsureMinimumBlankRows();
 
             UpdateItemCount();
             CalculatePrices();
@@ -455,21 +477,29 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 创建新的药材项ViewModel
+        /// Issue: unify-herb-card-control - 使用PrescriptionHerbItemViewModel继承自HerbItemViewModelBase
         /// </summary>
-        private PrescriptionItemViewModel CreateHerbItem()
+        private PrescriptionHerbItemViewModel CreateHerbItem()
         {
-            var item = new PrescriptionItemViewModel(_eventAggregator, _loggerFactory);
+            var item = new PrescriptionHerbItemViewModel();
             item.AllHerbs = _allHerbs;
 
-            // 订阅属性变化以触发价格计算
+            // 订阅属性变化以触发价格计算和N+1行原则
+            // Issue: unify-herb-card-control - ItemAmount改为ItemTotal
             item.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(PrescriptionItemViewModel.ItemAmount) ||
-                    e.PropertyName == nameof(PrescriptionItemViewModel.HerbId))
+                if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.ItemTotal) ||
+                    e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
                 {
                     CalculatePrices();
                     UpdateItemCount();
                     CheckDuplicateHerbs();
+
+                    // N+1行原则：药材选择后确保至少有4个空槽位
+                    if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
+                    {
+                        EnsureMinimumBlankRows();
+                    }
                 }
             };
 
@@ -477,24 +507,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 添加默认药材项（12个空槽位，对应3行4列）
+        /// 添加默认药材项（初始化时调用）
+        /// N+1行原则：确保至少有4个空槽位（一整行）
         /// </summary>
         private void AddDefaultHerbItems()
         {
-            for (int i = 0; i < 12; i++)
+            // 初始化8个空槽位（2行4列）
+            for (int i = 0; i < 8; i++)
             {
                 HerbItems.Add(CreateHerbItem());
             }
         }
 
         /// <summary>
-        /// 确保至少有12个槽位
+        /// 确保至少有4个空槽位（N+1行原则）
+        /// Issue: unify-herb-card-control - 与经验方编辑器保持一致的逻辑
+        /// 逻辑：
+        /// - 0~4种药材 → 8个槽位（2行）
+        /// - 5~8种药材 → 12个槽位（3行）
+        /// - 9~12种药材 → 16个槽位（4行）
+        /// - 以此类推...
         /// </summary>
-        private void EnsureMinimumHerbItems()
+        private void EnsureMinimumBlankRows()
         {
-            while (HerbItems.Count < 12)
+            const int minBlankSlots = 4; // 至少保留4个空槽位（一整行）
+
+            // 统计空槽位数量（未选择药材的槽位）
+            var blankSlots = HerbItems.Count(h => h.HerbId == Guid.Empty);
+
+            // 如果空槽位不足4个，补充到4个
+            while (blankSlots < minBlankSlots)
             {
                 HerbItems.Add(CreateHerbItem());
+                blankSlots++;
             }
         }
 
@@ -600,40 +645,44 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 添加行（添加4个空槽位）
+        /// 添加行（N+1原则：强制添加一整行4个空槽位）
         /// </summary>
         private void ExecuteAddRow()
         {
+            // 强制添加4个空槽位（用户主动添加行）
             for (int i = 0; i < 4; i++)
             {
                 HerbItems.Add(CreateHerbItem());
             }
-            Logger.LogInformation("添加新行，当前共{Count}个槽位", HerbItems.Count);
+            Logger.LogInformation("手动添加新行，当前共{Count}个槽位", HerbItems.Count);
         }
 
         /// <summary>
-        /// 添加单个新槽位（由HerbCardControl到达末尾时触发）
+        /// 添加新槽位（由HerbCardControl到达末尾时触发）
+        /// N+1行原则：确保至少有4个空槽位
         /// </summary>
         private void ExecuteAddNewRow()
         {
-            HerbItems.Add(CreateHerbItem());
+            // N+1行原则：确保至少有4个空槽位
+            EnsureMinimumBlankRows();
             Logger.LogInformation("添加新槽位，当前共{Count}个", HerbItems.Count);
         }
 
         /// <summary>
-        /// 删除药材项
+        /// 删除药材项（带自动前移）
+        /// Issue: unify-herb-card-control - 与经验方编辑器保持一致的逻辑
         /// </summary>
-        private void ExecuteDeleteHerb(PrescriptionItemViewModel? item)
+        private void ExecuteDeleteHerb(PrescriptionHerbItemViewModel? item)
         {
             if (item == null) return;
 
-            // 不直接删除，而是清空该槽位（保持布局稳定）
-            item.HerbId = Guid.Empty;
-            item.HerbName = string.Empty;
-            item.Dosage = 10m;
-            item.UnitPrice = 0;
+            // 删除指定药材项（与经验方编辑器一致）
+            HerbItems.Remove(item);
 
-            Logger.LogInformation("清空药材槽位");
+            // N+1行原则：确保至少有4个空槽位
+            EnsureMinimumBlankRows();
+
+            Logger.LogInformation("删除药材: {HerbName}", item.HerbName);
             UpdateItemCount();
             CalculatePrices();
             CheckDuplicateHerbs();
@@ -641,8 +690,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 剂量完成命令（触发重复检测）
+        /// Issue: unify-herb-card-control - 使用PrescriptionHerbItemViewModel
         /// </summary>
-        private void ExecuteDosageCompleted(PrescriptionItemViewModel? item)
+        private void ExecuteDosageCompleted(PrescriptionHerbItemViewModel? item)
         {
             if (item == null) return;
 
@@ -742,12 +792,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 计算价格（单剂价格 = 所有药材小计之和，总价格 = 单剂价格 × 剂数）
         /// 这是处方特有的功能，经验方不需要
+        /// Issue: unify-herb-card-control - ItemAmount改为ItemTotal
         /// </summary>
         private void CalculatePrices()
         {
             SingleDosagePrice = HerbItems
                 .Where(h => h.HerbId != Guid.Empty)
-                .Sum(h => h.ItemAmount);
+                .Sum(h => h.ItemTotal);
 
             TotalPrice = SingleDosagePrice * DosageCount;
         }
@@ -1023,6 +1074,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 添加药材到当前处方（追加模式）
+                // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice
                 int addedCount = 0;
                 foreach (var item in detail.Prescription.Items)
                 {
@@ -1043,9 +1095,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     emptySlot.HerbId = item.HerbId;
                     emptySlot.HerbName = item.HerbName ?? string.Empty;
                     emptySlot.Dosage = item.Dosage;
-                    emptySlot.UnitPrice = item.UnitPrice;
+                    emptySlot.SetLoadedUnitPrice(item.UnitPrice);
                     addedCount++;
                 }
+
+                // N+1行原则：确保至少有4个空槽位
+                EnsureMinimumBlankRows();
 
                 // 重新计算价格
                 UpdateItemCount();
@@ -1149,14 +1204,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     emptySlot.HerbId = herb.HerbId.Value;
                     emptySlot.HerbName = herb.HerbName ?? string.Empty;
                     emptySlot.Dosage = herb.Quantity;
-                    // 尝试从药材列表获取单价
+                    // 尝试从药材列表获取单价 (Issue: unify-herb-card-control)
                     var herbInfo = _allHerbs.FirstOrDefault(h => h.Id == herb.HerbId.Value);
                     if (herbInfo != null)
                     {
-                        emptySlot.UnitPrice = herbInfo.Price;
+                        emptySlot.SetLoadedUnitPrice(herbInfo.Price);
                     }
                     addedCount++;
                 }
+
+                // N+1行原则：确保至少有4个空槽位
+                EnsureMinimumBlankRows();
 
                 // 重新计算价格
                 UpdateItemCount();
@@ -1228,6 +1286,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 添加药材到当前处方（追加模式）
+                // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice
                 int addedCount = 0;
                 foreach (var item in items)
                 {
@@ -1248,9 +1307,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     emptySlot.HerbId = item.HerbId;
                     emptySlot.HerbName = item.HerbName ?? string.Empty;
                     emptySlot.Dosage = item.Dosage;
-                    emptySlot.UnitPrice = item.UnitPrice;
+                    emptySlot.SetLoadedUnitPrice(item.UnitPrice);
                     addedCount++;
                 }
+
+                // N+1行原则：确保至少有4个空槽位
+                EnsureMinimumBlankRows();
 
                 // 重新计算价格
                 UpdateItemCount();

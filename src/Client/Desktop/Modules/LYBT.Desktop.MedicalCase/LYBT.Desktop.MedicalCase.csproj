@@ -71,6 +71,8 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
+    <!-- Issue: unify-herb-card-control - 引用共享HerbCardControl控件 -->
+    <ProjectReference Include="..\..\Core\LYBT.Desktop.Presentation\LYBT.Desktop.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="Desktop Core">
