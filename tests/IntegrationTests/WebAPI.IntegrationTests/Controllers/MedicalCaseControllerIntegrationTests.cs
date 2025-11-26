@@ -148,6 +148,126 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             apiResponse.Data.ConsultationId.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Issue #2232 Task 4.1.1: 验证DoctorId正确设置
+        /// 测试目标: 验证创建医案时,DoctorId从JWT Token的NameIdentifier中正确设置
+        /// </summary>
+        [Fact]
+        public async Task CreateMedicalCase_ShouldSetDoctorId_WhenCalled()
+        {
+            // Arrange
+            var request = new
+            {
+                PatientId = _testPatientId,
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // Assert
+            response.ShouldBeOk();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+
+            // Issue #2232: 验证DoctorId被正确设置为JWT Token中的NameIdentifier
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.DoctorId.Should().Be(FixedDoctorId);
+            apiResponse.Data.DoctorId.Should().NotBe(Guid.Empty);
+
+            _output.WriteLine($"✅ DoctorId正确设置: {apiResponse.Data.DoctorId}");
+        }
+
+        /// <summary>
+        /// Issue #2232 Task 4.1.1: 验证DoctorName从Users表正确获取
+        /// 测试目标: 验证创建医案时,DoctorName从Users.RealName字段正确获取
+        /// </summary>
+        [Fact]
+        public async Task CreateMedicalCase_ShouldSetDoctorName_FromUserTable()
+        {
+            // Arrange
+            var request = new
+            {
+                PatientId = _testPatientId,
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // Assert
+            response.ShouldBeOk();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+
+            // Issue #2232: 验证DoctorName从Users表的RealName字段正确获取
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.DoctorName.Should().NotBeNullOrEmpty();
+            apiResponse.Data.DoctorName.Should().Be("测试医生"); // 与InitializeAsync中创建的testDoctor.RealName一致
+
+            _output.WriteLine($"✅ DoctorName正确设置: {apiResponse.Data.DoctorName}");
+        }
+
+        /// <summary>
+        /// Issue #2232 Task 4.1.1: 验证PatientName从Patients表正确获取
+        /// 测试目标: 验证创建医案时,PatientName从Patients.Name字段正确获取
+        /// </summary>
+        [Fact]
+        public async Task CreateMedicalCase_ShouldSetPatientName_FromPatientTable()
+        {
+            // Arrange
+            var request = new
+            {
+                PatientId = _testPatientId,
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // Assert
+            response.ShouldBeOk();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+
+            // Issue #2232: 验证PatientName从Patients表的Name字段正确获取
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.PatientName.Should().NotBeNullOrEmpty();
+            // 患者名称应该与InitializeAsync中创建的testPatient.Name一致
+            // 注意: InitializeAsync创建的患者名称格式为"测试患者{Guid前8位}"，如"测试患者2e1e2f73"
+            apiResponse.Data.PatientName.Should().StartWith("测试患者");
+
+            _output.WriteLine($"✅ PatientName正确设置: {apiResponse.Data.PatientName}");
+        }
+
+        /// <summary>
+        /// Issue #2232 Task 4.1.1: 验证空GUID异常处理
+        /// 测试目标: 验证PatientId为空GUID时返回422 Unprocessable Entity（患者不存在）
+        /// </summary>
+        [Fact]
+        public async Task CreateMedicalCase_ShouldThrowException_WhenGuidEmpty()
+        {
+            // Arrange
+            var request = new
+            {
+                PatientId = Guid.Empty, // 使用空GUID
+                VisitDate = DateTime.Now
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/api/v1/medicalcases", request);
+
+            // Assert
+            // Issue #2232: 空GUID会通过FluentValidation，但在Service层业务逻辑验证时被拒绝（患者不存在）
+            // 因此返回422 Unprocessable Entity而不是400 Bad Request
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.UnprocessableEntity);
+
+            // 验证响应内容包含错误消息
+            var apiResponse = await response.Content.ReadFromJsonAsync<LYBT.Shared.Models.Contracts.Common.ApiResponse<object>>();
+            apiResponse.Should().NotBeNull();
+            apiResponse!.Success.Should().BeFalse();
+            apiResponse.Message.Should().Contain("患者不存在");
+
+            _output.WriteLine($"✅ 空GUID正确返回422: {apiResponse.Message}");
+        }
+
         [Fact]
         public async Task CreateMedicalCase_WhenPatientHasActiveCase_ShouldReturn422()
         {
