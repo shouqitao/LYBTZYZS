@@ -1301,6 +1301,146 @@ END;
 
 ---
 
+## ⚙️ EF Core Configuration最佳实践
+
+### 1. 枚举映射配置规范
+
+#### ❌ 常见错误：错误的HasConversion配置
+```csharp
+// 错误示例：数据库是int类型，却配置为string映射
+public class MedicalCaseConfiguration : IEntityTypeConfiguration<MedicalCase>
+{
+    public void Configure(EntityTypeBuilder<MedicalCase> entity)
+    {
+        entity.Property(m => m.Status).HasConversion<string>(); // ❌ 错误！
+        // 导致SQL错误："在将 nvarchar 值 'Enabled' 转换成数据类型 int 时失败"
+    }
+}
+```
+
+**问题原因**：
+- 数据库Schema中Status列是`int NOT NULL`类型
+- EF Core配置了`.HasConversion<string>()`将枚举映射为字符串
+- INSERT/UPDATE时EF Core尝试将字符串值插入int列，导致SQL类型转换错误
+
+#### ✅ 正确做法：让EF Core使用默认int映射
+```csharp
+// 正确示例：删除HasConversion配置，使用默认int映射
+public class MedicalCaseConfiguration : IEntityTypeConfiguration<MedicalCase>
+{
+    public void Configure(EntityTypeBuilder<MedicalCase> entity)
+    {
+        // ✅ 不配置HasConversion，EF Core默认将枚举映射为int
+        // CommonStatus.Enabled = 1 → 数据库存储为 1
+        entity.Property(m => m.Remark).HasMaxLength(500);
+    }
+}
+```
+
+**最佳实践**：
+1. **默认使用int映射**：枚举默认映射为int，无需显式配置
+2. **显式string映射**：仅在确实需要存储枚举名称字符串时使用`.HasConversion<string>()`
+3. **Schema一致性**：EF Core配置必须与数据库Schema类型完全匹配
+
+#### 枚举映射规则对照表
+
+| 枚举定义 | 数据库列类型 | EF Core配置 | 存储值示例 |
+|---------|-------------|------------|----------|
+| `CommonStatus.Enabled = 1` | `INT NOT NULL` | **无需配置** | `1` |
+| `CommonStatus.Enabled = 1` | `NVARCHAR(50)` | `.HasConversion<string>()` | `'Enabled'` |
+| `MedicalCaseStatus.Active = 1` | `INT NOT NULL` | **无需配置** | `1` |
+| `UserRole.Admin = 1` | `NVARCHAR(20)` | `.HasConversion<string>()` | `'Admin'` |
+
+### 2. 索引过滤器配置规范
+
+#### ❌ 常见错误：字段名和类型不匹配
+```csharp
+// 错误示例：使用了错误的字段名和字符串值
+entity.HasIndex(m => m.PatientId)
+      .HasFilter("[Status] = 'Active'"); // ❌ 双重错误！
+      // 1. 字段名错误：应该是CaseStatus，不是Status
+      // 2. 类型错误：CaseStatus是int，不是string
+```
+
+**问题原因**：
+- MedicalCase实体有两个状态字段：
+  - `Status` (CommonStatus): 系统状态 - Disabled(0)/Enabled(1)
+  - `CaseStatus` (MedicalCaseStatus): 业务流程状态 - Draft(0)/Active(1)/Completed(2)
+- 业务规则"单患者仅一条Active医案"指的是`CaseStatus`，不是`Status`
+- 索引过滤器应该使用int值`1`，而不是字符串`'Active'`
+
+#### ✅ 正确做法：使用正确的字段名和int值
+```csharp
+// 正确示例：使用正确的业务状态字段 + int值
+entity.HasIndex(m => m.PatientId)
+      .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
+      .IsUnique()
+      .HasFilter("[CaseStatus] = 1"); // ✅ 正确！
+      // CaseStatus枚举值：Draft=0, Active=1, Completed=2
+```
+
+**最佳实践**：
+1. **明确字段用途**：区分系统状态字段(Status)和业务状态字段(XxxStatus)
+2. **使用int值**：索引过滤器中使用枚举的int值，不是枚举名称字符串
+3. **添加注释**：在索引配置上方添加枚举值说明注释
+
+### 3. 双状态字段设计模式
+
+#### LYBTZYZS项目的标准模式
+项目中大多数实体都采用"系统状态 + 业务状态"双字段模式：
+
+```csharp
+public class MedicalCase : BaseEntity
+{
+    /// <summary>系统状态（与其他实体统一：Patient、Herb、Formula等）</summary>
+    public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+    /// <summary>业务流程状态（原Status字段重命名）</summary>
+    public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
+}
+```
+
+**字段职责划分**：
+- **Status (CommonStatus)**：控制实体启用/禁用，值域：Disabled(0)/Enabled(1)
+- **XxxStatus (业务枚举)**：控制业务流程流转，值域根据业务定义
+
+**配置示例**：
+```csharp
+public class MedicalCaseConfiguration : IEntityTypeConfiguration<MedicalCase>
+{
+    public void Configure(EntityTypeBuilder<MedicalCase> entity)
+    {
+        // 系统状态：默认int映射，无需配置
+
+        // 业务状态：默认int映射，无需配置
+
+        // 索引过滤器：使用业务状态字段
+        entity.HasIndex(m => m.PatientId)
+              .HasFilter("[CaseStatus] = 1"); // Active状态
+    }
+}
+```
+
+### 4. EF Core Configuration检查清单
+
+创建新的EntityConfiguration时，请按以下清单检查：
+
+- [ ] **枚举映射**：是否需要`.HasConversion<string>()`？（99%情况不需要）
+- [ ] **索引过滤器**：字段名是否正确？使用int值还是string值？
+- [ ] **双状态字段**：是否区分了Status（系统）和XxxStatus（业务）？
+- [ ] **数据库Schema**：EF Core配置是否与实际数据库列类型匹配？
+- [ ] **注释说明**：是否添加了枚举值对照注释？
+
+### 5. 相关Bug修复案例
+
+**案例**：医案创建失败 - SQL类型转换错误
+**错误信息**：`在将 nvarchar 值 'Enabled' 转换成数据类型 int 时失败`
+**根本原因**：MedicalCaseConfiguration配置了`.HasConversion<string>()`但数据库是int类型
+**修复方案**：删除HasConversion配置，使用默认int映射
+**提交记录**：commit 8337611a0
+
+---
+
 ## 📚 数据库设计最佳实践
 
 ### ✅ 推荐做法
