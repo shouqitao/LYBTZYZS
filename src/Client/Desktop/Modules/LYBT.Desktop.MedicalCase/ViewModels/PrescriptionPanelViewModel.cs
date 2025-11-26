@@ -416,10 +416,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     {
                         _allHerbs.Add(herb);
                     }
-                    totalLoaded += result.Items.Count();
+                    totalLoaded += result.Items.Count;
 
                     // 如果返回的数量少于请求的数量，说明已经是最后一页
-                    if (result.Items.Count() < pageSize || totalLoaded >= result.TotalCount)
+                    if (result.Items.Count < pageSize || totalLoaded >= result.TotalCount)
                         break;
 
                     page++;
