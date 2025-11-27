@@ -88,12 +88,13 @@ public class NavigationManager
     }
 
     /// <summary>
-    /// 快速导航到医案流程视图
+    /// 快速导航到医案工作区视图
     /// Issue #1790: 从ExecuteQuickStartConsultationAsync提取
+    /// Epic #2210 Phase 4: 导航目标更新为MedicalCaseWorkspaceView
     /// </summary>
     public void NavigateToMedicalCaseFlow()
     {
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseFlowView");
+        _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView");
     }
 
     /// <summary>

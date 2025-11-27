@@ -93,11 +93,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
-                Logger.LogInformation("用户选择继续看诊，导航到Step 1");
+                Logger.LogInformation("用户选择继续看诊，导航到患者选择界面");
 
-                // 导航到MedicalCaseFlowView，StartStep=1
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView",
-                    new NavigationParameters { { "StartStep", 1 } });
+                // Epic #2210 Phase 4: 导航到PatientSelectionView进行新的患者选择
+                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
             }
             catch (Exception ex)
             {

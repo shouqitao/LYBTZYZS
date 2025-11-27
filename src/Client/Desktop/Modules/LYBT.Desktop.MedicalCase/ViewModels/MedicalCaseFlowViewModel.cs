@@ -1,4 +1,5 @@
-﻿using LYBT.Desktop.Infrastructure.Events;
+﻿using System;
+using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Interfaces;
@@ -20,7 +21,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     /// 医案流程主视图ViewModel
     /// Issue #1567 - 管理3步看病流程：辨证 → 施治 → 完成
     /// 患者选择已独立化为PatientSelectionView
+    ///
+    /// [已废弃] Epic #2210 Phase 4: 此ViewModel已被MedicalCaseWorkspaceViewModel替代
+    /// MedicalCaseWorkspaceViewModel采用4:6统一布局（诊断40% + 处方60%）
+    /// 请使用MedicalCaseWorkspaceViewModel进行新的开发
     /// </summary>
+    [Obsolete("此ViewModel已被MedicalCaseWorkspaceViewModel替代，采用4:6统一布局。请使用MedicalCaseWorkspaceViewModel。")]
     public class MedicalCaseFlowViewModel : UnifiedViewModelBase
     {
         #region 字段

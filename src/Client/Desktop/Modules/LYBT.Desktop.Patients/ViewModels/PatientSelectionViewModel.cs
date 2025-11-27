@@ -952,7 +952,8 @@ namespace LYBT.Desktop.Patients.ViewModels
                     patient.Id, patient.Name);
             }
 
-            RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+            // Epic #2210 Phase 4: 导航到新的4:6统一工作区视图
+            RegionManager.RequestNavigate("ContentRegion", "MedicalCaseWorkspaceView", parameters);
         }
 
         private void PublishPatientSelectedEvent(PatientDto patient, Guid? medicalCaseId = null)
@@ -1162,13 +1163,13 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("医案创建成功: PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     CurrentPatient.Id, medicalCase.Id);
 
-                // 导航到医案详情
+                // Epic #2210 Phase 4: 导航到新的4:6统一工作区视图
                 var parameters = new NavigationParameters
                 {
                     { "MedicalCaseId", medicalCase.Id },
                     { "MedicalCaseFlowId", MedicalCaseFlowId }
                 };
-                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseFlowView", parameters);
+                RegionManager.RequestNavigate("ContentRegion", "MedicalCaseWorkspaceView", parameters);
             }
             catch (Exception ex)
             {
