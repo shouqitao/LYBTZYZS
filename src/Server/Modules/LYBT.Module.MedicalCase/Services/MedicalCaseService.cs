@@ -214,7 +214,9 @@ namespace LYBT.Module.MedicalCase.Services
                 consultation.TCMDiagnosis = request.TCMDiagnosis;
                 consultation.TreatmentPrinciple = request.TreatmentPrinciple;
                 consultation.MedicalAdvice = request.MedicalAdvice;
-                consultation.Remark = request.Remark;
+                // OpenSpec: clarify-cancel-consultation-logic
+                // 诊断不需要独立备注，备注统一保存到MedicalCase
+                medicalCase.Remark = request.MedicalCaseRemark;
                 consultation.UpdatedAt = DateTime.Now;
 
                 // 标记Step1完成

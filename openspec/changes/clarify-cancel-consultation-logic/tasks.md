@@ -153,9 +153,12 @@ private async void ExecuteCancelConsultation()
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseWorkspaceViewModel.cs`
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/MedicalCaseWorkspaceView.xaml`
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseLifecycleHandler.cs` - 改用标准DELETE端点
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/ConsultationPanelViewModel.cs` - 添加MedicalCaseRemark
 - `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseController.cs` - 添加DELETE端点
 - `src/Server/Modules/LYBT.Module.MedicalCase/Interfaces/IMedicalCaseService.cs` - 添加DeleteAsync接口
-- `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseService.cs` - 实现DeleteAsync方法
+- `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseService.cs` - 实现DeleteAsync + 保存MedicalCaseRemark
+- `src/Shared/LYBT.Shared.Models/Contracts/Consultation/ConsultationDtos.cs` - Remark改为MedicalCaseRemark
+- `src/Shared/LYBT.Shared.Models/Extensions/ConsultationDtoExtensions.cs` - 更新扩展方法
 
 ### API端点修复（运行时发现的问题）
 - **问题**: 客户端调用 `DELETE /api/v1/medicalcases/{id}/soft` 返回404
@@ -167,8 +170,18 @@ private async void ExecuteCancelConsultation()
 - `MedicalCaseEnums.cs` - 状态枚举保持不变
 - `MedicalCaseModel.cs` - 实体模型保持不变
 
+### 备注字段重构
+- **问题**: `SaveRemarkAsync`调用`PUT /api/v1/medicalcases/{id}`端点不存在
+- **用户反馈**: 诊断不需要独立备注，医案备注应在保存诊断时一起保存
+- **修复**:
+  - `ConsultationInputDto.Remark` 改为 `MedicalCaseRemark`
+  - 服务端 `UpdateConsultationAsync` 保存 `request.MedicalCaseRemark` 到 `medicalCase.Remark`
+  - 客户端保存前设置 `ConsultationPanelViewModel.MedicalCaseRemark = Remark`
+  - 移除 `SaveRemarkAsync()` 调用
+
 ### 验收标准
 1. 取消确认对话框清晰说明操作后果
 2. 取消前自动保存已填写数据
 3. 暂停/取消的语义区分明确
 4. 无回归问题
+5. 医案备注通过诊断保存一起保存（不再单独调用）

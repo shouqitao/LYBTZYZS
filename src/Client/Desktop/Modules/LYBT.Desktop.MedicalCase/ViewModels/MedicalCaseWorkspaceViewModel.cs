@@ -324,6 +324,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 // OpenSpec LIFECYCLE-003: 取消前自动保存（供审计）
                 try
                 {
+                    // OpenSpec: clarify-cancel-consultation-logic
+                    // 医案备注通过ConsultationInputDto.MedicalCaseRemark传递保存
+                    if (ConsultationPanelViewModel != null)
+                    {
+                        ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                    }
                     if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                     {
                         await consultationSaveable.SaveAsync();
@@ -332,7 +338,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     {
                         await prescriptionSaveable.SaveAsync();
                     }
-                    await SaveRemarkAsync();
                     Logger.LogDebug("取消前数据已保存（供审计）");
                 }
                 catch (Exception saveEx)
@@ -370,7 +375,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存...");
 
-                // 保存诊断数据
+                // OpenSpec: clarify-cancel-consultation-logic
+                // 医案备注通过ConsultationInputDto.MedicalCaseRemark传递保存
+                if (ConsultationPanelViewModel != null)
+                {
+                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                }
+
+                // 保存诊断数据（包含医案备注）
                 if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                 {
                     await consultationSaveable.SaveAsync();
@@ -381,9 +393,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     await prescriptionSaveable.SaveAsync();
                 }
-
-                // OpenSpec: refactor-medicalcase-ui - 保存医案备注
-                await SaveRemarkAsync();
 
                 // 更新医案状态
                 var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
@@ -443,7 +452,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在完成看诊...");
 
-                // 保存诊断数据
+                // OpenSpec: clarify-cancel-consultation-logic
+                // 医案备注通过ConsultationInputDto.MedicalCaseRemark传递保存
+                if (ConsultationPanelViewModel != null)
+                {
+                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                }
+
+                // 保存诊断数据（包含医案备注）
                 if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                 {
                     var consultationResult = await consultationSaveable.SaveAsync();
@@ -464,9 +480,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         return;
                     }
                 }
-
-                // OpenSpec: refactor-medicalcase-ui - 保存医案备注
-                await SaveRemarkAsync();
 
                 // 完成医案
                 var result = await _lifecycleHandler.CompleteAsync(MedicalCaseId);
@@ -760,8 +773,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 保存医案备注（OpenSpec: refactor-medicalcase-ui）
+        /// 保存医案备注（已弃用）
+        /// OpenSpec: clarify-cancel-consultation-logic - 改为通过ConsultationInputDto.MedicalCaseRemark保存
         /// </summary>
+        [Obsolete("医案备注现在通过UpdateConsultationAsync保存，不再需要单独调用此方法")]
         private async Task SaveRemarkAsync()
         {
             if (_dataLoader.CachedMedicalCase == null || MedicalCaseId == Guid.Empty)

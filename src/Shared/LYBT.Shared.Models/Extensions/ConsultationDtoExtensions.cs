@@ -35,7 +35,9 @@ namespace LYBT.Shared.Models.Extensions
                 TreatmentPrinciple = dto.TreatmentPrinciple,
                 MedicalAdvice = dto.MedicalAdvice,
                 // Issue #1562 Phase 2: 移除StartTime/EndTime/ConsultationStatus
-                Remark = dto.Remark,
+                // OpenSpec: clarify-cancel-consultation-logic - 诊断不需要独立备注
+                // MedicalCaseRemark在服务端保存到MedicalCase.Remark
+                Remark = null,
                 Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -67,7 +69,9 @@ namespace LYBT.Shared.Models.Extensions
                 TCMDiagnosis = dto.TCMDiagnosis,
                 TreatmentPrinciple = dto.TreatmentPrinciple,
                 MedicalAdvice = dto.MedicalAdvice,
-                Remark = dto.Remark
+                // OpenSpec: clarify-cancel-consultation-logic
+                // ConsultationDto.Remark映射到MedicalCaseRemark
+                MedicalCaseRemark = dto.Remark
             };
         }
 
@@ -91,7 +95,8 @@ namespace LYBT.Shared.Models.Extensions
             existing.TCMDiagnosis = dto.TCMDiagnosis;
             existing.TreatmentPrinciple = dto.TreatmentPrinciple;
             existing.MedicalAdvice = dto.MedicalAdvice; // Issue #1562 Phase 2
-            existing.Remark = dto.Remark;
+            // OpenSpec: clarify-cancel-consultation-logic - 不从InputDto更新Consultation.Remark
+            // MedicalCaseRemark在服务端保存到MedicalCase.Remark
             existing.UpdatedAt = DateTime.UtcNow;
         }
     }

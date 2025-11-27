@@ -108,13 +108,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         private string _remark = string.Empty;
         /// <summary>
-        /// 备注
+        /// 备注（诊断自身的备注，已弃用）
         /// </summary>
+        [Obsolete("诊断不需要独立备注，请使用MedicalCaseRemark")]
         public string Remark
         {
             get => _remark;
             set => SetProperty(ref _remark, value);
         }
+
+        /// <summary>
+        /// 医案备注（保存时传递到服务端更新MedicalCase.Remark）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// </summary>
+        public string? MedicalCaseRemark { get; set; }
 
         private bool _needsPrescription = true;
         /// <summary>
@@ -226,7 +233,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             AuscultationOlfaction = dto.AuscultationOlfaction ?? string.Empty;
             Inquiry = dto.Inquiry ?? string.Empty;
             Palpation = dto.Palpation ?? string.Empty;
-            Remark = dto.Remark ?? string.Empty;
+            // OpenSpec: clarify-cancel-consultation-logic
+            // 诊断不需要独立备注，MedicalCaseRemark由父ViewModel在保存前设置
         }
 
         #endregion
@@ -253,7 +261,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     AuscultationOlfaction = AuscultationOlfaction,
                     Inquiry = Inquiry,
                     Palpation = Palpation,
-                    Remark = Remark
+                    // OpenSpec: clarify-cancel-consultation-logic
+                    // 诊断不需要独立备注，使用MedicalCaseRemark保存到医案
+                    MedicalCaseRemark = MedicalCaseRemark
                 };
 
                 var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
