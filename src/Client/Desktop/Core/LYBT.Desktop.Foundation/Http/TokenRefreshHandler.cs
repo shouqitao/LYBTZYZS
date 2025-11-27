@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Shared.Models.Contracts.Auth;
 using LYBT.Shared.Models.Contracts.Common;
@@ -11,12 +12,14 @@ namespace LYBT.Desktop.Foundation.Http
 {
     /// <summary>
     /// Token自动刷新处理器 - Issue #1838
+    /// OpenSpec: refactor-token-sliding-expiration (AUTH-002)
     /// 检测Access Token即将过期时自动调用RefreshToken端点获取新Token
-    /// 确保用户无感知的Token刷新，避免API调用中断
+    /// 仅在用户活跃时执行刷新，实现滑动过期机制
     /// </summary>
     public class TokenRefreshHandler : DelegatingHandler
     {
         private readonly ITokenStorageService _tokenStorage;
+        private readonly IUserActivityState? _userActivityState;
         private readonly ILogger<TokenRefreshHandler> _logger;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _refreshHttpClient; // 专用HttpClient，避免循环依赖
@@ -28,11 +31,13 @@ namespace LYBT.Desktop.Foundation.Http
         public TokenRefreshHandler(
             ITokenStorageService tokenStorage,
             IConfiguration configuration,
-            ILogger<TokenRefreshHandler> logger)
+            ILogger<TokenRefreshHandler> logger,
+            IUserActivityState? userActivityState = null)
         {
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userActivityState = userActivityState; // 可选依赖，启动时可能尚未注册
 
             // 创建专用HttpClient用于RefreshToken调用（不包含TokenRefreshHandler，避免循环依赖）
             var apiBaseUrl = _configuration["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
@@ -69,9 +74,17 @@ namespace LYBT.Desktop.Foundation.Http
 
             if (timeUntilExpiry <= _refreshBeforeExpiry)
             {
+                // OpenSpec: refactor-token-sliding-expiration (AUTH-002)
+                // 3. 检查用户活跃状态，仅在用户活跃时刷新Token（滑动过期机制）
+                if (_userActivityState != null && !_userActivityState.IsUserActive)
+                {
+                    _logger.LogInformation("用户不活跃，跳过Token刷新（滑动过期机制）");
+                    return await base.SendAsync(request, cancellationToken);
+                }
+
                 _logger.LogInformation("Access Token即将过期（剩余 {Minutes} 分钟），准备刷新", timeUntilExpiry.TotalMinutes);
 
-                // 3. 使用SemaphoreSlim防止并发刷新
+                // 4. 使用SemaphoreSlim防止并发刷新
                 await _refreshSemaphore.WaitAsync(cancellationToken);
                 try
                 {
@@ -79,7 +92,7 @@ namespace LYBT.Desktop.Foundation.Http
                     var currentLoginResponse = await _tokenStorage.GetLoginResponseAsync();
                     if (currentLoginResponse == null || currentLoginResponse.ExpiresAt - DateTime.UtcNow <= _refreshBeforeExpiry)
                     {
-                        // 4. 调用RefreshToken API
+                        // 5. 调用RefreshToken API
                         var refreshToken = await _tokenStorage.GetRefreshTokenAsync();
                         if (string.IsNullOrEmpty(refreshToken))
                         {
@@ -91,6 +104,10 @@ namespace LYBT.Desktop.Foundation.Http
                         if (success)
                         {
                             _logger.LogInformation("Token刷新成功");
+
+                            // OpenSpec: refactor-token-sliding-expiration (AUTH-002)
+                            // 刷新成功后重置用户活动计时器
+                            _userActivityState?.ResetActivity();
                         }
                         else
                         {
@@ -108,7 +125,7 @@ namespace LYBT.Desktop.Foundation.Http
                 }
             }
 
-            // 5. 继续原始请求
+            // 6. 继续原始请求
             return await base.SendAsync(request, cancellationToken);
         }
 

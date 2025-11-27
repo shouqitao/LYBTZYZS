@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Modules;
+using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
@@ -35,9 +36,16 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private readonly IRoleNavigationService _roleNavigationService;
     private readonly NavigationManager _navigationManager;
     private readonly MenuManager _menuManager;
+    private readonly IActiveConsultationService _activeConsultationService; // OpenSpec: clarify-cancel-consultation-logic
+    // OpenSpec: refactor-token-sliding-expiration - 统一定时服务和用户活动追踪
+    private readonly IApplicationTickService _tickService;
+    private readonly IUserActivityTracker _userActivityTracker;
+    private readonly IAuthenticationService _authenticationService;
 
     /// <summary>
     /// 构造函数 - Issue #1790: 注入NavigationManager和MenuManager
+    /// OpenSpec: clarify-cancel-consultation-logic - 添加IActiveConsultationService注入
+    /// OpenSpec: refactor-token-sliding-expiration - 添加统一定时服务和用户活动追踪注入
     /// </summary>
     public MainWindowViewModel(
         IRegionManager regionManager,
@@ -49,7 +57,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IApiHealthCheckService apiHealthCheckService,
         IRoleNavigationService roleNavigationService,
         NavigationManager navigationManager,
-        MenuManager menuManager)
+        MenuManager menuManager,
+        IActiveConsultationService activeConsultationService,
+        IApplicationTickService tickService,
+        IUserActivityTracker userActivityTracker,
+        IAuthenticationService authenticationService)
         : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
@@ -59,6 +71,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
+        _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
+        _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
+        _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
+        _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
 
         InitializeViewModel();
     }
@@ -68,9 +84,10 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private UserDto? _currentUser;
     private bool _isLoggedIn = false;
     private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-    private System.Windows.Threading.DispatcherTimer _clockTimer = null!;
-    private System.Windows.Threading.DispatcherTimer _healthCheckTimer = null!;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
+    // OpenSpec: refactor-token-sliding-expiration - 使用统一定时服务替代独立定时器
+    private long _lastHealthCheckTick;
+    private const int HealthCheckIntervalSeconds = 10;
 
     /// <summary>获取或设置窗口标题</summary>
     public string Title
@@ -183,12 +200,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private void InitializeClock()
     {
-        _clockTimer = new System.Windows.Threading.DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(1)
-        };
-        _clockTimer.Tick += OnClockTick;
-        _clockTimer.Start();
+        // OpenSpec: refactor-token-sliding-expiration - 使用统一定时服务
+        _tickService.Tick += OnTick;
+        _tickService.Start();
+
+        // 订阅用户活动追踪事件
+        _userActivityTracker.SessionExpiring += OnSessionExpiring;
+        _userActivityTracker.SessionExpired += OnSessionExpired;
     }
 
     /// <summary>
@@ -196,13 +214,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// </summary>
     private void InitializeHealthCheck()
     {
-        _healthCheckTimer = new System.Windows.Threading.DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(10)
-        };
-        _healthCheckTimer.Tick += async (s, e) => await OnHealthCheckTickAsync();
-        _healthCheckTimer.Start();
-
+        // OpenSpec: refactor-token-sliding-expiration - 健康检查逻辑已合并到OnTick
+        // 初始化时执行一次健康检查
+        _lastHealthCheckTick = _tickService.TickCount;
         _ = Task.Run(async () => await OnHealthCheckTickAsync());
     }
 
@@ -260,55 +274,146 @@ public class MainWindowViewModel : UnifiedViewModelBase
         InitializeEvents();
     }
 
-    /// <summary>时钟计时器事件</summary>
-    private void OnClockTick(object? sender, EventArgs e)
+    /// <summary>
+    /// OpenSpec: refactor-token-sliding-expiration - 统一Tick处理
+    /// 处理时钟更新和健康检查
+    /// </summary>
+    private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
+        // 1. 每秒更新时钟
         CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+        // 2. 每隔HealthCheckIntervalSeconds秒执行健康检查
+        if (e.TickCount - _lastHealthCheckTick >= HealthCheckIntervalSeconds)
+        {
+            _lastHealthCheckTick = e.TickCount;
+            _ = OnHealthCheckTickAsync();
+        }
+    }
+
+    /// <summary>
+    /// OpenSpec: refactor-token-sliding-expiration (AUTH-003)
+    /// 会话即将过期事件处理 - 显示警告对话框
+    /// </summary>
+    private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var remainingMinutes = e.RemainingTime.TotalMinutes;
+            var message = $"您已有一段时间未操作，会话将在 {remainingMinutes:F0} 分钟后过期。\n\n请点击任意位置或按任意键以保持会话活跃。";
+
+            MessageBox.Show(
+                Application.Current.MainWindow,
+                message,
+                "会话即将过期",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            // 用户点击确定后，重置活动计时器
+            _userActivityTracker.ResetActivity();
+        });
+    }
+
+    /// <summary>
+    /// OpenSpec: refactor-token-sliding-expiration (AUTH-004)
+    /// 会话已过期事件处理 - 执行自动登出
+    /// </summary>
+    private async void OnSessionExpired(object? sender, EventArgs e)
+    {
+        Logger.LogWarning("用户会话因不活跃已过期，执行自动登出");
+
+        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        {
+            MessageBox.Show(
+                Application.Current.MainWindow,
+                "您的会话因长时间未操作已过期，请重新登录。",
+                "会话已过期",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            // 执行登出
+            await PerformLogoutAsync();
+        });
     }
 
     /// <summary>
     /// 退出登录命令执行
     /// Issue #1790: 使用NavigationManager处理导航
+    /// OpenSpec: clarify-cancel-consultation-logic - 使用IActiveConsultationService检查活跃医案
     /// </summary>
     private async Task ExecuteLogoutAsync()
     {
-        var result = await ShowConfirmationAsync("确定要退出登录吗？");
-        if (result)
+        try
+        {
+            // OpenSpec: clarify-cancel-consultation-logic - 通过服务检查是否有活跃的医案
+            if (_activeConsultationService.HasActiveConsultation)
+            {
+                // 有活跃医案，调用服务请求离开（会显示三选项对话框）
+                var leaveResult = await _activeConsultationService.RequestLeaveAsync();
+                if (!leaveResult.CanLeave)
+                {
+                    Logger.LogDebug("用户选择继续停留，取消退出登录");
+                    return;
+                }
+                Logger.LogInformation("活跃医案已处理（选择: {Choice}），继续退出登录", leaveResult.Choice);
+            }
+            else
+            {
+                // 没有活跃医案，显示普通确认
+                var result = await ShowConfirmationAsync("确定要退出登录吗？");
+                if (!result)
+                {
+                    return;
+                }
+            }
+
+            // 执行退出登录
+            await PerformLogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "退出登录时发生异常");
+            await ShowErrorMessageAsync($"退出登录失败:{ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 执行实际的退出登录操作
+    /// OpenSpec: clarify-cancel-consultation-logic - 提取为独立方法
+    /// </summary>
+    private async Task PerformLogoutAsync()
+    {
+        // OpenSpec: refactor-token-sliding-expiration - 登出时停止用户活动追踪
+        _userActivityTracker.StopTracking();
+
+        // 立即更新UI状态
+        CurrentUser = null;
+        IsLoggedIn = false;
+        Title = "凌隐宝堂中医诊所诊疗系统";
+
+        // 清理界面并显示登录界面
+        _navigationManager.ClearContentRegion();
+        _navigationManager.ShowLoginDialog();
+
+        // 后台异步处理
+        _ = Task.Run(async () =>
         {
             try
             {
-                // 立即更新UI状态
-                CurrentUser = null;
-                IsLoggedIn = false;
-                Title = "凌隐宝堂中医诊所诊疗系统";
-
-                // 清理界面并显示登录界面
-                _navigationManager.ClearContentRegion();
-                _navigationManager.ShowLoginDialog();
-
-                // 后台异步处理
-                _ = Task.Run(async () =>
+                await _servicesFacade.AuthenticationService.LogoutAsync();
+                EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs
                 {
-                    try
-                    {
-                        await _servicesFacade.AuthenticationService.LogoutAsync();
-                        EventAggregator.GetEvent<LogoutEvent>().Publish(new LogoutEventArgs
-                        {
-                            Reason = LogoutReason.SessionTimeout,
-                            Message = "Token已过期"
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"后台登出处理异常: {ex.Message}");
-                    }
+                    Reason = LogoutReason.UserInitiated,
+                    Message = "用户主动退出"
                 });
             }
             catch (Exception ex)
             {
-                await ShowErrorMessageAsync($"退出登录失败:{ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"后台登出处理异常: {ex.Message}");
             }
-        }
+        });
+
+        await Task.CompletedTask;
     }
 
     /// <summary>
@@ -340,6 +445,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         IsLoggedIn = true;
         CurrentUser = user;
+
+        // OpenSpec: refactor-token-sliding-expiration - 登录成功后启动用户活动追踪
+        _userActivityTracker.StartTracking();
 
         System.Diagnostics.Debug.WriteLine(" IsLoggedIn 已设置为 true，ContentRegion 应该已可见");
 
@@ -527,8 +635,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         try
         {
-            CleanupClockTimer();
-            CleanupHealthCheckTimer();
+            // OpenSpec: refactor-token-sliding-expiration - 使用统一的清理方法
+            CleanupTickSubscription();
             UnsubscribeLoginEvent();
             _navigationManager.UnsubscribeFromRegionCollection();
 
@@ -545,33 +653,21 @@ public class MainWindowViewModel : UnifiedViewModelBase
     }
 
     /// <summary>
-    /// 清理时钟定时器
-    /// Issue #1794: 提取定时器清理逻辑
+    /// 清理Tick订阅和用户活动追踪
+    /// OpenSpec: refactor-token-sliding-expiration - 替换原来的CleanupClockTimer
     /// </summary>
-    private void CleanupClockTimer()
+    private void CleanupTickSubscription()
     {
-        if (_clockTimer != null)
-        {
-            _clockTimer.Stop();
-            _clockTimer.Tick -= OnClockTick;
-            _clockTimer = null!;
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] DispatcherTimer已清理");
-        }
+        // OpenSpec: refactor-token-sliding-expiration - 取消订阅统一定时服务
+        _tickService.Tick -= OnTick;
+        _userActivityTracker.SessionExpiring -= OnSessionExpiring;
+        _userActivityTracker.SessionExpired -= OnSessionExpired;
+        _userActivityTracker.StopTracking();
+        System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] Tick订阅已清理");
     }
 
-    /// <summary>
-    /// 清理健康检查定时器
-    /// Issue #1794: 提取定时器清理逻辑
-    /// </summary>
-    private void CleanupHealthCheckTimer()
-    {
-        if (_healthCheckTimer != null)
-        {
-            _healthCheckTimer.Stop();
-            _healthCheckTimer = null!;
-            System.Diagnostics.Debug.WriteLine(" [MainWindowViewModel] 健康检查定时器已清理");
-        }
-    }
+    // OpenSpec: refactor-token-sliding-expiration - CleanupHealthCheckTimer已移除
+    // 健康检查逻辑已合并到OnTick，不再需要独立的定时器清理
 
     /// <summary>
     /// 取消登录事件订阅

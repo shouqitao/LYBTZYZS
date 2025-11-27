@@ -287,6 +287,28 @@ public class SessionConfiguration
     /// 是否启用滑动过期
     /// </summary>
     public bool SlidingExpiration { get; set; } = true;
+
+    // =========== 用户活动追踪配置 (OpenSpec: refactor-token-sliding-expiration) ===========
+
+    /// <summary>
+    /// 用户不活跃超时时间（分钟）
+    /// 超过此时间无用户操作将自动登出
+    /// </summary>
+    [Range(1, 120)]
+    public int InactivityTimeoutMinutes { get; set; } = 15;
+
+    /// <summary>
+    /// 超时警告提前时间（分钟）
+    /// 在自动登出前提前显示警告对话框
+    /// </summary>
+    [Range(1, 10)]
+    public int WarningBeforeTimeoutMinutes { get; set; } = 2;
+
+    /// <summary>
+    /// 活动检查间隔（秒）
+    /// </summary>
+    [Range(10, 300)]
+    public int ActivityCheckIntervalSeconds { get; set; } = 60;
 }
 
 /// <summary>

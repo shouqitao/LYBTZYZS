@@ -39,6 +39,8 @@
   <!-- Project References -->
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Client\Desktop\Core\LYBT.Desktop.Contracts\LYBT.Desktop.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\..\TestConfiguration\LYBT.Tests.Configuration.csproj" />
   </ItemGroup>

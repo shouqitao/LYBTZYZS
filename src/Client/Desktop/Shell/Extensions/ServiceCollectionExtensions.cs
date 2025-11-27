@@ -6,6 +6,7 @@ using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Consultation;
 using LYBT.Desktop.Contracts.Api;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Formula.Repositories;
 using LYBT.Desktop.Formula.ViewModels.Components;
@@ -31,6 +32,7 @@ using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Desktop.Prescriptions;
 using LYBT.Desktop.Prescriptions.Services;
 using LYBT.Desktop.Presentation.Notifications;
+using LYBT.Desktop.Presentation.UserExperience;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Users;
@@ -140,6 +142,10 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<StandardErrorHandler>(containerRegistry);
             RegisterLogger<KeyboardShortcutService>(containerRegistry);
             RegisterLogger<RoleNavigationService>(containerRegistry);
+            RegisterLogger<ActiveConsultationService>(containerRegistry); // OpenSpec: clarify-cancel-consultation-logic
+            // OpenSpec: refactor-token-sliding-expiration - 统一定时服务和用户活动追踪
+            RegisterLogger<ApplicationTickService>(containerRegistry);
+            RegisterLogger<UserActivityTracker>(containerRegistry);
         }
 
         /// <summary>
@@ -269,8 +275,25 @@ namespace LYBT.Desktop.Shell.Extensions
             // Issue #1239 修复: 在 Prism 容器中注册 AuthorizationMessageHandler
             containerRegistry.RegisterSingleton<AuthorizationMessageHandler>();
 
-            // Issue #1838: 注册 TokenRefreshHandler
-            containerRegistry.RegisterSingleton<TokenRefreshHandler>();
+            // Issue #1838 + OpenSpec: refactor-token-sliding-expiration
+            // 注册 TokenRefreshHandler，注入 IUserActivityState 实现滑动过期
+            containerRegistry.RegisterSingleton<TokenRefreshHandler>(resolver =>
+            {
+                var tokenStorage = resolver.Resolve<ITokenStorageService>();
+                var configuration = resolver.Resolve<IConfiguration>();
+                var logger = resolver.Resolve<ILogger<TokenRefreshHandler>>();
+                // IUserActivityState 在启动阶段可能尚未注册，使用 TryResolve
+                IUserActivityState? userActivityState = null;
+                try
+                {
+                    userActivityState = resolver.Resolve<IUserActivityState>();
+                }
+                catch
+                {
+                    // 忽略解析失败，启动阶段正常
+                }
+                return new TokenRefreshHandler(tokenStorage, configuration, logger, userActivityState);
+            });
 
             // Issue #1239 修复 + Issue #1838: 手动创建带有 TokenRefreshHandler 和 AuthorizationMessageHandler 的 HttpClient
             // 不使用 ServiceCollection，因为 Handler 依赖 Prism 容器中的服务
@@ -396,6 +419,22 @@ namespace LYBT.Desktop.Shell.Extensions
             // 会话管理器
             containerRegistry.RegisterSingleton<ISessionManager, SessionManager>();
 
+            // OpenSpec: clarify-cancel-consultation-logic - 活跃医案服务
+            containerRegistry.RegisterSingleton<IActiveConsultationService, ActiveConsultationService>();
+
+            // OpenSpec: refactor-token-sliding-expiration - 统一定时服务和用户活动追踪
+            containerRegistry.RegisterSingleton<IApplicationTickService, ApplicationTickService>();
+            containerRegistry.RegisterSingleton<UserActivityTracker>(resolver =>
+            {
+                var logger = resolver.Resolve<ILogger<UserActivityTracker>>();
+                var tickService = resolver.Resolve<IApplicationTickService>();
+                // 使用默认配置: 15分钟超时, 2分钟警告, 60秒检查间隔
+                return new UserActivityTracker(logger, tickService);
+            });
+            // 同一实例映射到两个接口
+            containerRegistry.RegisterSingleton<IUserActivityTracker>(resolver => resolver.Resolve<UserActivityTracker>());
+            containerRegistry.RegisterSingleton<IUserActivityState>(resolver => resolver.Resolve<UserActivityTracker>());
+
             // 验证服务 - Issue #1776 Task 3: 组件化基础设施（Epic #2210 P0 Bug修复：补充DI注册）
             containerRegistry.RegisterSingleton<IValidationService, ValidationService>();
 
@@ -423,8 +462,15 @@ namespace LYBT.Desktop.Shell.Extensions
             // Epic #1934: 通用对话框服务 - 支持批量导入/导出功能的文件对话框
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
 
-            // 注意：UserExperienceService 已移至 Presentation 层（UI体验服务应属于 Presentation 层）
-            // 如需使用，请在 App.xaml.cs 中调用 services.AddDesktopPresentation()
+            // OpenSpec: refactor-token-sliding-expiration - UserExperienceService需要IApplicationTickService
+            // 由于依赖Prism容器中的服务，在此直接注册而非使用AddDesktopPresentation
+            containerRegistry.RegisterSingleton<IUserExperienceService>(resolver =>
+            {
+                var logger = resolver.Resolve<ILogger<UserExperienceService>>();
+                var notificationService = resolver.Resolve<INotificationService>();
+                var tickService = resolver.Resolve<IApplicationTickService>();
+                return new UserExperienceService(logger, notificationService, tickService);
+            });
         }
 
         /// <summary>

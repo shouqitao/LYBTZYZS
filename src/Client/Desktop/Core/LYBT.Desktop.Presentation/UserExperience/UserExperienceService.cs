@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Presentation.Notifications;
 using Microsoft.Extensions.Logging;
 
@@ -63,13 +63,14 @@ namespace LYBT.Desktop.Presentation.UserExperience
 
     /// <summary>
     /// 简化的用户体验增强服务 - 遵循"适度设计、拒绝过度工程"原则
+    /// OpenSpec: refactor-token-sliding-expiration - 使用统一定时服务替代独立DispatcherTimer
     /// 提供核心的用户体验功能，避免过度复杂的依赖
     /// </summary>
     public class UserExperienceService : IUserExperienceService
     {
         private readonly ILogger<UserExperienceService> _logger;
         private readonly INotificationService _notificationService;
-        private readonly DispatcherTimer _feedbackTimer;
+        private readonly IApplicationTickService _tickService;
 
         private bool _isGlobalLoading = false;
         private string _loadingMessage = "加载中...";
@@ -77,19 +78,21 @@ namespace LYBT.Desktop.Presentation.UserExperience
         private FeedbackType _currentFeedbackType = FeedbackType.None;
         private int _operationProgress = 0;
 
+        // OpenSpec: refactor-token-sliding-expiration - 使用Tick计数替代独立Timer
+        private long _feedbackShownAtTick = -1;
+        private const int FeedbackClearIntervalTicks = 3; // 3秒后自动清除状态消息
+
         public UserExperienceService(
             ILogger<UserExperienceService> logger,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IApplicationTickService tickService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
 
-            // 初始化反馈定时器
-            _feedbackTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(3) // 3秒后自动清除状态消息
-            };
-            _feedbackTimer.Tick += OnFeedbackTimerTick;
+            // OpenSpec: refactor-token-sliding-expiration - 订阅统一Tick服务
+            _tickService.Tick += OnTick;
         }
 
         #region 属性
@@ -236,7 +239,7 @@ namespace LYBT.Desktop.Presentation.UserExperience
             {
                 StatusMessage = string.Empty;
                 CurrentFeedbackType = FeedbackType.None;
-                _feedbackTimer.Stop();
+                _feedbackShownAtTick = -1; // 重置计数器
             });
         }
 
@@ -313,15 +316,21 @@ namespace LYBT.Desktop.Presentation.UserExperience
                 StatusMessage = message;
                 CurrentFeedbackType = feedbackType;
 
-                // 重新启动定时器
-                _feedbackTimer.Stop();
-                _feedbackTimer.Start();
+                // OpenSpec: refactor-token-sliding-expiration - 记录显示时的Tick计数
+                _feedbackShownAtTick = _tickService.TickCount;
             });
         }
 
-        private void OnFeedbackTimerTick(object? sender, EventArgs e)
+        /// <summary>
+        /// OpenSpec: refactor-token-sliding-expiration - 统一Tick事件处理
+        /// </summary>
+        private void OnTick(object? sender, ApplicationTickEventArgs e)
         {
-            ClearStatusMessage();
+            // 如果有活跃的反馈消息，检查是否需要清除
+            if (_feedbackShownAtTick >= 0 && e.TickCount - _feedbackShownAtTick >= FeedbackClearIntervalTicks)
+            {
+                ClearStatusMessage();
+            }
         }
 
         private string GetUserFriendlyErrorMessage(Exception exception)
@@ -358,7 +367,8 @@ namespace LYBT.Desktop.Presentation.UserExperience
 
         public void Dispose()
         {
-            _feedbackTimer?.Stop();
+            // OpenSpec: refactor-token-sliding-expiration - 取消订阅统一Tick服务
+            _tickService.Tick -= OnTick;
             Mouse.OverrideCursor = null;
         }
 
