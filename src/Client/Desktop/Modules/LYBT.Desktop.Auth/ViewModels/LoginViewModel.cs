@@ -35,6 +35,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private bool _rememberMe;
         private bool _rememberPassword; // Issue #1246: 记住密码
         private bool _hasSavedPassword;
+        private string? _savedUsername; // 记录加载的保存用户名，用于检测用户名变更
         private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
         private string _apiStatusMessage = "正在检查连接...";
         private ConnectionMode _connectionMode; // Issue #1825: 连接模式
@@ -226,6 +227,8 @@ namespace LYBT.Desktop.Auth.ViewModels
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
+                            // 先记录保存的用户名，再设置属性（避免触发清空逻辑）
+                            _savedUsername = credentials.Value.Username;
                             Username = credentials.Value.Username;
                             Password = credentials.Value.Password;
                             RememberMe = true; // 记住密码时必然记住用户名
@@ -246,6 +249,8 @@ namespace LYBT.Desktop.Auth.ViewModels
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
+                            // 先记录保存的用户名，再设置属性
+                            _savedUsername = savedUsername;
                             Username = savedUsername;
                             RememberMe = isRememberMeEnabled;
                             Logger.LogInformation("已自动填充用户名: {UserName}", savedUsername);
@@ -266,8 +271,24 @@ namespace LYBT.Desktop.Auth.ViewModels
             get => _username;
             set
             {
-                SetProperty(ref _username, value);
-                (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+                // 检测是否与保存的用户名不同（用于清空密码）
+                var shouldClearPassword = _savedUsername != null &&
+                                          !string.IsNullOrEmpty(_savedUsername) &&
+                                          !string.IsNullOrEmpty(value) &&
+                                          value != _savedUsername &&
+                                          !string.IsNullOrEmpty(_password);
+
+                if (SetProperty(ref _username, value))
+                {
+                    // 如果用户名改变了（且不是初始加载），清空密码
+                    if (shouldClearPassword)
+                    {
+                        Password = string.Empty;
+                        Logger.LogInformation("用户名已变更（从 {SavedUsername} 到 {NewUsername}），密码字段已清空", _savedUsername, value);
+                    }
+
+                    (LoginCommand as DelegateCommand)?.RaiseCanExecuteChanged();
+                }
             }
         }
 
