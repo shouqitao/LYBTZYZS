@@ -151,6 +151,7 @@ public class MedicalCaseLifecycleHandler
     /// <summary>
     /// 取消医案（软删除）
     /// Issue #2242: 使用软删除（IsDeleted=true）替代Cancelled状态
+    /// OpenSpec: clarify-cancel-consultation-logic - 使用标准DELETE端点
     /// </summary>
     public async Task<(bool success, string? errorMessage)> CancelAsync(Guid medicalCaseId)
     {
@@ -158,8 +159,9 @@ public class MedicalCaseLifecycleHandler
         {
             _logger.LogInformation("取消医案（软删除），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
-            // Issue #2242: 使用软删除替代状态更新为Cancelled
-            var response = await _dataManager.SoftDeleteMedicalCaseAsync(medicalCaseId);
+            // OpenSpec: clarify-cancel-consultation-logic
+            // 使用标准DELETE端点，BaseRepository.DeleteAsync默认实现为软删除
+            var response = await _dataManager.DeleteMedicalCaseAsync(medicalCaseId);
 
             if (!response.Success)
             {

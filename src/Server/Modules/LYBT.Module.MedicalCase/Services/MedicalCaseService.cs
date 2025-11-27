@@ -679,6 +679,38 @@ namespace LYBT.Module.MedicalCase.Services
             }
         }
 
+        /// <summary>
+        /// 删除病案（软删除）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 使用BaseRepository默认软删除机制（IsDeleted=true）
+        /// </summary>
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("开始软删除病案，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 使用Repository的软删除（BaseRepository.DeleteAsync设置IsDeleted=true）
+                var result = await _repository.DeleteAsync(id);
+
+                if (result)
+                {
+                    _logger.LogInformation("病案软删除成功，MedicalCaseId: {MedicalCaseId}", id);
+                }
+                else
+                {
+                    _logger.LogWarning("病案软删除失败（不存在），MedicalCaseId: {MedicalCaseId}", id);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "软删除病案失败，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
         // ========== Read Layer（读操作，独立查询）==========
 
         /// <summary>

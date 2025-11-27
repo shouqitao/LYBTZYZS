@@ -375,6 +375,33 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 删除病案（软删除）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 使用BaseRepository默认软删除机制（IsDeleted=true）
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<ActionResult> DeleteMedicalCase(Guid id)
+        {
+            try
+            {
+                var result = await _medicalCaseService.DeleteAsync(id);
+
+                if (!result)
+                    return NotFound(ApiResponse.CreateFail("病案不存在"));
+
+                _logger.LogInformation("病案已软删除，MedicalCaseId: {Id}", id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex, "删除病案", new { id });
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 关闭病案（直接标记为Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// 业务规则：直接设置状态为Completed，不验证三步流程

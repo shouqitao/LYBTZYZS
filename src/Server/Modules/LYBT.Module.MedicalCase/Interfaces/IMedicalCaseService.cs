@@ -130,6 +130,15 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>关闭是否成功</returns>
         Task<bool> CloseCaseAsync(Guid id);
 
+        /// <summary>
+        /// 删除病案（软删除）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 业务规则：使用BaseRepository默认软删除机制（IsDeleted=true）
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <returns>删除是否成功</returns>
+        Task<bool> DeleteAsync(Guid id);
+
         // ========== Read Layer（读操作，独立查询）==========
 
         /// <summary>

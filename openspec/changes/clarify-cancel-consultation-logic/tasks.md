@@ -152,9 +152,18 @@ private async void ExecuteCancelConsultation()
 ### 修改的文件
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseWorkspaceViewModel.cs`
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/MedicalCaseWorkspaceView.xaml`
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Services/MedicalCaseLifecycleHandler.cs` - 改用标准DELETE端点
+- `src/Server/Services/LYBT.WebAPI/Controllers/MedicalCaseController.cs` - 添加DELETE端点
+- `src/Server/Modules/LYBT.Module.MedicalCase/Interfaces/IMedicalCaseService.cs` - 添加DeleteAsync接口
+- `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseService.cs` - 实现DeleteAsync方法
+
+### API端点修复（运行时发现的问题）
+- **问题**: 客户端调用 `DELETE /api/v1/medicalcases/{id}/soft` 返回404
+- **原因**: 服务端未实现该端点
+- **修复**: 添加 `DELETE /api/v1/medicalcases/{id}` 端点（BaseRepository默认软删除）
+- **客户端**: 改用 `DeleteMedicalCaseAsync` 替代 `SoftDeleteMedicalCaseAsync`
 
 ### 不修改的文件
-- `MedicalCaseLifecycleHandler.cs` - 软删除逻辑已正确实现
 - `MedicalCaseEnums.cs` - 状态枚举保持不变
 - `MedicalCaseModel.cs` - 实体模型保持不变
 
