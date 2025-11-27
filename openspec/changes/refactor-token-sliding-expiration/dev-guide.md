@@ -187,13 +187,36 @@ public interface IUserActivityState
 
 ## 配置选项
 
-会话管理相关配置位于`LybtOptions`:
+### 客户端会话管理配置 (Shell/appsettings.json)
+
+```json
+{
+  "Lybt": {
+    "Client": {
+      "Session": {
+        "InactivityTimeoutMinutes": 5,
+        "WarningBeforeTimeoutMinutes": 1,
+        "ActivityCheckIntervalSeconds": 30
+      }
+    }
+  }
+}
+```
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `InactivityTimeoutMinutes` | 15 | 用户不活跃超时时间（分钟） |
-| `WarningBeforeTimeoutMinutes` | 2 | 超时前警告提前量（分钟） |
-| `ActivityCheckIntervalSeconds` | 60 | 活动检查间隔（秒） |
+| `InactivityTimeoutMinutes` | 5 | 用户不活跃超时时间（分钟），应 ≤ 服务端 TokenExpiration |
+| `WarningBeforeTimeoutMinutes` | 0 | 超时前警告提前量（分钟），0=不弹窗直接登出 |
+| `ActivityCheckIntervalSeconds` | 30 | 活动检查间隔（秒） |
+
+### 服务端 Token 配置 (.env.development)
+
+```env
+Lybt__Jwt__AccessTokenExpirationMinutes=5
+Lybt__Jwt__ClockSkewSeconds=30
+```
+
+**重要**: `InactivityTimeoutMinutes` 应 ≤ `AccessTokenExpirationMinutes`，确保用户不活跃时在Token过期前自动登出。
 
 ## Token滑动过期机制
 

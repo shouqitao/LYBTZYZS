@@ -428,8 +428,16 @@ namespace LYBT.Desktop.Shell.Extensions
             {
                 var logger = resolver.Resolve<ILogger<UserActivityTracker>>();
                 var tickService = resolver.Resolve<IApplicationTickService>();
-                // 使用默认配置: 15分钟超时, 2分钟警告, 60秒检查间隔
-                return new UserActivityTracker(logger, tickService);
+                var config = resolver.Resolve<IConfiguration>();
+
+                // 从配置读取会话超时设置，默认值对齐Token过期时间
+                // 配置路径: Lybt:Client:Session:InactivityTimeoutMinutes
+                // WarningBeforeTimeoutMinutes=0 表示不弹窗警告，直接自动登出
+                var inactivityTimeout = config.GetValue("Lybt:Client:Session:InactivityTimeoutMinutes", 5);
+                var warningBefore = config.GetValue("Lybt:Client:Session:WarningBeforeTimeoutMinutes", 0);
+                var checkInterval = config.GetValue("Lybt:Client:Session:ActivityCheckIntervalSeconds", 30);
+
+                return new UserActivityTracker(logger, tickService, inactivityTimeout, warningBefore, checkInterval);
             });
             // 同一实例映射到两个接口
             containerRegistry.RegisterSingleton<IUserActivityTracker>(resolver => resolver.Resolve<UserActivityTracker>());

@@ -299,18 +299,42 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            var remainingMinutes = e.RemainingTime.TotalMinutes;
-            var message = $"您已有一段时间未操作，会话将在 {remainingMinutes:F0} 分钟后过期。\n\n请点击任意位置或按任意键以保持会话活跃。";
+            // 临时停止追踪，避免点击对话框本身被视为用户活动
+            _userActivityTracker.StopTracking();
 
-            MessageBox.Show(
-                Application.Current.MainWindow,
-                message,
-                "会话即将过期",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            try
+            {
+                var remainingMinutes = e.RemainingTime.TotalMinutes;
+                var message = $"您已有一段时间未操作，会话将在约 {remainingMinutes:F0} 分钟后过期。\n\n是否继续当前会话？";
 
-            // 用户点击确定后，重置活动计时器
-            _userActivityTracker.ResetActivity();
+                var result = MessageBox.Show(
+                    Application.Current.MainWindow,
+                    message,
+                    "会话即将过期",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    MessageBoxResult.Yes);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    // 用户选择继续，重启追踪并重置计时器
+                    _userActivityTracker.StartTracking();
+                    _userActivityTracker.ResetActivity();
+                    Logger.LogInformation("用户选择继续会话，活动计时器已重置");
+                }
+                else
+                {
+                    // 用户选择不继续，立即执行登出
+                    Logger.LogInformation("用户选择结束会话，执行登出");
+                    _ = PerformLogoutAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "处理会话过期警告时出错");
+                // 出错时恢复追踪
+                _userActivityTracker.StartTracking();
+            }
         });
     }
 

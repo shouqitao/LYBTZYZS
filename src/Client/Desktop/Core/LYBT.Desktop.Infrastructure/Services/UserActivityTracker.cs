@@ -141,7 +141,8 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
             _tickService.Tick += OnTick;
 
             _isTracking = true;
-            _logger.LogInformation("UserActivityTracker已启动追踪");
+            _logger.LogInformation("UserActivityTracker已启动追踪 (超时={Timeout}分钟, 警告={Warning}分钟, 检查间隔={Interval}秒)",
+                _inactivityTimeoutMinutes, _warningBeforeTimeoutMinutes, _activityCheckIntervalSeconds);
         }
     }
 
@@ -179,7 +180,19 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
 
     private void OnPreProcessInput(object sender, PreProcessInputEventArgs e)
     {
-        // 只记录时间戳,不处理事件内容,保持低开销
+        // 只监听有意义的用户操作，忽略鼠标移动等被动事件
+        var inputEvent = e.StagingItem.Input;
+
+        // 过滤：只接受键盘事件、鼠标点击、鼠标滚轮
+        bool isValidActivity = inputEvent is KeyboardEventArgs ||
+                               inputEvent is MouseButtonEventArgs ||
+                               inputEvent is MouseWheelEventArgs;
+
+        if (!isValidActivity)
+        {
+            return;
+        }
+
         lock (_lock)
         {
             _lastActivityTime = DateTime.Now;
