@@ -98,8 +98,12 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.4
         /// Epic #2210 Task 3.1.4: 添加doctorId参数
+        /// OpenSpec: multi-doctor-unfinished-case - 添加checkAllDoctors参数
         /// </summary>
-        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+        /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
+        /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
+        Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）

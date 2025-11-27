@@ -47,12 +47,18 @@ public abstract class BaseControllerCore : ControllerBase
                      ?? User?.FindFirst("roles")?.Value
                      ?? User?.FindFirst("Admin")?.Value;  // 兼容旧版本
 
-        if (Guid.TryParse(userId, out var opId) && !string.IsNullOrEmpty(userName))
+        // Bug Fix: 添加 opId != Guid.Empty 检查，防止空GUID导致400错误
+        // 当JWT中userId是"00000000-..."时，TryParse成功但opId为Empty
+        if (Guid.TryParse(userId, out var opId) && opId != Guid.Empty && !string.IsNullOrEmpty(userName))
         {
             // Issue #2241: 将字符串角色转换为UserRole枚举
             var role = ParseUserRole(roleStr);
             return (opId, userName, role);
         }
+
+        // 记录详细的失败原因便于调试
+        _logger.LogWarning("GetOperator失败: userId={UserId}, userName={UserName}, opId={OpId}, opIdIsEmpty={OpIdIsEmpty}",
+            userId, userName, opId, opId == Guid.Empty);
 
         throw new UnauthorizedAccessException("未登录或用户信息无效");
     }

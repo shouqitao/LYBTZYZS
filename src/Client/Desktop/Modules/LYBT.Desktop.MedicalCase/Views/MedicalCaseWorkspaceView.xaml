@@ -72,17 +72,8 @@
                     <TextBlock Text="{Binding MedicalCaseId, StringFormat={}{0:N}}" FontSize="12" Foreground="#999" />
                 </StackPanel>
 
-                <!-- 右侧: 取消看诊按钮 (保持此位置防止误点) -->
-                <!-- OpenSpec LIFECYCLE-004: 明确的Tooltip说明 -->
-                <Button Grid.Column="2"
-                        Content="取消看诊"
-                        Command="{Binding CancelConsultationCommand}"
-                        Style="{StaticResource DangerButtonStyle}"
-                        FontSize="12"
-                        Padding="12,4"
-                        Margin="0,8"
-                        VerticalAlignment="Center"
-                        ToolTip="作废本次就诊。数据保留供审计查看，但无法继续编辑。" />
+                <!-- OpenSpec: clarify-cancel-consultation-logic - 取消按钮已移除 -->
+                <!-- 取消操作集成到返回/退出流程的离开确认对话框中 -->
             </Grid>
         </Border>
 

@@ -11,5 +11,12 @@
         /// </summary>
         /// <returns>保存成功返回true，失败返回false</returns>
         Task<bool> SaveAsync();
+
+        /// <summary>
+        /// 静默保存（不显示验证错误对话框）
+        /// OpenSpec: clarify-cancel-consultation-logic - 取消前保存使用
+        /// </summary>
+        /// <returns>保存成功返回true，失败返回false</returns>
+        Task<bool> SaveSilentlyAsync() => SaveAsync(); // 默认实现
     }
 }

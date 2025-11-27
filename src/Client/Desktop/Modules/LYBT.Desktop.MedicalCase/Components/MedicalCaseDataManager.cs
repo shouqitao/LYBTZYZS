@@ -592,34 +592,39 @@ namespace LYBT.Desktop.MedicalCase.Components
         /// <summary>
         /// 获取患者未完成的病案
         /// Epic #1773: 为PatientSelectionViewModel提供跨模块访问
+        /// OpenSpec: multi-doctor-unfinished-case - 添加checkAllDoctors参数
         /// </summary>
-        public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
+        /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
+        public virtual async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
         {
             try
             {
-                _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}, DoctorId={DoctorId}", 
-                    patientId, doctorId);
-                
+                _logger.LogDebug("获取患者未完成病案: PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+                    patientId, doctorId, checkAllDoctors);
+
                 // Epic #2210 Task 3.1.4: 传递doctorId到Repository
-                var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+                // OpenSpec: multi-doctor-unfinished-case - 传递checkAllDoctors参数
+                var unfinishedCase = await _repository.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
 
                 if (unfinishedCase != null)
                 {
-                    _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}, DoctorId={DoctorId}", 
+                    _logger.LogInformation("找到未完成病案: MedicalCaseId={MedicalCaseId}, DoctorId={DoctorId}",
                         unfinishedCase.Id, unfinishedCase.DoctorId);
                 }
                 else
                 {
-                    _logger.LogInformation("患者无未完成病案: PatientId={PatientId}, DoctorId={DoctorId}", 
-                        patientId, doctorId);
+                    _logger.LogInformation("患者无未完成病案: PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+                        patientId, doctorId, checkAllDoctors);
                 }
 
                 return unfinishedCase;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取患者未完成病案失败: PatientId={PatientId}, DoctorId={DoctorId}", 
-                    patientId, doctorId);
+                _logger.LogError(ex, "获取患者未完成病案失败: PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+                    patientId, doctorId, checkAllDoctors);
                 throw;
             }
         }
@@ -692,23 +697,30 @@ namespace LYBT.Desktop.MedicalCase.Components
         }
 
         /// <summary>
-        /// 删除医案（物理删除，聚合根方法）
-        /// Issue #1783: 为PrescriptionEditorViewModel提供删除业务命令
+        /// 删除医案（软删除，聚合根方法）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 服务端返回204 No Content，根据状态码判断成功
         /// </summary>
-        public virtual async Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid medicalCaseId)
+        public virtual async Task<ApiResponse> DeleteMedicalCaseAsync(Guid medicalCaseId)
         {
             try
             {
-                _logger.LogDebug("删除医案(物理删除): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                _logger.LogDebug("删除医案(软删除): MedicalCaseId={MedicalCaseId}", medicalCaseId);
                 var response = await _api.DeleteMedicalCaseAsync(medicalCaseId);
-                _logger.LogInformation("医案删除成功(物理删除): MedicalCaseId={MedicalCaseId}, Success={Success}",
-                    medicalCaseId, response.Success);
-                return response;
+
+                // 204 No Content 或 200 OK 均视为成功
+                var isSuccess = response.IsSuccessStatusCode;
+                _logger.LogInformation("医案删除结果: MedicalCaseId={MedicalCaseId}, StatusCode={StatusCode}, Success={Success}",
+                    medicalCaseId, response.StatusCode, isSuccess);
+
+                return isSuccess
+                    ? new ApiResponse { Success = true, Message = "医案已取消" }
+                    : new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除医案失败(物理删除): MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw;
+                _logger.LogError(ex, "删除医案失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                return new ApiResponse { Success = false, Message = $"删除失败: {ex.Message}" };
             }
         }
 

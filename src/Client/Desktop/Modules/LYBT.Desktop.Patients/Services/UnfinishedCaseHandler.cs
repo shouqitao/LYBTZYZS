@@ -36,13 +36,17 @@ public class UnfinishedCaseHandler
     /// <summary>
     /// 检查患者是否有未完成的医案
     /// Issue #1790: 从PatientSelectionViewModel提取
+    /// OpenSpec: multi-doctor-unfinished-case - 支持检测其他医生的挂起医案
     /// </summary>
-    public async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId, Guid doctorId)
+    /// <param name="patientId">患者ID</param>
+    /// <param name="doctorId">当前医生ID</param>
+    /// <param name="checkAllDoctors">是否检查所有医生的未完成医案（默认true，用于多医生场景检测）</param>
+    public async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = true)
     {
         try
         {
-            // 1. 先查本地缓存
-            if (_pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
+            // 1. 先查本地缓存（仅当不检查所有医生时使用缓存）
+            if (!checkAllDoctors && _pendingCaseCache.TryGetValue(patientId, out var cachedMedicalCaseId))
             {
                 _logger.LogInformation("缓存命中:PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     patientId, cachedMedicalCaseId);
@@ -51,39 +55,43 @@ public class UnfinishedCaseHandler
                 return new MedicalCaseDto { Id = cachedMedicalCaseId };
             }
 
-            // 2. 缓存未命中,调用API查询
-            _logger.LogInformation("缓存未命中,调用API查询:PatientId={PatientId}, DoctorId={DoctorId}", 
-                patientId, doctorId);
+            // 2. 调用API查询
+            _logger.LogInformation("查询未完成医案:PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+                patientId, doctorId, checkAllDoctors);
 
-            // Epic #2210 Task 3.1.4: 传递doctorId到DataManager
-            var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+            // OpenSpec: multi-doctor-unfinished-case - 查询所有医生的未完成医案
+            var unfinishedCase = await _medicalCaseDataManager.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
 
             if (unfinishedCase != null)
             {
                 // 3. 找到未完成医案,更新缓存
                 _pendingCaseCache[patientId] = unfinishedCase.Id;
-                _logger.LogInformation("找到未完成医案,已更新缓存:MedicalCaseId={MedicalCaseId}, DoctorId={DoctorId}",
-                    unfinishedCase.Id, unfinishedCase.DoctorId);
+
+                // 判断是否是其他医生的医案
+                var isOtherDoctorCase = unfinishedCase.DoctorId != doctorId;
+                _logger.LogInformation("找到未完成医案,MedicalCaseId={MedicalCaseId}, DoctorId={CaseDoctorId}, DoctorName={DoctorName}, IsOtherDoctor={IsOtherDoctor}",
+                    unfinishedCase.Id, unfinishedCase.DoctorId, unfinishedCase.DoctorName ?? "未知", isOtherDoctorCase);
             }
             else
             {
-                _logger.LogInformation("患者无未完成医案:PatientId={PatientId}, DoctorId={DoctorId}", 
-                    patientId, doctorId);
+                _logger.LogInformation("患者无未完成医案:PatientId={PatientId}, CheckAllDoctors={CheckAllDoctors}",
+                    patientId, checkAllDoctors);
             }
 
             // 触发事件
             CaseCheckCompleted?.Invoke(this, new CaseCheckCompletedEventArgs
             {
                 PatientId = patientId,
-                UnfinishedCase = unfinishedCase
+                UnfinishedCase = unfinishedCase,
+                CurrentDoctorId = doctorId
             });
 
             return unfinishedCase;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "检查未完成医案失败:PatientId={PatientId}, DoctorId={DoctorId}", 
-                patientId, doctorId);
+            _logger.LogError(ex, "检查未完成医案失败:PatientId={PatientId}, DoctorId={DoctorId}, CheckAllDoctors={CheckAllDoctors}",
+                patientId, doctorId, checkAllDoctors);
             return null;
         }
     }
@@ -204,11 +212,23 @@ public class UnfinishedCaseHandler
 /// <summary>
 /// 医案检查完成事件参数
 /// Issue #1790: 封装事件数据
+/// OpenSpec: multi-doctor-unfinished-case - 添加CurrentDoctorId和IsOtherDoctorCase
 /// </summary>
 public class CaseCheckCompletedEventArgs : EventArgs
 {
     public Guid PatientId { get; set; }
     public MedicalCaseDto? UnfinishedCase { get; set; }
+    public Guid CurrentDoctorId { get; set; }
+
+    /// <summary>
+    /// 是否是其他医生的未完成医案
+    /// </summary>
+    public bool IsOtherDoctorCase => UnfinishedCase != null && UnfinishedCase.DoctorId != CurrentDoctorId;
+
+    /// <summary>
+    /// 其他医生的名称（如果是其他医生的医案）
+    /// </summary>
+    public string? OtherDoctorName => IsOtherDoctorCase ? UnfinishedCase?.DoctorName : null;
 }
 
 /// <summary>

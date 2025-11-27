@@ -664,10 +664,31 @@ namespace LYBT.Desktop.Patients.ViewModels
                     CurrentPatient.Name, CurrentPatient.Id);
 
                 // Phase 2: 智能路由逻辑
+                // OpenSpec: multi-doctor-unfinished-case - 检查所有医生的未完成医案
                 var unfinishedCase = await CheckUnfinishedMedicalCaseAsync(CurrentPatient.Id);
 
                 if (unfinishedCase != null)
                 {
+                    // OpenSpec: multi-doctor-unfinished-case - 检测是否是其他医生的挂起医案
+                    var currentDoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
+                    var isOtherDoctorCase = unfinishedCase.DoctorId != Guid.Empty &&
+                                            unfinishedCase.DoctorId != currentDoctorId;
+
+                    if (isOtherDoctorCase)
+                    {
+                        // 其他医生的挂起医案，只显示提示，不提供操作选项
+                        var doctorName = !string.IsNullOrEmpty(unfinishedCase.DoctorName)
+                            ? unfinishedCase.DoctorName
+                            : "其他医生";
+                        Logger.LogInformation("检测到患者在其他医生处有挂起医案: DoctorId={DoctorId}, DoctorName={DoctorName}",
+                            unfinishedCase.DoctorId, doctorName);
+
+                        SetIsBusy(false); // 对话框前关闭繁忙状态
+                        await ShowOtherDoctorCaseMessageAsync(CurrentPatient.Name, doctorName);
+                        return;
+                    }
+
+                    // 当前医生的挂起医案，显示操作对话框
                     await HandleUnfinishedCaseAsync(unfinishedCase.Id);
                 }
                 else
@@ -801,6 +822,40 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 Logger.LogError(ex, "显示对话框失败");
                 tcs.SetResult(0); // 异常时返回取消
+            }
+
+            return tcs.Task;
+        }
+
+        /// <summary>
+        /// 显示其他医生挂起医案提示
+        /// OpenSpec: multi-doctor-unfinished-case
+        /// </summary>
+        /// <param name="patientName">患者姓名</param>
+        /// <param name="doctorName">其他医生姓名</param>
+        private Task ShowOtherDoctorCaseMessageAsync(string patientName, string doctorName)
+        {
+            var tcs = new TaskCompletionSource();
+
+            try
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var message = $"患者「{patientName}」在{doctorName}处有挂起医案，暂时无法为其开始新的诊断。\n\n请联系{doctorName}完成或关闭该医案后再试。";
+
+                    System.Windows.MessageBox.Show(
+                        message,
+                        "提示",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
+
+                    tcs.SetResult();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "显示其他医生挂起医案提示失败");
+                tcs.SetResult();
             }
 
             return tcs.Task;

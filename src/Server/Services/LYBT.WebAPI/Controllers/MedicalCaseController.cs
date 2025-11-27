@@ -9,6 +9,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MedicalCaseDto = LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 // Epic #1612: 新Service接口和DTOs
@@ -100,6 +101,13 @@ namespace LYBT.WebAPI.Controllers
                 // BR-001: 单个患者只能有一个Active病案
                 _logger.LogWarning(ex, "创建病案失败：业务规则验证失败");
                 return UnprocessableEntity(ApiResponse<MedicalCaseDto>.CreateFail(ex.Message));
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // 数据库约束错误 - 提取详细错误信息以便诊断
+                var innerMessage = dbEx.InnerException?.Message ?? dbEx.Message;
+                _logger.LogError(dbEx, "创建病案失败：数据库约束错误 - {InnerMessage}", innerMessage);
+                return BadRequest(ApiResponse<MedicalCaseDto>.CreateFail($"数据库错误: {innerMessage}"));
             }
             catch (Exception ex)
             {
@@ -743,18 +751,26 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 403)]
         public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> GetUnfinishedCaseByPatientId(
             Guid patientId,
-            [FromQuery] Guid? doctorId = null)
+            [FromQuery] Guid? doctorId = null,
+            [FromQuery] bool checkAllDoctors = false)
         {
             try
             {
                 // Epic #2210 Task 3.1.3: Q4医生筛选链 - 提取当前医生ID
+                // OpenSpec: multi-doctor-unfinished-case - 支持查询所有医生的未完成医案
                 Guid currentDoctorId;
                 try
                 {
                     var (operatorId, operatorName, operatorRole) = GetOperator();
 
+                    // 如果checkAllDoctors=true，查询所有医生的未完成医案（用于多医生场景检测）
+                    if (checkAllDoctors)
+                    {
+                        _logger.LogInformation("查询所有医生的未完成医案，PatientId: {PatientId}", patientId);
+                        currentDoctorId = Guid.Empty; // Repository会跳过医生ID过滤
+                    }
                     // 如果未传递doctorId，使用当前登录医生ID
-                    if (doctorId == null || doctorId == Guid.Empty)
+                    else if (doctorId == null || doctorId == Guid.Empty)
                     {
                         // Issue #2241: 验证当前用户是医生角色，使用UserRole枚举比较
                         if (operatorRole != UserRole.Doctor)

@@ -35,10 +35,11 @@ namespace LYBT.Infrastructure.Data.Configurations
 
             // 根据文档要求：单患者仅一条未完成病案 - 过滤唯一索引
             // CaseStatus枚举值：Draft=0, Active=1, Completed=2 (Issue #2242: Cancelled已废弃，使用软删除)
+            // Bug Fix: 添加IsDeleted=0条件，避免软删除的Active医案阻止新建
             entity.HasIndex(m => m.PatientId)
                   .HasDatabaseName("UX_MedicalCases_Patient_ActiveOnly")
                   .IsUnique()
-                  .HasFilter("[CaseStatus] = 1");
+                  .HasFilter("[CaseStatus] = 1 AND [IsDeleted] = 0");
 
             // 删除PrescriptionId外键关系，改为通过Prescription.MedicalCaseId关联
             // 不再需要下面这行

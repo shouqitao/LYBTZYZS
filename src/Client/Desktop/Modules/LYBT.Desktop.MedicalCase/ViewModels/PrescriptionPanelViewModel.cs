@@ -615,6 +615,70 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+
+        /// <summary>
+        /// 静默保存（不显示错误对话框，不发布事件）
+        /// OpenSpec: clarify-cancel-consultation-logic - 取消前保存使用
+        /// </summary>
+        public async Task<bool> SaveSilentlyAsync()
+        {
+            try
+            {
+                // 收集药材项
+                var items = CollectPrescriptionItems();
+
+                if (!items.Any())
+                {
+                    Logger.LogDebug("没有药材项，静默保存跳过");
+                    return true; // 空处方也算保存成功
+                }
+
+                PrescriptionDto? result;
+                if (_prescriptionId.HasValue)
+                {
+                    // 更新现有处方
+                    var updateRequest = new PrescriptionUpdateDto
+                    {
+                        DosageCount = DosageCount,
+                        Usage = Usage,
+                        Items = items
+                    };
+                    result = await _medicalCaseRepository.UpdatePrescriptionAsync(_medicalCaseId, updateRequest);
+                }
+                else
+                {
+                    // 创建新处方
+                    var createRequest = new PrescriptionCreateDto
+                    {
+                        DosageCount = DosageCount,
+                        Usage = Usage,
+                        Items = items
+                    };
+                    result = await _medicalCaseRepository.CreatePrescriptionAsync(_medicalCaseId, createRequest);
+                    if (result != null)
+                    {
+                        _prescriptionId = result.Id;
+                    }
+                }
+
+                if (result != null)
+                {
+                    Logger.LogDebug("处方数据静默保存成功");
+                    // 不发布PrescriptionCompletedEvent，因为这是取消流程的保存
+                    return true;
+                }
+
+                Logger.LogDebug("处方数据静默保存失败");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // 静默保存不显示错误，只记录日志
+                Logger.LogWarning(ex, "静默保存处方数据异常（不阻止后续操作）");
+                return false;
+            }
+        }
+
         /// <summary>
         /// 收集处方药材项（从HerbItems扁平列表中收集有效项）
         /// </summary>

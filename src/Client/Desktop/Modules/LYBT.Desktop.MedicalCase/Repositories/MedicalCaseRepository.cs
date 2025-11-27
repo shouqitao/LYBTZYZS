@@ -307,23 +307,24 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.4
         /// </summary>
-        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        public async Task<MedicalCaseDto?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId, bool checkAllDoctors = false)
         {
             if (patientId == Guid.Empty)
                 throw new ArgumentException("患者ID不能为空", nameof(patientId));
 
             try
             {
-                _logger.LogInformation("查询患者未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}", 
-                    patientId, doctorId);
+                _logger.LogInformation("查询患者未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}, CheckAllDoctors: {CheckAllDoctors}",
+                    patientId, doctorId, checkAllDoctors);
 
                 // Epic #2210 Task 3.1.4: 传递doctorId到API
-                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+                // OpenSpec: multi-doctor-unfinished-case - 传递checkAllDoctors参数
+                var response = await _api.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId, checkAllDoctors);
 
-                // 404表示没有未完成医案,这是正常情况
+                // 成功响应但无数据
                 if (response.Data == null)
                 {
-                    _logger.LogInformation("患者无未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}", 
+                    _logger.LogInformation("患者无未完成医案,PatientId: {PatientId}, DoctorId: {DoctorId}",
                         patientId, doctorId);
                     return null;
                 }
@@ -333,9 +334,17 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
                 return response.Data;
             }
+            catch (Refit.ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Bug Fix: 404表示没有未完成医案，这是正常业务场景
+                // Refit默认在非2xx状态码时抛出ApiException，需要特殊处理404
+                _logger.LogInformation("患者无未完成医案(404),PatientId: {PatientId}, DoctorId: {DoctorId}",
+                    patientId, doctorId);
+                return null;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "查询未完成医案失败,PatientId: {PatientId}, DoctorId: {DoctorId}", 
+                _logger.LogError(ex, "查询未完成医案失败,PatientId: {PatientId}, DoctorId: {DoctorId}",
                     patientId, doctorId);
                 throw;
             }
@@ -393,12 +402,30 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiUpdateAsync(Guid id, MedicalCaseInputDto dto)
         {
-            return _api.UpdateMedicalCaseAsync(id, dto);
+            // OpenSpec: clarify-cancel-consultation-logic
+            // PUT /api/v1/medicalcases/{id} 端点在服务端已不存在
+            // 服务端架构采用子资源端点模式：
+            // - 更新诊断: UpdateConsultationAsync (PUT /consultation)
+            // - 更新处方: UpdatePrescriptionAsync (PUT /prescription)
+            // - 更新状态: UpdateStatusAsync (PUT /status)
+            // - 关闭医案: CloseCaseAsync (PUT /close)
+            //
+            // 如果看到此异常，请检查调用栈并使用正确的子资源端点
+            throw new NotSupportedException(
+                "不支持直接更新MedicalCase实体。" +
+                "服务端采用子资源端点架构，请使用对应的方法：" +
+                "UpdateConsultationAsync、UpdatePrescriptionAsync、UpdateStatusAsync等。");
         }
 
-        protected override Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
+        protected override async Task<ApiResponse<ApiResponse>> CallApiDeleteAsync(Guid id)
         {
-            return _api.DeleteMedicalCaseAsync(id);
+            // OpenSpec: clarify-cancel-consultation-logic
+            // DELETE返回204 No Content，需要转换IApiResponse为ApiResponse<ApiResponse>
+            var response = await _api.DeleteMedicalCaseAsync(id);
+            var result = response.IsSuccessStatusCode
+                ? new ApiResponse { Success = true, Message = "删除成功" }
+                : new ApiResponse { Success = false, Message = $"删除失败: {response.ReasonPhrase}" };
+            return ApiResponse<ApiResponse>.CreateSuccess(result);
         }
 
         protected override Guid? GetIdFromUpdateDto(MedicalCaseInputDto dto)

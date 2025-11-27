@@ -285,6 +285,47 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <summary>
+        /// 静默保存（不显示验证错误对话框）
+        /// OpenSpec: clarify-cancel-consultation-logic - 取消前保存使用
+        /// </summary>
+        public async Task<bool> SaveSilentlyAsync()
+        {
+            try
+            {
+                // 跳过验证，直接保存当前填写的内容（供审计用途）
+                var request = new ConsultationInputDto
+                {
+                    ChiefComplaint = ChiefComplaint,
+                    PresentIllness = PresentIllness,
+                    TCMDiagnosis = TCMDiagnosis,
+                    TreatmentPrinciple = TreatmentPrinciple,
+                    Inspection = Inspection,
+                    AuscultationOlfaction = AuscultationOlfaction,
+                    Inquiry = Inquiry,
+                    Palpation = Palpation,
+                    MedicalCaseRemark = MedicalCaseRemark
+                };
+
+                var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
+
+                if (result != null)
+                {
+                    Logger.LogDebug("诊断数据静默保存成功");
+                    return true;
+                }
+
+                Logger.LogDebug("诊断数据静默保存失败");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // 静默保存不显示错误，只记录日志
+                Logger.LogWarning(ex, "静默保存诊断数据异常（不阻止后续操作）");
+                return false;
+            }
+        }
+
         #endregion
 
         #region 命令实现

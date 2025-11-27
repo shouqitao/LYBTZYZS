@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using System.Windows;
 using System.Windows.Media;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly MedicalCaseDataLoader _dataLoader;
         private readonly ConsultationPanelViewModel _injectedConsultationPanelViewModel;
         private readonly PrescriptionPanelViewModel _injectedPrescriptionPanelViewModel;
+        private readonly IActiveConsultationService _activeConsultationService; // OpenSpec: clarify-cancel-consultation-logic
 
         #endregion
 
@@ -229,7 +231,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 命令
 
         public DelegateCommand BackToPatientSelectionCommand { get; }
-        public DelegateCommand CancelConsultationCommand { get; }
+        // OpenSpec: clarify-cancel-consultation-logic - CancelConsultationCommand已移除，取消操作集成到离开确认对话框
         public DelegateCommand SaveDraftCommand { get; }
         public DelegateCommand PrintPrescriptionCommand { get; }
         public DelegateCommand CompleteConsultationCommand { get; }
@@ -247,6 +249,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ILoggerFactory loggerFactory,
             ConsultationPanelViewModel consultationPanelViewModel,
             PrescriptionPanelViewModel prescriptionPanelViewModel,
+            IActiveConsultationService activeConsultationService, // OpenSpec: clarify-cancel-consultation-logic
             ISessionManager? sessionManager = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
@@ -256,14 +259,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
             _injectedConsultationPanelViewModel = consultationPanelViewModel ?? throw new ArgumentNullException(nameof(consultationPanelViewModel));
             _injectedPrescriptionPanelViewModel = prescriptionPanelViewModel ?? throw new ArgumentNullException(nameof(prescriptionPanelViewModel));
+            _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
 
             // 订阅生命周期事件
             _lifecycleHandler.ActionCompleted += OnLifecycleActionCompleted;
             _dataLoader.DataLoaded += OnDataLoaded;
 
             // 初始化命令
-            BackToPatientSelectionCommand = new DelegateCommand(ExecuteBackToPatientSelection);
-            CancelConsultationCommand = new DelegateCommand(ExecuteCancelConsultation);
+            // OpenSpec: clarify-cancel-consultation-logic - 返回按钮触发离开确认对话框
+            BackToPatientSelectionCommand = new DelegateCommand(async () => await ExecuteBackToPatientSelectionAsync());
             SaveDraftCommand = new DelegateCommand(ExecuteSaveDraft);
             PrintPrescriptionCommand = new DelegateCommand(ExecutePrintPrescription, () => CanPrintPrescription)
                 .ObservesProperty(() => CanPrintPrescription);
@@ -286,14 +290,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 返回患者选择页面
+        /// 返回患者选择页面（OpenSpec: clarify-cancel-consultation-logic）
+        /// 显示三选项离开确认对话框
         /// </summary>
-        private void ExecuteBackToPatientSelection()
+        private async Task ExecuteBackToPatientSelectionAsync()
         {
             try
             {
-                Logger.LogInformation("返回患者选择页面");
-                _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                // 显示三选项对话框并处理用户选择
+                var result = await HandleLeaveRequestAsync();
+
+                if (result.CanLeave)
+                {
+                    // 用户选择了暂存或取消，导航回患者列表
+                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                }
+                // 否则用户选择继续停留，不做任何操作
             }
             catch (Exception ex)
             {
@@ -302,47 +314,196 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 取消看诊（OpenSpec: clarify-cancel-consultation-logic）
-        /// 语义：作废本次就诊，软删除数据保留供审计
+        /// 显示离开确认对话框（三选项）并处理用户选择
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 此方法由IActiveConsultationService调用（退出登录时）
         /// </summary>
-        private async void ExecuteCancelConsultation()
+        private async Task<LeaveConsultationResult> HandleLeaveRequestAsync()
+        {
+            // 使用MessageBox实现三选项对话框
+            // WPF MessageBox.YesNoCancel 正好支持三个选项
+            var result = MessageBox.Show(
+                "您将离开看诊界面，是否暂存当前医案？\n\n" +
+                "【是】暂存医案 - 保存当前进度，下次可继续\n" +
+                "【否】取消医案 - 作废本次就诊\n" +
+                "【取消】继续看诊 - 返回当前界面",
+                "离开确认",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            var choice = result switch
+            {
+                MessageBoxResult.Yes => LeaveConsultationChoice.SaveDraft,
+                MessageBoxResult.No => LeaveConsultationChoice.CancelCase,
+                _ => LeaveConsultationChoice.Stay
+            };
+
+            // 根据用户选择执行对应操作
+            switch (choice)
+            {
+                case LeaveConsultationChoice.SaveDraft:
+                    await SaveDraftOnlyAsync();
+                    return LeaveConsultationResult.AllowLeave(choice);
+
+                case LeaveConsultationChoice.CancelCase:
+                    await CancelCaseOnlyAsync();
+                    return LeaveConsultationResult.AllowLeave(choice);
+
+                case LeaveConsultationChoice.Stay:
+                default:
+                    Logger.LogDebug("用户选择继续停留");
+                    return LeaveConsultationResult.CancelLeave();
+            }
+        }
+
+        /// <summary>
+        /// 仅保存草稿（不导航）
+        /// </summary>
+        private async Task SaveDraftOnlyAsync()
         {
             try
             {
-                // OpenSpec LIFECYCLE-004: 明确的确认提示
-                var confirmed = await ShowConfirmationAsync(
-                    "确定要取消本次看诊吗？\n\n" +
-                    "取消后，本次就诊记录将被标记为已取消，无法继续编辑。\n" +
-                    "如果只是临时离开，请使用「暂停看诊」保存进度。",
-                    "取消看诊");
+                SetIsBusy(true, "正在保存...");
 
-                if (!confirmed)
+                if (ConsultationPanelViewModel != null)
                 {
-                    return;
+                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                }
+                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                {
+                    await consultationSaveable.SaveSilentlyAsync();
+                }
+                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                {
+                    await prescriptionSaveable.SaveSilentlyAsync();
                 }
 
-                // OpenSpec LIFECYCLE-003: 取消前自动保存（供审计）
+                await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
+                Logger.LogInformation("医案已暂存");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 仅取消医案（不导航）
+        /// </summary>
+        private async Task CancelCaseOnlyAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在处理...");
+
+                // 取消前自动保存（供审计）
                 try
                 {
-                    // OpenSpec: clarify-cancel-consultation-logic
-                    // 医案备注通过ConsultationInputDto.MedicalCaseRemark传递保存
                     if (ConsultationPanelViewModel != null)
                     {
                         ConsultationPanelViewModel.MedicalCaseRemark = Remark;
                     }
                     if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                     {
-                        await consultationSaveable.SaveAsync();
+                        await consultationSaveable.SaveSilentlyAsync();
                     }
                     if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
                     {
-                        await prescriptionSaveable.SaveAsync();
+                        await prescriptionSaveable.SaveSilentlyAsync();
+                    }
+                }
+                catch (Exception saveEx)
+                {
+                    Logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
+                }
+
+                await _lifecycleHandler.CancelAsync(MedicalCaseId);
+                Logger.LogInformation("医案已取消（软删除）");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 暂存医案并返回患者列表
+        /// </summary>
+        private async Task SaveDraftAndNavigateBackAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在保存...");
+
+                // 设置医案备注
+                if (ConsultationPanelViewModel != null)
+                {
+                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                }
+
+                // 保存诊断和处方数据
+                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                {
+                    await consultationSaveable.SaveSilentlyAsync();
+                }
+                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                {
+                    await prescriptionSaveable.SaveSilentlyAsync();
+                }
+
+                // 更新状态为Draft
+                var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
+
+                if (result.success)
+                {
+                    Logger.LogInformation("医案已暂存，返回患者列表");
+                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
+                }
+                else
+                {
+                    await ShowErrorMessageAsync(result.errorMessage ?? "暂存失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "暂存医案失败");
+                await ShowErrorMessageAsync($"暂存失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 取消医案并返回患者列表（软删除）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// </summary>
+        private async Task CancelCaseAndNavigateBackAsync()
+        {
+            try
+            {
+                SetIsBusy(true, "正在处理...");
+
+                // 取消前自动保存（供审计）
+                try
+                {
+                    if (ConsultationPanelViewModel != null)
+                    {
+                        ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                    }
+                    if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                    {
+                        await consultationSaveable.SaveSilentlyAsync();
+                    }
+                    if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                    {
+                        await prescriptionSaveable.SaveSilentlyAsync();
                     }
                     Logger.LogDebug("取消前数据已保存（供审计）");
                 }
                 catch (Exception saveEx)
                 {
-                    // 保存失败不阻止取消操作
                     Logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
                 }
 
@@ -351,7 +512,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 if (result.success)
                 {
-                    Logger.LogInformation("医案已取消（软删除）");
+                    Logger.LogInformation("医案已取消（软删除），返回患者列表");
                     _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
                 }
                 else
@@ -361,8 +522,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "取消看诊失败");
+                Logger.LogError(ex, "取消医案失败");
                 await ShowErrorMessageAsync($"取消失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
             }
         }
 
@@ -645,6 +810,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 CurrentPatient?.Name ?? string.Empty,
                 null);
 
+            // OpenSpec: clarify-cancel-consultation-logic - 注册活跃医案服务
+            _activeConsultationService.Register(MedicalCaseId, HandleLeaveRequestAsync);
+
             Logger.LogInformation("子面板ViewModel初始化完成，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
         }
 
@@ -655,6 +823,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public override void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            // OpenSpec: clarify-cancel-consultation-logic - 注销活跃医案服务
+            _activeConsultationService.Unregister();
+
             base.OnNavigatedFrom(navigationContext);
             Logger.LogInformation("离开MedicalCaseWorkspaceView");
         }
@@ -810,6 +981,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             if (disposing)
             {
+                // OpenSpec: clarify-cancel-consultation-logic - 确保注销活跃医案服务
+                _activeConsultationService.Unregister();
+
                 _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
                 _dataLoader.DataLoaded -= OnDataLoaded;
 

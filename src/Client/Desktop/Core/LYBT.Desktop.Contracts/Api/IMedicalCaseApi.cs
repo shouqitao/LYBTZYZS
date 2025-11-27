@@ -74,9 +74,11 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
 
         /// <summary>
-        /// 更新医疗案例
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
+        /// 更新医疗案例（已弃用 - 服务端不存在此端点）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 服务端采用子资源端点架构，请使用UpdateConsultationAsync、UpdatePrescriptionAsync、UpdateStatusAsync等
         /// </summary>
+        [Obsolete("服务端已移除此端点，请使用子资源端点：UpdateConsultationAsync、UpdatePrescriptionAsync、UpdateStatusAsync等")]
         [Refit.Put("/api/v1/medicalcases/{id}")]
         Task<ApiResponse<MedicalCaseDto>> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
 
@@ -88,10 +90,12 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<ConsultationDto>> UpdateConsultationAsync(Guid medicalCaseId, [Refit.Body] ConsultationInputDto request);
 
         /// <summary>
-        /// 删除医疗案例（物理删除）
+        /// 删除医疗案例（软删除）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 服务端返回204 No Content，使用IApiResponse处理空响应
         /// </summary>
         [Refit.Delete("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<ApiResponse>> DeleteMedicalCaseAsync(Guid id);
+        Task<Refit.IApiResponse> DeleteMedicalCaseAsync(Guid id);
 
         /// <summary>
         /// 软删除医疗案例（标记为删除）
@@ -166,10 +170,11 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Body] SetPrescriptionFlagRequest request);
 
         /// <summary>
-        /// 暂存病案（保存当前状态）
-        /// Epic #1589 Phase 5 - 架构合规版本
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
+        /// 暂存病案（已弃用 - 服务端不存在此端点）
+        /// OpenSpec: clarify-cancel-consultation-logic
+        /// 如需保存草稿，请使用UpdateStatusAsync设置Draft状态
         /// </summary>
+        [Obsolete("服务端不存在此端点，请使用UpdateStatusAsync设置Draft状态")]
         [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/save-as-draft")]
         Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
             Guid medicalCaseId,
@@ -181,11 +186,16 @@ namespace LYBT.Desktop.Contracts.Api
         /// 获取患者的未完成医案（Status != Completed）
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.4: 添加doctorId参数
+        /// OpenSpec: multi-doctor-unfinished-case - 添加checkAllDoctors参数
         /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <param name="doctorId">医生ID（当checkAllDoctors=false时使用）</param>
+        /// <param name="checkAllDoctors">是否查询所有医生的未完成医案（用于多医生场景检测）</param>
         [Refit.Get("/api/v1/medicalcases/patient/{patientId}/unfinished")]
         Task<ApiResponse<MedicalCaseDto>> GetUnfinishedCaseByPatientIdAsync(
             Guid patientId,
-            [Refit.Query] Guid doctorId);
+            [Refit.Query] Guid doctorId,
+            [Refit.Query] bool checkAllDoctors = false);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
