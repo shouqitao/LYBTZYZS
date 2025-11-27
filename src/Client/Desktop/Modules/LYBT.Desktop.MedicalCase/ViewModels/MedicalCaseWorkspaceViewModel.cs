@@ -6,6 +6,7 @@ using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -203,6 +204,26 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _canComplete, value);
         }
 
+        private string _remark = string.Empty;
+        /// <summary>
+        /// 医案备注（OpenSpec: refactor-medicalcase-ui - 替代底部状态指示器）
+        /// </summary>
+        public string Remark
+        {
+            get => _remark;
+            set
+            {
+                if (SetProperty(ref _remark, value))
+                {
+                    // 同步到缓存的医案数据
+                    if (_dataLoader.CachedMedicalCase != null)
+                    {
+                        _dataLoader.CachedMedicalCase.Remark = value;
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region 命令
@@ -336,6 +357,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     await prescriptionSaveable.SaveAsync();
                 }
 
+                // OpenSpec: refactor-medicalcase-ui - 保存医案备注
+                await SaveRemarkAsync();
+
                 // 更新医案状态
                 var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
 
@@ -415,6 +439,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                         return;
                     }
                 }
+
+                // OpenSpec: refactor-medicalcase-ui - 保存医案备注
+                await SaveRemarkAsync();
 
                 // 完成医案
                 var result = await _lifecycleHandler.CompleteAsync(MedicalCaseId);
@@ -543,6 +570,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 {
                     IsPrescriptionEnabled = true;
                 }
+
+                // OpenSpec: refactor-medicalcase-ui - 加载医案备注
+                Remark = result.detail?.Remark ?? string.Empty;
 
                 Logger.LogInformation("医案数据加载完成");
             }
@@ -701,6 +731,34 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 PrescriptionStatusBackground = new SolidColorBrush(Color.FromRgb(158, 158, 158)); // 灰色
                 PrescriptionStatusSummary = customText ?? "待开方";
                 PrescriptionStatusSummaryColor = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+            }
+        }
+
+        /// <summary>
+        /// 保存医案备注（OpenSpec: refactor-medicalcase-ui）
+        /// </summary>
+        private async Task SaveRemarkAsync()
+        {
+            if (_dataLoader.CachedMedicalCase == null || MedicalCaseId == Guid.Empty)
+            {
+                return;
+            }
+
+            try
+            {
+                // 同步备注到缓存
+                _dataLoader.CachedMedicalCase.Remark = Remark;
+
+                // 使用扩展方法转换为InputDto并保存
+                var inputDto = _dataLoader.CachedMedicalCase.ToInputDto();
+                await _dataManager.UpdateSimpleAsync(inputDto);
+
+                Logger.LogDebug("医案备注已保存: {MedicalCaseId}", MedicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "保存医案备注失败（非致命）: {MedicalCaseId}", MedicalCaseId);
+                // 不抛出异常，备注保存失败不应阻断主流程
             }
         }
 

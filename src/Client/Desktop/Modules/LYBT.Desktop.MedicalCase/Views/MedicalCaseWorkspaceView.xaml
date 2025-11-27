@@ -77,6 +77,10 @@
                         Content="取消看诊"
                         Command="{Binding CancelConsultationCommand}"
                         Style="{StaticResource DangerButtonStyle}"
+                        FontSize="12"
+                        Padding="12,4"
+                        Margin="0,8"
+                        VerticalAlignment="Center"
                         ToolTip="放弃本次看诊" />
             </Grid>
         </Border>
@@ -130,23 +134,25 @@
                     <!-- 面板标题 -->
                     <Border Grid.Row="0"
                             Style="{StaticResource PanelHeaderStyle}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="处方编辑" Style="{StaticResource PanelTitleStyle}" />
-                            <TextBlock Text=" (Prescription)"
-                                       Style="{StaticResource HintTextStyle}"
-                                       VerticalAlignment="Center"
-                                       Margin="8,0,0,0" />
-                            <!-- 处方状态指示 -->
-                            <Border Background="{Binding PrescriptionStatusBackground}"
-                                    CornerRadius="12"
-                                    Padding="12,4"
-                                    Margin="16,0,0,0"
-                                    Visibility="{Binding ShowPrescriptionStatus, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="{Binding PrescriptionStatusText}"
-                                           FontSize="12"
-                                           Foreground="White" />
-                            </Border>
-                        </StackPanel>
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="处方编辑" Style="{StaticResource PanelTitleStyle}" VerticalAlignment="Center" />
+                                <TextBlock Text="(Prescription)"
+                                           Style="{StaticResource HintTextStyle}"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                            <!-- 查询按钮 -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="经验方查询"
+                                        Command="{Binding PrescriptionPanelViewModel.OpenFormulaImportDialogCommand}"
+                                        Style="{StaticResource OutlineButtonStyle}"
+                                        Margin="0,0,8,0"/>
+                                <Button Content="历史处方查询"
+                                        Command="{Binding PrescriptionPanelViewModel.OpenHistoryCopyDialogCommand}"
+                                        Style="{StaticResource OutlineButtonStyle}"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
 
                     <!-- 处方内容区 -->
@@ -159,42 +165,42 @@
         </Grid>
 
         <!-- Row 2: 底部操作栏 (OpenSpec: refactor-medicalcase-ui) -->
+        <!--
+        布局优化参考: SAP Fiori Footer Toolbar / Carbon Design System
+        - Fluid输入框自适应填充可用空间
+        - 按钮层级: 次要(左) → 主要(右)
+        - 三区布局: 标签 | 输入框(stretch) | 操作按钮
+        -->
         <Border Grid.Row="2"
                 Style="{StaticResource ActionBarStyle}">
             <Grid Margin="24,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />  <!-- 标签 -->
+                    <ColumnDefinition Width="*" />     <!-- 备注输入框(自适应) -->
+                    <ColumnDefinition Width="24" />    <!-- 间隔 -->
+                    <ColumnDefinition Width="Auto" />  <!-- 操作按钮 -->
                 </Grid.ColumnDefinitions>
 
-                <!-- 左侧: 简化状态指示器 -->
-                <StackPanel Grid.Column="0"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
-                    <!-- 诊断状态 -->
-                    <Ellipse Width="8" Height="8"
-                             Fill="{Binding ConsultationStatusColor}"
-                             VerticalAlignment="Center"
-                             Margin="0,0,6,0" />
-                    <TextBlock Text="{Binding ConsultationStatusText}"
-                               FontSize="13"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,24,0" />
-                    <!-- 处方状态 -->
-                    <Ellipse Width="8" Height="8"
-                             Fill="{Binding PrescriptionStatusSummaryColor}"
-                             VerticalAlignment="Center"
-                             Margin="0,0,6,0" />
-                    <TextBlock Text="{Binding PrescriptionStatusSummary}"
-                               FontSize="13"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                <!-- 备注标签 -->
+                <TextBlock Grid.Column="0"
+                           Text="备注："
+                           FontSize="13"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
 
-                <!-- 右侧: 操作按钮 -->
-                <StackPanel Grid.Column="1"
+                <!-- 备注输入框（Fluid - 自适应宽度） -->
+                <TextBox Grid.Column="1"
+                         Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource FormTextBoxStyle}"
+                         MinHeight="36"
+                         MaxLength="500"
+                         ToolTip="医案备注信息（最多500字）"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch" />
+
+                <!-- 操作按钮组 -->
+                <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <!-- 暂停看诊 -->

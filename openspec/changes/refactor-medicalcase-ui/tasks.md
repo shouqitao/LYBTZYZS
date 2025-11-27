@@ -11,7 +11,7 @@
 | 3.1 | 重构 PrescriptionEditorPanel 布局 | 45min | Done |
 | 3.2 | 移除重复字段，优化药材卡片区 | 30min | Done |
 | 4.1 | 重构 MedicalCaseWorkspaceView 底部操作栏 | 30min | Done |
-| 4.2 | 简化状态指示器 | 15min | Done |
+| 4.2 | 简化状态指示器 → 医案备注 | 15min | Done |
 | 5.1 | 清理废弃的 View 文件 | 15min | Done |
 | 5.2 | 清理废弃的 ViewModel 文件 | 15min | Done |
 | 6.1 | 1920x1080 分辨率测试 | 20min | Skipped |
@@ -146,18 +146,27 @@
 - 按钮布局合理
 - 样式统一
 
-### Task 4.2: 简化状态指示器
+### Task 4.2: 简化状态指示器 → 医案备注
 **Priority**: P1
 **Effort**: 15min
 **Dependencies**: Task 4.1
 **Status**: Done
 
-- [x] 将冗长状态文本改为 "●已诊断 ●待开方" 格式
-- [x] 使用颜色区分状态：绿色(完成)、灰色(待处理)、黄色(进行中)
+分析结论: 状态指示器("已完成/待开方")在5:5统一界面中无必要：
+- 诊断/处方面板始终可见，用户可直观判断状态
+- 状态信息冗余，占用有价值的UI空间
+
+改进方案: 替换为医案级别备注字段
+- [x] 删除底部状态指示器（"●已诊断 ●待开方"）
+- [x] 添加 Remark 属性到 MedicalCaseWorkspaceViewModel
+- [x] 实现备注数据加载（从 MedicalCaseDetailDto）
+- [x] 实现备注保存（在暂停/完成看诊时调用 SaveRemarkAsync）
+- [x] 更新 XAML：底部左侧添加备注输入框（Width=400, MaxLength=500）
 
 **验收标准**:
-- 状态一目了然
-- 颜色语义正确
+- 底部操作栏左侧显示备注输入框
+- 备注数据正确加载和保存
+- 编译无错误
 
 ---
 
@@ -275,6 +284,7 @@ Phase 2-4 完成 →
 
 ### 修改的文件
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Views/MedicalCaseWorkspaceView.xaml` - 主工作区视图
+- `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/ViewModels/MedicalCaseWorkspaceViewModel.cs` - 添加Remark属性和保存逻辑
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Controls/ConsultationPanel.xaml` - 诊断面板
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/Controls/PrescriptionEditorPanel.xaml` - 处方面板
 - `src/Client/Desktop/Modules/LYBT.Desktop.MedicalCase/MedicalCaseModule.cs` - 模块注册

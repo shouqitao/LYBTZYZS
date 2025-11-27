@@ -28,36 +28,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Row 0: 快速导入 -->
-            <RowDefinition Height="*"/>    <!-- Row 1: 药材卡片区域 -->
-            <RowDefinition Height="Auto"/> <!-- Row 2: 重复药材警告 -->
-            <RowDefinition Height="Auto"/> <!-- Row 3: 处方信息（价格计算） -->
+            <RowDefinition Height="*"/>    <!-- Row 0: 药材卡片区域 -->
+            <RowDefinition Height="Auto"/> <!-- Row 1: 重复药材警告 -->
+            <RowDefinition Height="Auto"/> <!-- Row 2: 处方信息（价格计算） -->
         </Grid.RowDefinitions>
 
-        <!-- Row 0: 快速导入按钮区 -->
-        <Border Grid.Row="0"
-                Background="#F8F9FA"
-                Padding="12,8"
-                Margin="12,12,12,0">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="快速导入："
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,16,0"/>
-                <Button Content="从验方导入"
-                        Command="{Binding OpenFormulaImportDialogCommand}"
-                        Style="{StaticResource OutlineButtonStyle}"
-                        Margin="0,0,8,0"/>
-                <Button Content="从历史处方复制"
-                        Command="{Binding OpenHistoryCopyDialogCommand}"
-                        Style="{StaticResource OutlineButtonStyle}"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Row 1: 药材卡片区域 -->
-        <Grid Grid.Row="1" Margin="12,8,12,0">
+        <!-- Row 0: 药材卡片区域 -->
+        <Grid Grid.Row="0" Margin="12,8,12,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- 统计信息 + 操作提示 -->
                 <RowDefinition Height="*"/>    <!-- 卡片列表 -->
@@ -127,8 +104,8 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- Row 2: 重复药材警告 -->
-        <Border Grid.Row="2"
+        <!-- Row 1: 重复药材警告 -->
+        <Border Grid.Row="1"
                 Background="#FFF3E0"
                 BorderBrush="#FFB74D"
                 BorderThickness="1"
@@ -151,8 +128,8 @@
             </StackPanel>
         </Border>
 
-        <!-- Row 3: 处方信息（价格计算卡片） -->
-        <Border Grid.Row="3"
+        <!-- Row 2: 处方信息（价格计算卡片） -->
+        <Border Grid.Row="2"
                 Background="#F8F9FA"
                 CornerRadius="4"
                 Padding="12,8"
