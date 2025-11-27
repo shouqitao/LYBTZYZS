@@ -52,18 +52,15 @@ namespace LYBT.Desktop.MedicalCase
 
             // 注册视图模型 - MVP核心功能
             // Issue #1549: MedicalCaseEntryViewModel已删除（由MedicalCaseFlowView的4步流程替代）
-            // containerRegistry.Register<ViewModels.MedicalCaseEntryViewModel>();  // Issue #1463: 病案录入（已废弃）
             // Epic #1583: PatientSelectionViewModel已移至PatientsModule（三区域布局）
             containerRegistry.Register<ViewModels.PrescriptionItemViewModel>();  // Epic #2175 BF-002 Task 3.5: 处方药材项ViewModel
-            containerRegistry.Register<ViewModels.MedicalCaseFormViewModel>();  // Epic #2175 BF-002 Task 3.2: 一体化病案编辑器ViewModel
-            containerRegistry.Register<ViewModels.MedicalCaseFlowViewModel>();   // Epic #1494 - Task #1496: 医案流程主视图模型 [已废弃]
+            // OpenSpec: refactor-medicalcase-ui - 废弃注册已清理
 
-            // Epic #2210 Phase 4: 新的4:6统一工作区视图模型
+            // Epic #2210 Phase 4: 4:6统一工作区视图模型
             containerRegistry.Register<ViewModels.MedicalCaseWorkspaceViewModel>();
             containerRegistry.Register<ViewModels.ConsultationPanelViewModel>();
             containerRegistry.Register<ViewModels.PrescriptionPanelViewModel>();
             containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
-            containerRegistry.Register<ViewModels.CompletionViewModel>();        // Epic #1494 - Task #1500: Step 4 完成医案
             // Issue #1799: 删除OtherCasesQueryViewModel（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListViewModel（功能与ManagementView重复）
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
@@ -82,17 +79,14 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterDialog<FormulaImportDialog, FormulaImportDialogViewModel>();
             containerRegistry.RegisterDialog<HistoryCopyDialog, HistoryCopyDialogViewModel>();
 
-            // 注册视图用于导航 - 需要对应视图文件存在
+            // 注册视图用于导航
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
-            // containerRegistry.RegisterForNavigation<Views.MedicalCaseEntryView>();  // Issue #1463: 病案录入视图（已废弃）
             // Epic #1583: PatientSelectionView已移至PatientsModule（三区域布局）
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseEditorView>();  // Epic #2175 BF-002 Task 3.1: 一体化病案编辑器视图
-            containerRegistry.RegisterForNavigation<Views.MedicalCaseFlowView>();   // Epic #1494 - Task #1496: 医案流程主视图 [已废弃]
+            // OpenSpec: refactor-medicalcase-ui - 废弃视图注册已清理（MedicalCaseFlowView, MedicalCaseEditorView, CompletionView）
 
-            // Epic #2210 Phase 4: 新的4:6统一工作区视图
+            // Epic #2210 Phase 4: 4:6统一工作区视图（唯一的看诊入口）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseWorkspaceView>();
             containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();  // Task #1499: 处方编辑器视图
-            containerRegistry.RegisterForNavigation<Views.CompletionView>();        // Epic #1494 - Task #1500: Step 4 完成医案视图
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();  // Issue #1799: 保留作为唯一医案管理入口

@@ -7,244 +7,225 @@
 
     <!--
     Epic #2210 Phase 4: 处方面板UserControl
+    OpenSpec: refactor-medicalcase-ui - UI重构版本
     用于MedicalCaseWorkspaceView的右侧60%区域
-    重构: 复用HerbCardControl和ItemsControl+UniformGrid模式（参考经验方EditFormulaDialog）
-    区别: 处方需要计算单剂价格和总价格，经验方不需要
-    Issue #2246: 添加验方导入和历史复制功能
+
+    设计变更:
+    - 保留顶部快速导入按钮
+    - 移除中间操作按钮行（添加行/保存草稿/删除处方）
+    - 移除重复的治法方案/治疗原则字段（诊断区已有）
+    - 优化药材卡片区视觉间距
+    - 底部价格信息区使用卡片样式
     -->
 
     <UserControl.Resources>
-        <!-- 标签样式 -->
-        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#333"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,3,8,3"/>
-        </Style>
-
-        <!-- 按钮样式 -->
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="5,0"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-
-        <!-- 导入按钮样式 -->
-        <Style x:Key="ImportButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#2196F3"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#2196F3"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Presentation;component/Theming/MedicalCaseStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="10">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Row 0: Tab切换 -->
-            <RowDefinition Height="Auto"/> <!-- Row 1: 治法方案 -->
-            <RowDefinition Height="*"/>    <!-- Row 2: HerbCardControl区域 -->
-            <RowDefinition Height="Auto"/> <!-- Row 3: 重复药材警告 -->
-            <RowDefinition Height="Auto"/> <!-- Row 4: 处方信息（价格计算） -->
+            <RowDefinition Height="Auto"/> <!-- Row 0: 快速导入 -->
+            <RowDefinition Height="*"/>    <!-- Row 1: 药材卡片区域 -->
+            <RowDefinition Height="Auto"/> <!-- Row 2: 重复药材警告 -->
+            <RowDefinition Height="Auto"/> <!-- Row 3: 处方信息（价格计算） -->
         </Grid.RowDefinitions>
 
-        <!-- Row 0: 导入操作按钮（Issue #2246: 验方导入和历史复制弹窗） -->
+        <!-- Row 0: 快速导入按钮区 -->
         <Border Grid.Row="0"
-                BorderBrush="#E0E0E0"
-                BorderThickness="0,0,0,1"
-                Padding="0,0,0,10"
-                Margin="0,0,0,10">
+                Background="#F8F9FA"
+                Padding="12,8"
+                Margin="12,12,12,0">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="快速导入："
-                           Style="{StaticResource FieldLabelStyle}"
-                           FontWeight="Bold"
-                           Margin="0,0,15,0"/>
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
                 <Button Content="从验方导入"
                         Command="{Binding OpenFormulaImportDialogCommand}"
-                        Style="{StaticResource ImportButtonStyle}"/>
+                        Style="{StaticResource OutlineButtonStyle}"
+                        Margin="0,0,8,0"/>
                 <Button Content="从历史处方复制"
                         Command="{Binding OpenHistoryCopyDialogCommand}"
-                        Style="{StaticResource ImportButtonStyle}"/>
+                        Style="{StaticResource OutlineButtonStyle}"/>
             </StackPanel>
         </Border>
 
-        <!-- Row 1: 治法方案/治疗原则 -->
-        <Grid Grid.Row="1" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="15"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Row 1: 药材卡片区域 -->
+        <Grid Grid.Row="1" Margin="12,8,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- 统计信息 + 操作提示 -->
+                <RowDefinition Height="*"/>    <!-- 卡片列表 -->
+            </Grid.RowDefinitions>
 
-            <!-- 治法方案 -->
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="治法方案" Style="{StaticResource FieldLabelStyle}" />
-                <TextBox Text="{Binding TreatmentMethod, UpdateSourceTrigger=PropertyChanged}"
-                         Height="50"
-                         Padding="5"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         BorderBrush="#BDBDBD"
-                         BorderThickness="1"
-                         FontSize="12" />
-            </StackPanel>
+            <!-- 统计信息与操作提示 -->
+            <Border Grid.Row="0"
+                    BorderBrush="{StaticResource DividerBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="0,0,0,4"
+                    Margin="0,0,0,8">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <TextBlock Text="药材总数："
+                                   FontSize="13"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ItemCount}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource PrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text=" 味"
+                                   FontSize="13"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="输入药材名或拼音码，Enter选择后自动跳转"
+                               FontSize="12"
+                               Foreground="{StaticResource TextHintBrush}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
 
-            <!-- 治疗原则 -->
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="治疗原则" Style="{StaticResource FieldLabelStyle}" />
-                <TextBox Text="{Binding TreatmentPrinciple, UpdateSourceTrigger=PropertyChanged}"
-                         Height="50"
-                         Padding="5"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Auto"
-                         BorderBrush="#BDBDBD"
-                         BorderThickness="1"
-                         FontSize="12" />
-            </StackPanel>
+            <!-- 药材卡片列表（Grid固定4列，铺满宽度，紧凑高度） -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding HerbItems}"
+                              VerticalAlignment="Top">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="VerticalAlignment" Value="Top" />
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- OpenSpec: unify-herb-card-control - 使用共享HerbCardControl -->
+                            <sharedControls:HerbCardControl
+                                Margin="2"
+                                Height="46"
+                                ShowPrice="False"
+                                IsEditMode="True"
+                                DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </Grid>
 
-        <!-- Row 2: 药材卡片区域（复用HerbCardControl） -->
+        <!-- Row 2: 重复药材警告 -->
         <Border Grid.Row="2"
-                BorderBrush="#E0E0E0"
-                BorderThickness="1"
-                CornerRadius="4"
-                Background="White"
-                Margin="0,0,0,10">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/> <!-- 操作按钮 -->
-                    <RowDefinition Height="*"/>    <!-- ItemsControl -->
-                    <RowDefinition Height="Auto"/> <!-- 统计信息 -->
-                </Grid.RowDefinitions>
-
-                <!-- 操作按钮区 -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8">
-                    <Button Content="添加行"
-                            Command="{Binding AddRowCommand}"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#4CAF50"
-                            Foreground="White"/>
-                    <Button Content="保存草稿"
-                            Command="{Binding SaveDraftCommand}"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#2196F3"
-                            Foreground="White"/>
-                    <Button Content="删除处方"
-                            Command="{Binding DeletePrescriptionCommand}"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#D32F2F"
-                            Foreground="White"/>
-                    <TextBlock Text="输入药材名或拼音码，Enter选择后自动跳转"
-                               FontSize="11"
-                               Foreground="#999"
-                               VerticalAlignment="Center"
-                               Margin="15,0,0,0"/>
-                </StackPanel>
-
-                <!-- 药材卡片列表（UniformGrid 4列，参考经验方EditFormulaDialog） -->
-                <ScrollViewer Grid.Row="1"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
-                              Margin="8">
-                    <ItemsControl ItemsSource="{Binding HerbItems}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <!-- Issue: unify-herb-card-control - 使用共享HerbCardControl，UI不显示价格（打印时显示） -->
-                                <sharedControls:HerbCardControl
-                                    ShowPrice="False"
-                                    IsEditMode="True"
-                                    DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <!-- 统计信息 -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="8">
-                    <TextBlock Text="药材总数：" Style="{StaticResource FieldLabelStyle}"/>
-                    <TextBlock Text="{Binding ItemCount}" FontWeight="Bold" Foreground="#2E86AB" VerticalAlignment="Center"/>
-                    <TextBlock Text="味" Margin="3,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Row 3: 重复药材警告 -->
-        <Border Grid.Row="3"
                 Background="#FFF3E0"
                 BorderBrush="#FFB74D"
                 BorderThickness="1"
-                CornerRadius="3"
-                Padding="8"
-                Margin="0,0,0,10"
+                CornerRadius="4"
+                Padding="8,6"
+                Margin="12,6,12,0"
                 Visibility="{Binding DuplicateHerbsWarningVisibility}">
-            <StackPanel>
-                <TextBlock Text="重复药材提示" FontWeight="Bold" FontSize="12" Foreground="#F57C00"/>
-                <TextBlock Text="{Binding DuplicateHerbsWarningText}" FontSize="11" Foreground="#666" TextWrapping="Wrap" Margin="0,3,0,0"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="重复药材提示："
+                           FontWeight="SemiBold"
+                           FontSize="12"
+                           Foreground="#F57C00"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding DuplicateHerbsWarningText}"
+                           FontSize="12"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           TextWrapping="NoWrap"
+                           VerticalAlignment="Center"
+                           Margin="4,0,0,0"/>
             </StackPanel>
         </Border>
 
-        <!-- Row 4: 处方信息（价格计算 - 这是处方特有的，经验方不需要） -->
-        <Border Grid.Row="4"
-                BorderBrush="#E0E0E0"
-                BorderThickness="1"
+        <!-- Row 3: 处方信息（价格计算卡片） -->
+        <Border Grid.Row="3"
+                Background="#F8F9FA"
                 CornerRadius="4"
-                Background="White"
-                Padding="10">
+                Padding="12,8"
+                Margin="12,8,12,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- 剂数 -->
-                <TextBlock Grid.Column="0" Text="剂数：" Style="{StaticResource FieldLabelStyle}"/>
+                <TextBlock Grid.Column="0"
+                           Text="剂数："
+                           FontSize="13"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
                 <TextBox Grid.Column="1"
                          Text="{Binding DosageCount, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="5,3"
-                         FontSize="12"
-                         Margin="0,0,15,0"/>
+                         Style="{StaticResource FormTextBoxStyle}"
+                         MinHeight="32"
+                         Margin="0,0,24,0"/>
 
                 <!-- 用法 -->
-                <TextBlock Grid.Column="2" Text="用法：" Style="{StaticResource FieldLabelStyle}"/>
+                <TextBlock Grid.Column="2"
+                           Text="用法："
+                           FontSize="13"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
                 <TextBox Grid.Column="3"
                          Text="{Binding Usage, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="5,3"
-                         FontSize="12"
-                         Margin="0,0,15,0"/>
+                         Style="{StaticResource FormTextBoxStyle}"
+                         MinHeight="32"
+                         Margin="0,0,24,0"/>
 
-                <!-- 单剂价格（处方特有） -->
-                <TextBlock Grid.Column="4" Text="单剂：" Style="{StaticResource FieldLabelStyle}"/>
-                <TextBlock Grid.Column="5" VerticalAlignment="Center" Margin="0,0,15,0">
-                    <Run Text="￥" FontSize="12"/>
-                    <Run Text="{Binding SingleDosagePrice, Mode=OneWay, StringFormat=F2}" FontWeight="Bold" Foreground="#4CAF50" FontSize="13"/>
-                </TextBlock>
+                <!-- 价格信息 -->
+                <StackPanel Grid.Column="4"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,24,0">
+                    <TextBlock Text="单剂："
+                               FontSize="13"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">
+                        <Run Text="￥" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <Run Text="{Binding SingleDosagePrice, Mode=OneWay, StringFormat=F2}"
+                             FontWeight="Bold"
+                             FontSize="15"
+                             Foreground="#4CAF50"/>
+                    </TextBlock>
+                </StackPanel>
 
-                <!-- 总价格（处方特有） -->
-                <TextBlock Grid.Column="6" Text="总计：" Style="{StaticResource FieldLabelStyle}"/>
-                <TextBlock Grid.Column="7" VerticalAlignment="Center">
-                    <Run Text="￥" FontSize="12"/>
-                    <Run Text="{Binding TotalPrice, Mode=OneWay, StringFormat=F2}" FontWeight="Bold" Foreground="#2E86AB" FontSize="15"/>
-                </TextBlock>
+                <StackPanel Grid.Column="5"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="总计："
+                               FontSize="13"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock VerticalAlignment="Center" Margin="4,0,0,0">
+                        <Run Text="￥" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <Run Text="{Binding TotalPrice, Mode=OneWay, StringFormat=F2}"
+                             FontWeight="Bold"
+                             FontSize="18"
+                             Foreground="{StaticResource PrimaryBrush}"/>
+                    </TextBlock>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

@@ -6,46 +6,40 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--
-    Epic #2210 Phase 4: 4:6统一看诊界面
+    Epic #2210 Phase 4: 5:5统一看诊界面
     设计文档: docs/explanation/architecture/patient-medicalcase-integration/patient-selection-workspace-integration.md
-    布局: 左侧40%诊断(Consultation) + 右侧60%处方(Prescription)
+    布局: 左侧50%诊断(Consultation) + 右侧50%处方(Prescription)
     替代: MedicalCaseFlowView (已标记为Deprecated)
     -->
 
     <UserControl.Resources>
-        <!-- 操作按钮样式 -->
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="20,10" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Margin" Value="5,0" />
-            <Setter Property="BorderThickness" Value="0" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- OpenSpec: refactor-medicalcase-ui - 引用共享样式资源 -->
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Presentation;component/Theming/MedicalCaseStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <!-- 面板标题样式 -->
-        <Style x:Key="PanelTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="#333" />
-            <Setter Property="Margin" Value="0,0,0,10" />
-        </Style>
+            <!-- BooleanToVisibilityConverter -->
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
-        <!-- BooleanToVisibilityConverter -->
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <!-- 兼容性：保留ActionButtonStyle引用，使用新的基础样式 -->
+            <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
+                <Setter Property="Padding" Value="20,10" />
+                <Setter Property="Margin" Value="5,0" />
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="#F5F5F5">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>  <!-- Row 0: 患者信息条 -->
             <RowDefinition Height="*"/>   <!-- Row 1: 主内容区 (4:6分栏) -->
-            <RowDefinition Height="70"/>  <!-- Row 2: 底部操作栏 -->
+            <RowDefinition Height="64"/>  <!-- Row 2: 底部操作栏 (OpenSpec: 64px) -->
         </Grid.RowDefinitions>
 
-        <!-- Row 0: 患者信息条 -->
+        <!-- Row 0: 患者信息条 (OpenSpec: refactor-medicalcase-ui) -->
         <Border Grid.Row="0"
-                Background="#E3F2FD"
-                BorderBrush="#90CAF9"
-                BorderThickness="0,0,0,1">
+                Style="{StaticResource InfoBarStyle}">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -78,30 +72,26 @@
                     <TextBlock Text="{Binding MedicalCaseId, StringFormat={}{0:N}}" FontSize="12" Foreground="#999" />
                 </StackPanel>
 
-                <!-- 右侧: 取消看诊按钮 -->
+                <!-- 右侧: 取消看诊按钮 (保持此位置防止误点) -->
                 <Button Grid.Column="2"
                         Content="取消看诊"
                         Command="{Binding CancelConsultationCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#F44336"
-                        Foreground="White" />
+                        Style="{StaticResource DangerButtonStyle}"
+                        ToolTip="放弃本次看诊" />
             </Grid>
         </Border>
 
-        <!-- Row 1: 主内容区 (4:6分栏) -->
-        <Grid Grid.Row="1" Margin="15">
+        <!-- Row 1: 主内容区 (5:5分栏) (OpenSpec: refactor-medicalcase-ui) -->
+        <Grid Grid.Row="1" Margin="12,8,12,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />  <!-- 左侧40% 诊断 -->
-                <ColumnDefinition Width="15" />  <!-- 间隔 -->
-                <ColumnDefinition Width="3*" />  <!-- 右侧60% 处方 -->
+                <ColumnDefinition Width="*" />   <!-- 左侧50% 诊断 -->
+                <ColumnDefinition Width="16" />  <!-- 间隔 (OpenSpec: 16px) -->
+                <ColumnDefinition Width="*" />   <!-- 右侧50% 处方 -->
             </Grid.ColumnDefinitions>
 
-            <!-- 左侧: 诊断面板 (40%) -->
+            <!-- 左侧: 诊断面板 (50%) -->
             <Border Grid.Column="0"
-                    Background="White"
-                    CornerRadius="8"
-                    BorderBrush="#E0E0E0"
-                    BorderThickness="1">
+                    Style="{StaticResource PanelCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -110,33 +100,27 @@
 
                     <!-- 面板标题 -->
                     <Border Grid.Row="0"
-                            Background="#F8F9FA"
-                            BorderBrush="#E0E0E0"
-                            BorderThickness="0,0,0,1"
-                            Padding="15,10">
+                            Style="{StaticResource PanelHeaderStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="诊断录入" Style="{StaticResource PanelTitleStyle}" Margin="0" />
-                            <TextBlock Text=" (Consultation)" FontSize="12" Foreground="#999" VerticalAlignment="Center" Margin="5,0,0,0" />
+                            <TextBlock Text="诊断录入" Style="{StaticResource PanelTitleStyle}" />
+                            <TextBlock Text=" (Consultation)"
+                                       Style="{StaticResource HintTextStyle}"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0" />
                         </StackPanel>
                     </Border>
 
                     <!-- 诊断内容区 -->
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <controls:ConsultationPanel
-                            DataContext="{Binding ConsultationPanelViewModel}"
-                            Margin="15" />
-                    </ScrollViewer>
+                    <controls:ConsultationPanel
+                        Grid.Row="1"
+                        DataContext="{Binding ConsultationPanelViewModel}"
+                        Margin="12,8" />
                 </Grid>
             </Border>
 
-            <!-- 右侧: 处方面板 (60%) -->
+            <!-- 右侧: 处方面板 (50%) -->
             <Border Grid.Column="2"
-                    Background="White"
-                    CornerRadius="8"
-                    BorderBrush="#E0E0E0"
-                    BorderThickness="1">
+                    Style="{StaticResource PanelCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -145,18 +129,18 @@
 
                     <!-- 面板标题 -->
                     <Border Grid.Row="0"
-                            Background="#F8F9FA"
-                            BorderBrush="#E0E0E0"
-                            BorderThickness="0,0,0,1"
-                            Padding="15,10">
+                            Style="{StaticResource PanelHeaderStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="处方编辑" Style="{StaticResource PanelTitleStyle}" Margin="0" />
-                            <TextBlock Text=" (Prescription)" FontSize="12" Foreground="#999" VerticalAlignment="Center" Margin="5,0,0,0" />
+                            <TextBlock Text="处方编辑" Style="{StaticResource PanelTitleStyle}" />
+                            <TextBlock Text=" (Prescription)"
+                                       Style="{StaticResource HintTextStyle}"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0" />
                             <!-- 处方状态指示 -->
                             <Border Background="{Binding PrescriptionStatusBackground}"
-                                    CornerRadius="10"
-                                    Padding="10,3"
-                                    Margin="15,0,0,0"
+                                    CornerRadius="12"
+                                    Padding="12,4"
+                                    Margin="16,0,0,0"
                                     Visibility="{Binding ShowPrescriptionStatus, Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{Binding PrescriptionStatusText}"
                                            FontSize="12"
@@ -174,63 +158,64 @@
             </Border>
         </Grid>
 
-        <!-- Row 2: 底部操作栏 -->
+        <!-- Row 2: 底部操作栏 (OpenSpec: refactor-medicalcase-ui) -->
         <Border Grid.Row="2"
-                Background="White"
-                BorderBrush="#E0E0E0"
-                BorderThickness="0,1,0,0">
-            <Grid Margin="20,0">
+                Style="{StaticResource ActionBarStyle}">
+            <Grid Margin="24,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- 左侧: 暂停看诊 -->
-                <Button Grid.Column="0"
-                        Content="暂停看诊"
-                        Command="{Binding SaveDraftCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#FF9800"
-                        Foreground="White"
-                        ToolTip="保存当前进度，稍后继续" />
-
-                <!-- 中间: 状态提示 -->
-                <StackPanel Grid.Column="1"
+                <!-- 左侧: 简化状态指示器 -->
+                <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
-                            HorizontalAlignment="Center"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Center">
-                    <TextBlock Text="诊断状态: " FontSize="13" Foreground="#666" />
+                    <!-- 诊断状态 -->
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding ConsultationStatusColor}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,6,0" />
                     <TextBlock Text="{Binding ConsultationStatusText}"
                                FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="{Binding ConsultationStatusColor}" />
-                    <TextBlock Text=" | 处方状态: " FontSize="13" Foreground="#666" Margin="20,0,0,0" />
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,24,0" />
+                    <!-- 处方状态 -->
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding PrescriptionStatusSummaryColor}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,6,0" />
                     <TextBlock Text="{Binding PrescriptionStatusSummary}"
                                FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="{Binding PrescriptionStatusSummaryColor}" />
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- 右侧: 主要操作按钮 -->
-                <StackPanel Grid.Column="2"
+                <!-- 右侧: 操作按钮 -->
+                <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
+                    <!-- 暂停看诊 -->
+                    <Button Content="暂停看诊"
+                            Command="{Binding SaveDraftCommand}"
+                            Style="{StaticResource WarningButtonStyle}"
+                            ToolTip="保存当前进度，稍后继续"
+                            Margin="0,0,8,0" />
+
                     <!-- 打印处方笺 -->
                     <Button Content="打印处方笺"
                             Command="{Binding PrintPrescriptionCommand}"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#2196F3"
-                            Foreground="White"
+                            Style="{StaticResource SecondaryButtonStyle}"
                             IsEnabled="{Binding CanPrintPrescription}"
-                            ToolTip="打印当前处方" />
+                            ToolTip="打印当前处方"
+                            Margin="0,0,8,0" />
 
                     <!-- 完成看诊 -->
                     <Button Content="完成看诊"
                             Command="{Binding CompleteConsultationCommand}"
-                            Style="{StaticResource ActionButtonStyle}"
-                            Background="#4CAF50"
-                            Foreground="White"
+                            Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanComplete}"
                             ToolTip="完成本次看诊，关闭医案" />
                 </StackPanel>
