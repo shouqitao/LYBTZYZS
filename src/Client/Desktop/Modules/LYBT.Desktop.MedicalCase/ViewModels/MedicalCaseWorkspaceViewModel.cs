@@ -302,14 +302,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 取消看诊
+        /// 取消看诊（OpenSpec: clarify-cancel-consultation-logic）
+        /// 语义：作废本次就诊，软删除数据保留供审计
         /// </summary>
         private async void ExecuteCancelConsultation()
         {
             try
             {
+                // OpenSpec LIFECYCLE-004: 明确的确认提示
                 var confirmed = await ShowConfirmationAsync(
-                    "确定要取消本次看诊吗？未保存的数据将丢失！",
+                    "确定要取消本次看诊吗？\n\n" +
+                    "取消后，本次就诊记录将被标记为已取消，无法继续编辑。\n" +
+                    "如果只是临时离开，请使用「暂停看诊」保存进度。",
                     "取消看诊");
 
                 if (!confirmed)
@@ -317,11 +321,32 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
+                // OpenSpec LIFECYCLE-003: 取消前自动保存（供审计）
+                try
+                {
+                    if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                    {
+                        await consultationSaveable.SaveAsync();
+                    }
+                    if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                    {
+                        await prescriptionSaveable.SaveAsync();
+                    }
+                    await SaveRemarkAsync();
+                    Logger.LogDebug("取消前数据已保存（供审计）");
+                }
+                catch (Exception saveEx)
+                {
+                    // 保存失败不阻止取消操作
+                    Logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
+                }
+
+                // 执行软删除
                 var result = await _lifecycleHandler.CancelAsync(MedicalCaseId);
 
                 if (result.success)
                 {
-                    Logger.LogInformation("医案已取消");
+                    Logger.LogInformation("医案已取消（软删除）");
                     _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
                 }
                 else
