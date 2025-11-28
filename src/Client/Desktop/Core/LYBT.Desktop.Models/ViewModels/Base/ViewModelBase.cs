@@ -372,21 +372,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 处理错误
+        /// Issue #2247: 移除直接MessageBox.Show调用，改为虚方法供子类覆盖
         /// </summary>
         protected virtual void HandleError(Exception ex, string? context = null)
         {
             Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作");
             ErrorMessage = GetUserFriendlyMessage(ex);
+            HasError = true;
 
-            // 简化的错误显示
-            RunOnUIThread(() =>
-            {
-                MessageBox.Show(
-                    ErrorMessage,
-                    "错误",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            });
+            // Issue #2247: 不再直接显示MessageBox
+            // 子类(如UnifiedViewModelBase)可通过覆盖此方法使用ICommonDialogService
+            // 错误信息已设置到ErrorMessage属性，UI可通过绑定显示
         }
 
         /// <summary>

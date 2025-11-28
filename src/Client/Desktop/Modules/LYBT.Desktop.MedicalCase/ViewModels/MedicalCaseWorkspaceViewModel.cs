@@ -625,42 +625,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// Management编辑模式返回确认
         /// OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
         /// 三选项: 保存修改(Yes) / 放弃修改(No) / 取消(Cancel)
+        /// Issue #2247: 移除MessageBox.Show fallback，统一使用IDialogService
         /// </summary>
         /// <returns>true: 允许导航; false: 留在当前界面</returns>
         private async Task<bool> HandleManagementLeaveRequestAsync()
         {
             if (_dialogService == null)
             {
-                // Fallback: 如果没有IDialogService，使用MessageBox
-                var result = MessageBox.Show(
-                    "您有未保存的修改，请选择操作：\n\n" +
-                    "【是】保存修改后返回\n" +
-                    "【否】放弃修改直接返回\n" +
-                    "【取消】留在当前界面",
-                    "未保存的修改",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Warning);
-
-                switch (result)
-                {
-                    case MessageBoxResult.Yes:
-                        // 检查审计需求
-                        var auditReason = await CheckAndGetAuditReasonAsync();
-                        if (auditReason == null) return false; // 用户取消审计
-
-                        if (!string.IsNullOrEmpty(auditReason))
-                        {
-                            EditReason = auditReason;
-                        }
-
-                        await SaveDraftOnlyAsync();
-                        IsEditing = false;
-                        return true;
-                    case MessageBoxResult.No:
-                        return true;
-                    default:
-                        return false;
-                }
+                // Issue #2247: IDialogService不可用时记录日志并返回安全默认值（不允许离开）
+                Logger.LogWarning("IDialogService不可用，无法显示未保存修改对话框，默认不允许离开");
+                return false;
             }
 
             // 使用Prism Dialog
@@ -735,14 +709,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
             else
             {
-                // Fallback: 直接使用MessageBox
-                var result = MessageBox.Show(message, "离开确认", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-                choice = result switch
-                {
-                    MessageBoxResult.Yes => LeaveConsultationChoice.SaveDraft,
-                    MessageBoxResult.No => LeaveConsultationChoice.CancelCase,
-                    _ => LeaveConsultationChoice.Stay
-                };
+                // Issue #2247: CommonDialogService不可用时记录日志并默认停留
+                Logger.LogWarning("CommonDialogService不可用，无法显示离开确认对话框，默认停留");
+                choice = LeaveConsultationChoice.Stay;
             }
 
             // 根据用户选择执行对应操作

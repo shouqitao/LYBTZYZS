@@ -401,7 +401,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示成功消息
-        /// Issue #2247: 优先使用ICommonDialogService
+        /// Issue #2247: 使用ICommonDialogService，移除MessageBox.Show fallback
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowSuccessMessageAsync(string message)
@@ -412,22 +412,14 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 return;
             }
 
-            await Task.Run(() =>
-            {
-                RunOnUIThread(() =>
-                {
-                    System.Windows.MessageBox.Show(
-                        message,
-                        "成功",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
-                });
-            });
+            // Issue #2247: 无CommonDialogService时记录日志，不显示MessageBox
+            Logger.LogWarning("CommonDialogService不可用，成功消息未显示: {Message}", message);
+            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 显示错误消息
-        /// Issue #2247: 优先使用ICommonDialogService
+        /// Issue #2247: 使用ICommonDialogService，移除MessageBox.Show fallback
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowErrorMessageAsync(string message)
@@ -438,22 +430,14 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 return;
             }
 
-            await Task.Run(() =>
-            {
-                RunOnUIThread(() =>
-                {
-                    System.Windows.MessageBox.Show(
-                        message,
-                        "错误",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
-                });
-            });
+            // Issue #2247: 无CommonDialogService时记录日志，不显示MessageBox
+            Logger.LogError("CommonDialogService不可用，错误消息未显示: {Message}", message);
+            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 显示警告消息
-        /// Issue #2247: 优先使用ICommonDialogService
+        /// Issue #2247: 使用ICommonDialogService，移除MessageBox.Show fallback
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowWarningMessageAsync(string message)
@@ -464,22 +448,14 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 return;
             }
 
-            await Task.Run(() =>
-            {
-                RunOnUIThread(() =>
-                {
-                    System.Windows.MessageBox.Show(
-                        message,
-                        "警告",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Warning);
-                });
-            });
+            // Issue #2247: 无CommonDialogService时记录日志，不显示MessageBox
+            Logger.LogWarning("CommonDialogService不可用，警告消息未显示: {Message}", message);
+            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 显示确认对话框
-        /// Issue #2247: 优先使用ICommonDialogService
+        /// Issue #2247: 使用ICommonDialogService，移除MessageBox.Show fallback
         /// </summary>
         /// <param name="message">消息内容</param>
         /// <param name="title">标题</param>
@@ -491,19 +467,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 return await CommonDialogService.ShowConfirmAsync(message, title);
             }
 
-            return await Task.Run(() =>
-            {
-                var result = false;
-                RunOnUIThread(() =>
-                {
-                    result = System.Windows.MessageBox.Show(
-                        message,
-                        title,
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.Yes;
-                });
-                return result;
-            });
+            // Issue #2247: 无CommonDialogService时记录日志并返回false（安全默认值）
+            Logger.LogWarning("CommonDialogService不可用，确认对话框未显示: {Message}，默认返回false", message);
+            return await Task.FromResult(false);
         }
 
         // Issue #2146: ShowErrorMessage和ShowInfoMessage同步方法已删除
@@ -541,14 +507,14 @@ namespace LYBT.Desktop.Models.ViewModels.Base
                 _ = Task.Run(async () => await UserNotificationService.HandleExceptionAsync(ex, contextInfo));
             }
 
-            // 使用CommonDialogService显示错误对话框
+            // Issue #2247: 使用CommonDialogService显示错误对话框
             if (CommonDialogService != null)
             {
                 _ = CommonDialogService.ShowErrorAsync(ErrorMessage, "错误");
             }
             else
             {
-                // 回退到基类实现（直接MessageBox.Show）
+                // Issue #2247: 基类已不再使用MessageBox.Show，仅记录日志
                 base.HandleError(ex, context);
             }
         }
