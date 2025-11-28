@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs; // OpenSpec: add-global-audit-system
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
@@ -27,6 +28,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
         // Epic #1962: 批量导入/导出需要Repository和对话框服务
         private readonly IHerbRepository _herbRepository;
         private readonly ICommonDialogService _dialogService;
+        private readonly IDialogService _prismDialogService; // OpenSpec: add-global-audit-system
 
         #endregion
 
@@ -36,6 +38,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             HerbDataManager dataManager, // Epic #1773: 注入DataManager
             IHerbRepository herbRepository, // Epic #1962: 注入Repository（批量导入/导出）
             ICommonDialogService dialogService, // Epic #1962: 注入对话框服务
+            IDialogService prismDialogService, // OpenSpec: add-global-audit-system
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -48,6 +51,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             // Epic #1962: 注入批量导入/导出依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService)); // OpenSpec: add-global-audit-system
 
             PageTitle = "药材管理";
 
@@ -83,6 +87,9 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 async (herb) => await ToggleStatusAsync(herb),
                 herb => herb != null && !IsBusy
             );
+
+            // OpenSpec: add-global-audit-system - 审计日志命令
+            ShowAuditLogCommand = new DelegateCommand<HerbDto>(ExecuteShowAuditLog, herb => herb != null);
 
             // Epic #1962: 批量导入/导出命令（移除占位实现，启用真实功能）
             ImportHerbsCommand = new DelegateCommand(
@@ -328,6 +335,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; } = null!;
 
         /// <summary>
+        /// 查看审计日志命令
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        public DelegateCommand<HerbDto> ShowAuditLogCommand { get; private set; } = null!;
+
+        /// <summary>
         /// 导入药材命令
         /// </summary>
         public DelegateCommand ImportHerbsCommand { get; private set; } = null!;
@@ -440,6 +453,23 @@ private bool CanEditHerb(HerbDto herb)
         #endregion
 
         #region 命令实现
+
+        /// <summary>
+        /// 显示审计日志
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        private void ExecuteShowAuditLog(HerbDto? herb)
+        {
+            if (herb == null) return;
+            Logger.LogInformation("查看药材审计日志：{HerbId} - {HerbName}", herb.Id, herb.Name);
+            var parameters = new DialogParameters
+            {
+                { "EntityType", "herb" },
+                { "EntityId", herb.Id },
+                { "EntityDescription", $"药材：{herb.Name}" }
+            };
+            _prismDialogService.ShowDialog("EntityAuditLogDialog", parameters, _ => { });
+        }
 
         /// <summary>
         /// 切换药材状态

@@ -1,4 +1,7 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Consultation;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Repositories;
 using LYBT.Module.Consultation.Services;
@@ -30,6 +33,9 @@ namespace LYBT.Module.Consultation
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<ConsultationInputDtoValidator>();
+
+            // OpenSpec: add-global-audit-system - 审计服务
+            services.AddScoped<IAuditService<Entities.Consultation.Consultation>, EntityAuditService<Entities.Consultation.Consultation>>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

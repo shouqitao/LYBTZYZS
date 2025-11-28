@@ -46,6 +46,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// 构造函数 - Issue #1790: 注入NavigationManager和MenuManager
     /// OpenSpec: clarify-cancel-consultation-logic - 添加IActiveConsultationService注入
     /// OpenSpec: refactor-token-sliding-expiration - 添加统一定时服务和用户活动追踪注入
+    /// Issue #2247: 添加ICommonDialogService注入
     /// </summary>
     public MainWindowViewModel(
         IRegionManager regionManager,
@@ -61,8 +62,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
         IUserActivityTracker userActivityTracker,
-        IAuthenticationService authenticationService)
-        : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService)
+        IAuthenticationService authenticationService,
+        ICommonDialogService commonDialogService)
+        : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService, commonDialogService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
         _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
@@ -294,10 +296,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>
     /// OpenSpec: refactor-token-sliding-expiration (AUTH-003)
     /// 会话即将过期事件处理 - 显示警告对话框
+    /// Issue #2247: 使用ICommonDialogService替代MessageBox
     /// </summary>
-    private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
+    private async void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        await Application.Current.Dispatcher.InvokeAsync(async () =>
         {
             // 临时停止追踪，避免点击对话框本身被视为用户活动
             _userActivityTracker.StopTracking();
@@ -307,15 +310,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
                 var remainingMinutes = e.RemainingTime.TotalMinutes;
                 var message = $"您已有一段时间未操作，会话将在约 {remainingMinutes:F0} 分钟后过期。\n\n是否继续当前会话？";
 
-                var result = MessageBox.Show(
-                    Application.Current.MainWindow,
-                    message,
-                    "会话即将过期",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning,
-                    MessageBoxResult.Yes);
+                var result = await ShowConfirmationAsync(message, "会话即将过期");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     // 用户选择继续，重启追踪并重置计时器
                     _userActivityTracker.StartTracking();
@@ -341,6 +338,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>
     /// OpenSpec: refactor-token-sliding-expiration (AUTH-004)
     /// 会话已过期事件处理 - 执行自动登出
+    /// Issue #2247: 使用ICommonDialogService替代MessageBox
     /// </summary>
     private async void OnSessionExpired(object? sender, EventArgs e)
     {
@@ -348,12 +346,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
         await Application.Current.Dispatcher.InvokeAsync(async () =>
         {
-            MessageBox.Show(
-                Application.Current.MainWindow,
-                "您的会话因长时间未操作已过期，请重新登录。",
-                "会话已过期",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            await ShowSuccessMessageAsync("您的会话因长时间未操作已过期，请重新登录。");
 
             // 执行登出
             await PerformLogoutAsync();

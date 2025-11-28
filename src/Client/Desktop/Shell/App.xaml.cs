@@ -106,6 +106,10 @@ public partial class App : PrismApplication
         // Epic #1676 Phase 2: 注册全局对话框
         containerRegistry.RegisterDialog<Dialogs.Views.ConfirmationDialog,
             Dialogs.ViewModels.ConfirmationDialogViewModel>();
+
+        // OpenSpec: add-global-audit-system - 注册审计日志对话框
+        containerRegistry.RegisterDialog<Dialogs.Views.EntityAuditLogDialog,
+            Dialogs.ViewModels.EntityAuditLogDialogViewModel>();
     }
 
     /// <summary>

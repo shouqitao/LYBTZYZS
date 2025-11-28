@@ -20,6 +20,10 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         protected readonly IRegionManager RegionManager;
         protected readonly ISessionManager? SessionManager;
         protected readonly IUserNotificationService? UserNotificationService;
+        /// <summary>
+        /// 通用对话框服务（Issue #2247: 统一MessageBox调用）
+        /// </summary>
+        protected readonly ICommonDialogService? CommonDialogService;
 
         #endregion
 
@@ -54,12 +58,14 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
+            IUserNotificationService? userNotificationService = null,
+            ICommonDialogService? commonDialogService = null)
             : base(eventAggregator, loggerFactory)
         {
             RegionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             SessionManager = sessionManager;
             UserNotificationService = userNotificationService;
+            CommonDialogService = commonDialogService;
 
             // Issue #1831: 初始化返回主页命令
             NavigateToHomeCommand = new DelegateCommand(ExecuteNavigateToHome);
@@ -395,10 +401,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示成功消息
+        /// Issue #2247: 优先使用ICommonDialogService
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowSuccessMessageAsync(string message)
         {
+            if (CommonDialogService != null)
+            {
+                await CommonDialogService.ShowInfoAsync(message, "成功");
+                return;
+            }
+
             await Task.Run(() =>
             {
                 RunOnUIThread(() =>
@@ -414,10 +427,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示错误消息
+        /// Issue #2247: 优先使用ICommonDialogService
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowErrorMessageAsync(string message)
         {
+            if (CommonDialogService != null)
+            {
+                await CommonDialogService.ShowErrorAsync(message, "错误");
+                return;
+            }
+
             await Task.Run(() =>
             {
                 RunOnUIThread(() =>
@@ -433,10 +453,17 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示警告消息
+        /// Issue #2247: 优先使用ICommonDialogService
         /// </summary>
         /// <param name="message">消息内容</param>
         protected virtual async Task ShowWarningMessageAsync(string message)
         {
+            if (CommonDialogService != null)
+            {
+                await CommonDialogService.ShowWarningAsync(message, "警告");
+                return;
+            }
+
             await Task.Run(() =>
             {
                 RunOnUIThread(() =>
@@ -452,12 +479,18 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         /// <summary>
         /// 显示确认对话框
+        /// Issue #2247: 优先使用ICommonDialogService
         /// </summary>
         /// <param name="message">消息内容</param>
         /// <param name="title">标题</param>
         /// <returns>用户选择结果</returns>
         protected virtual async Task<bool> ShowConfirmationAsync(string message, string title = "确认")
         {
+            if (CommonDialogService != null)
+            {
+                return await CommonDialogService.ShowConfirmAsync(message, title);
+            }
+
             return await Task.Run(() =>
             {
                 var result = false;
@@ -492,6 +525,34 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             return ShowConfirmMessageAsync(message, title).GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// 处理错误 - Issue #2247: 重写基类方法以使用ICommonDialogService
+        /// 同时支持UserNotificationService进行错误上报
+        /// </summary>
+        protected override void HandleError(Exception ex, string? context = null)
+        {
+            Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作");
+            ErrorMessage = GetUserFriendlyMessage(ex);
+
+            // 使用UserNotificationService上报错误（如果可用）
+            if (UserNotificationService != null)
+            {
+                var contextInfo = $"{context ?? "未知操作"} - 模块:{GetType().Name} - 用户:{SessionManager?.CurrentUser?.Id}";
+                _ = Task.Run(async () => await UserNotificationService.HandleExceptionAsync(ex, contextInfo));
+            }
+
+            // 使用CommonDialogService显示错误对话框
+            if (CommonDialogService != null)
+            {
+                _ = CommonDialogService.ShowErrorAsync(ErrorMessage, "错误");
+            }
+            else
+            {
+                // 回退到基类实现（直接MessageBox.Show）
+                base.HandleError(ex, context);
+            }
+        }
+
         #endregion
 
         #region 状态管理增强
@@ -511,25 +572,6 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             else if (!isBusy)
             {
                 StatusMessage = string.Empty;
-            }
-        }
-
-        #endregion
-
-        #region 增强的错误处理
-
-        protected override void HandleError(Exception ex, string? context = null)
-        {
-            Logger.LogError(ex, "错误发生在: {Context}", context ?? "未知操作");
-
-            if (UserNotificationService != null)
-            {
-                var contextInfo = $"{context ?? "未知操作"} - 模块:{GetType().Name} - 用户:{SessionManager?.CurrentUser?.Id}";
-                _ = Task.Run(async () => await UserNotificationService.HandleExceptionAsync(ex, contextInfo));
-            }
-            else
-            {
-                base.HandleError(ex, context);
             }
         }
 

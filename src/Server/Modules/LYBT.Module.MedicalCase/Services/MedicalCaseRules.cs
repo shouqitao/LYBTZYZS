@@ -38,7 +38,13 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
-        /// 核心规则2：当天可改、过期锁定机制
+        /// 核心规则2：基于状态的编辑权限
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        ///
+        /// 权限规则:
+        /// - 管理员(isAdmin=true)可以编辑所有医案
+        /// - 医生只能编辑自己创建的Draft/Active状态医案
+        /// - 已完成(Completed)医案医生不可编辑
         /// </summary>
         /// <param name="medicalCase">医案实体</param>
         /// <param name="currentUserId">当前用户ID</param>
@@ -46,14 +52,16 @@ namespace LYBT.Module.MedicalCase.Services
         /// <returns>是否可以编辑</returns>
         public static bool CanEdit(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
         {
-            // 管理员权限
+            // 管理员权限 - 可以编辑所有医案
             if (isAdmin) return true;
 
             // 非创建者无权编辑
             if (medicalCase.DoctorId != currentUserId) return false;
 
-            // 当天创建可编辑
-            return medicalCase.CreatedAt.Date == DateTime.Today;
+            // OpenSpec: refactor-medicalcase-management
+            // 医生只能编辑自己的Draft/Active状态医案
+            return medicalCase.CaseStatus == MedicalCaseStatus.Draft
+                || medicalCase.CaseStatus == MedicalCaseStatus.Active;
         }
 
         /// <summary>

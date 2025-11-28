@@ -90,7 +90,7 @@
             </DataGridTemplateColumn>
 
             <!-- 操作 -->
-            <DataGridTemplateColumn Header="操作" Width="400">
+            <DataGridTemplateColumn Header="操作" Width="480">
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -121,6 +121,15 @@
                                     FontSize="12"
                                     Margin="2"
                                     Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 变更记录按钮 -->
+                            <Button Content="变更记录"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Padding="8,4"
+                                    FontSize="12"
+                                    Margin="2"
+                                    ToolTip="查看医案变更历史"
+                                    Command="{Binding DataContext.ViewAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <Button Content="打印"
                                     Style="{StaticResource SecondaryButton}"
@@ -178,17 +187,14 @@
         </views:BaseMasterDataListView.FilterContent>
 
         <!-- 操作按钮区域 -->
+        <!-- refactor-medicalcase-management: 移除"新建案例"按钮，创建入口仅限临床工作流 -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
-                <Button Content="+ 新建案例"
-                        Style="{StaticResource SuccessButton}"
-                        Command="{Binding AddCommand}"
-                        Margin="{StaticResource SpacingSmall}" />
                 <Button Content="刷新"
                         Style="{StaticResource SecondaryButton}"
                         Command="{Binding RefreshCommand}"
                         Margin="{StaticResource SpacingSmall}" />
-                <Button Content="🏠 返回主页"
+                <Button Content="返回主页"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding NavigateToHomeCommand}"
                         ToolTip="返回管理员主页" />

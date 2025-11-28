@@ -193,5 +193,28 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDto>> UpdateStatusAsync(
             Guid id,
             [Refit.Body] UpdateMedicalCaseStatusDto request);
+
+        /// <summary>
+        /// 获取当前用户对指定医案的权限
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <returns>权限详情</returns>
+        [Refit.Get("/api/v1/medicalcases/{id}/permissions")]
+        Task<ApiResponse<MedicalCasePermissionDto>> GetPermissionsAsync(Guid id);
+
+        /// <summary>
+        /// 获取医案审计日志
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="page">页码（默认1）</param>
+        /// <param name="pageSize">每页数量（默认20）</param>
+        /// <returns>分页的审计日志列表</returns>
+        [Refit.Get("/api/v1/medicalcases/{id}/audit-logs")]
+        Task<ApiResponse<MedicalCaseAuditLogPagedResultDto>> GetAuditLogsAsync(
+            Guid id,
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20);
     }
 }

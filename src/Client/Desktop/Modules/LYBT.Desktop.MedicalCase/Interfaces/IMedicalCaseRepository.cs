@@ -104,5 +104,13 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// 业务规则：直接设置状态为Completed，不验证三步流程
         /// </summary>
         Task<bool> CloseCaseAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 获取当前用户对指定医案的权限
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <returns>权限详情</returns>
+        Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId);
     }
 }

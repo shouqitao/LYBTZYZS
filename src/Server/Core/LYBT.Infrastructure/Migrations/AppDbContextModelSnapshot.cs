@@ -227,6 +227,67 @@ namespace LYBT.Infrastructure.Migrations
                     b.ToTable("SecurityAuditLogs", (string)null);
                 });
 
+            modelBuilder.Entity("LYBT.Entities.Common.EntityAuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChangedFields")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OperatorName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("OperatorRole")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_EntityAuditLogs_CreatedAt");
+
+                    b.HasIndex("OperatorId", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_EntityAuditLogs_OperatorId_CreatedAt");
+
+                    b.HasIndex("EntityType", "EntityId", "CreatedAt")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("IX_EntityAuditLogs_EntityType_EntityId_CreatedAt");
+
+                    b.ToTable("EntityAuditLogs", (string)null);
+                });
+
             modelBuilder.Entity("LYBT.Entities.Common.SystemLog", b =>
                 {
                     b.Property<int>("Id")
@@ -643,6 +704,52 @@ namespace LYBT.Infrastructure.Migrations
                         .HasFilter("[CaseStatus] = 1 AND [IsDeleted] = 0");
 
                     b.ToTable("MedicalCases", (string)null);
+                });
+
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCaseAuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ChangedFields")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MedicalCaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("OperatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OperatorName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("OperatorRole")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalCaseId");
+
+                    b.ToTable("MedicalCaseAuditLogs");
                 });
 
             modelBuilder.Entity("LYBT.Entities.Patients.Patient", b =>
@@ -1068,6 +1175,17 @@ namespace LYBT.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Formula");
+                });
+
+            modelBuilder.Entity("LYBT.Entities.MedicalCase.MedicalCaseAuditLog", b =>
+                {
+                    b.HasOne("LYBT.Entities.MedicalCase.MedicalCase", "MedicalCase")
+                        .WithMany()
+                        .HasForeignKey("MedicalCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalCase");
                 });
 
             modelBuilder.Entity("LYBT.Entities.Prescriptions.Prescription", b =>

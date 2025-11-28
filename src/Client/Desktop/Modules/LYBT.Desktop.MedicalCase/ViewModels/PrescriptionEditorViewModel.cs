@@ -192,7 +192,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (SetProperty(ref _step2CompletedAt, value))
                 {
                     RaisePropertyChanged(nameof(Step2CompletedAtText));
-                    RaisePropertyChanged(nameof(Step2CompletedAtVisibility));
+                    RaisePropertyChanged(nameof(IsStep2CompletedAtVisible)); // Issue #2248
                 }
             }
         }
@@ -206,12 +206,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 : string.Empty;
 
         /// <summary>
-        /// Step2完成时间可见性（Issue #1591新增）
+        /// Step2完成时间是否可见 (Issue #2248: 使用bool+Converter替代Visibility)
         /// </summary>
-        public System.Windows.Visibility Step2CompletedAtVisibility =>
-            Step2CompletedAt.HasValue
-                ? System.Windows.Visibility.Visible
-                : System.Windows.Visibility.Collapsed;
+        public bool IsStep2CompletedAtVisible => Step2CompletedAt.HasValue;
 
         private string _duplicateHerbsWarningText = string.Empty;
         /// <summary>
@@ -224,18 +221,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 if (SetProperty(ref _duplicateHerbsWarningText, value))
                 {
-                    RaisePropertyChanged(nameof(DuplicateHerbsWarningVisibility));
+                    RaisePropertyChanged(nameof(IsDuplicateHerbsWarningVisible)); // Issue #2248
                 }
             }
         }
 
         /// <summary>
-        /// 重复药材警告可见性（Issue #1591新增）
+        /// 重复药材警告是否可见 (Issue #2248: 使用bool+Converter替代Visibility)
         /// </summary>
-        public System.Windows.Visibility DuplicateHerbsWarningVisibility =>
-            !string.IsNullOrWhiteSpace(DuplicateHerbsWarningText)
-                ? System.Windows.Visibility.Visible
-                : System.Windows.Visibility.Collapsed;
+        public bool IsDuplicateHerbsWarningVisible => !string.IsNullOrWhiteSpace(DuplicateHerbsWarningText);
 
         #endregion
 

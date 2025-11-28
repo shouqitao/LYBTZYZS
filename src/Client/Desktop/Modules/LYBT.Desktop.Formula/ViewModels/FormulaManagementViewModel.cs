@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs; // OpenSpec: add-global-audit-system
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
@@ -21,6 +22,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         // Issue #1787: 使用CommandHandler替代直接Repository访问
         private readonly IFormulaCommandHandler _commandHandler; // Desktop层架构重构 Phase 1: 接口化
+        private readonly IDialogService _prismDialogService; // OpenSpec: add-global-audit-system
 
         #endregion
 
@@ -28,6 +30,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         public FormulaManagementViewModel(
             IFormulaCommandHandler commandHandler, // Desktop层架构重构 Phase 1: 接口化
+            IDialogService prismDialogService, // OpenSpec: add-global-audit-system
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -37,8 +40,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             // Issue #1787: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService)); // OpenSpec: add-global-audit-system
 
             PageTitle = "配方管理";
+
+            // OpenSpec: add-global-audit-system - 初始化审计日志命令
+            ShowAuditLogCommand = new DelegateCommand<FormulaDto>(ExecuteShowAuditLog, formula => formula != null);
         }
 
         #endregion
@@ -264,6 +271,12 @@ namespace LYBT.Desktop.Formula.ViewModels
         /// </summary>
         public DelegateCommand<FormulaDto> ViewDetailsCommand => ViewDetailCommand;
 
+        /// <summary>
+        /// 查看审计日志命令
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        public DelegateCommand<FormulaDto> ShowAuditLogCommand { get; private set; } = null!;
+
         #endregion
 
         #region 自定义功能
@@ -354,7 +367,23 @@ namespace LYBT.Desktop.Formula.ViewModels
             return formula != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
         }
 
-  
+        /// <summary>
+        /// 显示审计日志
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        private void ExecuteShowAuditLog(FormulaDto? formula)
+        {
+            if (formula == null) return;
+            Logger.LogInformation("查看验方审计日志：{FormulaId} - {FormulaName}", formula.Id, formula.Name);
+            var parameters = new DialogParameters
+            {
+                { "EntityType", "formula" },
+                { "EntityId", formula.Id },
+                { "EntityDescription", $"验方：{formula.Name}" }
+            };
+            _prismDialogService.ShowDialog("EntityAuditLogDialog", parameters, _ => { });
+        }
+
         /// <summary>
         /// 导入配方命令
         /// </summary>

@@ -73,8 +73,8 @@
                                 Binding="{Binding Email}"
                                 Width="220" />
 
-            <!-- 操作列 -->
-            <DataGridTemplateColumn Header="操作" Width="450">
+            <!-- 操作列 - OpenSpec: add-global-audit-system 增加审计按钮 -->
+            <DataGridTemplateColumn Header="操作" Width="510">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -117,6 +117,13 @@
                                     </TextBlock>
                                 </Button.Content>
                             </Button>
+                            <!-- OpenSpec: add-global-audit-system -->
+                            <Button Content="记录"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="4,0"
+                                    ToolTip="查看变更记录"
+                                    Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
                             <Button Content="删除"
                                     Style="{StaticResource DangerButton}"
                                     Margin="4,0"

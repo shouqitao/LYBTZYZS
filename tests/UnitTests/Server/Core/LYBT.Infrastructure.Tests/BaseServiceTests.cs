@@ -1,8 +1,10 @@
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 using LYBT.Infrastructure.Services;
+using Xunit;
 
 namespace LYBT.Infrastructure.Services.Tests
 {
@@ -251,7 +253,7 @@ namespace LYBT.Infrastructure.Services.Tests
         public void GetRoleDisplayName_ShouldReturnCorrectDisplayName(string role, string expected)
         {
             // Act
-            var result = BaseService.GetRoleDisplayName(role);
+            var result = TestableBaseService.GetRoleDisplayName(role);
 
             // Assert
             Assert.Equal(expected, result);
@@ -266,7 +268,7 @@ namespace LYBT.Infrastructure.Services.Tests
             var date = isToday ? DateTime.Today : DateTime.Today.AddDays(-1);
 
             // Act
-            var result = BaseService.IsToday(date);
+            var result = TestableBaseService.IsToday(date);
 
             // Assert
             Assert.Equal(isToday, result);

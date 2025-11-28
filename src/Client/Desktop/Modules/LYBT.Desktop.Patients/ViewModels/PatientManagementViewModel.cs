@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Patients.ViewModels
 {
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly PatientCommandHandler _commandHandler;
         private readonly IPatientRepository _patientRepository; // Epic #1934
         private readonly ICommonDialogService _dialogService; // Epic #1934
+        private readonly IDialogService _prismDialogService; // OpenSpec: add-global-audit-system
 
         #endregion
 
@@ -35,6 +37,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             PatientCommandHandler commandHandler,
             IPatientRepository patientRepository, // Epic #1934
             ICommonDialogService dialogService, // Epic #1934
+            IDialogService prismDialogService, // OpenSpec: add-global-audit-system
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -45,6 +48,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
 
             PageTitle = "患者管理";
 
@@ -58,6 +62,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
+
+            // OpenSpec: add-global-audit-system - 审计日志命令
+            ShowAuditLogCommand = new DelegateCommand<PatientDto>(ExecuteShowAuditLog, patient => patient != null);
 
             // CRUD统一模式: 订阅患者创建和更新事件
             EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(OnPatientCreated);
@@ -289,7 +296,12 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         public DelegateCommand<PatientDto> EditCommand { get; private set; } = null!;
 
-        
+        /// <summary>
+        /// 查看审计日志命令
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        public DelegateCommand<PatientDto> ShowAuditLogCommand { get; private set; } = null!;
+
         #endregion
 
         #region Epic #1934: 批量导入/导出功能
@@ -528,6 +540,32 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             Logger.LogInformation("收到患者更新事件：{PatientId} - {PatientName}", patient.Id, patient.Name);
             await RefreshAsync();
+        }
+
+        #endregion
+
+        #region OpenSpec: add-global-audit-system - 审计日志
+
+        /// <summary>
+        /// 显示患者审计日志对话框
+        /// </summary>
+        private void ExecuteShowAuditLog(PatientDto? patient)
+        {
+            if (patient == null)
+            {
+                return;
+            }
+
+            Logger.LogInformation("查看患者审计日志：{PatientId} - {PatientName}", patient.Id, patient.Name);
+
+            var parameters = new DialogParameters
+            {
+                { "EntityType", "patient" },
+                { "EntityId", patient.Id },
+                { "EntityDescription", $"患者：{patient.Name}" }
+            };
+
+            _prismDialogService.ShowDialog("EntityAuditLogDialog", parameters, _ => { });
         }
 
         #endregion

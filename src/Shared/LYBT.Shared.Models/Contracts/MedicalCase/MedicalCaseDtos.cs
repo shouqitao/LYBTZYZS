@@ -527,4 +527,121 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [Required(ErrorMessage = "开处方标志不能为空")]
         public bool NeedsPrescription { get; set; }
     }
+
+    /// <summary>
+    /// 医案权限详情DTO
+    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+    /// 用于前后端传递用户对医案的权限信息
+    /// </summary>
+    public class MedicalCasePermissionDto
+    {
+        /// <summary>是否可编辑</summary>
+        [DisplayName("可编辑")]
+        public bool CanEdit { get; set; }
+
+        /// <summary>是否可删除</summary>
+        [DisplayName("可删除")]
+        public bool CanDelete { get; set; }
+
+        /// <summary>是否需要修改原因（编辑已完成医案时需要）</summary>
+        [DisplayName("需要修改原因")]
+        public bool RequiresEditReason { get; set; }
+
+        /// <summary>是否只读模式</summary>
+        [DisplayName("只读")]
+        public bool IsReadOnly => !CanEdit;
+
+        /// <summary>权限拒绝原因（如果无权限）</summary>
+        [DisplayName("拒绝原因")]
+        public string? DenialReason { get; set; }
+    }
+
+    /// <summary>
+    /// 医案审计日志DTO
+    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+    /// 用于前后端传递医案的修改历史记录
+    /// </summary>
+    public class MedicalCaseAuditLogDto
+    {
+        /// <summary>唯一标识</summary>
+        [DisplayName("唯一标识")]
+        public Guid Id { get; set; }
+
+        /// <summary>医案ID</summary>
+        [DisplayName("医案ID")]
+        public Guid MedicalCaseId { get; set; }
+
+        /// <summary>操作者ID</summary>
+        [DisplayName("操作者ID")]
+        public Guid OperatorId { get; set; }
+
+        /// <summary>操作者姓名</summary>
+        [DisplayName("操作者姓名")]
+        public string OperatorName { get; set; } = string.Empty;
+
+        /// <summary>操作者角色</summary>
+        [DisplayName("操作者角色")]
+        public UserRole OperatorRole { get; set; }
+
+        /// <summary>操作类型</summary>
+        [DisplayName("操作类型")]
+        public AuditOperationType OperationType { get; set; }
+
+        /// <summary>操作类型显示名称</summary>
+        [DisplayName("操作类型名称")]
+        public string OperationTypeName => OperationType switch
+        {
+            AuditOperationType.Create => "创建",
+            AuditOperationType.Update => "更新",
+            AuditOperationType.StatusChange => "状态变更",
+            AuditOperationType.SoftDelete => "软删除",
+            _ => "未知"
+        };
+
+        /// <summary>变更的字段列表（JSON格式）</summary>
+        [DisplayName("变更字段")]
+        public string? ChangedFields { get; set; }
+
+        /// <summary>变更前的值（JSON格式）</summary>
+        [DisplayName("原值")]
+        public string? OldValues { get; set; }
+
+        /// <summary>变更后的值（JSON格式）</summary>
+        [DisplayName("新值")]
+        public string? NewValues { get; set; }
+
+        /// <summary>修改原因（历史医案修改时必填）</summary>
+        [DisplayName("修改原因")]
+        public string? Reason { get; set; }
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; }
+    }
+
+    /// <summary>
+    /// 医案审计日志分页结果DTO
+    /// </summary>
+    public class MedicalCaseAuditLogPagedResultDto
+    {
+        /// <summary>审计日志列表</summary>
+        [DisplayName("日志列表")]
+        public List<MedicalCaseAuditLogDto> Logs { get; set; } = new();
+
+        /// <summary>总记录数</summary>
+        [DisplayName("总记录数")]
+        public int TotalCount { get; set; }
+
+        /// <summary>当前页码</summary>
+        [DisplayName("当前页")]
+        public int CurrentPage { get; set; }
+
+        /// <summary>每页大小</summary>
+        [DisplayName("每页大小")]
+        public int PageSize { get; set; }
+
+        /// <summary>总页数</summary>
+        [DisplayName("总页数")]
+        public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
+    }
 }

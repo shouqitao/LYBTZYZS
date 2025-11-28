@@ -1,5 +1,6 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
+using LYBT.Desktop.MedicalCase.Dialogs; // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase; // Epic #1832: 添加MedicalCaseDto引用
 using LYBT.Shared.Models.Enums; // Issue #1839: 添加枚举命名空间
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs; // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -20,6 +22,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         // Issue #1783: 使用DataManager替代直接Repository访问（容器ViewModel暂不使用，但保持架构一致性）
         private readonly MedicalCaseDataManager _dataManager;
+        // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 对话框服务
+        private readonly IDialogService _dialogService;
 
         #endregion
 
@@ -49,8 +53,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 命令
 
-        // Epic #1832 Phase 4: 删除重复的标准命令定义（SearchCommand, AddCommand, RefreshCommand已由基类提供）
-        // Epic #1832 Phase 4: 删除CreateNewCommand（与AddCommand功能重复，统一使用基类AddCommand）
+        // Epic #1832 Phase 4: 删除重复的标准命令定义（SearchCommand, RefreshCommand已由基类提供）
+        // refactor-medicalcase-management: 移除AddCommand，创建入口仅限临床工作流(LIFECYCLE-005)
 
         /// <summary>
         /// 查看详情命令（DataGrid 行命令）
@@ -77,6 +81,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public DelegateCommand<object> PrintCommand { get; }
 
+        /// <summary>
+        /// 查看变更记录命令（DataGrid 行命令）
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// </summary>
+        public DelegateCommand<object> ViewAuditLogCommand { get; }
+
         // Epic #1832 Phase 4: FirstPageCommand, LastPageCommand已由基类提供，删除重复定义
 
         // Epic #1832 Phase 4: DeleteCommand, PreviousPageCommand, NextPageCommand已由基类提供
@@ -87,6 +97,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public MedicalCaseManagementViewModel(
             MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
+            IDialogService dialogService, // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -96,8 +107,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             // Issue #1783: 注入DataManager（容器ViewModel暂不使用数据操作，但保持架构一致性）
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 注入对话框服务
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
-            // Epic #1832 Phase 4: 删除重复的标准命令初始化（SearchCommand, AddCommand, RefreshCommand, DeleteCommand, 分页命令已由基类提供）
+            // Epic #1832 Phase 4: 删除重复的标准命令初始化（SearchCommand, RefreshCommand, DeleteCommand, 分页命令已由基类提供）
+            // refactor-medicalcase-management: AddCommand不再使用，创建入口仅限临床工作流
 
             // 仅初始化领域特定命令
             ViewDetailsCommand = new DelegateCommand<object>(ExecuteViewDetails);
@@ -105,10 +119,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ViewConsultationCommand = new DelegateCommand<object>(ExecuteViewConsultation);
             CreatePrescriptionCommand = new DelegateCommand<object>(ExecuteCreatePrescription);
             PrintCommand = new DelegateCommand<object>(ExecutePrint);
+            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 审计日志命令
+            ViewAuditLogCommand = new DelegateCommand<object>(ExecuteViewAuditLog);
 
             // Issue #1839: 初始化分页命令（暂为stub实现，避免UI绑定警告）
-            
-            
 
             // Epic #1832 Phase 4: DeleteCommand和其他分页命令已由基类提供，无需初始化
         }
@@ -154,22 +168,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 重写虚方法
 
-        /// <summary>
-        /// 执行添加操作
-        /// </summary>
-        protected override async Task OnExecuteAddAsync()
-        {
-            try
-            {
-                NavigateTo("MedicalCaseContentRegion", "CreateMedicalCaseView");
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导航到创建病历页面时发生异常");
-                await ShowErrorMessageAsync("打开创建病历页面失败，请稍后重试");
-            }
-        }
+        // refactor-medicalcase-management: 删除OnExecuteAddAsync()
+        // 医案创建入口仅限临床工作流(PatientSelection → MedicalCaseWorkspace)
+        // 管理界面不提供创建功能，符合LIFECYCLE-005规范
 
         /// <summary>
         /// 执行删除操作
@@ -238,12 +239,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         }
 
         /// <summary>
-        /// 编辑病历
+        /// 编辑病历 - refactor-medicalcase-management
+        /// 导航到MedicalCaseWorkspaceView进行编辑
+        /// 管理员可编辑所有医案（包括历史医案）
         /// </summary>
         private void ExecuteEdit(object item)
         {
-            Logger.LogInformation("编辑病历功能开发中");
-            _ = ShowSuccessMessageAsync("编辑功能开发中");
+            if (item is not MedicalCaseDto medicalCase)
+            {
+                Logger.LogWarning("编辑病历失败：无效的参数类型");
+                return;
+            }
+
+            try
+            {
+                // refactor-medicalcase-management: 导航到工作区进行编辑
+                // 传递参数标识为历史修改模式（管理界面编辑）
+                var parameters = new NavigationParameters
+                {
+                    { "MedicalCaseId", medicalCase.Id },
+                    { "EditMode", "HistoricalEdit" },  // 历史修改模式，需要填写修改原因
+                    { "IsFromManagement", true }        // 标识来自管理界面
+                };
+
+                // 导航到医案工作区视图
+                NavigateTo("ContentRegion", "MedicalCaseWorkspaceView", parameters);
+                Logger.LogInformation("导航到编辑医案: {MedicalCaseId}, CaseNumber: {CaseNumber}",
+                    medicalCase.Id, medicalCase.CaseNumber);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "编辑病历导航失败: {MedicalCaseId}", medicalCase.Id);
+                _ = ShowErrorMessageAsync("打开编辑页面失败，请稍后重试");
+            }
         }
 
         /// <summary>
@@ -271,6 +299,42 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             Logger.LogInformation("打印病历功能开发中");
             _ = ShowSuccessMessageAsync("打印功能开发中");
+        }
+
+        /// <summary>
+        /// 查看变更记录
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// </summary>
+        private void ExecuteViewAuditLog(object item)
+        {
+            if (item is not MedicalCaseDto medicalCase)
+            {
+                Logger.LogWarning("查看变更记录失败：无效的参数类型");
+                return;
+            }
+
+            try
+            {
+                var parameters = new DialogParameters
+                {
+                    { "MedicalCaseId", medicalCase.Id },
+                    { "CaseNumber", medicalCase.CaseNumber },
+                    { "PatientName", medicalCase.PatientName }
+                };
+
+                _dialogService.ShowDialog(nameof(AuditLogDialog), parameters, result =>
+                {
+                    Logger.LogInformation("审计日志对话框已关闭");
+                });
+
+                Logger.LogInformation("打开变更记录对话框: MedicalCaseId={MedicalCaseId}, CaseNumber={CaseNumber}",
+                    medicalCase.Id, medicalCase.CaseNumber);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "打开变更记录对话框失败: {MedicalCaseId}", medicalCase.Id);
+                _ = ShowErrorMessageAsync("打开变更记录失败，请稍后重试");
+            }
         }
 
         // Epic #1832 Phase 4: ExecuteDeleteAsync、分页方法已由基类提供，删除空占位符

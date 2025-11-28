@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Utilities;
 using LYBT.Module.MedicalCase.Dtos;
@@ -33,6 +34,7 @@ namespace LYBT.Module.MedicalCase.Services
         private readonly IMedicalCaseRepository _repository;
         private readonly IPatientRepository _patientRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMedicalCaseAuditService _auditService;
         private readonly IMapper _mapper;
 
         // 显式声明隐藏基类字段以消除警告
@@ -42,6 +44,7 @@ namespace LYBT.Module.MedicalCase.Services
             IMedicalCaseRepository repository,
             IPatientRepository patientRepository,
             IUserRepository userRepository,
+            IMedicalCaseAuditService auditService,
             IMapper mapper,
             ILogger<MedicalCaseService> logger)
             : base(logger)
@@ -49,6 +52,7 @@ namespace LYBT.Module.MedicalCase.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -146,6 +150,15 @@ namespace LYBT.Module.MedicalCase.Services
                 _logger.LogInformation("病案创建成功，MedicalCaseId: {Id}, ConsultationId: {ConsultationId}, Doctor: {DoctorName}, Patient: {PatientName}",
                     result.Id, consultation.Id, medicalCase.DoctorName, medicalCase.PatientName);
 
+                // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录创建审计日志
+                await _auditService.LogAsync(
+                    before: null,
+                    after: result,
+                    operatorId: doctorId,
+                    operatorName: doctor.RealName,
+                    role: doctor.Role,
+                    operationType: AuditOperationType.Create);
+
                 return result;
             }
             catch (Exception ex)
@@ -177,6 +190,9 @@ namespace LYBT.Module.MedicalCase.Services
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                     return null;
                 }
+
+                // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 保存变更前的状态用于审计
+                var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
                 // Epic #1731: 权限检查 - 集成CanEdit规则
                 if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
@@ -230,6 +246,17 @@ namespace LYBT.Module.MedicalCase.Services
                 var result = await _repository.UpdateAsync(medicalCase);
 
                 _logger.LogInformation("辨证信息更新成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录更新审计日志
+                var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
+                await _auditService.LogAsync(
+                    before: beforeState,
+                    after: result,
+                    operatorId: currentUserId,
+                    operatorName: operatorInfo.Name,
+                    role: operatorInfo.Role,
+                    operationType: AuditOperationType.Update);
+
                 return result;
             }
             catch (Exception ex)
@@ -262,6 +289,9 @@ namespace LYBT.Module.MedicalCase.Services
                     return null;
                 }
 
+                // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 保存变更前的状态用于审计
+                var beforeState = CloneMedicalCaseForAudit(medicalCase);
+
                 // Epic #1731: 权限检查 - 集成CanEdit规则
                 if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
                 {
@@ -286,7 +316,7 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     medicalCase.Consultation.PrescriptionEnabled = needsPrescription;
                     medicalCase.Consultation.UpdatedAt = DateTime.Now;
-                    
+
                     // Epic #2175 BF-002: 标记Step2完成时间戳
                     if (medicalCase.Consultation.Step2CompletedAt == null)
                     {
@@ -301,6 +331,17 @@ namespace LYBT.Module.MedicalCase.Services
 
                 _logger.LogInformation("处方标志设置成功，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
                     medicalCaseId, needsPrescription);
+
+                // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 记录更新审计日志
+                var operatorInfo = await GetOperatorInfoAsync(currentUserId, isAdmin);
+                await _auditService.LogAsync(
+                    before: beforeState,
+                    after: result,
+                    operatorId: currentUserId,
+                    operatorName: operatorInfo.Name,
+                    role: operatorInfo.Role,
+                    operationType: AuditOperationType.Update);
+
                 return result;
             }
             catch (Exception ex)
@@ -1193,5 +1234,59 @@ namespace LYBT.Module.MedicalCase.Services
         // ========== Private Helper Methods ==========
 
         // Issue #1757: IsValidStatusTransition已移至ValidationHelper.IsValidMedicalCaseStatusTransition
+
+        #region Audit Helper Methods
+
+        /// <summary>
+        /// 克隆医案实体用于审计比较
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// </summary>
+        private static MedicalCaseEntity CloneMedicalCaseForAudit(MedicalCaseEntity source)
+        {
+            return new MedicalCaseEntity
+            {
+                Id = source.Id,
+                PatientId = source.PatientId,
+                PatientName = source.PatientName,
+                DoctorId = source.DoctorId,
+                DoctorName = source.DoctorName,
+                ConsultationDate = source.ConsultationDate,
+                CaseStatus = source.CaseStatus,
+                Status = source.Status,
+                Remark = source.Remark,
+                NeedsPrescription = source.NeedsPrescription,
+                IsDeleted = source.IsDeleted,
+                CreatedAt = source.CreatedAt,
+                UpdatedAt = source.UpdatedAt
+            };
+        }
+
+        /// <summary>
+        /// 获取操作者信息用于审计日志
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// </summary>
+        private async Task<(string Name, UserRole Role)> GetOperatorInfoAsync(Guid userId, bool isAdmin)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user != null)
+                {
+                    return (user.RealName, user.Role);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "获取操作者信息失败，UserId: {UserId}", userId);
+            }
+
+            // 回退到基本信息
+            return (
+                "Unknown",
+                isAdmin ? UserRole.Admin : UserRole.Doctor
+            );
+        }
+
+        #endregion
     }
 }

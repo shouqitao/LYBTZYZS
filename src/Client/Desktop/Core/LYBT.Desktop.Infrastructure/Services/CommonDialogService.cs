@@ -47,6 +47,22 @@ namespace LYBT.Desktop.Infrastructure.Services
         }
 
         /// <summary>
+        /// 显示三选项对话框（是/否/取消）
+        /// Issue #2247: 支持离开确认等三选项场景
+        /// </summary>
+        public Task<TripleChoiceResult> ShowTripleChoiceAsync(string message, string? title = null)
+        {
+            var result = MessageBox.Show(message, title ?? "确认", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            var choice = result switch
+            {
+                MessageBoxResult.Yes => TripleChoiceResult.Yes,
+                MessageBoxResult.No => TripleChoiceResult.No,
+                _ => TripleChoiceResult.Cancel
+            };
+            return Task.FromResult(choice);
+        }
+
+        /// <summary>
         /// 显示输入对话框
         /// </summary>
         /// <remarks>

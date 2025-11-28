@@ -1,6 +1,20 @@
 ﻿namespace LYBT.Desktop.Infrastructure.Interfaces
 {
     /// <summary>
+    /// 三选项对话框结果
+    /// Issue #2247: 支持YesNoCancel类型对话框
+    /// </summary>
+    public enum TripleChoiceResult
+    {
+        /// <summary>选择"是"</summary>
+        Yes,
+        /// <summary>选择"否"</summary>
+        No,
+        /// <summary>选择"取消"</summary>
+        Cancel
+    }
+
+    /// <summary>
     /// 通用对话框服务接口 - UltraThink架构对话框抽象
     /// 负责统一的用户交互对话框：确认、提示、输入等
     /// </summary>
@@ -34,6 +48,15 @@
         /// <param name="title">标题</param>
         /// <returns>用户确认结果</returns>
         Task<bool> ShowConfirmAsync(string message, string? title = null);
+
+        /// <summary>
+        /// 显示三选项对话框（是/否/取消）
+        /// Issue #2247: 支持离开确认等三选项场景
+        /// </summary>
+        /// <param name="message">对话内容</param>
+        /// <param name="title">标题</param>
+        /// <returns>用户选择结果</returns>
+        Task<TripleChoiceResult> ShowTripleChoiceAsync(string message, string? title = null);
 
         /// <summary>
         /// 显示输入对话框

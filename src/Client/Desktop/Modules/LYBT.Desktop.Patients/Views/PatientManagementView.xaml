@@ -66,8 +66,8 @@
                                 Binding="{Binding VisitCount}"
                                 Width="100" />
 
-            <!-- 操作列 -->
-            <DataGridTemplateColumn Header="操作" Width="220">
+            <!-- 操作列 - OpenSpec: add-global-audit-system 增加审计按钮 -->
+            <DataGridTemplateColumn Header="操作" Width="280">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -87,6 +87,13 @@
                                     Margin="4,0"
                                     ToolTip="编辑患者信息"
                                     Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: add-global-audit-system -->
+                            <Button Content="记录"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="4,0"
+                                    ToolTip="查看变更记录"
+                                    Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <Button Content="删除"
                                     Style="{StaticResource DangerButton}"

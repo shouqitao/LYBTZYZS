@@ -1,4 +1,7 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Formula;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Repositories;
 using LYBT.Module.Formula.Services;
@@ -26,6 +29,8 @@ namespace LYBT.Module.Formula
             services.AddScoped<IFormulaService, FormulaService>();
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<FormulaInputDtoValidator>();
+            // OpenSpec: add-global-audit-system - 审计服务
+            services.AddScoped<IAuditService<Entities.Formula.Formula>, EntityAuditService<Entities.Formula.Formula>>();
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
             return services;
         }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Users.ViewModels
 {
@@ -28,6 +29,7 @@ namespace LYBT.Desktop.Users.ViewModels
         // Issue #2003: 批量导入功能依赖
         private readonly IUserRepository _userRepository;
         private readonly ICommonDialogService _commonDialogService;
+        private readonly IDialogService _prismDialogService; // OpenSpec: add-global-audit-system
 
         #endregion
 
@@ -129,7 +131,12 @@ namespace LYBT.Desktop.Users.ViewModels
         /// </summary>
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
 
-        
+        /// <summary>
+        /// 查看审计日志命令
+        /// OpenSpec: add-global-audit-system
+        /// </summary>
+        public DelegateCommand<UserDto> ShowAuditLogCommand { get; private set; } = null!;
+
         #endregion
 
         #region Issue #2003: 批量导入/导出功能
@@ -161,6 +168,7 @@ namespace LYBT.Desktop.Users.ViewModels
             UserCommandHandler commandHandler, // Issue #1785: 注入CommandHandler
             IUserRepository userRepository, // Issue #2003: 批量导入功能
             ICommonDialogService commonDialogService, // Issue #2003: 批量导入功能
+            IDialogService prismDialogService, // OpenSpec: add-global-audit-system
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -174,6 +182,7 @@ namespace LYBT.Desktop.Users.ViewModels
             // Issue #2003: 批量导入功能
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _commonDialogService = commonDialogService ?? throw new ArgumentNullException(nameof(commonDialogService));
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
 
             // 初始化选项
             RoleOptions = Enum.GetValues<UserRole>();
@@ -212,6 +221,9 @@ namespace LYBT.Desktop.Users.ViewModels
             ToggleUserStatusCommand = new DelegateCommand<UserDto>(async user => await ExecuteToggleUserStatusAsync(user), CanExecuteToggleUserStatus);
             ViewDetailsCommand = new DelegateCommand<UserDto>(ExecuteViewDetails, user => user != null);
             ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters, () => HasActiveFilters);
+
+            // OpenSpec: add-global-audit-system
+            ShowAuditLogCommand = new DelegateCommand<UserDto>(ExecuteShowAuditLog, user => user != null);
         }
 
         #endregion
@@ -856,6 +868,32 @@ namespace LYBT.Desktop.Users.ViewModels
                     $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入用户」功能导入。\n\n注意：\n1. 用户名必须唯一\n2. 角色可选值：Admin(管理员)、Doctor(医生)、Nurse(护士)\n3. 状态可选值：Enabled(启用)、Disabled(禁用)",
                     "下载成功");
             }, "下载模板");
+        }
+
+        #endregion
+
+        #region OpenSpec: add-global-audit-system - 审计日志
+
+        /// <summary>
+        /// 显示用户审计日志对话框
+        /// </summary>
+        private void ExecuteShowAuditLog(UserDto? user)
+        {
+            if (user == null)
+            {
+                return;
+            }
+
+            Logger.LogInformation("查看用户审计日志：{UserId} - {UserName}", user.Id, user.UserName);
+
+            var parameters = new DialogParameters
+            {
+                { "EntityType", "user" },
+                { "EntityId", user.Id },
+                { "EntityDescription", $"用户：{user.RealName ?? user.UserName}" }
+            };
+
+            _prismDialogService.ShowDialog("EntityAuditLogDialog", parameters, _ => { });
         }
 
         #endregion

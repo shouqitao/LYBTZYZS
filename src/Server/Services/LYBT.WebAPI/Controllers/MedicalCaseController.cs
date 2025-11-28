@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using LYBT.Entities.MedicalCase;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescriptionFlagRequest (模块专用)
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
@@ -31,13 +32,19 @@ namespace LYBT.WebAPI.Controllers
     public class MedicalCaseController : BaseApiController
     {
         private readonly NewMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCasePermissionService _permissionService;
+        private readonly IMedicalCaseAuditService _auditService;
 
         public MedicalCaseController(
             NewMedicalCaseService medicalCaseService,
+            IMedicalCasePermissionService permissionService,
+            IMedicalCaseAuditService auditService,
             ILogger<MedicalCaseController> logger)
             : base(logger)
         {
             _medicalCaseService = medicalCaseService;
+            _permissionService = permissionService;
+            _auditService = auditService;
         }
 
         // ========== Write Layer（写操作，通过聚合根）==========
@@ -578,6 +585,111 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException<MedicalCaseDetailDto>(ex, "获取病案详情（含关联数据）", new { id });
+            }
+        }
+
+        /// <summary>
+        /// 获取当前用户对指定医案的权限
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        /// 返回用户是否可编辑、可删除、是否需要提供修改原因等权限信息
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <returns>权限详情</returns>
+        [HttpGet("{id}/permissions")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionDto>), 404)]
+        public async Task<ActionResult<ApiResponse<MedicalCasePermissionDto>>> GetPermissions(Guid id)
+        {
+            try
+            {
+                var entity = await _medicalCaseService.GetByIdAsync(id);
+
+                if (entity == null)
+                    return NotFound(ApiResponse<MedicalCasePermissionDto>.CreateFail("病案不存在"));
+
+                // 获取当前用户信息
+                var (userId, _, role) = GetOperator();
+
+                // 获取权限详情
+                var permissions = _permissionService.GetPermissions(userId, role, entity);
+
+                _logger.LogDebug("权限查询: 用户 {UserId}({Role}) 对医案 {MedicalCaseId} 的权限: CanEdit={CanEdit}, CanDelete={CanDelete}",
+                    userId, role, id, permissions.CanEdit, permissions.CanDelete);
+
+                return Ok(ApiResponse<MedicalCasePermissionDto>.CreateSuccess(permissions, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCasePermissionDto>(ex, "获取病案权限", new { id });
+            }
+        }
+
+        /// <summary>
+        /// 获取医案的审计日志列表（分页）
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        /// 返回医案的所有修改历史记录
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="page">页码（默认1）</param>
+        /// <param name="pageSize">每页大小（默认20）</param>
+        /// <returns>审计日志分页结果</returns>
+        [HttpGet("{id}/audit-logs")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseAuditLogPagedResultDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseAuditLogPagedResultDto>), 404)]
+        public async Task<ActionResult<ApiResponse<MedicalCaseAuditLogPagedResultDto>>> GetAuditLogs(
+            Guid id,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                // 验证医案是否存在
+                var entity = await _medicalCaseService.GetByIdAsync(id);
+                if (entity == null)
+                    return NotFound(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail("病案不存在"));
+
+                // 参数验证
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return BadRequest(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail(
+                        "页码和页大小参数无效（页码>0，页大小1-100）"));
+                }
+
+                // 获取审计日志
+                var (logs, totalCount) = await _auditService.GetLogsPagedAsync(id, page, pageSize);
+
+                // Entity → DTO 映射
+                var logDtos = logs.Select(log => new MedicalCaseAuditLogDto
+                {
+                    Id = log.Id,
+                    MedicalCaseId = log.MedicalCaseId,
+                    OperatorId = log.OperatorId,
+                    OperatorName = log.OperatorName,
+                    OperatorRole = log.OperatorRole,
+                    OperationType = log.OperationType,
+                    ChangedFields = log.ChangedFields,
+                    OldValues = log.OldValues,
+                    NewValues = log.NewValues,
+                    Reason = log.Reason,
+                    CreatedAt = log.CreatedAt
+                }).ToList();
+
+                var result = new MedicalCaseAuditLogPagedResultDto
+                {
+                    Logs = logDtos,
+                    TotalCount = totalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                _logger.LogDebug("审计日志查询: 医案 {MedicalCaseId}, 第 {Page} 页, 共 {TotalCount} 条",
+                    id, page, totalCount);
+
+                return Ok(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateSuccess(result, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException<MedicalCaseAuditLogPagedResultDto>(ex, "获取审计日志", new { id, page, pageSize });
             }
         }
 

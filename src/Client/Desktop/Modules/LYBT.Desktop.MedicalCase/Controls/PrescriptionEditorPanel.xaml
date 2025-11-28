@@ -112,7 +112,7 @@
                 CornerRadius="4"
                 Padding="8,6"
                 Margin="12,6,12,0"
-                Visibility="{Binding DuplicateHerbsWarningVisibility}">
+                Visibility="{Binding IsDuplicateHerbsWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="重复药材提示："
                            FontWeight="SemiBold"

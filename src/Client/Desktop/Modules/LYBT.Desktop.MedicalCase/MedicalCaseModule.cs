@@ -79,6 +79,9 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.RegisterDialog<FormulaImportDialog, FormulaImportDialogViewModel>();
             containerRegistry.RegisterDialog<HistoryCopyDialog, HistoryCopyDialogViewModel>();
 
+            // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 审计日志对话框
+            containerRegistry.RegisterDialog<AuditLogDialog, AuditLogDialogViewModel>();
+
             // 注册视图用于导航
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
             // Epic #1583: PatientSelectionView已移至PatientsModule（三区域布局）

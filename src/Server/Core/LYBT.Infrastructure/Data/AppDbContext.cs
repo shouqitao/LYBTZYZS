@@ -53,6 +53,12 @@ namespace LYBT.Infrastructure.Data
         // 医疗案例
         public DbSet<MedicalCase> MedicalCases { get; set; }
 
+        // 医案审计日志 - OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+        public DbSet<MedicalCaseAuditLog> MedicalCaseAuditLogs { get; set; }
+
+        // 通用实体审计日志 - OpenSpec: add-global-audit-system
+        public DbSet<EntityAuditLog> EntityAuditLogs { get; set; }
+
         // 诊断
         public DbSet<Consultation> Consultations { get; set; }
 

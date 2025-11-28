@@ -91,7 +91,7 @@
                 FontWeight="SemiBold"
                 Foreground="Green"
                 Text="{Binding Step1CompletedAtText, Mode=OneWay}"
-                Visibility="{Binding Step1CompletedAtVisibility, Mode=OneWay}" />
+                Visibility="{Binding IsStep1CompletedAtVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
             <!--  Row 2: 基本诊断信息（2列布局）  -->
             <Border

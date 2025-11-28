@@ -1,5 +1,8 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Users;
 using LYBT.Infrastructure.DependencyInjection;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Module.Users.Repositories;
 using LYBT.Module.Users.Services;
@@ -29,6 +32,9 @@ namespace LYBT.Module.Users
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<UserInputDtoValidator>();
+
+            // OpenSpec: add-global-audit-system - 审计服务
+            services.AddScoped<IAuditService<User>, EntityAuditService<User>>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

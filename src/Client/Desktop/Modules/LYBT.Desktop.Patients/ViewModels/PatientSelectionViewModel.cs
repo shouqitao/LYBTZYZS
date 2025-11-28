@@ -321,8 +321,9 @@ namespace LYBT.Desktop.Patients.ViewModels
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
-            IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            IUserNotificationService? userNotificationService = null,
+            ICommonDialogService? commonDialogService = null) // Issue #2247: 统一对话框服务
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
             // Issue #1788: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
@@ -833,32 +834,18 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         /// <param name="patientName">患者姓名</param>
         /// <param name="doctorName">其他医生姓名</param>
-        private Task ShowOtherDoctorCaseMessageAsync(string patientName, string doctorName)
+        /// <remarks>Issue #2247: 使用ICommonDialogService替代直接MessageBox.Show调用</remarks>
+        private async Task ShowOtherDoctorCaseMessageAsync(string patientName, string doctorName)
         {
-            var tcs = new TaskCompletionSource();
-
             try
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var message = $"患者「{patientName}」在{doctorName}处有挂起医案，暂时无法为其开始新的诊断。\n\n请联系{doctorName}完成或关闭该医案后再试。";
-
-                    System.Windows.MessageBox.Show(
-                        message,
-                        "提示",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
-
-                    tcs.SetResult();
-                });
+                var message = $"患者「{patientName}」在{doctorName}处有挂起医案，暂时无法为其开始新的诊断。\n\n请联系{doctorName}完成或关闭该医案后再试。";
+                await ShowSuccessMessageAsync(message);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "显示其他医生挂起医案提示失败");
-                tcs.SetResult();
             }
-
-            return tcs.Task;
         }
 
         /// <summary>

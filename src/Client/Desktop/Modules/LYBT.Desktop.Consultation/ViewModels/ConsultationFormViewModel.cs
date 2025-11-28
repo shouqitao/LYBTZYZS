@@ -215,7 +215,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 if (SetProperty(ref _step1CompletedAt, value))
                 {
                     RaisePropertyChanged(nameof(Step1CompletedAtText));
-                    RaisePropertyChanged(nameof(Step1CompletedAtVisibility));
+                    RaisePropertyChanged(nameof(IsStep1CompletedAtVisible)); // Issue #2248
                 }
             }
         }
@@ -229,10 +229,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
                 : string.Empty;
 
         /// <summary>
-        /// Step1完成时间可见性
+        /// Step1完成时间是否可见 (Issue #2248: 使用bool+Converter替代Visibility)
         /// </summary>
-        public System.Windows.Visibility Step1CompletedAtVisibility =>
-            Step1CompletedAt.HasValue ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+        public bool IsStep1CompletedAtVisible => Step1CompletedAt.HasValue;
 
         #endregion
 

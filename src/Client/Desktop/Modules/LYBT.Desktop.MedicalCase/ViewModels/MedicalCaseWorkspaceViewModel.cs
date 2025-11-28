@@ -206,6 +206,92 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _canComplete, value);
         }
 
+        #region refactor-medicalcase-management: 编辑模式属性
+
+        private bool _isEditing = true;
+        /// <summary>
+        /// 是否处于编辑模式
+        /// - 新建医案或继续Draft/Active医案时为true
+        /// - 查看已完成医案时为false（只读模式）
+        /// </summary>
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set
+            {
+                if (SetProperty(ref _isEditing, value))
+                {
+                    RaisePropertyChanged(nameof(IsReadOnly));
+                    RaisePropertyChanged(nameof(ShowEditButton));
+                    SaveCommand?.RaiseCanExecuteChanged();
+                    EnterEditModeCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否处于只读模式（与IsEditing互斥）
+        /// </summary>
+        public bool IsReadOnly => !IsEditing;
+
+        /// <summary>
+        /// 是否显示编辑按钮（只读模式且有权限）
+        /// </summary>
+        public bool ShowEditButton => IsReadOnly && CanEdit;
+
+        private bool _isHistoricalEditMode;
+        /// <summary>
+        /// 是否为历史修改模式（从管理界面进入）
+        /// - 管理员编辑已完成医案时为true
+        /// - 需要填写修改原因
+        /// </summary>
+        public bool IsHistoricalEditMode
+        {
+            get => _isHistoricalEditMode;
+            set => SetProperty(ref _isHistoricalEditMode, value);
+        }
+
+        private bool _canEdit;
+        /// <summary>
+        /// 当前用户是否有编辑权限
+        /// - 管理员：所有医案
+        /// - 医生：仅自己未完成的医案
+        /// </summary>
+        public bool CanEdit
+        {
+            get => _canEdit;
+            set
+            {
+                if (SetProperty(ref _canEdit, value))
+                {
+                    RaisePropertyChanged(nameof(ShowEditButton));
+                    EnterEditModeCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        private string _editReason = string.Empty;
+        /// <summary>
+        /// 修改原因（历史修改模式下必填）
+        /// </summary>
+        public string EditReason
+        {
+            get => _editReason;
+            set => SetProperty(ref _editReason, value);
+        }
+
+        private bool _isFromManagement;
+        /// <summary>
+        /// 是否来自管理界面
+        /// </summary>
+        public bool IsFromManagement
+        {
+            get => _isFromManagement;
+            set => SetProperty(ref _isFromManagement, value);
+        }
+
+        #endregion
+
         private string _remark = string.Empty;
         /// <summary>
         /// 医案备注（OpenSpec: refactor-medicalcase-ui - 替代底部状态指示器）
@@ -236,6 +322,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public DelegateCommand PrintPrescriptionCommand { get; }
         public DelegateCommand CompleteConsultationCommand { get; }
 
+        // refactor-medicalcase-management: 新增保存和编辑模式切换命令
+        /// <summary>
+        /// 保存命令 - 保存当前进度但不改变医案状态
+        /// 编辑模式下可见
+        /// </summary>
+        public DelegateCommand SaveCommand { get; }
+
+        /// <summary>
+        /// 进入编辑模式命令
+        /// 只读模式下且有权限时可见
+        /// </summary>
+        public DelegateCommand EnterEditModeCommand { get; }
+
         #endregion
 
         #region 构造函数
@@ -250,8 +349,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ConsultationPanelViewModel consultationPanelViewModel,
             PrescriptionPanelViewModel prescriptionPanelViewModel,
             IActiveConsultationService activeConsultationService, // OpenSpec: clarify-cancel-consultation-logic
-            ISessionManager? sessionManager = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager)
+            ISessionManager? sessionManager = null,
+            ICommonDialogService? commonDialogService = null) // Issue #2247: 统一对话框服务
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, commonDialogService)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
@@ -274,6 +374,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CompleteConsultationCommand = new DelegateCommand(ExecuteCompleteConsultation, () => CanComplete)
                 .ObservesProperty(() => CanComplete);
 
+            // refactor-medicalcase-management: 保存和编辑模式切换命令
+            SaveCommand = new DelegateCommand(ExecuteSave, () => IsEditing)
+                .ObservesProperty(() => IsEditing);
+            EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => IsReadOnly && CanEdit)
+                .ObservesProperty(() => IsReadOnly)
+                .ObservesProperty(() => CanEdit);
+
             // 订阅诊断完成事件（启用处方面板）
             EventAggregator.GetEvent<ConsultationCompletedEvent>()
                 .Subscribe(OnConsultationCompleted, ThreadOption.UIThread);
@@ -288,6 +395,73 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         #region 命令实现
+
+        #region refactor-medicalcase-management: 保存和编辑模式命令
+
+        /// <summary>
+        /// 执行保存 - 保存当前进度但不改变医案状态
+        /// </summary>
+        private async void ExecuteSave()
+        {
+            try
+            {
+                SetIsBusy(true, "正在保存...");
+
+                // 同步备注到面板
+                if (ConsultationPanelViewModel != null)
+                {
+                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                }
+
+                // 保存诊断数据
+                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                {
+                    await consultationSaveable.SaveSilentlyAsync();
+                }
+
+                // 保存处方数据
+                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                {
+                    await prescriptionSaveable.SaveSilentlyAsync();
+                }
+
+                // 历史修改模式下记录修改原因
+                if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason))
+                {
+                    // TODO: Phase 4实现 - 通过审计服务记录修改原因
+                    Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason);
+                }
+
+                await ShowSuccessMessageAsync("保存成功");
+                Logger.LogInformation("医案数据保存成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "保存医案数据失败");
+                await ShowErrorMessageAsync($"保存失败：{ex.Message}");
+            }
+            finally
+            {
+                SetIsBusy(false);
+            }
+        }
+
+        /// <summary>
+        /// 进入编辑模式
+        /// </summary>
+        private void ExecuteEnterEditMode()
+        {
+            if (!CanEdit)
+            {
+                Logger.LogWarning("无编辑权限，无法进入编辑模式");
+                return;
+            }
+
+            IsEditing = true;
+            Logger.LogInformation("进入编辑模式，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+        }
+
+        #endregion
 
         /// <summary>
         /// 返回患者选择页面（OpenSpec: clarify-cancel-consultation-logic）
@@ -318,25 +492,38 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// OpenSpec: clarify-cancel-consultation-logic
         /// 此方法由IActiveConsultationService调用（退出登录时）
         /// </summary>
+        /// <remarks>Issue #2247: 使用ICommonDialogService替代直接MessageBox.Show调用</remarks>
         private async Task<LeaveConsultationResult> HandleLeaveRequestAsync()
         {
-            // 使用MessageBox实现三选项对话框
-            // WPF MessageBox.YesNoCancel 正好支持三个选项
-            var result = MessageBox.Show(
-                "您将离开看诊界面，是否暂存当前医案？\n\n" +
+            var message = "您将离开看诊界面，是否暂存当前医案？\n\n" +
                 "【是】暂存医案 - 保存当前进度，下次可继续\n" +
                 "【否】取消医案 - 作废本次就诊\n" +
-                "【取消】继续看诊 - 返回当前界面",
-                "离开确认",
-                MessageBoxButton.YesNoCancel,
-                MessageBoxImage.Question);
+                "【取消】继续看诊 - 返回当前界面";
 
-            var choice = result switch
+            LeaveConsultationChoice choice;
+
+            if (CommonDialogService != null)
             {
-                MessageBoxResult.Yes => LeaveConsultationChoice.SaveDraft,
-                MessageBoxResult.No => LeaveConsultationChoice.CancelCase,
-                _ => LeaveConsultationChoice.Stay
-            };
+                // Issue #2247: 使用抽象的对话框服务
+                var dialogResult = await CommonDialogService.ShowTripleChoiceAsync(message, "离开确认");
+                choice = dialogResult switch
+                {
+                    TripleChoiceResult.Yes => LeaveConsultationChoice.SaveDraft,
+                    TripleChoiceResult.No => LeaveConsultationChoice.CancelCase,
+                    _ => LeaveConsultationChoice.Stay
+                };
+            }
+            else
+            {
+                // Fallback: 直接使用MessageBox
+                var result = MessageBox.Show(message, "离开确认", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                choice = result switch
+                {
+                    MessageBoxResult.Yes => LeaveConsultationChoice.SaveDraft,
+                    MessageBoxResult.No => LeaveConsultationChoice.CancelCase,
+                    _ => LeaveConsultationChoice.Stay
+                };
+            }
 
             // 根据用户选择执行对应操作
             switch (choice)
@@ -683,8 +870,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             MedicalCaseId = navigationContext.Parameters.GetValue<Guid>("MedicalCaseId");
             CurrentPatient = navigationContext.Parameters.GetValue<PatientDto>("CurrentPatient");
 
-            Logger.LogInformation("进入4:6看诊界面，MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}",
-                MedicalCaseId, CurrentPatient?.Name);
+            // refactor-medicalcase-management: 处理编辑模式参数
+            var editMode = navigationContext.Parameters.GetValue<string>("EditMode");
+            IsFromManagement = navigationContext.Parameters.GetValue<bool>("IsFromManagement");
+            IsHistoricalEditMode = editMode == "HistoricalEdit";
+
+            Logger.LogInformation("进入看诊界面，MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}, 编辑模式: {EditMode}, 来自管理: {IsFromManagement}",
+                MedicalCaseId, CurrentPatient?.Name, editMode ?? "Normal", IsFromManagement);
 
             // 初始化患者信息
             await InitializePatientInfoAsync();
@@ -694,6 +886,69 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             // 初始化子面板ViewModel
             InitializeChildViewModels();
+
+            // refactor-medicalcase-management: 根据医案状态和权限决定初始编辑模式
+            await DetermineEditModeAsync();
+        }
+
+        /// <summary>
+        /// 根据医案状态和用户权限决定编辑模式
+        /// refactor-medicalcase-management: LIFECYCLE-009实现
+        /// </summary>
+        private async Task DetermineEditModeAsync()
+        {
+            try
+            {
+                var medicalCase = _dataLoader.CachedMedicalCase;
+                if (medicalCase == null)
+                {
+                    // 新建医案，默认编辑模式
+                    IsEditing = true;
+                    CanEdit = true;
+                    return;
+                }
+
+                // TODO: Phase 3实现 - 通过IMedicalCasePermissionService获取权限
+                // 临时逻辑：管理员总是可以编辑，医生根据状态判断
+                var currentUserRole = SessionManager?.CurrentUser?.Role;
+                var isAdmin = currentUserRole == Shared.Models.Enums.UserRole.Admin ||
+                              currentUserRole == Shared.Models.Enums.UserRole.SuperAdmin;
+
+                // MedicalCaseDetailDto 使用 CaseStatus 属性（MedicalCaseStatus枚举）
+                var caseStatus = medicalCase.CaseStatus;
+                var isCompleted = caseStatus == Shared.Models.Enums.MedicalCaseStatus.Completed;
+
+                if (isAdmin)
+                {
+                    // 管理员可以编辑所有医案
+                    CanEdit = true;
+                    // 历史修改模式下默认进入编辑模式
+                    IsEditing = IsHistoricalEditMode || !isCompleted;
+                }
+                else
+                {
+                    // 医生只能编辑自己未完成的医案
+                    // 使用 DoctorId 作为创建者标识
+                    var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
+                    var isOwner = medicalCase.DoctorId == currentUserId;
+                    var isNotCompleted = !isCompleted;
+
+                    CanEdit = isOwner && isNotCompleted;
+                    IsEditing = CanEdit;
+                }
+
+                Logger.LogInformation("编辑模式确定：IsEditing={IsEditing}, CanEdit={CanEdit}, CaseStatus={CaseStatus}",
+                    IsEditing, CanEdit, caseStatus);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "确定编辑模式失败");
+                // 默认只读模式
+                IsEditing = false;
+                CanEdit = false;
+            }
+
+            await Task.CompletedTask;
         }
 
         /// <summary>

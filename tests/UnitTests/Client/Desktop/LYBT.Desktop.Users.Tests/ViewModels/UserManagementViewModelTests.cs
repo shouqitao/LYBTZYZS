@@ -23,6 +23,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         private readonly Mock<UserCommandHandler> _mockCommandHandler;
         private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly Mock<ICommonDialogService> _mockCommonDialogService; // Issue #2003
+        private readonly Mock<IDialogService> _mockPrismDialogService; // OpenSpec: add-global-audit-system
         private readonly Mock<IEventAggregator> _mockEventAggregator;
         private readonly Mock<ILoggerFactory> _mockLoggerFactory;
         private readonly Mock<ILogger<UserManagementViewModel>> _mockLogger;
@@ -45,6 +46,7 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             _mockCommandLogger = new Mock<ILogger<UserCommandHandler>>();
             _mockCommandHandler = new Mock<UserCommandHandler>(_mockUserRepository.Object, _mockCommandLogger.Object);
             _mockCommonDialogService = new Mock<ICommonDialogService>(); // Issue #2003
+            _mockPrismDialogService = new Mock<IDialogService>(); // OpenSpec: add-global-audit-system
             _mockEventAggregator = new Mock<IEventAggregator>();
             _mockLoggerFactory = new Mock<ILoggerFactory>();
             _mockLogger = new Mock<ILogger<UserManagementViewModel>>();
@@ -60,10 +62,12 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             // Issue #2166: Events已移除，改为Navigation参数模式，无需Setup EventAggregator
 
 // Create ViewModel instance (Issue #2003: 添加IUserRepository和ICommonDialogService参数)
+            // OpenSpec: add-global-audit-system - 添加IDialogService参数
             _viewModel = new UserManagementViewModel(
                 _mockCommandHandler.Object,
                 _mockUserRepository.Object,
                 _mockCommonDialogService.Object,
+                _mockPrismDialogService.Object, // OpenSpec: add-global-audit-system
                 _mockEventAggregator.Object,
                 _mockLoggerFactory.Object,
                 _mockRegionManager.Object,

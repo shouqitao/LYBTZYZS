@@ -43,4 +43,28 @@ namespace LYBT.Shared.Models.Enums
         [Description("已挂号")]
         Appointment = 2
     }
+
+    /// <summary>
+    /// 审计操作类型枚举
+    /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum AuditOperationType
+    {
+        /// <summary>创建</summary>
+        [Description("创建")]
+        Create = 1,
+
+        /// <summary>更新</summary>
+        [Description("更新")]
+        Update = 2,
+
+        /// <summary>状态变更</summary>
+        [Description("状态变更")]
+        StatusChange = 3,
+
+        /// <summary>软删除</summary>
+        [Description("软删除")]
+        SoftDelete = 4
+    }
 }

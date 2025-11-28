@@ -14,7 +14,6 @@ using Prism.Events;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 using System.Collections.ObjectModel;
-using System.Windows;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels
 {
@@ -139,14 +138,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #region 警告属性
 
-        private Visibility _duplicateHerbsWarningVisibility = Visibility.Collapsed;
+        private bool _isDuplicateHerbsWarningVisible = false;
         /// <summary>
-        /// 重复药材警告可见性
+        /// 重复药材警告是否可见 (Issue #2248: 使用bool+Converter替代Visibility)
         /// </summary>
-        public Visibility DuplicateHerbsWarningVisibility
+        public bool IsDuplicateHerbsWarningVisible
         {
-            get => _duplicateHerbsWarningVisibility;
-            set => SetProperty(ref _duplicateHerbsWarningVisibility, value);
+            get => _isDuplicateHerbsWarningVisible;
+            set => SetProperty(ref _isDuplicateHerbsWarningVisible, value);
         }
 
         private string _duplicateHerbsWarningText = string.Empty;
@@ -893,11 +892,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             if (duplicates.Any())
             {
                 DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates.Distinct())}";
-                DuplicateHerbsWarningVisibility = Visibility.Visible;
+                IsDuplicateHerbsWarningVisible = true;
             }
             else
             {
-                DuplicateHerbsWarningVisibility = Visibility.Collapsed;
+                IsDuplicateHerbsWarningVisible = false;
             }
         }
 
@@ -1134,7 +1133,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (duplicates.Any())
                 {
                     DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates)}";
-                    DuplicateHerbsWarningVisibility = Visibility.Visible;
+                    IsDuplicateHerbsWarningVisible = true;
                 }
 
                 // 添加药材到当前处方（追加模式）
@@ -1238,7 +1237,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (duplicates.Any())
                 {
                     DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates)}";
-                    DuplicateHerbsWarningVisibility = Visibility.Visible;
+                    IsDuplicateHerbsWarningVisible = true;
                 }
 
                 // 添加药材到当前处方（追加模式）
@@ -1346,7 +1345,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (duplicates.Any())
                 {
                     DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates)}";
-                    DuplicateHerbsWarningVisibility = Visibility.Visible;
+                    IsDuplicateHerbsWarningVisible = true;
                 }
 
                 // 添加药材到当前处方（追加模式）

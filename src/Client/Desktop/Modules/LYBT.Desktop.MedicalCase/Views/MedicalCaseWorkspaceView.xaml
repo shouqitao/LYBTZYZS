@@ -156,19 +156,24 @@
             </Border>
         </Grid>
 
-        <!-- Row 2: 底部操作栏 (OpenSpec: refactor-medicalcase-ui) -->
+        <!-- Row 2: 底部操作栏 (OpenSpec: refactor-medicalcase-ui, refactor-medicalcase-management) -->
         <!--
         布局优化参考: SAP Fiori Footer Toolbar / Carbon Design System
         - Fluid输入框自适应填充可用空间
         - 按钮层级: 次要(左) → 主要(右)
-        - 三区布局: 标签 | 输入框(stretch) | 操作按钮
+        - 四区布局: 备注 | 修改原因(历史模式) | 操作按钮
+
+        refactor-medicalcase-management: 新增按钮状态机
+        - 编辑模式: [保存] [暂停看诊] [打印] [完成看诊]
+        - 只读模式: [编辑] (有权限时)
         -->
         <Border Grid.Row="2"
                 Style="{StaticResource ActionBarStyle}">
             <Grid Margin="24,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />  <!-- 标签 -->
+                    <ColumnDefinition Width="Auto" />  <!-- 备注标签 -->
                     <ColumnDefinition Width="*" />     <!-- 备注输入框(自适应) -->
+                    <ColumnDefinition Width="Auto" />  <!-- 修改原因区域(历史模式) -->
                     <ColumnDefinition Width="24" />    <!-- 间隔 -->
                     <ColumnDefinition Width="Auto" />  <!-- 操作按钮 -->
                 </Grid.ColumnDefinitions>
@@ -189,17 +194,57 @@
                          MaxLength="500"
                          ToolTip="医案备注信息（最多500字）"
                          VerticalAlignment="Center"
-                         HorizontalAlignment="Stretch" />
+                         HorizontalAlignment="Stretch"
+                         IsReadOnly="{Binding IsReadOnly}" />
+
+                <!-- refactor-medicalcase-management: 修改原因输入区域（历史修改模式显示） -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsHistoricalEditMode, Converter={StaticResource BoolToVisibility}}"
+                            Margin="16,0,0,0">
+                    <TextBlock Text="修改原因："
+                               FontSize="13"
+                               Foreground="#E65100"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <TextBox Text="{Binding EditReason, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource FormTextBoxStyle}"
+                             Width="200"
+                             MinHeight="36"
+                             MaxLength="200"
+                             ToolTip="请输入修改原因（必填）"
+                             VerticalAlignment="Center" />
+                </StackPanel>
 
                 <!-- 操作按钮组 -->
-                <StackPanel Grid.Column="3"
+                <StackPanel Grid.Column="4"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
-                    <!-- 暂停看诊 (OpenSpec LIFECYCLE-004: 明确的Tooltip说明) -->
+
+                    <!-- refactor-medicalcase-management: 编辑按钮（只读模式且有权限时显示） -->
+                    <Button Content="编辑"
+                            Command="{Binding EnterEditModeCommand}"
+                            Style="{StaticResource SuccessButtonStyle}"
+                            ToolTip="进入编辑模式"
+                            Visibility="{Binding ShowEditButton, Converter={StaticResource BoolToVisibility}}"
+                            Margin="0,0,8,0" />
+
+                    <!-- refactor-medicalcase-management: 保存按钮（编辑模式显示） -->
+                    <Button Content="保存"
+                            Command="{Binding SaveCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTip="保存当前修改（不改变医案状态）"
+                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"
+                            Margin="0,0,8,0" />
+
+                    <!-- 暂停看诊 (OpenSpec LIFECYCLE-004: 明确的Tooltip说明) - 编辑模式显示 -->
                     <Button Content="暂停看诊"
                             Command="{Binding SaveDraftCommand}"
                             Style="{StaticResource WarningButtonStyle}"
                             ToolTip="保存当前进度并暂时离开。下次选择该患者时可继续看诊。"
+                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"
                             Margin="0,0,8,0" />
 
                     <!-- 打印处方笺 -->
@@ -210,12 +255,13 @@
                             ToolTip="打印当前处方"
                             Margin="0,0,8,0" />
 
-                    <!-- 完成看诊 -->
+                    <!-- 完成看诊 - 编辑模式显示 -->
                     <Button Content="完成看诊"
                             Command="{Binding CompleteConsultationCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanComplete}"
-                            ToolTip="完成本次看诊，关闭医案" />
+                            ToolTip="完成本次看诊，关闭医案"
+                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
             </Grid>
         </Border>

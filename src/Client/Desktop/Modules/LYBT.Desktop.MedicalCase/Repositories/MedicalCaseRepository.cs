@@ -361,6 +361,39 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        /// <summary>
+        /// 获取当前用户对指定医案的权限
+        /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-007)
+        /// </summary>
+        public async Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+
+            try
+            {
+                _logger.LogDebug("获取医案权限，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+                var response = await _api.GetPermissionsAsync(medicalCaseId);
+
+                if (response.Success && response.Data != null)
+                {
+                    _logger.LogDebug("获取医案权限成功，MedicalCaseId: {MedicalCaseId}, CanEdit: {CanEdit}",
+                        medicalCaseId, response.Data.CanEdit);
+                    return response.Data;
+                }
+
+                _logger.LogWarning("获取医案权限失败，MedicalCaseId: {MedicalCaseId}, Message: {Message}",
+                    medicalCaseId, response.Message);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医案权限失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);

@@ -1,4 +1,7 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Repositories;
 using LYBT.Module.Prescriptions.Services;
@@ -32,6 +35,9 @@ namespace LYBT.Module.Prescriptions
 
             // 注册验证器 - 自动注册所有Validator
             services.AddValidatorsFromAssemblyContaining<PrescriptionCreateDtoValidator>();
+
+            // OpenSpec: add-global-audit-system - 审计服务
+            services.AddScoped<IAuditService<Prescription>, EntityAuditService<Prescription>>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 

@@ -1,4 +1,7 @@
 ﻿using FluentValidation;
+using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Interfaces;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Module.Herbs.Services;
@@ -30,6 +33,9 @@ namespace LYBT.Module.Herbs
 
             // Epic #1731: 注册Herbs模块Validators
             services.AddValidatorsFromAssemblyContaining<HerbInputDtoValidator>();
+
+            // OpenSpec: add-global-audit-system - 审计服务
+            services.AddScoped<IAuditService<Herb>, EntityAuditService<Herb>>();
 
             // AutoMapper配置已在UnifiedServiceRegistration中集中注册
 
