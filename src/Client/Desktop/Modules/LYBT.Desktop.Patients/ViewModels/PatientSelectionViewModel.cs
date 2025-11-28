@@ -4,6 +4,7 @@ using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 使用DataManager替代Repository
+using LYBT.Desktop.MedicalCase.Models; // OpenSpec: refine-medicalcase-edit-modes
 // Epic #1773: 已移除LYBT.Desktop.MedicalCase.Interfaces（不再直接使用IMedicalCaseRepository）
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.ViewModels.Components; // Issue #1788: 添加Component命名空间
@@ -980,11 +981,13 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private void NavigateToMedicalCaseFlow(PatientDto patient, Guid? medicalCaseId)
         {
-            var parameters = new NavigationParameters { { "CurrentPatient", patient } };
+            // OpenSpec: refine-medicalcase-edit-modes - 使用MedicalCaseNavigationParameters
+            var parameters = MedicalCaseNavigationParameters.ForClinical(patient.Id, medicalCaseId);
+            // 兼容性: 保留CurrentPatient参数供其他逻辑使用
+            parameters.Add("CurrentPatient", patient);
 
             if (medicalCaseId.HasValue && medicalCaseId.Value != Guid.Empty)
             {
-                parameters.Add("MedicalCaseId", medicalCaseId.Value);
                 Logger.LogInformation("导航到医案录入界面（继续看诊）：PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     patient.Id, medicalCaseId.Value);
             }
@@ -1205,12 +1208,9 @@ namespace LYBT.Desktop.Patients.ViewModels
                 Logger.LogInformation("医案创建成功: PatientId={PatientId}, MedicalCaseId={MedicalCaseId}",
                     CurrentPatient.Id, medicalCase.Id);
 
-                // Epic #2210 Phase 4: 导航到新的4:6统一工作区视图
-                var parameters = new NavigationParameters
-                {
-                    { "MedicalCaseId", medicalCase.Id },
-                    { "MedicalCaseFlowId", MedicalCaseFlowId }
-                };
+                // OpenSpec: refine-medicalcase-edit-modes - 使用新的导航参数
+                var parameters = MedicalCaseNavigationParameters.ForClinical(CurrentPatient.Id, medicalCase.Id);
+                parameters.Add("MedicalCaseFlowId", MedicalCaseFlowId);
                 RegionManager.RequestNavigate("ContentRegion", "MedicalCaseWorkspaceView", parameters);
             }
             catch (Exception ex)

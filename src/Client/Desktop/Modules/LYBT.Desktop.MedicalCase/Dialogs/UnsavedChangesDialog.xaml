@@ -1,0 +1,84 @@
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Dialogs.UnsavedChangesDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
+             xmlns:prism="http://prismlibrary.com/"
+             mc:Ignorable="d"
+             prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
+             d:DesignHeight="200" d:DesignWidth="400"
+             d:DataContext="{d:DesignInstance Type=viewmodels:UnsavedChangesDialogViewModel}">
+
+    <!--
+    OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
+    未保存修改确认对话框 - Management编辑模式返回时提示
+    -->
+
+    <Grid Background="White" MinWidth="380" MinHeight="160">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="#FFA726" Padding="15,12">
+            <TextBlock Text="未保存的修改" Foreground="White" FontSize="16" FontWeight="Bold" />
+        </Border>
+
+        <!-- 内容区域 -->
+        <StackPanel Grid.Row="1" Margin="20" VerticalAlignment="Center">
+            <TextBlock Text="您有未保存的修改，请选择操作："
+                       FontSize="14"
+                       Foreground="#333"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,10" />
+            <TextBlock Text="- 保存修改：保存当前修改后返回列表"
+                       FontSize="12"
+                       Foreground="#666"
+                       Margin="10,2" />
+            <TextBlock Text="- 放弃修改：不保存修改直接返回列表"
+                       FontSize="12"
+                       Foreground="#666"
+                       Margin="10,2" />
+            <TextBlock Text="- 取消：留在当前编辑界面"
+                       FontSize="12"
+                       Foreground="#666"
+                       Margin="10,2" />
+        </StackPanel>
+
+        <!-- 按钮区域 -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="15,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <!-- 取消按钮 -->
+                <Button Content="取消"
+                        Command="{Binding CancelCommand}"
+                        MinWidth="80"
+                        Padding="16,8"
+                        Margin="0,0,8,0"
+                        Background="#F5F5F5"
+                        BorderBrush="#BDBDBD" />
+
+                <!-- 放弃修改按钮 -->
+                <Button Content="放弃修改"
+                        Command="{Binding DiscardCommand}"
+                        MinWidth="80"
+                        Padding="16,8"
+                        Margin="0,0,8,0"
+                        Background="#EF5350"
+                        Foreground="White"
+                        BorderBrush="#EF5350" />
+
+                <!-- 保存修改按钮 -->
+                <Button Content="保存修改"
+                        Command="{Binding SaveCommand}"
+                        MinWidth="80"
+                        Padding="16,8"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        BorderBrush="#4CAF50" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

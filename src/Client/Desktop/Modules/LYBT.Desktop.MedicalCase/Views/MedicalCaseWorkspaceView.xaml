@@ -47,25 +47,26 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- 左侧: 返回按钮 -->
+                <!-- 左侧: 返回按钮 (OpenSpec: refine-medicalcase-edit-modes - 动态文案) -->
                 <Button Grid.Column="0"
-                        Command="{Binding BackToPatientSelectionCommand}"
+                        Command="{Binding BackCommand}"
                         Background="Transparent"
                         BorderThickness="0"
                         Cursor="Hand"
                         Padding="10,5">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="←" FontSize="18" Foreground="#2E86AB" VerticalAlignment="Center" />
-                        <TextBlock Text=" 返回患者选择" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding BackButtonText, StringFormat=' {0}'}" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
-                <!-- 中间: 患者信息 -->
+                <!-- 中间: 患者信息 (OpenSpec: refine-medicalcase-edit-modes - 动态标题) -->
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center">
-                    <TextBlock Text="看诊中 | 患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
+                    <TextBlock Text="{Binding HeaderTitle}" FontSize="14" Foreground="#333" FontWeight="Bold" />
+                    <TextBlock Text=" | 患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
                     <TextBlock Text="{Binding PatientName}" FontSize="14" Foreground="#2E86AB" FontWeight="Bold" Margin="5,0" />
                     <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="#666" Margin="20,0,0,0" />
                     <TextBlock Text=" | 医案ID：" FontSize="13" Foreground="#666" Margin="10,0,0,0" />
@@ -74,6 +75,18 @@
 
                 <!-- OpenSpec: clarify-cancel-consultation-logic - 取消按钮已移除 -->
                 <!-- 取消操作集成到返回/退出流程的离开确认对话框中 -->
+
+                <!-- OpenSpec: medicalcase-management-ui-refactor TASK-001 - 右上角编辑医案按钮(Management只读模式) -->
+                <Button Grid.Column="2"
+                        Content="编辑医案"
+                        Command="{Binding EnterEditModeCommand}"
+                        Style="{StaticResource SuccessButtonStyle}"
+                        ToolTip="进入编辑模式，可修改诊断和处方内容"
+                        Visibility="{Binding ShowEditButtonTopRight, Converter={StaticResource BoolToVisibility}}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Padding="16,8"
+                        Margin="0,0,10,0" />
             </Grid>
         </Border>
 
@@ -218,36 +231,35 @@
                              VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- 操作按钮组 -->
+                <!-- 操作按钮组 (OpenSpec: medicalcase-management-ui-refactor TASK-002) -->
+                <!--
+                按钮可见性规则:
+                  Management 只读: [打印处方笺]
+                  Management 编辑: [打印处方笺] [保存医案]
+                  Clinical   只读: [修改医案] [打印处方笺]
+                  Clinical   编辑: [暂存医案] [打印处方笺] [完成看诊]
+                -->
                 <StackPanel Grid.Column="4"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
 
-                    <!-- refactor-medicalcase-management: 编辑按钮（只读模式且有权限时显示） -->
-                    <Button Content="编辑"
+                    <!-- Clinical只读模式: 修改医案按钮 -->
+                    <Button Content="修改医案"
                             Command="{Binding EnterEditModeCommand}"
                             Style="{StaticResource SuccessButtonStyle}"
-                            ToolTip="进入编辑模式"
+                            ToolTip="进入编辑模式，可修改诊断和处方内容"
                             Visibility="{Binding ShowEditButton, Converter={StaticResource BoolToVisibility}}"
                             Margin="0,0,8,0" />
 
-                    <!-- refactor-medicalcase-management: 保存按钮（编辑模式显示） -->
-                    <Button Content="保存"
-                            Command="{Binding SaveCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            ToolTip="保存当前修改（不改变医案状态）"
-                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"
-                            Margin="0,0,8,0" />
-
-                    <!-- 暂停看诊 (OpenSpec LIFECYCLE-004: 明确的Tooltip说明) - 编辑模式显示 -->
-                    <Button Content="暂停看诊"
-                            Command="{Binding SaveDraftCommand}"
+                    <!-- Clinical编辑模式: 暂存医案按钮 -->
+                    <Button Content="暂存医案"
+                            Command="{Binding SaveAndStayCommand}"
                             Style="{StaticResource WarningButtonStyle}"
-                            ToolTip="保存当前进度并暂时离开。下次选择该患者时可继续看诊。"
-                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"
+                            ToolTip="保存当前进度，可随时点击'修改医案'继续编辑"
+                            Visibility="{Binding ShowDraftButton, Converter={StaticResource BoolToVisibility}}"
                             Margin="0,0,8,0" />
 
-                    <!-- 打印处方笺 -->
+                    <!-- 所有模式: 打印处方笺按钮 -->
                     <Button Content="打印处方笺"
                             Command="{Binding PrintPrescriptionCommand}"
                             Style="{StaticResource SecondaryButtonStyle}"
@@ -255,13 +267,20 @@
                             ToolTip="打印当前处方"
                             Margin="0,0,8,0" />
 
-                    <!-- 完成看诊 - 编辑模式显示 -->
+                    <!-- Clinical编辑模式: 完成看诊按钮 -->
                     <Button Content="完成看诊"
                             Command="{Binding CompleteConsultationCommand}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             IsEnabled="{Binding CanComplete}"
                             ToolTip="完成本次看诊，关闭医案"
-                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}" />
+                            Visibility="{Binding ShowCompleteButton, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!-- Management编辑模式: 保存医案按钮(最右侧) -->
+                    <Button Content="保存医案"
+                            Command="{Binding SaveAndStayCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            ToolTip="保存修改并留在当前界面"
+                            Visibility="{Binding ShowSaveButton, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
             </Grid>
         </Border>

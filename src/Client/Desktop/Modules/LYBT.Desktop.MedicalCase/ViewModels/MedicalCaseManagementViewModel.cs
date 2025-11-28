@@ -1,6 +1,7 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
 using LYBT.Desktop.MedicalCase.Dialogs; // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+using LYBT.Desktop.MedicalCase.Models; // OpenSpec: refine-medicalcase-edit-modes
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase; // Epic #1832: 添加MedicalCaseDto引用
 using LYBT.Shared.Models.Enums; // Issue #1839: 添加枚举命名空间
@@ -234,8 +235,29 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void ExecuteViewDetails(object item)
         {
-            Logger.LogInformation("查看病历详情功能开发中");
-            _ = ShowSuccessMessageAsync("查看详情功能开发中");
+            if (item is not MedicalCaseDto medicalCase)
+            {
+                Logger.LogWarning("查看病历详情失败：无效的参数类型");
+                return;
+            }
+
+            try
+            {
+                // OpenSpec: refine-medicalcase-edit-modes - 查看模式导航
+                var parameters = MedicalCaseNavigationParameters.ForManagementView(medicalCase.Id, medicalCase.PatientId);
+                // 兼容性：保留旧参数
+                parameters.Add("EditMode", "View");
+                parameters.Add("IsFromManagement", true);
+
+                NavigateTo("ContentRegion", "MedicalCaseWorkspaceView", parameters);
+                Logger.LogInformation("导航到查看医案: {MedicalCaseId}, CaseNumber: {CaseNumber}",
+                    medicalCase.Id, medicalCase.CaseNumber);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "查看病历导航失败: {MedicalCaseId}", medicalCase.Id);
+                _ = ShowErrorMessageAsync("打开查看页面失败，请稍后重试");
+            }
         }
 
         /// <summary>
@@ -253,14 +275,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             try
             {
-                // refactor-medicalcase-management: 导航到工作区进行编辑
-                // 传递参数标识为历史修改模式（管理界面编辑）
-                var parameters = new NavigationParameters
-                {
-                    { "MedicalCaseId", medicalCase.Id },
-                    { "EditMode", "HistoricalEdit" },  // 历史修改模式，需要填写修改原因
-                    { "IsFromManagement", true }        // 标识来自管理界面
-                };
+                // OpenSpec: refine-medicalcase-edit-modes - 使用新的导航参数
+                var parameters = MedicalCaseNavigationParameters.ForManagementEdit(medicalCase.Id, medicalCase.PatientId);
+                // 兼容性：保留旧参数
+                parameters.Add("EditMode", "HistoricalEdit");  // 历史修改模式，需要填写修改原因
+                parameters.Add("IsFromManagement", true);       // 标识来自管理界面
 
                 // 导航到医案工作区视图
                 NavigateTo("ContentRegion", "MedicalCaseWorkspaceView", parameters);

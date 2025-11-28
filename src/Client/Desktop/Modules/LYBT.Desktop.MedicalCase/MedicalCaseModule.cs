@@ -29,6 +29,9 @@ namespace LYBT.Desktop.MedicalCase
             // - Repository (数据访问层) 由各业务模块自行注册
             containerRegistry.RegisterSingleton<IMedicalCaseRepository, MedicalCaseRepository>();
 
+            // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-010) - 审计需求检查器
+            containerRegistry.RegisterSingleton<IAuditRequirementChecker, AuditRequirementChecker>();
+
             // Epic #1773: 注册Component组件
             containerRegistry.Register<MedicalCaseDataManager>();
 
@@ -81,6 +84,12 @@ namespace LYBT.Desktop.MedicalCase
 
             // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 审计日志对话框
             containerRegistry.RegisterDialog<AuditLogDialog, AuditLogDialogViewModel>();
+
+            // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008) - 未保存修改确认对话框
+            containerRegistry.RegisterDialog<UnsavedChangesDialog, UnsavedChangesDialogViewModel>();
+
+            // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-011) - 审计理由对话框
+            containerRegistry.RegisterDialog<AuditReasonDialog, AuditReasonDialogViewModel>();
 
             // 注册视图用于导航
             // Issue #1549: MedicalCaseEntryView已删除（由MedicalCaseFlowView的4步流程替代）
