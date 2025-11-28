@@ -1589,51 +1589,5 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         }
 
         #endregion
-
-        [Fact]
-        public async Task CanEditAsync_WhenStatusActive_ShouldReturnTrue()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                CaseStatus = MedicalCaseStatus.Active
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
-
-            // Act
-            var result = await _service.CanEditAsync(medicalCaseId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.CanEdit.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task CanEditAsync_WhenStatusCompleted_ShouldReturnFalse()
-        {
-            // Arrange
-            var medicalCaseId = Guid.NewGuid();
-            var medicalCase = new MedicalCaseEntity
-            {
-                Id = medicalCaseId,
-                CaseStatus = MedicalCaseStatus.Completed
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdAsync(medicalCaseId))
-                .ReturnsAsync(medicalCase);
-
-            // Act
-            var result = await _service.CanEditAsync(medicalCaseId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.CanEdit.Should().BeFalse();
-        }
-
-        #endregion
     }
 }

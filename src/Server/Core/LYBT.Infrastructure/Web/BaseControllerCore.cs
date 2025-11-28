@@ -84,20 +84,6 @@ public abstract class BaseControllerCore : ControllerBase
         // 尝试解析为枚举
         if (Enum.TryParse<UserRole>(roleStr, ignoreCase: true, out var role))
         {
-            // 检查是否为已废弃的角色（User, Pharmacist, Receptionist等）
-            // 注意：这里合法使用已废弃枚举值进行检测和转换
-#pragma warning disable CS0618 // 类型或成员已过时
-            if (role == UserRole.User ||
-                role == UserRole.Pharmacist ||
-                role == UserRole.Receptionist ||
-                role == UserRole.Cashier ||
-                role == UserRole.Therapist)
-#pragma warning restore CS0618
-            {
-                _logger.LogWarning("使用了已废弃的角色 {ObsoleteRole}，统一为Doctor", role);
-                return UserRole.Doctor;
-            }
-
             return role;
         }
 

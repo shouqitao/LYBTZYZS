@@ -106,17 +106,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _palpation, value);
         }
 
-        private string _remark = string.Empty;
-        /// <summary>
-        /// 备注（诊断自身的备注，已弃用）
-        /// </summary>
-        [Obsolete("诊断不需要独立备注，请使用MedicalCaseRemark")]
-        public string Remark
-        {
-            get => _remark;
-            set => SetProperty(ref _remark, value);
-        }
-
         /// <summary>
         /// 医案备注（保存时传递到服务端更新MedicalCase.Remark）
         /// OpenSpec: clarify-cancel-consultation-logic

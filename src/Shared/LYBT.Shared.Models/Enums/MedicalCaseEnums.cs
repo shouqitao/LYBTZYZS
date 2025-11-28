@@ -21,39 +21,7 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已完成（三步流程全部完成）</summary>
         [Description("已完成")]
-        Completed = 2,
-
-        /// <summary>已取消 - Issue #2242: 已废弃，使用软删除（IsDeleted=true）代替</summary>
-        [Description("已取消")]
-        [Obsolete("Use soft delete (IsDeleted=true) instead of Cancelled status. Issue #2242", false)]
-        Cancelled = 3,
-
-        // ========== 废弃状态（兼容性保留） ==========
-
-        /// <summary>已关闭 - 废弃，拆分为Completed和Cancelled</summary>
-        [Description("已关闭")]
-        [Obsolete("Use Completed or Cancelled instead. Closed status split into Completed/Cancelled.", true)]
-        Closed = 20,
-
-        /// <summary>挂号完成 - 废弃，合并到Draft或Active</summary>
-        [Description("挂号完成")]
-        [Obsolete("Use Draft or Active instead.", true)]
-        Registered = 10,
-
-        /// <summary>诊疗中 - 废弃，使用Active代替</summary>
-        [Description("诊疗中")]
-        [Obsolete("Use Active instead.", true)]
-        InConsultation = 11,
-
-        /// <summary>暂停 - 废弃，使用Draft代替</summary>
-        [Description("暂停")]
-        [Obsolete("Use Draft instead.", true)]
-        Suspended = 12,
-
-        /// <summary>已归档 - 废弃，使用Completed代替</summary>
-        [Description("已归档")]
-        [Obsolete("Use Completed instead.", true)]
-        Archived = 13
+        Completed = 2
     }
 
     /// <summary>

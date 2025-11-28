@@ -89,7 +89,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 诊疗输入DTO - 统一创建和更新
     /// Phase 3: 合并ConsultationCreateDto和ConsultationUpdateDto
     /// </summary>
-    public class ConsultationInputDto : IRemarkable
+    public class ConsultationInputDto
     {
         /// <summary>主诉</summary>
         [StringLength(ValidationConstants.DiagnosisMaxLength, ErrorMessage = "主诉长度不能超过{1}个字符")]
@@ -143,10 +143,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [StringLength(ValidationConstants.RemarkMaxLength, ErrorMessage = "医案备注长度不能超过{1}个字符")]
         [DisplayName("医案备注")]
         public string? MedicalCaseRemark { get; set; }
-
-        /// <inheritdoc/>
-        [Obsolete("诊断不需要独立备注，请使用MedicalCaseRemark")]
-        string? IRemarkable.Remark { get => MedicalCaseRemark; set => MedicalCaseRemark = value; }
 
         /// <summary>诊疗ID（更新时必填，创建时为null，共享主键=MedicalCaseId）</summary>
         [DisplayName("诊疗ID")]

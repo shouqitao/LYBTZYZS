@@ -55,33 +55,6 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>医生（诊疗、记录、查询等业务操作）</summary>
         [Description("医生")]
-        Doctor = 1,
-
-        // 兼容性映射：旧角色保留以避免序列化错误，但标记为过时
-
-        /// <summary>普通用户 - 已统一到Doctor角色</summary>
-        [Description("普通用户")]
-        [Obsolete("Use Doctor instead. User role unified to Doctor in role unification.", false)]
-        User = 20,
-
-        /// <summary>药师 - 已统一到Doctor角色</summary>
-        [Description("药师")]
-        [Obsolete("Use Doctor instead. Pharmacist role unified to Doctor in role unification.", false)]
-        Pharmacist = 2,
-
-        /// <summary>前台 - 已统一到Doctor角色</summary>
-        [Description("前台")]
-        [Obsolete("Use Doctor instead. Receptionist role unified to Doctor in role unification.", false)]
-        Receptionist = 3,
-
-        /// <summary>收银员 - 已统一到Doctor角色</summary>
-        [Description("收银员")]
-        [Obsolete("Use Doctor instead. Cashier role unified to Doctor in role unification.", false)]
-        Cashier = 4,
-
-        /// <summary>理疗师 - 已统一到Doctor角色</summary>
-        [Description("理疗师")]
-        [Obsolete("Use Doctor instead. Therapist role unified to Doctor in role unification.", false)]
-        Therapist = 5
+        Doctor = 1
     }
 }

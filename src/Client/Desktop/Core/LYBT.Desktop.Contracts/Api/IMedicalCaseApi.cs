@@ -74,15 +74,6 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDto>> CreateMedicalCaseWithDetailsAsync([Refit.Body] MedicalCaseWithDetailsCreateDto request);
 
         /// <summary>
-        /// 更新医疗案例（已弃用 - 服务端不存在此端点）
-        /// OpenSpec: clarify-cancel-consultation-logic
-        /// 服务端采用子资源端点架构，请使用UpdateConsultationAsync、UpdatePrescriptionAsync、UpdateStatusAsync等
-        /// </summary>
-        [Obsolete("服务端已移除此端点，请使用子资源端点：UpdateConsultationAsync、UpdatePrescriptionAsync、UpdateStatusAsync等")]
-        [Refit.Put("/api/v1/medicalcases/{id}")]
-        Task<ApiResponse<MedicalCaseDto>> UpdateMedicalCaseAsync(Guid id, [Refit.Body] MedicalCaseInputDto request);
-
-        /// <summary>
         /// 更新医案的诊断信息（聚合根方法）
         /// Issue #1563 - 修复ConsultationFormViewModel违反聚合根模式
         /// </summary>
@@ -168,17 +159,6 @@ namespace LYBT.Desktop.Contracts.Api
         Task<ApiResponse<MedicalCaseDto>> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
             [Refit.Body] SetPrescriptionFlagRequest request);
-
-        /// <summary>
-        /// 暂存病案（已弃用 - 服务端不存在此端点）
-        /// OpenSpec: clarify-cancel-consultation-logic
-        /// 如需保存草稿，请使用UpdateStatusAsync设置Draft状态
-        /// </summary>
-        [Obsolete("服务端不存在此端点，请使用UpdateStatusAsync设置Draft状态")]
-        [Refit.Put("/api/v1/medicalcases/{medicalCaseId}/save-as-draft")]
-        Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
-            Guid medicalCaseId,
-            [Refit.Body] MedicalCaseInputDto request);
 
         // ========== Epic #1676 Phase 4 Task 4.1 - 新增专用API ==========
 

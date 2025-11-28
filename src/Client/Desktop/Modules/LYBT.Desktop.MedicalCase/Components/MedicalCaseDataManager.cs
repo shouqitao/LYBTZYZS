@@ -455,30 +455,6 @@ namespace LYBT.Desktop.MedicalCase.Components
         }
 
         /// <summary>
-        /// 暂存病案（保存当前状态为草稿）
-        /// Issue #1783: 为ConsultationViewModel提供业务命令
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
-        /// </summary>
-        public virtual async Task<ApiResponse<MedicalCaseDto>> SaveAsDraftAsync(
-            Guid medicalCaseId,
-            MedicalCaseInputDto request)
-        {
-            try
-            {
-                _logger.LogDebug("暂存病案: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                var response = await _api.SaveAsDraftAsync(medicalCaseId, request);
-                _logger.LogInformation("病案暂存成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
-                    medicalCaseId, response.Success);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "暂存病案失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
-        /// <summary>
         /// 完成辨证步骤（Step 1）
         /// Issue #1783: 为工作流提供业务命令
         /// </summary>

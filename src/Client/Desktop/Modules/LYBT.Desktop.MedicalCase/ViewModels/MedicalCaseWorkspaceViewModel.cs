@@ -943,36 +943,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 保存医案备注（已弃用）
-        /// OpenSpec: clarify-cancel-consultation-logic - 改为通过ConsultationInputDto.MedicalCaseRemark保存
-        /// </summary>
-        [Obsolete("医案备注现在通过UpdateConsultationAsync保存，不再需要单独调用此方法")]
-        private async Task SaveRemarkAsync()
-        {
-            if (_dataLoader.CachedMedicalCase == null || MedicalCaseId == Guid.Empty)
-            {
-                return;
-            }
-
-            try
-            {
-                // 同步备注到缓存
-                _dataLoader.CachedMedicalCase.Remark = Remark;
-
-                // 使用扩展方法转换为InputDto并保存
-                var inputDto = _dataLoader.CachedMedicalCase.ToInputDto();
-                await _dataManager.UpdateSimpleAsync(inputDto);
-
-                Logger.LogDebug("医案备注已保存: {MedicalCaseId}", MedicalCaseId);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, "保存医案备注失败（非致命）: {MedicalCaseId}", MedicalCaseId);
-                // 不抛出异常，备注保存失败不应阻断主流程
-            }
-        }
-
         #endregion
 
         #region IDisposable

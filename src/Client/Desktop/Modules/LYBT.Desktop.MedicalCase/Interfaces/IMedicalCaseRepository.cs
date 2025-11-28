@@ -85,13 +85,6 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// </summary>
         Task DeletePrescriptionAsync(Guid medicalCaseId);
 
-        /// <summary>
-        /// 暂存病案（保存当前状态）
-        /// Epic #1589 Phase 5 - 架构合规版本
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
-        /// </summary>
-        Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseInputDto dto);
-
         // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
 
         /// <summary>

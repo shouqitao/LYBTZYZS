@@ -826,68 +826,6 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-        // ========== Helper Layer（辅助功能）==========
-
-        /// <summary>
-        /// 验证病案是否可编辑
-        /// Epic #1612: 检查病案状态和权限
-        /// Phase 2.3: 此端点已标记为过时，将在v2.0移除
-        /// 推荐：使用GetById返回的Status字段进行客户端判断（medicalCase.Status == MedicalCaseStatus.Active）
-        /// </summary>
-        [Obsolete("此端点将在v2.0移除，请使用GetById返回的Status字段判断是否可编辑", false)]
-        [HttpGet("{id}/can-edit")]
-        [ProducesResponseType(typeof(ApiResponse<CanEditResponse>), 200)]
-        public async Task<ActionResult<ApiResponse<CanEditResponse>>> CanEdit(Guid id)
-        {
-            try
-            {
-                // Issue #2233: 添加医生所有权验证 - 提取当前医生ID
-                Guid currentDoctorId;
-                try
-                {
-                    var (operatorId, operatorName, operatorRole) = GetOperator();
-                    currentDoctorId = operatorId;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Unauthorized(ApiResponse<CanEditResponse>.CreateFail("未登录或用户信息无效"));
-                }
-
-                var result = await _medicalCaseService.CanEditAsync(id, currentDoctorId);
-
-                return Ok(ApiResponse<CanEditResponse>.CreateSuccess(result, "验证成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException<CanEditResponse>(ex, "验证病案可编辑性", new { id });
-            }
-        }
-
-        /// <summary>
-        /// 验证处方是否可删除
-        /// Epic #1612: 检查处方打印状态
-        /// Phase 2.3: 此端点已标记为过时，将在v2.0移除
-        /// 推荐：使用GetById返回的Prescription.IsPrinted字段进行客户端判断（medicalCase.Prescription?.IsPrinted == false）
-        /// </summary>
-        [Obsolete("此端点将在v2.0移除，请使用GetById返回的Prescription.IsPrinted字段判断是否可删除", false)]
-        [HttpGet("{id}/prescriptions/{prescriptionId}/can-delete")]
-        [ProducesResponseType(typeof(ApiResponse<CanDeleteResponse>), 200)]
-        public async Task<ActionResult<ApiResponse<CanDeleteResponse>>> CanDeletePrescription(
-            Guid id,
-            Guid prescriptionId)
-        {
-            try
-            {
-                var result = await _medicalCaseService.CanDeletePrescriptionAsync(id, prescriptionId);
-
-                return Ok(ApiResponse<CanDeleteResponse>.CreateSuccess(result, "验证成功"));
-            }
-            catch (Exception ex)
-            {
-                return HandleException<CanDeleteResponse>(ex, "验证处方可删除性",
-                    new { id, prescriptionId });
-            }
-        }
     }
 
     // ========== Request DTOs ==========

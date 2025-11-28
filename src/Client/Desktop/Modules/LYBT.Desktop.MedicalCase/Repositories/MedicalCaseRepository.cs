@@ -277,30 +277,6 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
-        /// <summary>
-        /// 暂存病案（保存当前状态）
-        /// Epic #1589 Phase 5 - 架构合规版本
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
-        /// </summary>
-        public async Task<MedicalCaseDto> SaveAsDraftAsync(Guid medicalCaseId, MedicalCaseInputDto dto)
-        {
-            if (medicalCaseId == Guid.Empty)
-                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            try
-            {
-                var response = await _api.SaveAsDraftAsync(medicalCaseId, dto);
-                return response.Data ?? throw new InvalidOperationException("暂存病案失败，服务器未返回数据");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "暂存病案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
         // ========== Epic #1676 Phase 4 Task 4.4 - Desktop端新增方法 ==========
 
         /// <summary>
