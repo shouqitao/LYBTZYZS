@@ -62,4 +62,36 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <returns>权限详情DTO</returns>
         MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCaseEntity medicalCase);
     }
+
+    /// <summary>
+    /// 编辑权限检查响应
+    /// </summary>
+    public class CanEditResponse
+    {
+        /// <summary>
+        /// 是否可编辑
+        /// </summary>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
+        /// 不可编辑时的原因说明
+        /// </summary>
+        public string? Reason { get; set; }
+    }
+
+    /// <summary>
+    /// 删除权限检查响应
+    /// </summary>
+    public class CanDeleteResponse
+    {
+        /// <summary>
+        /// 是否可删除
+        /// </summary>
+        public bool CanDelete { get; set; }
+
+        /// <summary>
+        /// 不可删除时的原因说明
+        /// </summary>
+        public string? Reason { get; set; }
+    }
 }

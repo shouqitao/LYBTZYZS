@@ -202,12 +202,13 @@ namespace LYBT.Module.MedicalCase.Services
                     throw new UnauthorizedAccessException("无权限编辑此病案");
                 }
 
-                // 业务规则验证：BF-002（仅Active状态可编辑）
-                if (medicalCase.CaseStatus != MedicalCaseStatus.Active)
+                // 业务规则验证：BF-002（Draft和Active状态可编辑）
+                // Bug Fix: Draft状态也需要允许编辑，因为Draft就是用于保存未完成工作的
+                if (medicalCase.CaseStatus != MedicalCaseStatus.Draft && medicalCase.CaseStatus != MedicalCaseStatus.Active)
                 {
                     _logger.LogWarning("病案状态不允许编辑，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                        medicalCaseId, medicalCase.Status);
-                    throw new InvalidOperationException($"病案状态为{medicalCase.Status}，不允许编辑");
+                        medicalCaseId, medicalCase.CaseStatus);
+                    throw new InvalidOperationException($"病案状态为{medicalCase.CaseStatus}，不允许编辑");
                 }
 
                 // 确保Consultation存在
@@ -360,72 +361,90 @@ namespace LYBT.Module.MedicalCase.Services
             Guid medicalCaseId,
             PrescriptionCreateDto request)
         {
-            try
+            const int maxRetries = 3;
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                _logger.LogInformation("开始创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-
-                // 获取聚合根
-                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
-                if (medicalCase == null)
+                try
                 {
-                    _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    return null;
-                }
+                    _logger.LogInformation("开始创建处方，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}", medicalCaseId, attempt);
 
-                // 业务规则验证：BF-002（必须先设置处方标志）
-                if (medicalCase.Consultation?.Step1CompletedAt == null)
+                    // 获取聚合根（使用Fresh版本确保获取最新RowVersion，解决并发问题）
+                    var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
+                    if (medicalCase == null)
+                    {
+                        _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                        return null;
+                    }
+
+                    // 业务规则验证：AR-003（一诊一方约束）
+                    if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
+                    {
+                        _logger.LogWarning("病案已存在处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                            medicalCaseId, medicalCase.Prescription.Id);
+                        throw new InvalidOperationException($"病案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
+                    }
+
+                    // 创建Prescription实体（不包含Items，需手动处理）
+                    var prescription = _mapper.Map<PrescriptionEntity>(request);
+                    prescription.Id = Guid.NewGuid();
+                    prescription.MedicalCaseId = medicalCaseId;
+                    prescription.PatientId = medicalCase.PatientId;
+                    prescription.UserId = medicalCase.DoctorId;
+                    prescription.Status = PrescriptionStatus.Draft; // 默认草稿状态
+                    prescription.CreatedAt = DateTime.Now;
+                    prescription.UpdatedAt = DateTime.Now;
+
+                    // 手动处理Items（确保PrescriptionId正确设置）
+                    if (request.Items != null && request.Items.Any())
+                    {
+                        prescription.Items = new List<LYBT.Entities.Prescriptions.PrescriptionItem>();
+                        foreach (var itemDto in request.Items)
+                        {
+                            var item = _mapper.Map<LYBT.Entities.Prescriptions.PrescriptionItem>(itemDto);
+                            item.Id = Guid.NewGuid();
+                            item.PrescriptionId = prescription.Id;
+                            prescription.Items.Add(item);
+                        }
+                        _logger.LogInformation("处方项创建完成，共{Count}项", request.Items.Count);
+                    }
+
+                    // 关联到聚合根
+                    medicalCase.Prescription = prescription;
+                    medicalCase.UpdatedAt = DateTime.Now;
+
+                    // 通过聚合根保存（EF Core会级联创建Prescription和Items）
+                    await _repository.UpdateAsync(medicalCase);
+
+                    _logger.LogInformation("处方创建成功，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
+                        medicalCaseId, prescription.Id);
+
+                    return prescription;
+                }
+                catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex) when (attempt < maxRetries)
                 {
-                    _logger.LogWarning("辨证未完成（Step1），无法创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("请先完成辨证信息填写（Step1）");
+                    // 并发冲突（EF Core原生异常），重试
+                    _logger.LogWarning(ex, "创建处方遇到EF并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                        medicalCaseId, attempt);
+                    await Task.Delay(100 * attempt); // 递增延迟
+                    continue;
                 }
-
-                if (medicalCase.NeedsPrescription != true)
+                catch (InvalidOperationException ex) when (ex.Message.Contains("数据已被其他用户修改") && attempt < maxRetries)
                 {
-                    _logger.LogWarning("病案未标记需要开处方（Step2），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("病案未标记需要开处方，请先设置处方标志（Step2）");
+                    // 并发冲突（Repository层封装的异常），重试
+                    _logger.LogWarning("创建处方遇到并发冲突，准备重试，MedicalCaseId: {MedicalCaseId}, 尝试次数: {Attempt}",
+                        medicalCaseId, attempt);
+                    await Task.Delay(100 * attempt); // 递增延迟
+                    continue;
                 }
-
-                if (medicalCase.Consultation?.Step2CompletedAt == null)
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("处方需求标记未完成（Step2），无法创建处方，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("处方需求标记未完成（Step2），无法创建处方");
+                    _logger.LogError(ex, "创建处方失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw;
                 }
-
-                // 业务规则验证：AR-003（一诊一方约束）
-                if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
-                {
-                    _logger.LogWarning("病案已存在处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
-                        medicalCaseId, medicalCase.Prescription.Id);
-                    throw new InvalidOperationException($"病案已存在处方（ID: {medicalCase.Prescription.Id}），请使用更新接口");
-                }
-
-                // 创建Prescription实体
-                var prescription = _mapper.Map<PrescriptionEntity>(request);
-                prescription.Id = Guid.NewGuid();
-                prescription.MedicalCaseId = medicalCaseId;
-                prescription.PatientId = medicalCase.PatientId;
-                prescription.UserId = medicalCase.DoctorId;
-                prescription.Status = PrescriptionStatus.Draft; // 默认草稿状态
-                prescription.CreatedAt = DateTime.Now;
-                prescription.UpdatedAt = DateTime.Now;
-
-                // 关联到聚合根
-                medicalCase.Prescription = prescription;
-                medicalCase.UpdatedAt = DateTime.Now;
-
-                // 通过聚合根保存（EF Core会级联创建Prescription）
-                await _repository.UpdateAsync(medicalCase);
-
-                _logger.LogInformation("处方创建成功，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
-                    medicalCaseId, prescription.Id);
-
-                return prescription;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建处方失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
+            
+            _logger.LogError("创建处方失败，已达最大重试次数，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            throw new InvalidOperationException("创建处方失败，请稍后重试");
         }
 
         /// <summary>
@@ -444,8 +463,8 @@ namespace LYBT.Module.MedicalCase.Services
                 _logger.LogInformation("开始更新处方，MedicalCaseId: {MedicalCaseId}, PrescriptionId: {PrescriptionId}",
                     medicalCaseId, prescriptionId);
 
-                // 获取聚合根
-                var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
+                // 获取聚合根（使用Fresh版本确保获取最新RowVersion，解决并发问题）
+                var medicalCase = await _repository.GetByIdWithDetailsFreshAsync(medicalCaseId);
                 if (medicalCase == null)
                 {
                     _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
@@ -475,10 +494,28 @@ namespace LYBT.Module.MedicalCase.Services
                     throw new InvalidOperationException("处方已打印，不允许修改");
                 }
 
-                // 通过AutoMapper更新Prescription子实体
+                // 通过AutoMapper更新Prescription子实体（不包含Items）
                 _mapper.Map(request, medicalCase.Prescription);
                 medicalCase.Prescription.UpdatedAt = DateTime.Now;
                 medicalCase.UpdatedAt = DateTime.Now;
+
+                // 手动处理Items更新（AutoMapper无法正确处理集合更新）
+                if (request.Items != null)
+                {
+                    // 清除旧的处方项
+                    medicalCase.Prescription.Items.Clear();
+
+                    // 添加新的处方项
+                    foreach (var itemDto in request.Items)
+                    {
+                        var item = _mapper.Map<LYBT.Entities.Prescriptions.PrescriptionItem>(itemDto);
+                        item.Id = Guid.NewGuid();
+                        item.PrescriptionId = prescriptionId;
+                        medicalCase.Prescription.Items.Add(item);
+                    }
+
+                    _logger.LogInformation("处方项更新完成，共{Count}项", request.Items.Count);
+                }
 
                 // 通过聚合根保存
                 await _repository.UpdateAsync(medicalCase);
@@ -718,6 +755,181 @@ namespace LYBT.Module.MedicalCase.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "关闭病案失败，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 暂存医案（保存草稿）
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
+        /// 业务规则：保存当前数据，设置状态为Draft，不触发完成验证
+        /// </summary>
+        public async Task<MedicalCaseEntity?> SaveDraftAsync(
+            Guid id,
+            ConsultationInputDto? request,
+            Guid operatorId,
+            bool isAdmin = false)
+        {
+            try
+            {
+                _logger.LogInformation("开始暂存医案，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 获取聚合根
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
+                if (medicalCase == null)
+                {
+                    _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", id);
+                    return null;
+                }
+
+                // 保存变更前的状态用于审计
+                var beforeState = CloneMedicalCaseForAudit(medicalCase);
+
+                // 权限检查
+                if (!MedicalCaseRules.CanEdit(medicalCase, operatorId, isAdmin))
+                {
+                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        id, operatorId);
+                    throw new UnauthorizedAccessException("无权限编辑此病案");
+                }
+
+                // 业务规则验证：只有Draft/Active状态可以暂存
+                if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
+                {
+                    _logger.LogWarning("已完成的医案不可暂存，MedicalCaseId: {MedicalCaseId}", id);
+                    throw new InvalidOperationException("已完成的医案不可暂存");
+                }
+
+                if (medicalCase.CaseStatus == MedicalCaseStatus.Cancelled)
+                {
+                    _logger.LogWarning("已取消的医案不可暂存，MedicalCaseId: {MedicalCaseId}", id);
+                    throw new InvalidOperationException("已取消的医案不可暂存");
+                }
+
+                // 如果提供了诊断信息，更新Consultation
+                if (request != null && medicalCase.Consultation != null)
+                {
+                    medicalCase.Consultation.ChiefComplaint = request.ChiefComplaint;
+                    medicalCase.Consultation.PresentIllness = request.PresentIllness;
+                    medicalCase.Consultation.Inspection = request.Inspection;
+                    medicalCase.Consultation.AuscultationOlfaction = request.AuscultationOlfaction;
+                    medicalCase.Consultation.Inquiry = request.Inquiry;
+                    medicalCase.Consultation.Palpation = request.Palpation;
+                    medicalCase.Consultation.TCMDiagnosis = request.TCMDiagnosis;
+                    medicalCase.Consultation.TreatmentPrinciple = request.TreatmentPrinciple;
+                    medicalCase.Consultation.MedicalAdvice = request.MedicalAdvice;
+                    medicalCase.Remark = request.MedicalCaseRemark;
+                    medicalCase.Consultation.UpdatedAt = DateTime.Now;
+                }
+
+                // 设置状态为Draft
+                medicalCase.CaseStatus = MedicalCaseStatus.Draft;
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                // 保存
+                var result = await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("医案暂存成功，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 记录审计日志
+                var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);
+                await _auditService.LogAsync(
+                    before: beforeState,
+                    after: result,
+                    operatorId: operatorId,
+                    operatorName: operatorInfo.Name,
+                    role: operatorInfo.Role,
+                    operationType: AuditOperationType.Update);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "暂存医案失败，MedicalCaseId: {MedicalCaseId}", id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 取消医案
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+        /// 业务规则：设置状态为Cancelled，需要审计理由（非当天本人操作时）
+        /// </summary>
+        public async Task<MedicalCaseEntity?> CancelAsync(
+            Guid id,
+            Guid operatorId,
+            bool isAdmin = false,
+            string? reason = null)
+        {
+            try
+            {
+                _logger.LogInformation("开始取消医案，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 获取聚合根
+                var medicalCase = await _repository.GetByIdWithDetailsAsync(id);
+                if (medicalCase == null)
+                {
+                    _logger.LogWarning("病案不存在，MedicalCaseId: {MedicalCaseId}", id);
+                    return null;
+                }
+
+                // 保存变更前的状态用于审计
+                var beforeState = CloneMedicalCaseForAudit(medicalCase);
+
+                // 权限检查
+                if (!MedicalCaseRules.CanEdit(medicalCase, operatorId, isAdmin))
+                {
+                    _logger.LogWarning("无权限取消病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
+                        id, operatorId);
+                    throw new UnauthorizedAccessException("无权限取消此病案");
+                }
+
+                // 业务规则验证：只有Draft/Active状态可以取消
+                if (medicalCase.CaseStatus == MedicalCaseStatus.Completed)
+                {
+                    _logger.LogWarning("已完成的医案不可取消，MedicalCaseId: {MedicalCaseId}", id);
+                    throw new InvalidOperationException("已完成的医案不可取消");
+                }
+
+                if (medicalCase.CaseStatus == MedicalCaseStatus.Cancelled)
+                {
+                    _logger.LogWarning("医案已经是取消状态，MedicalCaseId: {MedicalCaseId}", id);
+                    throw new InvalidOperationException("医案已经是取消状态");
+                }
+
+                // 检查是否需要审计理由（非当天本人操作时）
+                var requiresAuditReason = !MedicalCaseRules.IsSameDayByCreator(medicalCase, operatorId);
+                if (requiresAuditReason && string.IsNullOrWhiteSpace(reason))
+                {
+                    _logger.LogWarning("取消医案需要提供原因，MedicalCaseId: {MedicalCaseId}", id);
+                    throw new InvalidOperationException("取消非当天本人创建的医案需要提供原因");
+                }
+
+                // 设置状态为Cancelled
+                medicalCase.CaseStatus = MedicalCaseStatus.Cancelled;
+                medicalCase.UpdatedAt = DateTime.Now;
+
+                // 保存
+                var result = await _repository.UpdateAsync(medicalCase);
+
+                _logger.LogInformation("医案取消成功，MedicalCaseId: {MedicalCaseId}", id);
+
+                // 记录审计日志
+                var operatorInfo = await GetOperatorInfoAsync(operatorId, isAdmin);
+                await _auditService.LogAsync(
+                    before: beforeState,
+                    after: result,
+                    operatorId: operatorId,
+                    operatorName: operatorInfo.Name,
+                    role: operatorInfo.Role,
+                    operationType: AuditOperationType.Cancel,
+                    reason: reason);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消医案失败，MedicalCaseId: {MedicalCaseId}", id);
                 throw;
             }
         }

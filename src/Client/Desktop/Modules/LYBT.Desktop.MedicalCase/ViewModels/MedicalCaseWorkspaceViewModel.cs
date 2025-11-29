@@ -741,13 +741,25 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存...");
 
+                // Bug诊断：记录保存流程
+                Logger.LogInformation("[诊断] SaveDraftOnlyAsync开始，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                Logger.LogInformation("[诊断] ConsultationPanelViewModel是否为null: {IsNull}", ConsultationPanelViewModel == null);
+
                 if (ConsultationPanelViewModel != null)
                 {
                     ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+                    Logger.LogInformation("[诊断] ConsultationPanelViewModel.ChiefComplaint: {ChiefComplaint}",
+                        ConsultationPanelViewModel.ChiefComplaint ?? "(空)");
                 }
                 if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                 {
-                    await consultationSaveable.SaveSilentlyAsync();
+                    Logger.LogInformation("[诊断] 开始调用ConsultationPanelViewModel.SaveSilentlyAsync");
+                    var consultationResult = await consultationSaveable.SaveSilentlyAsync();
+                    Logger.LogInformation("[诊断] ConsultationPanelViewModel.SaveSilentlyAsync返回: {Result}", consultationResult);
+                }
+                else
+                {
+                    Logger.LogWarning("[诊断] ConsultationPanelViewModel不是ISaveable，跳过保存诊断数据");
                 }
                 if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
                 {
@@ -941,16 +953,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     ConsultationPanelViewModel.MedicalCaseRemark = Remark;
                 }
 
-                // 保存诊断数据
+                // Bug Fix: 暂存(Draft)不需要验证，使用SaveSilentlyAsync代替SaveAsync
+                // 保存诊断数据（静默保存，不验证）
                 if (ConsultationPanelViewModel is ISaveable consultationSaveable)
                 {
-                    await consultationSaveable.SaveAsync();
+                    await consultationSaveable.SaveSilentlyAsync();
                 }
 
-                // 保存处方数据
+                // 保存处方数据（静默保存，不验证）
                 if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
                 {
-                    await prescriptionSaveable.SaveAsync();
+                    await prescriptionSaveable.SaveSilentlyAsync();
                 }
 
                 // 更新医案状态为Draft
@@ -1361,16 +1374,17 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             ConsultationPanelViewModel = _injectedConsultationPanelViewModel;
             PrescriptionPanelViewModel = _injectedPrescriptionPanelViewModel;
 
-            // 初始化子面板（传入MedicalCaseId）
-            ConsultationPanelViewModel?.Initialize(MedicalCaseId, null);
+            // Bug Fix: 传入已加载的诊断数据，确保再次打开时能显示已保存的数据
+            var existingConsultation = _dataLoader.CachedConsultation;
+            ConsultationPanelViewModel?.Initialize(MedicalCaseId, existingConsultation);
 
-            // PrescriptionPanelViewModel 需要异步初始化，在数据加载后调用
-            // 此处先设置基础信息，药材数据将在后续加载
+            // Bug Fix: 传入已加载的处方数据，确保再次打开时能显示已保存的数据
+            var existingPrescription = _dataLoader.CachedPrescription;
             _ = PrescriptionPanelViewModel?.InitializeAsync(
                 MedicalCaseId,
                 CurrentPatient?.Id ?? Guid.Empty,
                 CurrentPatient?.Name ?? string.Empty,
-                null);
+                existingPrescription);
 
             // OpenSpec: clarify-cancel-consultation-logic - 注册活跃医案服务
             _activeConsultationService.Register(MedicalCaseId, HandleLeaveRequestAsync);

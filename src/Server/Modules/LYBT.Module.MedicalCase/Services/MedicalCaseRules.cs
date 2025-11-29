@@ -89,6 +89,24 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         /// <summary>
+        /// 核心规则5：检查是否为当天本人创建的医案
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+        /// 用于判断操作是否需要审计理由
+        /// </summary>
+        /// <param name="medicalCase">医案实体</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <returns>是否为当天本人创建</returns>
+        public static bool IsSameDayByCreator(MedicalCaseEntity medicalCase, Guid operatorId)
+        {
+            // 检查是否为创建者
+            if (medicalCase.DoctorId != operatorId) return false;
+
+            // 检查是否为当天创建
+            var today = DateTime.Today;
+            return medicalCase.CreatedAt.Date == today;
+        }
+
+        /// <summary>
         /// 业务规则验证结果
         /// </summary>
         public class ValidationResult

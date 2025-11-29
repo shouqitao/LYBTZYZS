@@ -103,6 +103,8 @@ public class MedicalCaseLifecycleHandler
 
     /// <summary>
     /// 暂存医案
+    /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
+    /// 使用专用 /draft 端点保存当前数据，设置状态为Draft
     /// </summary>
     public async Task<(bool success, string? errorMessage)> SaveDraftAsync(Guid medicalCaseId)
     {
@@ -110,12 +112,12 @@ public class MedicalCaseLifecycleHandler
         {
             _logger.LogInformation("暂存医案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
-            // 更新MedicalCase状态为Active
-            var result = await UpdateMedicalCaseStatusAsync(medicalCaseId, MedicalCaseStatus.Active);
+            // OpenSpec: refactor-medicalcase-api - 使用专用 /draft 端点
+            var response = await _dataManager.SaveDraftViaApiAsync(medicalCaseId);
 
-            if (!result.success)
+            if (!response.Success)
             {
-                return result;
+                return (false, response.Message ?? "暂存医案失败");
             }
 
             _logger.LogInformation("医案暂存成功");
@@ -149,26 +151,28 @@ public class MedicalCaseLifecycleHandler
     }
 
     /// <summary>
-    /// 取消医案（软删除）
-    /// Issue #2242: 使用软删除（IsDeleted=true）替代Cancelled状态
-    /// OpenSpec: clarify-cancel-consultation-logic - 使用标准DELETE端点
+    /// 取消医案
+    /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+    /// 使用专用 /cancel 端点设置状态为Cancelled，支持审计理由
     /// </summary>
-    public async Task<(bool success, string? errorMessage)> CancelAsync(Guid medicalCaseId)
+    /// <param name="medicalCaseId">医案ID</param>
+    /// <param name="reason">取消原因（非当天本人操作时必填）</param>
+    public async Task<(bool success, string? errorMessage)> CancelAsync(Guid medicalCaseId, string? reason = null)
     {
         try
         {
-            _logger.LogInformation("取消医案（软删除），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("取消医案，MedicalCaseId: {MedicalCaseId}, HasReason: {HasReason}",
+                medicalCaseId, !string.IsNullOrEmpty(reason));
 
-            // OpenSpec: clarify-cancel-consultation-logic
-            // 使用标准DELETE端点，BaseRepository.DeleteAsync默认实现为软删除
-            var response = await _dataManager.DeleteMedicalCaseAsync(medicalCaseId);
+            // OpenSpec: refactor-medicalcase-api - 使用专用 /cancel 端点
+            var response = await _dataManager.CancelMedicalCaseViaApiAsync(medicalCaseId, reason);
 
             if (!response.Success)
             {
-                return (false, response.Message ?? "软删除医案失败");
+                return (false, response.Message ?? "取消医案失败");
             }
 
-            _logger.LogInformation("医案已软删除（取消）");
+            _logger.LogInformation("医案已取消（状态变更为Cancelled）");
 
             // 触发事件
             ActionCompleted?.Invoke(this, new LifecycleActionCompletedEventArgs

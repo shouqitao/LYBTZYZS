@@ -618,6 +618,211 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         #endregion
 
+        #region Write Layer Tests - SaveDraft (OpenSpec: refactor-medicalcase-api)
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - SaveDraft端点集成测试
+        /// 验证暂存医案功能（PUT /api/v1/medicalcases/{id}/draft）
+        /// </summary>
+        [Fact]
+        public async Task SaveDraft_WithValidRequest_ShouldSetStatusToDraft()
+        {
+            // Arrange - 创建Active状态的病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Active);
+
+            // Act - 调用SaveDraft端点
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                null);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
+
+            _output.WriteLine($"✅ SaveDraft成功: 状态从Active变更为Draft");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - SaveDraft对Completed状态应返回403
+        /// 验证业务规则: 已完成的医案不可编辑
+        /// </summary>
+        [Fact]
+        public async Task SaveDraft_WhenStatusCompleted_ShouldReturn403()
+        {
+            // Arrange - 创建并完成病案
+            var medicalCase = await CreateAndCompleteMedicalCaseAsync();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+
+            // Act - 尝试对已完成的病案调用SaveDraft
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                null);
+
+            // Assert - MedicalCaseRules.CanEdit对Completed状态返回false，抛出UnauthorizedAccessException
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+
+            _output.WriteLine($"✅ SaveDraft正确拒绝Completed状态的医案");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - SaveDraft对Draft状态应保持Draft
+        /// 验证幂等性: 多次暂存不改变状态
+        /// </summary>
+        [Fact]
+        public async Task SaveDraft_WhenStatusDraft_ShouldRemainDraft()
+        {
+            // Arrange - 创建病案并暂存
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/draft", null);
+
+            // Act - 再次调用SaveDraft
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/draft",
+                null);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
+
+            _output.WriteLine($"✅ SaveDraft幂等性验证通过");
+        }
+
+        #endregion
+
+        #region Write Layer Tests - Cancel (OpenSpec: refactor-medicalcase-api)
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - Cancel端点集成测试
+        /// 验证取消医案功能（PUT /api/v1/medicalcases/{id}/cancel）
+        /// </summary>
+        [Fact]
+        public async Task CancelMedicalCase_WithValidRequest_ShouldSetStatusToCancelled()
+        {
+            // Arrange - 创建Active状态的病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Active);
+
+            // Act - 调用Cancel端点（同天本人操作，无需理由）
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
+                null);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+
+            _output.WriteLine($"✅ Cancel成功: 状态变更为Cancelled");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - Cancel对Completed状态应返回403
+        /// 验证业务规则: 已完成的医案不可取消
+        /// </summary>
+        [Fact]
+        public async Task CancelMedicalCase_WhenStatusCompleted_ShouldReturn403()
+        {
+            // Arrange - 创建并完成病案
+            var medicalCase = await CreateAndCompleteMedicalCaseAsync();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+
+            // Act - 尝试对已完成的病案调用Cancel
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
+                null);
+
+            // Assert - MedicalCaseRules.CanEdit对Completed状态返回false
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+
+            _output.WriteLine($"✅ Cancel正确拒绝Completed状态的医案");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - Cancel带理由应成功
+        /// 验证审计理由功能
+        /// </summary>
+        [Fact]
+        public async Task CancelMedicalCase_WithReason_ShouldSucceed()
+        {
+            // Arrange - 创建Active状态的病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var cancelRequest = new CancelMedicalCaseRequestDto
+            {
+                Reason = "患者临时有事，择日再诊"
+            };
+
+            // Act - 调用Cancel端点并提供理由
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
+                cancelRequest);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+
+            _output.WriteLine($"✅ Cancel带理由成功");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - Cancel对Draft状态应成功
+        /// 验证草稿状态可取消
+        /// </summary>
+        [Fact]
+        public async Task CancelMedicalCase_WhenStatusDraft_ShouldSucceed()
+        {
+            // Arrange - 创建病案并暂存
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/draft", null);
+
+            // Act - 取消Draft状态的病案
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
+                null);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+
+            _output.WriteLine($"✅ Cancel对Draft状态成功");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-api - 已取消的医案不可再次取消
+        /// 验证状态流转规则
+        /// </summary>
+        [Fact]
+        public async Task CancelMedicalCase_WhenAlreadyCancelled_ShouldReturn403()
+        {
+            // Arrange - 创建并取消病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/cancel", null);
+
+            // Act - 尝试再次取消
+            var response = await Client.PutAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/cancel",
+                null);
+
+            // Assert - Cancelled状态不可编辑
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+
+            _output.WriteLine($"✅ Cancel正确拒绝已取消的医案");
+        }
+
+        #endregion
+
         #region Helper Layer Tests - CanEdit
 
         [Fact]

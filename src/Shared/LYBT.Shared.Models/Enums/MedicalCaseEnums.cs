@@ -21,7 +21,11 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>已完成（三步流程全部完成）</summary>
         [Description("已完成")]
-        Completed = 2
+        Completed = 2,
+
+        /// <summary>已取消（用户主动取消或管理员关闭）</summary>
+        [Description("已取消")]
+        Cancelled = 3
     }
 
     /// <summary>
@@ -65,6 +69,10 @@ namespace LYBT.Shared.Models.Enums
 
         /// <summary>软删除</summary>
         [Description("软删除")]
-        SoftDelete = 4
+        SoftDelete = 4,
+
+        /// <summary>取消</summary>
+        [Description("取消")]
+        Cancel = 5
     }
 }

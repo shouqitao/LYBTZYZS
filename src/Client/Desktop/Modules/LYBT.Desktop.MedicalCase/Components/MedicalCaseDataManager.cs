@@ -746,6 +746,60 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
+        /// <summary>
+        /// 暂存医案（保存草稿）
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
+        /// 使用专用 /draft 端点保存当前数据，设置状态为Draft
+        /// </summary>
+        public virtual async Task<ApiResponse<MedicalCaseDto>> SaveDraftViaApiAsync(
+            Guid medicalCaseId,
+            ConsultationInputDto? consultationData = null)
+        {
+            try
+            {
+                _logger.LogDebug("暂存医案(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                var response = await _api.SaveDraftAsync(medicalCaseId, consultationData);
+                _logger.LogInformation("医案暂存成功(API): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "暂存医案失败(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 取消医案
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+        /// 使用专用 /cancel 端点设置状态为Cancelled，支持审计理由
+        /// </summary>
+        public virtual async Task<ApiResponse<MedicalCaseDto>> CancelMedicalCaseViaApiAsync(
+            Guid medicalCaseId,
+            string? reason = null)
+        {
+            try
+            {
+                _logger.LogDebug("取消医案(API): MedicalCaseId={MedicalCaseId}, HasReason={HasReason}",
+                    medicalCaseId, !string.IsNullOrEmpty(reason));
+
+                var request = string.IsNullOrEmpty(reason)
+                    ? null
+                    : new CancelMedicalCaseRequestDto { Reason = reason };
+
+                var response = await _api.CancelMedicalCaseAsync(medicalCaseId, request);
+                _logger.LogInformation("医案取消成功(API): MedicalCaseId={MedicalCaseId}, Success={Success}",
+                    medicalCaseId, response.Success);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消医案失败(API): MedicalCaseId={MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         #endregion
 
         #region 聚合根专用方法

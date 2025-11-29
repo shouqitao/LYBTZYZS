@@ -9,9 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 诊疗管理控制器 - Read Layer（Issue #1600 Phase 4）
+    /// 诊疗管理控制器 - 只读查询层
+    /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-012)
     /// 职责：提供诊疗记录的只读查询功能
-    /// 所有Write操作请使用MedicalCaseController
+    /// 所有写操作必须使用 MedicalCaseController（聚合根入口）
     /// </summary>
     [ApiController]
     [ApiVersion("1.0")]

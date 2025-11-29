@@ -35,6 +35,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         private readonly Mock<IMedicalCaseRepository> _repositoryMock;
         private readonly Mock<IPatientRepository> _patientRepositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IMedicalCaseAuditService> _auditServiceMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<MedicalCaseService>> _loggerMock;
 
@@ -43,6 +44,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             _repositoryMock = CreateMock<IMedicalCaseRepository>();
             _patientRepositoryMock = CreateMock<IPatientRepository>();
             _userRepositoryMock = CreateMock<IUserRepository>();
+            _auditServiceMock = CreateMock<IMedicalCaseAuditService>();
             _mapperMock = CreateMock<IMapper>();
             _loggerMock = CreateLoggerMock<MedicalCaseService>();
 
@@ -50,6 +52,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 _repositoryMock.Object,
                 _patientRepositoryMock.Object,
                 _userRepositoryMock.Object,
+                _auditServiceMock.Object,
                 _mapperMock.Object,
                 _loggerMock.Object);
         }
@@ -733,6 +736,8 @@ namespace LYBT.Module.MedicalCase.Tests.Services
         #endregion
 
         #region Helper Layer Tests
+        // TODO: 添加Helper Layer测试
+        #endregion
 
         #region Write Layer Tests - UpdatePrescriptionAsync (补充)
 
@@ -1345,6 +1350,374 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             // Assert - 应该直接关闭，不抛出异常
             result.Should().BeTrue();
             medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
+        }
+
+        #endregion
+
+        #region Write Layer Tests - SaveDraftAsync (OpenSpec: refactor-medicalcase-api)
+
+        /// <summary>
+        /// 测试暂存医案成功场景
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
+        /// </summary>
+        [Fact]
+        public async Task SaveDraftAsync_WithValidRequest_ShouldSaveDraftAndSetStatusToDraft()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId, // 操作者是创建医生
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now,
+                Consultation = new ConsultationEntity
+                {
+                    Id = medicalCaseId, // Consultation与MedicalCase共享主键
+                    ChiefComplaint = "头痛"
+                }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(medicalCase);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(operatorId))
+                .ReturnsAsync(new User { Id = operatorId, UserName = "测试医生", RealName = "测试医生" });
+
+            // Act
+            var result = await _service.SaveDraftAsync(medicalCaseId, null, operatorId);
+
+            // Assert
+            result.Should().NotBeNull();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Draft);
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()), Times.Once);
+            _auditServiceMock.Verify(x => x.LogAsync(
+                It.IsAny<MedicalCaseEntity>(),
+                It.IsAny<MedicalCaseEntity>(),
+                operatorId,
+                It.IsAny<string>(),
+                It.IsAny<UserRole>(),
+                AuditOperationType.Update,
+                It.IsAny<string>()), Times.Once);
+        }
+
+        /// <summary>
+        /// 测试医案不存在时返回null
+        /// </summary>
+        [Fact]
+        public async Task SaveDraftAsync_WhenMedicalCaseNotFound_ShouldReturnNull()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
+
+            // Act
+            var result = await _service.SaveDraftAsync(medicalCaseId, null, operatorId);
+
+            // Assert
+            result.Should().BeNull();
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()), Times.Never);
+        }
+
+        /// <summary>
+        /// 测试无权限编辑时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task SaveDraftAsync_WhenNoPermission_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid(); // 不同的操作者
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = doctorId, // 创建医生不是操作者
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now.AddDays(-1) // 非当天创建
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.SaveDraftAsync(medicalCaseId, null, operatorId));
+        }
+
+        /// <summary>
+        /// 测试已完成的医案不可暂存（权限检查阻止）
+        /// 业务规则：医生只能编辑Draft/Active状态的医案，Completed状态无权编辑
+        /// </summary>
+        [Fact]
+        public async Task SaveDraftAsync_WhenCompleted_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Completed,
+                CreatedAt = DateTime.Now
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert - MedicalCaseRules.CanEdit会阻止编辑Completed状态
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.SaveDraftAsync(medicalCaseId, null, operatorId));
+        }
+
+        /// <summary>
+        /// 测试已取消的医案不可暂存（权限检查阻止）
+        /// 业务规则：医生只能编辑Draft/Active状态的医案，Cancelled状态无权编辑
+        /// </summary>
+        [Fact]
+        public async Task SaveDraftAsync_WhenCancelled_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Cancelled,
+                CreatedAt = DateTime.Now
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert - MedicalCaseRules.CanEdit会阻止编辑Cancelled状态
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.SaveDraftAsync(medicalCaseId, null, operatorId));
+        }
+
+        #endregion
+
+        #region Write Layer Tests - CancelAsync (OpenSpec: refactor-medicalcase-api)
+
+        /// <summary>
+        /// 测试取消医案成功场景（当天本人操作，无需理由）
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenSameDayByCreator_ShouldCancelWithoutReason()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId, // 操作者是创建医生
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now // 当天创建
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(medicalCase);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(operatorId))
+                .ReturnsAsync(new User { Id = operatorId, UserName = "测试医生", RealName = "测试医生" });
+
+            // Act
+            var result = await _service.CancelAsync(medicalCaseId, operatorId);
+
+            // Assert
+            result.Should().NotBeNull();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()), Times.Once);
+            _auditServiceMock.Verify(x => x.LogAsync(
+                It.IsAny<MedicalCaseEntity>(),
+                It.IsAny<MedicalCaseEntity>(),
+                operatorId,
+                It.IsAny<string>(),
+                It.IsAny<UserRole>(),
+                AuditOperationType.Cancel,
+                It.IsAny<string>()), Times.Once);
+        }
+
+        /// <summary>
+        /// 测试非当天本人操作需要提供原因
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenNotSameDayByCreator_WithoutReason_ShouldThrowException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now.AddDays(-1) // 非当天创建
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _service.CancelAsync(medicalCaseId, operatorId, false, null));
+            exception.Message.Should().Contain("取消非当天本人创建的医案需要提供原因");
+        }
+
+        /// <summary>
+        /// 测试非当天本人操作提供原因后成功取消
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenNotSameDayByCreator_WithReason_ShouldCancel()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var reason = "患者要求取消";
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now.AddDays(-1) // 非当天创建
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()))
+                .ReturnsAsync(medicalCase);
+
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(operatorId))
+                .ReturnsAsync(new User { Id = operatorId, UserName = "测试医生", RealName = "测试医生" });
+
+            // Act
+            var result = await _service.CancelAsync(medicalCaseId, operatorId, false, reason);
+
+            // Assert
+            result.Should().NotBeNull();
+            medicalCase.CaseStatus.Should().Be(MedicalCaseStatus.Cancelled);
+            _auditServiceMock.Verify(x => x.LogAsync(
+                It.IsAny<MedicalCaseEntity>(),
+                It.IsAny<MedicalCaseEntity>(),
+                operatorId,
+                It.IsAny<string>(),
+                It.IsAny<UserRole>(),
+                AuditOperationType.Cancel,
+                reason), Times.Once);
+        }
+
+        /// <summary>
+        /// 测试医案不存在时返回null
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenMedicalCaseNotFound_ShouldReturnNull()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
+
+            // Act
+            var result = await _service.CancelAsync(medicalCaseId, operatorId);
+
+            // Assert
+            result.Should().BeNull();
+            _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<MedicalCaseEntity>()), Times.Never);
+        }
+
+        /// <summary>
+        /// 测试无权限取消时抛出异常
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenNoPermission_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid(); // 不同的操作者
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = doctorId,
+                CaseStatus = MedicalCaseStatus.Active,
+                CreatedAt = DateTime.Now.AddDays(-1)
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.CancelAsync(medicalCaseId, operatorId));
+        }
+
+        /// <summary>
+        /// 测试已完成的医案不可取消（权限检查阻止）
+        /// 业务规则：医生只能编辑Draft/Active状态的医案，Completed状态无权编辑
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenCompleted_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Completed,
+                CreatedAt = DateTime.Now
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert - MedicalCaseRules.CanEdit会阻止编辑Completed状态
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.CancelAsync(medicalCaseId, operatorId));
+        }
+
+        /// <summary>
+        /// 测试已取消的医案不可再次取消（权限检查阻止）
+        /// 业务规则：医生只能编辑Draft/Active状态的医案，Cancelled状态无权编辑
+        /// </summary>
+        [Fact]
+        public async Task CancelAsync_WhenAlreadyCancelled_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var operatorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                DoctorId = operatorId,
+                CaseStatus = MedicalCaseStatus.Cancelled,
+                CreatedAt = DateTime.Now
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act & Assert - MedicalCaseRules.CanEdit会阻止编辑Cancelled状态
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                _service.CancelAsync(medicalCaseId, operatorId));
         }
 
         #endregion

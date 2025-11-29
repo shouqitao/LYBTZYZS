@@ -131,6 +131,38 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<bool> CloseCaseAsync(Guid id);
 
         /// <summary>
+        /// 暂存医案（保存草稿）
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
+        /// 业务规则：保存当前数据，设置状态为Draft，不触发完成验证
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <param name="request">可选的诊断信息更新</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <returns>更新后的病案实体</returns>
+        Task<MedicalCaseEntity?> SaveDraftAsync(
+            Guid id,
+            ConsultationInputDto? request,
+            Guid operatorId,
+            bool isAdmin = false);
+
+        /// <summary>
+        /// 取消医案
+        /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
+        /// 业务规则：设置状态为Cancelled，需要审计理由（非当天本人操作时）
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <param name="operatorId">操作者ID</param>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <param name="reason">取消原因（审计时必填）</param>
+        /// <returns>更新后的病案实体</returns>
+        Task<MedicalCaseEntity?> CancelAsync(
+            Guid id,
+            Guid operatorId,
+            bool isAdmin = false,
+            string? reason = null);
+
+        /// <summary>
         /// 删除病案（软删除）
         /// OpenSpec: clarify-cancel-consultation-logic
         /// 业务规则：使用BaseRepository默认软删除机制（IsDeleted=true）

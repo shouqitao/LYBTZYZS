@@ -282,6 +282,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
+                // Bug诊断：记录调用信息
+                Logger.LogInformation("[诊断] SaveSilentlyAsync被调用，MedicalCaseId: {MedicalCaseId}, ChiefComplaint: {ChiefComplaint}",
+                    _medicalCaseId, ChiefComplaint ?? "(空)");
+
+                if (_medicalCaseId == Guid.Empty)
+                {
+                    Logger.LogWarning("[诊断] _medicalCaseId为空，跳过保存");
+                    return false;
+                }
+
                 // 跳过验证，直接保存当前填写的内容（供审计用途）
                 var request = new ConsultationInputDto
                 {
@@ -296,21 +306,22 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     MedicalCaseRemark = MedicalCaseRemark
                 };
 
+                Logger.LogInformation("[诊断] 准备调用API保存诊断数据，MedicalCaseId: {MedicalCaseId}", _medicalCaseId);
                 var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
 
                 if (result != null)
                 {
-                    Logger.LogDebug("诊断数据静默保存成功");
+                    Logger.LogInformation("[诊断] 诊断数据静默保存成功");
                     return true;
                 }
 
-                Logger.LogDebug("诊断数据静默保存失败");
+                Logger.LogWarning("[诊断] 诊断数据静默保存失败：API返回null");
                 return false;
             }
             catch (Exception ex)
             {
                 // 静默保存不显示错误，只记录日志
-                Logger.LogWarning(ex, "静默保存诊断数据异常（不阻止后续操作）");
+                Logger.LogWarning(ex, "[诊断] 静默保存诊断数据异常（不阻止后续操作），MedicalCaseId: {MedicalCaseId}", _medicalCaseId);
                 return false;
             }
         }

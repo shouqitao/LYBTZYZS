@@ -104,7 +104,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Indication, opt => opt.Ignore())
                 .ForMember(dest => dest.Discount, opt => opt.Ignore())
                 .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
-                .ForMember(dest => dest.Items, opt => opt.Ignore())
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items))
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -114,6 +114,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
             // Request映射: PrescriptionEditDto -> Prescription (Shared层)
+            // 注意：Items需要在Service层手动处理（删除旧项，添加新项），不能通过AutoMapper直接映射
             CreateMap<PrescriptionEditDto, LYBT.Entities.Prescriptions.Prescription>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
@@ -130,7 +131,7 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.Indication, opt => opt.Ignore())
                 .ForMember(dest => dest.FormulaSource, opt => opt.Ignore())
                 .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
-                .ForMember(dest => dest.Items, opt => opt.Ignore())
+                .ForMember(dest => dest.Items, opt => opt.Ignore()) // Items需在Service层手动处理
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
@@ -149,6 +150,11 @@ namespace LYBT.Module.MedicalCase.Mapping
                 .ForMember(dest => dest.UnitPrice, opt => opt.Ignore())
                 .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 .ForMember(dest => dest.Remark, opt => opt.Ignore());
+
+            // Request映射: PrescriptionItemInputDto -> PrescriptionItem (用于创建/更新处方)
+            CreateMap<PrescriptionItemInputDto, LYBT.Entities.Prescriptions.PrescriptionItem>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.PrescriptionId, opt => opt.Ignore());
 
             // Response映射: MedicalCase -> MedicalCaseDetailResponse
             CreateMap<LYBT.Entities.MedicalCase.MedicalCase, MedicalCaseDetailResponse>()

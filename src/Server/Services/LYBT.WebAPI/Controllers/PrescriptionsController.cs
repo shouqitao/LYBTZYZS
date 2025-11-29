@@ -9,7 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
-    /// 处方管理 API - 基础CRUD功能
+    /// 处方管理控制器 - 只读查询层
+    /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-012)
+    /// 职责：提供处方的只读查询和搜索功能
+    /// 所有写操作必须使用 MedicalCaseController（聚合根入口）
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
