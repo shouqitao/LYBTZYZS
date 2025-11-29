@@ -1,13 +1,13 @@
 # LYBTZYZS Project Skills 说明文档
 
-> **📅 最后更新**：2025-10-26
-> **📦 Skills版本**：v1.1（新增design-generator需求→设计全自动化）
+> **📅 最后更新**：2025-11-29
+> **📦 Skills版本**：v1.2（新增openspec-archive-finalize归档后自动化）
 
 ---
 
 ## 📋 Skills 总览
 
-本项目共有**6个核心Skills**，分为3类：
+本项目共有**7个核心Skills**，分为4类：
 
 ### 1️⃣ 合规性检查Skills（3个）
 
@@ -29,6 +29,12 @@
 |-------|------|-----------|
 | **lybtzyzs-task-breakdown** | 任务分解生成 | 任务分解、生成任务清单、task breakdown |
 | **lybtzyzs-issue-template** | Issue模板生成（单模式+批量模式） | 创建Issue、批量创建Issues |
+
+### 4️⃣ OpenSpec工作流Skills（1个）⭐ v1.2新增
+
+| Skill | 功能 | 触发关键词 |
+|-------|------|-----------|
+| **lybtzyzs-openspec-archive-finalize** | 归档后自动化：代码审查→提交推送→保存记忆→同步文档 | 归档完成、archive finalize、openspec完成 |
 
 ---
 
@@ -490,9 +496,55 @@ lybtzyzs-doc-sync（文档同步检查）
 | v0.9 | 2025-10-22 | 初始版本，3个合规性检查Skills |
 | v1.0 | 2025-10-26 | 新增task-breakdown Skill，增强issue-template批量模式 |
 | v1.1 | 2025-10-26 | 新增design-generator Skill（需求→设计全自动化），自动触发design-arch-validator |
+| v1.2 | 2025-11-29 | 新增openspec-archive-finalize Skill（归档后自动化），配套PostToolUse Hook |
+
+---
+
+### 📦 7. lybtzyzs-openspec-archive-finalize ⭐ v1.2新增
+
+**功能**：OpenSpec归档完成后的自动化流程
+
+**工作流程**：
+```
+归档完成 → 代码审查 → 提交推送 → 保存Graphiti记忆 → 同步文档
+```
+
+**能力**：
+- 代码审查：检查归档变更涉及的代码质量（调用lybtzyzs-code-review逻辑）
+- 提交推送：审查通过后自动commit并push到远程仓库
+- 保存记忆：将变更关键信息保存到Graphiti知识图谱
+- 同步文档：更新docs系统文档保持同步
+
+**触发方式**：
+1. **自动触发**：通过PostToolUse Hook，在`/openspec:archive`命令完成后自动提醒执行
+2. **手动触发**：使用关键词"归档完成"、"archive finalize"、"openspec完成"
+
+**Hook配置**：
+```json
+// .claude/settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "SlashCommand",
+        "hooks": [
+          {"type": "command", "command": "bash .claude/scripts/hooks/openspec-archive-post.sh"}
+        ]
+      }
+    ]
+  }
+}
+```
+
+**使用场景**：
+- OpenSpec归档（/openspec:archive）完成后自动触发
+- 手动执行归档后处理流程
+- 批量归档后需要统一处理
+
+**详细文档**：`.claude/skills/lybtzyzs-openspec-archive-finalize/SKILL.md`
 
 ---
 
 **维护者**：Claude Code
 **反馈渠道**：GitHub Issues
-**最后更新**：2025-10-26
+**最后更新**：2025-11-29

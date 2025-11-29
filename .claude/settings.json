@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.claude.codes/settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "SlashCommand",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/hooks/openspec-archive-post.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
