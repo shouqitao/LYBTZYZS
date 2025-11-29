@@ -85,6 +85,8 @@
 #### 常见错误
 - **[启动错误排查](troubleshooting/startup-errors.md)** - 应用启动问题
 - **[数据库错误](troubleshooting/database-errors.md)** - 数据库相关问题
+- **[EF Core并发问题](troubleshooting/efcore-concurrency-issues.md)** - RowVersion冲突、DbUpdateConcurrencyException
+- **[WPF MVVM事件问题](troubleshooting/wpf-mvvm-event-issues.md)** - PropertyChanged副作用、数据显示异常
 - **[网络连接问题](troubleshooting/network-issues.md)** - 网络连接错误
 - **[内存性能问题](troubleshooting/memory-issues.md)** - 内存和性能问题
 
@@ -188,6 +190,6 @@
 ---
 
 **文档类型**: How-to Guides Index
-**更新时间**: 2025-11-22
+**更新时间**: 2025-11-29
 **维护团队**: 架构组 + 技术支持团队
 **质量保证**: 所有指南都经过实践验证
