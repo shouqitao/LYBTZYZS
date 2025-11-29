@@ -21,6 +21,13 @@ namespace LYBT.Module.MedicalCase.Interfaces
         Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>
+        /// 根据ID获取病案（包含所有关联数据）- 强制刷新版本
+        /// 分离ChangeTracker中的缓存实体后重新查询，确保获取最新RowVersion
+        /// 用于并发场景下避免DbUpdateConcurrencyException
+        /// </summary>
+        Task<MedicalCaseEntity?> GetByIdWithDetailsFreshAsync(Guid id);
+
+        /// <summary>
         /// 获取分页列表（包含关联数据）
         /// </summary>
         Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);

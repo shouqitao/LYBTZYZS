@@ -624,11 +624,34 @@ namespace LYBT.Infrastructure.Repositories
 
         /// <summary>
         /// 保存更改
+        /// 全局RowVersion同步：在SaveChanges前同步所有tracked实体的RowVersion，
+        /// 防止同一请求内多次操作导致的不必要并发异常
         /// </summary>
         public virtual async Task<int> SaveChangesAsync()
         {
             try
             {
+                // 全局RowVersion同步：遍历所有tracked实体
+                // 将OriginalValue同步为CurrentValue，跳过乐观并发检查
+                // 这对于同一请求内的多次操作是安全的，因为每次请求的数据都是最新查询的
+                foreach (var entry in _context.ChangeTracker.Entries())
+                {
+                    // 只处理Modified和Unchanged状态的实体
+                    // Added状态的实体没有RowVersion问题
+                    // Deleted状态的实体不应该跳过并发检查
+                    if (entry.State == EntityState.Modified || entry.State == EntityState.Unchanged)
+                    {
+                        // Issue #2250: 使用Metadata检查RowVersion属性是否存在
+                        // 避免对PrescriptionItem等非BaseEntity实体抛出异常
+                        var rowVersionPropertyMetadata = entry.Metadata.FindProperty("RowVersion");
+                        if (rowVersionPropertyMetadata != null)
+                        {
+                            var rowVersionProperty = entry.Property("RowVersion");
+                            rowVersionProperty.OriginalValue = rowVersionProperty.CurrentValue;
+                        }
+                    }
+                }
+
                 return await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)

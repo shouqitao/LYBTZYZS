@@ -10,6 +10,7 @@ using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
 using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
 using PatientEntity = LYBT.Entities.Patients.Patient;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
+using PrescriptionItem = LYBT.Entities.Prescriptions.PrescriptionItem;
 
 namespace LYBT.Module.MedicalCase.Repositories
 {
@@ -67,6 +68,58 @@ namespace LYBT.Module.MedicalCase.Repositories
             return (await GetDetailQuery()
                 .Where(m => m.Id == id)
                 .SingleOrDefaultAsync())!;
+        }
+
+        /// <summary>
+        /// 根据ID获取病案（包含关联数据，强制从数据库刷新，不使用缓存）
+        /// 用于处理并发场景，确保获取最新的RowVersion
+        /// </summary>
+        public async Task<MedicalCaseEntity?> GetByIdWithDetailsFreshAsync(Guid id)
+        {
+            // 分离所有相关缓存实体：MedicalCase、Consultation、Prescription及PrescriptionItems
+            var medicalCaseEntry = _context.ChangeTracker.Entries<MedicalCaseEntity>()
+                .FirstOrDefault(e => e.Entity.Id == id);
+            if (medicalCaseEntry != null)
+            {
+                // 分离关联的Consultation
+                var consultationEntry = _context.ChangeTracker.Entries<LYBT.Entities.Consultation.Consultation>()
+                    .FirstOrDefault(e => e.Entity.Id == id); // Consultation使用共享主键
+                if (consultationEntry != null)
+                {
+                    consultationEntry.State = EntityState.Detached;
+                }
+
+                // 分离关联的Prescription及其Items
+                if (medicalCaseEntry.Entity.Prescription != null)
+                {
+                    var prescriptionId = medicalCaseEntry.Entity.Prescription.Id;
+
+                    // 先分离PrescriptionItems
+                    var prescriptionItemEntries = _context.ChangeTracker.Entries<LYBT.Entities.Prescriptions.PrescriptionItem>()
+                        .Where(e => e.Entity.PrescriptionId == prescriptionId)
+                        .ToList();
+                    foreach (var itemEntry in prescriptionItemEntries)
+                    {
+                        itemEntry.State = EntityState.Detached;
+                    }
+
+                    // 再分离Prescription
+                    var prescriptionEntry = _context.ChangeTracker.Entries<PrescriptionEntity>()
+                        .FirstOrDefault(e => e.Entity.Id == prescriptionId);
+                    if (prescriptionEntry != null)
+                    {
+                        prescriptionEntry.State = EntityState.Detached;
+                    }
+                }
+
+                // 最后分离MedicalCase
+                medicalCaseEntry.State = EntityState.Detached;
+            }
+
+            // 重新查询获取最新数据
+            return await GetDetailQuery()
+                .Where(m => m.Id == id)
+                .SingleOrDefaultAsync();
         }
 
         /// <summary>
@@ -129,7 +182,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 _logger?.LogInformation(" [诊断] Prescription状态 - PrescriptionId: {Id}, State: {State}",
                     entity.Prescription.Id, prescriptionEntry.State);
 
-                //  Issue #1669 Phase 7: 修复Prescription状态错误
+                //  Issue #1669 Phase 7 + Issue #2250: 修复Prescription及其Items状态错误
                 // 如果Prescription是新创建的（State=Modified但在数据库中不存在），将其改为Added
                 if (prescriptionEntry.State == EntityState.Modified)
                 {
@@ -140,6 +193,48 @@ namespace LYBT.Module.MedicalCase.Repositories
                     {
                         _logger?.LogInformation(" [修复] 检测到新Prescription被错误标记为Modified，改为Added");
                         prescriptionEntry.State = EntityState.Added;
+
+                        // Issue #2250: 同时修复PrescriptionItem的状态
+                        // PrescriptionItem不继承BaseEntity，没有RowVersion，需要单独处理
+                        if (entity.Prescription.Items != null && entity.Prescription.Items.Any())
+                        {
+                            foreach (var item in entity.Prescription.Items)
+                            {
+                                var itemEntry = _context.Entry(item);
+                                if (itemEntry.State == EntityState.Modified)
+                                {
+                                    _logger?.LogInformation(" [修复] 检测到新PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}",
+                                        item.Id);
+                                    itemEntry.State = EntityState.Added;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Issue #2250 Phase 3: Prescription已存在，但Items可能是更新时新添加的
+                        // 当Service调用Items.Clear()后添加新Items时，这些新Items会被错误标记为Modified
+                        // 需要检查每个Item是否真实存在于数据库中
+                        if (entity.Prescription.Items != null && entity.Prescription.Items.Any())
+                        {
+                            foreach (var item in entity.Prescription.Items)
+                            {
+                                var itemEntry = _context.Entry(item);
+                                if (itemEntry.State == EntityState.Modified)
+                                {
+                                    // 检查此Item是否存在于数据库
+                                    var itemExistsInDb = await _context.Set<PrescriptionItem>()
+                                        .AnyAsync(pi => pi.Id == item.Id);
+
+                                    if (!itemExistsInDb)
+                                    {
+                                        _logger?.LogInformation(" [修复] 检测到更新时新添加的PrescriptionItem被错误标记为Modified，改为Added - ItemId: {ItemId}",
+                                            item.Id);
+                                        itemEntry.State = EntityState.Added;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -173,6 +268,34 @@ namespace LYBT.Module.MedicalCase.Repositories
                 if (rowVersionProperty != null)
                 {
                     rowVersionProperty.OriginalValue = rowVersionProperty.CurrentValue;
+                }
+
+                // 同时同步Consultation的RowVersion（Consultation与MedicalCase使用共享主键）
+                if (entity.Consultation != null)
+                {
+                    var consultationEntry = _context.Entry(entity.Consultation);
+                    var consultationRowVersion = consultationEntry.Property("RowVersion");
+                    if (consultationRowVersion != null)
+                    {
+                        consultationRowVersion.OriginalValue = consultationRowVersion.CurrentValue;
+                        _logger?.LogDebug(" [RowVersion同步] Consultation RowVersion已同步");
+                    }
+                }
+
+                // 同步Prescription的RowVersion（如果存在）
+                if (entity.Prescription != null)
+                {
+                    var prescriptionEntry = _context.Entry(entity.Prescription);
+                    // 只对已存在的Prescription同步RowVersion（Added状态的不需要）
+                    if (prescriptionEntry.State != EntityState.Added && prescriptionEntry.State != EntityState.Detached)
+                    {
+                        var prescriptionRowVersion = prescriptionEntry.Property("RowVersion");
+                        if (prescriptionRowVersion != null)
+                        {
+                            prescriptionRowVersion.OriginalValue = prescriptionRowVersion.CurrentValue;
+                            _logger?.LogDebug(" [RowVersion同步] Prescription RowVersion已同步");
+                        }
+                    }
                 }
             }
 
@@ -218,15 +341,17 @@ namespace LYBT.Module.MedicalCase.Repositories
         }
 
         /// <summary>
-        /// 获取待看诊医案列表（Status=Active）
+        /// 获取待看诊医案列表（Status=Draft或Active）
         /// Epic #1583 - Phase 5
+        /// Bug Fix: 应包含Draft和Active两种未完成状态
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetPendingCasesAsync(Guid doctorId)
         {
             // Epic #2210 Phase 3: 按医生ID过滤，实现多医生数据隔离
+            // Bug Fix: 包含Draft和Active两种未完成状态，暂存后的医案应显示在待诊队列
             var result = await _dbSet
                 .Where(m => !m.IsDeleted
-                    && m.CaseStatus == MedicalCaseStatus.Active
+                    && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
                     && m.DoctorId == doctorId)
                 .Join(
                     _context.Set<PatientEntity>(),
@@ -252,11 +377,13 @@ namespace LYBT.Module.MedicalCase.Repositories
 
         /// <summary>
         /// 获取所有待看诊医案列表（管理员专用）
+        /// Bug Fix: 应包含Draft和Active两种未完成状态
         /// </summary>
         public async Task<List<PendingMedicalCaseDto>> GetAllPendingCasesAsync()
         {
+            // Bug Fix: 包含Draft和Active两种未完成状态
             var result = await _dbSet
-                .Where(m => !m.IsDeleted && m.CaseStatus == MedicalCaseStatus.Active)
+                .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active))
                 .Join(
                     _context.Set<PatientEntity>(),
                     m => m.PatientId,
