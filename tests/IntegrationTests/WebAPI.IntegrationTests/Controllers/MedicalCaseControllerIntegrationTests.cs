@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos; // SetPrescriptionFlagRequest (模块专用)
+using LYBT.Module.MedicalCase.Dtos; // MedicalCasePrescriptionDto (模块专用)
+// SetPrescriptionFlagRequest 现在来自 LYBT.Shared.Models.Contracts.MedicalCase
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;

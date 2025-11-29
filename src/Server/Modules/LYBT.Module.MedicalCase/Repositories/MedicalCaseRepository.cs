@@ -260,43 +260,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 // Tracked场景：entity本身就是existingEntity（Service层场景）
                 // 无需查询，entity的导航属性已通过GetByIdWithDetailsAsync加载
                 existingEntity = entity;
-
-                //  Issue #1669 Phase 7: InMemory数据库RowVersion同步问题
-                // 当entity被多次修改时，RowVersion可能不同步，导致并发异常
-                // 解决方案：将RowVersion的OriginalValue同步为CurrentValue，跳过并发检查
-                var rowVersionProperty = entry.Property("RowVersion");
-                if (rowVersionProperty != null)
-                {
-                    rowVersionProperty.OriginalValue = rowVersionProperty.CurrentValue;
-                }
-
-                // 同时同步Consultation的RowVersion（Consultation与MedicalCase使用共享主键）
-                if (entity.Consultation != null)
-                {
-                    var consultationEntry = _context.Entry(entity.Consultation);
-                    var consultationRowVersion = consultationEntry.Property("RowVersion");
-                    if (consultationRowVersion != null)
-                    {
-                        consultationRowVersion.OriginalValue = consultationRowVersion.CurrentValue;
-                        _logger?.LogDebug(" [RowVersion同步] Consultation RowVersion已同步");
-                    }
-                }
-
-                // 同步Prescription的RowVersion（如果存在）
-                if (entity.Prescription != null)
-                {
-                    var prescriptionEntry = _context.Entry(entity.Prescription);
-                    // 只对已存在的Prescription同步RowVersion（Added状态的不需要）
-                    if (prescriptionEntry.State != EntityState.Added && prescriptionEntry.State != EntityState.Detached)
-                    {
-                        var prescriptionRowVersion = prescriptionEntry.Property("RowVersion");
-                        if (prescriptionRowVersion != null)
-                        {
-                            prescriptionRowVersion.OriginalValue = prescriptionRowVersion.CurrentValue;
-                            _logger?.LogDebug(" [RowVersion同步] Prescription RowVersion已同步");
-                        }
-                    }
-                }
+                // RowVersion同步已由BaseRepository.SaveChangesAsync()全局处理（Issue #2250）
             }
 
             // 检测状态变更：从Active/Draft变为Completed - Issue #2242简化版

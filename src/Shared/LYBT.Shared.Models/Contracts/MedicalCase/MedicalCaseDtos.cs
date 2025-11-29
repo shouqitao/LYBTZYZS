@@ -644,4 +644,150 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("总页数")]
         public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     }
+
+    #region UpdateMedicalCaseRequest (从LYBT.Module.MedicalCase.Dtos迁移)
+
+    /// <summary>
+    /// MedicalCase统一更新请求模型
+    /// Epic #1612: MedicalCase模块权限优化 - Phase 2 Task 2.3
+    /// 合并6个分散的更新方法为统一的更新接口
+    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
+    /// </summary>
+    public class UpdateMedicalCaseRequest
+    {
+        #region 基本属性
+
+        /// <summary>
+        /// 病案状态
+        /// </summary>
+        public MedicalCaseStatus? Status { get; set; }
+
+        /// <summary>
+        /// 是否需要处方（三步流程Step 2）
+        /// </summary>
+        public bool? NeedsPrescription { get; set; }
+
+        #endregion
+
+        #region 辨证信息（Step 1）
+
+        /// <summary>
+        /// 辨证信息更新（三步流程Step 1）
+        /// 如果提供，则更新Consultation实体
+        /// </summary>
+        public ConsultationInputDto? Consultation { get; set; }
+
+        #endregion
+
+        #region 处方操作（Step 3）
+
+        /// <summary>
+        /// 创建处方请求（三步流程Step 3a）
+        /// </summary>
+        public PrescriptionCreateDto? CreatePrescription { get; set; }
+
+        /// <summary>
+        /// 更新处方请求（三步流程Step 3b）
+        /// </summary>
+        public MedicalCasePrescriptionUpdateRequest? UpdatePrescription { get; set; }
+
+        /// <summary>
+        /// 删除处方请求
+        /// </summary>
+        public MedicalCaseDeletePrescriptionRequest? DeletePrescription { get; set; }
+
+        /// <summary>
+        /// 完成病案请求（三步流程完成）
+        /// </summary>
+        public MedicalCaseCompleteCaseRequest? CompleteCase { get; set; }
+
+        #endregion
+
+        #region 操作模式选项
+
+        /// <summary>
+        /// 更新模式
+        /// </summary>
+        public MedicalCaseUpdateMode Mode { get; set; } = MedicalCaseUpdateMode.UpdateAll;
+
+        /// <summary>
+        /// 是否跳过业务规则验证（仅管理员可用）
+        /// </summary>
+        public bool SkipBusinessRules { get; set; } = false;
+
+        /// <summary>
+        /// 是否强制执行（覆盖状态检查）
+        /// </summary>
+        public bool Force { get; set; } = false;
+
+        #endregion
+    }
+
+    /// <summary>
+    /// 更新模式枚举
+    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
+    /// </summary>
+    public enum MedicalCaseUpdateMode
+    {
+        /// <summary>
+        /// 更新所有提供的字段
+        /// </summary>
+        UpdateAll,
+
+        /// <summary>
+        /// 仅更新提供的字段，其他保持不变
+        /// </summary>
+        UpdateOnly,
+
+        /// <summary>
+        /// 仅验证，不执行更新
+        /// </summary>
+        ValidateOnly,
+
+        /// <summary>
+        /// 事务模式：要么全部成功，要么全部回滚
+        /// </summary>
+        Transactional
+    }
+
+    /// <summary>
+    /// 处方更新请求
+    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
+    /// </summary>
+    public class MedicalCasePrescriptionUpdateRequest
+    {
+        /// <summary>处方ID</summary>
+        public Guid PrescriptionId { get; set; }
+
+        /// <summary>处方数据</summary>
+        public PrescriptionEditDto PrescriptionData { get; set; } = new();
+    }
+
+    /// <summary>
+    /// 删除处方请求
+    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
+    /// </summary>
+    public class MedicalCaseDeletePrescriptionRequest
+    {
+        /// <summary>处方ID</summary>
+        public Guid PrescriptionId { get; set; }
+
+        /// <summary>删除原因</summary>
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 完成病案请求
+    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
+    /// </summary>
+    public class MedicalCaseCompleteCaseRequest
+    {
+        /// <summary>是否跳过三步验证</summary>
+        public bool SkipThreeStepValidation { get; set; } = false;
+
+        /// <summary>完成备注</summary>
+        public string CompletionNote { get; set; } = string.Empty;
+    }
+
+    #endregion
 }

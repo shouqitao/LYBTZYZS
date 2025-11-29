@@ -59,9 +59,7 @@
 
 ---
 
-## MODIFIED Requirements
-
-### Requirement: LIFECYCLE-005 关闭病案
+### Requirement: LIFECYCLE-013 关闭病案API
 系统 **SHALL** 提供关闭医案功能，支持权限检查和审计日志。
 
 #### Scenario: 关闭医案成功
@@ -79,7 +77,7 @@
 
 ---
 
-### Requirement: LIFECYCLE-006 删除病案
+### Requirement: LIFECYCLE-014 删除病案API
 系统 **SHALL** 提供软删除医案功能，标记IsDeleted而非物理删除。
 
 #### Scenario: 软删除成功

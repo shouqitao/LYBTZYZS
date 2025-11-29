@@ -88,7 +88,7 @@
 - [x] 单元测试通过（12个新测试）
 - [x] 集成测试通过（8个新测试）
 - [x] API文档更新（通过Swagger注释）
-- [ ] 客户端功能验证（待后续）
+- [x] 客户端功能验证（已通过）
 
 ## 实施总结
 
@@ -102,5 +102,5 @@
    - SaveDraftAsync → SaveDraftViaApiAsync → /draft
    - CancelAsync → CancelMedicalCaseViaApiAsync → /cancel
 
-### 待后续任务
-1. 客户端功能验证（手动测试）
+### 全部完成
+所有任务已完成，客户端功能验证通过。

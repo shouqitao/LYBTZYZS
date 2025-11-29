@@ -1205,14 +1205,14 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 仅验证模式
-                if (request.Mode == UpdateMode.ValidateOnly)
+                if (request.Mode == MedicalCaseUpdateMode.ValidateOnly)
                 {
                     _logger.LogInformation("验证模式完成，MedicalCaseId: {Id}", id);
                     return medicalCase;
                 }
 
                 // 事务模式处理
-                if (request.Mode == UpdateMode.Transactional)
+                if (request.Mode == MedicalCaseUpdateMode.Transactional)
                 {
                     return await UpdateMedicalCaseTransactionalAsync(medicalCase, request, currentUserId, isAdmin);
                 }
@@ -1403,7 +1403,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         private void UpdatePrescriptionInternalAsync(
             MedicalCaseEntity medicalCase,
-            PrescriptionUpdateRequest updateRequest,
+            MedicalCasePrescriptionUpdateRequest updateRequest,
             Guid currentUserId,
             bool isAdmin)
         {
@@ -1413,7 +1413,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         private void DeletePrescriptionInternalAsync(
             MedicalCaseEntity medicalCase,
-            DeletePrescriptionRequest deleteRequest,
+            MedicalCaseDeletePrescriptionRequest deleteRequest,
             Guid currentUserId,
             bool isAdmin)
         {
@@ -1433,7 +1433,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         private void CompleteCaseInternalAsync(
             MedicalCaseEntity medicalCase,
-            CompleteCaseRequest completeRequest,
+            MedicalCaseCompleteCaseRequest completeRequest,
             Guid currentUserId,
             bool isAdmin)
         {

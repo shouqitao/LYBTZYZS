@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using LYBT.Entities.MedicalCase;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto, SetPrescriptionFlagRequest (模块专用)
+using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto (模块专用), SetPrescriptionFlagRequest 已移至Shared层
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -1212,14 +1212,7 @@ namespace LYBT.WebAPI.Controllers
         public DateTime VisitDate { get; set; }
     }
 
-    /// <summary>
-    /// 标记是否开处方请求
-    /// </summary>
-    public class SetPrescriptionFlagRequest
-    {
-        /// <summary>是否需要开处方</summary>
-        public bool NeedsPrescription { get; set; }
-    }
+    // SetPrescriptionFlagRequest 已移至 LYBT.Shared.Models.Contracts.MedicalCase
 
     /// <summary>
     /// 更新病案状态请求

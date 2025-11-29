@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos; // SetPrescriptionFlagRequest (模块专用)
+using LYBT.Module.MedicalCase.Dtos; // MedicalCasePrescriptionDto (模块专用)
+using LYBT.Shared.Models.Contracts.MedicalCase; // SetPrescriptionFlagRequest 已移至Shared层
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Module.MedicalCase.Interfaces;
