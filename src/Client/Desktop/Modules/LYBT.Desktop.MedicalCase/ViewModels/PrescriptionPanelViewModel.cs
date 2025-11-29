@@ -39,6 +39,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private string _patientName = string.Empty;
 
         /// <summary>
+        /// 加载数据标志 - 用于在LoadFromDto期间跳过EnsureMinimumBlankRows
+        /// Bug Fix: 防止PropertyChanged事件在数据加载完成前触发空槽位添加
+        /// </summary>
+        private bool _isLoadingData;
+
+        /// <summary>
         /// 所有药材列表（用于注入到每个PrescriptionItemViewModel）
         /// </summary>
         private ObservableCollection<HerbDto> _allHerbs = new();
@@ -381,15 +387,28 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _patientId = patientId;
             _patientName = patientName;
 
+            // Bug Fix: ViewModel可能被复用，每次初始化时先重置HerbItems
+            // 避免上一次会话的数据残留
+            HerbItems.Clear();
+            _prescriptionId = null;
+
             // 加载药材列表
             await LoadHerbsAsync();
 
             if (existingPrescription != null)
             {
+                // 有已保存的处方，加载数据
                 LoadFromDto(existingPrescription);
             }
+            else
+            {
+                // 新处方，添加默认空槽位
+                AddDefaultHerbItems();
+                UpdateItemCount();
+            }
 
-            Logger.LogInformation("PrescriptionPanel初始化完成，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}", medicalCaseId, patientId);
+            Logger.LogInformation("PrescriptionPanel初始化完成，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}, HasPrescription: {HasPrescription}",
+                medicalCaseId, patientId, existingPrescription != null);
         }
 
         /// <summary>
@@ -443,35 +462,45 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void LoadFromDto(PrescriptionDto dto)
         {
-            _prescriptionId = dto.Id;
-            TreatmentMethod = dto.Indication ?? string.Empty;
-            TreatmentPrinciple = dto.Advice ?? string.Empty;
-            DosageCount = dto.DosageCount;
-            Usage = dto.Usage ?? string.Empty;
-            SingleDosagePrice = dto.SingleDosePrice;
-            TotalPrice = dto.TotalPrice;
+            // Bug Fix: 设置加载标志，防止PropertyChanged事件在加载过程中触发EnsureMinimumBlankRows
+            _isLoadingData = true;
 
-            // 加载药材项
-            // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice替代直接赋值
-            HerbItems.Clear();
-            if (dto.Items != null && dto.Items.Any())
+            try
             {
-                foreach (var item in dto.Items)
+                _prescriptionId = dto.Id;
+                TreatmentMethod = dto.Indication ?? string.Empty;
+                TreatmentPrinciple = dto.Advice ?? string.Empty;
+                DosageCount = dto.DosageCount;
+                Usage = dto.Usage ?? string.Empty;
+                SingleDosagePrice = dto.SingleDosePrice;
+                TotalPrice = dto.TotalPrice;
+
+                // 加载药材项
+                // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice替代直接赋值
+                HerbItems.Clear();
+                if (dto.Items != null && dto.Items.Any())
                 {
-                    var herbItem = CreateHerbItem();
-                    herbItem.HerbId = item.HerbId;
-                    herbItem.HerbName = item.HerbName ?? string.Empty;
-                    herbItem.Dosage = item.Dosage;
-                    herbItem.SetLoadedUnitPrice(item.UnitPrice); // 使用方法设置价格
-                    HerbItems.Add(herbItem);
+                    foreach (var item in dto.Items)
+                    {
+                        var herbItem = CreateHerbItem();
+                        herbItem.HerbId = item.HerbId;
+                        herbItem.HerbName = item.HerbName ?? string.Empty;
+                        herbItem.Dosage = item.Dosage;
+                        herbItem.SetLoadedUnitPrice(item.UnitPrice); // 使用方法设置价格
+                        HerbItems.Add(herbItem);
+                    }
                 }
+
+                // N+1行原则：确保至少有4个空槽位（药材已添加，此时添加的空槽位会在药材后面）
+                EnsureMinimumBlankRows();
+
+                UpdateItemCount();
+                CalculatePrices();
             }
-
-            // N+1行原则：确保至少有4个空槽位
-            EnsureMinimumBlankRows();
-
-            UpdateItemCount();
-            CalculatePrices();
+            finally
+            {
+                _isLoadingData = false;
+            }
         }
 
         /// <summary>
@@ -490,6 +519,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.ItemTotal) ||
                     e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
                 {
+                    // Bug Fix: 加载过程中跳过这些操作，避免在数据加载完成前触发副作用
+                    if (_isLoadingData) return;
+
                     CalculatePrices();
                     UpdateItemCount();
                     CheckDuplicateHerbs();
@@ -542,6 +574,31 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        /// <summary>
+        /// 紧凑药材列表：将所有非空药材移到前面，空槽位移到后面
+        /// Bug Fix: 解决用户在中间槽位输入药材后，空槽位显示在药材前面的问题
+        /// </summary>
+        private void CompactHerbItems()
+        {
+            // 提取所有非空药材项（保持相对顺序）
+            var nonEmptyItems = HerbItems.Where(h => h.HerbId != Guid.Empty).ToList();
+
+            // 清空集合
+            HerbItems.Clear();
+
+            // 先添加非空药材
+            foreach (var item in nonEmptyItems)
+            {
+                HerbItems.Add(item);
+            }
+
+            // 再添加空槽位
+            EnsureMinimumBlankRows();
+
+            // 更新计数
+            UpdateItemCount();
+        }
+
         #endregion
 
         #region ISaveable
@@ -574,8 +631,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 else
                 {
                     // 创建新处方
+                    // Bug Fix: 添加必填字段PatientId和DoctorId，否则服务端验证会返回400
                     var createRequest = new PrescriptionCreateDto
                     {
+                        PatientId = _patientId,
+                        DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
                         DosageCount = DosageCount,
                         Usage = Usage,
                         Items = items
@@ -590,6 +650,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result != null)
                 {
                     Logger.LogInformation("处方数据保存成功");
+
+                    // Bug Fix: 紧凑药材列表，将空槽位移到后面
+                    CompactHerbItems();
 
                     // 发布处方完成事件
                     EventAggregator.GetEvent<PrescriptionCompletedEvent>()
@@ -623,12 +686,23 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
+                // Bug诊断：记录调用信息
+                Logger.LogInformation("[处方诊断] SaveSilentlyAsync被调用，MedicalCaseId: {MedicalCaseId}, HerbItems.Count: {Count}",
+                    _medicalCaseId, HerbItems.Count);
+
                 // 收集药材项
                 var items = CollectPrescriptionItems();
 
+                Logger.LogInformation("[处方诊断] CollectPrescriptionItems返回: {Count}个有效药材项", items.Count);
+
                 if (!items.Any())
                 {
-                    Logger.LogDebug("没有药材项，静默保存跳过");
+                    Logger.LogWarning("[处方诊断] 没有有效药材项，静默保存跳过。HerbItems详情:");
+                    foreach (var h in HerbItems.Take(5))
+                    {
+                        Logger.LogWarning("[处方诊断]   - HerbId={HerbId}, HerbName={HerbName}, Dosage={Dosage}",
+                            h.HerbId, h.HerbName ?? "(null)", h.Dosage);
+                    }
                     return true; // 空处方也算保存成功
                 }
 
@@ -647,13 +721,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 else
                 {
                     // 创建新处方
+                    // Bug Fix: 添加必填字段PatientId和DoctorId，否则服务端验证会返回400
                     var createRequest = new PrescriptionCreateDto
                     {
+                        PatientId = _patientId,
+                        DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
                         DosageCount = DosageCount,
                         Usage = Usage,
                         Items = items
                     };
+                    Logger.LogInformation("[处方诊断] 准备调用CreatePrescriptionAsync，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}, Items: {Count}",
+                        _medicalCaseId, _patientId, items.Count);
                     result = await _medicalCaseRepository.CreatePrescriptionAsync(_medicalCaseId, createRequest);
+                    Logger.LogInformation("[处方诊断] CreatePrescriptionAsync返回: {Result}", result != null ? $"成功,Id={result.Id}" : "null");
                     if (result != null)
                     {
                         _prescriptionId = result.Id;
@@ -662,12 +742,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 if (result != null)
                 {
-                    Logger.LogDebug("处方数据静默保存成功");
+                    Logger.LogInformation("[处方诊断] 处方数据静默保存成功，PrescriptionId: {PrescriptionId}", result.Id);
+
+                    // Bug Fix: 紧凑药材列表，将空槽位移到后面
+                    CompactHerbItems();
+
                     // 不发布PrescriptionCompletedEvent，因为这是取消流程的保存
                     return true;
                 }
 
-                Logger.LogDebug("处方数据静默保存失败");
+                Logger.LogWarning("[处方诊断] 处方数据静默保存失败：API返回null");
                 return false;
             }
             catch (Exception ex)
