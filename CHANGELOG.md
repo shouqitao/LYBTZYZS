@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### WebAPI层重构 (OpenSpec: refactor-webapi-layer)
+
+**Phase 1: Dead Endpoints清理**
+- 标记废弃端点 `[Obsolete]` + `[ApiExplorerSettings(IgnoreApi = true)]`
+- UsersController: `BatchDeleteUsers`, `ToggleStatus` 已废弃
+- HerbsController: `BatchDeleteHerbs` 已废弃
+- FormulasController: `BatchDeleteFormulas` 已废弃
+- MedicalCaseController: `CompleteMedicalCase` 已废弃
+- CacheHealthController: 整个Controller标记废弃待评估
+
+**决策记录:**
+- 批量删除模式统一为Client端循环模式
+- 保留有设计意图的端点: `GetCurrentUser`, `CheckReference`, `BatchCheckReference`, `GetAllForExport`, `Search`
+
 #### Service层重构 (OpenSpec: refactor-service-layer)
 
 - 统一返回值类型：废弃`ServiceResult<T>`，统一使用`Result<T>`

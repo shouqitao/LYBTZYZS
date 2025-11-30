@@ -10,6 +10,14 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 缓存管理控制器 - MVP简化版（Issue #1754：直接使用IMemoryCache）
     /// </summary>
+    /// <summary>
+    /// 缓存健康检查控制器 - 运维功能
+    /// </summary>
+    /// <remarks>
+    /// OpenSpec refactor-webapi-layer: 此Controller从未被Client调用，
+    /// 保留用于潜在的运维工具需求。标记为Obsolete待进一步评估。
+    /// </remarks>
+    [Obsolete("运维功能，无Client调用。保留待未来评估是否需要Admin UI")]
     [ApiController]
     [Route("api/v1/system/cache")]
     [Authorize(Roles = "Admin")]

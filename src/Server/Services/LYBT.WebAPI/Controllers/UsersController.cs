@@ -238,40 +238,21 @@ namespace LYBT.WebAPI.Controllers
         /// 批量删除用户（软删除）(Issue #1169)
         /// </summary>
         /// <param name="request">批量删除请求</param>
+        /// <summary>
+        /// 批量删除用户（软删除）- 已废弃
+        /// </summary>
+        /// <remarks>
+        /// 此端点从未被Client调用，Client使用循环单删模式。
+        /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
+        /// </remarks>
+        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<BatchOperationResultDto>>> BatchDeleteUsers([FromBody] BatchDeleteRequestDto request)
+        public ActionResult<ApiResponse<BatchOperationResultDto>> BatchDeleteUsers([FromBody] BatchDeleteRequestDto request)
         {
-            try
-            {
-                // 验证请求
-                if (request.Ids == null || request.Ids.Count == 0)
-                {
-                    return ValidationFail<BatchOperationResultDto>("ID列表不能为空");
-                }
-
-                if (request.Ids.Count > 100)
-                {
-                    return ValidationFail<BatchOperationResultDto>("批量操作最多支持100条记录");
-                }
-
-                var result = await _userService.BatchDeleteAsync(request.Ids);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("批量删除用户",
-                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
-                        null);
-                    return Success(result.Data, result.Data.Message ?? "批量删除完成");
-                }
-
-                return BusinessFail<BatchOperationResultDto>(result.ErrorMessage ?? "批量删除失败");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<BatchOperationResultDto>(ex, "批量删除用户", new { IdCount = request.Ids?.Count });
-            }
+            return ValidationFail<BatchOperationResultDto>("此端点已废弃，请使用单个删除API循环调用");
         }
 
         /// <summary>
@@ -313,32 +294,21 @@ namespace LYBT.WebAPI.Controllers
         /// 切换用户状态（启用/禁用）(Issue #1162)
         /// </summary>
         /// <param name="id">用户ID</param>
+        /// <summary>
+        /// 切换用户状态（启用/禁用）- 已废弃
+        /// </summary>
+        /// <remarks>
+        /// 此端点从未被Client调用，无对应UI功能。
+        /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
+        /// </remarks>
+        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("{id:guid}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> ToggleStatus(Guid id)
+        public ActionResult<ApiResponse<UserDto>> ToggleStatus(Guid id)
         {
-            try
-            {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<UserDto>("用户ID不能为空");
-                }
-
-                var result = await _userService.ToggleStatusAsync(id);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("切换用户状态", new { NewStatus = result.Data.Status }, id);
-                    return Success(result.Data, "状态切换成功");
-                }
-
-                return BusinessFail<UserDto>(result.ErrorMessage ?? "状态切换失败");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<UserDto>(ex, "切换用户状态", new { UserId = id });
-            }
+            return ValidationFail<UserDto>("此端点已废弃");
         }
 
         /// <summary>

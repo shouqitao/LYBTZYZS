@@ -534,32 +534,22 @@ namespace LYBT.WebAPI.Controllers
         /// 完成病案（三步流程最后一步）
         /// Epic #1612 - BF-002: 三步流程验证
         /// </summary>
+        /// <summary>
+        /// 完成病案 - 已废弃
+        /// </summary>
+        /// <remarks>
+        /// OpenSpec refactor-webapi-layer: 此端点从未被Client调用，
+        /// Client使用 PUT /{id}/status 并指定 Completed 状态。
+        /// </remarks>
+        [Obsolete("此端点未被Client使用，请使用 PUT /{id}/status 并指定 Completed 状态")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPut("{id}/complete")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> CompleteMedicalCase(Guid id)
+        public ActionResult<ApiResponse<MedicalCase>> CompleteMedicalCase(Guid id)
         {
-            try
-            {
-                var result = await _stateService.CompleteAsync(id);
-
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
-
-                _logger.LogInformation("病案完成，MedicalCaseId: {Id}", id);
-                return Ok(ApiResponse<MedicalCase>.CreateSuccess(result, "病案已完成"));
-            }
-            catch (InvalidOperationException ex)
-            {
-                // BF-002: 三步流程验证失败
-                _logger.LogWarning(ex, "病案完成失败：流程验证失败");
-                return UnprocessableEntity(ApiResponse<MedicalCase>.CreateFail(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return HandleException<MedicalCase>(ex, "完成病案", new { id });
-            }
+            return ValidationFail<MedicalCase>("此端点已废弃，请使用 PUT /{id}/status 并指定 Completed 状态");
         }
 
         /// <summary>

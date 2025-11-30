@@ -171,40 +171,21 @@ namespace LYBT.WebAPI.Controllers
         /// 批量删除验方（软删除）(Issue #1169)
         /// </summary>
         /// <param name="request">批量删除请求</param>
+        /// <summary>
+        /// 批量删除验方（软删除）- 已废弃
+        /// </summary>
+        /// <remarks>
+        /// 此端点从未被Client调用，Client使用循环单删模式。
+        /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
+        /// </remarks>
+        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPost("batch-delete")]
         [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<BatchOperationResultDto>>> BatchDeleteFormulas([FromBody] BatchDeleteRequestDto request)
+        public ActionResult<ApiResponse<BatchOperationResultDto>> BatchDeleteFormulas([FromBody] BatchDeleteRequestDto request)
         {
-            try
-            {
-                // 验证请求
-                if (request.Ids == null || request.Ids.Count == 0)
-                {
-                    return ValidationFail<BatchOperationResultDto>("ID列表不能为空");
-                }
-
-                if (request.Ids.Count > 100)
-                {
-                    return ValidationFail<BatchOperationResultDto>("批量操作最多支持100条记录");
-                }
-
-                var result = await _service.BatchDeleteAsync(request.Ids);
-
-                if (result.IsSuccess && result.Data != null)
-                {
-                    LogOperation("批量删除验方",
-                        new { TotalCount = result.Data.TotalCount, SuccessCount = result.Data.SuccessCount },
-                        null);
-                    return Success(result.Data, result.Data.Message ?? "批量删除完成");
-                }
-
-                return BusinessFail<BatchOperationResultDto>(result.ErrorMessage ?? "批量删除失败");
-            }
-            catch (Exception ex)
-            {
-                return HandleException<BatchOperationResultDto>(ex, "批量删除验方", new { IdCount = request.Ids?.Count });
-            }
+            return ValidationFail<BatchOperationResultDto>("此端点已废弃，请使用单个删除API循环调用");
         }
 
 
