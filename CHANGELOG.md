@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### Repository层重构 (OpenSpec: refactor-repository-layer)
+
+- 将`IRepository`/`IReadRepository`接口从Shared层移至Infrastructure层
+- 统一所有Repository构造函数签名为`(AppDbContext context, ILogger logger)`
+- 引入模板方法模式消除`GetPagedAsync`代码重复
+  - `ApplyKeywordFilter` - 子类覆盖实现关键字过滤
+  - `ApplyDefaultOrdering` - 子类覆盖实现默认排序
+- 修复`UnifiedListViewModelBase`基类`commonDialogService`参数传递问题
+- 创建`repository-patterns` spec规范化Repository设计模式
+
 ## [1.0.0] - 2025-11-09
 
 ### Added
