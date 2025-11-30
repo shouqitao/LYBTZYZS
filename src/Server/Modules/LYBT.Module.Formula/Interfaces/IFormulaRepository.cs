@@ -1,8 +1,8 @@
-﻿using LYBT.Shared.Models.Interfaces;
+﻿using LYBT.Entities.Formulas;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
-namespace LYBT.Module.Formula.Interfaces
+namespace LYBT.Module.Formulas.Interfaces
 {
 
     /// <summary>
@@ -13,36 +13,36 @@ namespace LYBT.Module.Formula.Interfaces
     /// 验方仓储接口 - 简化版，减少冗余权限方法
     /// 继承BaseRepository提供通用CRUD，扩展验方特定业务方法
     /// </summary>
-    public interface IFormulaRepository : IRepository<FormulaEntity>
+    public interface IFormulaRepository : IRepository<Formula>
     {
         /// <summary>
         /// 获取模板验方列表
         /// </summary>
-        Task<List<FormulaEntity>> GetTemplatesAsync();
+        Task<List<Formula>> GetTemplatesAsync();
 
         /// <summary>
         /// 根据ID获取方剂（包含所有药材配伍）
         /// </summary>
-        Task<FormulaEntity> GetByIdWithHerbsAsync(Guid id);
+        Task<Formula> GetByIdWithHerbsAsync(Guid id);
 
         /// <summary>
         /// 获取分页列表（包含药材配伍信息）
         /// </summary>
-        Task<PagedResult<FormulaEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
+        Task<PagedResult<Formula>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
 
         /// <summary>
         /// 根据用户ID获取方剂列表（包含权限逻辑：自己的+共享的）
         /// </summary>
-        Task<List<FormulaEntity>> GetByUserIdAsync(Guid userId);
+        Task<List<Formula>> GetByUserIdAsync(Guid userId);
 
         /// <summary>
         /// 获取共享的方剂列表（保留用于特殊场景）
         /// </summary>
-        Task<List<FormulaEntity>> GetSharedFormulasAsync();
+        Task<List<Formula>> GetSharedFormulasAsync();
 
         /// <summary>
         /// 根据类别获取方剂列表
         /// </summary>
-        Task<List<FormulaEntity>> GetByCategoryAsync(string category);
+        Task<List<Formula>> GetByCategoryAsync(string category);
     }
 }

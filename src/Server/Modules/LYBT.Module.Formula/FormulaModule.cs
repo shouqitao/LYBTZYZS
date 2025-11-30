@@ -2,13 +2,13 @@
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
-using LYBT.Module.Formula.Interfaces;
-using LYBT.Module.Formula.Repositories;
-using LYBT.Module.Formula.Services;
+using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.Formulas.Repositories;
+using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Validators.Formula;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Formula
+namespace LYBT.Module.Formulas
 {
     /// <summary>
     /// 验方模块注册 - 标准三层架构

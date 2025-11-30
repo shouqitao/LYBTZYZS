@@ -1,6 +1,6 @@
-﻿using LYBT.Module.Consultation.Services;
+﻿using LYBT.Module.Consultations.Services;
 
-namespace LYBT.Module.Consultation.Tests
+namespace LYBT.Module.Consultations.Tests
 {
     /// <summary>
     /// ConsultationService 简化单元测试 - UltraThink双层架构适配

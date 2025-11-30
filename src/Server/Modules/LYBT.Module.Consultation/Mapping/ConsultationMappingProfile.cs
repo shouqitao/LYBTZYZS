@@ -2,7 +2,7 @@
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Consultation.Mapping
+namespace LYBT.Module.Consultations.Mapping
 {
     /// <summary>
     /// 诊疗模块 AutoMapper 映射配置

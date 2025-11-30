@@ -1,7 +1,7 @@
 ﻿using LYBT.Entities.Patients;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Patients.Repositories;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Patients.Interfaces
 {

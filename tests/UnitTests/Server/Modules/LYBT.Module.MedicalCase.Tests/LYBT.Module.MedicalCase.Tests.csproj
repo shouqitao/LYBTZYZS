@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>LYBT.Module.MedicalCases.Tests</RootNamespace>
+    <AssemblyName>LYBT.Module.MedicalCases.Tests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

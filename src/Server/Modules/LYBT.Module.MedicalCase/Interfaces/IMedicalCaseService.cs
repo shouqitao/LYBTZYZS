@@ -1,12 +1,12 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Entities.MedicalCases;
+using LYBT.Entities.Prescriptions;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
-namespace LYBT.Module.MedicalCase.Interfaces
+namespace LYBT.Module.MedicalCases.Interfaces
 {
     /// <summary>
     /// 病案Service接口 - Epic #1612 重构版
@@ -28,7 +28,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="visitDate">就诊日期</param>
         /// <param name="doctorId">医生ID</param>
         /// <returns>创建的病案实体</returns>
-        Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId);
+        Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId);
 
         /// <summary>
         /// 更新辨证信息（三步流程Step 1）
@@ -40,7 +40,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="currentUserId">当前操作用户ID</param>
         /// <param name="isAdmin">是否管理员（默认false）</param>
         /// <returns>更新后的病案实体（包含Consultation）</returns>
-        Task<MedicalCaseEntity?> UpdateConsultationAsync(
+        Task<MedicalCase?> UpdateConsultationAsync(
             Guid medicalCaseId,
             ConsultationInputDto request,
             Guid currentUserId,
@@ -53,7 +53,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="medicalCaseId">病案ID</param>
         /// <param name="needsPrescription">是否需要开处方</param>
         /// <returns>更新后的病案实体</returns>
-        Task<MedicalCaseEntity?> SetPrescriptionFlagAsync(
+        Task<MedicalCase?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
             bool needsPrescription,
             Guid currentUserId,
@@ -67,7 +67,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="medicalCaseId">病案ID</param>
         /// <param name="request">处方创建请求</param>
         /// <returns>创建的处方实体</returns>
-        Task<PrescriptionEntity?> CreatePrescriptionAsync(
+        Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
             PrescriptionCreateDto request);
 
@@ -79,7 +79,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="prescriptionId">处方ID</param>
         /// <param name="request">处方更新请求</param>
         /// <returns>更新后的处方实体</returns>
-        Task<PrescriptionEntity?> UpdatePrescriptionAsync(
+        Task<Prescription?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
             PrescriptionEditDto request,
@@ -107,7 +107,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="medicalCaseId">病案ID</param>
         /// <param name="status">目标状态</param>
         /// <returns>更新后的病案实体</returns>
-        Task<MedicalCaseEntity?> UpdateStatusAsync(
+        Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
             MedicalCaseStatus status);
 
@@ -118,7 +118,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>完成后的病案实体</returns>
-        Task<MedicalCaseEntity?> CompleteAsync(Guid medicalCaseId);
+        Task<MedicalCase?> CompleteAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 关闭病案（直接标记为Completed）
@@ -139,7 +139,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="operatorId">操作者ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <returns>更新后的病案实体</returns>
-        Task<MedicalCaseEntity?> SaveDraftAsync(
+        Task<MedicalCase?> SaveDraftAsync(
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,
@@ -155,7 +155,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="isAdmin">是否管理员</param>
         /// <param name="reason">取消原因（审计时必填）</param>
         /// <returns>更新后的病案实体</returns>
-        Task<MedicalCaseEntity?> CancelAsync(
+        Task<MedicalCase?> CancelAsync(
             Guid id,
             Guid operatorId,
             bool isAdmin = false,
@@ -179,7 +179,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="id">病案ID</param>
         /// <returns>病案实体（包含完整关联数据）</returns>
-        Task<MedicalCaseEntity?> GetByIdAsync(Guid id);
+        Task<MedicalCase?> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 查询病案列表（分页）
@@ -190,7 +190,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
         /// <returns>分页结果</returns>
-        Task<PagedResult<MedicalCaseEntity>> GetListAsync(
+        Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
@@ -220,7 +220,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的病案实体（包含关联数据），若无则返回null</returns>
-        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
 
         /// <summary>
         /// 获取待看诊队列（Status = Active的医案患者列表）

@@ -1,5 +1,5 @@
 using LYBT.Entities.Herbs;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Herbs.Interfaces
 {

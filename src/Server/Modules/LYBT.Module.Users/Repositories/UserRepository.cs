@@ -26,37 +26,26 @@ namespace LYBT.Module.Users.Repositories
         {
         }
 
-        #region BaseRepository GetPagedAsync 重写 - 支持用户关键字搜索
+        #region 模板方法覆盖 - 用户关键字搜索和排序
 
         /// <summary>
-        /// 分页查询用户（重写基类方法，支持用户名/真实姓名/拼音码搜索）
+        /// 关键字过滤：用户名、真实姓名、拼音码
         /// </summary>
-        public override async Task<PagedResult<User>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        protected override IQueryable<User> ApplyKeywordFilter(IQueryable<User> query, string keyword)
         {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(u => !u.IsDeleted);
+            return query.Where(u =>
+                u.UserName.Contains(keyword) ||
+                (u.RealName != null && u.RealName.Contains(keyword)) ||
+                (u.PinYinCode != null && u.PinYinCode.Contains(keyword))
+            );
+        }
 
-            // 关键字搜索：用户名、真实姓名、拼音码
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                var searchTerm = keyword.Trim();
-                query = query.Where(u =>
-                    u.UserName.Contains(searchTerm) ||
-                    (u.RealName != null && u.RealName.Contains(searchTerm)) ||
-                    (u.PinYinCode != null && u.PinYinCode.Contains(searchTerm))
-                );
-            }
-
-            query = query.OrderBy(u => u.UserName);
-
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<User>(items, totalCount, pageNumber, pageSize);
+        /// <summary>
+        /// 默认排序：按用户名升序
+        /// </summary>
+        protected override IQueryable<User> ApplyDefaultOrdering(IQueryable<User> query)
+        {
+            return query.OrderBy(u => u.UserName);
         }
 
         #endregion

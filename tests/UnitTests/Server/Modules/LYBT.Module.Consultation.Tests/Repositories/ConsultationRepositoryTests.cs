@@ -1,10 +1,11 @@
 ﻿using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Consultation.Repositories;
+using LYBT.Module.Consultations.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace LYBT.Module.Consultation.Tests.Repositories;
+namespace LYBT.Module.Consultations.Tests.Repositories;
 
 /// <summary>
 /// ConsultationRepository 单元测试
@@ -22,7 +23,7 @@ public class ConsultationRepositoryTests : IDisposable
             .Options;
 
         _context = new AppDbContext(options);
-        _sut = new ConsultationRepository(_context);
+        _sut = new ConsultationRepository(_context, NullLogger<ConsultationRepository>.Instance);
     }
 
     public void Dispose()

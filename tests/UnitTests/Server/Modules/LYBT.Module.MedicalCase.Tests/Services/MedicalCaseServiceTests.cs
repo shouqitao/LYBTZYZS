@@ -3,8 +3,8 @@ using FluentAssertions;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Module.MedicalCase.Services;
+using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using LYBT.Tests.Common;
@@ -19,7 +19,7 @@ using LYBT.Module.Users.Interfaces;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 
-namespace LYBT.Module.MedicalCase.Tests.Services
+namespace LYBT.Module.MedicalCases.Tests.Services
 {
     /// <summary>
     /// Epic #1612：MedicalCaseService单元测试

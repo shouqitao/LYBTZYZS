@@ -26,36 +26,25 @@ namespace LYBT.Module.Herbs.Repositories
         {
         }
 
-        #region BaseRepository GetPagedAsync 重写 - 支持药材关键字搜索
+        #region 模板方法覆盖 - 药材关键字搜索和排序
 
         /// <summary>
-        /// 分页查询药材（重写基类方法，支持名称/拼音码搜索）
+        /// 关键字过滤：名称、拼音码
         /// </summary>
-        public override async Task<PagedResult<Herb>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        protected override IQueryable<Herb> ApplyKeywordFilter(IQueryable<Herb> query, string keyword)
         {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(h => !h.IsDeleted);
+            return query.Where(h =>
+                h.Name.Contains(keyword) ||
+                (h.PinYinCode != null && h.PinYinCode.Contains(keyword))
+            );
+        }
 
-            // 关键字搜索：名称、拼音码
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                var searchTerm = keyword.Trim();
-                query = query.Where(h =>
-                    h.Name.Contains(searchTerm) ||
-                    (h.PinYinCode != null && h.PinYinCode.Contains(searchTerm))
-                );
-            }
-
-            query = query.OrderBy(h => h.Name);
-
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<Herb>(items, totalCount, pageNumber, pageSize);
+        /// <summary>
+        /// 默认排序：按名称升序
+        /// </summary>
+        protected override IQueryable<Herb> ApplyDefaultOrdering(IQueryable<Herb> query)
+        {
+            return query.OrderBy(h => h.Name);
         }
 
         #endregion

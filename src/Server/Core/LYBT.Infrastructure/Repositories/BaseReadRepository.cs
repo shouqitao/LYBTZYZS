@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LYBT.Infrastructure.Repositories;
 
@@ -21,7 +22,7 @@ namespace LYBT.Infrastructure.Repositories;
 /// - 所有方法标记为virtual，允许子类重写
 /// - 自动应用软删除过滤（!e.IsDeleted）
 /// - 使用EF Core LINQ实现查询逻辑
-/// - 构造函数注入ApplicationDbContext
+/// - 构造函数注入AppDbContext和ILogger
 /// </remarks>
 public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity> 
     where TEntity : BaseEntity
@@ -29,7 +30,7 @@ public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity>
     /// <summary>
     /// 数据库上下文
     /// </summary>
-    protected readonly AppDbContext Context;
+    protected readonly AppDbContext _context;
 
     /// <summary>
     /// 实体DbSet
@@ -37,13 +38,20 @@ public abstract class BaseReadRepository<TEntity> : IReadRepository<TEntity>
     protected readonly DbSet<TEntity> DbSet;
 
     /// <summary>
+    /// 日志记录器
+    /// </summary>
+    protected readonly ILogger _logger;
+
+    /// <summary>
     /// 构造函数
     /// </summary>
     /// <param name="context">数据库上下文</param>
-    protected BaseReadRepository(AppDbContext context)
+    /// <param name="logger">日志记录器</param>
+    protected BaseReadRepository(AppDbContext context, ILogger logger)
     {
-        Context = context ?? throw new ArgumentNullException(nameof(context));
-        DbSet = Context.Set<TEntity>();
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        DbSet = _context.Set<TEntity>();
     }
 
     /// <summary>

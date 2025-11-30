@@ -1,28 +1,23 @@
-﻿using LYBT.Infrastructure.Data;
+﻿using LYBT.Entities.Consultations;
+using LYBT.Entities.MedicalCases;
+using LYBT.Entities.Patients;
+using LYBT.Entities.Prescriptions;
+using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using PatientEntity = LYBT.Entities.Patients.Patient;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
-using PrescriptionItem = LYBT.Entities.Prescriptions.PrescriptionItem;
 
-namespace LYBT.Module.MedicalCase.Repositories
+namespace LYBT.Module.MedicalCases.Repositories
 {
     /// <summary>
     /// 病案仓储 - 简化版，减少过度复杂的Include策略
     /// </summary>
-    internal class MedicalCaseRepository : BaseRepository<MedicalCaseEntity>, IMedicalCaseRepository
+    internal class MedicalCaseRepository : BaseRepository<MedicalCase>, IMedicalCaseRepository
     {
-        public MedicalCaseRepository(AppDbContext context) : base(context)
-        {
-        }
-
         public MedicalCaseRepository(AppDbContext context, ILogger<MedicalCaseRepository> logger)
             : base(context, logger)
         {
@@ -31,7 +26,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 基础查询 - 简化Include逻辑
         /// </summary>
-        private IQueryable<MedicalCaseEntity> GetBaseQuery()
+        private IQueryable<MedicalCase> GetBaseQuery()
         {
             return _dbSet.Where(m => !m.IsDeleted);
         }
@@ -40,7 +35,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 详细查询 - 仅在需要时Include关联数据
         /// Epic #1612 Task 1.5: 增强Include策略，预加载Prescription.Items避免N+1查询
         /// </summary>
-        private IQueryable<MedicalCaseEntity> GetDetailQuery()
+        private IQueryable<MedicalCase> GetDetailQuery()
         {
             return _dbSet
                 .Include(m => m.Consultation)
@@ -52,7 +47,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 根据患者ID获取医疗案例（简化版）
         /// </summary>
-        public async Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId)
+        public async Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId)
         {
             return await GetBaseQuery()
                 .Where(m => m.PatientId == patientId)
@@ -63,7 +58,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 根据ID获取病案（包含关联数据）
         /// </summary>
-        public async Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id)
+        public async Task<MedicalCase> GetByIdWithDetailsAsync(Guid id)
         {
             return (await GetDetailQuery()
                 .Where(m => m.Id == id)
@@ -74,15 +69,15 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 根据ID获取病案（包含关联数据，强制从数据库刷新，不使用缓存）
         /// 用于处理并发场景，确保获取最新的RowVersion
         /// </summary>
-        public async Task<MedicalCaseEntity?> GetByIdWithDetailsFreshAsync(Guid id)
+        public async Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id)
         {
             // 分离所有相关缓存实体：MedicalCase、Consultation、Prescription及PrescriptionItems
-            var medicalCaseEntry = _context.ChangeTracker.Entries<MedicalCaseEntity>()
+            var medicalCaseEntry = _context.ChangeTracker.Entries<MedicalCase>()
                 .FirstOrDefault(e => e.Entity.Id == id);
             if (medicalCaseEntry != null)
             {
                 // 分离关联的Consultation
-                var consultationEntry = _context.ChangeTracker.Entries<LYBT.Entities.Consultations.Consultation>()
+                var consultationEntry = _context.ChangeTracker.Entries<Consultation>()
                     .FirstOrDefault(e => e.Entity.Id == id); // Consultation使用共享主键
                 if (consultationEntry != null)
                 {
@@ -95,7 +90,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                     var prescriptionId = medicalCaseEntry.Entity.Prescription.Id;
 
                     // 先分离PrescriptionItems
-                    var prescriptionItemEntries = _context.ChangeTracker.Entries<LYBT.Entities.Prescriptions.PrescriptionItem>()
+                    var prescriptionItemEntries = _context.ChangeTracker.Entries<PrescriptionItem>()
                         .Where(e => e.Entity.PrescriptionId == prescriptionId)
                         .ToList();
                     foreach (var itemEntry in prescriptionItemEntries)
@@ -104,7 +99,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                     }
 
                     // 再分离Prescription
-                    var prescriptionEntry = _context.ChangeTracker.Entries<PrescriptionEntity>()
+                    var prescriptionEntry = _context.ChangeTracker.Entries<Prescription>()
                         .FirstOrDefault(e => e.Entity.Id == prescriptionId);
                     if (prescriptionEntry != null)
                     {
@@ -126,7 +121,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 获取分页列表（简化版，按需Include）
         /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
         /// </summary>
-        public async Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(
+        public async Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
             string? keyword = null)
@@ -151,7 +146,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <summary>
         /// 根据医生ID获取病案列表（简化版）
         /// </summary>
-        public async Task<List<MedicalCaseEntity>> GetByDoctorIdAsync(Guid doctorId)
+        public async Task<List<MedicalCase>> GetByDoctorIdAsync(Guid doctorId)
         {
             return await GetBaseQuery()
                 .Where(m => m.DoctorId == doctorId)
@@ -164,7 +159,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 当医案状态变更为Closed时，自动删除关联的Consultation和Prescription
         /// Issue #1669 Phase 7: 支持tracked和detached两种entity状态
         /// </summary>
-        public override async Task<MedicalCaseEntity> UpdateAsync(MedicalCaseEntity entity)
+        public override async Task<MedicalCase> UpdateAsync(MedicalCase entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -186,7 +181,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 // 如果Prescription是新创建的（State=Modified但在数据库中不存在），将其改为Added
                 if (prescriptionEntry.State == EntityState.Modified)
                 {
-                    var existsInDb = await _context.Set<PrescriptionEntity>()
+                    var existsInDb = await _context.Set<Prescription>()
                         .AnyAsync(p => p.Id == entity.Prescription.Id);
 
                     if (!existsInDb)
@@ -239,7 +234,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                 }
             }
 
-            MedicalCaseEntity? existingEntity;
+            MedicalCase? existingEntity;
 
             if (entry.State == EntityState.Detached)
             {
@@ -276,14 +271,14 @@ namespace LYBT.Module.MedicalCase.Repositories
                 if (existingEntity.Consultation != null)
                 {
                     _logger?.LogInformation("删除关联的Consultation，ConsultationId: {ConsultationId}", existingEntity.Consultation.Id);
-                    _context.Set<ConsultationEntity>().Remove(existingEntity.Consultation);
+                    _context.Set<Consultation>().Remove(existingEntity.Consultation);
                 }
 
                 // 删除关联的Prescription（如果存在）
                 if (existingEntity.Prescription != null)
                 {
                     _logger?.LogInformation("删除关联的Prescription，PrescriptionId: {PrescriptionId}", existingEntity.Prescription.Id);
-                    _context.Set<PrescriptionEntity>().Remove(existingEntity.Prescription);
+                    _context.Set<Prescription>().Remove(existingEntity.Prescription);
                 }
 
                 _logger?.LogInformation("级联删除完成，即将更新医案状态");
@@ -318,7 +313,7 @@ namespace LYBT.Module.MedicalCase.Repositories
                     && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active)
                     && m.DoctorId == doctorId)
                 .Join(
-                    _context.Set<PatientEntity>(),
+                    _context.Set<Patient>(),
                     m => m.PatientId,
                     p => p.Id,
                     (m, p) => new { MedicalCase = m, Patient = p })
@@ -349,7 +344,7 @@ namespace LYBT.Module.MedicalCase.Repositories
             var result = await _dbSet
                 .Where(m => !m.IsDeleted && (m.CaseStatus == MedicalCaseStatus.Draft || m.CaseStatus == MedicalCaseStatus.Active))
                 .Join(
-                    _context.Set<PatientEntity>(),
+                    _context.Set<Patient>(),
                     m => m.PatientId,
                     p => p.Id,
                     (m, p) => new { MedicalCase = m, Patient = p })
@@ -385,7 +380,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// 查询病案列表（支持多条件组合查询）
         /// Issue #1592 - Phase 3
         /// </summary>
-        public async Task<List<MedicalCaseEntity>> QueryAsync(
+        public async Task<List<MedicalCase>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -440,7 +435,7 @@ namespace LYBT.Module.MedicalCase.Repositories
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体（包含关联数据），若无则返回null</returns>
-        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             _logger?.LogInformation("查询患者未完成医案，PatientId: {PatientId}, DoctorId: {DoctorId}",
                 patientId, doctorId);

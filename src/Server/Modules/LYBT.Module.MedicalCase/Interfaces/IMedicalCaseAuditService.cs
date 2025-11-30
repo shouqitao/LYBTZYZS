@@ -1,8 +1,7 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Interfaces
+namespace LYBT.Module.MedicalCases.Interfaces
 {
     /// <summary>
     /// 医案审计服务接口
@@ -22,8 +21,8 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="operationType">操作类型</param>
         /// <param name="reason">修改原因（历史医案修改时必填）</param>
         Task LogAsync(
-            MedicalCaseEntity? before,
-            MedicalCaseEntity after,
+            MedicalCase? before,
+            MedicalCase after,
             Guid operatorId,
             string operatorName,
             UserRole role,

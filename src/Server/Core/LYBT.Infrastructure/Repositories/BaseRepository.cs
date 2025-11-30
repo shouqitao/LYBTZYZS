@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Entities.Common;
 using LYBT.Infrastructure.Data;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,9 +29,32 @@ namespace LYBT.Infrastructure.Repositories
             _dbSet = _context.Set<TEntity>();
         }
 
-        protected BaseRepository(AppDbContext context) : this(context, NullLogger.Instance)
+        #region 模板方法
+
+        /// <summary>
+        /// 模板方法：子类覆盖提供关键字过滤逻辑
+        /// </summary>
+        /// <param name="query">基础查询</param>
+        /// <param name="keyword">搜索关键字</param>
+        /// <returns>应用过滤后的查询</returns>
+        protected virtual IQueryable<TEntity> ApplyKeywordFilter(IQueryable<TEntity> query, string keyword)
         {
+            // 默认不过滤，子类覆盖实现具体逻辑
+            return query;
         }
+
+        /// <summary>
+        /// 模板方法：子类覆盖提供默认排序逻辑
+        /// </summary>
+        /// <param name="query">基础查询</param>
+        /// <returns>应用排序后的查询</returns>
+        protected virtual IQueryable<TEntity> ApplyDefaultOrdering(IQueryable<TEntity> query)
+        {
+            // 默认按CreatedAt降序
+            return query.OrderByDescending(e => e.CreatedAt);
+        }
+
+        #endregion
 
         #region 查询操作
 
@@ -169,25 +192,32 @@ namespace LYBT.Infrastructure.Repositories
         }
 
         /// <summary>
-        /// 分页查询（IRepository接口实现 - 支持关键字搜索）
+        /// 分页查询（使用模板方法模式）
         /// </summary>
         /// <param name="pageNumber">页码（从1开始）</param>
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字（可选）</param>
         /// <returns>分页结果</returns>
         /// <remarks>
-        /// 子类应重写此方法以实现特定的关键字搜索逻辑
-        /// 默认实现：忽略keyword参数，按CreatedAt降序返回分页数据
+        /// 子类通过覆盖ApplyKeywordFilter和ApplyDefaultOrdering提供自定义逻辑，
+        /// 不再需要重写整个GetPagedAsync方法
         /// </remarks>
         public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
         {
-            // 基类默认实现：忽略keyword参数，子类可重写实现搜索逻辑
-            var query = _dbSet.Where(e => !e.IsDeleted);
+            var query = _dbSet.AsNoTracking().Where(e => !e.IsDeleted);
+
+            // 应用关键字过滤（模板方法）
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = ApplyKeywordFilter(query, keyword.Trim());
+            }
+
+            // 应用默认排序（模板方法）
+            query = ApplyDefaultOrdering(query);
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(e => e.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

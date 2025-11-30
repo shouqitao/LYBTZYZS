@@ -2,15 +2,15 @@
 using LYBT.Entities.Consultations;
 using LYBT.Infrastructure.Interfaces;
 using LYBT.Infrastructure.Services;
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.Consultation.Repositories;
-using LYBT.Module.Consultation.Services;
+using LYBT.Module.Consultations.Interfaces;
+using LYBT.Module.Consultations.Repositories;
+using LYBT.Module.Consultations.Services;
 using LYBT.Shared.Validators.Consultation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.Consultation
+namespace LYBT.Module.Consultations
 {
     /// <summary>
     /// 问诊模块服务注册（简化版本）

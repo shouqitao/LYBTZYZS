@@ -2,7 +2,7 @@
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.Formula.Mapping
+namespace LYBT.Module.Formulas.Mapping
 {
 
     /// <summary>

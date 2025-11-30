@@ -1,6 +1,6 @@
+using LYBT.Entities.Consultations;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -30,9 +30,9 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// 返回结构：Prescription实体 + 预加载的关联数据（MedicalCase、Patient、Consultation）
         /// </summary>
         Task<Result<(List<Prescription> Prescriptions,
-                   Dictionary<Guid, MedicalCaseEntity> MedicalCases,
+                   Dictionary<Guid, MedicalCase> MedicalCases,
                    Dictionary<Guid, Patient> Patients,
-                   Dictionary<Guid, ConsultationEntity> Consultations)>> SearchPrescriptionsEntityAsync(
+                   Dictionary<Guid, Consultation> Consultations)>> SearchPrescriptionsEntityAsync(
             string? patientName = null,
             string? symptomKeyword = null);
 
@@ -40,7 +40,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// 获取患者最近处方列表（直接返回Prescription Entity列表，包含预加载的关联数据）
         /// </summary>
         Task<Result<(List<Prescription> Prescriptions,
-                   Dictionary<Guid, MedicalCaseEntity> MedicalCases,
+                   Dictionary<Guid, MedicalCase> MedicalCases,
                    Dictionary<Guid, Patient> Patients)>> GetPatientRecentPrescriptionsEntityAsync(
             Guid patientId, int count = 10);
     }

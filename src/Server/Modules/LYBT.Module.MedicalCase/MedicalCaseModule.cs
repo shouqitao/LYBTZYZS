@@ -1,11 +1,11 @@
 ﻿using FluentValidation;
-using LYBT.Module.MedicalCase.Interfaces;
-using LYBT.Module.MedicalCase.Repositories;
-using LYBT.Module.MedicalCase.Services;
+using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Repositories;
+using LYBT.Module.MedicalCases.Services;
 using LYBT.Shared.Validators.MedicalCase;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LYBT.Module.MedicalCase
+namespace LYBT.Module.MedicalCases
 {
 
     /// <summary>

@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using AutoMapper;
-using LYBT.Module.Consultation.Mapping;
-using LYBT.Module.Formula.Mapping;
+using LYBT.Module.Consultations.Mapping;
+using LYBT.Module.Formulas.Mapping;
 using LYBT.Module.Herbs.Mapping;
-using LYBT.Module.MedicalCase.Mapping;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Module.Patients.Mapping;
 using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Module.Users.Mapping;
@@ -103,9 +103,9 @@ namespace LYBT.Tests.Common
                 cfg.AddProfile<LYBT.Module.Herbs.Mapping.HerbMappingProfile>();
                 cfg.AddProfile<LYBT.Module.Patients.Mapping.PatientMappingProfile>();
                 cfg.AddProfile<LYBT.Module.Prescriptions.Mapping.PrescriptionMappingProfile>();
-                cfg.AddProfile<LYBT.Module.Consultation.Mapping.ConsultationMappingProfile>();
-                cfg.AddProfile<LYBT.Module.Formula.Mapping.FormulaMappingProfile>();
-                cfg.AddProfile<LYBT.Module.MedicalCase.Mapping.MedicalCaseMappingProfile>();
+                cfg.AddProfile<LYBT.Module.Consultations.Mapping.ConsultationMappingProfile>();
+                cfg.AddProfile<LYBT.Module.Formulas.Mapping.FormulaMappingProfile>();
+                cfg.AddProfile<LYBT.Module.MedicalCases.Mapping.MedicalCaseMappingProfile>();
             }
             catch (Exception ex)
             {

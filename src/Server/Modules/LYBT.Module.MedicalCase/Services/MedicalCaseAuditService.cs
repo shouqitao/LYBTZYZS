@@ -1,13 +1,12 @@
 using System.Text.Json;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Services
+namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
     /// 医案审计服务实现
@@ -34,8 +33,8 @@ namespace LYBT.Module.MedicalCase.Services
 
         /// <inheritdoc/>
         public async Task LogAsync(
-            MedicalCaseEntity? before,
-            MedicalCaseEntity after,
+            MedicalCase? before,
+            MedicalCase after,
             Guid operatorId,
             string operatorName,
             UserRole role,
@@ -114,8 +113,8 @@ namespace LYBT.Module.MedicalCase.Services
         /// 检测两个医案实体之间的变更
         /// </summary>
         private (string? ChangedFields, string? OldValues, string? NewValues) DetectChanges(
-            MedicalCaseEntity? before,
-            MedicalCaseEntity after)
+            MedicalCase? before,
+            MedicalCase after)
         {
             if (before == null)
             {

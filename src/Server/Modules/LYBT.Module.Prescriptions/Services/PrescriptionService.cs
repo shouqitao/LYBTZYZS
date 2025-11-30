@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using LYBT.Module.Consultation.Interfaces;
-using LYBT.Module.Formula.Interfaces;
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.Consultations.Interfaces;
+using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;

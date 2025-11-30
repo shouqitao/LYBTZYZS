@@ -28,36 +28,25 @@ namespace LYBT.Module.Patients.Repositories
         {
         }
 
-        #region BaseRepository GetPagedAsync 重写 - 支持患者关键字搜索
+        #region 模板方法覆盖 - 患者关键字搜索和排序
 
         /// <summary>
-        /// 分页查询患者（重写基类方法，支持姓名/拼音码搜索）
+        /// 关键字过滤：姓名、拼音码
         /// </summary>
-        public override async Task<PagedResult<Patient>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null)
+        protected override IQueryable<Patient> ApplyKeywordFilter(IQueryable<Patient> query, string keyword)
         {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted);
+            return query.Where(p =>
+                p.Name.Contains(keyword) ||
+                (p.PinYinCode != null && p.PinYinCode.Contains(keyword))
+            );
+        }
 
-            // 关键字搜索：姓名、拼音码
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                var searchTerm = keyword.Trim();
-                query = query.Where(p =>
-                    p.Name.Contains(searchTerm) ||
-                    (p.PinYinCode != null && p.PinYinCode.Contains(searchTerm))
-                );
-            }
-
-            query = query.OrderBy(p => p.Name);
-
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<Patient>(items, totalCount, pageNumber, pageSize);
+        /// <summary>
+        /// 默认排序：按姓名升序
+        /// </summary>
+        protected override IQueryable<Patient> ApplyDefaultOrdering(IQueryable<Patient> query)
+        {
+            return query.OrderBy(p => p.Name);
         }
 
         #endregion

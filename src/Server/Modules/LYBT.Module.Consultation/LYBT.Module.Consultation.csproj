@@ -5,11 +5,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>LYBT.Module.Consultations</RootNamespace>
+    <AssemblyName>LYBT.Module.Consultations</AssemblyName>
   </PropertyGroup>
 
   <!-- 允许测试项目访问internal类 (Issue #1600 Phase 3) -->
   <ItemGroup>
-    <InternalsVisibleTo Include="LYBT.Module.Consultation.Tests" />
+    <InternalsVisibleTo Include="LYBT.Module.Consultations.Tests" />
   </ItemGroup>
 
   <ItemGroup>

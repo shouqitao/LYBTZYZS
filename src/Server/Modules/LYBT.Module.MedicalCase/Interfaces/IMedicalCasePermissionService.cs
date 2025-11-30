@@ -1,8 +1,8 @@
+using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Interfaces
+namespace LYBT.Module.MedicalCases.Interfaces
 {
     /// <summary>
     /// 医案权限服务接口 - OpenSpec: refactor-medicalcase-management
@@ -26,7 +26,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="role">用户角色</param>
         /// <param name="medicalCase">医案实体</param>
         /// <returns>是否有编辑权限</returns>
-        bool CanEdit(Guid userId, UserRole role, MedicalCaseEntity medicalCase);
+        bool CanEdit(Guid userId, UserRole role, MedicalCase medicalCase);
 
         /// <summary>
         /// 检查用户是否有权创建医案
@@ -43,7 +43,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="role">用户角色</param>
         /// <param name="medicalCase">医案实体</param>
         /// <returns>是否有删除权限</returns>
-        bool CanDelete(Guid userId, UserRole role, MedicalCaseEntity medicalCase);
+        bool CanDelete(Guid userId, UserRole role, MedicalCase medicalCase);
 
         /// <summary>
         /// 检查是否需要提供修改原因
@@ -51,7 +51,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="medicalCase">医案实体</param>
         /// <returns>是否需要修改原因</returns>
-        bool RequiresEditReason(MedicalCaseEntity medicalCase);
+        bool RequiresEditReason(MedicalCase medicalCase);
 
         /// <summary>
         /// 获取用户对医案的权限详情
@@ -60,7 +60,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="role">用户角色</param>
         /// <param name="medicalCase">医案实体</param>
         /// <returns>权限详情DTO</returns>
-        MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCaseEntity medicalCase);
+        MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCase medicalCase);
     }
 
     /// <summary>

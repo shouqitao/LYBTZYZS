@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using LYBT.Module.Consultation.Interfaces;
+using LYBT.Module.Consultations.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Module.Consultation.Services
+namespace LYBT.Module.Consultations.Services
 {
     /// <summary>
     /// 诊疗服务 - Read Layer（Issue #1600 Phase 3）

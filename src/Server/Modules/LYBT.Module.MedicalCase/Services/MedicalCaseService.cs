@@ -1,8 +1,11 @@
 ﻿using System.Text.Json;
 using AutoMapper;
+using LYBT.Entities.Consultations;
+using LYBT.Entities.MedicalCases;
+using LYBT.Entities.Prescriptions;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Utilities;
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -11,11 +14,8 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
-using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
-namespace LYBT.Module.MedicalCase.Services
+namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
     /// 病案Service实现 - Epic #1612 重构版 + Phase 2 Task 2.3 统一更新
@@ -28,7 +28,7 @@ namespace LYBT.Module.MedicalCase.Services
     /// - AR-003: 一诊一方约束
     /// - 权限规则：当天可改规则 + 管理员权限
     /// </summary>
-    public class MedicalCaseService : BaseService<MedicalCaseEntity>, IMedicalCaseService
+    public class MedicalCaseService : BaseService<MedicalCase>, IMedicalCaseService
     {
         private readonly IMedicalCaseRepository _repository;
         private readonly IPatientRepository _patientRepository;
@@ -63,7 +63,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// Epic #1612: 自动创建Consultation子实体（共享主键）
         /// Issue #2211: 修复P0 Bug - 添加doctorId参数并设置DoctorId/DoctorName/PatientName
         /// </summary>
-        public async Task<MedicalCaseEntity?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
+        public async Task<MedicalCase?> CreateAsync(Guid patientId, DateTime visitDate, Guid doctorId)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace LYBT.Module.MedicalCase.Services
                 }
 
                 // 创建MedicalCase实体
-                var medicalCase = new MedicalCaseEntity
+                var medicalCase = new MedicalCase
                 {
                     Id = Guid.NewGuid(),
                     PatientId = patientId,
@@ -130,7 +130,7 @@ namespace LYBT.Module.MedicalCase.Services
                 };
 
                 // 聚合根模式：自动创建关联的Consultation（共享主键）
-                var consultation = new ConsultationEntity
+                var consultation = new Consultation
                 {
                     Id = medicalCase.Id, // 共享主键（Consultation.Id == MedicalCase.Id）
                     MedicalCase = medicalCase, // 设置Required导航属性
@@ -170,7 +170,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// Epic #1612: 通过聚合根协调Consultation更新
         /// 业务规则：AR-001（聚合根约束）、BF-002（三步流程）
         /// </summary>
-        public async Task<MedicalCaseEntity?> UpdateConsultationAsync(
+        public async Task<MedicalCase?> UpdateConsultationAsync(
             Guid medicalCaseId,
             ConsultationInputDto request,
             Guid currentUserId,
@@ -261,7 +261,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 标记是否需要开处方（三步流程Step 2）
         /// Epic #1612: 动态流程控制，用户可选择跳过处方
         /// </summary>
-        public async Task<MedicalCaseEntity?> SetPrescriptionFlagAsync(
+        public async Task<MedicalCase?> SetPrescriptionFlagAsync(
             Guid medicalCaseId,
             bool needsPrescription,
             Guid currentUserId,
@@ -332,7 +332,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// Epic #1612: 通过聚合根创建Prescription
         /// 业务规则：AR-001（聚合根约束）、AR-003（一诊一方约束）
         /// </summary>
-        public async Task<PrescriptionEntity?> CreatePrescriptionAsync(
+        public async Task<Prescription?> CreatePrescriptionAsync(
             Guid medicalCaseId,
             PrescriptionCreateDto request)
         {
@@ -368,7 +368,7 @@ namespace LYBT.Module.MedicalCase.Services
                     }
 
                     // 创建Prescription实体（不包含Items，需手动处理）
-                    var prescription = _mapper.Map<PrescriptionEntity>(request);
+                    var prescription = _mapper.Map<Prescription>(request);
                     prescription.Id = Guid.NewGuid();
                     prescription.MedicalCaseId = medicalCaseId;
                     prescription.PatientId = medicalCase.PatientId;
@@ -433,7 +433,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 更新处方（三步流程Step 3b）
         /// Epic #1612: 通过聚合根更新Prescription
         /// </summary>
-        public async Task<PrescriptionEntity?> UpdatePrescriptionAsync(
+        public async Task<Prescription?> UpdatePrescriptionAsync(
             Guid medicalCaseId,
             Guid prescriptionId,
             PrescriptionEditDto request,
@@ -583,7 +583,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 更新病案状态
         /// Epic #1612: 支持Active/Completed/Cancelled状态流转
         /// </summary>
-        public async Task<MedicalCaseEntity?> UpdateStatusAsync(
+        public async Task<MedicalCase?> UpdateStatusAsync(
             Guid medicalCaseId,
             MedicalCaseStatus status)
         {
@@ -631,7 +631,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// Epic #1612: 验证三步流程完整性后标记为Completed
         /// 业务规则：BF-002（三步流程验证）
         /// </summary>
-        public async Task<MedicalCaseEntity?> CompleteAsync(Guid medicalCaseId)
+        public async Task<MedicalCase?> CompleteAsync(Guid medicalCaseId)
         {
             try
             {
@@ -726,7 +726,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
         /// 业务规则：保存当前数据，设置状态为Draft，不触发完成验证
         /// </summary>
-        public async Task<MedicalCaseEntity?> SaveDraftAsync(
+        public async Task<MedicalCase?> SaveDraftAsync(
             Guid id,
             ConsultationInputDto? request,
             Guid operatorId,
@@ -817,7 +817,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
         /// 业务规则：设置状态为Cancelled，需要审计理由（非当天本人操作时）
         /// </summary>
-        public async Task<MedicalCaseEntity?> CancelAsync(
+        public async Task<MedicalCase?> CancelAsync(
             Guid id,
             Guid operatorId,
             bool isAdmin = false,
@@ -934,7 +934,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 根据ID获取病案详情（包含完整关联数据）
         /// Epic #1612: 使用GetDetailQuery预加载Consultation和Prescription
         /// </summary>
-        public async Task<MedicalCaseEntity?> GetByIdAsync(Guid id)
+        public async Task<MedicalCase?> GetByIdAsync(Guid id)
         {
             try
             {
@@ -952,7 +952,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 查询病案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
         /// </summary>
-        public async Task<PagedResult<MedicalCaseEntity>> GetListAsync(
+        public async Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
@@ -977,7 +977,7 @@ namespace LYBT.Module.MedicalCase.Services
                     filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
                 }
 
-                return new PagedResult<MedicalCaseEntity>
+                return new PagedResult<MedicalCase>
                 {
                     Items = filteredItems.ToList(),
                     TotalCount = filteredItems.Count(),
@@ -1047,7 +1047,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// Epic #1676 Phase 4 Task 4.1
         /// Epic #2210 Task 3.1.2: 添加doctorId参数
         /// </summary>
-        public async Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
+        public async Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId)
         {
             try
             {
@@ -1138,7 +1138,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="currentUserId">当前用户ID</param>
         /// <param name="isAdmin">是否为管理员</param>
         /// <returns>更新后的病案实体</returns>
-        public async Task<MedicalCaseEntity?> UpdateMedicalCaseAsync(
+        public async Task<MedicalCase?> UpdateMedicalCaseAsync(
             Guid id,
             UpdateMedicalCaseRequest request,
             Guid currentUserId,
@@ -1198,7 +1198,7 @@ namespace LYBT.Module.MedicalCase.Services
         {
             return entity switch
             {
-                MedicalCaseEntity medicalCase => medicalCase.Id,
+                MedicalCase medicalCase => medicalCase.Id,
                 _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
             };
         }
@@ -1210,7 +1210,7 @@ namespace LYBT.Module.MedicalCase.Services
         {
             return entity switch
             {
-                MedicalCaseEntity medicalCase => medicalCase.CreatedBy ?? Guid.Empty,
+                MedicalCase medicalCase => medicalCase.CreatedBy ?? Guid.Empty,
                 _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
             };
         }
@@ -1222,7 +1222,7 @@ namespace LYBT.Module.MedicalCase.Services
         {
             return entity switch
             {
-                MedicalCaseEntity medicalCase => medicalCase.CreatedAt,
+                MedicalCase medicalCase => medicalCase.CreatedAt,
                 _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
             };
         }
@@ -1234,8 +1234,8 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 普通更新模式处理
         /// </summary>
-        private async Task<MedicalCaseEntity?> UpdateMedicalCaseNormalAsync(
-            MedicalCaseEntity medicalCase,
+        private async Task<MedicalCase?> UpdateMedicalCaseNormalAsync(
+            MedicalCase medicalCase,
             UpdateMedicalCaseRequest request,
             Guid currentUserId,
             bool isAdmin)
@@ -1309,8 +1309,8 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 事务模式更新处理
         /// </summary>
-        private async Task<MedicalCaseEntity?> UpdateMedicalCaseTransactionalAsync(
-            MedicalCaseEntity medicalCase,
+        private async Task<MedicalCase?> UpdateMedicalCaseTransactionalAsync(
+            MedicalCase medicalCase,
             UpdateMedicalCaseRequest request,
             Guid currentUserId,
             bool isAdmin)
@@ -1323,7 +1323,7 @@ namespace LYBT.Module.MedicalCase.Services
         // 以下是内部更新方法（简化版本，后续完善）
 
         private void UpdateConsultationInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             ConsultationInputDto consultation,
             Guid currentUserId,
             bool isAdmin)
@@ -1339,7 +1339,7 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         private void SetPrescriptionFlagInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             bool needsPrescription,
             Guid currentUserId,
             bool isAdmin)
@@ -1354,7 +1354,7 @@ namespace LYBT.Module.MedicalCase.Services
 
         // 处方相关方法暂时简化，后续完善
         private void CreatePrescriptionInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             PrescriptionCreateDto prescriptionData,
             Guid currentUserId,
             bool isAdmin)
@@ -1364,7 +1364,7 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         private void UpdatePrescriptionInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             MedicalCasePrescriptionUpdateRequest updateRequest,
             Guid currentUserId,
             bool isAdmin)
@@ -1374,7 +1374,7 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         private void DeletePrescriptionInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             MedicalCaseDeletePrescriptionRequest deleteRequest,
             Guid currentUserId,
             bool isAdmin)
@@ -1384,7 +1384,7 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         private void UpdateStatusInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             MedicalCaseStatus newStatus,
             Guid currentUserId,
             bool isAdmin)
@@ -1394,7 +1394,7 @@ namespace LYBT.Module.MedicalCase.Services
         }
 
         private void CompleteCaseInternalAsync(
-            MedicalCaseEntity medicalCase,
+            MedicalCase medicalCase,
             MedicalCaseCompleteCaseRequest completeRequest,
             Guid currentUserId,
             bool isAdmin)
@@ -1415,9 +1415,9 @@ namespace LYBT.Module.MedicalCase.Services
         /// 克隆医案实体用于审计比较
         /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
         /// </summary>
-        private static MedicalCaseEntity CloneMedicalCaseForAudit(MedicalCaseEntity source)
+        private static MedicalCase CloneMedicalCaseForAudit(MedicalCase source)
         {
-            return new MedicalCaseEntity
+            return new MedicalCase
             {
                 Id = source.Id,
                 PatientId = source.PatientId,

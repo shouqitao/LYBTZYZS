@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Formula.Interfaces;
-using LYBT.Module.Formula.Services;
+using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,7 +16,7 @@ using Moq;
 using Xunit;
 using FormulaEntity = LYBT.Entities.Formula.Formula;
 
-namespace LYBT.Module.Formula.Tests.Services
+namespace LYBT.Module.Formulas.Tests.Services
 {
     /// <summary>
     /// 方剂服务单元测试

@@ -1,17 +1,17 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 
-namespace LYBT.Shared.Models.Interfaces;
+namespace LYBT.Infrastructure.Interfaces;
 
 /// <summary>
-/// 只读Repository泛型接口（Shared层 - Layer 1）
+/// 只读Repository泛型接口（Infrastructure层）
 /// 提供5个核心查询方法，不包含写操作
 /// 适用于从属实体（Subordinate Entity）
 /// </summary>
 /// <typeparam name="T">实体类型，必须是引用类型</typeparam>
 /// <remarks>
 /// 三层架构说明：
-/// - Layer 1: IReadRepository&lt;T&gt; (Shared层) - 只读查询，适用于从属实体
-/// - Layer 2: IRepository&lt;T&gt; (Shared层) - 完整CRUD，适用于聚合根
+/// - Layer 1: IReadRepository&lt;T&gt; - 只读查询，适用于从属实体
+/// - Layer 2: IRepository&lt;T&gt; - 完整CRUD，适用于聚合根
 /// - Layer 3: 模块特定仓储 - 专门化实现
 /// 
 /// 从属实体使用此接口：Consultation, Prescription
@@ -30,13 +30,6 @@ public interface IReadRepository<T> where T : class
     /// </summary>
     /// <param name="id">实体唯一标识符</param>
     /// <returns>找到的实体，不存在则返回null</returns>
-    /// <example>
-    /// <code>
-    /// var consultation = await _repository.GetByIdAsync(consultationId);
-    /// if (consultation == null)
-    ///     throw new NotFoundException("辨证记录不存在");
-    /// </code>
-    /// </example>
     /// <remarks>
     /// 自动过滤软删除记录（IsDeleted = true）
     /// </remarks>
@@ -47,7 +40,7 @@ public interface IReadRepository<T> where T : class
     /// </summary>
     /// <returns>所有实体的集合</returns>
     /// <remarks>
-    ///  注意：对于大数据集，建议使用分页查询避免性能问题
+    /// 注意：对于大数据集，建议使用分页查询避免性能问题
     /// 自动过滤软删除记录（IsDeleted = true）
     /// </remarks>
     Task<IEnumerable<T>> GetAllAsync();
@@ -57,13 +50,6 @@ public interface IReadRepository<T> where T : class
     /// </summary>
     /// <param name="predicate">查询条件表达式</param>
     /// <returns>符合条件的实体集合</returns>
-    /// <example>
-    /// <code>
-    /// // 查询某个病案的所有辨证记录
-    /// var consultations = await _repository.FindAsync(
-    ///     c => c.MedicalCaseId == medicalCaseId);
-    /// </code>
-    /// </example>
     /// <remarks>
     /// 自动过滤软删除记录（IsDeleted = true）
     /// </remarks>
@@ -75,12 +61,6 @@ public interface IReadRepository<T> where T : class
     /// <param name="predicate">查询条件表达式</param>
     /// <returns>符合条件的实体，不存在则返回null</returns>
     /// <exception cref="InvalidOperationException">找到多个匹配实体时抛出</exception>
-    /// <example>
-    /// <code>
-    /// var consultation = await _repository.GetSingleAsync(
-    ///     c => c.Id == id);
-    /// </code>
-    /// </example>
     /// <remarks>
     /// 自动过滤软删除记录（IsDeleted = true）
     /// </remarks>

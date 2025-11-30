@@ -1,41 +1,41 @@
-﻿using LYBT.Shared.Models.Interfaces;
+﻿using LYBT.Entities.MedicalCases;
+using LYBT.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Interfaces
+namespace LYBT.Module.MedicalCases.Interfaces
 {
     /// <summary>
     /// 医疗案例仓储接口 - 简化版，只包含基础CRUD
     /// </summary>
-    public interface IMedicalCaseRepository : IRepository<MedicalCaseEntity>
+    public interface IMedicalCaseRepository : IRepository<MedicalCase>
     {
         /// <summary>
         /// 根据患者ID获取医疗案例
         /// </summary>
-        Task<List<MedicalCaseEntity>> GetByPatientIdAsync(Guid patientId);
+        Task<List<MedicalCase>> GetByPatientIdAsync(Guid patientId);
 
         /// <summary>
         /// 根据ID获取病案（包含所有关联数据）
         /// </summary>
-        Task<MedicalCaseEntity> GetByIdWithDetailsAsync(Guid id);
+        Task<MedicalCase> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>
         /// 根据ID获取病案（包含所有关联数据）- 强制刷新版本
         /// 分离ChangeTracker中的缓存实体后重新查询，确保获取最新RowVersion
         /// 用于并发场景下避免DbUpdateConcurrencyException
         /// </summary>
-        Task<MedicalCaseEntity?> GetByIdWithDetailsFreshAsync(Guid id);
+        Task<MedicalCase?> GetByIdWithDetailsFreshAsync(Guid id);
 
         /// <summary>
         /// 获取分页列表（包含关联数据）
         /// </summary>
-        Task<PagedResult<MedicalCaseEntity>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
+        Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
 
         /// <summary>
         /// 根据医生ID获取病案列表
         /// </summary>
-        Task<List<MedicalCaseEntity>> GetByDoctorIdAsync(Guid doctorId);
+        Task<List<MedicalCase>> GetByDoctorIdAsync(Guid doctorId);
 
         /// <summary>
         /// 获取待看诊医案列表（Status=Active）
@@ -63,7 +63,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="startDate">开始日期（过滤CreatedAt）</param>
         /// <param name="endDate">结束日期（过滤CreatedAt）</param>
         /// <param name="diagnosisKeyword">诊断关键字（搜索TCMDiagnosis）</param>
-        Task<List<MedicalCaseEntity>> QueryAsync(
+        Task<List<MedicalCase>> QueryAsync(
             string? patientName = null,
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -77,6 +77,6 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// <param name="patientId">患者ID</param>
         /// <param name="doctorId">医生ID（为Guid.Empty时不筛选医生）</param>
         /// <returns>未完成的医案实体，若无则返回null</returns>
-        Task<MedicalCaseEntity?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
+        Task<MedicalCase?> GetUnfinishedCaseByPatientIdAsync(Guid patientId, Guid doctorId);
     }
 }

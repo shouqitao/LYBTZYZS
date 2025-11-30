@@ -1,10 +1,10 @@
-using LYBT.Module.MedicalCase.Interfaces;
+using LYBT.Entities.MedicalCases;
+using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
-namespace LYBT.Module.MedicalCase.Services
+namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
     /// 医案权限服务实现 - OpenSpec: refactor-medicalcase-management
@@ -27,7 +27,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// - 医生不能编辑他人医案
         /// - 医生不能编辑已完成(Completed)的医案
         /// </summary>
-        public bool CanEdit(Guid userId, UserRole role, MedicalCaseEntity medicalCase)
+        public bool CanEdit(Guid userId, UserRole role, MedicalCase medicalCase)
         {
             if (medicalCase == null)
             {
@@ -96,7 +96,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 检查用户是否有权删除指定医案
         /// 删除权限与编辑权限相同
         /// </summary>
-        public bool CanDelete(Guid userId, UserRole role, MedicalCaseEntity medicalCase)
+        public bool CanDelete(Guid userId, UserRole role, MedicalCase medicalCase)
         {
             // 删除权限与编辑权限相同
             return CanEdit(userId, role, medicalCase);
@@ -106,7 +106,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// 检查是否需要提供修改原因
         /// 已完成(Completed)医案修改时必须提供原因
         /// </summary>
-        public bool RequiresEditReason(MedicalCaseEntity medicalCase)
+        public bool RequiresEditReason(MedicalCase medicalCase)
         {
             if (medicalCase == null) return false;
 
@@ -117,7 +117,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 获取用户对医案的权限详情
         /// </summary>
-        public MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCaseEntity medicalCase)
+        public MedicalCasePermissionDto GetPermissions(Guid userId, UserRole role, MedicalCase medicalCase)
         {
             var canEdit = CanEdit(userId, role, medicalCase);
             var canDelete = CanDelete(userId, role, medicalCase);
@@ -151,7 +151,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 获取权限拒绝原因
         /// </summary>
-        private string GetDenialReason(Guid userId, UserRole role, MedicalCaseEntity medicalCase)
+        private string GetDenialReason(Guid userId, UserRole role, MedicalCase medicalCase)
         {
             if (medicalCase == null)
                 return "医案不存在";

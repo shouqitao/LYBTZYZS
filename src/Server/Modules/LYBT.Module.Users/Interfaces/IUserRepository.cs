@@ -1,5 +1,5 @@
 ﻿using LYBT.Entities.Users;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Users.Interfaces
 {

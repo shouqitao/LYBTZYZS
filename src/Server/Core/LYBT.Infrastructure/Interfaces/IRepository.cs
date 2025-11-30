@@ -1,22 +1,17 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 
-namespace LYBT.Shared.Models.Interfaces;
+namespace LYBT.Infrastructure.Interfaces;
 
 /// <summary>
-/// Repository泛型接口（Shared层）
+/// Repository泛型接口（Infrastructure层）
 /// 提供标准CRUD操作，适用于聚合根实体
 /// </summary>
 /// <typeparam name="T">实体类型</typeparam>
 /// <remarks>
-/// Phase 2 重构说明：
-/// - 原名：IBaseRepository（已重命名为 IRepository）
-/// - 当前版本：11个标准方法（继承前的过渡版本）
-/// - 后续版本：将继承 IReadRepository&lt;T&gt; 并扩展至20个方法
-/// 
 /// 设计原则：
-/// - ⭐ 统一共性（11个标准CRUD方法）
-/// - ⭐ 保持特性（各模块可保留特定业务方法）
+/// - 统一共性（14个标准CRUD方法）
+/// - 保持特性（各模块可保留特定业务方法）
 /// - 使用Guid作为ID类型（对齐BaseEntity设计）
 /// - 所有方法均为异步方法（Async后缀）
 ///
@@ -26,13 +21,6 @@ namespace LYBT.Shared.Models.Interfaces;
 /// {
 ///     // 保留用户模块特定业务方法
 ///     Task&lt;User?&gt; GetByUsernameAsync(string username);
-///     Task&lt;bool&gt; IsUsernameExistsAsync(string username);
-/// }
-///
-/// public class UserRepository : IRepository&lt;User&gt;, IUserRepository
-/// {
-///     // 实现IRepository&lt;User&gt;的11个标准方法
-///     // 实现IUserRepository的特定业务方法
 /// }
 /// </code>
 /// </remarks>
@@ -48,7 +36,7 @@ public interface IRepository<T> where T : class
     Task<T?> GetByIdAsync(Guid id);
 
     /// <summary>
-    /// 获取所有实体（ 仅用于小数据量场景，如下拉列表）
+    /// 获取所有实体（仅用于小数据量场景，如下拉列表）
     /// </summary>
     /// <returns>实体集合</returns>
     Task<IEnumerable<T>> GetAllAsync();
@@ -63,7 +51,7 @@ public interface IRepository<T> where T : class
     Task<PagedResult<T>> GetPagedAsync(int pageNumber, int pageSize, string? keyword = null);
 
     /// <summary>
-    /// 条件查询（ 谨慎使用，建议使用具体业务方法）
+    /// 条件查询（谨慎使用，建议使用具体业务方法）
     /// </summary>
     /// <param name="predicate">查询条件表达式</param>
     /// <returns>符合条件的实体集合</returns>
@@ -136,7 +124,7 @@ public interface IRepository<T> where T : class
     Task<int> CountAsync();
 
     /// <summary>
-    /// 保存更改（ 通常由Service层调用，Repository层实现可选）
+    /// 保存更改（通常由Service层调用，Repository层实现可选）
     /// </summary>
     /// <returns>受影响的行数</returns>
     Task<int> SaveChangesAsync();

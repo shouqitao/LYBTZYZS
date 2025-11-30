@@ -3,7 +3,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Validators.Consultation;
 using Xunit;
 
-namespace LYBT.Module.Consultation.Tests.Validators;
+namespace LYBT.Module.Consultations.Tests.Validators;
 
 /// <summary>
 /// ConsultationInputDtoValidator 单元测试

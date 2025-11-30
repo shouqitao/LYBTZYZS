@@ -1,11 +1,11 @@
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Mapping;
+using LYBT.Module.MedicalCases.Mapping;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 
-namespace LYBT.Module.MedicalCase.Tests.Mapping
+namespace LYBT.Module.MedicalCases.Tests.Mapping
 {
     /// <summary>
     /// MedicalCaseMappingProfile 映射配置测试

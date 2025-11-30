@@ -1,7 +1,7 @@
-﻿using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
+﻿using LYBT.Entities.MedicalCases;
+using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Module.MedicalCase.Services
+namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
     /// 医疗案例规则 - 集中管理核心业务逻辑
@@ -15,7 +15,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         /// <param name="existingCases">患者现有的医案列表</param>
         /// <returns>是否可以创建新医案</returns>
-        public static bool CanCreateNewCase(IEnumerable<MedicalCaseEntity> existingCases)
+        public static bool CanCreateNewCase(IEnumerable<MedicalCase> existingCases)
         {
             return !existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active ||
                                             c.CaseStatus == MedicalCaseStatus.Draft);
@@ -24,7 +24,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 检查是否有Active状态的医案
         /// </summary>
-        public static bool HasActiveCase(IEnumerable<MedicalCaseEntity> existingCases)
+        public static bool HasActiveCase(IEnumerable<MedicalCase> existingCases)
         {
             return existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Active);
         }
@@ -32,7 +32,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <summary>
         /// 检查是否有Draft（暂存/挂起）状态的医案
         /// </summary>
-        public static bool HasDraftCase(IEnumerable<MedicalCaseEntity> existingCases)
+        public static bool HasDraftCase(IEnumerable<MedicalCase> existingCases)
         {
             return existingCases.Any(c => c.CaseStatus == MedicalCaseStatus.Draft);
         }
@@ -50,7 +50,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="currentUserId">当前用户ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <returns>是否可以编辑</returns>
-        public static bool CanEdit(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
+        public static bool CanEdit(MedicalCase medicalCase, Guid currentUserId, bool isAdmin = false)
         {
             // 管理员权限 - 可以编辑所有医案
             if (isAdmin) return true;
@@ -71,7 +71,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="currentUserId">当前用户ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <returns>是否可以删除</returns>
-        public static bool CanDelete(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
+        public static bool CanDelete(MedicalCase medicalCase, Guid currentUserId, bool isAdmin = false)
         {
             // 删除规则与编辑相同：当天创建的可以删除
             return CanEdit(medicalCase, currentUserId, isAdmin);
@@ -82,7 +82,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// </summary>
         /// <param name="medicalCase">医案实体</param>
         /// <returns>是否可以完成</returns>
-        public static bool CanComplete(MedicalCaseEntity medicalCase)
+        public static bool CanComplete(MedicalCase medicalCase)
         {
             // 简化逻辑：只有进行中的医案可以完成
             return medicalCase.CaseStatus == MedicalCaseStatus.Active;
@@ -96,7 +96,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="medicalCase">医案实体</param>
         /// <param name="operatorId">操作者ID</param>
         /// <returns>是否为当天本人创建</returns>
-        public static bool IsSameDayByCreator(MedicalCaseEntity medicalCase, Guid operatorId)
+        public static bool IsSameDayByCreator(MedicalCase medicalCase, Guid operatorId)
         {
             // 检查是否为创建者
             if (medicalCase.DoctorId != operatorId) return false;
@@ -124,7 +124,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="patientId">患者ID</param>
         /// <param name="existingCases">患者现有医案</param>
         /// <returns>验证结果</returns>
-        public static ValidationResult ValidateNewCaseCreation(Guid patientId, IEnumerable<MedicalCaseEntity> existingCases)
+        public static ValidationResult ValidateNewCaseCreation(Guid patientId, IEnumerable<MedicalCase> existingCases)
         {
             if (!CanCreateNewCase(existingCases))
             {
@@ -141,7 +141,7 @@ namespace LYBT.Module.MedicalCase.Services
         /// <param name="currentUserId">当前用户ID</param>
         /// <param name="isAdmin">是否管理员</param>
         /// <returns>验证结果</returns>
-        public static ValidationResult ValidateCaseUpdate(MedicalCaseEntity medicalCase, Guid currentUserId, bool isAdmin = false)
+        public static ValidationResult ValidateCaseUpdate(MedicalCase medicalCase, Guid currentUserId, bool isAdmin = false)
         {
             if (!CanEdit(medicalCase, currentUserId, isAdmin))
             {

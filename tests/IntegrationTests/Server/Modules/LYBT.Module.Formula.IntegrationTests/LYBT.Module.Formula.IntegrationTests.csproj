@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>LYBT.Module.Formulas.IntegrationTests</RootNamespace>
+    <AssemblyName>LYBT.Module.Formulas.IntegrationTests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

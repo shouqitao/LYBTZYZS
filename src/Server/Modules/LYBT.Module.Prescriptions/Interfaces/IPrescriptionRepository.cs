@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Interfaces;
+using LYBT.Infrastructure.Interfaces;
 
 namespace LYBT.Module.Prescriptions.Interfaces
 {

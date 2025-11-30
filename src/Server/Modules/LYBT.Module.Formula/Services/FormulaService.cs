@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Formulas;
-using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
-using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
-namespace LYBT.Module.Formula.Services
+namespace LYBT.Module.Formulas.Services
 {
     /// <summary>
     /// 验方服务 - 简化版，只包含基础CRUD
@@ -92,7 +91,7 @@ namespace LYBT.Module.Formula.Services
             try
             {
                 // Issue #2014: 手动创建entity（不依赖AutoMapper处理Herbs集合）
-                var entity = new FormulaEntity
+                var entity = new Formula
                 {
                     Name = dto.Name,
                     Effect = dto.Effect,
@@ -460,7 +459,7 @@ namespace LYBT.Module.Formula.Services
                         }
 
                         // 创建验方实体（从DTO映射）
-                        var formula = new FormulaEntity
+                        var formula = new Formula
                         {
                             Name = formulaDto.Name,
                             Effect = formulaDto.Effect,

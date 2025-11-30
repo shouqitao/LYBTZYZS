@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
-using LYBT.Module.Formula.Interfaces;
+using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Module.Prescriptions.Services;
 using LYBT.Shared.Models.Contracts.Common;

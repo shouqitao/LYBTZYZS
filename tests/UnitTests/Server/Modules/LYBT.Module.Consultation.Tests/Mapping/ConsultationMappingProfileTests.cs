@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using LYBT.Module.Consultation.Mapping;
+using LYBT.Module.Consultations.Mapping;
 using Xunit;
 
-namespace LYBT.Module.Consultation.Tests.Mapping
+namespace LYBT.Module.Consultations.Tests.Mapping
 {
     /// <summary>
     /// Consultation模块AutoMapper映射配置单元测试

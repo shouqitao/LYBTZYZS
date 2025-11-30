@@ -6,10 +6,10 @@ using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
-using LYBT.Module.Formula.Interfaces;
-using LYBT.Module.Formula.Mapping;
-using LYBT.Module.Formula.Repositories;
-using LYBT.Module.Formula.Services;
+using LYBT.Module.Formulas.Interfaces;
+using LYBT.Module.Formulas.Mapping;
+using LYBT.Module.Formulas.Repositories;
+using LYBT.Module.Formulas.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Module.Herbs.Repositories;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -20,7 +20,7 @@ using Moq;
 using OfficeOpenXml;
 using Xunit;
 
-namespace LYBT.Module.Formula.IntegrationTests
+namespace LYBT.Module.Formulas.IntegrationTests
 {
     /// <summary>
     /// 验方服务集成测试 - 测试完整的工作流

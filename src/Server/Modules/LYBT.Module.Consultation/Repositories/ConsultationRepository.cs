@@ -1,34 +1,34 @@
-﻿using System.Linq.Expressions;
+﻿using LYBT.Entities.Consultations;
 using LYBT.Infrastructure.Data;
 using LYBT.Infrastructure.Repositories;
-using LYBT.Module.Consultation.Interfaces;
+using LYBT.Module.Consultations.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 
-namespace LYBT.Module.Consultation.Repositories
+namespace LYBT.Module.Consultations.Repositories
 {
     /// <summary>
     /// 诊疗仓储 - 继承BaseReadRepository标准实现（Epic #2016 Phase 3）
     /// </summary>
     /// <remarks>
     /// 设计原则：
-    /// - ⭐ 统一共性：继承BaseReadRepository&lt;ConsultationEntity&gt;获得5个标准只读方法
-    /// - ⭐ 保持特性：保留诊疗模块特定业务方法
+    /// - 统一共性：继承BaseReadRepository获得5个标准只读方法
+    /// - 保持特性：保留诊疗模块特定业务方法
     /// - Read-only模式：所有写操作必须通过MedicalCase聚合根
     /// - Include策略：预加载MedicalCase关联以避免N+1查询
     /// </remarks>
-    internal class ConsultationRepository : BaseReadRepository<ConsultationEntity>, IConsultationRepository
+    internal class ConsultationRepository : BaseReadRepository<Consultation>, IConsultationRepository
     {
-        public ConsultationRepository(AppDbContext context) : base(context)
+        public ConsultationRepository(AppDbContext context, ILogger<ConsultationRepository> logger) 
+            : base(context, logger)
         {
         }
 
         /// <summary>
         /// 根据患者ID获取诊疗记录
         /// </summary>
-        public async Task<List<ConsultationEntity>> GetByPatientIdAsync(Guid patientId)
+        public async Task<List<Consultation>> GetByPatientIdAsync(Guid patientId)
         {
             return await DbSet
                 .AsNoTracking()
@@ -43,7 +43,7 @@ namespace LYBT.Module.Consultation.Repositories
         /// 优化：预加载Patient和User信息，避免N+1查询
         /// Phase 2: Repository层简化（Epic #1725）- 使用BaseRepository辅助方法
         /// </summary>
-        public async Task<PagedResult<ConsultationEntity>> GetPagedWithDetailsAsync(
+        public async Task<PagedResult<Consultation>> GetPagedWithDetailsAsync(
             int pageNumber,
             int pageSize,
             string? keyword = null)
@@ -72,13 +72,13 @@ namespace LYBT.Module.Consultation.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new PagedResult<ConsultationEntity>(items, totalCount, pageNumber, pageSize);
+            return new PagedResult<Consultation>(items, totalCount, pageNumber, pageSize);
         }
 
         /// <summary>
         /// 根据ID获取诊疗记录（包含所有关联数据）
         /// </summary>
-        public async Task<ConsultationEntity> GetByIdWithDetailsAsync(Guid id)
+        public async Task<Consultation> GetByIdWithDetailsAsync(Guid id)
         {
             return (await DbSet
             .AsNoTracking()
@@ -96,7 +96,7 @@ namespace LYBT.Module.Consultation.Repositories
         /// 保留此方法是为了语义清晰，明确表达"通过病案ID查询诊疗记录"的业务意图。
         /// 参见：ConsultationConfiguration.cs的Fluent API配置
         /// </remarks>
-        public async Task<ConsultationEntity> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        public async Task<Consultation> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             return (await DbSet
             .AsNoTracking()
