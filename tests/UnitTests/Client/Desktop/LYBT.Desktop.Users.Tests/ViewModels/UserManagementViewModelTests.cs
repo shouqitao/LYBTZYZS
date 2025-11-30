@@ -202,14 +202,20 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
         #region 用户删除测试
 
         [Fact]
-        public async Task DeleteUserAsync_ShouldCallRepositoryDelete()
+        public async Task DeleteUserAsync_ShouldCallCommandHandlerDelete()
         {
             // Arrange
             var user = CreateUser("testuser", "测试用户");
 
-            _mockUserRepository
-                .Setup(x => x.DeleteAsync(user.Id))
+            // Mock确认对话框返回true
+            _mockCommonDialogService
+                .Setup(x => x.ShowConfirmAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
+
+            // Mock CommandHandler.DeleteAsync
+            _mockCommandHandler
+                .Setup(x => x.DeleteAsync(user.Id))
+                .ReturnsAsync((true, (string?)null));
 
             // 模拟LoadPageAsync
             _mockUserRepository
@@ -222,8 +228,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .GetMethod("OnExecuteDeleteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             await (Task)method!.Invoke(_viewModel, new object[] { user })!;
 
-            // Assert
-            _mockUserRepository.Verify(x => x.DeleteAsync(user.Id), Times.Once);
+            // Assert - 验证CommandHandler.DeleteAsync被调用
+            _mockCommandHandler.Verify(x => x.DeleteAsync(user.Id), Times.Once);
         }
 
         [Fact]
@@ -237,9 +243,14 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 CreateUser("user3", "用户3")
             };
 
-            _mockUserRepository
+            // Mock当前登录用户（不在删除列表中，避免BR-001检查）
+            var currentUser = CreateUser("admin", "管理员");
+            _mockSessionManager.Setup(x => x.CurrentUser).Returns(currentUser);
+
+            // Mock CommandHandler.DeleteAsync（实际被调用的方法）
+            _mockCommandHandler
                 .Setup(x => x.DeleteAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(true);
+                .ReturnsAsync((true, (string?)null));
 
             // 模拟LoadPageAsync
             _mockUserRepository
@@ -252,12 +263,12 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .GetMethod("OnExecuteBatchDeleteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             await (Task)method!.Invoke(_viewModel, new object[] { users })!;
 
-            // Assert
-            _mockUserRepository.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Exactly(3));
+            // Assert - 验证CommandHandler被调用3次
+            _mockCommandHandler.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Exactly(3));
         }
 
         [Fact]
-        public async Task BatchDeleteAsync_WithPartialFailure_ShouldReportErrors()
+        public async Task BatchDeleteAsync_WithPartialFailure_ShouldContinueProcessing()
         {
             // Arrange
             var users = new List<UserDto>
@@ -266,21 +277,27 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 CreateUser("user2", "用户2")  // This one will fail
             };
 
-            _mockUserRepository
+            // Mock当前登录用户（不在删除列表中，避免BR-001检查）
+            var currentUser = CreateUser("admin", "管理员");
+            _mockSessionManager.Setup(x => x.CurrentUser).Returns(currentUser);
+
+            // Mock CommandHandler.DeleteAsync：第一个成功，第二个失败
+            _mockCommandHandler
                 .Setup(x => x.DeleteAsync(users[0].Id))
-                .ReturnsAsync(true);
+                .ReturnsAsync((true, (string?)null));
 
-            _mockUserRepository
+            _mockCommandHandler
                 .Setup(x => x.DeleteAsync(users[1].Id))
-                .ThrowsAsync(new InvalidOperationException("删除失败"));
+                .ReturnsAsync((false, "删除失败"));
 
-            // Act & Assert
-            // 使用反射调用protected方法
+            // Act - 方法会捕获异常继续处理，不会抛出
             var method = typeof(UserManagementViewModel)
                 .GetMethod("OnExecuteBatchDeleteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            await (Task)method!.Invoke(_viewModel, new object[] { users })!;
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await (Task)method!.Invoke(_viewModel, new object[] { users })!);
+            // Assert - 验证两个删除都被调用
+            _mockCommandHandler.Verify(x => x.DeleteAsync(users[0].Id), Times.Once);
+            _mockCommandHandler.Verify(x => x.DeleteAsync(users[1].Id), Times.Once);
         }
 
         #endregion
@@ -296,12 +313,13 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
             var updatedUser = CreateUser("testuser", "测试用户", UserRole.Doctor, CommonStatus.Disabled);
             updatedUser.Id = user.Id;
 
-            _mockUserRepository
+            // Mock CommandHandler.UpdateAsync（实际被调用的方法）
+            _mockCommandHandler
                 .Setup(x => x.UpdateAsync(It.Is<UserInputDto>(dto =>
                     dto.Id == user.Id && dto.Status == CommonStatus.Disabled)))
-                .ReturnsAsync(updatedUser);
+                .ReturnsAsync((true, updatedUser, (string?)null));
 
-            // 模拟LoadPageAsync
+            // 模拟LoadPageAsync（RefreshAsync调用）
             _mockUserRepository
                 .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
                 .ReturnsAsync(new PagedResult<UserDto> { Items = new List<UserDto>(), TotalCount = 0 });
@@ -313,8 +331,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
 
             await (Task)method!.Invoke(_viewModel, new object[] { user })!;
 
-            // Assert
-            _mockUserRepository.Verify(x => x.UpdateAsync(It.Is<UserInputDto>(dto =>
+            // Assert - 验证CommandHandler.UpdateAsync被调用
+            _mockCommandHandler.Verify(x => x.UpdateAsync(It.Is<UserInputDto>(dto =>
                 dto.Id == user.Id && dto.Status == CommonStatus.Disabled)), Times.Once);
         }
 

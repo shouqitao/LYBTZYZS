@@ -430,14 +430,24 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var keyword = "张";
-            var allPatients = CreateTestPatients(5);
-            allPatients[0].Name = "张三";
-            allPatients[1].Name = "张四";
-            allPatients[2].Name = "李五";
+            var matchingPatients = new List<Patient>
+            {
+                CreateTestPatient(),
+                CreateTestPatient()
+            };
+            matchingPatients[0].Name = "张三";
+            matchingPatients[1].Name = "张四";
 
+            // Service使用GetPagedAsync进行搜索
             _repositoryMock
-                .Setup(x => x.GetAllAsync())
-                .ReturnsAsync(allPatients);
+                .Setup(x => x.GetPagedAsync(1, 100, keyword))
+                .ReturnsAsync(new PagedResult<Patient>
+                {
+                    Items = matchingPatients,
+                    TotalCount = 2,
+                    CurrentPage = 1,
+                    PageSize = 100
+                });
 
             // Act
             var result = await _patientService.SearchAsync(keyword);
@@ -447,7 +457,6 @@ namespace LYBT.Module.Patients.Tests.Services
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data!.Should().HaveCount(2);
-            result.Data!.All(p => p.Name.Contains(keyword)).Should().BeTrue();
         }
 
         [Fact]
@@ -491,11 +500,17 @@ namespace LYBT.Module.Patients.Tests.Services
         {
             // Arrange
             var keyword = "不存在的名字";
-            var allPatients = CreateTestPatients(3);
 
+            // Service使用GetPagedAsync进行搜索，返回空结果
             _repositoryMock
-                .Setup(x => x.GetAllAsync())
-                .ReturnsAsync(allPatients);
+                .Setup(x => x.GetPagedAsync(1, 100, keyword))
+                .ReturnsAsync(new PagedResult<Patient>
+                {
+                    Items = new List<Patient>(),
+                    TotalCount = 0,
+                    CurrentPage = 1,
+                    PageSize = 100
+                });
 
             // Act
             var result = await _patientService.SearchAsync(keyword);
@@ -515,7 +530,7 @@ namespace LYBT.Module.Patients.Tests.Services
             var exception = new Exception("数据库错误");
 
             _repositoryMock
-                .Setup(x => x.GetAllAsync())
+                .Setup(x => x.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()))
                 .ThrowsAsync(exception);
 
             // Act

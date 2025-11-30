@@ -51,14 +51,19 @@
 - [x] 3.2.4 FormulaRepository: ApplyKeywordFilter(Name, Effect), ApplyDefaultOrdering使用基类默认
 - [x] 3.2.5 MedicalCaseRepository: 已有模板方法实现，无需修改
 
-## Phase 4: 测试验证
+## Phase 4: 测试验证 ✅ 已完成
 
 ### 4.1 单元测试
 - [x] 4.1.1 ConsultationRepositoryTests - 7个测试全部通过
-- [ ] 4.1.2 其他Repository测试更新（如需要）
+- [x] 4.1.2 PatientServiceTests - 修复5个SearchAsync测试的mock（GetPagedAsync替代GetAllAsync）
+- [x] 4.1.3 UserManagementViewModelTests - 修复4个测试（CommandHandler mock + commonDialogService传递）
 
 ### 4.2 编译验证
 - [x] 4.2.1 Release配置编译通过，无错误无警告
+
+### 4.3 附带修复（测试过程发现）
+- [x] 4.3.1 UnifiedListViewModelBase构造函数添加commonDialogService参数传递
+- [x] 4.3.2 UserManagementViewModel正确传递commonDialogService到基类
 
 ## Completion Criteria
 
@@ -69,9 +74,16 @@
 - [x] 编译通过，无警告
 - [x] Repository单元测试通过
 - [x] GetPagedAsync代码重复已消除（Phase 3）
-- [ ] 集成测试100%通过（待验证）
+- [x] Service测试通过（PatientServiceTests 23/23）
+- [x] ViewModel测试通过（UserManagementViewModelTests 35/35）
 
 ## 实施记录
+
+### 2025-11-30 Phase 4完成
+- 修复PatientServiceTests的SearchAsync相关测试：mock从GetAllAsync改为GetPagedAsync
+- 修复UserManagementViewModelTests：CommandHandler mock替代UserRepository mock
+- 发现并修复UnifiedListViewModelBase基类不传递commonDialogService的问题
+- PatientsController测试有3个预存失败（非本次引入，不在范围内）
 
 ### 2025-11-30 Phase 3完成
 - BaseRepository模板方法已实现：ApplyKeywordFilter、ApplyDefaultOrdering

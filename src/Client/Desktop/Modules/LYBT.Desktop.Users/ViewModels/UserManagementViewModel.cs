@@ -174,7 +174,7 @@ namespace LYBT.Desktop.Users.ViewModels
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
             // Issue #1785: 注入CommandHandler
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
