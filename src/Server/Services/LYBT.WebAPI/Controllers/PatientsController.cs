@@ -131,12 +131,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<PatientDto>("参数验证失败");
-                }
-
-                // Phase 3 Task 3.1: 使用优化版本，获取Entity数据
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var entityResult = await _optimizedService.CreateEntityAsync(dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
@@ -173,12 +168,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<PatientDto>("患者ID不能为空");
                 }
 
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<PatientDto>("参数验证失败");
-                }
-
-                // Phase 3 Task 3.1: 使用优化版本，获取Entity数据
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var entityResult = await _optimizedService.UpdateEntityAsync(id, dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {

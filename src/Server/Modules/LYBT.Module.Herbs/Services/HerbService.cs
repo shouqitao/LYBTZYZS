@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -15,12 +16,11 @@ namespace LYBT.Module.Herbs.Services
     /// <summary>
     /// 药材服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
+    /// Phase 2: 继承BaseService<Herb>复用统一错误处理和验证逻辑
     /// </summary>
-    public class HerbService : IHerbService
+    public class HerbService : BaseService<Herb>, IHerbService
     {
         private readonly IHerbRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<HerbService> _logger;
         private readonly IValidator<HerbInputDto> _validator;
 
         public HerbService(
@@ -28,10 +28,9 @@ namespace LYBT.Module.Herbs.Services
             IMapper mapper,
             ILogger<HerbService> logger,
             IValidator<HerbInputDto> validator)
+            : base(logger, mapper)
         {
             _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
             _validator = validator;
         }
 

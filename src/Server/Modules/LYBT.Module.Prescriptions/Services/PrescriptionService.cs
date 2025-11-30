@@ -4,7 +4,7 @@ using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Prescriptions.Interfaces;
-using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
@@ -49,22 +49,22 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
 
-        public async Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id)
+        public async Task<Result<PrescriptionDto>> GetByIdAsync(Guid id)
         {
             try
             {
                 // 使用优化后的查询方法，包含处方项
                 var entity = await _repository.GetByIdWithItemsAsync(id);
                 if (entity == null)
-                    return ServiceResult<PrescriptionDto>.Failure("处方不存在");
+                    return Result<PrescriptionDto>.Failure("处方不存在");
 
                 var dto = _mapper.Map<PrescriptionDto>(entity);
-                return ServiceResult<PrescriptionDto>.Success(dto);
+                return Result<PrescriptionDto>.Success(dto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取处方详情失败");
-                return ServiceResult<PrescriptionDto>.Failure("获取处方详情失败");
+                return Result<PrescriptionDto>.Failure("获取处方详情失败");
             }
         }
 
@@ -72,7 +72,7 @@ namespace LYBT.Module.Prescriptions.Services
         // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync, CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
         // 所有写操作必须通过MedicalCase聚合根进行
 
-        public async Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
+        public async Task<Result<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId)
         {
             try
             {
@@ -82,12 +82,12 @@ namespace LYBT.Module.Prescriptions.Services
                 // 转换为DTO
                 var prescriptionDtos = _mapper.Map<List<PrescriptionDto>>(prescriptions);
 
-                return ServiceResult<List<PrescriptionDto>>.Success(prescriptionDtos);
+                return Result<List<PrescriptionDto>>.Success(prescriptionDtos);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取病历相关处方时发生错误，病历ID：{MedicalCaseId}", medicalCaseId);
-                return ServiceResult<List<PrescriptionDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
+                return Result<List<PrescriptionDto>>.Failure($"获取病历相关处方失败：{ex.Message}");
             }
         }
 
@@ -154,7 +154,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// <param name="patientName">患者姓名关键字（可空）</param>
         /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
         /// <returns>处方搜索结果列表</returns>
-        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+        public async Task<Result<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
             string? patientName = null,
             string? symptomKeyword = null)
         {
@@ -163,7 +163,7 @@ namespace LYBT.Module.Prescriptions.Services
                 // 如果两个参数都为空，返回空列表
                 if (string.IsNullOrWhiteSpace(patientName) && string.IsNullOrWhiteSpace(symptomKeyword))
                 {
-                    return ServiceResult<List<PrescriptionSearchResultDto>>.Success(new List<PrescriptionSearchResultDto>());
+                    return Result<List<PrescriptionSearchResultDto>>.Success(new List<PrescriptionSearchResultDto>());
                 }
 
                 // 获取所有处方
@@ -235,13 +235,13 @@ namespace LYBT.Module.Prescriptions.Services
                 _logger.LogInformation("处方搜索完成，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}，结果数量：{Count}",
                     patientName ?? "(空)", symptomKeyword ?? "(空)", searchResults.Count);
 
-                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(searchResults);
+                return Result<List<PrescriptionSearchResultDto>>.Success(searchResults);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索处方时发生错误，患者姓名：{PatientName}，症状关键字：{SymptomKeyword}",
                     patientName ?? "(空)", symptomKeyword ?? "(空)");
-                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"搜索处方失败：{ex.Message}");
+                return Result<List<PrescriptionSearchResultDto>>.Failure($"搜索处方失败：{ex.Message}");
             }
         }
 
@@ -255,7 +255,7 @@ namespace LYBT.Module.Prescriptions.Services
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5条）</param>
         /// <returns>患者最近处方列表（按日期倒序）</returns>
-        public async Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+        public async Task<Result<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
             Guid patientId,
             int count = 5)
         {
@@ -265,7 +265,7 @@ namespace LYBT.Module.Prescriptions.Services
                 var patient = await _patientRepository.GetByIdAsync(patientId);
                 if (patient == null)
                 {
-                    return ServiceResult<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
+                    return Result<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
                 }
 
                 // 获取所有处方
@@ -352,12 +352,12 @@ namespace LYBT.Module.Prescriptions.Services
                 _logger.LogInformation("获取患者最近处方完成，患者ID：{PatientId}，患者姓名：{PatientName}，请求数量：{RequestCount}，实际返回：{ActualCount}",
                     patientId, patient.Name ?? "(空)", count, recentPrescriptions.Count);
 
-                return ServiceResult<List<PrescriptionSearchResultDto>>.Success(recentPrescriptions);
+                return Result<List<PrescriptionSearchResultDto>>.Success(recentPrescriptions);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取患者最近处方时发生错误，患者ID：{PatientId}", patientId);
-                return ServiceResult<List<PrescriptionSearchResultDto>>.Failure($"获取患者最近处方失败：{ex.Message}");
+                return Result<List<PrescriptionSearchResultDto>>.Failure($"获取患者最近处方失败：{ex.Message}");
             }
         }
     }

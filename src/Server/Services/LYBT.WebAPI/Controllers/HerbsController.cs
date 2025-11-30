@@ -96,11 +96,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<HerbDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _herbService.CreateAsync(dto);
                 if (result.IsSuccess && result.Data != null)
                 {
@@ -129,11 +125,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<HerbDto>("药材ID不能为空");
                 }
 
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<HerbDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 // 确保使用路由中的ID
                 dto.Id = id;
 

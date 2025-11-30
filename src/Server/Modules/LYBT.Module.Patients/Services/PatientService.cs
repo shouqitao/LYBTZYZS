@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Patients;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -16,12 +17,11 @@ namespace LYBT.Module.Patients.Services
     /// 患者服务 - 简化版，只包含基础CRUD
     /// 同时实现 Module 内部接口和 Shared 跨平台接口
     /// Phase 3 Task 3.1: 实现优化版本，消除双重映射
+    /// Phase 2: 继承BaseService<Patient>复用统一错误处理和验证逻辑
     /// </summary>
-    public class PatientService : IPatientService, IPatientServiceOptimized
+    public class PatientService : BaseService<Patient>, IPatientService, IPatientServiceOptimized
     {
         private readonly IPatientRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<PatientService> _logger;
         private readonly IValidator<PatientInputDto> _validator;
 
         public PatientService(
@@ -29,10 +29,9 @@ namespace LYBT.Module.Patients.Services
             IMapper mapper,
             ILogger<PatientService> logger,
             IValidator<PatientInputDto> validator)
+            : base(logger, mapper)
         {
             _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
             _validator = validator;
         }
 

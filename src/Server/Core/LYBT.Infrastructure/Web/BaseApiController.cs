@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -119,7 +120,7 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 处理分页结果 - 兼容旧版本方法
         /// </summary>
-        protected ActionResult<ApiResponse<PagedResult<T>>> HandlePagedResult<T>(ServiceResult<PagedResult<T>> result, string successMessage = "查询成功")
+        protected ActionResult<ApiResponse<PagedResult<T>>> HandlePagedResult<T>(Result<PagedResult<T>> result, string successMessage = "查询成功")
         {
             if (result.IsSuccess)
             {
@@ -131,7 +132,7 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 处理服务结果 - 兼容旧版本方法
         /// </summary>
-        protected ActionResult<ApiResponse<T>> HandleResult<T>(ServiceResult<T> result, string successMessage = "操作成功")
+        protected ActionResult<ApiResponse<T>> HandleResult<T>(Result<T> result, string successMessage = "操作成功")
         {
             if (result.IsSuccess)
             {
@@ -211,7 +212,7 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 处理布尔服务结果 - 兼容旧版本方法
         /// </summary>
-        protected ActionResult<ApiResponse> HandleBoolServiceResult(ServiceResult<bool> result, string successMessage = "操作成功")
+        protected ActionResult<ApiResponse> HandleBoolServiceResult(Result<bool> result, string successMessage = "操作成功")
         {
             if (result.IsSuccess)
             {
@@ -221,9 +222,9 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
-        /// 处理服务结果 - 兼容旧版本方法
+        /// 处理服务结果 - 统一使用Result返回值
         /// </summary>
-        protected ActionResult<ApiResponse<T>> HandleServiceResult<T>(ServiceResult<T> result, string successMessage = "操作成功")
+        protected ActionResult<ApiResponse<T>> HandleServiceResult<T>(Result<T> result, string successMessage = "操作成功")
         {
             if (result.IsSuccess)
             {

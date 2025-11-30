@@ -1,4 +1,5 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Common;
+using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
 
 namespace LYBT.Module.Formulas.Interfaces
@@ -15,45 +16,45 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选（可选）</param>
-        Task<ServiceResult<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+        Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
 
         /// <summary>
         /// 根据ID获取验方详情
         /// </summary>
-        Task<ServiceResult<FormulaDto>> GetByIdAsync(Guid id);
+        Task<Result<FormulaDto>> GetByIdAsync(Guid id);
 
         /// <summary>
         /// 创建新验方
         /// </summary>
-        Task<ServiceResult<FormulaDto>> CreateAsync(FormulaInputDto dto);
+        Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto);
 
         /// <summary>
         /// 更新验方信息
         /// </summary>
-        Task<ServiceResult<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto);
+        Task<Result<FormulaDto>> UpdateAsync(Guid id, FormulaInputDto dto);
 
         /// <summary>
         /// 删除验方（软删除）
         /// </summary>
-        Task<ServiceResult> DeleteAsync(Guid id);
+        Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
         /// 批量删除验方（软删除）(Issue #1169)
         /// </summary>
         /// <param name="ids">验方ID列表</param>
-        Task<ServiceResult<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
+        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
 
         /// <summary>
         /// 搜索验方 - 支持多条件搜索
         /// </summary>
-        Task<ServiceResult<List<FormulaDto>>> SearchAsync(string keyword);
+        Task<Result<List<FormulaDto>>> SearchAsync(string keyword);
 
         /// <summary>
         /// 从已解析的验方数据导入（Issue #1166, #1347, #1758）
         /// 架构原则：Server端只处理结构化DTO，Excel解析由Client端负责
         /// 返回FormulaImportResultDto包含药材匹配统计
         /// </summary>
-        Task<ServiceResult<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null);
+        Task<Result<FormulaImportResultDto>> ImportFromDataAsync(List<FormulaImportDto> formulas, string? fileName = null);
 
         /// <summary>
         /// 导出验方数据到Excel (Issue #1166)
@@ -71,12 +72,12 @@ namespace LYBT.Module.Formulas.Interfaces
         /// <param name="formulaId">验方ID</param>
         /// <param name="herbItemId">待验证的药材项ID</param>
         /// <param name="selectedHerbId">选中的系统药材ID</param>
-        Task<ServiceResult> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
+        Task<Result> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
 
         /// <summary>
         /// 获取待验证的验方列表 (Issue #1349)
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
-        Task<ServiceResult<List<FormulaDto>>> GetPendingValidationFormulasAsync();
+        Task<Result<List<FormulaDto>>> GetPendingValidationFormulasAsync();
     }
 }

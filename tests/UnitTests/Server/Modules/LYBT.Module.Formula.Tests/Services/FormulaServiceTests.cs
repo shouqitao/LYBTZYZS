@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using FormulaEntity = LYBT.Entities.Formula.Formula;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formulas.Tests.Services
 {
@@ -340,7 +340,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Category = "和解剂"
             };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(existingFormula);
 
             _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<FormulaEntity>()))
@@ -372,7 +372,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Herbs = new List<FormulaHerbItemInputDto>()
             };
 
-            _repositoryMock.Setup(x => x.GetByIdAsync(formulaId))
+            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync((FormulaEntity?)null);
 
             // Act
@@ -429,71 +429,6 @@ namespace LYBT.Module.Formulas.Tests.Services
 
         #endregion
 
-        #region 克隆方剂测试
-
-        [Fact]
-        public async Task CloneFormulaAsync_WithValidId_ShouldReturnClonedFormula()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-            var originalFormula = new FormulaEntity
-            {
-                Id = formulaId,
-                Name = "桂枝汤",
-                Effect = "解肌发表，调和营卫",
-                Usage = "温服",
-                Category = "解表剂",
-                FormulaType = LYBT.Entities.Formula.FormulaType.Classic,
-                IsShared = true
-            };
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync(originalFormula);
-
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => f);
-
-            _repositoryMock.Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(1);
-
-            // Act
-            var result = await _formulaService.CloneFormulaAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.Name.Should().Contain("副本");
-            result.Data.Name.Should().Contain(originalFormula.Name);
-
-            _repositoryMock.Verify(x => x.GetByIdWithHerbsAsync(formulaId), Times.Once);
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
-            _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task CloneFormulaAsync_WithNonExistentId_ShouldReturnFailure()
-        {
-            // Arrange
-            var formulaId = Guid.NewGuid();
-
-            _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
-                .ReturnsAsync((FormulaEntity?)null);
-
-            // Act
-            var result = await _formulaService.CloneFormulaAsync(formulaId);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("未找到要克隆的处方");
-
-            _repositoryMock.Verify(x => x.GetByIdWithHerbsAsync(formulaId), Times.Once);
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Never);
-        }
-
-        #endregion
-
         #region 待验证验方查询测试
 
         [Fact]
@@ -508,7 +443,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                     Name = "待验证验方1",
                     Effect = "功效1",
                     ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                    Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>()
+                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
                 },
                 new()
                 {
@@ -516,7 +451,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                     Name = "已验证验方",
                     Effect = "功效2",
                     ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Validated,
-                    Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>()
+                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
                 },
                 new()
                 {
@@ -524,7 +459,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                     Name = "待验证验方2",
                     Effect = "功效3",
                     ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                    Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>()
+                    Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>()
                 }
             };
 
@@ -595,7 +530,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Id = formulaId,
                 Name = "测试验方",
                 ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
                 {
                     new()
                     {
@@ -671,7 +606,7 @@ namespace LYBT.Module.Formulas.Tests.Services
                 Id = formulaId,
                 Name = "测试验方",
                 ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft,
-                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
                 {
                     new()
                     {
@@ -775,7 +710,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             {
                 Id = formulaId,
                 Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
                 {
                     new()
                     {
@@ -817,7 +752,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             {
                 Id = formulaId,
                 Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
                 {
                     new()
                     {
@@ -862,7 +797,7 @@ namespace LYBT.Module.Formulas.Tests.Services
             {
                 Id = formulaId,
                 Name = "测试验方",
-                Herbs = new List<LYBT.Entities.Formula.FormulaHerbItem>
+                Herbs = new List<LYBT.Entities.Formulas.FormulaHerbItem>
                 {
                     new()
                     {
@@ -896,173 +831,6 @@ namespace LYBT.Module.Formulas.Tests.Services
             // 验证未调用更新操作（因为已校验，应该直接返回）
             _repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<FormulaEntity>()), Times.Never);
             _repositoryMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-        }
-
-        #endregion
-
-        #region Excel导入验方测试
-
-        [Fact]
-        public async Task ImportFromExcelAsync_WithValidData_ShouldImportSuccessfully()
-        {
-            // Arrange
-            // 创建一个简单的Excel文件内容（模拟）
-            using var stream = new MemoryStream();
-            using (var package = new OfficeOpenXml.ExcelPackage(stream))
-            {
-                // Sheet1: 验方信息
-                var formulaSheet = package.Workbook.Worksheets.Add("验方信息");
-                formulaSheet.Cells[1, 1].Value = "验方编号";
-                formulaSheet.Cells[1, 2].Value = "验方名称";
-                formulaSheet.Cells[1, 3].Value = "分类";
-                formulaSheet.Cells[1, 4].Value = "功效";
-                formulaSheet.Cells[1, 5].Value = "用法";
-                formulaSheet.Cells[1, 6].Value = "性味";
-                formulaSheet.Cells[1, 7].Value = "验方类型";
-                formulaSheet.Cells[1, 8].Value = "是否共享";
-                formulaSheet.Cells[1, 9].Value = "备注";
-
-                formulaSheet.Cells[2, 1].Value = "F001";
-                formulaSheet.Cells[2, 2].Value = "测试验方";
-                formulaSheet.Cells[2, 3].Value = "补益剂";
-                formulaSheet.Cells[2, 4].Value = "补气养血";
-                formulaSheet.Cells[2, 5].Value = "水煎服";
-                formulaSheet.Cells[2, 6].Value = "温";
-                formulaSheet.Cells[2, 7].Value = "经典";
-                formulaSheet.Cells[2, 8].Value = "是";
-                formulaSheet.Cells[2, 9].Value = "测试备注";
-
-                // Sheet2: 药材明细
-                var herbSheet = package.Workbook.Worksheets.Add("药材明细");
-                herbSheet.Cells[1, 1].Value = "验方编号";
-                herbSheet.Cells[1, 2].Value = "药材名称";
-                herbSheet.Cells[1, 3].Value = "用量";
-                herbSheet.Cells[1, 4].Value = "单位";
-
-                herbSheet.Cells[2, 1].Value = "F001";
-                herbSheet.Cells[2, 2].Value = "人参";
-                herbSheet.Cells[2, 3].Value = 10;
-                herbSheet.Cells[2, 4].Value = "g";
-
-                package.Save();
-            }
-
-            stream.Position = 0;
-
-            var savedFormula = new FormulaEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "测试验方",
-                Category = "补益剂",
-                ValidationStatus = LYBT.Shared.Models.Enums.FormulaValidationStatus.Draft
-            };
-
-            _repositoryMock.Setup(x => x.AddAsync(It.IsAny<FormulaEntity>()))
-                .ReturnsAsync((FormulaEntity f) => { f.Id = savedFormula.Id; return f; });
-
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                herbRepositoryMock.Object,
-                Mapper,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ImportFromExcelAsync(stream, "test.xlsx");
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.SuccessCount.Should().Be(1);
-            result.Data.FailureCount.Should().Be(0);
-            result.Data.SuccessfulFormulas.Should().HaveCount(1);
-            result.Data.SuccessfulFormulas[0].Name.Should().Be("测试验方");
-            result.Data.MatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
-            result.Data.UnmatchedHerbsCount.Should().BeGreaterOrEqualTo(0);
-
-            _repositoryMock.Verify(x => x.AddAsync(It.IsAny<FormulaEntity>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task ImportFromExcelAsync_WithMissingHerbSheet_ShouldReturnFailure()
-        {
-            // Arrange
-            using var stream = new MemoryStream();
-            using (var package = new OfficeOpenXml.ExcelPackage(stream))
-            {
-                // 只创建验方信息表，缺少药材明细表
-                var formulaSheet = package.Workbook.Worksheets.Add("验方信息");
-                formulaSheet.Cells[1, 1].Value = "验方编号";
-                formulaSheet.Cells[1, 2].Value = "验方名称";
-                formulaSheet.Cells[2, 1].Value = "F001";
-                formulaSheet.Cells[2, 2].Value = "测试验方";
-                package.Save();
-            }
-
-            stream.Position = 0;
-
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                herbRepositoryMock.Object,
-                Mapper,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ImportFromExcelAsync(stream, "test.xlsx");
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("Excel文件格式错误");
-        }
-
-        [Fact]
-        public async Task ImportFromExcelAsync_WithEmptyFormulaName_ShouldSkipAndReportError()
-        {
-            // Arrange
-            using var stream = new MemoryStream();
-            using (var package = new OfficeOpenXml.ExcelPackage(stream))
-            {
-                // Sheet1: 验方信息（名称为空）
-                var formulaSheet = package.Workbook.Worksheets.Add("验方信息");
-                formulaSheet.Cells[1, 1].Value = "验方编号";
-                formulaSheet.Cells[1, 2].Value = "验方名称";
-                formulaSheet.Cells[1, 3].Value = "分类";
-
-                formulaSheet.Cells[2, 1].Value = "F001";
-                formulaSheet.Cells[2, 2].Value = ""; // 空名称
-                formulaSheet.Cells[2, 3].Value = "补益剂";
-
-                // Sheet2: 药材明细
-                var herbSheet = package.Workbook.Worksheets.Add("药材明细");
-                herbSheet.Cells[1, 1].Value = "验方编号";
-
-                package.Save();
-            }
-
-            stream.Position = 0;
-
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            var formulaService = new FormulaService(
-                _repositoryMock.Object,
-                herbRepositoryMock.Object,
-                Mapper,
-                _loggerMock.Object);
-
-            // Act
-            var result = await formulaService.ImportFromExcelAsync(stream, "test.xlsx");
-
-            // Assert
-            result.Should().NotBeNull();
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.SuccessCount.Should().Be(0);
-            result.Data.FailureCount.Should().Be(1);
-            result.Data.FailedItems.Should().HaveCount(1);
-            result.Data.FailedItems[0].ErrorMessage.Should().Contain("验方名称不能为空");
         }
 
         #endregion

@@ -130,7 +130,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("用户名或密码错误");
+        result.ErrorMessage.Should().Contain("用户名或密码错误");
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("用户名或密码错误");
+        result.ErrorMessage.Should().Contain("用户名或密码错误");
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("用户名和密码不能为空");
+        result.ErrorMessage.Should().Contain("用户名和密码不能为空");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("用户名和密码不能为空");
+        result.ErrorMessage.Should().Contain("用户名和密码不能为空");
     }
 
     #endregion
@@ -255,7 +255,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         // Issue #1872: 添加失败消息输出以便诊断
-        result.IsSuccess.Should().BeTrue($"Login should succeed, but failed with: {result.Message}");
+        result.IsSuccess.Should().BeTrue($"Login should succeed, but failed with: {result.ErrorMessage}");
         result.Data.Should().NotBeNull();
         result.Data!.Token.Should().Be(expectedToken);
         result.Data.User.Should().BeEquivalentTo(testUserDto);
@@ -280,7 +280,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("用户名或密码错误");
+        result.ErrorMessage.Should().Contain("用户名或密码错误");
     }
 
     [Fact]
@@ -339,7 +339,7 @@ public class AuthServiceTests : IDisposable
         // Assert
         // Issue #1872: RefreshTokenAsync现在实际实现了功能，不存在的token应返回失败
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("RefreshToken不存在");
+        result.ErrorMessage.Should().Contain("RefreshToken不存在");
     }
 
     [Fact]
@@ -380,7 +380,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("已撤销");
+        result.ErrorMessage.Should().Contain("已撤销");
     }
 
     [Fact]
@@ -612,7 +612,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Message.Should().Contain("令牌无效");
+        result.ErrorMessage.Should().Contain("令牌无效");
     }
 
     #endregion

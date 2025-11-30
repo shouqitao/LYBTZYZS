@@ -1,4 +1,7 @@
 ﻿using System.Security.Claims;
+using AutoMapper;
+using FluentValidation;
+using LYBT.Shared.Models.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -238,14 +241,107 @@ namespace LYBT.Infrastructure.Services
     }
 
     /// <summary>
-    /// 泛型BaseService，提供类型安全的权限验证
+    /// 泛型BaseService，提供类型安全的权限验证和统一错误处理
+    /// Phase 2: 扩展支持 ExecuteAsync 和 ValidateAsync
     /// </summary>
     /// <typeparam name="T">实体类型</typeparam>
     public abstract class BaseService<T> : BaseService where T : class
     {
-        protected BaseService(ILogger logger) : base(logger)
+        protected readonly IMapper _mapper;
+
+        protected BaseService(ILogger logger, IMapper mapper) : base(logger)
         {
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
+
+        #region 统一错误处理方法（Phase 2）
+
+        /// <summary>
+        /// 执行操作并统一处理异常
+        /// </summary>
+        /// <typeparam name="TResult">返回结果类型</typeparam>
+        /// <param name="operation">异步操作</param>
+        /// <param name="operationName">操作名称（用于日志）</param>
+        /// <returns>统一的Result结果</returns>
+        protected async Task<Result<TResult>> ExecuteAsync<TResult>(
+            Func<Task<TResult>> operation,
+            string operationName)
+        {
+            try
+            {
+                var result = await operation();
+                return Result<TResult>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Operation} 失败", operationName);
+                return Result<TResult>.Failure($"{operationName}失败");
+            }
+        }
+
+        /// <summary>
+        /// 执行无返回值操作并统一处理异常
+        /// </summary>
+        /// <param name="operation">异步操作</param>
+        /// <param name="operationName">操作名称（用于日志）</param>
+        /// <returns>统一的Result结果</returns>
+        protected async Task<Result> ExecuteAsync(
+            Func<Task> operation,
+            string operationName)
+        {
+            try
+            {
+                await operation();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Operation} 失败", operationName);
+                return Result.Failure($"{operationName}失败");
+            }
+        }
+
+        /// <summary>
+        /// 执行验证
+        /// </summary>
+        /// <typeparam name="TDto">DTO类型</typeparam>
+        /// <param name="dto">待验证的DTO</param>
+        /// <param name="validator">验证器</param>
+        /// <returns>验证结果</returns>
+        protected async Task<Result<TDto>> ValidateAsync<TDto>(
+            TDto dto,
+            IValidator<TDto> validator)
+        {
+            var validationResult = await validator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Result<TDto>.Failure(errors);
+            }
+            return Result<TDto>.Success(dto);
+        }
+
+        /// <summary>
+        /// 同步验证（适用于简单场景）
+        /// </summary>
+        protected Result<TDto> Validate<TDto>(
+            TDto dto,
+            IValidator<TDto> validator)
+        {
+            var validationResult = validator.Validate(dto);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Result<TDto>.Failure(errors);
+            }
+            return Result<TDto>.Success(dto);
+        }
+
+        #endregion
 
         /// <summary>
         /// 验证实体编辑权限（泛型版本）
@@ -264,22 +360,31 @@ namespace LYBT.Infrastructure.Services
             return ValidateEditPermission(entityId, currentUserId, createdUserId, createdDate, isAdmin, entityType);
         }
 
-        #region 实体属性反射方法
+        #region 实体属性反射方法（虚方法，需要权限验证功能的子类需重写）
 
         /// <summary>
-        /// 获取实体ID（需要子类实现具体逻辑）
+        /// 获取实体ID（需要权限验证的子类需重写此方法）
         /// </summary>
-        protected abstract Guid GetEntityId<TEntity>(TEntity entity) where TEntity : class;
+        protected virtual Guid GetEntityId<TEntity>(TEntity entity) where TEntity : class
+        {
+            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetEntityId 方法以支持权限验证");
+        }
 
         /// <summary>
-        /// 获取创建用户ID（需要子类实现具体逻辑）
+        /// 获取创建用户ID（需要权限验证的子类需重写此方法）
         /// </summary>
-        protected abstract Guid GetCreatedUserId<TEntity>(TEntity entity) where TEntity : class;
+        protected virtual Guid GetCreatedUserId<TEntity>(TEntity entity) where TEntity : class
+        {
+            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetCreatedUserId 方法以支持权限验证");
+        }
 
         /// <summary>
-        /// 获取创建时间（需要子类实现具体逻辑）
+        /// 获取创建时间（需要权限验证的子类需重写此方法）
         /// </summary>
-        protected abstract DateTime GetCreatedDate<TEntity>(TEntity entity) where TEntity : class;
+        protected virtual DateTime GetCreatedDate<TEntity>(TEntity entity) where TEntity : class
+        {
+            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetCreatedDate 方法以支持权限验证");
+        }
 
         #endregion
     }

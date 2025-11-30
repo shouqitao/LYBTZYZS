@@ -41,6 +41,7 @@ namespace LYBT.Module.Herbs.Mapping
                 .ForMember(dest => dest.Usage, opt => opt.Ignore())
                 .ForMember(dest => dest.PinYinCode, opt => opt.Ignore())
                 .ForMember(dest => dest.CostPrice, opt => opt.Ignore())
+                .ForMember(dest => dest.Category, opt => opt.Ignore()) // HerbImportDto没有Category字段
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

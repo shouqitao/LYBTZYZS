@@ -6,6 +6,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Enums;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace LYBT.Infrastructure.Tests.Repositories;
@@ -1394,7 +1395,8 @@ public class BaseRepositoryTests : IDisposable
 /// </summary>
 internal class TestRepository : BaseRepository<User>, LYBT.Shared.Models.Interfaces.IRepository<User>
 {
-    public TestRepository(AppDbContext context) : base(context)
+    public TestRepository(AppDbContext context)
+        : base(context, NullLogger<TestRepository>.Instance)
     {
     }
 }

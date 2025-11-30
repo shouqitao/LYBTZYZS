@@ -150,11 +150,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<UserDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.CreateAsync(dto);
 
                 if (result.IsSuccess && result.Data != null)
@@ -189,11 +185,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<UserDto>("用户ID不能为空");
                 }
 
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<UserDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.UpdateAsync(id, dto);
 
                 if (result.IsSuccess && result.Data != null)
@@ -370,13 +362,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<UserDto>("用户ID不能为空");
                 }
 
-                // 验证模型
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<UserDto>("参数验证失败");
-                }
-
-                // 调用服务
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.ChangeProfileAsync(id, dto);
 
                 if (result.IsSuccess && result.Data != null)
@@ -415,13 +401,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("用户ID不能为空");
                 }
 
-                // 验证模型
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail("参数验证失败");
-                }
-
-                // 调用服务
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
 
                 if (result.IsSuccess)

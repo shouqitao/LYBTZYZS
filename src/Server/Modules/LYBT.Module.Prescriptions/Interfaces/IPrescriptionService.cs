@@ -1,4 +1,4 @@
-﻿using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Module.Prescriptions.Interfaces
@@ -11,7 +11,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据ID获取处方详情
         /// </summary>
-        Task<ServiceResult<PrescriptionDto>> GetByIdAsync(Guid id);
+        Task<Result<PrescriptionDto>> GetByIdAsync(Guid id);
 
         // ========== Write方法已移除（Issue #1601 Phase 1）==========
         // CreateAsync, UpdateAsync, DeleteAsync, PhysicalDeleteAsync 已移除
@@ -20,7 +20,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据病例ID获取处方列表
         /// </summary>
-        Task<ServiceResult<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
+        Task<Result<List<PrescriptionDto>>> GetByMedicalCaseIdAsync(Guid medicalCaseId);
 
         // ========== Clone/Import方法已移除（Issue #1601 Phase 1）==========
         // CloneAsync, ClonePrescriptionAsync, ImportFormulaIntoPrescriptionAsync 已移除
@@ -32,7 +32,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <param name="patientName">患者姓名关键字（可空）</param>
         /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
         /// <returns>处方搜索结果列表</returns>
-        Task<ServiceResult<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
+        Task<Result<List<PrescriptionSearchResultDto>>> SearchPrescriptionsAsync(
             string? patientName = null,
             string? symptomKeyword = null);
 
@@ -43,7 +43,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5条）</param>
         /// <returns>患者最近处方列表</returns>
-        Task<ServiceResult<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
+        Task<Result<List<PrescriptionSearchResultDto>>> GetPatientRecentPrescriptionsAsync(
             Guid patientId,
             int count = 5);
     }

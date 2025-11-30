@@ -12,16 +12,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedicalCaseDto = LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto;
-// Epic #1612: 新Service接口和DTOs
-using NewMedicalCaseService = LYBT.Module.MedicalCases.Interfaces.IMedicalCaseService;
 
 namespace LYBT.WebAPI.Controllers
 {
     /// <summary>
     /// 医疗案例管理 API V1 - Epic #1612重构版
-    /// 遵循Write/Read/Helper Layer分离原则
+    /// 遵循CQRS原则：Command/Query/State服务分离
     /// 所有写操作通过MedicalCase聚合根
-    /// 注：保持v1版本，v2升级延后到Phase 3完成后
+    /// Phase 3: 拆分为三个职责单一的Service
     /// </summary>
     [ApiController]
     [ApiVersion("1")]
@@ -29,18 +27,24 @@ namespace LYBT.WebAPI.Controllers
     [Authorize]
     public class MedicalCaseController : BaseApiController
     {
-        private readonly NewMedicalCaseService _medicalCaseService;
+        private readonly IMedicalCaseCommandService _commandService;
+        private readonly IMedicalCaseQueryService _queryService;
+        private readonly IMedicalCaseStateService _stateService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly IMedicalCaseAuditService _auditService;
 
         public MedicalCaseController(
-            NewMedicalCaseService medicalCaseService,
+            IMedicalCaseCommandService commandService,
+            IMedicalCaseQueryService queryService,
+            IMedicalCaseStateService stateService,
             IMedicalCasePermissionService permissionService,
             IMedicalCaseAuditService auditService,
             ILogger<MedicalCaseController> logger)
             : base(logger)
         {
-            _medicalCaseService = medicalCaseService;
+            _commandService = commandService;
+            _queryService = queryService;
+            _stateService = stateService;
             _permissionService = permissionService;
             _auditService = auditService;
         }
@@ -67,7 +71,7 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2212: 获取当前医生ID
                 var (doctorId, _, _) = GetOperator();
 
-                var entity = await _medicalCaseService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
+                var entity = await _commandService.CreateAsync(request.PatientId, request.VisitDate, doctorId);
 
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCaseDto>.CreateFail("患者不存在"));
@@ -139,7 +143,7 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
+                var result = await _commandService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<ConsultationDto>.CreateFail("病案不存在"));
@@ -199,7 +203,7 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
+                var result = await _commandService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -234,7 +238,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.CreatePrescriptionAsync(id, request);
+                var result = await _commandService.CreatePrescriptionAsync(id, request);
 
                 if (result == null)
                     return NotFound(ApiResponse<Prescription>.CreateFail("病案不存在"));
@@ -275,7 +279,7 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, request, operatorId, isAdmin);
+                var result = await _commandService.UpdatePrescriptionAsync(id, prescriptionId, request, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<Prescription>.CreateFail("病案或处方不存在"));
@@ -316,7 +320,7 @@ namespace LYBT.WebAPI.Controllers
                 // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.DeletePrescriptionAsync(id, prescriptionId, operatorId, isAdmin);
+                var result = await _commandService.DeletePrescriptionAsync(id, prescriptionId, operatorId, isAdmin);
 
                 if (!result)
                     return NotFound(ApiResponse.CreateFail("病案或处方不存在"));
@@ -358,7 +362,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.CreatePrescriptionAsync(id, request);
+                var result = await _commandService.CreatePrescriptionAsync(id, request);
 
                 if (result == null)
                     return NotFound(ApiResponse<PrescriptionDto>.CreateFail("病案不存在"));
@@ -400,7 +404,7 @@ namespace LYBT.WebAPI.Controllers
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 // 一诊一方模式：从医案获取处方ID
-                var medicalCase = await _medicalCaseService.GetByIdAsync(id);
+                var medicalCase = await _queryService.GetByIdAsync(id);
                 if (medicalCase?.Prescription == null)
                     return NotFound(ApiResponse<PrescriptionDto>.CreateFail("病案或处方不存在"));
 
@@ -426,7 +430,7 @@ namespace LYBT.WebAPI.Controllers
                     }).ToList() ?? new List<PrescriptionItemInputDto>()
                 };
 
-                var result = await _medicalCaseService.UpdatePrescriptionAsync(id, prescriptionId, editDto, operatorId, isAdmin);
+                var result = await _commandService.UpdatePrescriptionAsync(id, prescriptionId, editDto, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<PrescriptionDto>.CreateFail("病案或处方不存在"));
@@ -505,7 +509,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.UpdateStatusAsync(id, request.Status);
+                var result = await _stateService.UpdateStatusAsync(id, request.Status);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -538,7 +542,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.CompleteAsync(id);
+                var result = await _stateService.CompleteAsync(id);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -570,7 +574,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.DeleteAsync(id);
+                var result = await _commandService.DeleteAsync(id);
 
                 if (!result)
                     return NotFound(ApiResponse.CreateFail("病案不存在"));
@@ -597,7 +601,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.CloseCaseAsync(id);
+                var result = await _stateService.CloseCaseAsync(id);
 
                 if (!result)
                     return NotFound(ApiResponse.CreateFail("病案不存在"));
@@ -629,7 +633,7 @@ namespace LYBT.WebAPI.Controllers
                 var (operatorId, _, operatorRole) = GetOperator();
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.SaveDraftAsync(id, request, operatorId, isAdmin);
+                var result = await _stateService.SaveDraftAsync(id, request, operatorId, isAdmin);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -671,7 +675,7 @@ namespace LYBT.WebAPI.Controllers
                 var (operatorId, _, operatorRole) = GetOperator();
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
-                var result = await _medicalCaseService.CancelAsync(id, operatorId, isAdmin, request?.Reason);
+                var result = await _stateService.CancelAsync(id, operatorId, isAdmin, request?.Reason);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -708,7 +712,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.GetByIdAsync(id);
+                var result = await _queryService.GetByIdAsync(id);
 
                 if (result == null)
                     return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
@@ -740,7 +744,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var entity = await _medicalCaseService.GetByIdAsync(id);
+                var entity = await _queryService.GetByIdAsync(id);
 
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
@@ -852,7 +856,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var entity = await _medicalCaseService.GetByIdAsync(id);
+                var entity = await _queryService.GetByIdAsync(id);
 
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCasePermissionDto>.CreateFail("病案不存在"));
@@ -894,7 +898,7 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 // 验证医案是否存在
-                var entity = await _medicalCaseService.GetByIdAsync(id);
+                var entity = await _queryService.GetByIdAsync(id);
                 if (entity == null)
                     return NotFound(ApiResponse<MedicalCaseAuditLogPagedResultDto>.CreateFail("病案不存在"));
 
@@ -963,7 +967,7 @@ namespace LYBT.WebAPI.Controllers
                         "页码和页大小参数无效（页码>0，页大小1-100）"));
                 }
 
-                var entityResult = await _medicalCaseService.GetListAsync(status, patientId, page, pageSize);
+                var entityResult = await _queryService.GetListAsync(status, patientId, page, pageSize);
 
                 // Entity → DTO映射
                 var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDto
@@ -1008,7 +1012,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.GetConsultationListAsync(medicalCaseId);
+                var result = await _queryService.GetConsultationListAsync(medicalCaseId);
 
                 return Ok(ApiResponse<List<ConsultationDto>>.CreateSuccess(result, "查询成功"));
             }
@@ -1030,7 +1034,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _medicalCaseService.GetPrescriptionListAsync(medicalCaseId);
+                var result = await _queryService.GetPrescriptionListAsync(medicalCaseId);
 
                 return Ok(ApiResponse<List<PrescriptionDto>>.CreateSuccess(result, "查询成功"));
             }
@@ -1074,14 +1078,14 @@ namespace LYBT.WebAPI.Controllers
                         // 管理员查询所有待诊医案
                         _logger.LogInformation("管理员查询全部待诊队列，OperatorId: {OperatorId}, Role: {Role}",
                             operatorId, operatorRole);
-                        result = await _medicalCaseService.GetAllPendingCasesAsync();
+                        result = await _queryService.GetAllPendingCasesAsync();
                     }
                     else if (operatorRole == UserRole.Doctor)
                     {
                         // 医生只查询自己的待诊医案
                         _logger.LogInformation("医生查询自己的待诊队列，DoctorId: {DoctorId}",
                             operatorId);
-                        result = await _medicalCaseService.GetPendingCasesAsync(operatorId);
+                        result = await _queryService.GetPendingCasesAsync(operatorId);
                     }
                     else
                     {
@@ -1153,7 +1157,7 @@ namespace LYBT.WebAPI.Controllers
                     return Unauthorized(ApiResponse<MedicalCaseDto>.CreateFail("未登录或用户信息无效"));
                 }
 
-                var entityResult = await _medicalCaseService.GetUnfinishedCaseByPatientIdAsync(patientId, currentDoctorId);
+                var entityResult = await _queryService.GetUnfinishedCaseByPatientIdAsync(patientId, currentDoctorId);
 
                 if (entityResult == null)
                 {

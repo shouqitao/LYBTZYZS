@@ -1,12 +1,104 @@
 # 配置参数详细指南
 
-**凌隐宝堂中医诊所管理系统 - Configuration Parameters Guide**  
-**创建时间**: 2025-10-16  
-**适用文档**: docs/quick-reference/config-templates.md  
+**凌隐宝堂中医诊所管理系统 - Configuration Parameters Guide**
+**创建时间**: 2025-10-16
+**最后更新**: 2025-11-30
+**适用文档**: docs/quick-reference/config-templates.md
 
 ---
 
-## 🔧 JWT认证配置参数详解
+## 配置文件架构
+
+### 核心原则
+
+**单一配置源原则**: 每个配置项只在一个地方定义，避免多处可修改同一参数导致的混乱。
+
+### 配置文件职责
+
+| 文件 | 职责 | 内容说明 |
+|------|------|----------|
+| `appsettings.json` | 完整基础配置 | 所有配置项的默认值，开发和生产通用 |
+| `appsettings.Development.json` | 开发环境增量 | **仅**包含与基础配置的差异项 |
+| `launchSettings.json` | IDE启动行为 | 仅控制启动参数，不配置URL/端口 |
+| 环境变量 | 生产环境覆盖 | 敏感信息（密码、密钥、连接字符串） |
+
+### 配置加载顺序（优先级从低到高）
+
+```
+1. appsettings.json              ← 基础配置
+2. appsettings.{Environment}.json ← 环境增量覆盖
+3. User secrets                   ← 开发环境密钥
+4. 环境变量                        ← 生产环境覆盖
+5. 命令行参数                      ← 最高优先级
+```
+
+### 配置文件示例
+
+#### appsettings.json（完整基础配置）
+
+```json
+{
+  "Kestrel": {
+    "Endpoints": {
+      "Http": { "Url": "http://localhost:5000" },
+      "Https": { "Url": "https://localhost:5001" }
+    }
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft.AspNetCore": "Warning"
+      }
+    }
+  }
+}
+```
+
+#### appsettings.Development.json（仅增量差异）
+
+```json
+{
+  "_comment": "开发环境增量配置 - 仅包含与appsettings.json的差异项",
+  "Serilog": {
+    "MinimumLevel": {
+      "Override": {
+        "Microsoft.WebTools.BrowserLink": "None",
+        "Microsoft.AspNetCore.Watch.BrowserRefresh": "None"
+      }
+    }
+  }
+}
+```
+
+#### launchSettings.json（仅启动行为）
+
+```json
+{
+  "profiles": {
+    "LYBT.WebAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
+```
+
+### 常见开发环境警告及解决方案
+
+| 警告 | 原因 | 解决方案 |
+|------|------|----------|
+| `developer certificate is not trusted` | HTTPS开发证书未信任 | 执行 `dotnet dev-certs https --trust` |
+| `Overriding address(es)` | URL配置在多处定义 | 移除launchSettings.json中的URL配置，仅保留appsettings.json的Kestrel.Endpoints |
+| `Browser Link script injection` | 响应压缩阻止脚本注入 | 在appsettings.Development.json中设置日志级别为None |
+
+---
+
+## JWT认证配置参数详解
 
 ### 开发环境JWT配置 (`Lybt:Authentication:Jwt`)
 

@@ -82,7 +82,8 @@ public class Result<T>
         return new Result<T>
         {
             IsSuccess = false,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
+            Errors = new List<string> { errorMessage }
         };
     }
 
@@ -98,6 +99,25 @@ public class Result<T>
             IsSuccess = false,
             Errors = errors,
             ErrorMessage = string.Join("; ", errors)
+        };
+    }
+
+    /// <summary>
+    /// 从异常创建失败结果
+    /// </summary>
+    /// <param name="ex">异常对象</param>
+    /// <param name="operationName">操作名称（可选，用于日志）</param>
+    /// <returns>失败的Result对象</returns>
+    public static Result<T> FromException(Exception ex, string? operationName = null)
+    {
+        var message = string.IsNullOrEmpty(operationName)
+            ? ex.Message
+            : $"{operationName}失败: {ex.Message}";
+        return new Result<T>
+        {
+            IsSuccess = false,
+            ErrorMessage = message,
+            Errors = new List<string> { message }
         };
     }
 }
@@ -161,7 +181,8 @@ public class Result
         return new Result
         {
             IsSuccess = false,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
+            Errors = new List<string> { errorMessage }
         };
     }
 
@@ -175,6 +196,25 @@ public class Result
             IsSuccess = false,
             Errors = errors,
             ErrorMessage = string.Join("; ", errors)
+        };
+    }
+
+    /// <summary>
+    /// 从异常创建失败结果
+    /// </summary>
+    /// <param name="ex">异常对象</param>
+    /// <param name="operationName">操作名称（可选，用于日志）</param>
+    /// <returns>失败的Result对象</returns>
+    public static Result FromException(Exception ex, string? operationName = null)
+    {
+        var message = string.IsNullOrEmpty(operationName)
+            ? ex.Message
+            : $"{operationName}失败: {ex.Message}";
+        return new Result
+        {
+            IsSuccess = false,
+            ErrorMessage = message,
+            Errors = new List<string> { message }
         };
     }
 }

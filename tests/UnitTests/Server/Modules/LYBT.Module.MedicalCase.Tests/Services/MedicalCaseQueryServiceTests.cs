@@ -1,0 +1,278 @@
+using AutoMapper;
+using FluentAssertions;
+using LYBT.Shared.Models.Contracts.MedicalCase;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Module.MedicalCases.Interfaces;
+using LYBT.Module.MedicalCases.Services;
+using LYBT.Shared.Models.Enums;
+using LYBT.Tests.Common;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
+
+namespace LYBT.Module.MedicalCases.Tests.Services
+{
+    /// <summary>
+    /// Phase 3: MedicalCaseQueryService单元测试
+    /// 测试范围：Query Service（读操作）
+    /// </summary>
+    public class MedicalCaseQueryServiceTests : TestBase
+    {
+        private readonly MedicalCaseQueryService _service;
+        private readonly Mock<IMedicalCaseRepository> _repositoryMock;
+        private readonly Mock<IMapper> _mapperMock;
+        private readonly Mock<ILogger<MedicalCaseQueryService>> _loggerMock;
+
+        public MedicalCaseQueryServiceTests()
+        {
+            _repositoryMock = CreateMock<IMedicalCaseRepository>();
+            _mapperMock = CreateMock<IMapper>();
+            _loggerMock = CreateLoggerMock<MedicalCaseQueryService>();
+
+            _service = new MedicalCaseQueryService(
+                _repositoryMock.Object,
+                _mapperMock.Object,
+                _loggerMock.Object);
+        }
+
+        #region GetByIdAsync Tests
+
+        [Fact]
+        public async Task GetByIdAsync_WithValidId_ShouldReturnMedicalCase()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = medicalCaseId,
+                PatientName = "张三",
+                CaseStatus = MedicalCaseStatus.Active,
+                Consultation = new ConsultationEntity { Id = medicalCaseId }
+            };
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.GetByIdAsync(medicalCaseId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(medicalCaseId);
+            result.PatientName.Should().Be("张三");
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_WithInvalidId_ShouldReturnNull()
+        {
+            // Arrange
+            var medicalCaseId = Guid.NewGuid();
+            MedicalCaseEntity? nullCase = null;
+
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+                .ReturnsAsync(nullCase!);
+
+            // Act
+            var result = await _service.GetByIdAsync(medicalCaseId);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        #endregion
+
+        #region GetListAsync Tests
+
+        [Fact]
+        public async Task GetListAsync_WithValidParameters_ShouldReturnPagedResult()
+        {
+            // Arrange
+            var status = MedicalCaseStatus.Active;
+            var patientId = Guid.NewGuid();
+            var page = 1;
+            var pageSize = 10;
+
+            var medicalCases = new List<MedicalCaseEntity>
+            {
+                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientId = patientId, CaseStatus = MedicalCaseStatus.Active },
+                new MedicalCaseEntity { Id = Guid.NewGuid(), PatientId = patientId, CaseStatus = MedicalCaseStatus.Active }
+            };
+
+            var pagedResult = new PagedResult<MedicalCaseEntity>
+            {
+                Items = medicalCases,
+                TotalCount = 2,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+
+            // Mock repository返回包含医案的分页结果
+            // 服务层会根据status和patientId进行过滤
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>()))
+                .ReturnsAsync(pagedResult);
+
+            // Act
+            var result = await _service.GetListAsync(status, patientId, page, pageSize);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Items.Should().HaveCount(2);
+            result.TotalCount.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task GetListAsync_WithNoFilters_ShouldReturnAllActiveCases()
+        {
+            // Arrange
+            var page = 1;
+            var pageSize = 10;
+
+            var medicalCases = new List<MedicalCaseEntity>
+            {
+                new MedicalCaseEntity { Id = Guid.NewGuid(), CaseStatus = MedicalCaseStatus.Active },
+                new MedicalCaseEntity { Id = Guid.NewGuid(), CaseStatus = MedicalCaseStatus.Completed }
+            };
+
+            var pagedResult = new PagedResult<MedicalCaseEntity>
+            {
+                Items = medicalCases,
+                TotalCount = 2,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+
+            _repositoryMock.Setup(x => x.GetPagedWithDetailsAsync(page, pageSize, It.IsAny<string?>()))
+                .ReturnsAsync(pagedResult);
+
+            // Act
+            var result = await _service.GetListAsync(null, null, page, pageSize);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Items.Should().HaveCount(2);
+        }
+
+        #endregion
+
+        #region GetUnfinishedCaseByPatientIdAsync Tests
+
+        [Fact]
+        public async Task GetUnfinishedCaseByPatientIdAsync_WithActiveCase_ShouldReturnCase()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+            var medicalCase = new MedicalCaseEntity
+            {
+                Id = Guid.NewGuid(),
+                PatientId = patientId,
+                DoctorId = doctorId,
+                CaseStatus = MedicalCaseStatus.Active
+            };
+
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
+                .ReturnsAsync(medicalCase);
+
+            // Act
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.PatientId.Should().Be(patientId);
+            result.CaseStatus.Should().Be(MedicalCaseStatus.Active);
+        }
+
+        [Fact]
+        public async Task GetUnfinishedCaseByPatientIdAsync_WithNoActiveCase_ShouldReturnNull()
+        {
+            // Arrange
+            var patientId = Guid.NewGuid();
+            var doctorId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId))
+                .ReturnsAsync((MedicalCaseEntity?)null);
+
+            // Act
+            var result = await _service.GetUnfinishedCaseByPatientIdAsync(patientId, doctorId);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        #endregion
+
+        #region GetPendingCasesAsync Tests
+
+        [Fact]
+        public async Task GetPendingCasesAsync_WithValidDoctorId_ShouldReturnPendingCases()
+        {
+            // Arrange
+            var doctorId = Guid.NewGuid();
+            var pendingCases = new List<PendingMedicalCaseDto>
+            {
+                new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "张三" },
+                new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "李四" }
+            };
+
+            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId))
+                .ReturnsAsync(pendingCases);
+
+            // Act
+            var result = await _service.GetPendingCasesAsync(doctorId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task GetPendingCasesAsync_WithNoPendingCases_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var doctorId = Guid.NewGuid();
+
+            _repositoryMock.Setup(x => x.GetPendingCasesAsync(doctorId))
+                .ReturnsAsync(new List<PendingMedicalCaseDto>());
+
+            // Act
+            var result = await _service.GetPendingCasesAsync(doctorId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEmpty();
+        }
+
+        #endregion
+
+        #region GetAllPendingCasesAsync Tests
+
+        [Fact]
+        public async Task GetAllPendingCasesAsync_ShouldReturnAllPendingCases()
+        {
+            // Arrange
+            var pendingCases = new List<PendingMedicalCaseDto>
+            {
+                new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "张三" },
+                new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "李四" },
+                new PendingMedicalCaseDto { PatientId = Guid.NewGuid(), PatientName = "王五" }
+            };
+
+            _repositoryMock.Setup(x => x.GetAllPendingCasesAsync())
+                .ReturnsAsync(pendingCases);
+
+            // Act
+            var result = await _service.GetAllPendingCasesAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(3);
+        }
+
+        #endregion
+    }
+}

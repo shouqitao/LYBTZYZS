@@ -92,11 +92,7 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<FormulaDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _service.CreateAsync(dto);
                 if (!result.IsSuccess || result.Data == null)
                 {
@@ -125,11 +121,7 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail<FormulaDto>("验方ID不能为空");
                 }
 
-                if (!ModelState.IsValid)
-                {
-                    return ValidationFail<FormulaDto>("参数验证失败");
-                }
-
+                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
                 {

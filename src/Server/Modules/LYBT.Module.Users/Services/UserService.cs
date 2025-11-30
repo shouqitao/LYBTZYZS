@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using LYBT.Entities.Users;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
@@ -19,13 +20,12 @@ namespace LYBT.Module.Users.Services
     /// 用户服务实现 - 标准CRUD模式
     /// Issue #1008: 重构为标准Service，移除过度设计方法
     /// Issue #1909: 添加三角色权限控制（SuperAdmin/Admin/Doctor）
+    /// Phase 2: 继承BaseService<User>复用统一错误处理和验证逻辑
     /// 遵循单一服务原则，符合MVP适度设计原则
     /// </summary>
-    public class UserService : IUserService
+    public class UserService : BaseService<User>, IUserService
     {
         private readonly IUserRepository _repository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<UserService> _logger;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<UserInputDto> _validator;
@@ -37,10 +37,9 @@ namespace LYBT.Module.Users.Services
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IValidator<UserInputDto> validator)
+            : base(logger, mapper)
         {
             _repository = repository;
-            _mapper = mapper;
-            _logger = logger;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _validator = validator;

@@ -3,8 +3,8 @@ using LYBT.Infrastructure.Data;
 using LYBT.Module.Auth.Interfaces;
 using LYBT.Module.Auth.Models;
 using LYBT.Module.Users.Interfaces;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Auth;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -57,17 +57,17 @@ namespace LYBT.Module.Auth.Services
         /// Issue #1008: 改为直接使用IUserRepository和BCrypt验证
         /// Issue #1909: 三角色统一认证（SuperAdmin/Admin/Doctor）
         /// </summary>
-        public async Task<ServiceResult<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
+        public async Task<Result<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
-                return ServiceResult<string>.Failure("用户名和密码不能为空");
+                return Result<string>.Failure("用户名和密码不能为空");
 
             try
             {
                 // 统一认证流程 - 所有用户（包括SuperAdmin）都从Users表验证
                 var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                 if (userEntity == null)
-                    return ServiceResult<string>.Failure("用户名或密码错误");
+                    return Result<string>.Failure("用户名或密码错误");
 
                 // 使用统一密码帮助类验证密码
                 var verificationResult = PasswordHelper.VerifyPassword(request.Password, userEntity.PasswordHash, userEntity.Role, _logger);
@@ -75,17 +75,17 @@ namespace LYBT.Module.Auth.Services
                 {
                     _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
                         request.UserName, userEntity.Role, DateTime.UtcNow);
-                    return ServiceResult<string>.Success(userEntity.Id.ToString());
+                    return Result<string>.Success(userEntity.Id.ToString());
                 }
 
                 _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: 密码错误] [时间: {Timestamp}]",
                     request.UserName, DateTime.UtcNow);
-                return ServiceResult<string>.Failure("用户名或密码错误");
+                return Result<string>.Failure("用户名或密码错误");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "验证用户凭据时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
-                return ServiceResult<string>.Failure("认证过程中发生错误");
+                return Result<string>.Failure("认证过程中发生错误");
             }
         }
 
@@ -100,7 +100,7 @@ namespace LYBT.Module.Auth.Services
         /// 用户登录（统一流程）
         /// Issue #1909: 三角色统一登录流程（SuperAdmin/Admin/Doctor）
         /// </summary>
-        public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -114,15 +114,15 @@ namespace LYBT.Module.Auth.Services
                         EventType = "LoginFailed",
                         UserName = request.UserName,
                         Success = false,
-                        ErrorMessage = credentialsResult.Message ?? "凭据验证失败"
+                        ErrorMessage = credentialsResult.ErrorMessage ?? "凭据验证失败"
                     });
-                    return ServiceResult<LoginResponse>.Failure(credentialsResult.Message ?? "凭据验证失败");
+                    return Result<LoginResponse>.Failure(credentialsResult.ErrorMessage ?? "凭据验证失败");
                 }
 
                 // 统一用户登录流程（包括SuperAdmin） - 所有角色都从Users表获取
                 var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                 if (userEntity == null)
-                    return ServiceResult<LoginResponse>.Failure("获取用户信息失败");
+                    return Result<LoginResponse>.Failure("获取用户信息失败");
 
                 var userDto = _mapper.Map<UserDto>(userEntity);
 
@@ -174,12 +174,12 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogInformation("用户登录成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
                     request.UserName, userDto.Role, DateTime.UtcNow);
 
-                return ServiceResult<LoginResponse>.Success(response);
+                return Result<LoginResponse>.Success(response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "用户登录时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
-                return ServiceResult<LoginResponse>.Failure("登录过程中发生错误");
+                return Result<LoginResponse>.Failure("登录过程中发生错误");
             }
         }
 
@@ -187,7 +187,7 @@ namespace LYBT.Module.Auth.Services
         /// 用户登出
         /// Issue #1872: 集成Token撤销和审计日志
         /// </summary>
-        public async Task<ServiceResult<bool>> LogoutAsync(LogoutRequest request)
+        public async Task<Result<bool>> LogoutAsync(LogoutRequest request)
         {
             try
             {
@@ -210,23 +210,23 @@ namespace LYBT.Module.Auth.Services
                     Success = true
                 });
 
-                return ServiceResult<bool>.Success(true, "登出成功");
+                return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "用户登出时发生错误");
                 // 即使撤销失败，也返回成功，因为客户端已经清除了Token
-                return ServiceResult<bool>.Success(true, "登出成功");
+                return Result<bool>.Success(true);
             }
         }
 
         /// <summary>
         /// 刷新令牌 - Issue #1838: 实现Token自动刷新机制
         /// </summary>
-        public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
+        public async Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
-                return ServiceResult<LoginResponse>.Failure("RefreshToken不能为空");
+                return Result<LoginResponse>.Failure("RefreshToken不能为空");
 
             try
             {
@@ -243,7 +243,7 @@ namespace LYBT.Module.Auth.Services
                         Success = false,
                         ErrorMessage = "Token不存在"
                     });
-                    return ServiceResult<LoginResponse>.Failure("RefreshToken不存在");
+                    return Result<LoginResponse>.Failure("RefreshToken不存在");
                 }
 
                 // 2. 验证Token是否有效
@@ -264,7 +264,7 @@ namespace LYBT.Module.Auth.Services
                     });
 
                     _logger.LogWarning("RefreshToken验证失败：{Reason}", reason);
-                    return ServiceResult<LoginResponse>.Failure($"RefreshToken{reason}，请重新登录");
+                    return Result<LoginResponse>.Failure($"RefreshToken{reason}，请重新登录");
                 }
 
                 // 3. 记录使用并检查异常使用
@@ -277,7 +277,7 @@ namespace LYBT.Module.Auth.Services
                 // 4. 统一从Users表获取用户信息（包括SuperAdmin） - Issue #1909
                 var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
                 if (userEntity == null)
-                    return ServiceResult<LoginResponse>.Failure("用户不存在");
+                    return Result<LoginResponse>.Failure("用户不存在");
 
                 var userDto = _mapper.Map<UserDto>(userEntity);
 
@@ -338,12 +338,12 @@ namespace LYBT.Module.Auth.Services
                 _logger.LogInformation("Token刷新成功 [用户: {UserName}] [时间: {Timestamp}]",
                     userDto.UserName, DateTime.UtcNow);
 
-                return ServiceResult<LoginResponse>.Success(response);
+                return Result<LoginResponse>.Success(response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "刷新Token时发生错误");
-                return ServiceResult<LoginResponse>.Failure("刷新Token失败");
+                return Result<LoginResponse>.Failure("刷新Token失败");
             }
         }
 
@@ -362,25 +362,25 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 验证令牌
         /// </summary>
-        public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
+        public async Task<Result<bool>> ValidateTokenAsync(string token)
         {
             await Task.CompletedTask;
 
             try
             {
                 var principal = _jwtService.ValidateToken(token);
-                return ServiceResult<bool>.Success(principal != null);
+                return Result<bool>.Success(principal != null);
             }
             catch
             {
-                return ServiceResult<bool>.Success(false);
+                return Result<bool>.Success(false);
             }
         }
 
         /// <summary>
         /// 获取会话信息
         /// </summary>
-        public async Task<ServiceResult<object>> GetSessionInfoAsync(string token)
+        public async Task<Result<object>> GetSessionInfoAsync(string token)
         {
             await Task.CompletedTask;
 
@@ -388,7 +388,7 @@ namespace LYBT.Module.Auth.Services
             {
                 var principal = _jwtService.ValidateToken(token);
                 if (principal == null)
-                    return ServiceResult<object>.Failure("令牌无效");
+                    return Result<object>.Failure("令牌无效");
 
                 var sessionInfo = new
                 {
@@ -397,21 +397,21 @@ namespace LYBT.Module.Auth.Services
                     Role = principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
                 };
 
-                return ServiceResult<object>.Success(sessionInfo);
+                return Result<object>.Success(sessionInfo);
             }
             catch
             {
-                return ServiceResult<object>.Failure("获取会话信息失败");
+                return Result<object>.Failure("获取会话信息失败");
             }
         }
 
         /// <summary>
         /// 撤销RefreshToken（简化版本不支持）
         /// </summary>
-        public async Task<ServiceResult<bool>> RevokeTokenAsync(RevokeTokenRequest request)
+        public async Task<Result<bool>> RevokeTokenAsync(RevokeTokenRequest request)
         {
             await Task.CompletedTask;
-            return ServiceResult<bool>.Success(true, "简化版本无需撤销令牌");
+            return Result<bool>.Success(true);
         }
 
         #endregion 认证流程操作
