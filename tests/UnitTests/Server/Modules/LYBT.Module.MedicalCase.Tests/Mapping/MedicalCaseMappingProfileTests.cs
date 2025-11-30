@@ -48,7 +48,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDto_ShouldMapCorrectly()
         {
             // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
@@ -80,7 +80,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDto_WithNullRemark_ShouldMapCorrectly()
         {
             // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
@@ -107,7 +107,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDetailDto_ShouldMapCorrectly()
         {
             // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
@@ -150,7 +150,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             };
 
             // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCases.MedicalCase>(inputDto);
 
             // Assert
             medicalCase.Should().NotBeNull();
@@ -173,7 +173,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             };
 
             // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCases.MedicalCase>(inputDto);
 
             // Assert - Id和导航属性应该被忽略
             // 注意：AutoMapper Ignore 不会将 Id 设为 Empty，而是保持实体的默认值
@@ -195,7 +195,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
             };
 
             // Act
-            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCase.MedicalCase>(inputDto);
+            var medicalCase = _mapper.Map<LYBT.Entities.MedicalCases.MedicalCase>(inputDto);
 
             // Assert - 可选字段为null
             medicalCase.Should().NotBeNull();
@@ -213,7 +213,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void MedicalCase_To_MedicalCaseDto_ShouldMapAllStatuses(MedicalCaseStatus status)
         {
             // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
@@ -238,7 +238,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void Mapping_WithNullSource_ShouldReturnNull()
         {
             // Arrange
-            LYBT.Entities.MedicalCase.MedicalCase? nullMedicalCase = null;
+            LYBT.Entities.MedicalCases.MedicalCase? nullMedicalCase = null;
 
             // Act
             var dto = _mapper.Map<MedicalCaseDto>(nullMedicalCase);
@@ -255,7 +255,7 @@ namespace LYBT.Module.MedicalCase.Tests.Mapping
         public void MedicalCase_WithSpecialCharacters_ShouldMapCorrectly()
         {
             // Arrange
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),

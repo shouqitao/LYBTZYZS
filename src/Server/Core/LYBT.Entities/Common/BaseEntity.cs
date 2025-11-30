@@ -7,7 +7,7 @@ namespace LYBT.Entities.Common
     /// 实体基类 - 提供统一的基础字段和审计功能
     /// 适用于凌隐宝堂中医诊所系统的所有业务实体
     /// </summary>
-    public abstract class BaseEntity
+    public abstract class BaseEntity : IAuditableEntity, ISoftDeletable
     {
         /// <summary>
         /// 唯一标识
@@ -17,16 +17,16 @@ namespace LYBT.Entities.Common
         public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// 创建时间
+        /// 创建时间 (UTC)
         /// </summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// 更新时间
+        /// 更新时间 (UTC)
         /// </summary>
         [DisplayName("更新时间")]
-        public DateTime? UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime? UpdatedAt { get; set; }
 
         /// <summary>
         /// 创建者ID

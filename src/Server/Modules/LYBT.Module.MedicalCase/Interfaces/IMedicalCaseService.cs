@@ -1,10 +1,9 @@
-﻿using LYBT.Module.MedicalCase.Dtos;
-using LYBT.Shared.Models.Contracts.Common;
+﻿using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Interfaces
@@ -211,7 +210,7 @@ namespace LYBT.Module.MedicalCase.Interfaces
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>
         /// <returns>处方DTO列表</returns>
-        Task<List<MedicalCasePrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId);
+        Task<List<PrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId);
 
         /// <summary>
         /// 获取患者的未完成医案（Status != Completed）

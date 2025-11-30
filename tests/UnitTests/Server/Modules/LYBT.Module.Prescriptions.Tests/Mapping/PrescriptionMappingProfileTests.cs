@@ -4,7 +4,6 @@ using FluentAssertions;
 using LYBT.Entities.Prescriptions;
 using LYBT.Module.Prescriptions.Mapping;
 using LYBT.Shared.Models.Contracts.Prescriptions;
-using LYBT.Shared.Models.Enums;
 using Xunit;
 
 namespace LYBT.Module.Prescriptions.Tests.Mapping
@@ -55,7 +54,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
                 Discount = 0.8m,
                 Advice = "饭后服用",
                 FormulaSource = "逍遥散",
-                Status = PrescriptionStatus.Draft,
                 Remark = "温服"
             };
 
@@ -96,7 +94,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
                 Discount = 0.9m,
                 Advice = "温服",
                 FormulaSource = "四君子汤",
-                Status = PrescriptionStatus.Completed,
                 Remark = "体质虚寒者适用"
             };
 
@@ -249,46 +246,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         }
 
         [Fact]
-        public void Map_Prescription_With_DraftStatus_Should_Success()
-        {
-            // Arrange
-            var prescription = new Prescription
-            {
-                Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                Status = PrescriptionStatus.Draft,
-                Indication = "草稿处方"
-            };
-
-            // Act
-            var dto = _mapper.Map<PrescriptionDto>(prescription);
-
-            // Assert
-            dto.Should().NotBeNull();
-            // Note: DTO uses CommonStatus, Entity uses PrescriptionStatus
-            dto.Indication.Should().Be("草稿处方");
-        }
-
-        [Fact]
-        public void Map_Prescription_With_CompletedStatus_Should_Success()
-        {
-            // Arrange
-            var prescription = new Prescription
-            {
-                Id = Guid.NewGuid(),
-                Status = PrescriptionStatus.Completed
-            };
-
-            // Act
-            var dto = _mapper.Map<PrescriptionDto>(prescription);
-
-            // Assert
-            dto.Should().NotBeNull();
-            // Note: DTO uses CommonStatus, Entity uses PrescriptionStatus
-        }
-
-        [Fact]
         public void Map_Prescription_With_NullOptionalFields_Should_Success()
         {
             // Arrange
@@ -302,8 +259,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
                 Advice = null,
                 FormulaSource = null,
                 Remark = null,
-                DosageCount = 1,
-                Status = PrescriptionStatus.Draft
+                DosageCount = 1
             };
 
             // Act
@@ -320,7 +276,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.FormulaSource.Should().BeNull();
             dto.Remark.Should().BeNull();
             dto.DosageCount.Should().Be(prescription.DosageCount);
-            // Note: DTO uses CommonStatus, Entity uses PrescriptionStatus
         }
 
         [Fact]

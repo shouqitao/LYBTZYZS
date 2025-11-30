@@ -67,6 +67,6 @@ namespace LYBT.Entities.Common
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

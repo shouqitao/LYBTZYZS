@@ -1,4 +1,4 @@
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 
@@ -19,7 +19,7 @@ public class MedicalCaseBusinessRulesTests
     {
         // Arrange
         var patientId = Guid.NewGuid();
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
@@ -41,7 +41,7 @@ public class MedicalCaseBusinessRulesTests
         // 3. 验证已完成案例不能回退到草稿（业务规则验证）
         // 注意：当前Entity不包含状态机验证逻辑，这应该在Service层实现
         // 此测试用于记录业务规则，实际验证应在Service层集成测试中完成
-        var completedCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var completedCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
@@ -71,7 +71,7 @@ public class MedicalCaseBusinessRulesTests
         bool isValidTransition)
     {
         // Arrange
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
@@ -107,7 +107,7 @@ public class MedicalCaseBusinessRulesTests
         var medicalCaseId = Guid.NewGuid();
 
         // Act & Assert - MedicalCase必须关联Patient
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = medicalCaseId,
             PatientId = patientId,  // 必须关联
@@ -122,7 +122,7 @@ public class MedicalCaseBusinessRulesTests
         // Act & Assert - Consultation必须关联MedicalCase（通过聚合根）
         // 注意：根据AR-001聚合根模式，Consultation应通过MedicalCase创建
         // 此测试验证实体关系的完整性
-        var consultation = new LYBT.Entities.Consultation.Consultation
+        var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = Guid.NewGuid(),
             MedicalCaseId = medicalCaseId,  // 必须关联
@@ -192,7 +192,7 @@ public class MedicalCaseBusinessRulesTests
     {
         // Arrange & Act
         var validPatientId = Guid.NewGuid();
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = validPatientId,

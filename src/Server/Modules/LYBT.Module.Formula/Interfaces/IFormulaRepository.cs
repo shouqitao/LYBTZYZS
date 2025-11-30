@@ -1,6 +1,6 @@
 ﻿using LYBT.Shared.Models.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
-using FormulaEntity = LYBT.Entities.Formula.Formula;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formula.Interfaces
 {

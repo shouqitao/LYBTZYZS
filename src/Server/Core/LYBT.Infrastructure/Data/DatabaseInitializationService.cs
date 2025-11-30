@@ -134,21 +134,37 @@ public class DatabaseInitializationService
         {
             _logger.LogInformation("开始检查系统管理员是否存在");
 
-            // 检查是否已存在SuperAdmin用户
+            var config = _lybtOptions.SystemAdmin;
+
+            // 检查是否已存在SuperAdmin用户（包括已删除的）
             var existingSuperAdmin = await _context.Users
-                .FirstOrDefaultAsync(u => u.Role == UserRole.SuperAdmin && !u.IsDeleted);
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.Role == UserRole.SuperAdmin);
 
             if (existingSuperAdmin != null)
             {
                 _logger.LogInformation(
-                    "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}",
+                    "系统管理员已存在，跳过创建。UserName: {UserName}, Email: {Email}, IsDeleted: {IsDeleted}",
                     existingSuperAdmin.UserName,
-                    existingSuperAdmin.Email);
+                    existingSuperAdmin.Email,
+                    existingSuperAdmin.IsDeleted);
+                return;
+            }
+
+            // 检查Email是否已被其他用户占用
+            var emailExists = await _context.Users
+                .IgnoreQueryFilters()
+                .AnyAsync(u => u.Email == config.Email);
+
+            if (emailExists)
+            {
+                _logger.LogWarning(
+                    "系统管理员邮箱 {Email} 已被其他用户占用，跳过创建",
+                    config.Email);
                 return;
             }
 
             // 不存在，创建新的SuperAdmin用户
-            var config = _lybtOptions.SystemAdmin;
             var defaultPassword = _lybtOptions.DefaultPasswords.SysAdminPassword;
 
             var superAdmin = new User

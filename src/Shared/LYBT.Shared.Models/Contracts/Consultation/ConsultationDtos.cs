@@ -10,8 +10,9 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 诊疗信息DTO - 简化版（Issue #1562 Phase 2）
     /// 与Consultation实体对齐，仅包含四诊信息和基础字段
     /// 移除了时间跟踪字段（StartTime/EndTime）和工作流状态（ConsultationStatus）
+    /// DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
     /// </summary>
-    public class ConsultationDto : StatusDto, IRemarkable
+    public class ConsultationDto : TimestampDto, IRemarkable
     {
         /// <summary>医疗案例ID（共享主键）</summary>
         [DisplayName("医疗案例ID")]
@@ -68,14 +69,6 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         /// <summary>医嘱</summary>
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
-
-        /// <summary>辨证完成时间戳 (Epic #2175 BF-002 Step 1)</summary>
-        [DisplayName("辨证完成时间")]
-        public DateTime? Step1CompletedAt { get; set; }
-
-        /// <summary>处方需求标记时间戳 (Epic #2175 BF-002 Step 2)</summary>
-        [DisplayName("处方需求标记时间")]
-        public DateTime? Step2CompletedAt { get; set; }
 
         /// <inheritdoc/>
         [DisplayName("备注")]
@@ -181,45 +174,4 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         public List<string> ErrorMessages { get; set; } = new();
     }
 
-    // Issue #1590: REQ-001 - 三步工作流优化-Step1
-
-    /// <summary>
-    /// 完成Step1请求DTO
-    /// </summary>
-    public class CompleteStep1Request
-    {
-        /// <summary>是否开处方</summary>
-        [DisplayName("是否开处方")]
-        public bool PrescriptionEnabled { get; set; } = true;
-    }
-
-    /// <summary>
-    /// 诊疗步骤状态DTO（用于三步工作流）
-    /// </summary>
-    public class ConsultationStepDto
-    {
-        /// <summary>诊疗ID（共享主键，等于MedicalCaseId）</summary>
-        [DisplayName("诊疗ID")]
-        public Guid Id { get; set; }
-
-        /// <summary>Step1完成时间（辩证）</summary>
-        [DisplayName("Step1完成时间")]
-        public DateTime? Step1CompletedAt { get; set; }
-
-        /// <summary>Step2完成时间（施治）</summary>
-        [DisplayName("Step2完成时间")]
-        public DateTime? Step2CompletedAt { get; set; }
-
-        /// <summary>Step3完成时间（汇总）</summary>
-        [DisplayName("Step3完成时间")]
-        public DateTime? Step3CompletedAt { get; set; }
-
-        /// <summary>是否开处方</summary>
-        [DisplayName("是否开处方")]
-        public bool PrescriptionEnabled { get; set; }
-
-        /// <summary>当前步骤（Step1/Step2/Step3/Completed）</summary>
-        [DisplayName("当前步骤")]
-        public string CurrentStep { get; set; } = "Step1";
-    }
 }

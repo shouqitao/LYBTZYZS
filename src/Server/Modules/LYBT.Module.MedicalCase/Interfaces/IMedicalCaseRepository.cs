@@ -1,7 +1,7 @@
 ﻿using LYBT.Shared.Models.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.MedicalCase;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Interfaces
 {

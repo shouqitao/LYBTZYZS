@@ -3,8 +3,8 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Entities.Consultation;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.Consultations;
+using LYBT.Entities.MedicalCases;
 using LYBT.Module.Consultation.Interfaces;
 using LYBT.Module.Consultation.Services;
 using LYBT.Module.MedicalCase.Interfaces;

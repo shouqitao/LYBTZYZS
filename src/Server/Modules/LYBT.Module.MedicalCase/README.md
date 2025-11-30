@@ -54,16 +54,7 @@ LYBT.Module.MedicalCase/
 │       ├── QueryAsync()                # 动态查询(支持多条件)
 │       ├── GetUnfinishedCaseByPatientIdAsync() # 获取患者未完成医案
 │       └── MaskPhoneNumber()           # 隐私保护(脱敏手机号)
-├── Dtos/                               # 模块专属DTO
-│   ├── ConsultationDetailDto.cs        # 诊断详情DTO
-│   ├── PrescriptionDetailDto.cs        # 处方详情DTO
-│   ├── PrescriptionItemDto.cs          # 处方条目DTO
-│   ├── MedicalCaseDetailResponse.cs    # 医案详情响应
-│   ├── CreatePrescriptionRequest.cs    # 创建处方请求
-│   ├── UpdateConsultationRequest.cs    # 更新诊断请求
-│   ├── UpdatePrescriptionRequest.cs    # 更新处方请求
-│   └── SetPrescriptionFlagRequest.cs   # 设置处方标志请求
-├── Validators/                         # FluentValidation验证器
+├── Validators/                         # FluentValidation验证器 (DTO定义已迁移至Shared层)
 │   ├── MedicalCaseCreateDtoValidator.cs # 创建医案DTO验证
 │   └── MedicalCaseUpdateDtoValidator.cs # 更新医案DTO验证
 └── Mapping/                            # AutoMapper映射配置

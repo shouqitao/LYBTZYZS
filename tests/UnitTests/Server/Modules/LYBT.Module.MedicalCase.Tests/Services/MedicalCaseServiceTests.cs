@@ -1,7 +1,6 @@
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos; // MedicalCasePrescriptionDto (模块专用)
-using LYBT.Shared.Models.Contracts.MedicalCase; // SetPrescriptionFlagRequest 已移至Shared层
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Module.MedicalCase.Interfaces;
@@ -12,8 +11,8 @@ using LYBT.Tests.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Users.Interfaces;
@@ -519,11 +518,10 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCaseId,
                 PatientId = patientId,
-                UserId = doctorId,
-                Status = PrescriptionStatus.Draft
+                UserId = doctorId
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             _mapperMock.Setup(x => x.Map<PrescriptionEntity>(request))
@@ -567,7 +565,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act & Assert
@@ -599,7 +597,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act & Assert
@@ -633,7 +631,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act & Assert
@@ -667,7 +665,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 }
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act & Assert
@@ -713,11 +711,10 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Id = Guid.NewGuid(),
                 MedicalCaseId = medicalCaseId,
                 PatientId = patientId,
-                UserId = doctorId,
-                Status = PrescriptionStatus.Draft
+                UserId = doctorId
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             _mapperMock.Setup(x => x.Map<PrescriptionEntity>(request))
@@ -766,7 +763,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = prescription
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             _mapperMock.Setup(x => x.Map(request, prescription));
@@ -790,7 +787,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
             var prescriptionId = Guid.NewGuid();
             var request = new PrescriptionEditDto();
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync((MedicalCaseEntity?)null);
 
             // Act
@@ -815,7 +812,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = null
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act
@@ -847,7 +844,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = prescription
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act
@@ -878,7 +875,7 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = prescription
             };
 
-            _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
+            _repositoryMock.Setup(x => x.GetByIdWithDetailsFreshAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
             // Act & Assert
@@ -1826,12 +1823,12 @@ namespace LYBT.Module.MedicalCase.Tests.Services
                 Prescription = prescription
             };
 
-            var prescriptionDto = new MedicalCasePrescriptionDto { Id = prescription.Id, Indication = "Test Indication" };
+            var prescriptionDto = new PrescriptionDto { Id = prescription.Id, Indication = "Test Indication" };
 
             _repositoryMock.Setup(x => x.GetByIdWithDetailsAsync(medicalCaseId))
                 .ReturnsAsync(medicalCase);
 
-            _mapperMock.Setup(x => x.Map<MedicalCasePrescriptionDto>(prescription))
+            _mapperMock.Setup(x => x.Map<PrescriptionDto>(prescription))
                 .Returns(prescriptionDto);
 
             var result = await _service.GetPrescriptionListAsync(medicalCaseId);

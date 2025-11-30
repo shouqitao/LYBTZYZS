@@ -1,7 +1,5 @@
 using System.Net.Http.Json;
 using FluentAssertions;
-using LYBT.Module.MedicalCase.Dtos; // MedicalCasePrescriptionDto (模块专用)
-// SetPrescriptionFlagRequest 现在来自 LYBT.Shared.Models.Contracts.MedicalCase
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Contracts.Common;
@@ -12,8 +10,8 @@ using LYBT.Tests.Common.AssertionHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.WebAPI.IntegrationTests.Controllers

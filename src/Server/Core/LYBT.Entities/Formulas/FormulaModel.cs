@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Formula
+namespace LYBT.Entities.Formulas
 {
 
     /// <summary>
@@ -79,7 +79,7 @@ namespace LYBT.Entities.Formula
         /// 药材组成（方剂中包含的药材列表）
         /// </summary>
         [DisplayName("药材组成")]
-        public List<FormulaHerbItem> Herbs { get; set; } = new();
+        public virtual ICollection<FormulaHerbItem> Herbs { get; set; } = new List<FormulaHerbItem>();
     }
 
     /// <summary>

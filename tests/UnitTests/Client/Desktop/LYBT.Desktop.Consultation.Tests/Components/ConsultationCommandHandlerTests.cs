@@ -80,22 +80,6 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.TCMDiagnosis), string.Empty), Times.Once);
         }
 
-        [Fact]
-        public async Task CompleteStep1Async_WithValidData_ShouldReturnTrue()
-        {
-            // Arrange
-            var testId = Guid.NewGuid();
-            _mockDataManager.SetupGet(m => m.MedicalCaseId).Returns(testId);
-            _mockValidator.Setup(v => v.CanCompleteStep1(out It.Ref<string>.IsAny)).Returns(true);
-            _mockRepository.Setup(r => r.CompleteStep1Async(testId, It.IsAny<CompleteStep1Request>()))
-                .ReturnsAsync(new ConsultationStepDto { Step1CompletedAt = DateTime.Now });
-
-            // Act
-            var result = await _commandHandler.CompleteStep1Async(prescriptionEnabled: true);
-
-            // Assert
-            result.Should().BeTrue();
-            _mockRepository.Verify(r => r.CompleteStep1Async(testId, It.IsAny<CompleteStep1Request>()), Times.Once);
-        }
+        // CompleteStep1Async_WithValidData_ShouldReturnTrue已移除 - 简化业务流程，移除Step概念
     }
 }

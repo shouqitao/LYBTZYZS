@@ -1,6 +1,6 @@
 using FluentAssertions;
-using LYBT.Entities.Consultation;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.Consultations;
+using LYBT.Entities.MedicalCases;
 using LYBT.Shared.Models.Enums;
 using System;
 using Xunit;

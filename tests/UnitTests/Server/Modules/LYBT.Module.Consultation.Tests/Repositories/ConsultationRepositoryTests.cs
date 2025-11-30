@@ -37,7 +37,7 @@ public class ConsultationRepositoryTests : IDisposable
     {
         // Arrange
         var consultationId = Guid.NewGuid();
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = consultationId,  // 共享主键
             PatientId = Guid.NewGuid(),
@@ -47,7 +47,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "测试医生"
         };
 
-        var consultation = new LYBT.Entities.Consultation.Consultation
+        var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = consultationId,
             ChiefComplaint = "头痛发热",
@@ -89,7 +89,7 @@ public class ConsultationRepositoryTests : IDisposable
     {
         // Arrange
         var medicalCaseId = Guid.NewGuid();
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = medicalCaseId,
             PatientId = Guid.NewGuid(),
@@ -99,7 +99,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生A"
         };
 
-        var consultation = new LYBT.Entities.Consultation.Consultation
+        var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCaseId,  // 共享主键
             ChiefComplaint = "咳嗽",
@@ -126,7 +126,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Arrange
         var patientId = Guid.NewGuid();
 
-        var medicalCase1 = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase1 = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
@@ -136,7 +136,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生B"
         };
 
-        var consultation1 = new LYBT.Entities.Consultation.Consultation
+        var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,
             ChiefComplaint = "主诉1",
@@ -149,7 +149,7 @@ public class ConsultationRepositoryTests : IDisposable
         await _context.Consultations.AddAsync(consultation1);
         await _context.SaveChangesAsync();
 
-        var medicalCase2 = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase2 = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = patientId,
@@ -159,7 +159,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生B"
         };
 
-        var consultation2 = new LYBT.Entities.Consultation.Consultation
+        var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,
             ChiefComplaint = "主诉2",
@@ -189,7 +189,7 @@ public class ConsultationRepositoryTests : IDisposable
     public async Task GetPagedWithDetailsAsync_WithDefaultParameters_ReturnsPagedResult()
     {
         // Arrange
-        var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
@@ -199,7 +199,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "医生C"
         };
 
-        var consultation = new LYBT.Entities.Consultation.Consultation
+        var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase.Id,
             ChiefComplaint = "感冒",
@@ -226,7 +226,7 @@ public class ConsultationRepositoryTests : IDisposable
     public async Task GetPagedWithDetailsAsync_WithKeyword_ReturnsMatchingRecords()
     {
         // Arrange
-        var medicalCase1 = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase1 = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
@@ -236,7 +236,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "李医生"
         };
 
-        var consultation1 = new LYBT.Entities.Consultation.Consultation
+        var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,
             ChiefComplaint = "头痛",
@@ -245,7 +245,7 @@ public class ConsultationRepositoryTests : IDisposable
             MedicalCase = medicalCase1
         };
 
-        var medicalCase2 = new LYBT.Entities.MedicalCase.MedicalCase
+        var medicalCase2 = new LYBT.Entities.MedicalCases.MedicalCase
         {
             Id = Guid.NewGuid(),
             PatientId = Guid.NewGuid(),
@@ -255,7 +255,7 @@ public class ConsultationRepositoryTests : IDisposable
             DoctorName = "王医生"
         };
 
-        var consultation2 = new LYBT.Entities.Consultation.Consultation
+        var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,
             ChiefComplaint = "咳嗽",
@@ -283,7 +283,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Arrange
         for (int i = 0; i < 5; i++)
         {
-            var medicalCase = new LYBT.Entities.MedicalCase.MedicalCase
+            var medicalCase = new LYBT.Entities.MedicalCases.MedicalCase
             {
                 Id = Guid.NewGuid(),
                 PatientId = Guid.NewGuid(),
@@ -293,7 +293,7 @@ public class ConsultationRepositoryTests : IDisposable
                 DoctorName = "医生"
             };
 
-            var consultation = new LYBT.Entities.Consultation.Consultation
+            var consultation = new LYBT.Entities.Consultations.Consultation
             {
                 Id = medicalCase.Id,
                 ChiefComplaint = $"主诉{i}",

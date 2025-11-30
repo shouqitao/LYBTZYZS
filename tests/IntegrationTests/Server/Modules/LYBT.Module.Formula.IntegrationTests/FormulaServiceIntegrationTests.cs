@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Formulas;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Formula.Mapping;

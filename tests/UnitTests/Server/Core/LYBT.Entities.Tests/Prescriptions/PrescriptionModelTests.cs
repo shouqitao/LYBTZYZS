@@ -197,23 +197,6 @@ namespace LYBT.UnitTests.Core.Entities
             prescription.PrintVersion.Should().Be(2, "修改后的处方应该增加版本号");
         }
 
-        [Fact]
-        public void PrescriptionStatus_ShouldSupportDifferentStates()
-        {
-            // Arrange
-            var prescription = new Prescription();
-
-            // Act & Assert - 测试不同状态
-            prescription.Status = PrescriptionStatus.Draft;
-            prescription.Status.Should().Be(PrescriptionStatus.Draft);
-
-            prescription.Status = PrescriptionStatus.Confirmed;
-            prescription.Status.Should().Be(PrescriptionStatus.Confirmed);
-
-            prescription.Status = PrescriptionStatus.Dispensed;
-            prescription.Status.Should().Be(PrescriptionStatus.Dispensed);
-        }
-
         #endregion
 
         #region Prescription Content Tests

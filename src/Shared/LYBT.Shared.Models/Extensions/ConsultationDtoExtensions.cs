@@ -37,8 +37,8 @@ namespace LYBT.Shared.Models.Extensions
                 // Issue #1562 Phase 2: 移除StartTime/EndTime/ConsultationStatus
                 // OpenSpec: clarify-cancel-consultation-logic - 诊断不需要独立备注
                 // MedicalCaseRemark在服务端保存到MedicalCase.Remark
+                // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                 Remark = null,
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

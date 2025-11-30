@@ -203,35 +203,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             }
         }
 
-        private DateTime? _step1CompletedAt;
-        /// <summary>
-        /// Step1完成时间（服务端返回）
-        /// </summary>
-        public DateTime? Step1CompletedAt
-        {
-            get => _step1CompletedAt;
-            set
-            {
-                if (SetProperty(ref _step1CompletedAt, value))
-                {
-                    RaisePropertyChanged(nameof(Step1CompletedAtText));
-                    RaisePropertyChanged(nameof(IsStep1CompletedAtVisible)); // Issue #2248
-                }
-            }
-        }
-
-        /// <summary>
-        /// Step1完成时间文本（格式化显示）
-        /// </summary>
-        public string Step1CompletedAtText =>
-            Step1CompletedAt.HasValue
-                ? $" Step1已完成（{Step1CompletedAt.Value:yyyy-MM-dd HH:mm}）"
-                : string.Empty;
-
-        /// <summary>
-        /// Step1完成时间是否可见 (Issue #2248: 使用bool+Converter替代Visibility)
-        /// </summary>
-        public bool IsStep1CompletedAtVisible => Step1CompletedAt.HasValue;
+        // Step1CompletedAt相关属性已移除 - 简化业务流程，移除Step概念
 
         #endregion
 
@@ -392,8 +364,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         // Issue #1562 Phase 1: 已删除ImportFromHistoryCommand（未实现的扩展功能）
 
-        // Issue #1590: REQ-001 - 三步工作流优化-Step1命令
-        public DelegateCommand CompleteStep1Command { get; }
+        // CompleteStep1Command已移除 - 简化业务流程，移除Step概念
         public DelegateCommand ShowOtherCasesQueryCommand { get; }
 
         // Issue #1594: 暂存功能完善
@@ -421,8 +392,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
             // 初始化命令
             ClearFormCommand = new DelegateCommand(ExecuteClearForm);
 
-            // Issue #1590: REQ-001 - 初始化新命令
-            CompleteStep1Command = new DelegateCommand(async () => await ExecuteCompleteStep1());
+            // CompleteStep1Command初始化已移除 - 简化业务流程，移除Step概念
             ShowOtherCasesQueryCommand = new DelegateCommand(ExecuteShowOtherCasesQuery);
 
             // Issue #1594: 暂存功能完善
@@ -467,79 +437,7 @@ namespace LYBT.Desktop.Consultation.ViewModels
 
         #region REQ-001: 命令实现
 
-        /// <summary>
-        /// 完成Step1（辩证）
-        /// </summary>
-        private async Task ExecuteCompleteStep1()
-        {
-            try
-            {
-                SetIsBusy(true, "正在完成Step1...");
-
-                // 1. 验证表单
-                if (!Validate())
-                {
-                    await ShowErrorMessageAsync(ValidationMessage);
-                    return;
-                }
-
-                // 2. 调用API完成Step1（通过MedicalCase聚合根）
-                var request = CreateCompleteStep1Request();
-                var stepDto = await _dataManager.CompleteStep1Async(MedicalCaseId, request);
-
-                // 3. 更新本地状态
-                Step1CompletedAt = stepDto.Step1CompletedAt;
-
-                // 4. 导航到下一步（Step2或Step3）
-                await NavigateToNextStepAsync();
-
-                Logger.LogInformation("Step1完成成功，导航到下一步");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "完成Step1失败");
-                await ShowErrorMessageAsync($"完成Step1失败：{ex.Message}");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
-
-        /// <summary>
-        /// 创建CompleteStep1Request
-        /// Issue #1794: 提取请求对象创建逻辑
-        /// </summary>
-        private CompleteStep1Request CreateCompleteStep1Request()
-        {
-            return new CompleteStep1Request
-            {
-                PrescriptionEnabled = PrescriptionEnabled
-            };
-        }
-
-        /// <summary>
-        /// 导航到下一步
-        /// Issue #1794: 提取导航逻辑
-        /// </summary>
-        private async Task NavigateToNextStepAsync()
-        {
-            if (PrescriptionEnabled)
-            {
-                // 跳转到Step2（处方录入）- PrescriptionEditorView
-                var parameters = new NavigationParameters
-                {
-                    { "MedicalCaseId", MedicalCaseId },
-                    { "CurrentPatient", CurrentPatient }
-                };
-                RegionManager?.RequestNavigate("ContentRegion", "PrescriptionEditorView", parameters);
-            }
-            else
-            {
-                // 跳转到Step3（汇总页）- 暂未实现，显示提示信息
-                await ShowSuccessMessageAsync("Step1已完成！\n您选择了不开处方，后续将直接进入汇总页（暂未实现）。");
-            }
-        }
+        // ExecuteCompleteStep1、CreateCompleteStep1Request、NavigateToNextStepAsync已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
         /// 显示其他病案查询浮动菜单

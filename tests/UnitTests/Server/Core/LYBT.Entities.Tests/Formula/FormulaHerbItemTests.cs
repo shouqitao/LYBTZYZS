@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Formulas;
 using Xunit;
 
 namespace LYBT.Entities.Tests.Formula

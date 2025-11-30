@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using PatientEntity = LYBT.Entities.Patients.Patient;
 
 namespace LYBT.WebAPI.IntegrationTests.Controllers

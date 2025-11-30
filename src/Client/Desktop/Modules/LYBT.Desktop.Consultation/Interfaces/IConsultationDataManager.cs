@@ -15,10 +15,7 @@ namespace LYBT.Desktop.Consultation.Interfaces
         /// </summary>
         Guid MedicalCaseId { get; set; }
 
-        /// <summary>
-        /// 完成Step1（辨证）
-        /// </summary>
-        Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
+        // CompleteStep1Async已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
         /// 更新诊断信息

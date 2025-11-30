@@ -285,7 +285,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 db.Set<LYBT.Entities.Patients.Patient>().Add(patient);
 
                 // 创建医生A的医案（使用正确的Entity属性）
-                var medicalCaseA = new LYBT.Entities.MedicalCase.MedicalCase
+                var medicalCaseA = new LYBT.Entities.MedicalCases.MedicalCase
                 {
                     Id = caseAId,
                     PatientId = patientId,
@@ -300,7 +300,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     CreatedBy = DoctorAId,
                     UpdatedBy = DoctorAId,
                     // 设置Consultation导航属性
-                    Consultation = new LYBT.Entities.Consultation.Consultation
+                    Consultation = new LYBT.Entities.Consultations.Consultation
                     {
                         Id = caseAId,
                         CreatedAt = DateTime.Now.AddDays(-1),
@@ -309,10 +309,10 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                         UpdatedBy = DoctorAId
                     }
                 };
-                db.Set<LYBT.Entities.MedicalCase.MedicalCase>().Add(medicalCaseA);
+                db.Set<LYBT.Entities.MedicalCases.MedicalCase>().Add(medicalCaseA);
 
                 // 创建医生B的医案（使用正确的Entity属性）
-                var medicalCaseB = new LYBT.Entities.MedicalCase.MedicalCase
+                var medicalCaseB = new LYBT.Entities.MedicalCases.MedicalCase
                 {
                     Id = caseBId,
                     PatientId = patientId,
@@ -327,7 +327,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     CreatedBy = DoctorBId,
                     UpdatedBy = DoctorBId,
                     // 设置Consultation导航属性
-                    Consultation = new LYBT.Entities.Consultation.Consultation
+                    Consultation = new LYBT.Entities.Consultations.Consultation
                     {
                         Id = caseBId,
                         CreatedAt = DateTime.Now,
@@ -336,7 +336,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                         UpdatedBy = DoctorBId
                     }
                 };
-                db.Set<LYBT.Entities.MedicalCase.MedicalCase>().Add(medicalCaseB);
+                db.Set<LYBT.Entities.MedicalCases.MedicalCase>().Add(medicalCaseB);
 
                 await db.SaveChangesAsync();
             }

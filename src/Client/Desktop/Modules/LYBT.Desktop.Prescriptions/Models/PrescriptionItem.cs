@@ -124,13 +124,6 @@ public class PrescriptionItem : BindableBase
         set => SetProperty(ref _totalAmount, value);
     }
 
-    private PrescriptionStatus _status;
-    public PrescriptionStatus Status
-    {
-        get => _status;
-        set => SetProperty(ref _status, value);
-    }
-
     private string? _doctorName;
     public string? DoctorName
     {
@@ -210,7 +203,6 @@ public class PrescriptionItem : BindableBase
             Frequency = null, // DTO中没有此属性
             Note = dto.Remark,
             TotalAmount = dto.TotalPrice,
-            Status = PrescriptionStatus.Draft, // 默认状态
             DoctorName = string.Empty, // 需要从其他地方获取
             CreatedAt = dto.CreatedAt,
             DispensedAt = null, // DTO中没有此属性
@@ -257,24 +249,14 @@ public class PrescriptionItem : BindableBase
     }
 
     /// <summary>
-    /// 状态显示文本
+    /// 状态显示文本（基于打印状态）
     /// </summary>
-    public string StatusText => Status switch
-    {
-        PrescriptionStatus.Draft => "草稿",
-        PrescriptionStatus.Completed => "已完成",
-        _ => "未知"
-    };
+    public string StatusText => IsPrinted ? "已打印" : "待打印";
 
     /// <summary>
-    /// 状态颜色
+    /// 状态颜色（基于打印状态）
     /// </summary>
-    public string StatusColor => Status switch
-    {
-        PrescriptionStatus.Draft => "#9E9E9E",
-        PrescriptionStatus.Completed => "#4CAF50",
-        _ => "#757575"
-    };
+    public string StatusColor => IsPrinted ? "#4CAF50" : "#9E9E9E";
 
     /// <summary>
     /// 药材数量
@@ -287,24 +269,24 @@ public class PrescriptionItem : BindableBase
     public decimal SingleDoseAmount => Doses > 0 ? TotalAmount / Doses : 0;
 
     /// <summary>
-    /// 是否可编辑
+    /// 是否可编辑（未打印时可编辑）
     /// </summary>
-    public bool CanEdit => Status == PrescriptionStatus.Draft;
+    public bool CanEdit => !IsPrinted;
 
     /// <summary>
-    /// 是否可配药
+    /// 是否可配药（未打印时可配药）
     /// </summary>
-    public bool CanDispense => Status == PrescriptionStatus.Draft;
+    public bool CanDispense => !IsPrinted;
 
     /// <summary>
-    /// 是否可打印
+    /// 是否可打印（有药材时可打印）
     /// </summary>
-    public bool CanPrint => Status == PrescriptionStatus.Completed;
+    public bool CanPrint => HerbCount > 0;
 
     /// <summary>
-    /// 是否可取消
+    /// 是否可取消（未打印时可取消）
     /// </summary>
-    public bool CanCancel => Status == PrescriptionStatus.Draft;
+    public bool CanCancel => !IsPrinted;
 
     /// <summary>
     /// 显示文本

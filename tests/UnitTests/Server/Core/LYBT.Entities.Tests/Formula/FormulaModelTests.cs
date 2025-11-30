@@ -2,7 +2,7 @@ using FluentAssertions;
 using LYBT.Shared.Models.Enums;
 using Xunit;
 using FormulaEntity = LYBT.Entities.Formula.Formula;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Formulas;
 
 namespace LYBT.Entities.Tests.Formula
 {

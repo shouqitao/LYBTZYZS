@@ -25,7 +25,6 @@ namespace LYBT.Desktop.Infrastructure.Converters
                 Gender gender => gender.GetDescription(),
                 PatientStatus patientStatus => patientStatus.GetDescription(),
                 CommonStatus commonStatus => commonStatus.GetDescription(),
-                PrescriptionStatus prescriptionStatus => prescriptionStatus.GetDescription(),
                 Enum enumValue => enumValue.GetDescription(),
                 _ => value.ToString() ?? string.Empty
             };

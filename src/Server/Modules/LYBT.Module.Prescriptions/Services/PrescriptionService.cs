@@ -120,8 +120,8 @@ namespace LYBT.Module.Prescriptions.Services
         /// <param name="includePatients">是否加载所有患者数据</param>
         /// <returns>关联数据的Dictionary集合</returns>
         private async Task<(
-            Dictionary<Guid, LYBT.Entities.MedicalCase.MedicalCase> medicalCases,
-            Dictionary<Guid, LYBT.Entities.Consultation.Consultation> consultations,
+            Dictionary<Guid, LYBT.Entities.MedicalCases.MedicalCase> medicalCases,
+            Dictionary<Guid, LYBT.Entities.Consultations.Consultation> consultations,
             Dictionary<Guid, LYBT.Entities.Patients.Patient>? patients
         )> LoadRelatedDataAsync(bool includePatients)
         {

@@ -2,7 +2,6 @@
 using AutoMapper;
 using LYBT.Infrastructure.Services;
 using LYBT.Infrastructure.Utilities;
-using LYBT.Module.MedicalCase.Dtos;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Module.Patients.Interfaces;
 using LYBT.Module.Users.Interfaces;
@@ -12,8 +11,8 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 
 namespace LYBT.Module.MedicalCase.Services
@@ -123,7 +122,6 @@ namespace LYBT.Module.MedicalCase.Services
                     PatientName = patient.Name,
                     ConsultationDate = visitDate,
                     CaseStatus = MedicalCaseStatus.Active,
-                    Status = CommonStatus.Enabled,
                     NeedsPrescription = false, // 默认值，用户可后续修改
                     DoctorId = doctorId,
                     DoctorName = doctor.RealName,
@@ -136,7 +134,6 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     Id = medicalCase.Id, // 共享主键（Consultation.Id == MedicalCase.Id）
                     MedicalCase = medicalCase, // 设置Required导航属性
-                    Status = CommonStatus.Enabled,
                     ChiefComplaint = string.Empty, // 初始化为空，待用户填写
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
@@ -236,13 +233,6 @@ namespace LYBT.Module.MedicalCase.Services
                 medicalCase.Remark = request.MedicalCaseRemark;
                 consultation.UpdatedAt = DateTime.Now;
 
-                // 标记Step1完成
-                if (medicalCase.Consultation.Step1CompletedAt == null)
-                {
-                    medicalCase.Consultation.Step1CompletedAt = DateTime.Now;
-                    _logger.LogInformation("标记Step1完成，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                }
-
                 // 通过聚合根保存（EF Core会跟踪子实体变更）
                 var result = await _repository.UpdateAsync(medicalCase);
 
@@ -301,13 +291,6 @@ namespace LYBT.Module.MedicalCase.Services
                     throw new UnauthorizedAccessException("无权限编辑此病案");
                 }
 
-                // 业务规则验证：BF-002（必须先完成Step1）
-                if (medicalCase.Consultation?.Step1CompletedAt == null)
-                {
-                    _logger.LogWarning("Step1未完成，无法设置处方标志，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("请先完成辨证信息填写（Step1）");
-                }
-
                 // 更新NeedsPrescription标志
                 medicalCase.NeedsPrescription = needsPrescription;
                 medicalCase.UpdatedAt = DateTime.Now;
@@ -317,14 +300,6 @@ namespace LYBT.Module.MedicalCase.Services
                 {
                     medicalCase.Consultation.PrescriptionEnabled = needsPrescription;
                     medicalCase.Consultation.UpdatedAt = DateTime.Now;
-
-                    // Epic #2175 BF-002: 标记Step2完成时间戳
-                    if (medicalCase.Consultation.Step2CompletedAt == null)
-                    {
-                        medicalCase.Consultation.Step2CompletedAt = DateTime.Now;
-                        _logger.LogInformation("标记Step2完成,MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
-                            medicalCaseId, needsPrescription);
-                    }
                 }
 
                 // 保存
@@ -376,6 +351,14 @@ namespace LYBT.Module.MedicalCase.Services
                         return null;
                     }
 
+                    // 业务规则验证：验证处方需求标记
+                    if (medicalCase.NeedsPrescription != true)
+                    {
+                        _logger.LogWarning("未标记需要开处方，MedicalCaseId: {MedicalCaseId}, NeedsPrescription: {NeedsPrescription}",
+                            medicalCaseId, medicalCase.NeedsPrescription);
+                        throw new InvalidOperationException("未标记需要开处方，请先设置处方需求标记");
+                    }
+
                     // 业务规则验证：AR-003（一诊一方约束）
                     if (medicalCase.Prescription != null && !medicalCase.Prescription.IsDeleted)
                     {
@@ -390,7 +373,6 @@ namespace LYBT.Module.MedicalCase.Services
                     prescription.MedicalCaseId = medicalCaseId;
                     prescription.PatientId = medicalCase.PatientId;
                     prescription.UserId = medicalCase.DoctorId;
-                    prescription.Status = PrescriptionStatus.Draft; // 默认草稿状态
                     prescription.CreatedAt = DateTime.Now;
                     prescription.UpdatedAt = DateTime.Now;
 
@@ -663,27 +645,14 @@ namespace LYBT.Module.MedicalCase.Services
                     return null;
                 }
 
-                // 业务规则验证：BF-002（三步流程完整性）
-                if (medicalCase.Consultation?.Step1CompletedAt == null)
-                {
-                    _logger.LogWarning("Step1未完成，无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("辨证信息未完成（Step1），无法完成病案");
-                }
-
-                // Step 2: 处方需求标记验证（Epic #2175 BF-002）
+                // 业务规则验证：处方需求标记
                 if (medicalCase.NeedsPrescription == null)
                 {
-                    _logger.LogWarning("未标记处方需求（Step2），无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("请先标记是否需要开处方（Step2）");
+                    _logger.LogWarning("未标记处方需求，无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    throw new InvalidOperationException("请先标记是否需要开处方");
                 }
 
-                if (medicalCase.Consultation?.Step2CompletedAt == null)
-                {
-                    _logger.LogWarning("Step2未完成，无法完成病案，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                    throw new InvalidOperationException("处方需求标记未完成（Step2），无法完成病案");
-                }
-
-                // Step 3: 如果标记需要开处方，验证处方存在
+                // 如果标记需要开处方，验证处方存在
                 if (medicalCase.NeedsPrescription == true)
                 {
                     if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
@@ -693,16 +662,9 @@ namespace LYBT.Module.MedicalCase.Services
                     }
                 }
 
-                // 更新状态为Completed（三步流程全部完成）
+                // 更新状态为Completed
                 medicalCase.CaseStatus = MedicalCaseStatus.Completed;
                 medicalCase.UpdatedAt = DateTime.Now;
-
-                // 标记Consultation.Step3完成（兼容旧逻辑）
-                if (medicalCase.Consultation != null)
-                {
-                    medicalCase.Consultation.Step3CompletedAt = DateTime.Now;
-                    medicalCase.Consultation.UpdatedAt = DateTime.Now;
-                }
 
                 // 保存
                 var result = await _repository.UpdateAsync(medicalCase);
@@ -1059,19 +1021,19 @@ namespace LYBT.Module.MedicalCase.Services
         /// 查询处方列表
         /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
-        public async Task<List<MedicalCasePrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId)
+        public async Task<List<PrescriptionDto>> GetPrescriptionListAsync(Guid medicalCaseId)
         {
             try
             {
                 var medicalCase = await _repository.GetByIdWithDetailsAsync(medicalCaseId);
                 if (medicalCase?.Prescription == null)
                 {
-                    return new List<MedicalCasePrescriptionDto>();
+                    return new List<PrescriptionDto>();
                 }
 
                 // 当前架构下只有一条Prescription（一诊一方），直接映射
-                var dto = _mapper.Map<MedicalCasePrescriptionDto>(medicalCase.Prescription);
-                return new List<MedicalCasePrescriptionDto> { dto };
+                var dto = _mapper.Map<PrescriptionDto>(medicalCase.Prescription);
+                return new List<PrescriptionDto> { dto };
             }
             catch (Exception ex)
             {
@@ -1097,8 +1059,8 @@ namespace LYBT.Module.MedicalCase.Services
 
                 if (result != null)
                 {
-                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
-                        result.Id, result.Status, result.DoctorId);
+                    _logger.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
+                        result.Id, result.CaseStatus, result.DoctorId);
                 }
                 else
                 {
@@ -1279,7 +1241,7 @@ namespace LYBT.Module.MedicalCase.Services
             bool isAdmin)
         {
             var hasUpdates = false;
-            var originalStatus = medicalCase.Status;
+            var originalCaseStatus = medicalCase.CaseStatus;
 
             // 1. 更新辨证信息（Step 1）
             if (request.Consultation != null)
@@ -1335,8 +1297,8 @@ namespace LYBT.Module.MedicalCase.Services
                 medicalCase.UpdatedAt = DateTime.Now;
                 var result = await _repository.UpdateAsync(medicalCase);
 
-                _logger.LogInformation("病案更新成功，MedicalCaseId: {Id}, Status: {Status} → {NewStatus}",
-                    medicalCase.Id, originalStatus, medicalCase.Status);
+                _logger.LogInformation("病案更新成功，MedicalCaseId: {Id}, CaseStatus: {CaseStatus} → {NewCaseStatus}",
+                    medicalCase.Id, originalCaseStatus, medicalCase.CaseStatus);
                 return result;
             }
 
@@ -1464,7 +1426,6 @@ namespace LYBT.Module.MedicalCase.Services
                 DoctorName = source.DoctorName,
                 ConsultationDate = source.ConsultationDate,
                 CaseStatus = source.CaseStatus,
-                Status = source.Status,
                 Remark = source.Remark,
                 NeedsPrescription = source.NeedsPrescription,
                 IsDeleted = source.IsDeleted,

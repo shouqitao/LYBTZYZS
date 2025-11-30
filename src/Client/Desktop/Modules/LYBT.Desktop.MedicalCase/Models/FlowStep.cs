@@ -21,7 +21,7 @@
         FillPrescription = 3,
 
         /// <summary>
-        /// Step 4: 完成医案 - 设置MedicalCase.Status=Completed
+        /// Step 4: 完成医案 - 设置MedicalCase.CaseStatus=Completed
         /// </summary>
         CompleteMedicalCase = 4
     }

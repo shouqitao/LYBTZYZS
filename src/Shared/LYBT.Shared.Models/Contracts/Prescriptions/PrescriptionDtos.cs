@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
@@ -449,9 +448,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("医生ID")]
         public Guid? DoctorId { get; set; }
 
-        [DisplayName("处方状态")]
-        public PrescriptionStatus? PrescriptionStatus { get; set; }
-
         [DisplayName("排序字段")]
         public string OrderBy { get; set; } = "CreateTime";
 
@@ -476,9 +472,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [DisplayName("诊断")]
         public string? Diagnosis { get; set; }
-
-        [DisplayName("处方状态")]
-        public PrescriptionStatus? Status { get; set; }
 
         [DisplayName("开始日期")]
         public DateTime? StartDate { get; set; }

@@ -35,7 +35,6 @@ namespace LYBT.Shared.Models.Extensions
                 PatientAge = null,
                 ConsultationId = null,
                 PrescriptionId = null,
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

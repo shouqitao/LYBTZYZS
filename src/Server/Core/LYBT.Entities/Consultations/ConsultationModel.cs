@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.Consultation
+namespace LYBT.Entities.Consultations
 {
 
     /// <summary>
@@ -73,30 +73,15 @@ namespace LYBT.Entities.Consultation
         [DisplayName("医嘱")]
         public string? MedicalAdvice { get; set; }
 
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
-
         /// <summary>备注信息</summary>
         [StringLength(500)]
         [DisplayName("备注")]
         public string? Remark { get; set; }
 
-        // Issue #1598: REQ-001 - 三步工作流优化状态字段
-
-        /// <summary>Step1完成时间（辩证）</summary>
-        [DisplayName("Step1完成时间")]
-        public DateTime? Step1CompletedAt { get; set; }
-
-        /// <summary>Step2完成时间（施治）</summary>
-        [DisplayName("Step2完成时间")]
-        public DateTime? Step2CompletedAt { get; set; }
-
-        /// <summary>Step3完成时间（总结）</summary>
-        [DisplayName("Step3完成时间")]
-        public DateTime? Step3CompletedAt { get; set; }
-
-        /// <summary>处方开关（true=开处方，false=不开处方）</summary>
+        /// <summary>
+        /// 处方开关（true=开处方，false=不开处方）
+        /// 注：与MedicalCase.NeedsPrescription同步，保留用于兼容
+        /// </summary>
         [DisplayName("处方开关")]
         public bool PrescriptionEnabled { get; set; } = true;
 
@@ -108,6 +93,6 @@ namespace LYBT.Entities.Consultation
         /// 所属医疗案例（必需的，通过共享主键关联）
         /// </summary>
         [Required]
-        public virtual MedicalCase.MedicalCase MedicalCase { get; set; } = null!;
+        public virtual MedicalCases.MedicalCase MedicalCase { get; set; } = null!;
     }
 }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LYBT.Entities.Formula
+namespace LYBT.Entities.Formulas
 {
 
     /// <summary>
@@ -30,7 +30,7 @@ namespace LYBT.Entities.Formula
         /// 关联的验方实体
         /// </summary>
         [ForeignKey("FormulaId")]
-        public Formula? Formula { get; set; }
+        public virtual Formula? Formula { get; set; }
 
         /// <summary>
         /// 药材ID（可空，支持延迟绑定）

@@ -44,7 +44,6 @@ namespace LYBT.Module.Prescriptions.Mapping
 
             // PrescriptionCreateDto -> Prescription
             CreateMap<PrescriptionCreateDto, Prescription>()
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.Indication, opt => opt.Ignore())
@@ -77,7 +76,6 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())
                 .ForMember(dest => dest.LastPrintedAt, opt => opt.Ignore())
@@ -99,7 +97,6 @@ namespace LYBT.Module.Prescriptions.Mapping
             // PrescriptionEditDto -> Prescription
             CreateMap<PrescriptionEditDto, Prescription>()
                 .ForMember(dest => dest.MedicalCaseId, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Indication, opt => opt.Ignore())
                 .ForMember(dest => dest.ReferencedFormulas, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintVersion, opt => opt.Ignore())

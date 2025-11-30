@@ -11,8 +11,9 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// <summary>
     /// 医疗案例DTO - UltraThink v2.0简化版
     /// 与MedicalCase实体对齐，保留ConsultationDate
+    /// 注：MedicalCase使用CaseStatus管理业务状态，不再使用CommonStatus
     /// </summary>
-    public class MedicalCaseDto : StatusDto, IRemarkable
+    public class MedicalCaseDto : TimestampDto, IRemarkable
     {
         [DisplayName("案例编号")]
         [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]

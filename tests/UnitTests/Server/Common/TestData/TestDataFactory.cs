@@ -89,7 +89,6 @@ public static class TestDataFactory
             Symptoms = $"症状描述_{Guid.NewGuid():N}",
             Principle = $"治法方解_{Guid.NewGuid():N}",
             TotalAmount = (decimal)(new Random().NextDouble() * 500 + 50),
-            Status = PrescriptionStatus.Active,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

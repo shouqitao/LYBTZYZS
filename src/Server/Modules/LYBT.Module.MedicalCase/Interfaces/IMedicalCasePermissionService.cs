@@ -1,6 +1,6 @@
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Interfaces
 {

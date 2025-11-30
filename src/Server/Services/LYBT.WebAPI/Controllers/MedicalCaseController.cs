@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Web;
-using LYBT.Module.MedicalCase.Dtos;     // MedicalCasePrescriptionDto (模块专用), SetPrescriptionFlagRequest 已移至Shared层
 using LYBT.Module.MedicalCase.Interfaces; // CanEditResponse, CanDeleteResponse
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -12,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedicalCaseDto = LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDto;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 // Epic #1612: 新Service接口和DTOs
 using NewMedicalCaseService = LYBT.Module.MedicalCase.Interfaces.IMedicalCaseService;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
@@ -89,7 +88,6 @@ namespace LYBT.WebAPI.Controllers
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt,
                     // Issue #2231: 添加ConsultationId字段（共享主键，值等于MedicalCase.Id）
                     ConsultationId = entity.Id
@@ -163,10 +161,8 @@ namespace LYBT.WebAPI.Controllers
                     TCMDiagnosis = result.Consultation.TCMDiagnosis,
                     TreatmentPrinciple = result.Consultation.TreatmentPrinciple,
                     MedicalAdvice = result.Consultation.MedicalAdvice,
-                    Step1CompletedAt = result.Consultation.Step1CompletedAt,
-                    Step2CompletedAt = result.Consultation.Step2CompletedAt,
                     Remark = result.Consultation.Remark,
-                    Status = (CommonStatus)(int)result.Consultation.Status,
+                    // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                     CreatedAt = result.Consultation.CreatedAt,
                     UpdatedAt = result.Consultation.UpdatedAt
                 } : null;
@@ -488,7 +484,7 @@ namespace LYBT.WebAPI.Controllers
                 SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
                 TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
                 TotalWeight = entity.Items?.Sum(x => x.Quantity) ?? 0,
-                Status = (CommonStatus)(int)entity.Status,
+                Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt
             };
@@ -763,7 +759,6 @@ namespace LYBT.WebAPI.Controllers
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
-                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt,
 
                     // 详细字段（MedicalCaseDetailDto扩展）
@@ -790,10 +785,8 @@ namespace LYBT.WebAPI.Controllers
                         TCMDiagnosis = entity.Consultation.TCMDiagnosis,
                         TreatmentPrinciple = entity.Consultation.TreatmentPrinciple,
                         MedicalAdvice = entity.Consultation.MedicalAdvice,
-                        Step1CompletedAt = entity.Consultation.Step1CompletedAt,
-                        Step2CompletedAt = entity.Consultation.Step2CompletedAt,
                         Remark = entity.Consultation.Remark,
-                        Status = (CommonStatus)(int)entity.Consultation.Status,
+                        // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                         CreatedAt = entity.Consultation.CreatedAt,
                         UpdatedAt = entity.Consultation.UpdatedAt
                     } : null,
@@ -832,7 +825,7 @@ namespace LYBT.WebAPI.Controllers
                         SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
                         TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣
                         TotalWeight = entity.Prescription.Items?.Sum(x => x.Quantity) ?? 0, // 总重量=所有药材用量之和
-                        Status = (CommonStatus)(int)entity.Prescription.Status,
+                        Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
                         CreatedAt = entity.Prescription.CreatedAt,
                         UpdatedAt = entity.Prescription.UpdatedAt
                     } : null
@@ -985,7 +978,6 @@ namespace LYBT.WebAPI.Controllers
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis, // 关联查询诊断信息
-                    Status = entity.Status, // 系统状态（CommonStatus）
                     CreatedAt = entity.CreatedAt
                 }).ToList();
 
@@ -1033,19 +1025,19 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 返回病案的所有历史处方记录
         /// </summary>
         [HttpGet("{medicalCaseId}/prescriptions")]
-        [ProducesResponseType(typeof(ApiResponse<List<MedicalCasePrescriptionDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<MedicalCasePrescriptionDto>>>> GetPrescriptionList(
+        [ProducesResponseType(typeof(ApiResponse<List<PrescriptionDto>>), 200)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> GetPrescriptionList(
             Guid medicalCaseId)
         {
             try
             {
                 var result = await _medicalCaseService.GetPrescriptionListAsync(medicalCaseId);
 
-                return Ok(ApiResponse<List<MedicalCasePrescriptionDto>>.CreateSuccess(result, "查询成功"));
+                return Ok(ApiResponse<List<PrescriptionDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {
-                return HandleException<List<MedicalCasePrescriptionDto>>(ex, "获取处方列表",
+                return HandleException<List<PrescriptionDto>>(ex, "获取处方列表",
                     new { medicalCaseId });
             }
         }
@@ -1183,7 +1175,6 @@ namespace LYBT.WebAPI.Controllers
                     CaseStatus = entityResult.CaseStatus,
                     Remark = entityResult.Remark,
                     Diagnosis = entityResult.Consultation?.TCMDiagnosis,
-                    Status = entityResult.Status, // 系统状态（CommonStatus）
                     CreatedAt = entityResult.CreatedAt
                 };
 

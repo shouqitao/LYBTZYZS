@@ -1,6 +1,6 @@
 using LYBT.Entities.Patients;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;

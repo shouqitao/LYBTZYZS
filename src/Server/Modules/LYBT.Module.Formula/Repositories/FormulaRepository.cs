@@ -4,7 +4,7 @@ using LYBT.Module.Formula.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using FormulaEntity = LYBT.Entities.Formula.Formula;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formula.Repositories
 {

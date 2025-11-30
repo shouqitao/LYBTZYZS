@@ -1,36 +1,34 @@
-﻿using LYBT.Entities.Herbs;
+using LYBT.Entities.Herbs;
+using LYBT.Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace LYBT.Infrastructure.Data.Configurations
+namespace LYBT.Infrastructure.Data.Configurations;
+
+/// <summary>
+/// Herb 实体 EF Core 配置
+/// 继承 BaseEntityConfiguration 统一审计字段和并发控制
+/// </summary>
+public class HerbConfiguration : BaseEntityConfiguration<Herb>
 {
-    /// <summary>
-    /// Herb 实体 EF Core 配置
-    /// </summary>
-    public class HerbConfiguration : IEntityTypeConfiguration<Herb>
+    public override void Configure(EntityTypeBuilder<Herb> builder)
     {
-        public void Configure(EntityTypeBuilder<Herb> entity)
-        {
-            entity.ToTable("Herbs");
-            entity.HasKey(h => h.Id);
-            entity.Property(h => h.Name).HasMaxLength(100);
-            entity.Property(h => h.PinYinCode).HasMaxLength(50);
-            entity.Property(h => h.Origin).HasMaxLength(100);
-            entity.Property(h => h.Spec).HasMaxLength(100);
-            entity.Property(h => h.Unit).HasMaxLength(10);
-            entity.Property(h => h.Effect).HasMaxLength(500);
-            entity.Property(h => h.Usage).HasMaxLength(500);
+        base.Configure(builder);
 
-            // P1 Batch1: 统一使用 HasPrecision 配置 decimal 精度
-            entity.Property(h => h.Price).HasPrecision(18, 2);
-            entity.Property(h => h.CostPrice).HasPrecision(18, 2);
+        builder.ToTable("Herbs");
+        builder.Property(h => h.Name).HasMaxLength(100);
+        builder.Property(h => h.PinYinCode).HasMaxLength(50);
+        builder.Property(h => h.Origin).HasMaxLength(100);
+        builder.Property(h => h.Spec).HasMaxLength(100);
+        builder.Property(h => h.Unit).HasMaxLength(10);
+        builder.Property(h => h.Effect).HasMaxLength(500);
+        builder.Property(h => h.Usage).HasMaxLength(500);
 
-            // 配置Status枚举字段
-            entity.Property(h => h.Status).HasConversion<int>();
+        // decimal 精度配置
+        builder.Property(h => h.Price).HasPrecision(18, 2);
+        builder.Property(h => h.CostPrice).HasPrecision(18, 2);
 
-            // Issue #1765: 删除2个多余索引
-            // MVP阶段(<500个草药)无需Name/PinYinCode索引
-            // 全表扫描足够快（<10ms）
-        }
+        // 配置Status枚举字段
+        builder.Property(h => h.Status).HasConversion<int>();
     }
 }

@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Prescriptions
 {
@@ -76,10 +75,6 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("引用验方")]
         public string? ReferencedFormulas { get; set; }
 
-        /// <summary>处方状态</summary>
-        [DisplayName("处方状态")]
-        public PrescriptionStatus Status { get; set; } = PrescriptionStatus.Draft;
-
         /// <summary>备注</summary>
         [StringLength(500)]
         [DisplayName("备注")]
@@ -109,18 +104,18 @@ namespace LYBT.Entities.Prescriptions
         /// 处方项目（药材明细）
         /// </summary>
         [DisplayName("处方项目")]
-        public List<PrescriptionItem> Items { get; set; } = new();
+        public virtual ICollection<PrescriptionItem> Items { get; set; } = new List<PrescriptionItem>();
 
         // 导航属性
 
         /// <summary>
         /// 所属医疗案例
         /// </summary>
-        public virtual MedicalCase.MedicalCase? MedicalCase { get; set; }
+        public virtual MedicalCases.MedicalCase? MedicalCase { get; set; }
 
         /// <summary>
         /// 打印日志记录
         /// </summary>
-        public List<PrescriptionPrintLog> PrintLogs { get; set; } = new();
+        public virtual ICollection<PrescriptionPrintLog> PrintLogs { get; set; } = new List<PrescriptionPrintLog>();
     }
 }

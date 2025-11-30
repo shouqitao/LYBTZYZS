@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Users;
 using LYBT.Shared.Models.Enums;

@@ -32,7 +32,7 @@ namespace LYBT.Entities.Auth
 
         /// <summary>登录时间</summary>
         [DisplayName("登录时间")]
-        public DateTime LoginTime { get; set; } = DateTime.Now;
+        public DateTime LoginTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>登出时间</summary>
         [DisplayName("登出时间")]

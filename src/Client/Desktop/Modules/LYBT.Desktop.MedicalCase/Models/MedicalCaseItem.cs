@@ -192,7 +192,6 @@ public class MedicalCaseItem : BindableBase
             TreatmentPlan = TreatmentPlan,
             CreatedAt = CreatedAt,
             UpdatedAt = CompletedAt ?? DateTime.Now,
-            Status = Status == MedicalCaseStatus.Active ? CommonStatus.Enabled : CommonStatus.Disabled,
             Remark = CompletionReason
         };
     }

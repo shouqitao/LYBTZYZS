@@ -346,7 +346,7 @@ namespace LYBT.Tests.Common
             base.Customize(modelBuilder, context);
 
             // 移除MedicalCase实体的RowVersion并发令牌配置
-            var medicalCaseEntity = modelBuilder.Model.FindEntityType(typeof(LYBT.Entities.MedicalCase.MedicalCase));
+            var medicalCaseEntity = modelBuilder.Model.FindEntityType(typeof(LYBT.Entities.MedicalCases.MedicalCase));
             if (medicalCaseEntity != null)
             {
                 var rowVersionProperty = medicalCaseEntity.FindProperty("RowVersion");

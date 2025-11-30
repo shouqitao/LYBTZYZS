@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Formulas;
 using LYBT.Module.Formula.Interfaces;
 using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -7,7 +7,7 @@ using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
-using FormulaEntity = LYBT.Entities.Formula.Formula;
+using FormulaEntity = LYBT.Entities.Formulas.Formula;
 
 namespace LYBT.Module.Formula.Services
 {
@@ -154,17 +154,20 @@ namespace LYBT.Module.Formula.Services
                 entity.Herbs.Clear();
                 if (dto.Herbs != null && dto.Herbs.Any())
                 {
-                    entity.Herbs.AddRange(dto.Herbs.Select(h => new FormulaHerbItem
+                    foreach (var h in dto.Herbs)
                     {
-                        HerbId = h.HerbId,
-                        HerbName = h.HerbName,
-                        Quantity = (int)h.Quantity, // decimal → int
-                        Unit = h.Unit,
-                        ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod
-                        Usage = h.Usage,
-                        OriginalHerbName = h.HerbName, // 保存原始名称
-                        IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
-                    }));
+                        entity.Herbs.Add(new FormulaHerbItem
+                        {
+                            HerbId = h.HerbId,
+                            HerbName = h.HerbName,
+                            Quantity = (int)h.Quantity, // decimal → int
+                            Unit = h.Unit,
+                            ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod
+                            Usage = h.Usage,
+                            OriginalHerbName = h.HerbName, // 保存原始名称
+                            IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
+                        });
+                    }
                 }
 
                 var result = await _repository.UpdateAsync(entity);

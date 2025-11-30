@@ -5,7 +5,7 @@ using LYBT.Module.Consultation.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 
 namespace LYBT.Module.Consultation.Repositories
 {

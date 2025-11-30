@@ -1,11 +1,11 @@
 using System.Text.Json;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Data;
 using LYBT.Module.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 
 namespace LYBT.Module.MedicalCase.Services
 {
@@ -148,7 +148,6 @@ namespace LYBT.Module.MedicalCase.Services
             CompareField("DoctorId", before.DoctorId, after.DoctorId, changedFields, oldValues, newValuesDict);
             CompareField("DoctorName", before.DoctorName, after.DoctorName, changedFields, oldValues, newValuesDict);
             CompareField("CaseStatus", before.CaseStatus.ToString(), after.CaseStatus.ToString(), changedFields, oldValues, newValuesDict);
-            CompareField("Status", before.Status.ToString(), after.Status.ToString(), changedFields, oldValues, newValuesDict);
             CompareField("Remark", before.Remark, after.Remark, changedFields, oldValues, newValuesDict);
             CompareField("NeedsPrescription", before.NeedsPrescription, after.NeedsPrescription, changedFields, oldValues, newValuesDict);
             CompareField("ConsultationDate", before.ConsultationDate, after.ConsultationDate, changedFields, oldValues, newValuesDict);

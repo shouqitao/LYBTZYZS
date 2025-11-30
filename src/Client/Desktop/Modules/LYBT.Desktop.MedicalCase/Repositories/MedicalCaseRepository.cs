@@ -143,48 +143,7 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
 
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Epic #1589 Phase 1 - 架构合规版本
-        /// </summary>
-        public async Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request)
-        {
-            if (medicalCaseId == Guid.Empty)
-                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
-
-            try
-            {
-                var response = await _api.CompleteStep1Async(medicalCaseId, request);
-                return response.Data ?? throw new InvalidOperationException("完成辩证失败，服务器未返回数据");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成辩证步骤失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 重置诊疗步骤
-        /// Epic #1589 Phase 2 - 架构合规版本
-        /// </summary>
-        public async Task ResetConsultationStepsAsync(Guid medicalCaseId)
-        {
-            if (medicalCaseId == Guid.Empty)
-                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
-
-            try
-            {
-                await _api.ResetConsultationStepsAsync(medicalCaseId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "重置诊疗步骤失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
+        // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
         /// 清空处方内容（保留处方框架）
@@ -305,8 +264,8 @@ namespace LYBT.Desktop.MedicalCase.Repositories
                     return null;
                 }
 
-                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
-                    response.Data.Id, response.Data.Status, response.Data.DoctorId);
+                _logger.LogInformation("找到未完成医案,MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
+                    response.Data.Id, response.Data.CaseStatus, response.Data.DoctorId);
 
                 return response.Data;
             }

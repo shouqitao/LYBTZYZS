@@ -454,49 +454,7 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
-        /// <summary>
-        /// 完成辨证步骤（Step 1）
-        /// Issue #1783: 为工作流提供业务命令
-        /// </summary>
-        public virtual async Task<ApiResponse<ConsultationStepDto>> CompleteStep1Async(
-            Guid medicalCaseId,
-            CompleteStep1Request request)
-        {
-            try
-            {
-                _logger.LogDebug("完成辨证步骤: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                var response = await _api.CompleteStep1Async(medicalCaseId, request);
-                _logger.LogInformation("辨证步骤完成: MedicalCaseId={MedicalCaseId}, Success={Success}",
-                    medicalCaseId, response.Success);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成辨证步骤失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 重置诊疗步骤
-        /// Issue #1783: 为工作流提供业务命令
-        /// </summary>
-        public virtual async Task<ApiResponse> ResetConsultationStepsAsync(Guid medicalCaseId)
-        {
-            try
-            {
-                _logger.LogDebug("重置诊疗步骤: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                var response = await _api.ResetConsultationStepsAsync(medicalCaseId);
-                _logger.LogInformation("诊疗步骤重置成功: MedicalCaseId={MedicalCaseId}, Success={Success}",
-                    medicalCaseId, response.Success);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "重置诊疗步骤失败: MedicalCaseId={MedicalCaseId}", medicalCaseId);
-                throw;
-            }
-        }
+        // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
         /// 清空处方内容（保留处方框架）
@@ -951,7 +909,6 @@ namespace LYBT.Desktop.MedicalCase.Components
                 ConsultationDate = source.ConsultationDate,
                 CaseStatus = source.CaseStatus,
                 Remark = source.Remark,
-                Status = source.Status,
                 CreatedAt = source.CreatedAt,
                 UpdatedAt = source.UpdatedAt
             };
@@ -990,7 +947,7 @@ namespace LYBT.Desktop.MedicalCase.Components
                 TreatmentPrinciple = source.TreatmentPrinciple,
                 MedicalAdvice = source.MedicalAdvice,
                 Remark = source.Remark,
-                Status = source.Status,
+                // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                 CreatedAt = source.CreatedAt,
                 UpdatedAt = source.UpdatedAt
             };
@@ -1039,7 +996,6 @@ namespace LYBT.Desktop.MedicalCase.Components
             target.ConsultationDate = source.ConsultationDate;
             target.CaseStatus = source.CaseStatus;
             target.Remark = source.Remark;
-            target.Status = source.Status;
             target.UpdatedAt = source.UpdatedAt;
         }
 

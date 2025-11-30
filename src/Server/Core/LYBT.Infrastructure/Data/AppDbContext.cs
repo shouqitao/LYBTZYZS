@@ -1,10 +1,10 @@
 ﻿using System.Security.Claims;
 using LYBT.Entities.Auth;
 using LYBT.Entities.Common;
-using LYBT.Entities.Consultation;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Consultations;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
-using LYBT.Entities.MedicalCase;
+using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;
 using LYBT.Entities.Users;

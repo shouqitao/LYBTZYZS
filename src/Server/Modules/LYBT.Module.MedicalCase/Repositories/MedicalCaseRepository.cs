@@ -6,8 +6,8 @@ using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
-using MedicalCaseEntity = LYBT.Entities.MedicalCase.MedicalCase;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
+using MedicalCaseEntity = LYBT.Entities.MedicalCases.MedicalCase;
 using PatientEntity = LYBT.Entities.Patients.Patient;
 using PrescriptionEntity = LYBT.Entities.Prescriptions.Prescription;
 using PrescriptionItem = LYBT.Entities.Prescriptions.PrescriptionItem;
@@ -82,7 +82,7 @@ namespace LYBT.Module.MedicalCase.Repositories
             if (medicalCaseEntry != null)
             {
                 // 分离关联的Consultation
-                var consultationEntry = _context.ChangeTracker.Entries<LYBT.Entities.Consultation.Consultation>()
+                var consultationEntry = _context.ChangeTracker.Entries<LYBT.Entities.Consultations.Consultation>()
                     .FirstOrDefault(e => e.Entity.Id == id); // Consultation使用共享主键
                 if (consultationEntry != null)
                 {
@@ -473,8 +473,8 @@ namespace LYBT.Module.MedicalCase.Repositories
 
             if (result != null)
             {
-                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, Status: {Status}, DoctorId: {DoctorId}",
-                    result.Id, result.Status, result.DoctorId);
+                _logger?.LogInformation("找到未完成医案，MedicalCaseId: {MedicalCaseId}, CaseStatus: {CaseStatus}, DoctorId: {DoctorId}",
+                    result.Id, result.CaseStatus, result.DoctorId);
             }
             else
             {

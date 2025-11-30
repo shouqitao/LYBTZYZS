@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.MedicalCase
+namespace LYBT.Entities.MedicalCases
 {
     /// <summary>
     /// 医案审计日志实体
@@ -61,7 +61,7 @@ namespace LYBT.Entities.MedicalCase
 
         /// <summary>创建时间</summary>
         [DisplayName("创建时间")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // 导航属性
         /// <summary>关联的医案</summary>

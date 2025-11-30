@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Interfaces;
-using ConsultationEntity = LYBT.Entities.Consultation.Consultation;
+using ConsultationEntity = LYBT.Entities.Consultations.Consultation;
 
 namespace LYBT.Module.Consultation.Interfaces
 {

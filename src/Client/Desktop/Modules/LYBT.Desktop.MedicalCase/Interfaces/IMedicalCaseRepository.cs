@@ -46,17 +46,7 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
 
         // ========== Epic #1589 - 三步工作流辅助方法（Issue #1605 Phase 5）==========
 
-        /// <summary>
-        /// 完成辩证步骤（Step 1）
-        /// Epic #1589 Phase 1 - 架构合规版本
-        /// </summary>
-        Task<ConsultationStepDto> CompleteStep1Async(Guid medicalCaseId, CompleteStep1Request request);
-
-        /// <summary>
-        /// 重置诊疗步骤
-        /// Epic #1589 Phase 2 - 架构合规版本
-        /// </summary>
-        Task ResetConsultationStepsAsync(Guid medicalCaseId);
+        // CompleteStep1Async和ResetConsultationStepsAsync已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
         /// 清空处方内容（保留处方框架）

@@ -1,8 +1,8 @@
 using Asp.Versioning;
 using AutoMapper;
 using LYBT.Entities.Common;
-using LYBT.Entities.Consultation;
-using LYBT.Entities.Formula;
+using LYBT.Entities.Consultations;
+using LYBT.Entities.Formulas;
 using LYBT.Entities.Herbs;
 using LYBT.Entities.Patients;
 using LYBT.Entities.Prescriptions;

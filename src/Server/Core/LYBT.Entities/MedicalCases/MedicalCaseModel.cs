@@ -5,7 +5,7 @@ using LYBT.Entities.Common;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Entities.MedicalCase
+namespace LYBT.Entities.MedicalCases
 {
 
     /// <summary>
@@ -46,15 +46,11 @@ namespace LYBT.Entities.MedicalCase
 
         /// <summary>诊疗时间（兼容旧字段）</summary>
         [DisplayName("诊疗时间")]
-        public DateTime ConsultationDate { get; set; } = DateTime.Now;
+        public DateTime ConsultationDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>业务流程状态（原Status字段重命名）</summary>
         [DisplayName("医案状态")]
         public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
-
-        /// <summary>系统状态（与其他实体统一：Patient、Herb、Formula等）</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
 
         /// <summary>
         /// 是否需要开处方（Epic #2175 BF-002动态流程控制）
@@ -76,7 +72,7 @@ namespace LYBT.Entities.MedicalCase
 
         /// <summary>诊疗记录（导航属性）- 一个医疗案例对应一次诊疗 (1:1关系)</summary>
         [DisplayName("诊疗记录")]
-        public virtual LYBT.Entities.Consultation.Consultation? Consultation { get; set; }
+        public virtual LYBT.Entities.Consultations.Consultation? Consultation { get; set; }
 
         /// <summary>处方信息（导航属性）- 一个医疗案例至多一张处方 (0..1关系)</summary>
         [DisplayName("处方信息")]

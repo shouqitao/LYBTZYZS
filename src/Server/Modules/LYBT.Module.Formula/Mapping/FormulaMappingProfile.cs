@@ -14,20 +14,20 @@ namespace LYBT.Module.Formula.Mapping
         public FormulaMappingProfile()
         {
             // Formula -> FormulaDto
-            CreateMap<LYBT.Entities.Formula.Formula, FormulaDto>()
+            CreateMap<LYBT.Entities.Formulas.Formula, FormulaDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
 
             // FormulaHerbItem -> FormulaHerbItemDto
-            CreateMap<LYBT.Entities.Formula.FormulaHerbItem, FormulaHerbItemDto>();
+            CreateMap<LYBT.Entities.Formulas.FormulaHerbItem, FormulaHerbItemDto>();
 
             // Formula -> FormulaDetailDto
-            CreateMap<LYBT.Entities.Formula.Formula, FormulaDetailDto>()
+            CreateMap<LYBT.Entities.Formulas.Formula, FormulaDetailDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
 
             // FormulaInputDto -> Formula
-            CreateMap<FormulaInputDto, LYBT.Entities.Formula.Formula>()
+            CreateMap<FormulaInputDto, LYBT.Entities.Formulas.Formula>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
                 .ForMember(dest => dest.Property, opt => opt.Ignore())
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore())
@@ -45,7 +45,7 @@ namespace LYBT.Module.Formula.Mapping
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
 
             // FormulaInputDto -> Formula
-            CreateMap<FormulaInputDto, LYBT.Entities.Formula.Formula>()
+            CreateMap<FormulaInputDto, LYBT.Entities.Formulas.Formula>()
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Property, opt => opt.Ignore())
                 .ForMember(dest => dest.Herbs, opt => opt.Ignore())

@@ -25,7 +25,7 @@ namespace LYBT.Entities.Prescriptions
 
         /// <summary>打印时间</summary>
         [DisplayName("打印时间")]
-        public DateTime PrintedAt { get; set; } = DateTime.Now;
+        public DateTime PrintedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>打印人ID</summary>
         [DisplayName("打印人ID")]

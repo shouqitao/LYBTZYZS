@@ -215,42 +215,10 @@ namespace LYBT.Desktop.Consultation.Components
             }
         }
 
-        /// <summary>
-        /// 完成Step1（辨证）
-        /// </summary>
-        public async Task<bool> CompleteStep1Async(bool prescriptionEnabled)
-        {
-            try
-            {
-                _logger.LogInformation("开始完成Step1, 开处方={PrescriptionEnabled}", prescriptionEnabled);
-
-                // 1. 验证表单
-                if (!_validator.CanCompleteStep1(out var errorMessage))
-                {
-                    _logger.LogWarning("Step1验证失败: {ErrorMessage}", errorMessage);
-                    return false;
-                }
-
-                // 2. 调用API完成Step1
-                var request = new CompleteStep1Request
-                {
-                    PrescriptionEnabled = prescriptionEnabled
-                };
-
-                var stepDto = await _medicalCaseRepository.CompleteStep1Async(_dataManager.MedicalCaseId, request);
-
-                _logger.LogInformation("Step1完成成功, Step1CompletedAt={CompletedAt}", stepDto.Step1CompletedAt);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "完成Step1失败");
-                return false;
-            }
-        }
+        // CompleteStep1Async已移除 - 简化业务流程，移除Step概念
 
         /// <summary>
-        /// 保存草稿（不完成Step1）
+        /// 保存草稿
         /// </summary>
         public async Task<bool> SaveDraftAsync()
         {
