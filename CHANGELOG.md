@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Service层重构 (OpenSpec: refactor-service-layer)
+
+- 统一返回值类型：废弃`ServiceResult<T>`，统一使用`Result<T>`
+- 引入Service基类：创建`BaseService`提供统一错误处理和`ExecuteAsync`方法
+- MedicalCaseService拆分（消除God Class）：
+  - `IMedicalCaseCommandService` - 创建/更新/删除操作
+  - `IMedicalCaseQueryService` - 查询操作
+  - `IMedicalCaseStateService` - 状态转换操作
+- FluentValidation验证统一化，移除手工验证代码
+- 创建`service-conventions` spec规范化Service设计模式
+
 #### Repository层重构 (OpenSpec: refactor-repository-layer)
 
 - 将`IRepository`/`IReadRepository`接口从Shared层移至Infrastructure层
