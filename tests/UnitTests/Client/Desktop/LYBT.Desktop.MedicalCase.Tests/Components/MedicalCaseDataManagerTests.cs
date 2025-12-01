@@ -385,7 +385,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 DoctorName = "李医生",
                 ConsultationDate = DateTime.Now,
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 Consultation = new ConsultationDto
@@ -402,7 +401,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     Palpation = "切诊",
                     TCMDiagnosis = "风寒感冒",
                     TreatmentPrinciple = "辛温解表",
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 },
@@ -417,7 +415,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                     DosageCount = 3,
                     Usage = "水煎服，每日一剂",
                     Discount = 1.0m,
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 }

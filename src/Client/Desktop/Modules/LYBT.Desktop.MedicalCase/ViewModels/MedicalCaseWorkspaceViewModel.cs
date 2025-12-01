@@ -1,9 +1,11 @@
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Events; // OpenSpec: controlify-workspace - Phase 4 工作区事件
 using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
@@ -37,6 +39,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IActiveConsultationService _activeConsultationService; // OpenSpec: clarify-cancel-consultation-logic
         private readonly IDialogService? _dialogService; // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
         private readonly IAuditRequirementChecker? _auditRequirementChecker; // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-010)
+        private readonly MedicalCaseWorkspaceCoordinator _coordinator; // OpenSpec: refactor-viewmodel-layer - VM-002 Components
 
         #endregion
 
@@ -273,6 +276,48 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public bool ShowCompleteButton => IsEditing && WorkspaceMode == WorkspaceMode.Clinical;
 
+        #region OpenSpec: controlify-workspace - Phase 4 脏数据追踪
+
+        private bool _hasUnsavedConsultationChanges;
+        private bool _hasUnsavedPrescriptionChanges;
+
+        /// <summary>
+        /// 工作区是否有未保存的修改（诊断或处方）
+        /// </summary>
+        public bool HasUnsavedChanges => _hasUnsavedConsultationChanges || _hasUnsavedPrescriptionChanges;
+
+        /// <summary>
+        /// 诊断是否有未保存的修改
+        /// </summary>
+        public bool HasUnsavedConsultationChanges
+        {
+            get => _hasUnsavedConsultationChanges;
+            private set
+            {
+                if (SetProperty(ref _hasUnsavedConsultationChanges, value))
+                {
+                    RaisePropertyChanged(nameof(HasUnsavedChanges));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 处方是否有未保存的修改
+        /// </summary>
+        public bool HasUnsavedPrescriptionChanges
+        {
+            get => _hasUnsavedPrescriptionChanges;
+            private set
+            {
+                if (SetProperty(ref _hasUnsavedPrescriptionChanges, value))
+                {
+                    RaisePropertyChanged(nameof(HasUnsavedChanges));
+                }
+            }
+        }
+
+        #endregion
+
         private bool _isHistoricalEditMode;
         /// <summary>
         /// 是否为历史修改模式（从管理界面进入）
@@ -452,6 +497,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             MedicalCaseDataManager dataManager,
             MedicalCaseLifecycleHandler lifecycleHandler,
             MedicalCaseDataLoader dataLoader,
+            MedicalCaseWorkspaceCoordinator coordinator, // OpenSpec: refactor-viewmodel-layer - VM-002 Components
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -468,6 +514,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
             _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
             _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
+            _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
             _injectedConsultationPanelViewModel = consultationPanelViewModel ?? throw new ArgumentNullException(nameof(consultationPanelViewModel));
             _injectedPrescriptionPanelViewModel = prescriptionPanelViewModel ?? throw new ArgumentNullException(nameof(prescriptionPanelViewModel));
             _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
@@ -502,6 +549,19 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             // 订阅处方完成事件
             EventAggregator.GetEvent<PrescriptionCompletedEvent>()
                 .Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
+
+            // OpenSpec: controlify-workspace - Phase 4 工作区事件订阅
+            // 订阅脏数据变更事件
+            EventAggregator.GetEvent<ConsultationDataChangedEvent>()
+                .Subscribe(OnConsultationDataChanged, ThreadOption.UIThread);
+            EventAggregator.GetEvent<PrescriptionDataChangedEvent>()
+                .Subscribe(OnPrescriptionDataChanged, ThreadOption.UIThread);
+
+            // 订阅保存完成事件
+            EventAggregator.GetEvent<ConsultationSavedEvent>()
+                .Subscribe(OnConsultationSaved, ThreadOption.UIThread);
+            EventAggregator.GetEvent<PrescriptionSavedEvent>()
+                .Subscribe(OnPrescriptionSaved, ThreadOption.UIThread);
 
             Logger.LogInformation("MedicalCaseWorkspaceViewModel已初始化（4:6统一界面）");
         }
@@ -732,8 +792,35 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        #region OpenSpec: refactor-viewmodel-layer - Coordinator辅助方法
+
+        /// <summary>
+        /// 同步医案备注到诊断面板
+        /// OpenSpec: refactor-viewmodel-layer - VM-002 Components
+        /// </summary>
+        private void SyncRemarkToPanel()
+        {
+            if (ConsultationPanelViewModel != null)
+            {
+                ConsultationPanelViewModel.MedicalCaseRemark = Remark;
+            }
+        }
+
+        /// <summary>
+        /// 获取诊断面板作为ISaveable
+        /// </summary>
+        private ISaveable? GetConsultationSaveable() => ConsultationPanelViewModel as ISaveable;
+
+        /// <summary>
+        /// 获取处方面板作为ISaveable
+        /// </summary>
+        private ISaveable? GetPrescriptionSaveable() => PrescriptionPanelViewModel as ISaveable;
+
+        #endregion
+
         /// <summary>
         /// 仅保存草稿（不导航）
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async Task SaveDraftOnlyAsync()
         {
@@ -741,33 +828,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存...");
 
-                // Bug诊断：记录保存流程
-                Logger.LogInformation("[诊断] SaveDraftOnlyAsync开始，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
-                Logger.LogInformation("[诊断] ConsultationPanelViewModel是否为null: {IsNull}", ConsultationPanelViewModel == null);
+                Logger.LogDebug("SaveDraftOnlyAsync开始，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
 
-                if (ConsultationPanelViewModel != null)
-                {
-                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                    Logger.LogInformation("[诊断] ConsultationPanelViewModel.ChiefComplaint: {ChiefComplaint}",
-                        ConsultationPanelViewModel.ChiefComplaint ?? "(空)");
-                }
-                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                {
-                    Logger.LogInformation("[诊断] 开始调用ConsultationPanelViewModel.SaveSilentlyAsync");
-                    var consultationResult = await consultationSaveable.SaveSilentlyAsync();
-                    Logger.LogInformation("[诊断] ConsultationPanelViewModel.SaveSilentlyAsync返回: {Result}", consultationResult);
-                }
-                else
-                {
-                    Logger.LogWarning("[诊断] ConsultationPanelViewModel不是ISaveable，跳过保存诊断数据");
-                }
-                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                {
-                    await prescriptionSaveable.SaveSilentlyAsync();
-                }
+                var result = await _coordinator.SaveDraftAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
-                Logger.LogInformation("医案已暂存");
+                if (result.IsSuccess)
+                {
+                    Logger.LogInformation("医案已暂存");
+                }
             }
             finally
             {
@@ -777,6 +849,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 仅取消医案（不导航）
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async Task CancelCaseOnlyAsync()
         {
@@ -784,29 +857,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在处理...");
 
-                // 取消前自动保存（供审计）
-                try
-                {
-                    if (ConsultationPanelViewModel != null)
-                    {
-                        ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                    }
-                    if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                    {
-                        await consultationSaveable.SaveSilentlyAsync();
-                    }
-                    if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                    {
-                        await prescriptionSaveable.SaveSilentlyAsync();
-                    }
-                }
-                catch (Exception saveEx)
-                {
-                    Logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
-                }
+                var result = await _coordinator.CancelAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                await _lifecycleHandler.CancelAsync(MedicalCaseId);
-                Logger.LogInformation("医案已取消（软删除）");
+                if (result.IsSuccess)
+                {
+                    Logger.LogInformation("医案已取消（软删除）");
+                }
             }
             finally
             {
@@ -816,6 +876,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 暂存医案并返回患者列表
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async Task SaveDraftAndNavigateBackAsync()
         {
@@ -823,33 +884,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存...");
 
-                // 设置医案备注
-                if (ConsultationPanelViewModel != null)
-                {
-                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                }
+                var result = await _coordinator.SaveDraftAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                // 保存诊断和处方数据
-                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                {
-                    await consultationSaveable.SaveSilentlyAsync();
-                }
-                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                {
-                    await prescriptionSaveable.SaveSilentlyAsync();
-                }
-
-                // 更新状态为Draft
-                var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
-
-                if (result.success)
+                if (result.IsSuccess)
                 {
                     Logger.LogInformation("医案已暂存，返回患者列表");
                     _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.errorMessage ?? "暂存失败");
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "暂存失败");
                 }
             }
             catch (Exception ex)
@@ -866,6 +914,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 取消医案并返回患者列表（软删除）
         /// OpenSpec: clarify-cancel-consultation-logic
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async Task CancelCaseAndNavigateBackAsync()
         {
@@ -873,39 +922,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在处理...");
 
-                // 取消前自动保存（供审计）
-                try
-                {
-                    if (ConsultationPanelViewModel != null)
-                    {
-                        ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                    }
-                    if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                    {
-                        await consultationSaveable.SaveSilentlyAsync();
-                    }
-                    if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                    {
-                        await prescriptionSaveable.SaveSilentlyAsync();
-                    }
-                    Logger.LogDebug("取消前数据已保存（供审计）");
-                }
-                catch (Exception saveEx)
-                {
-                    Logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
-                }
+                var result = await _coordinator.CancelAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                // 执行软删除
-                var result = await _lifecycleHandler.CancelAsync(MedicalCaseId);
-
-                if (result.success)
+                if (result.IsSuccess)
                 {
                     Logger.LogInformation("医案已取消（软删除），返回患者列表");
                     _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.errorMessage ?? "取消失败");
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "取消失败");
                 }
             }
             catch (Exception ex)
@@ -923,6 +953,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// 暂存医案（保存当前数据 + 切换到只读模式，留在当前界面）
         /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-003
         /// OpenSpec: medicalcase-management-ui-refactor - EDITMODE-010 审计检查
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async void ExecuteSaveAndStay()
         {
@@ -947,29 +978,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 SetIsBusy(true, WorkspaceMode == WorkspaceMode.Management ? "正在保存..." : "正在暂存...");
 
-                // 同步医案备注到面板
-                if (ConsultationPanelViewModel != null)
-                {
-                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                }
+                // 使用Coordinator保存草稿
+                var result = await _coordinator.SaveDraftAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                // Bug Fix: 暂存(Draft)不需要验证，使用SaveSilentlyAsync代替SaveAsync
-                // 保存诊断数据（静默保存，不验证）
-                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                {
-                    await consultationSaveable.SaveSilentlyAsync();
-                }
-
-                // 保存处方数据（静默保存，不验证）
-                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                {
-                    await prescriptionSaveable.SaveSilentlyAsync();
-                }
-
-                // 更新医案状态为Draft
-                var result = await _lifecycleHandler.SaveDraftAsync(MedicalCaseId);
-
-                if (result.success)
+                if (result.IsSuccess)
                 {
                     // OpenSpec: refine-medicalcase-edit-modes - 切换到只读模式（留在当前界面）
                     IsEditing = false;
@@ -982,7 +998,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.errorMessage ?? "保存失败");
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
                 }
             }
             catch (Exception ex)
@@ -1093,6 +1109,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 完成看诊
+        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
         /// </summary>
         private async void ExecuteCompleteConsultation()
         {
@@ -1100,39 +1117,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在完成看诊...");
 
-                // OpenSpec: clarify-cancel-consultation-logic
-                // 医案备注通过ConsultationInputDto.MedicalCaseRemark传递保存
-                if (ConsultationPanelViewModel != null)
-                {
-                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                }
+                // 使用Coordinator完成医案
+                var result = await _coordinator.CompleteAsync(
+                    MedicalCaseId,
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel,
+                    IsPrescriptionEnabled);
 
-                // 保存诊断数据（包含医案备注）
-                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
-                {
-                    var consultationResult = await consultationSaveable.SaveAsync();
-                    if (!consultationResult)
-                    {
-                        await ShowErrorMessageAsync("保存诊断数据失败");
-                        return;
-                    }
-                }
-
-                // 保存处方数据（如果启用）
-                if (IsPrescriptionEnabled && PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
-                {
-                    var prescriptionResult = await prescriptionSaveable.SaveAsync();
-                    if (!prescriptionResult)
-                    {
-                        await ShowErrorMessageAsync("保存处方数据失败");
-                        return;
-                    }
-                }
-
-                // 完成医案
-                var result = await _lifecycleHandler.CompleteAsync(MedicalCaseId);
-
-                if (result.success)
+                if (result.IsSuccess)
                 {
                     await ShowSuccessMessageAsync("看诊已完成");
                     Logger.LogInformation("医案已完成");
@@ -1148,7 +1141,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
                 else
                 {
-                    await ShowErrorMessageAsync(result.errorMessage ?? "完成失败");
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "完成失败");
                 }
             }
             catch (Exception ex)
@@ -1449,6 +1442,55 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CanComplete = true;
         }
 
+        #region OpenSpec: controlify-workspace - Phase 4 工作区事件处理
+
+        /// <summary>
+        /// 诊断数据变更事件处理 - 脏数据追踪
+        /// </summary>
+        private void OnConsultationDataChanged(Guid medicalCaseId)
+        {
+            if (medicalCaseId != MedicalCaseId) return;
+
+            HasUnsavedConsultationChanges = true;
+            Logger.LogDebug("诊断数据变更，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+        }
+
+        /// <summary>
+        /// 处方数据变更事件处理 - 脏数据追踪
+        /// </summary>
+        private void OnPrescriptionDataChanged(Guid medicalCaseId)
+        {
+            if (medicalCaseId != MedicalCaseId) return;
+
+            HasUnsavedPrescriptionChanges = true;
+            Logger.LogDebug("处方数据变更，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+        }
+
+        /// <summary>
+        /// 诊断保存完成事件处理
+        /// </summary>
+        private void OnConsultationSaved(ConsultationSavedPayload payload)
+        {
+            if (payload.MedicalCaseId != MedicalCaseId) return;
+
+            HasUnsavedConsultationChanges = false;
+            Logger.LogInformation("诊断保存完成，IsAutoSave: {IsAutoSave}", payload.IsAutoSave);
+        }
+
+        /// <summary>
+        /// 处方保存完成事件处理
+        /// </summary>
+        private void OnPrescriptionSaved(PrescriptionSavedPayload payload)
+        {
+            if (payload.MedicalCaseId != MedicalCaseId) return;
+
+            HasUnsavedPrescriptionChanges = false;
+            Logger.LogInformation("处方保存完成，PrescriptionId: {PrescriptionId}, IsAutoSave: {IsAutoSave}", 
+                payload.PrescriptionId, payload.IsAutoSave);
+        }
+
+        #endregion
+
         /// <summary>
         /// 生命周期操作完成事件处理
         /// </summary>
@@ -1532,6 +1574,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
                 _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
                 _dataLoader.DataLoaded -= OnDataLoaded;
+
+                // OpenSpec: controlify-workspace - Phase 4 取消事件订阅
+                EventAggregator.GetEvent<ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
+                EventAggregator.GetEvent<PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
+                EventAggregator.GetEvent<ConsultationDataChangedEvent>().Unsubscribe(OnConsultationDataChanged);
+                EventAggregator.GetEvent<PrescriptionDataChangedEvent>().Unsubscribe(OnPrescriptionDataChanged);
+                EventAggregator.GetEvent<ConsultationSavedEvent>().Unsubscribe(OnConsultationSaved);
+                EventAggregator.GetEvent<PrescriptionSavedEvent>().Unsubscribe(OnPrescriptionSaved);
 
                 Logger.LogInformation("MedicalCaseWorkspaceViewModel已释放资源");
             }

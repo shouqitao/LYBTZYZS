@@ -3,8 +3,10 @@ using System.Windows.Controls;
 namespace LYBT.Desktop.MedicalCase.Controls
 {
     /// <summary>
-    /// Epic #2210 Phase 4: 诊断面板UserControl
-    /// 用于MedicalCaseWorkspaceView的左侧40%区域
+    /// 诊断面板UserControl
+    /// OpenSpec: controlify-workspace - Phase 2
+    /// 用于MedicalCaseWorkspaceView的左侧1:1区域
+    /// 通过Prism Region + RegionContext与父视图通信
     /// </summary>
     public partial class ConsultationPanel : UserControl
     {

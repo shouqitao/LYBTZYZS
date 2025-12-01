@@ -2,7 +2,9 @@ using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.MedicalCase.Events; // OpenSpec: controlify-workspace - 事件支持
 using LYBT.Desktop.MedicalCase.Interfaces;
+using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -33,6 +35,15 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IEventAggregator _eventAggregator;
         private readonly ILoggerFactory _loggerFactory;
+
+        // OpenSpec: cleanup-ui-layer - Phase 1.1 Components
+        private readonly PrescriptionCalculator _calculator;
+        private readonly PrescriptionValidator _validator;
+        private readonly PrescriptionItemHandler _itemHandler;
+        private readonly PrescriptionSaveHandler _saveHandler;
+        private readonly PrescriptionImportHandler _importHandler;
+        private readonly PrescriptionDataLoader _dataLoader;
+
         private Guid _medicalCaseId;
         private Guid? _prescriptionId;
         private Guid _patientId;
@@ -43,6 +54,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// Bug Fix: 防止PropertyChanged事件在数据加载完成前触发空槽位添加
         /// </summary>
         private bool _isLoadingData;
+
+        /// <summary>
+        /// 初始化标志 - 用于脏数据追踪
+        /// OpenSpec: controlify-workspace - Phase 3
+        /// </summary>
+        private bool _isInitialized;
 
         /// <summary>
         /// 所有药材列表（用于注入到每个PrescriptionItemViewModel）
@@ -284,6 +301,30 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
 
+        #region 控件状态（OpenSpec: controlify-workspace）
+
+        private bool _hasUnsavedChanges;
+        /// <summary>
+        /// 是否有未保存修改
+        /// </summary>
+        public bool HasUnsavedChanges
+        {
+            get => _hasUnsavedChanges;
+            private set => SetProperty(ref _hasUnsavedChanges, value);
+        }
+
+        private bool _isReadOnly;
+        /// <summary>
+        /// 是否只读模式
+        /// </summary>
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set => SetProperty(ref _isReadOnly, value);
+        }
+
+        #endregion
+
         #region 命令
 
         public DelegateCommand AddRowCommand { get; }
@@ -339,6 +380,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
+            PrescriptionCalculator calculator,
+            PrescriptionValidator validator,
+            PrescriptionItemHandler itemHandler,
+            PrescriptionSaveHandler saveHandler,
+            PrescriptionImportHandler importHandler,
+            PrescriptionDataLoader dataLoader,
             ISessionManager? sessionManager = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager)
         {
@@ -348,6 +395,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _eventAggregator = eventAggregator;
             _loggerFactory = loggerFactory;
+
+            // OpenSpec: cleanup-ui-layer - Phase 1.1 Components
+            _calculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _itemHandler = itemHandler ?? throw new ArgumentNullException(nameof(itemHandler));
+            _saveHandler = saveHandler ?? throw new ArgumentNullException(nameof(saveHandler));
+            _importHandler = importHandler ?? throw new ArgumentNullException(nameof(importHandler));
+            _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
 
             // 基础命令
             AddRowCommand = new DelegateCommand(ExecuteAddRow);
@@ -369,6 +424,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
             // 初始化默认药材项（12个空槽位，对应3行4列）
             AddDefaultHerbItems();
+
+            // OpenSpec: controlify-workspace - 订阅保存所有请求事件
+            EventAggregator.GetEvent<SaveAllRequestedEvent>()
+                .Subscribe(OnSaveAllRequested, ThreadOption.UIThread);
 
             Logger.LogInformation("PrescriptionPanelViewModel已初始化");
         }
@@ -407,6 +466,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 UpdateItemCount();
             }
 
+            // OpenSpec: controlify-workspace - 设置初始化标志
+            _isInitialized = true;
+            HasUnsavedChanges = false;
+
             Logger.LogInformation("PrescriptionPanel初始化完成，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}, HasPrescription: {HasPrescription}",
                 medicalCaseId, patientId, existingPrescription != null);
         }
@@ -417,44 +480,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private async Task LoadHerbsAsync()
         {
-            try
-            {
-                _allHerbs.Clear();
-                const int pageSize = 100; // 后端限制最大100
-                int page = 1;
-                int totalLoaded = 0;
-
-                while (true)
-                {
-                    var result = await _herbRepository.GetPagedAsync(page: page, pageSize: pageSize);
-                    if (result.Items == null || !result.Items.Any())
-                        break;
-
-                    foreach (var herb in result.Items)
-                    {
-                        _allHerbs.Add(herb);
-                    }
-                    totalLoaded += result.Items.Count;
-
-                    // 如果返回的数量少于请求的数量，说明已经是最后一页
-                    if (result.Items.Count < pageSize || totalLoaded >= result.TotalCount)
-                        break;
-
-                    page++;
-                }
-
-                // 注入到所有现有的药材项
-                foreach (var item in HerbItems)
-                {
-                    item.AllHerbs = _allHerbs;
-                }
-
-                Logger.LogInformation("加载药材列表完成，共{Count}种", _allHerbs.Count);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载药材列表失败");
-            }
+            await _dataLoader.LoadAllHerbsAsync(_allHerbs);
+            _dataLoader.InjectHerbsToItems(HerbItems, _allHerbs);
         }
 
         /// <summary>
@@ -509,32 +536,30 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private PrescriptionHerbItemViewModel CreateHerbItem()
         {
-            var item = new PrescriptionHerbItemViewModel();
-            item.AllHerbs = _allHerbs;
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            return _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged);
+        }
 
-            // 订阅属性变化以触发价格计算和N+1行原则
-            // Issue: unify-herb-card-control - ItemAmount改为ItemTotal
-            item.PropertyChanged += (s, e) =>
+        /// <summary>
+        /// 药材项属性变化回调（供ItemHandler使用）
+        /// </summary>
+        private void OnHerbItemChanged(PrescriptionHerbItemViewModel item, string propertyName)
+        {
+            // Bug Fix: 加载过程中跳过这些操作，避免在数据加载完成前触发副作用
+            if (_isLoadingData) return;
+
+            CalculatePrices();
+            UpdateItemCount();
+            CheckDuplicateHerbs();
+
+            // N+1行原则：药材选择后确保至少有4个空槽位
+            if (propertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
             {
-                if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.ItemTotal) ||
-                    e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
-                {
-                    // Bug Fix: 加载过程中跳过这些操作，避免在数据加载完成前触发副作用
-                    if (_isLoadingData) return;
+                EnsureMinimumBlankRows();
+            }
 
-                    CalculatePrices();
-                    UpdateItemCount();
-                    CheckDuplicateHerbs();
-
-                    // N+1行原则：药材选择后确保至少有4个空槽位
-                    if (e.PropertyName == nameof(PrescriptionHerbItemViewModel.HerbId))
-                    {
-                        EnsureMinimumBlankRows();
-                    }
-                }
-            };
-
-            return item;
+            // OpenSpec: controlify-workspace - 通知数据变更
+            NotifyDataChanged();
         }
 
         /// <summary>
@@ -543,11 +568,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void AddDefaultHerbItems()
         {
-            // 初始化8个空槽位（2行4列）
-            for (int i = 0; i < 8; i++)
-            {
-                HerbItems.Add(CreateHerbItem());
-            }
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
         }
 
         /// <summary>
@@ -561,17 +583,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void EnsureMinimumBlankRows()
         {
-            const int minBlankSlots = 4; // 至少保留4个空槽位（一整行）
-
-            // 统计空槽位数量（未选择药材的槽位）
-            var blankSlots = HerbItems.Count(h => h.HerbId == Guid.Empty);
-
-            // 如果空槽位不足4个，补充到4个
-            while (blankSlots < minBlankSlots)
-            {
-                HerbItems.Add(CreateHerbItem());
-                blankSlots++;
-            }
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
         }
 
         /// <summary>
@@ -580,20 +593,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void CompactHerbItems()
         {
-            // 提取所有非空药材项（保持相对顺序）
-            var nonEmptyItems = HerbItems.Where(h => h.HerbId != Guid.Empty).ToList();
-
-            // 清空集合
-            HerbItems.Clear();
-
-            // 先添加非空药材
-            foreach (var item in nonEmptyItems)
-            {
-                HerbItems.Add(item);
-            }
-
-            // 再添加空槽位
-            EnsureMinimumBlankRows();
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            _itemHandler.CompactHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
 
             // 更新计数
             UpdateItemCount();
@@ -607,66 +608,45 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             try
             {
-                // 收集药材项
-                var items = CollectPrescriptionItems();
-
-                if (!items.Any())
+                // OpenSpec: cleanup-ui-layer - 委托到PrescriptionSaveHandler
+                var context = new PrescriptionSaveContext
                 {
-                    Logger.LogWarning("没有药材项，跳过保存");
+                    MedicalCaseId = _medicalCaseId,
+                    PrescriptionId = _prescriptionId,
+                    PatientId = _patientId,
+                    DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
+                    DosageCount = DosageCount,
+                    Usage = Usage,
+                    Items = CollectPrescriptionItems(),
+                    TotalPrice = TotalPrice
+                };
+
+                var result = await _saveHandler.SaveAsync(context);
+
+                if (result.IsEmpty)
+                {
                     return true; // 空处方也算保存成功
                 }
 
-                PrescriptionDto? result;
-                if (_prescriptionId.HasValue)
+                if (result.IsSuccess)
                 {
-                    // 更新现有处方
-                    var updateRequest = new PrescriptionUpdateDto
-                    {
-                        DosageCount = DosageCount,
-                        Usage = Usage,
-                        Items = items
-                    };
-                    result = await _medicalCaseRepository.UpdatePrescriptionAsync(_medicalCaseId, updateRequest);
-                }
-                else
-                {
-                    // 创建新处方
-                    // Bug Fix: 添加必填字段PatientId和DoctorId，否则服务端验证会返回400
-                    var createRequest = new PrescriptionCreateDto
-                    {
-                        PatientId = _patientId,
-                        DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
-                        DosageCount = DosageCount,
-                        Usage = Usage,
-                        Items = items
-                    };
-                    result = await _medicalCaseRepository.CreatePrescriptionAsync(_medicalCaseId, createRequest);
-                    if (result != null)
-                    {
-                        _prescriptionId = result.Id;
-                    }
-                }
-
-                if (result != null)
-                {
-                    Logger.LogInformation("处方数据保存成功");
-
+                    _prescriptionId = result.PrescriptionId;
                     // Bug Fix: 紧凑药材列表，将空槽位移到后面
                     CompactHerbItems();
 
-                    // 发布处方完成事件
-                    EventAggregator.GetEvent<PrescriptionCompletedEvent>()
-                        .Publish(new PrescriptionCompletedPayload
+                    // OpenSpec: controlify-workspace - 重置脏数据标志并发布事件
+                    HasUnsavedChanges = false;
+                    EventAggregator.GetEvent<PrescriptionSavedEvent>()
+                        .Publish(new PrescriptionSavedPayload
                         {
-                            PrescriptionId = _prescriptionId ?? Guid.Empty,
-                            TotalItems = items.Count,
-                            TotalAmount = TotalPrice
+                            MedicalCaseId = _medicalCaseId,
+                            PrescriptionId = result.PrescriptionId ?? Guid.Empty,
+                            IsAutoSave = false
                         });
 
                     return true;
                 }
 
-                Logger.LogWarning("处方数据保存失败");
                 return false;
             }
             catch (Exception ex)
@@ -684,82 +664,39 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         public async Task<bool> SaveSilentlyAsync()
         {
-            try
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionSaveHandler
+            var context = new PrescriptionSaveContext
             {
-                // Bug诊断：记录调用信息
-                Logger.LogInformation("[处方诊断] SaveSilentlyAsync被调用，MedicalCaseId: {MedicalCaseId}, HerbItems.Count: {Count}",
-                    _medicalCaseId, HerbItems.Count);
+                MedicalCaseId = _medicalCaseId,
+                PrescriptionId = _prescriptionId,
+                PatientId = _patientId,
+                DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
+                DosageCount = DosageCount,
+                Usage = Usage,
+                Items = CollectPrescriptionItems(),
+                TotalPrice = TotalPrice
+            };
 
-                // 收集药材项
-                var items = CollectPrescriptionItems();
+            var result = await _saveHandler.SaveSilentlyAsync(context);
 
-                Logger.LogInformation("[处方诊断] CollectPrescriptionItems返回: {Count}个有效药材项", items.Count);
-
-                if (!items.Any())
-                {
-                    Logger.LogWarning("[处方诊断] 没有有效药材项，静默保存跳过。HerbItems详情:");
-                    foreach (var h in HerbItems.Take(5))
-                    {
-                        Logger.LogWarning("[处方诊断]   - HerbId={HerbId}, HerbName={HerbName}, Dosage={Dosage}",
-                            h.HerbId, h.HerbName ?? "(null)", h.Dosage);
-                    }
-                    return true; // 空处方也算保存成功
-                }
-
-                PrescriptionDto? result;
-                if (_prescriptionId.HasValue)
-                {
-                    // 更新现有处方
-                    var updateRequest = new PrescriptionUpdateDto
-                    {
-                        DosageCount = DosageCount,
-                        Usage = Usage,
-                        Items = items
-                    };
-                    result = await _medicalCaseRepository.UpdatePrescriptionAsync(_medicalCaseId, updateRequest);
-                }
-                else
-                {
-                    // 创建新处方
-                    // Bug Fix: 添加必填字段PatientId和DoctorId，否则服务端验证会返回400
-                    var createRequest = new PrescriptionCreateDto
-                    {
-                        PatientId = _patientId,
-                        DoctorId = SessionManager?.CurrentUserId ?? Guid.Empty,
-                        DosageCount = DosageCount,
-                        Usage = Usage,
-                        Items = items
-                    };
-                    Logger.LogInformation("[处方诊断] 准备调用CreatePrescriptionAsync，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}, Items: {Count}",
-                        _medicalCaseId, _patientId, items.Count);
-                    result = await _medicalCaseRepository.CreatePrescriptionAsync(_medicalCaseId, createRequest);
-                    Logger.LogInformation("[处方诊断] CreatePrescriptionAsync返回: {Result}", result != null ? $"成功,Id={result.Id}" : "null");
-                    if (result != null)
-                    {
-                        _prescriptionId = result.Id;
-                    }
-                }
-
-                if (result != null)
-                {
-                    Logger.LogInformation("[处方诊断] 处方数据静默保存成功，PrescriptionId: {PrescriptionId}", result.Id);
-
-                    // Bug Fix: 紧凑药材列表，将空槽位移到后面
-                    CompactHerbItems();
-
-                    // 不发布PrescriptionCompletedEvent，因为这是取消流程的保存
-                    return true;
-                }
-
-                Logger.LogWarning("[处方诊断] 处方数据静默保存失败：API返回null");
-                return false;
-            }
-            catch (Exception ex)
+            if (result.IsEmpty)
             {
-                // 静默保存不显示错误，只记录日志
-                Logger.LogWarning(ex, "静默保存处方数据异常（不阻止后续操作）");
-                return false;
+                return true; // 空处方也算保存成功
             }
+
+            if (result.IsSuccess)
+            {
+                _prescriptionId = result.PrescriptionId;
+                // Bug Fix: 紧凑药材列表，将空槽位移到后面
+                CompactHerbItems();
+
+                // OpenSpec: controlify-workspace - 重置脏数据标志
+                HasUnsavedChanges = false;
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -767,24 +704,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private List<PrescriptionItemInputDto> CollectPrescriptionItems()
         {
-            var items = new List<PrescriptionItemInputDto>();
-
-            foreach (var herbItem in HerbItems)
-            {
-                if (herbItem.HerbId != Guid.Empty && herbItem.Dosage > 0)
-                {
-                    items.Add(new PrescriptionItemInputDto
-                    {
-                        HerbId = herbItem.HerbId,
-                        HerbName = herbItem.HerbName,
-                        Quantity = herbItem.Dosage,
-                        Dosage = herbItem.Dosage,
-                        Unit = "g"
-                    });
-                }
-            }
-
-            return items;
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            return _itemHandler.CollectPrescriptionItems(HerbItems);
         }
 
         #endregion
@@ -796,11 +717,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void ExecuteAddRow()
         {
-            // 强制添加4个空槽位（用户主动添加行）
-            for (int i = 0; i < 4; i++)
-            {
-                HerbItems.Add(CreateHerbItem());
-            }
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            _itemHandler.AddNewRow(HerbItems, _allHerbs, OnHerbItemChanged);
             Logger.LogInformation("手动添加新行，当前共{Count}个槽位", HerbItems.Count);
         }
 
@@ -823,11 +741,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         {
             if (item == null) return;
 
-            // 删除指定药材项（与经验方编辑器一致）
-            HerbItems.Remove(item);
-
-            // N+1行原则：确保至少有4个空槽位
-            EnsureMinimumBlankRows();
+            // OpenSpec: cleanup-ui-layer - 委托到PrescriptionItemHandler
+            _itemHandler.DeleteHerbItem(HerbItems, item, _allHerbs, OnHerbItemChanged);
 
             Logger.LogInformation("删除药材: {HerbName}", item.HerbName);
             UpdateItemCount();
@@ -930,58 +845,33 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 更新药材总数
+        /// OpenSpec: cleanup-ui-layer - 委托给Calculator
         /// </summary>
         private void UpdateItemCount()
         {
-            ItemCount = HerbItems.Count(h => h.HerbId != Guid.Empty);
+            ItemCount = _calculator.CalculateItemCount(HerbItems);
         }
 
         /// <summary>
         /// 计算价格（单剂价格 = 所有药材小计之和，总价格 = 单剂价格 × 剂数）
-        /// 这是处方特有的功能，经验方不需要
-        /// Issue: unify-herb-card-control - ItemAmount改为ItemTotal
+        /// OpenSpec: cleanup-ui-layer - 委托给Calculator
         /// </summary>
         private void CalculatePrices()
         {
-            SingleDosagePrice = HerbItems
-                .Where(h => h.HerbId != Guid.Empty)
-                .Sum(h => h.ItemTotal);
-
-            TotalPrice = SingleDosagePrice * DosageCount;
+            var result = _calculator.CalculatePrices(HerbItems, DosageCount);
+            SingleDosagePrice = result.SingleDosagePrice;
+            TotalPrice = result.TotalPrice;
         }
 
         /// <summary>
         /// 检查重复药材
+        /// OpenSpec: cleanup-ui-layer - 委托给Validator
         /// </summary>
         private void CheckDuplicateHerbs()
         {
-            var herbIds = new List<Guid>();
-            var duplicates = new List<string>();
-
-            foreach (var item in HerbItems)
-            {
-                if (item.HerbId != Guid.Empty)
-                {
-                    if (herbIds.Contains(item.HerbId))
-                    {
-                        duplicates.Add(item.HerbName);
-                    }
-                    else
-                    {
-                        herbIds.Add(item.HerbId);
-                    }
-                }
-            }
-
-            if (duplicates.Any())
-            {
-                DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates.Distinct())}";
-                IsDuplicateHerbsWarningVisible = true;
-            }
-            else
-            {
-                IsDuplicateHerbsWarningVisible = false;
-            }
+            var result = _validator.CheckDuplicateHerbs(HerbItems);
+            IsDuplicateHerbsWarningVisible = result.HasDuplicates;
+            DuplicateHerbsWarningText = result.WarningText;
         }
 
         #endregion
@@ -1009,20 +899,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private async Task LoadFormulasAsync()
         {
-            try
-            {
-                var result = await _formulaRepository.GetPagedAsync(page: 1, pageSize: 100);
-                FilteredFormulas.Clear();
-                foreach (var formula in result.Items)
-                {
-                    FilteredFormulas.Add(formula);
-                }
-                Logger.LogInformation("加载验方列表完成，共{Count}个", FilteredFormulas.Count);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载验方列表失败");
-            }
+            await _dataLoader.LoadFormulasAsync(FilteredFormulas);
         }
 
         /// <summary>
@@ -1123,29 +1000,11 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private async Task LoadPrescriptionHistoryAsync()
         {
-            try
-            {
-                if (_patientId == Guid.Empty)
-                {
-                    Logger.LogWarning("PatientId为空，无法加载历史处方");
-                    return;
-                }
-
-                var cases = await _medicalCaseRepository.GetByPatientIdAsync(_patientId);
-                PrescriptionHistory.Clear();
-
-                // 过滤掉当前医案，只显示其他历史医案
-                foreach (var caseItem in cases.Where(c => c.Id != _medicalCaseId).OrderByDescending(c => c.ConsultationDate))
-                {
-                    PrescriptionHistory.Add(caseItem);
-                }
-
-                Logger.LogInformation("加载历史处方完成，共{Count}条", PrescriptionHistory.Count);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载历史处方失败");
-            }
+            await _dataLoader.LoadPrescriptionHistoryAsync(
+                _patientId,
+                _medicalCaseId,
+                PrescriptionHistory,
+                _medicalCaseRepository);
         }
 
         /// <summary>
@@ -1311,54 +1170,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 检查重复药材（过滤掉HerbId为null的药材）
-                var existingHerbIds = HerbItems.Where(h => h.HerbId != Guid.Empty).Select(h => h.HerbId).ToHashSet();
-                var duplicates = herbs
-                    .Where(h => h.HerbId.HasValue && existingHerbIds.Contains(h.HerbId.Value))
-                    .Select(h => h.HerbName)
-                    .ToList();
+                // OpenSpec: cleanup-ui-layer - 委托到PrescriptionImportHandler
+                var importResult = _importHandler.ProcessFormulaImport(formula, herbs, HerbItems, _allHerbs);
 
-                if (duplicates.Any())
+                if (!importResult.IsSuccess)
                 {
-                    DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates)}";
+                    await ShowErrorMessageAsync(importResult.ErrorMessage ?? "导入失败");
+                    return;
+                }
+
+                // 显示重复警告
+                if (importResult.HasDuplicates)
+                {
+                    DuplicateHerbsWarningText = importResult.DuplicateWarningText;
                     IsDuplicateHerbsWarningVisible = true;
                 }
 
-                // 添加药材到当前处方（追加模式）
-                int addedCount = 0;
-                foreach (var herb in herbs)
-                {
-                    // 跳过没有HerbId的药材
-                    if (!herb.HerbId.HasValue)
-                    {
-                        continue;
-                    }
-
-                    // 跳过已存在的药材
-                    if (existingHerbIds.Contains(herb.HerbId.Value))
-                    {
-                        continue;
-                    }
-
-                    // 找一个空槽位或添加新槽位
-                    var emptySlot = HerbItems.FirstOrDefault(h => h.HerbId == Guid.Empty);
-                    if (emptySlot == null)
-                    {
-                        emptySlot = CreateHerbItem();
-                        HerbItems.Add(emptySlot);
-                    }
-
-                    emptySlot.HerbId = herb.HerbId.Value;
-                    emptySlot.HerbName = herb.HerbName ?? string.Empty;
-                    emptySlot.Dosage = herb.Quantity;
-                    // 尝试从药材列表获取单价 (Issue: unify-herb-card-control)
-                    var herbInfo = _allHerbs.FirstOrDefault(h => h.Id == herb.HerbId.Value);
-                    if (herbInfo != null)
-                    {
-                        emptySlot.SetLoadedUnitPrice(herbInfo.Price);
-                    }
-                    addedCount++;
-                }
+                // 添加药材到当前处方
+                var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, importResult.ItemsToAdd, CreateHerbItem);
 
                 // N+1行原则：确保至少有4个空槽位
                 EnsureMinimumBlankRows();
@@ -1367,8 +1196,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 UpdateItemCount();
                 CalculatePrices();
 
-                await ShowSuccessMessageAsync($"已导入验方「{formula.Name}」，添加 {addedCount} 味药材");
-                Logger.LogInformation("验方导入成功: {FormulaName}, 添加{Count}味药材", formula.Name, addedCount);
+                await ShowSuccessMessageAsync($"已导入验方「{importResult.FormulaName}」，添加 {addedCount} 味药材");
+                Logger.LogInformation("验方导入成功: {FormulaName}, 添加{Count}味药材", importResult.FormulaName, addedCount);
             }
             catch (Exception ex)
             {
@@ -1419,44 +1248,24 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return;
                 }
 
-                // 检查重复药材
-                var existingHerbIds = HerbItems.Where(h => h.HerbId != Guid.Empty).Select(h => h.HerbId).ToHashSet();
-                var duplicates = items
-                    .Where(i => existingHerbIds.Contains(i.HerbId))
-                    .Select(i => i.HerbName)
-                    .ToList();
+                // OpenSpec: cleanup-ui-layer - 委托到PrescriptionImportHandler
+                var copyResult = _importHandler.ProcessHistoryCopy(items, HerbItems);
 
-                if (duplicates.Any())
+                if (!copyResult.IsSuccess)
                 {
-                    DuplicateHerbsWarningText = $"发现重复药材：{string.Join("、", duplicates)}";
+                    await ShowErrorMessageAsync(copyResult.ErrorMessage ?? "复制失败");
+                    return;
+                }
+
+                // 显示重复警告
+                if (copyResult.HasDuplicates)
+                {
+                    DuplicateHerbsWarningText = copyResult.DuplicateWarningText;
                     IsDuplicateHerbsWarningVisible = true;
                 }
 
-                // 添加药材到当前处方（追加模式）
-                // Issue: unify-herb-card-control - 使用SetLoadedUnitPrice
-                int addedCount = 0;
-                foreach (var item in items)
-                {
-                    // 跳过已存在的药材
-                    if (existingHerbIds.Contains(item.HerbId))
-                    {
-                        continue;
-                    }
-
-                    // 找一个空槽位或添加新槽位
-                    var emptySlot = HerbItems.FirstOrDefault(h => h.HerbId == Guid.Empty);
-                    if (emptySlot == null)
-                    {
-                        emptySlot = CreateHerbItem();
-                        HerbItems.Add(emptySlot);
-                    }
-
-                    emptySlot.HerbId = item.HerbId;
-                    emptySlot.HerbName = item.HerbName ?? string.Empty;
-                    emptySlot.Dosage = item.Dosage;
-                    emptySlot.SetLoadedUnitPrice(item.UnitPrice);
-                    addedCount++;
-                }
+                // 添加药材到当前处方
+                var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, copyResult.ItemsToAdd, CreateHerbItem);
 
                 // N+1行原则：确保至少有4个空槽位
                 EnsureMinimumBlankRows();
@@ -1477,6 +1286,48 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(false);
             }
+        }
+
+        #endregion
+
+        #region 事件处理（OpenSpec: controlify-workspace）
+
+        /// <summary>
+        /// 响应保存所有请求事件
+        /// </summary>
+        private async void OnSaveAllRequested(Guid medicalCaseId)
+        {
+            if (medicalCaseId != _medicalCaseId) return;
+
+            await SaveSilentlyAsync();
+        }
+
+        /// <summary>
+        /// 通知数据变更
+        /// </summary>
+        private void NotifyDataChanged()
+        {
+            if (!_isInitialized) return;
+
+            if (!HasUnsavedChanges)
+            {
+                HasUnsavedChanges = true;
+
+                EventAggregator.GetEvent<PrescriptionDataChangedEvent>()
+                    .Publish(_medicalCaseId);
+            }
+        }
+
+        #endregion
+
+        #region 清理
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Cleanup()
+        {
+            EventAggregator.GetEvent<SaveAllRequestedEvent>().Unsubscribe(OnSaveAllRequested);
         }
 
         #endregion

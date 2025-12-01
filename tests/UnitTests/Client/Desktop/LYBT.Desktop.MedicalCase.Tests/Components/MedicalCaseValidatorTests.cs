@@ -450,7 +450,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 PatientId = Guid.NewGuid(),
                 DoctorId = Guid.NewGuid(),
                 CaseStatus = (MedicalCaseStatus)CaseStatus.Active,
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -467,7 +466,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 ChiefComplaint = "感冒发热",
                 TCMDiagnosis = "风寒感冒",
                 TreatmentPrinciple = "辛温解表",
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -483,7 +481,6 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 UserId = Guid.NewGuid(),
                 Indication = "风寒感冒",
                 DosageCount = 3,
-                Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
