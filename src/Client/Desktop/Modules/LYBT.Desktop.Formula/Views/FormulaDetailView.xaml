@@ -30,7 +30,7 @@
 
         <!-- 顶部操作栏 -->
         <Grid Grid.Row="0" Margin="40,28,40,0">
-            <Border Background="White"
+            <Border Background="{StaticResource SurfaceBrush}"
                     CornerRadius="8"
                     Padding="24,16">
                 <Grid MinHeight="48">
@@ -45,7 +45,7 @@
                             Content="← 返回"
                             Background="Transparent"
                             BorderThickness="0"
-                            Foreground="#64748B"
+                            Foreground="{StaticResource TextSecondaryBrush}"
                             FontSize="14"
                             Cursor="Hand"
                             Padding="8,4"
@@ -57,7 +57,7 @@
                                FontSize="20"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"
-                               Foreground="#1E293B"
+                               Foreground="{StaticResource TextPrimaryBrush}"
                                Margin="16,0,0,0" />
                 </Grid>
             </Border>
@@ -73,7 +73,7 @@
 
                 <!-- 区块1: 字段区 -->
                 <Border Grid.Row="0"
-                        Background="White"
+                        Background="{StaticResource SurfaceBrush}"
                         CornerRadius="8"
                         Padding="24"
                         Margin="0,0,0,16">
@@ -181,7 +181,7 @@
                         <TextBlock Grid.Row="5" Grid.Column="1"
                                    Text="{Binding Formula.CreatedAt, Mode=OneWay, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
-                                   Foreground="#6B7280"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,8,12,8" />
 
@@ -193,7 +193,7 @@
                         <TextBlock Grid.Row="5" Grid.Column="3"
                                    Text="{Binding Formula.UpdatedAt, Mode=OneWay, StringFormat='yyyy-MM-dd HH:mm'}"
                                    FontSize="14"
-                                   Foreground="#6B7280"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,8" />
                     </Grid>
@@ -201,7 +201,7 @@
 
                 <!-- 区块2: 药材区 -->
                 <Border Grid.Row="1"
-                        Background="White"
+                        Background="{StaticResource SurfaceBrush}"
                         CornerRadius="8"
                         Padding="24">
                     <Grid>
@@ -215,7 +215,7 @@
                                    Text="{Binding HerbCount, Mode=OneWay, StringFormat='药材组成 (共{0}味)'}"
                                    FontSize="16"
                                    FontWeight="SemiBold"
-                                   Foreground="#1E293B"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
                                    Margin="0,0,0,16" />
 
                         <!-- 药材列表 -->
@@ -245,9 +245,9 @@
 
         <!-- 底部按钮栏 -->
         <Border Grid.Row="2"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 BorderThickness="0,1,0,0"
-                BorderBrush="#E5E7EB"
+                BorderBrush="{StaticResource BorderBrush}"
                 Padding="40,16">
             <Grid>
                 <StackPanel Orientation="Horizontal"
@@ -256,8 +256,8 @@
                     <Button Command="{Binding CancelEditCommand}"
                             Content="取消"
                             Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Background="#F3F4F6"
-                            Foreground="#374151"
+                            Background="{StaticResource BackgroundBrush}"
+                            Foreground="{StaticResource TextPrimaryBrush}"
                             FontSize="14"
                             FontWeight="Medium"
                             Cursor="Hand"
@@ -278,7 +278,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#E5E7EB" />
+                                                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -292,8 +292,8 @@
                     <Button Command="{Binding SaveCommand}"
                             Content="保存修改"
                             Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Background="#3B82F6"
-                            Foreground="White"
+                            Background="{StaticResource PrimaryBrush}"
+                            Foreground="{StaticResource SurfaceBrush}"
                             FontSize="14"
                             FontWeight="Medium"
                             Cursor="Hand"
@@ -313,10 +313,10 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#2563EB" />
+                                                    <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}" />
                                                 </Trigger>
                                                 <Trigger Property="IsEnabled" Value="False">
-                                                    <Setter Property="Background" Value="#94A3B8" />
+                                                    <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -332,13 +332,13 @@
         <!-- 加载遮罩 -->
         <Grid Grid.Row="0" Grid.RowSpan="3"
               Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-              Background="#80000000">
+              Background="{StaticResource OverlayBrush}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar Width="50" Height="50"
                              IsIndeterminate="True"
                              Margin="0,0,0,16" />
                 <TextBlock Text="正在加载验方信息..."
-                           Foreground="White"
+                           Foreground="{StaticResource SurfaceBrush}"
                            FontSize="16"
                            HorizontalAlignment="Center" />
             </StackPanel>

@@ -7,17 +7,18 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Background="#F9F9F9">
+        Background="{StaticResource BackgroundBrush}">
 
     <Window.DataContext>
         <viewmodels:UnfinishedCaseDialogViewModel/>
     </Window.DataContext>
 
+    <!-- OpenSpec: cleanup-ui-layer Issue #2251 - 使用全局样式系统 -->
     <Window.Resources>
         <!-- 主按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2E86AB"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -28,8 +29,8 @@
 
         <!-- 次要按钮样式 -->
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#95A5A6"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -40,8 +41,8 @@
 
         <!-- 取消按钮样式 -->
         <Style x:Key="CancelButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#BDC3C7"/>
-            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Background" Value="{StaticResource DisabledBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -68,22 +69,22 @@
                       FontSize="16"
                       TextWrapping="Wrap"
                       VerticalAlignment="Center"
-                      Foreground="#2C3E50"/>
+                      Foreground="{StaticResource TextPrimaryBrush}"/>
         </StackPanel>
 
         <!-- 选项说明区域 -->
         <Border Grid.Row="1"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 Padding="15"
                 CornerRadius="5"
-                BorderBrush="#E0E0E0"
+                BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="1"
                 Margin="0,0,0,20">
             <StackPanel>
                 <!-- 选项1 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="🔄" FontSize="16" Margin="0,0,10,0"/>
-                    <TextBlock FontSize="14" Foreground="#2C3E50">
+                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
                         <Run Text="继续看诊：" FontWeight="Bold"/>
                         <Run Text="恢复之前的医案，继续编辑"/>
                     </TextBlock>
@@ -92,7 +93,7 @@
                 <!-- 选项2 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="➕" FontSize="16" Margin="0,0,10,0"/>
-                    <TextBlock FontSize="14" Foreground="#2C3E50">
+                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
                         <Run Text="新建医案：" FontWeight="Bold"/>
                         <Run Text="关闭旧医案后创建新的"/>
                     </TextBlock>
@@ -101,7 +102,7 @@
                 <!-- 选项3 -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="🗑️" FontSize="16" Margin="0,0,10,0"/>
-                    <TextBlock FontSize="14" Foreground="#2C3E50">
+                    <TextBlock FontSize="14" Foreground="{StaticResource TextPrimaryBrush}">
                         <Run Text="仅关闭：" FontWeight="Bold"/>
                         <Run Text="关闭旧医案（从待看诊列表移除）"/>
                     </TextBlock>
@@ -110,7 +111,7 @@
                 <!-- 选项4 -->
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="" FontSize="16" Margin="0,0,10,0"/>
-                    <TextBlock FontSize="14" Foreground="#7F8C8D">
+                    <TextBlock FontSize="14" Foreground="{StaticResource TextSecondaryBrush}">
                         <Run Text="取消：" FontWeight="Bold"/>
                         <Run Text="什么都不做，关闭对话框"/>
                     </TextBlock>

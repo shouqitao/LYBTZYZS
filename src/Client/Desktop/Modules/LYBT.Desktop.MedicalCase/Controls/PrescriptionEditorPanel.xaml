@@ -18,13 +18,7 @@
     - 底部价格信息区使用卡片样式
     -->
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Presentation;component/Theming/MedicalCaseStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!-- OpenSpec: cleanup-ui-layer - 使用全局样式系统，移除MedicalCaseStyles.xaml引用 -->
 
     <Grid>
         <Grid.RowDefinitions>
@@ -106,8 +100,8 @@
 
         <!-- Row 1: 重复药材警告 -->
         <Border Grid.Row="1"
-                Background="#FFF3E0"
-                BorderBrush="#FFB74D"
+                Background="{StaticResource WarningLightBrush}"
+                BorderBrush="{StaticResource WarningBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="8,6"
@@ -117,7 +111,7 @@
                 <TextBlock Text="重复药材提示："
                            FontWeight="SemiBold"
                            FontSize="12"
-                           Foreground="#F57C00"
+                           Foreground="{StaticResource WarningDarkBrush}"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding DuplicateHerbsWarningText}"
                            FontSize="12"
@@ -130,7 +124,7 @@
 
         <!-- Row 2: 处方信息（价格计算卡片） -->
         <Border Grid.Row="2"
-                Background="#F8F9FA"
+                Background="{StaticResource BackgroundBrush}"
                 CornerRadius="4"
                 Padding="12,8"
                 Margin="12,8,12,12">
@@ -184,7 +178,7 @@
                         <Run Text="{Binding SingleDosagePrice, Mode=OneWay, StringFormat=F2}"
                              FontWeight="Bold"
                              FontSize="15"
-                             Foreground="#4CAF50"/>
+                             Foreground="{StaticResource SuccessBrush}"/>
                     </TextBlock>
                 </StackPanel>
 

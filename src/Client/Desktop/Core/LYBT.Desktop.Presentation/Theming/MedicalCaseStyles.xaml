@@ -2,85 +2,19 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
     医案模块共享样式资源字典
-    OpenSpec: refactor-medicalcase-ui
-    设计文档: openspec/changes/refactor-medicalcase-ui/design.md
+    OpenSpec: refactor-medicalcase-ui, cleanup-ui-layer
 
-    目标分辨率: 1920x1080 (Full HD)
-    最小支持: 1366x768
+    设计规范:
+    - 颜色/间距: 继承自 Shell/Styles/Colors.xaml (全局定义)
+    - 本文件仅定义医案模块特有的控件样式
+    - 目标分辨率: 1920x1080 (Full HD)
+    - 最小支持: 1366x768
+
+    语义说明:
+    - PrimaryButtonStyle: 绿色，用于完成/确认等正向操作
+    - SecondaryButtonStyle: 蓝色，用于打印/导出等辅助操作
+    - DangerButtonStyle: 红色，用于取消/删除等危险操作
     -->
-
-    <!-- ==================== 颜色定义 ==================== -->
-
-    <!-- 主色调 -->
-    <Color x:Key="PrimaryColor">#2196F3</Color>
-    <Color x:Key="PrimaryDarkColor">#1976D2</Color>
-    <Color x:Key="PrimaryLightColor">#BBDEFB</Color>
-
-    <!-- 功能色 -->
-    <Color x:Key="SuccessColor">#4CAF50</Color>
-    <Color x:Key="SuccessDarkColor">#388E3C</Color>
-    <Color x:Key="WarningColor">#FF9800</Color>
-    <Color x:Key="WarningDarkColor">#F57C00</Color>
-    <Color x:Key="DangerColor">#F44336</Color>
-    <Color x:Key="DangerDarkColor">#D32F2F</Color>
-
-    <!-- 中性色 -->
-    <Color x:Key="BackgroundColor">#F5F5F5</Color>
-    <Color x:Key="SurfaceColor">#FFFFFF</Color>
-    <Color x:Key="BorderColor">#E0E0E0</Color>
-    <Color x:Key="DividerColor">#EEEEEE</Color>
-
-    <!-- 文本色 -->
-    <Color x:Key="TextPrimaryColor">#333333</Color>
-    <Color x:Key="TextSecondaryColor">#666666</Color>
-    <Color x:Key="TextHintColor">#999999</Color>
-    <Color x:Key="TextDisabledColor">#BDBDBD</Color>
-
-    <!-- 状态色 -->
-    <Color x:Key="StatusCompleteColor">#4CAF50</Color>
-    <Color x:Key="StatusPendingColor">#9E9E9E</Color>
-    <Color x:Key="StatusInProgressColor">#FFC107</Color>
-
-    <!-- ==================== SolidColorBrush ==================== -->
-
-    <!-- 主色调画刷 -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
-    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}" />
-    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}" />
-
-    <!-- 功能色画刷 -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
-    <SolidColorBrush x:Key="SuccessDarkBrush" Color="{StaticResource SuccessDarkColor}" />
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
-    <SolidColorBrush x:Key="WarningDarkBrush" Color="{StaticResource WarningDarkColor}" />
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
-    <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource DangerDarkColor}" />
-
-    <!-- 中性色画刷 -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
-    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
-
-    <!-- 文本色画刷 -->
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
-    <SolidColorBrush x:Key="TextHintBrush" Color="{StaticResource TextHintColor}" />
-    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" />
-
-    <!-- 状态色画刷 -->
-    <SolidColorBrush x:Key="StatusCompleteBrush" Color="{StaticResource StatusCompleteColor}" />
-    <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
-    <SolidColorBrush x:Key="StatusInProgressBrush" Color="{StaticResource StatusInProgressColor}" />
-
-    <!-- ==================== 间距常量 ==================== -->
-
-    <!-- 4px网格系统 -->
-    <Thickness x:Key="SpacingXS">4</Thickness>
-    <Thickness x:Key="SpacingSM">8</Thickness>
-    <Thickness x:Key="SpacingMD">16</Thickness>
-    <Thickness x:Key="SpacingLG">24</Thickness>
-    <Thickness x:Key="SpacingXL">32</Thickness>
 
     <!-- ==================== 按钮样式 ==================== -->
 

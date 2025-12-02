@@ -12,10 +12,11 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
 
+        <!-- OpenSpec: cleanup-ui-layer Issue #2251 - 使用全局样式系统 -->
         <!-- 按钮样式 -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2E86AB"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -23,8 +24,8 @@
         </Style>
 
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#95A5A6"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
@@ -32,7 +33,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="#F9F9F9">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>   <!-- 顶部导航栏 -->
             <RowDefinition Height="*"/>    <!-- 主内容区（三区域布局） -->
@@ -40,10 +41,10 @@
         </Grid.RowDefinitions>
 
         <!-- 顶部导航栏 -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <Grid Margin="20,0">
                 <TextBlock Text="患者选择" FontSize="20" FontWeight="Bold"
-                          VerticalAlignment="Center" Foreground="#2C3E50"/>
+                          VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
                 <Button Content="返回主页"
                        Command="{Binding BackToHomeCommand}"
                        HorizontalAlignment="Right"
@@ -68,8 +69,8 @@
                 </Grid.RowDefinitions>
 
                 <!-- 患者信息详情模块 -->
-                <Border Grid.Row="0" Background="White" Padding="15" CornerRadius="5"
-                       BorderBrush="#E0E0E0" BorderThickness="1">
+                <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" Padding="15" CornerRadius="5"
+                       BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Grid>
                         <!-- 有患者时显示患者信息 -->
                         <Grid>
@@ -91,25 +92,25 @@
 
                             <!-- 标题 -->
                             <TextBlock Grid.Row="0" Text="患者信息" FontWeight="Bold" FontSize="14"
-                                      Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,10"/>
 
                             <!-- 患者详细信息 -->
                             <StackPanel Grid.Row="1">
                                 <!-- 姓名 -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="姓　　名：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock Text="姓　　名：" Width="80" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                                     <TextBlock Text="{Binding CurrentPatient.Name}" FontWeight="Bold" FontSize="12"/>
                                 </StackPanel>
 
                                 <!-- 手机号（脱敏） -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="手　机　号：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock Text="手　机　号：" Width="80" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                                     <TextBlock Text="{Binding CurrentPatient.PhoneNumber}" FontSize="12"/>
                                 </StackPanel>
 
                                 <!-- 年龄 -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="年　　龄：" Width="80" Foreground="#7F8C8D" FontSize="12"/>
+                                    <TextBlock Text="年　　龄：" Width="80" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                                     <TextBlock FontSize="12">
                                         <Run Text="{Binding CurrentPatient.Age, Mode=OneWay}"/>
                                         <Run Text="岁"/>
@@ -118,21 +119,21 @@
 
                                 <!-- 地址 -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Text="地　　址：" Width="80" Foreground="#7F8C8D" FontSize="12" VerticalAlignment="Top"/>
+                                    <TextBlock Text="地　　址：" Width="80" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Top"/>
                                     <TextBlock Text="{Binding CurrentPatient.Address}" FontSize="12" TextWrapping="Wrap" MaxWidth="180"/>
                                 </StackPanel>
 
                                 <!-- 过敏史 -->
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="过　敏　史：" Width="80" Foreground="#7F8C8D" FontSize="12" VerticalAlignment="Top"/>
+                                    <TextBlock Text="过　敏　史：" Width="80" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Top"/>
                                     <TextBlock Text="{Binding CurrentPatient.AllergyHistory, TargetNullValue='无'}"
-                                              FontSize="12" TextWrapping="Wrap" MaxWidth="180" Foreground="#E74C3C"/>
+                                              FontSize="12" TextWrapping="Wrap" MaxWidth="180" Foreground="{StaticResource ErrorBrush}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
 
                         <!-- 未选择患者时的提示 -->
-                        <TextBlock Text="请从列表中选择患者" FontSize="13" Foreground="#95A5A6"
+                        <TextBlock Text="请从列表中选择患者" FontSize="13" Foreground="{StaticResource TextHintBrush}"
                                   HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -149,8 +150,8 @@
                 </Border>
 
                 <!-- 待看诊队列 -->
-                <Border Grid.Row="2" Background="White" Padding="15" CornerRadius="5"
-                       BorderBrush="#E0E0E0" BorderThickness="1">
+                <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" Padding="15" CornerRadius="5"
+                       BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -165,7 +166,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Grid.Column="0" Text="待看诊队列" FontWeight="Bold" FontSize="14"
-                                      Foreground="#2C3E50" VerticalAlignment="Center"/>
+                                      Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
 
                             <!-- Epic #2210 Task 3.2.2: FR-006 手动刷新队列 -->
                             <Button Grid.Column="1" Content="🔄" ToolTip="刷新待诊队列"
@@ -222,10 +223,10 @@
                                     <Setter Property="BorderThickness" Value="0"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                            <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
@@ -243,19 +244,19 @@
                             
                             <!-- 主标题 -->
                             <TextBlock Text="暂无待诊患者" FontSize="16" FontWeight="Bold"
-                                      Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                            
+                                      Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
                             <!-- 副标题 -->
                             <TextBlock Text="从左侧选择患者或等待新的挂号" FontSize="12"
-                                      Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+                                      Foreground="{StaticResource TextHintBrush}" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>
             </Grid>
 
             <!-- 右侧：全部患者列表 -->
-            <Border Grid.Column="2" Background="White" Padding="15" CornerRadius="5"
-                   BorderBrush="#E0E0E0" BorderThickness="1">
+            <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" Padding="15" CornerRadius="5"
+                   BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>  <!-- 标题 -->
@@ -266,7 +267,7 @@
 
                     <!-- 标题 -->
                     <TextBlock Grid.Row="0" Text="全部患者" FontWeight="Bold" FontSize="16"
-                              Foreground="#2C3E50" Margin="0,0,0,15"/>
+                              Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,15"/>
 
                     <!-- 搜索框和按钮区 -->
                     <Grid Grid.Row="1" Margin="0,0,0,15">
@@ -281,19 +282,19 @@
                                 Height="35"
                                 Padding="10,0"
                                 VerticalContentAlignment="Center"
-                                BorderBrush="#BDC3C7"
+                                BorderBrush="{StaticResource DisabledBrush}"
                                 BorderThickness="1">
                             <TextBox.Style>
                                 <Style TargetType="TextBox">
-                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
                                     <Style.Triggers>
                                         <Trigger Property="Text" Value="">
                                             <Setter Property="Background">
                                                 <Setter.Value>
                                                     <VisualBrush Stretch="None" AlignmentX="Left">
                                                         <VisualBrush.Visual>
-                                                            <TextBlock Text=" 输入姓名/手机号/拼音码搜索（实时）" 
-                                                                      Foreground="#BDC3C7" 
+                                                            <TextBlock Text=" 输入姓名/手机号/拼音码搜索（实时）"
+                                                                      Foreground="{StaticResource DisabledBrush}"
                                                                       FontSize="12"
                                                                       Margin="10,0,0,0"/>
                                                         </VisualBrush.Visual>
@@ -326,7 +327,7 @@
                              CanUserResizeRows="False"
                              HeadersVisibility="Column"
                              GridLinesVisibility="Horizontal"
-                             BorderBrush="#E0E0E0"
+                             BorderBrush="{StaticResource BorderBrush}"
                              BorderThickness="1">
 
                         <!-- 双击事件：进入看诊 -->
@@ -343,7 +344,7 @@
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="#2E86AB"/>
+                                        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -383,10 +384,10 @@
                                 <Setter Property="Height" Value="40"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                        <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -403,7 +404,7 @@
                         <!-- 分页信息 -->
                         <TextBlock Grid.Column="0"
                                   VerticalAlignment="Center"
-                                  Foreground="#7F8C8D" FontSize="12">
+                                  Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
                             <Run Text="共 "/>
                             <Run Text="{Binding TotalCount}" FontWeight="Bold"/>
                             <Run Text=" 条记录，每页 "/>
@@ -425,12 +426,12 @@
 
                             <TextBlock Text="/"
                                       VerticalAlignment="Center"
-                                      Foreground="#BDC3C7"
+                                      Foreground="{StaticResource DisabledBrush}"
                                       Margin="5,0"/>
 
                             <TextBlock Text="{Binding TotalPages}"
                                       VerticalAlignment="Center"
-                                      Foreground="#7F8C8D"
+                                      Foreground="{StaticResource TextSecondaryBrush}"
                                       Margin="5,0,10,0"/>
 
                             <Button Content="下一页"
@@ -444,8 +445,8 @@
         </Grid>
 
         <!-- 底部操作栏 -->
-        <Border Grid.Row="2" Background="White" Padding="20"
-               BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" Padding="20"
+               BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>    <!-- StatusBar -->
@@ -461,11 +462,11 @@
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <!-- 默认黑色 -->
-                            <Setter Property="Foreground" Value="#2C3E50"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                             <!-- 错误消息时红色 -->
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding StatusBarIsError}" Value="True">
-                                    <Setter Property="Foreground" Value="#E74C3C"/>
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

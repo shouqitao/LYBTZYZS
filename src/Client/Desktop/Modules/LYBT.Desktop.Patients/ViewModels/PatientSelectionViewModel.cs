@@ -54,6 +54,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
         private readonly PendingQueueManager _pendingQueueManager;
 
+        // OpenSpec: cleanup-ui-layer Phase 1.2 - 医案启动协调器
+        private readonly MedicalCaseStartCoordinator _medicalCaseStartCoordinator;
+
         #endregion
 
         #region 流程上下文属性
@@ -316,6 +319,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             PatientSearchManager searchManager, // Issue #1790: 注入搜索管理器
             UnfinishedCaseHandler unfinishedCaseHandler, // Issue #1790: 注入未完成医案处理器
             PendingQueueManager pendingQueueManager, // Issue #1790: 注入待诊队列管理器
+            MedicalCaseStartCoordinator medicalCaseStartCoordinator, // OpenSpec: cleanup-ui-layer Phase 1.2
             IDialogService dialogService,
             IMedicalCaseApi medicalCaseApi,
             IEventAggregator eventAggregator,
@@ -334,6 +338,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             _searchManager = searchManager ?? throw new ArgumentNullException(nameof(searchManager));
             _unfinishedCaseHandler = unfinishedCaseHandler ?? throw new ArgumentNullException(nameof(unfinishedCaseHandler));
             _pendingQueueManager = pendingQueueManager ?? throw new ArgumentNullException(nameof(pendingQueueManager));
+            // OpenSpec: cleanup-ui-layer Phase 1.2
+            _medicalCaseStartCoordinator = medicalCaseStartCoordinator ?? throw new ArgumentNullException(nameof(medicalCaseStartCoordinator));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _medicalCaseApi = medicalCaseApi ?? throw new ArgumentNullException(nameof(medicalCaseApi));
 
@@ -643,12 +649,9 @@ namespace LYBT.Desktop.Patients.ViewModels
         }
 
         /// <summary>
-        /// 开始诊断（替代原有的SelectPatientCommand）
-        /// Epic #1583: 统一的开始诊断入口，基于CurrentPatient
-        /// </summary>
-        /// <summary>
-        /// Phase 2: 智能路由（检查未完成医案 + 三选一对话框）
-        /// Issue #1794: 优化方法长度（65→35行），提取未完成医案处理逻辑
+        /// 开始看诊（替代原有的SelectPatientCommand）
+        /// Epic #1583: 统一的开始看诊入口，基于CurrentPatient
+        /// OpenSpec: cleanup-ui-layer Phase 1.2 - 委托给MedicalCaseStartCoordinator
         /// </summary>
         private async void ExecuteStartConsultation()
         {
@@ -662,30 +665,22 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 SetIsBusy(true, "正在检查患者医案...");
 
-                Logger.LogInformation("开始诊断，患者：{PatientName}（ID: {PatientId}）",
+                Logger.LogInformation("开始看诊，患者：{PatientName}（ID: {PatientId}）",
                     CurrentPatient.Name, CurrentPatient.Id);
 
-                // Phase 2: 智能路由逻辑
-                // OpenSpec: multi-doctor-unfinished-case - 检查所有医生的未完成医案
-                var unfinishedCase = await CheckUnfinishedMedicalCaseAsync(CurrentPatient.Id);
+                // OpenSpec: cleanup-ui-layer Phase 1.2 - 委托给Coordinator检查未完成医案
+                var unfinishedCase = await _medicalCaseStartCoordinator.CheckUnfinishedCaseAsync(CurrentPatient.Id);
 
                 if (unfinishedCase != null)
                 {
-                    // OpenSpec: multi-doctor-unfinished-case - 检测是否是其他医生的挂起医案
-                    var currentDoctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-                    var isOtherDoctorCase = unfinishedCase.DoctorId != Guid.Empty &&
-                                            unfinishedCase.DoctorId != currentDoctorId;
-
-                    if (isOtherDoctorCase)
+                    // 检查是否是其他医生的挂起医案
+                    if (_medicalCaseStartCoordinator.IsOtherDoctorCase(unfinishedCase))
                     {
-                        // 其他医生的挂起医案，只显示提示，不提供操作选项
-                        var doctorName = !string.IsNullOrEmpty(unfinishedCase.DoctorName)
-                            ? unfinishedCase.DoctorName
-                            : "其他医生";
+                        var doctorName = _medicalCaseStartCoordinator.GetOtherDoctorName(unfinishedCase);
                         Logger.LogInformation("检测到患者在其他医生处有挂起医案: DoctorId={DoctorId}, DoctorName={DoctorName}",
                             unfinishedCase.DoctorId, doctorName);
 
-                        SetIsBusy(false); // 对话框前关闭繁忙状态
+                        SetIsBusy(false);
                         await ShowOtherDoctorCaseMessageAsync(CurrentPatient.Name, doctorName);
                         return;
                     }
@@ -700,8 +695,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "开始诊断失败");
-                await ShowErrorMessageAsync($"开始诊断失败：{ex.Message}");
+                Logger.LogError(ex, "开始看诊失败");
+                await ShowErrorMessageAsync($"开始看诊失败：{ex.Message}");
             }
             finally
             {
@@ -712,6 +707,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// <summary>
         /// 处理有未完成医案的情况
         /// Issue #1794: 从ExecuteStartConsultation提取
+        /// OpenSpec: cleanup-ui-layer Phase 1.2 - 委托给MedicalCaseStartCoordinator
         /// </summary>
         private async Task HandleUnfinishedCaseAsync(Guid unfinishedCaseId)
         {
@@ -719,27 +715,27 @@ namespace LYBT.Desktop.Patients.ViewModels
 
             var choice = await ShowUnfinishedCaseDialogAsync(CurrentPatient!.Name, unfinishedCaseId);
 
-            switch (choice)
+            if (choice == 0)
             {
-                case 1: // 继续看诊
-                    await ContinueConsultationAsync(CurrentPatient, unfinishedCaseId);
-                    break;
-
-                case 2: // 新建医案（先关闭旧的）
-                    SetIsBusy(true, "正在关闭旧医案...");
-                    await CreateNewCaseAfterClosingOldAsync(CurrentPatient, unfinishedCaseId);
-                    break;
-
-                case 3: // 仅关闭旧医案（不创建新医案）
-                    SetIsBusy(true, "正在关闭医案...");
-                    await CloseOldCaseOnlyAsync(CurrentPatient, unfinishedCaseId);
-                    break;
-
-                case 0: // 取消/关闭窗口
-                default:
-                    Logger.LogInformation("用户取消操作");
-                    break;
+                Logger.LogInformation("用户取消操作");
+                return;
             }
+
+            // 设置忙状态
+            if (choice == 2 || choice == 3)
+            {
+                SetIsBusy(true, choice == 2 ? "正在关闭旧医案..." : "正在关闭医案...");
+            }
+
+            // OpenSpec: cleanup-ui-layer Phase 1.2 - 委托给Coordinator处理用户选择
+            var result = await _medicalCaseStartCoordinator.HandleUserChoiceAsync(
+                choice,
+                CurrentPatient,
+                unfinishedCaseId,
+                LoadPendingCasesAsync); // 传递刷新队列回调
+
+            // 处理结果
+            await HandleStartResultAsync(result);
         }
 
         /// <summary>
@@ -748,8 +744,44 @@ namespace LYBT.Desktop.Patients.ViewModels
         /// </summary>
         private void HandleNoUnfinishedCase()
         {
-            Logger.LogInformation("患者无未完成医案，直接开始诊断");
+            Logger.LogInformation("患者无未完成医案，直接开始看诊");
             PublishPatientSelectedEvent(CurrentPatient!);
+        }
+
+        /// <summary>
+        /// 处理医案启动结果
+        /// OpenSpec: cleanup-ui-layer Phase 1.2 - 统一处理Coordinator返回的结果
+        /// </summary>
+        private async Task HandleStartResultAsync(MedicalCaseStartCoordinator.StartResultData result)
+        {
+            switch (result.Result)
+            {
+                case MedicalCaseStartCoordinator.StartResult.ContinueExisting:
+                    // 继续现有医案 - 发布事件并导航
+                    PublishPatientSelectedEvent(CurrentPatient!, result.ExistingMedicalCaseId);
+                    break;
+
+                case MedicalCaseStartCoordinator.StartResult.CreateNew:
+                    // 创建新医案 - 发布事件（不带医案ID，MedicalCaseFlowViewModel将创建新医案）
+                    PublishPatientSelectedEvent(CurrentPatient!);
+                    break;
+
+                case MedicalCaseStartCoordinator.StartResult.CloseOnly:
+                    // 仅关闭 - 队列已在Coordinator中刷新，无需额外操作
+                    Logger.LogInformation("旧医案已关闭，待诊队列已刷新");
+                    break;
+
+                case MedicalCaseStartCoordinator.StartResult.Error:
+                    // 错误 - 显示错误消息
+                    await ShowErrorMessageAsync(result.ErrorMessage ?? "操作失败");
+                    break;
+
+                case MedicalCaseStartCoordinator.StartResult.Cancelled:
+                case MedicalCaseStartCoordinator.StartResult.BlockedByOtherDoctor:
+                default:
+                    // 取消或阻塞 - 无需操作
+                    break;
+            }
         }
 
         private bool CanExecuteStartConsultation()
@@ -760,31 +792,6 @@ namespace LYBT.Desktop.Patients.ViewModels
         #endregion
 
         #region Phase 2: 智能路由方法
-
-        /// <summary>
-        /// Phase 2: 检查患者是否有未完成医案（缓存优先策略）
-        /// Issue #1790: 委托给UnfinishedCaseHandler
-        /// </summary>
-        /// <param name="patientId">患者ID</param>
-        /// <returns>未完成的医案，如果没有则返回null</returns>
-        private async Task<MedicalCaseDto?> CheckUnfinishedMedicalCaseAsync(Guid patientId)
-        {
-            // Epic #2210 Task 3.1.4: 从SessionManager提取当前医生ID
-            var doctorId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-
-            // 诊断日志：记录SessionManager状态和doctorId
-            Logger.LogInformation("[诊断] 检查未完成医案 - PatientId: {PatientId}, SessionManager!=null: {HasSession}, CurrentUser!=null: {HasUser}, DoctorId: {DoctorId}",
-                patientId, SessionManager != null, SessionManager?.CurrentUser != null, doctorId);
-
-            // Issue #1790: 委托给UnfinishedCaseHandler处理
-            var result = await _unfinishedCaseHandler.CheckUnfinishedMedicalCaseAsync(patientId, doctorId);
-
-            // 诊断日志：记录返回结果
-            Logger.LogInformation("[诊断] CheckUnfinishedMedicalCaseAsync返回结果: {HasResult}, MedicalCaseId: {CaseId}",
-                result != null, result?.Id);
-
-            return result;
-        }
 
         /// <summary>
         /// Phase 2: 显示未完成医案对话框（三选一）
@@ -849,100 +856,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        /// <summary>
-        /// Phase 2: 继续看诊（直接发布患者选择事件）
-        /// Issue #1597: 传递现有MedicalCaseId
-        /// </summary>
-        private async Task ContinueConsultationAsync(PatientDto patient, Guid medicalCaseId)
-        {
-            try
-            {
-                Logger.LogInformation("用户选择继续看诊，患者：{PatientName}，MedicalCaseId: {MedicalCaseId}",
-                    patient.Name, medicalCaseId);
-
-                // 直接发布患者选择事件，传递现有MedicalCaseId
-                PublishPatientSelectedEvent(patient, medicalCaseId);
-
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "继续看诊失败");
-            }
-        }
-
-        /// <summary>
-        /// Phase 2: 新建医案（关闭旧医案后发布事件）
-        /// </summary>
-        private async Task CreateNewCaseAfterClosingOldAsync(PatientDto patient, Guid oldMedicalCaseId)
-        {
-            try
-            {
-                Logger.LogInformation("用户选择新建医案，先关闭旧医案：OldMedicalCaseId={OldMedicalCaseId}",
-                    oldMedicalCaseId);
-
-                // Issue #1790: 委托给UnfinishedCaseHandler处理关闭逻辑
-                var closed = await _unfinishedCaseHandler.CloseAndCreateNewCaseAsync(patient.Id, oldMedicalCaseId);
-
-                if (closed)
-                {
-                    Logger.LogInformation("旧医案已关闭，缓存已清理");
-
-                    // 3. 发布患者选择事件（MedicalCaseFlowViewModel将创建新医案）
-                    PublishPatientSelectedEvent(patient);
-                }
-                else
-                {
-                    Logger.LogWarning("关闭旧医案失败，取消操作");
-                    await ShowErrorMessageAsync("关闭旧医案失败，请稍后重试");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "新建医案失败");
-                await ShowErrorMessageAsync($"新建医案失败：{ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Phase 2: 仅关闭旧医案（不创建新医案）
-        /// 修复：添加"仅关闭"选项支持
-        /// </summary>
-        private async Task CloseOldCaseOnlyAsync(PatientDto patient, Guid oldMedicalCaseId)
-        {
-            try
-            {
-                Logger.LogInformation("用户选择仅关闭医案：OldMedicalCaseId={OldMedicalCaseId}",
-                    oldMedicalCaseId);
-
-                // Issue #1790: 委托给UnfinishedCaseHandler处理关闭逻辑
-                var closed = await _unfinishedCaseHandler.CloseOnlyAsync(patient.Id, oldMedicalCaseId);
-
-                if (closed)
-                {
-                    Logger.LogInformation("旧医案已关闭，缓存已清理");
-
-                    // 刷新待看诊列表（移除已关闭的医案）
-                    await LoadPendingCasesAsync();
-
-                    Logger.LogInformation("待看诊列表已刷新");
-                }
-                else
-                {
-                    Logger.LogWarning("关闭医案失败");
-                    await ShowErrorMessageAsync("关闭医案失败，请稍后重试");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "关闭医案失败");
-                await ShowErrorMessageAsync($"关闭医案失败：{ex.Message}");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
+        // OpenSpec: cleanup-ui-layer Phase 1.2
+        // 以下方法已委托给MedicalCaseStartCoordinator处理：
+        // - ContinueConsultationAsync → _medicalCaseStartCoordinator.ContinueExistingCaseAsync
+        // - CreateNewCaseAfterClosingOldAsync → _medicalCaseStartCoordinator.CloseAndCreateNewAsync
+        // - CloseOldCaseOnlyAsync → _medicalCaseStartCoordinator.CloseOnlyAsync
 
         #endregion
 

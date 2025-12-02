@@ -401,6 +401,21 @@ ViewModel MUST 继承适当的基类。
 
 ## Implementation Notes
 
+### ViewModelBase继承链结构
+
+```
+BindableBase (Prism)
+    └── ViewModelBase (核心状态、错误处理、IDisposable)
+            └── UnifiedViewModelBase (导航、消息展示、验证增强)
+                    └── UnifiedListViewModelBase<T> (列表管理、分页、CRUD)
+
+BindableBase (Prism)
+    └── HerbItemViewModelBase (药材项专用，独立分支)
+```
+
+**继承深度**: 4层 (3层在项目控制下)
+**设计决策**: 保持继承模式，不提取为组合 (评估于2025-12-02，ROI过低)
+
 ### Component目录结构
 ```
 LYBT.Desktop.{Module}/

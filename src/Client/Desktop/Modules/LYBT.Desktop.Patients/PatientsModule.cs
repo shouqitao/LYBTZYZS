@@ -45,6 +45,9 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<UnfinishedCaseHandler>();
             containerRegistry.Register<PendingQueueManager>();
 
+            // OpenSpec: cleanup-ui-layer Phase 1.2 - 注册医案启动协调器
+            containerRegistry.Register<ViewModels.Components.MedicalCaseStartCoordinator>();
+
             // Epic #1773 Task 4: 注册患者模块组件化组件（Scoped生命周期）
             containerRegistry.Register<ViewModels.Components.PatientDataManager>();
             containerRegistry.Register<ViewModels.Components.PatientCommandHandler>();

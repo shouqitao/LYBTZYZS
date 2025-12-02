@@ -17,13 +17,10 @@
                 <!--  UI统一化组件样式 (Issue #1840: Desktop端管理界面UI统一化)  -->
                 <ResourceDictionary Source="/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml" />
 
-                <!--  全局样式系统 (新)  -->
+                <!--  全局样式系统 (OpenSpec: cleanup-ui-layer)  -->
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Typography.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
-
-                <!--  保留旧样式以兼容现有代码  -->
-                <ResourceDictionary Source="Styles/CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--  基础转换器 - 引用 Infrastructure 中的统一定义  -->

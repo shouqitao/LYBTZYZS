@@ -14,16 +14,12 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!-- OpenSpec: refactor-medicalcase-ui - 引用共享样式资源 -->
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Presentation;component/Theming/MedicalCaseStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
             <!-- BooleanToVisibilityConverter -->
             <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
-            <!-- 兼容性：保留ActionButtonStyle引用，使用新的基础样式 -->
-            <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource MedicalCaseButtonBaseStyle}">
+            <!-- OpenSpec: cleanup-ui-layer - 使用全局样式系统，移除MedicalCaseStyles.xaml引用 -->
+            <!-- ActionButtonStyle基于全局SuccessButton样式 -->
+            <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource SuccessButton}">
                 <Setter Property="Padding" Value="20,10" />
                 <Setter Property="Margin" Value="5,0" />
             </Style>
@@ -55,8 +51,8 @@
                         Cursor="Hand"
                         Padding="10,5">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="←" FontSize="18" Foreground="#2E86AB" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding BackButtonText, StringFormat=' {0}'}" FontSize="14" Foreground="#2E86AB" VerticalAlignment="Center" />
+                        <TextBlock Text="←" FontSize="18" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding BackButtonText, StringFormat=' {0}'}" FontSize="14" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
@@ -65,12 +61,12 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding HeaderTitle}" FontSize="14" Foreground="#333" FontWeight="Bold" />
-                    <TextBlock Text=" | 患者：" FontSize="14" Foreground="#333" FontWeight="Bold" />
-                    <TextBlock Text="{Binding PatientName}" FontSize="14" Foreground="#2E86AB" FontWeight="Bold" Margin="5,0" />
-                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="#666" Margin="20,0,0,0" />
-                    <TextBlock Text=" | 医案ID：" FontSize="13" Foreground="#666" Margin="10,0,0,0" />
-                    <TextBlock Text="{Binding MedicalCaseId, StringFormat={}{0:N}}" FontSize="12" Foreground="#999" />
+                    <TextBlock Text="{Binding HeaderTitle}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold" />
+                    <TextBlock Text=" | 患者：" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding PatientName}" FontSize="14" Foreground="{StaticResource PrimaryBrush}" FontWeight="Bold" Margin="5,0" />
+                    <TextBlock Text="{Binding PatientInfo}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="20,0,0,0" />
+                    <TextBlock Text=" | 医案ID：" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="10,0,0,0" />
+                    <TextBlock Text="{Binding MedicalCaseId, StringFormat={}{0:N}}" FontSize="12" Foreground="{StaticResource TextHintBrush}" />
                 </StackPanel>
 
                 <!-- OpenSpec: clarify-cancel-consultation-logic - 取消按钮已移除 -->
@@ -218,7 +214,7 @@
                             Margin="16,0,0,0">
                     <TextBlock Text="修改原因："
                                FontSize="13"
-                               Foreground="#E65100"
+                               Foreground="{StaticResource WarningBrush}"
                                FontWeight="Bold"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0" />
@@ -267,18 +263,18 @@
                             ToolTip="打印当前处方"
                             Margin="0,0,8,0" />
 
-                    <!-- Clinical编辑模式: 完成看诊按钮 -->
+                    <!-- Clinical编辑模式: 完成看诊按钮 (绿色-完成确认操作) -->
                     <Button Content="完成看诊"
                             Command="{Binding CompleteConsultationCommand}"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Style="{StaticResource SuccessButtonStyle}"
                             IsEnabled="{Binding CanComplete}"
                             ToolTip="完成本次看诊，关闭医案"
                             Visibility="{Binding ShowCompleteButton, Converter={StaticResource BoolToVisibility}}" />
 
-                    <!-- Management编辑模式: 保存医案按钮(最右侧) -->
+                    <!-- Management编辑模式: 保存医案按钮(绿色-保存确认操作) -->
                     <Button Content="保存医案"
                             Command="{Binding SaveAndStayCommand}"
-                            Style="{StaticResource PrimaryButtonStyle}"
+                            Style="{StaticResource SuccessButtonStyle}"
                             ToolTip="保存修改并留在当前界面"
                             Visibility="{Binding ShowSaveButton, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>

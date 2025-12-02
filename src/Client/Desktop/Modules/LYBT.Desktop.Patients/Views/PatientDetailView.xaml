@@ -17,11 +17,12 @@
             <!-- 布尔值转可见性转换器 -->
             <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
+            <!-- OpenSpec: cleanup-ui-layer Issue #2251 - 使用全局样式系统 -->
             <!-- 表单标签样式 -->
             <Style x:Key="FormLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontWeight" Value="Medium"/>
-                <Setter Property="Foreground" Value="#374151"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                 <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
 
@@ -29,9 +30,9 @@
             <Style x:Key="EditableTextBoxStyle" TargetType="TextBox">
                 <Setter Property="FontSize" Value="15"/>
                 <Setter Property="Padding" Value="14,12"/>
-                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Background" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Template">
                     <Setter.Value>
@@ -45,14 +46,14 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter Property="BorderBrush" Value="#3B82F6"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource TextSecondaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsReadOnly" Value="True">
-                                    <Setter Property="Background" Value="#F9FAFB"/>
-                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                    <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -62,8 +63,8 @@
 
             <!-- 主按钮样式 -->
             <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="#3B82F6"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="FontSize" Value="15"/>
                 <Setter Property="FontWeight" Value="Medium"/>
@@ -78,14 +79,14 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#2563EB"/>
+                                    <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#1D4ED8"/>
+                                    <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Background" Value="#9CA3AF"/>
-                                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                                    <Setter Property="Background" Value="{StaticResource DisabledBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource BorderBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -95,9 +96,9 @@
 
             <!-- 次要按钮样式 -->
             <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="Foreground" Value="#374151"/>
-                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="FontSize" Value="15"/>
                 <Setter Property="FontWeight" Value="Medium"/>
@@ -114,15 +115,15 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#F9FAFB"/>
-                                    <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                                    <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource TextSecondaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                    <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="#9CA3AF"/>
-                                    <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -143,7 +144,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="#F8FAFC">
+    <Grid Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -152,7 +153,7 @@
 
         <!-- 顶部操作栏 -->
         <Grid Grid.Row="0" Margin="40,28,40,0">
-            <Border Background="White"
+            <Border Background="{StaticResource SurfaceBrush}"
                     CornerRadius="16"
                     Padding="32,24"
                     Effect="{StaticResource CardShadow}">
@@ -178,7 +179,7 @@
                                FontSize="26"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"
-                               Foreground="#1E293B"
+                               Foreground="{StaticResource TextPrimaryBrush}"
                                Margin="20,0,0,0" />
 
                     <!-- View模式：切换到编辑按钮 -->
@@ -196,7 +197,7 @@
 
         <!-- 表单内容区域 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="40,28,40,0">
-            <Border Background="White"
+            <Border Background="{StaticResource SurfaceBrush}"
                     CornerRadius="16"
                     Padding="40,32"
                     Effect="{StaticResource CardShadow}">
@@ -205,7 +206,7 @@
                     <TextBlock Text="基本信息"
                                FontSize="18"
                                FontWeight="SemiBold"
-                               Foreground="#1E293B"
+                               Foreground="{StaticResource TextPrimaryBrush}"
                                Margin="0,0,0,24"/>
 
                     <Grid>
@@ -236,7 +237,7 @@
                             <TextBlock Text="拼音码（自动生成）" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding PinYinCode, Mode=OneWay}"
                                      IsReadOnly="True"
-                                     Background="#F9FAFB"
+                                     Background="{StaticResource BackgroundBrush}"
                                      MinHeight="44"
                                      Padding="12,10"/>
                         </StackPanel>
@@ -262,7 +263,7 @@
                         <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                             <TextBlock Text="年龄" Style="{StaticResource FormLabelStyle}"/>
                             <TextBox IsReadOnly="True"
-                                     Background="#F9FAFB"
+                                     Background="{StaticResource BackgroundBrush}"
                                      MinHeight="44"
                                      Padding="12,10">
                                 <TextBox.Text>
@@ -319,7 +320,7 @@
         <!-- 底部操作按钮区 - 仅Edit/Create模式显示 -->
         <Grid Grid.Row="2" Margin="40,28,40,28"
               Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Border Background="White"
+            <Border Background="{StaticResource SurfaceBrush}"
                     CornerRadius="16"
                     Padding="32,24"
                     Effect="{StaticResource CardShadow}">
@@ -372,7 +373,7 @@
                            Margin="0,0,0,16"/>
                 <TextBlock Text="{Binding StatusMessage}"
                            FontSize="16"
-                           Foreground="White"
+                           Foreground="{StaticResource SurfaceBrush}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>

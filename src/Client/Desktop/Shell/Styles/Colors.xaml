@@ -2,50 +2,106 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-    全局颜色系统 (Issue #1484)
+    全局颜色系统 (Issue #1484, OpenSpec: cleanup-ui-layer)
     定义应用的核心颜色规范，所有界面统一使用
+
+    设计规范:
+    - 主色调: Material Design Blue #2196F3
+    - 目标分辨率: 1920x1080 (Full HD)
+    - 最小支持: 1366x768
     -->
 
-    <!-- 核心颜色 -->
+    <!-- ==================== 主色调 ==================== -->
     <Color x:Key="PrimaryColor">#2196F3</Color>
-    <Color x:Key="SuccessColor">#4CAF50</Color>
-    <Color x:Key="WarningColor">#FF9800</Color>
-    <Color x:Key="ErrorColor">#F44336</Color>
+    <Color x:Key="PrimaryDarkColor">#1976D2</Color>
+    <Color x:Key="PrimaryLightColor">#BBDEFB</Color>
 
-    <!-- 背景颜色 -->
+    <!-- ==================== 功能色 ==================== -->
+    <Color x:Key="SuccessColor">#4CAF50</Color>
+    <Color x:Key="SuccessDarkColor">#388E3C</Color>
+    <Color x:Key="SuccessLightColor">#E8F5E9</Color>
+    <Color x:Key="WarningColor">#FF9800</Color>
+    <Color x:Key="WarningDarkColor">#F57C00</Color>
+    <Color x:Key="WarningLightColor">#FFF3E0</Color>
+    <Color x:Key="ErrorColor">#F44336</Color>
+    <Color x:Key="ErrorDarkColor">#D32F2F</Color>
+    <Color x:Key="ErrorLightColor">#FFEBEE</Color>
+    <!-- 别名: DangerColor = ErrorColor (兼容MedicalCaseStyles) -->
+    <Color x:Key="DangerColor">#F44336</Color>
+    <Color x:Key="DangerDarkColor">#D32F2F</Color>
+    <Color x:Key="DangerLightColor">#FFEBEE</Color>
+
+    <!-- ==================== 中性色/背景色 ==================== -->
     <Color x:Key="BackgroundColor">#F5F5F5</Color>
     <Color x:Key="SurfaceColor">#FFFFFF</Color>
-
-    <!-- 文本颜色 -->
-    <Color x:Key="TextColor">#212121</Color>
-    <Color x:Key="TextSecondaryColor">#757575</Color>
-
-    <!-- 边框颜色 -->
     <Color x:Key="BorderColor">#E0E0E0</Color>
+    <Color x:Key="DividerColor">#EEEEEE</Color>
 
-    <!-- 画刷定义 (基于颜色资源) -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
-    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
-    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
-    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+    <!-- ==================== 文本颜色 ==================== -->
+    <Color x:Key="TextColor">#212121</Color>
+    <Color x:Key="TextPrimaryColor">#333333</Color>
+    <Color x:Key="TextSecondaryColor">#757575</Color>
+    <Color x:Key="TextHintColor">#999999</Color>
+    <Color x:Key="TextDisabledColor">#BDBDBD</Color>
 
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
-
-    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
-
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
-
-    <!-- 交互状态颜色 -->
+    <!-- ==================== 交互状态颜色 ==================== -->
     <Color x:Key="HoverColor">#E3F2FD</Color>
-    <!-- Primary的浅色版本 -->
     <Color x:Key="PressedColor">#BBDEFB</Color>
-    <!-- Primary的更浅版本 -->
     <Color x:Key="DisabledColor">#BDBDBD</Color>
 
+    <!-- ==================== 状态指示颜色 ==================== -->
+    <Color x:Key="StatusCompleteColor">#4CAF50</Color>
+    <Color x:Key="StatusPendingColor">#9E9E9E</Color>
+    <Color x:Key="StatusInProgressColor">#FFC107</Color>
+
+    <!-- ==================== 主色调画刷 ==================== -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}" />
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}" />
+
+    <!-- ==================== 功能色画刷 ==================== -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="SuccessDarkBrush" Color="{StaticResource SuccessDarkColor}" />
+    <SolidColorBrush x:Key="SuccessLightBrush" Color="{StaticResource SuccessLightColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="WarningDarkBrush" Color="{StaticResource WarningDarkColor}" />
+    <SolidColorBrush x:Key="WarningLightBrush" Color="{StaticResource WarningLightColor}" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+    <SolidColorBrush x:Key="ErrorDarkBrush" Color="{StaticResource ErrorDarkColor}" />
+    <SolidColorBrush x:Key="ErrorLightBrush" Color="{StaticResource ErrorLightColor}" />
+    <!-- 别名: DangerBrush = ErrorBrush (兼容MedicalCaseStyles) -->
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource DangerDarkColor}" />
+    <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource DangerLightColor}" />
+
+    <!-- ==================== 中性色画刷 ==================== -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}" />
+
+    <!-- ==================== 文本色画刷 ==================== -->
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextHintBrush" Color="{StaticResource TextHintColor}" />
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" />
+
+    <!-- ==================== 交互状态画刷 ==================== -->
     <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}" />
     <SolidColorBrush x:Key="PressedBrush" Color="{StaticResource PressedColor}" />
     <SolidColorBrush x:Key="DisabledBrush" Color="{StaticResource DisabledColor}" />
+
+    <!-- ==================== 状态指示画刷 ==================== -->
+    <SolidColorBrush x:Key="StatusCompleteBrush" Color="{StaticResource StatusCompleteColor}" />
+    <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
+    <SolidColorBrush x:Key="StatusInProgressBrush" Color="{StaticResource StatusInProgressColor}" />
+
+    <!-- ==================== 间距常量 (4px网格系统) ==================== -->
+    <Thickness x:Key="SpacingXS">4</Thickness>
+    <Thickness x:Key="SpacingSM">8</Thickness>
+    <Thickness x:Key="SpacingMD">16</Thickness>
+    <Thickness x:Key="SpacingLG">24</Thickness>
+    <Thickness x:Key="SpacingXL">32</Thickness>
 
 </ResourceDictionary>

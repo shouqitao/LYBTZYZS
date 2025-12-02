@@ -2,8 +2,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-    全局控件样式 (Issue #1484)
+    全局控件样式 (Issue #1484, OpenSpec: cleanup-ui-layer)
     定义统一的控件外观，确保界面一致性
+
+    设计规范:
+    - 风格: 传统中医，简洁大气，原生WPF控件
+    - 目标分辨率: 1920x1080 (Full HD)，界面铺满，尽量避免滚动
+    - 最小支持: 1366x768
+    - 控件高度: 36px (标准) / 40px (大按钮)
     -->
 
     <!-- ========== 按钮样式 ========== -->
@@ -171,6 +177,58 @@
         </Setter>
     </Style>
 
+    <!-- 表单文本框 (Form TextBox) -->
+    <Style x:Key="FormTextBox" TargetType="TextBox">
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="border" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource BackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource TextDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 多行文本域 (Form TextArea) -->
+    <Style x:Key="FormTextArea" TargetType="TextBox" BasedOn="{StaticResource FormTextBox}">
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MinHeight" Value="80" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
     <!-- 搜索文本框 (Search TextBox) -->
     <Style x:Key="SearchTextBox" TargetType="TextBox" BasedOn="{StaticResource StandardTextBox}">
         <Setter Property="Template">
@@ -271,5 +329,226 @@
         <Setter Property="BorderBrush" Value="White" />
         <Setter Property="BorderThickness" Value="0,0,1,0" />
     </Style>
+
+    <!-- ========== 成功按钮样式 ========== -->
+
+    <!-- 成功按钮 (Success Button) -->
+    <Style x:Key="SuccessButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SuccessDarkBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
+                            <Setter Property="Foreground" Value="#757575" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== 兼容性别名 (Legacy Compatibility) ========== -->
+    <!--
+    以下别名用于兼容旧代码中的样式引用
+    新代码应使用新命名: PrimaryButton, SecondaryButton, DangerButton
+    -->
+
+    <!-- 按钮样式别名 -->
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButton}" />
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButton}" />
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource DangerButton}" />
+    <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource SuccessButton}" />
+
+    <!-- 输入控件样式别名 -->
+    <Style x:Key="StandardTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource StandardTextBox}" />
+    <Style x:Key="SearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource SearchTextBox}" />
+    <Style x:Key="FormTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource FormTextBox}" />
+    <Style x:Key="FormTextAreaStyle" TargetType="TextBox" BasedOn="{StaticResource FormTextArea}" />
+    <Style x:Key="StandardComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource StandardComboBox}" />
+
+    <!-- DataGrid样式别名 -->
+    <Style x:Key="StandardDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource StandardDataGrid}" />
+
+    <!-- ========== 卡片与容器样式 ========== -->
+
+    <!-- 面板卡片样式 -->
+    <Style x:Key="PanelCard" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <!-- 面板头部样式 -->
+    <Style x:Key="PanelHeader" TargetType="Border">
+        <Setter Property="Background" Value="#F8F9FA" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <!-- 操作栏样式 -->
+    <Style x:Key="ActionBar" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Height" Value="64" />
+    </Style>
+
+    <!-- 信息栏样式 -->
+    <Style x:Key="InfoBar" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}" />
+        <Setter Property="BorderBrush" Value="#90CAF9" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Height" Value="50" />
+    </Style>
+
+    <!-- 分隔线样式 -->
+    <Style x:Key="Divider" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource DividerBrush}" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="0,12" />
+    </Style>
+
+    <!-- 卡片样式 (带阴影) -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect
+                    BlurRadius="5"
+                    Direction="315"
+                    Opacity="0.2"
+                    ShadowDepth="2"
+                    Color="Gray" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== 警告按钮样式 ========== -->
+
+    <!-- 警告按钮 (Warning Button) -->
+    <Style x:Key="WarningButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource WarningDarkBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
+                            <Setter Property="Foreground" Value="#757575" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 轮廓按钮 (Outline Button) -->
+    <Style x:Key="OutlineButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontFamily" Value="Microsoft YaHei" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource PressedBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource DisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== 更多兼容性别名 ========== -->
+
+    <!-- 卡片容器样式别名 -->
+    <Style x:Key="PanelCardStyle" TargetType="Border" BasedOn="{StaticResource PanelCard}" />
+    <Style x:Key="PanelHeaderStyle" TargetType="Border" BasedOn="{StaticResource PanelHeader}" />
+    <Style x:Key="ActionBarStyle" TargetType="Border" BasedOn="{StaticResource ActionBar}" />
+    <Style x:Key="InfoBarStyle" TargetType="Border" BasedOn="{StaticResource InfoBar}" />
+    <Style x:Key="DividerStyle" TargetType="Border" BasedOn="{StaticResource Divider}" />
+    <Style x:Key="CardStyle" TargetType="Border" BasedOn="{StaticResource Card}" />
+
+    <!-- 按钮样式别名(补充) -->
+    <Style x:Key="WarningButtonStyle" TargetType="Button" BasedOn="{StaticResource WarningButton}" />
+    <Style x:Key="OutlineButtonStyle" TargetType="Button" BasedOn="{StaticResource OutlineButton}" />
 
 </ResourceDictionary>

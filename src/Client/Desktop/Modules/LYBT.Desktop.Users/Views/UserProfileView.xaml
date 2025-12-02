@@ -21,7 +21,7 @@
     </UserControl.Resources>
 
     <!-- 主容器：页面背景 #F8FAFC -->
-    <Grid Margin="40,28" Background="#F8FAFC">
+    <Grid Margin="40,28" Background="{StaticResource BackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -29,7 +29,7 @@
 
         <!-- 顶部导航卡片 -->
         <Border Grid.Row="0"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 CornerRadius="16"
                 Padding="32,24"
                 Margin="0,0,0,28"
@@ -63,8 +63,8 @@
                         </Style>
                     </Button.Style>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="←" FontSize="18" Foreground="#6B7280" Margin="0,0,8,0"/>
-                        <TextBlock Text="返回" FontSize="14" Foreground="#6B7280"/>
+                        <TextBlock Text="←" FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="返回" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </Button>
 
@@ -73,7 +73,7 @@
                            Text="{Binding PageTitle}"
                            FontSize="24"
                            FontWeight="SemiBold"
-                           Foreground="#1F2937"
+                           Foreground="{StaticResource TextPrimaryBrush}"
                            VerticalAlignment="Center"
                            Margin="24,0,0,0"/>
             </Grid>
@@ -85,7 +85,7 @@
                       HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0,0,0,40">
                 <!-- 个人信息卡片 -->
-                <Border Background="White"
+                <Border Background="{StaticResource SurfaceBrush}"
                         CornerRadius="16"
                         Padding="32,24"
                         Margin="0,0,0,24"
@@ -106,13 +106,13 @@
                                    Text="个人信息"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="#1F2937"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
                                    Margin="0,0,0,20"/>
 
                         <!-- 验证错误提示 -->
                         <Border Grid.Row="1"
-                                Background="#FEF2F2"
-                                BorderBrush="#FCA5A5"
+                                Background="{StaticResource ErrorLightBrush}"
+                                BorderBrush="{StaticResource ErrorBrush}"
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Padding="12,10"
@@ -121,11 +121,11 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚠"
                                            FontSize="14"
-                                           Foreground="#EF4444"
+                                           Foreground="{StaticResource ErrorBrush}"
                                            Margin="0,0,8,0"/>
                                 <TextBlock Text="{Binding ValidationError}"
                                            FontSize="13"
-                                           Foreground="#DC2626"
+                                           Foreground="{StaticResource ErrorBrush}"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -140,16 +140,16 @@
                             <TextBlock Grid.Column="0"
                                        Text="用户名"
                                        FontSize="14"
-                                       Foreground="#6B7280"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center"/>
 
                             <TextBox Grid.Column="1"
                                      Text="{Binding UserName, Mode=OneWay}"
                                      FontSize="14"
                                      Padding="12,10"
-                                     Background="#F3F4F6"
-                                     Foreground="#6B7280"
-                                     BorderBrush="#D1D5DB"
+                                     Background="{StaticResource BackgroundBrush}"
+                                     Foreground="{StaticResource TextSecondaryBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
                                      BorderThickness="1"
                                      IsReadOnly="True"
                                      VerticalAlignment="Center">
@@ -183,15 +183,15 @@
                             <TextBlock Grid.Column="0"
                                        Text="真实姓名"
                                        FontSize="14"
-                                       Foreground="#6B7280"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center"/>
 
                             <TextBox Grid.Column="1"
                                      Text="{Binding RealName, UpdateSourceTrigger=PropertyChanged}"
                                      FontSize="14"
                                      Padding="12,10"
-                                     Background="White"
-                                     BorderBrush="#D1D5DB"
+                                     Background="{StaticResource SurfaceBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
                                      BorderThickness="1"
                                      VerticalAlignment="Center">
                                 <TextBox.Style>
@@ -224,16 +224,16 @@
                             <TextBlock Grid.Column="0"
                                        Text="角色"
                                        FontSize="14"
-                                       Foreground="#6B7280"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center"/>
 
                             <TextBox Grid.Column="1"
                                      Text="{Binding Role, Mode=OneWay}"
                                      FontSize="14"
                                      Padding="12,10"
-                                     Background="#F3F4F6"
-                                     Foreground="#6B7280"
-                                     BorderBrush="#D1D5DB"
+                                     Background="{StaticResource BackgroundBrush}"
+                                     Foreground="{StaticResource TextSecondaryBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
                                      BorderThickness="1"
                                      IsReadOnly="True"
                                      VerticalAlignment="Center">
@@ -267,15 +267,15 @@
                             <TextBlock Grid.Column="0"
                                        Text="邮箱地址"
                                        FontSize="14"
-                                       Foreground="#6B7280"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center"/>
 
                             <TextBox Grid.Column="1"
                                      Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
                                      FontSize="14"
                                      Padding="12,10"
-                                     Background="White"
-                                     BorderBrush="#D1D5DB"
+                                     Background="{StaticResource SurfaceBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
                                      BorderThickness="1"
                                      VerticalAlignment="Center">
                                 <TextBox.Style>
@@ -308,15 +308,15 @@
                             <TextBlock Grid.Column="0"
                                        Text="手机号码"
                                        FontSize="14"
-                                       Foreground="#6B7280"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center"/>
 
                             <TextBox Grid.Column="1"
                                      Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
                                      FontSize="14"
                                      Padding="12,10"
-                                     Background="White"
-                                     BorderBrush="#D1D5DB"
+                                     Background="{StaticResource SurfaceBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
                                      BorderThickness="1"
                                      VerticalAlignment="Center">
                                 <TextBox.Style>
@@ -342,7 +342,7 @@
                 </Border>
 
                 <!-- 操作按钮卡片 -->
-                <Border Background="White"
+                <Border Background="{StaticResource SurfaceBrush}"
                         CornerRadius="16"
                         Padding="32,24"
                         Effect="{StaticResource CardShadow}">
@@ -352,8 +352,8 @@
                                 Content="保存"
                                 FontSize="14"
                                 FontWeight="Medium"
-                                Foreground="White"
-                                Background="#3B82F6"
+                                Foreground="{StaticResource SurfaceBrush}"
+                                Background="{StaticResource PrimaryBrush}"
                                 BorderThickness="0"
                                 Padding="24,10"
                                 Margin="0,0,12,0"
@@ -370,11 +370,11 @@
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#2563EB"/>
+                                                        <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
                                                     </Trigger>
                                                     <Trigger Property="IsEnabled" Value="False">
-                                                        <Setter Property="Background" Value="#9CA3AF"/>
-                                                        <Setter Property="Foreground" Value="#D1D5DB"/>
+                                                        <Setter Property="Background" Value="{StaticResource DisabledBrush}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource BorderBrush}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -389,8 +389,8 @@
                                 Content="取消"
                                 FontSize="14"
                                 FontWeight="Medium"
-                                Foreground="#6B7280"
-                                Background="#F3F4F6"
+                                Foreground="{StaticResource TextSecondaryBrush}"
+                                Background="{StaticResource BackgroundBrush}"
                                 BorderThickness="0"
                                 Padding="24,10"
                                 Cursor="Hand">
@@ -406,7 +406,7 @@
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#E5E7EB"/>
+                                                        <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -422,11 +422,11 @@
 
         <!-- Loading 遮罩 -->
         <Border Grid.Row="0" Grid.RowSpan="2"
-                Background="#80FFFFFF"
+                Background="{StaticResource OverlayBrush}"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="⏳" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                <TextBlock Text="处理中..." FontSize="16" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                <TextBlock Text="处理中..." FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
             </StackPanel>
         </Border>
     </Grid>

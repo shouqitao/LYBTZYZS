@@ -9,9 +9,10 @@
     <UserControl.Resources>
         <!--  BooleanToVisibilityConverter for sysadmin visibility control  -->
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+        <!-- OpenSpec: cleanup-ui-layer - 使用全局样式系统 -->
         <!--  功能卡片样式  -->
         <Style x:Key="FunctionCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
@@ -20,8 +21,8 @@
             <Setter Property="Cursor" Value="Hand" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F0F8FF" />
-                    <Setter Property="BorderBrush" Value="#2E86AB" />
+                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -37,7 +38,7 @@
         <Style x:Key="CardTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#2E86AB" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
     </UserControl.Resources>
@@ -54,13 +55,13 @@
                     HorizontalAlignment="Center"
                     FontSize="32"
                     FontWeight="Bold"
-                    Foreground="#2E86AB"
+                    Foreground="{StaticResource PrimaryBrush}"
                     Text="凌隐宝堂中医诊所" />
                 <TextBlock
                     Margin="0,0,0,20"
                     HorizontalAlignment="Center"
                     FontSize="18"
-                    Foreground="#666"
+                    Foreground="{StaticResource TextSecondaryBrush}"
                     Text="系统管理工作台" />
 
                 <!--  用户信息与操作区域 (Issue #1892)  -->
@@ -69,7 +70,7 @@
                     Margin="0,0,0,30"
                     Padding="20,15"
                     HorizontalAlignment="Center"
-                    Background="White"
+                    Background="{StaticResource SurfaceBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">

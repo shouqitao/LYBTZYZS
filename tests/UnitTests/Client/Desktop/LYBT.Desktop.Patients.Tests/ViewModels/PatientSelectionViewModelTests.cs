@@ -41,6 +41,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
         private readonly PatientSearchManager _searchManager;
         private readonly UnfinishedCaseHandler _unfinishedCaseHandler;
         private readonly PendingQueueManager _pendingQueueManager;
+        private readonly MedicalCaseStartCoordinator _medicalCaseStartCoordinator; // OpenSpec: cleanup-ui-layer Phase 1.2
 
         private readonly PatientSelectionViewModel _viewModel;
 
@@ -66,6 +67,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             var searchManagerLoggerMock = new Mock<ILogger<PatientSearchManager>>();
             var unfinishedCaseHandlerLoggerMock = new Mock<ILogger<UnfinishedCaseHandler>>();
             var pendingQueueManagerLoggerMock = new Mock<ILogger<PendingQueueManager>>();
+            var medicalCaseStartCoordinatorLoggerMock = new Mock<ILogger<MedicalCaseStartCoordinator>>(); // OpenSpec: cleanup-ui-layer Phase 1.2
             var viewModelLoggerMock = new Mock<ILogger<PatientSelectionViewModel>>();
 
             _loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>()))
@@ -76,6 +78,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                     if (name.Contains(nameof(PatientSearchManager))) return searchManagerLoggerMock.Object;
                     if (name.Contains(nameof(UnfinishedCaseHandler))) return unfinishedCaseHandlerLoggerMock.Object;
                     if (name.Contains(nameof(PendingQueueManager))) return pendingQueueManagerLoggerMock.Object;
+                    if (name.Contains(nameof(MedicalCaseStartCoordinator))) return medicalCaseStartCoordinatorLoggerMock.Object;
                     return viewModelLoggerMock.Object;
                 });
 
@@ -126,6 +129,14 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 pendingQueueManagerLoggerMock.Object
             );
 
+            // 6. MedicalCaseStartCoordinator（依赖：ILogger, UnfinishedCaseHandler, ISessionManager）
+            // OpenSpec: cleanup-ui-layer Phase 1.2
+            _medicalCaseStartCoordinator = new MedicalCaseStartCoordinator(
+                medicalCaseStartCoordinatorLoggerMock.Object,
+                _unfinishedCaseHandler,
+                _sessionManagerMock.Object
+            );
+
             // 创建ViewModel实例
             _viewModel = new PatientSelectionViewModel(
                 _commandHandler,
@@ -133,6 +144,7 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 _searchManager,
                 _unfinishedCaseHandler,
                 _pendingQueueManager,
+                _medicalCaseStartCoordinator, // OpenSpec: cleanup-ui-layer Phase 1.2
                 _dialogServiceMock.Object,
                 _medicalCaseApiMock.Object,
                 _eventAggregatorMock.Object,

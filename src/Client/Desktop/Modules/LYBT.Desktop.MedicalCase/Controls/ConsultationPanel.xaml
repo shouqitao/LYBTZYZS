@@ -15,13 +15,7 @@
     - 应用统一样式资源
     -->
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Presentation;component/Theming/MedicalCaseStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
+    <!-- OpenSpec: cleanup-ui-layer - 使用全局样式系统，移除MedicalCaseStyles.xaml引用 -->
 
     <!--
     OpenSpec: refactor-medicalcase-ui
@@ -186,7 +180,7 @@
 
         <!-- Row 5: 处方选项 -->
         <Border Grid.Row="5"
-                Background="#F8F9FA"
+                Background="{StaticResource BackgroundBrush}"
                 CornerRadius="4"
                 Padding="12,6">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

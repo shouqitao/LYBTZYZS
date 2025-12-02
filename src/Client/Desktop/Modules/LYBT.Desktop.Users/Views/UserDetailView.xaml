@@ -46,7 +46,7 @@
             <Style x:Key="EditableTextBoxStyle" TargetType="TextBox">
                 <Setter Property="FontSize" Value="15" />
                 <Setter Property="Padding" Value="14,12" />
-                <Setter Property="BorderBrush" Value="#D1D5DB" />
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Background" Value="White" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -63,10 +63,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="BorderBrush" Value="#9CA3AF" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -77,7 +77,7 @@
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="40,28" Background="#F8FAFC">
+        <Grid Margin="40,28" Background="{StaticResource BackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -88,7 +88,7 @@
                 Grid.Row="0"
                 Margin="0,0,0,28"
                 Padding="32,24"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 CornerRadius="16"
                 Effect="{StaticResource CardShadow}">
                 <Grid MinHeight="64">
@@ -109,7 +109,7 @@
                         Cursor="Hand"
                         FontSize="15"
                         FontWeight="Medium"
-                        Foreground="#64748B">
+                        Foreground="{StaticResource TextSecondaryBrush}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -136,8 +136,8 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#F1F5F9" />
-                                                    <Setter Property="Foreground" Value="#475569" />
+                                                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -154,7 +154,7 @@
                         VerticalAlignment="Center"
                         FontSize="26"
                         FontWeight="SemiBold"
-                        Foreground="#1E293B"
+                        Foreground="{StaticResource TextPrimaryBrush}"
                         Text="{Binding PageTitle}" />
 
                     <!--  View模式：编辑按钮  -->
@@ -169,8 +169,8 @@
                         Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="Background" Value="#3B82F6" />
-                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}" />
                                 <Setter Property="BorderThickness" Value="0" />
                                 <Setter Property="Template">
                                     <Setter.Value>
@@ -187,7 +187,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#2563EB" />
+                                                    <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -202,7 +202,7 @@
             <!--  表单内容  -->
             <Border
                 Grid.Row="1"
-                Background="White"
+                Background="{StaticResource SurfaceBrush}"
                 CornerRadius="16"
                 Effect="{StaticResource CardShadow}">
                 <Grid>
@@ -216,12 +216,12 @@
                     <Border
                         Grid.Row="0"
                         Padding="32,20"
-                        Background="#F9FAFB"
+                        Background="{StaticResource BackgroundBrush}"
                         CornerRadius="16,16,0,0">
                         <TextBlock
                             FontSize="19"
                             FontWeight="SemiBold"
-                            Foreground="#111827"
+                            Foreground="{StaticResource TextPrimaryBrush}"
                             Text="用户信息" />
                     </Border>
 
@@ -239,7 +239,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="用户名 *" />
 
                             <TextBox
@@ -252,8 +252,8 @@
                                     <Style BasedOn="{StaticResource EditableTextBoxStyle}" TargetType="TextBox">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsEditOrViewMode}" Value="True">
-                                                <Setter Property="Background" Value="#F9FAFB" />
-                                                <Setter Property="BorderBrush" Value="#E5E7EB" />
+                                                <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -273,7 +273,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="真实姓名 *" />
 
                             <TextBox
@@ -295,7 +295,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="手机号码" />
 
                             <TextBox
@@ -317,7 +317,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="邮箱地址" />
 
                             <TextBox
@@ -339,7 +339,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="用户角色 *" />
 
                             <ComboBox
@@ -352,7 +352,7 @@
                                 SelectedItem="{Binding SelectedRole}">
                                 <ComboBox.Style>
                                     <Style TargetType="ComboBox">
-                                        <Setter Property="BorderBrush" Value="#D1D5DB" />
+                                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="Background" Value="White" />
                                         <Setter Property="Template">
@@ -379,7 +379,7 @@
                                                                     HorizontalAlignment="Right"
                                                                     VerticalAlignment="Center"
                                                                     FontSize="12"
-                                                                    Foreground="#6B7280"
+                                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                                     Text="" />
                                                             </Grid>
                                                         </Border>
@@ -392,8 +392,8 @@
                                                             PopupAnimation="Slide">
                                                             <Border
                                                                 Margin="0,4,0,0"
-                                                                Background="White"
-                                                                BorderBrush="#E5E7EB"
+                                                                Background="{StaticResource SurfaceBrush}"
+                                                                BorderBrush="{StaticResource BorderBrush}"
                                                                 BorderThickness="1"
                                                                 CornerRadius="8"
                                                                 Effect="{StaticResource CardShadow}">
@@ -405,11 +405,11 @@
                                                     </Grid>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Border" Property="BorderBrush" Value="#9CA3AF" />
+                                                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
                                                         </Trigger>
                                                         <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter TargetName="Border" Property="Background" Value="#F9FAFB" />
-                                                            <Setter TargetName="Border" Property="BorderBrush" Value="#E5E7EB" />
+                                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundBrush}" />
+                                                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -432,7 +432,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 FontWeight="Medium"
-                                Foreground="#374151"
+                                Foreground="{StaticResource TextPrimaryBrush}"
                                 Text="账户状态" />
 
                             <ComboBox
@@ -445,7 +445,7 @@
                                 SelectedItem="{Binding Status}">
                                 <ComboBox.Style>
                                     <Style TargetType="ComboBox">
-                                        <Setter Property="BorderBrush" Value="#D1D5DB" />
+                                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="Background" Value="White" />
                                         <Setter Property="Template">
@@ -472,7 +472,7 @@
                                                                     HorizontalAlignment="Right"
                                                                     VerticalAlignment="Center"
                                                                     FontSize="12"
-                                                                    Foreground="#6B7280"
+                                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                                     Text="" />
                                                             </Grid>
                                                         </Border>
@@ -485,8 +485,8 @@
                                                             PopupAnimation="Slide">
                                                             <Border
                                                                 Margin="0,4,0,0"
-                                                                Background="White"
-                                                                BorderBrush="#E5E7EB"
+                                                                Background="{StaticResource SurfaceBrush}"
+                                                                BorderBrush="{StaticResource BorderBrush}"
                                                                 BorderThickness="1"
                                                                 CornerRadius="8"
                                                                 Effect="{StaticResource CardShadow}">
@@ -498,11 +498,11 @@
                                                     </Grid>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Border" Property="BorderBrush" Value="#9CA3AF" />
+                                                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
                                                         </Trigger>
                                                         <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter TargetName="Border" Property="Background" Value="#F9FAFB" />
-                                                            <Setter TargetName="Border" Property="BorderBrush" Value="#E5E7EB" />
+                                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundBrush}" />
+                                                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BorderBrush}" />
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -531,8 +531,8 @@
                                 FontWeight="Medium">
                                 <Button.Style>
                                     <Style TargetType="Button">
-                                        <Setter Property="Background" Value="#F3F4F6" />
-                                        <Setter Property="Foreground" Value="#374151" />
+                                        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Template">
                                             <Setter.Value>
@@ -549,7 +549,7 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#E5E7EB" />
+                                                            <Setter Property="Background" Value="{StaticResource HoverBrush}" />
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -569,8 +569,8 @@
                                 FontWeight="Medium">
                                 <Button.Style>
                                     <Style TargetType="Button">
-                                        <Setter Property="Background" Value="#3B82F6" />
-                                        <Setter Property="Foreground" Value="White" />
+                                        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}" />
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Setter Property="Template">
                                             <Setter.Value>
@@ -599,10 +599,10 @@
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#2563EB" />
+                                                            <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}" />
                                                         </Trigger>
                                                         <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter Property="Background" Value="#9CA3AF" />
+                                                            <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
                                                             <Setter Property="Cursor" Value="Arrow" />
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
