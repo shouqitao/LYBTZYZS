@@ -77,26 +77,7 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
-        /// <summary>
-        /// 发布诊疗步骤已变更事件
-        /// </summary>
-        /// <param name="medicalCaseId">病案ID</param>
-        /// <param name="currentStep">当前步骤</param>
-        public void PublishConsultationStepChanged(Guid medicalCaseId, Models.ConsultationStep currentStep)
-        {
-            try
-            {
-                _logger.LogInformation("发布ConsultationStepChangedEvent: {MedicalCaseId}, Step: {Step}",
-                    medicalCaseId, currentStep);
-                // TODO: 定义ConsultationStepChangedEvent
-                // _eventAggregator.GetEvent<ConsultationStepChangedEvent>().Publish(
-                //     new ConsultationStepChangedPayload { MedicalCaseId = medicalCaseId, CurrentStep = currentStep });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "发布ConsultationStepChangedEvent失败");
-            }
-        }
+        // [已移除] PublishConsultationStepChanged - 三步流程已取消
 
         /// <summary>
         /// 发布处方已创建事件
@@ -161,25 +142,7 @@ namespace LYBT.Desktop.MedicalCase.Components
             }
         }
 
-        /// <summary>
-        /// 订阅诊疗步骤已变更事件
-        /// </summary>
-        /// <param name="action">事件处理委托</param>
-        public void SubscribeToConsultationStepChanged(Action<(Guid MedicalCaseId, Models.ConsultationStep Step)> action)
-        {
-            try
-            {
-                _logger.LogDebug("订阅ConsultationStepChangedEvent");
-                // TODO: 定义ConsultationStepChangedEvent
-                // var token = _eventAggregator.GetEvent<ConsultationStepChangedEvent>()
-                //     .Subscribe(payload => action((payload.MedicalCaseId, payload.CurrentStep)));
-                // _subscriptionTokens.Add(token);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "订阅ConsultationStepChangedEvent失败");
-            }
-        }
+        // [已移除] SubscribeToConsultationStepChanged - 三步流程已取消
 
         #endregion
 

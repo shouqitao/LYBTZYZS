@@ -239,38 +239,7 @@ namespace LYBT.Desktop.Consultation.Components
 
         #endregion
 
-        #region 导航方法
-
-        /// <summary>
-        /// 导航到处方录入页（Step2）
-        /// </summary>
-        public async Task<bool> NavigateToPrescriptionEditorAsync(Guid medicalCaseId, object? currentPatient = null)
-        {
-            try
-            {
-                _logger.LogInformation("导航到处方录入页, MedicalCaseId={MedicalCaseId}", medicalCaseId);
-
-                var parameters = new NavigationParameters
-                {
-                    { "MedicalCaseId", medicalCaseId }
-                };
-
-                if (currentPatient != null)
-                {
-                    parameters.Add("CurrentPatient", currentPatient);
-                }
-
-                _regionManager.RequestNavigate("ContentRegion", "PrescriptionEditorView", parameters);
-                await Task.CompletedTask;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "导航到处方录入页失败");
-                return false;
-            }
-        }
-
-        #endregion
+        // [已移除] NavigateToPrescriptionEditorAsync - PrescriptionEditorView已删除，处方编辑通过MedicalCaseWorkspaceView完成
+        // OpenSpec: refactor-viewmodel-layer - 死代码清理
     }
 }

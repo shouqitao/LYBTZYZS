@@ -3,7 +3,7 @@ using LYBT.Desktop.Contracts.Api; // Issue #2164: 添加Api接口引用
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
-using LYBT.Desktop.MedicalCase.Models;
+// [已移除] using LYBT.Desktop.MedicalCase.Models; - ConsultationStep枚举已删除
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -167,72 +167,8 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
         #endregion
 
-        #region Workflow Validation Tests
-
-        [Fact]
-        public void CanCompleteStep1_ShouldReturnValidatorResult()
-        {
-            // Arrange
-            string errorMessage;
-            _mockValidator.Setup(x => x.CanCompleteStep1(out errorMessage))
-                .Returns((out string error) => { error = string.Empty; return true; });
-
-            // Act
-            var result = _sut.CanCompleteStep1(out var error);
-
-            // Assert
-            result.Should().BeTrue();
-            error.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void CanMarkForPrescription_ShouldReturnValidatorResult()
-        {
-            // Arrange
-            string errorMessage;
-            _mockValidator.Setup(x => x.CanMarkForPrescription(ConsultationStep.Prescription, out errorMessage))
-                .Returns((ConsultationStep step, out string error) => { error = string.Empty; return true; });
-
-            // Act
-            var result = _sut.CanMarkForPrescription(ConsultationStep.Prescription, out var error);
-
-            // Assert
-            result.Should().BeTrue();
-            error.Should().BeEmpty();
-        }
-
-        [Fact]
-        public void CanCreatePrescription_ShouldReturnValidatorResult()
-        {
-            // Arrange
-            string errorMessage;
-            _mockValidator.Setup(x => x.CanCreatePrescription(ConsultationStep.Completion, out errorMessage))
-                .Returns((ConsultationStep step, out string error) => { error = string.Empty; return true; });
-
-            // Act
-            var result = _sut.CanCreatePrescription(ConsultationStep.Completion, out var error);
-
-            // Assert
-            result.Should().BeTrue();
-            error.Should().BeEmpty();
-        }
-
-        [Fact]
-        public async Task ValidateStepAsync_ShouldCallValidator()
-        {
-            // Arrange
-            _mockValidator.Setup(x => x.ValidateStepAsync(ConsultationStep.Consultation))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _sut.ValidateStepAsync(ConsultationStep.Consultation);
-
-            // Assert
-            result.Should().BeTrue();
-            _mockValidator.Verify(x => x.ValidateStepAsync(ConsultationStep.Consultation), Times.Once);
-        }
-
-        #endregion
+        // [已移除] Workflow Validation Tests (CanCompleteStep1, CanMarkForPrescription, CanCreatePrescription, ValidateStepAsync)
+        // 三步流程已取消，相关验证逻辑已移除
 
         #region Prescription Management Tests
 

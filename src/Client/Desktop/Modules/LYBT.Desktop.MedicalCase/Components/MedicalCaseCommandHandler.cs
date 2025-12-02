@@ -1,5 +1,4 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
-using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -228,51 +227,7 @@ namespace LYBT.Desktop.MedicalCase.Components
 
         #endregion
 
-        #region 工作流步骤验证命令
-
-        /// <summary>
-        /// 验证是否可以完成Step1（辨证）
-        /// </summary>
-        /// <param name="errorMessage">错误信息</param>
-        /// <returns>是否可以完成</returns>
-        public bool CanCompleteStep1(out string errorMessage)
-        {
-            return _validator.CanCompleteStep1(out errorMessage);
-        }
-
-        /// <summary>
-        /// 验证是否可以开方标记（Step2）
-        /// </summary>
-        /// <param name="currentStep">当前步骤</param>
-        /// <param name="errorMessage">错误信息</param>
-        /// <returns>是否可以开方</returns>
-        public bool CanMarkForPrescription(ConsultationStep currentStep, out string errorMessage)
-        {
-            return _validator.CanMarkForPrescription(currentStep, out errorMessage);
-        }
-
-        /// <summary>
-        /// 验证是否可以创建处方（Step3）
-        /// </summary>
-        /// <param name="currentStep">当前步骤</param>
-        /// <param name="errorMessage">错误信息</param>
-        /// <returns>是否可以创建处方</returns>
-        public bool CanCreatePrescription(ConsultationStep currentStep, out string errorMessage)
-        {
-            return _validator.CanCreatePrescription(currentStep, out errorMessage);
-        }
-
-        /// <summary>
-        /// 验证当前步骤
-        /// </summary>
-        /// <param name="currentStep">当前步骤</param>
-        /// <returns>验证是否通过</returns>
-        public async Task<bool> ValidateStepAsync(ConsultationStep currentStep)
-        {
-            return await _validator.ValidateStepAsync(currentStep);
-        }
-
-        #endregion
+        // [已移除] 三步流程步骤验证命令 (CanCompleteStep1, CanMarkForPrescription, CanCreatePrescription, ValidateStepAsync)
 
         #region 处方管理命令
 

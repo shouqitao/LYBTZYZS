@@ -36,12 +36,18 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<MedicalCaseDataManager>();
 
             // Issue #1806: 注册MedicalCaseFlowViewModel组件化服务（Epic #1805 Phase 2）
-            containerRegistry.RegisterScoped<MedicalCaseFlowManager>();
+            // [已移除] MedicalCaseFlowManager - 三步流程已取消
             containerRegistry.RegisterScoped<MedicalCaseLifecycleHandler>();
             containerRegistry.RegisterScoped<MedicalCaseDataLoader>();
 
             // OpenSpec: refactor-viewmodel-layer - 工作区协调器
             containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseWorkspaceCoordinator>();
+
+            // OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式状态机
+            containerRegistry.RegisterScoped<ViewModels.Components.MedicalCaseEditModeStateMachine>();
+
+            // OpenSpec: refactor-viewmodel-layer Phase 5 - 导航处理器
+            containerRegistry.RegisterScoped<MedicalCaseNavigationHandler>();
 
             // OpenSpec: cleanup-ui-layer - Phase 1.1 PrescriptionPanel Components
             containerRegistry.Register<ViewModels.Components.PrescriptionCalculator>();
@@ -50,10 +56,6 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.Components.PrescriptionSaveHandler>();
             containerRegistry.Register<ViewModels.Components.PrescriptionImportHandler>();
             containerRegistry.Register<ViewModels.Components.PrescriptionDataLoader>();
-
-            // Issue #1790: 注册PrescriptionEditorViewModel组件化服务
-            containerRegistry.Register<PrescriptionEditorHerbFilterManager>();
-            containerRegistry.Register<PrescriptionEditorValidator>();
 
             // Issue #1807: 注册PrescriptionEditorViewModel组件化服务 Phase 2
             containerRegistry.Register<PrescriptionCalculator>();
@@ -75,9 +77,7 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.ConsultationPanelViewModel>();
             containerRegistry.Register<ViewModels.PrescriptionPanelViewModel>();
 
-            // OpenSpec: controlify-workspace - Phase 2 控件化ViewModel
-            containerRegistry.Register<ViewModels.ConsultationControlViewModel>();
-            containerRegistry.Register<ViewModels.PrescriptionEditorViewModel>();  // Task #1499: 处方编辑器
+            // [已移除] PrescriptionEditorViewModel - 死代码，从未导航到（OpenSpec: refactor-viewmodel-layer）
             // Issue #1799: 删除OtherCasesQueryViewModel（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListViewModel（功能与ManagementView重复）
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
@@ -112,7 +112,7 @@ namespace LYBT.Desktop.MedicalCase
 
             // Epic #2210 Phase 4: 4:6统一工作区视图（唯一的看诊入口）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseWorkspaceView>();
-            containerRegistry.RegisterForNavigation<Views.PrescriptionEditorView>();  // Task #1499: 处方编辑器视图
+            // [已移除] PrescriptionEditorView - 死代码，从未导航到（OpenSpec: refactor-viewmodel-layer）
             // Issue #1799: 删除OtherCasesQueryView（违反AR-001聚合根约束）
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();  // Issue #1799: 保留作为唯一医案管理入口

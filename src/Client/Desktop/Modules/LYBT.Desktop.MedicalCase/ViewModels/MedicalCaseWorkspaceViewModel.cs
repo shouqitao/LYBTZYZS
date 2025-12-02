@@ -40,6 +40,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private readonly IDialogService? _dialogService; // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
         private readonly IAuditRequirementChecker? _auditRequirementChecker; // OpenSpec: medicalcase-management-ui-refactor (EDITMODE-010)
         private readonly MedicalCaseWorkspaceCoordinator _coordinator; // OpenSpec: refactor-viewmodel-layer - VM-002 Components
+        private readonly MedicalCaseNavigationHandler _navigationHandler; // OpenSpec: refactor-viewmodel-layer Phase 5 - 导航处理器
+        private readonly MedicalCaseEditModeStateMachine _editModeStateMachine; // OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式状态机
 
         #endregion
 
@@ -213,93 +215,56 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _canComplete, value);
         }
 
-        #region refactor-medicalcase-management: 编辑模式属性
-
-        private bool _isEditing = true;
-        /// <summary>
-        /// 是否处于编辑模式
-        /// - 新建医案或继续Draft/Active医案时为true
-        /// - 查看已完成医案时为false（只读模式）
-        /// </summary>
-        public bool IsEditing
-        {
-            get => _isEditing;
-            set
-            {
-                if (SetProperty(ref _isEditing, value))
-                {
-                    RaisePropertyChanged(nameof(IsReadOnly));
-                    RaisePropertyChanged(nameof(ShowEditButton));
-                    // OpenSpec: medicalcase-management-ui-refactor - 新增按钮可见性属性
-                    RaisePropertyChanged(nameof(ShowEditButtonTopRight));
-                    RaisePropertyChanged(nameof(ShowSaveButton));
-                    RaisePropertyChanged(nameof(ShowDraftButton));
-                    RaisePropertyChanged(nameof(ShowCompleteButton));
-                    SaveCommand?.RaiseCanExecuteChanged();
-                    EnterEditModeCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        #region OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式属性（委托给状态机）
 
         /// <summary>
-        /// 是否处于只读模式（与IsEditing互斥）
+        /// 编辑模式状态机（公开供View绑定）
         /// </summary>
-        public bool IsReadOnly => !IsEditing;
+        public MedicalCaseEditModeStateMachine EditModeState => _editModeStateMachine;
 
         /// <summary>
-        /// 是否显示编辑按钮（底部，仅Clinical只读模式且有权限）
-        /// OpenSpec: medicalcase-management-ui-refactor - Clinical模式在底部显示"修改医案"
+        /// 是否处于编辑模式（委托给状态机）
         /// </summary>
-        public bool ShowEditButton => IsReadOnly && CanEdit && WorkspaceMode == WorkspaceMode.Clinical;
+        public bool IsEditing => _editModeStateMachine.IsEditing;
 
         /// <summary>
-        /// 是否在右上角显示编辑按钮（Management只读模式且有权限）
-        /// OpenSpec: medicalcase-management-ui-refactor TASK-003
+        /// 是否处于只读模式（委托给状态机）
         /// </summary>
-        public bool ShowEditButtonTopRight => IsReadOnly && CanEdit && WorkspaceMode == WorkspaceMode.Management;
+        public bool IsReadOnly => _editModeStateMachine.IsReadOnly;
 
         /// <summary>
-        /// 是否显示保存医案按钮（Management编辑模式）
-        /// OpenSpec: medicalcase-management-ui-refactor TASK-003
+        /// 是否显示编辑按钮（底部，委托给状态机）
         /// </summary>
-        public bool ShowSaveButton => IsEditing && WorkspaceMode == WorkspaceMode.Management;
+        public bool ShowEditButton => _editModeStateMachine.ShowEditButton;
 
         /// <summary>
-        /// 是否显示暂存医案按钮（Clinical编辑模式）
-        /// OpenSpec: medicalcase-management-ui-refactor TASK-003
+        /// 是否在右上角显示编辑按钮（委托给状态机）
         /// </summary>
-        public bool ShowDraftButton => IsEditing && WorkspaceMode == WorkspaceMode.Clinical;
+        public bool ShowEditButtonTopRight => _editModeStateMachine.ShowEditButtonTopRight;
 
         /// <summary>
-        /// 是否显示完成看诊按钮（Clinical编辑模式）
-        /// OpenSpec: medicalcase-management-ui-refactor TASK-003
+        /// 是否显示保存医案按钮（委托给状态机）
         /// </summary>
-        public bool ShowCompleteButton => IsEditing && WorkspaceMode == WorkspaceMode.Clinical;
+        public bool ShowSaveButton => _editModeStateMachine.ShowSaveButton;
 
-        #region OpenSpec: controlify-workspace - Phase 4 脏数据追踪
+        /// <summary>
+        /// 是否显示暂存医案按钮（委托给状态机）
+        /// </summary>
+        public bool ShowDraftButton => _editModeStateMachine.ShowDraftButton;
 
-        private bool _hasUnsavedConsultationChanges;
+        /// <summary>
+        /// 是否显示完成看诊按钮（委托给状态机）
+        /// </summary>
+        public bool ShowCompleteButton => _editModeStateMachine.ShowCompleteButton;
+
+        #region 处方脏数据追踪
+
         private bool _hasUnsavedPrescriptionChanges;
 
         /// <summary>
-        /// 工作区是否有未保存的修改（诊断或处方）
+        /// 工作区是否有未保存的修改（处方）
         /// </summary>
-        public bool HasUnsavedChanges => _hasUnsavedConsultationChanges || _hasUnsavedPrescriptionChanges;
-
-        /// <summary>
-        /// 诊断是否有未保存的修改
-        /// </summary>
-        public bool HasUnsavedConsultationChanges
-        {
-            get => _hasUnsavedConsultationChanges;
-            private set
-            {
-                if (SetProperty(ref _hasUnsavedConsultationChanges, value))
-                {
-                    RaisePropertyChanged(nameof(HasUnsavedChanges));
-                }
-            }
-        }
+        public bool HasUnsavedChanges => _hasUnsavedPrescriptionChanges;
 
         /// <summary>
         /// 处方是否有未保存的修改
@@ -318,45 +283,23 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
 
-        private bool _isHistoricalEditMode;
         /// <summary>
-        /// 是否为历史修改模式（从管理界面进入）
-        /// - 管理员编辑已完成医案时为true
-        /// - 需要填写修改原因
+        /// 是否为历史修改模式（委托给状态机）
         /// </summary>
-        public bool IsHistoricalEditMode
-        {
-            get => _isHistoricalEditMode;
-            set => SetProperty(ref _isHistoricalEditMode, value);
-        }
+        public bool IsHistoricalEditMode => _editModeStateMachine.IsHistoricalEditMode;
 
-        private bool _canEdit;
         /// <summary>
-        /// 当前用户是否有编辑权限
-        /// - 管理员：所有医案
-        /// - 医生：仅自己未完成的医案
+        /// 当前用户是否有编辑权限（委托给状态机）
         /// </summary>
-        public bool CanEdit
-        {
-            get => _canEdit;
-            set
-            {
-                if (SetProperty(ref _canEdit, value))
-                {
-                    RaisePropertyChanged(nameof(ShowEditButton));
-                    EnterEditModeCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        public bool CanEdit => _editModeStateMachine.CanEdit;
 
-        private string _editReason = string.Empty;
         /// <summary>
-        /// 修改原因（历史修改模式下必填）
+        /// 修改原因（委托给状态机）
         /// </summary>
         public string EditReason
         {
-            get => _editReason;
-            set => SetProperty(ref _editReason, value);
+            get => _editModeStateMachine.EditReason;
+            set => _editModeStateMachine.EditReason = value;
         }
 
         private bool _isFromManagement;
@@ -371,59 +314,26 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
 
-        #region OpenSpec: refine-medicalcase-edit-modes - 工作区模式属性
+        #region OpenSpec: refine-medicalcase-edit-modes - 工作区模式属性（委托给状态机）
 
-        private WorkspaceMode _workspaceMode = WorkspaceMode.Clinical;
         /// <summary>
-        /// 工作区模式
-        /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-001
-        /// Clinical: 临床看诊模式（从PatientSelection进入）
-        /// Management: 管理编辑模式（从MedicalCaseManagement进入）
+        /// 工作区模式（委托给状态机）
         /// </summary>
         public WorkspaceMode WorkspaceMode
         {
-            get => _workspaceMode;
-            set
-            {
-                if (SetProperty(ref _workspaceMode, value))
-                {
-                    RaisePropertyChanged(nameof(HeaderTitle));
-                    RaisePropertyChanged(nameof(BackButtonText));
-                    // OpenSpec: medicalcase-management-ui-refactor - 模式切换影响按钮可见性
-                    RaisePropertyChanged(nameof(ShowEditButton));
-                    RaisePropertyChanged(nameof(ShowEditButtonTopRight));
-                    RaisePropertyChanged(nameof(ShowSaveButton));
-                    RaisePropertyChanged(nameof(ShowDraftButton));
-                    RaisePropertyChanged(nameof(ShowCompleteButton));
-                }
-            }
+            get => _editModeStateMachine.WorkspaceMode;
+            set => _editModeStateMachine.WorkspaceMode = value;
         }
 
         /// <summary>
-        /// 标题文本（动态计算）
-        /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-001
-        /// Clinical: "看诊中 | 患者：XXX"
-        /// Management: "编辑医案 | 患者：XXX"
+        /// 标题文本（委托给状态机）
         /// </summary>
-        public string HeaderTitle => WorkspaceMode switch
-        {
-            WorkspaceMode.Clinical => "看诊中",
-            WorkspaceMode.Management => "编辑医案",
-            _ => "看诊中"
-        };
+        public string HeaderTitle => _editModeStateMachine.HeaderTitle;
 
         /// <summary>
-        /// 返回按钮文本（动态计算）
-        /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-005
-        /// Clinical: "返回患者选择"
-        /// Management: "返回医案列表"
+        /// 返回按钮文本（委托给状态机）
         /// </summary>
-        public string BackButtonText => WorkspaceMode switch
-        {
-            WorkspaceMode.Clinical => "返回患者选择",
-            WorkspaceMode.Management => "返回医案列表",
-            _ => "返回患者选择"
-        };
+        public string BackButtonText => _editModeStateMachine.BackButtonText;
 
         #endregion
 
@@ -498,6 +408,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             MedicalCaseLifecycleHandler lifecycleHandler,
             MedicalCaseDataLoader dataLoader,
             MedicalCaseWorkspaceCoordinator coordinator, // OpenSpec: refactor-viewmodel-layer - VM-002 Components
+            MedicalCaseNavigationHandler navigationHandler, // OpenSpec: refactor-viewmodel-layer - Phase 5.2 导航处理器
+            MedicalCaseEditModeStateMachine editModeStateMachine, // OpenSpec: refactor-viewmodel-layer Phase 1 - 编辑模式状态机
             IRegionManager regionManager,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -515,11 +427,29 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
             _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
             _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+            _navigationHandler = navigationHandler ?? throw new ArgumentNullException(nameof(navigationHandler));
             _injectedConsultationPanelViewModel = consultationPanelViewModel ?? throw new ArgumentNullException(nameof(consultationPanelViewModel));
             _injectedPrescriptionPanelViewModel = prescriptionPanelViewModel ?? throw new ArgumentNullException(nameof(prescriptionPanelViewModel));
             _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
             _dialogService = dialogService; // 可选依赖
             _auditRequirementChecker = auditRequirementChecker; // 可选依赖
+            _editModeStateMachine = editModeStateMachine ?? throw new ArgumentNullException(nameof(editModeStateMachine));
+
+            // OpenSpec: refactor-viewmodel-layer Phase 1 - 订阅状态机事件
+            _editModeStateMachine.EditStateChanged += OnEditStateChanged;
+
+            // OpenSpec: refactor-viewmodel-layer Phase 5.2 - 配置NavigationHandler回调
+            _navigationHandler.SaveDraftCallback = SaveDraftOnlyAsync;
+            _navigationHandler.CancelCaseCallback = CancelCaseOnlyAsync;
+            _navigationHandler.CheckAndGetAuditReasonCallback = CheckAndGetAuditReasonAsync;
+            _navigationHandler.SetEditReasonCallback = reason => _editModeStateMachine.EditReason = reason;
+            _navigationHandler.SetIsEditingCallback = value =>
+            {
+                if (value)
+                    _editModeStateMachine.EnterEditMode();
+                else
+                    _editModeStateMachine.EnterReadOnlyMode();
+            };
 
             // 订阅生命周期事件
             _lifecycleHandler.ActionCompleted += OnLifecycleActionCompleted;
@@ -536,11 +466,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 .ObservesProperty(() => CanComplete);
 
             // refactor-medicalcase-management: 保存和编辑模式切换命令
-            SaveCommand = new DelegateCommand(ExecuteSave, () => IsEditing)
-                .ObservesProperty(() => IsEditing);
-            EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => IsReadOnly && CanEdit)
-                .ObservesProperty(() => IsReadOnly)
-                .ObservesProperty(() => CanEdit);
+            // OpenSpec: refactor-viewmodel-layer Phase 1 - 使用状态机属性
+            SaveCommand = new DelegateCommand(ExecuteSave, () => _editModeStateMachine.IsEditing);
+            EnterEditModeCommand = new DelegateCommand(ExecuteEnterEditMode, () => _editModeStateMachine.CanEnterEditMode);
 
             // 订阅诊断完成事件（启用处方面板）
             EventAggregator.GetEvent<ConsultationCompletedEvent>()
@@ -550,16 +478,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             EventAggregator.GetEvent<PrescriptionCompletedEvent>()
                 .Subscribe(OnPrescriptionCompleted, ThreadOption.UIThread);
 
-            // OpenSpec: controlify-workspace - Phase 4 工作区事件订阅
-            // 订阅脏数据变更事件
-            EventAggregator.GetEvent<ConsultationDataChangedEvent>()
-                .Subscribe(OnConsultationDataChanged, ThreadOption.UIThread);
-            EventAggregator.GetEvent<PrescriptionDataChangedEvent>()
-                .Subscribe(OnPrescriptionDataChanged, ThreadOption.UIThread);
-
             // 订阅保存完成事件
-            EventAggregator.GetEvent<ConsultationSavedEvent>()
-                .Subscribe(OnConsultationSaved, ThreadOption.UIThread);
             EventAggregator.GetEvent<PrescriptionSavedEvent>()
                 .Subscribe(OnPrescriptionSaved, ThreadOption.UIThread);
 
@@ -581,33 +500,27 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             {
                 SetIsBusy(true, "正在保存...");
 
-                // 同步备注到面板
-                if (ConsultationPanelViewModel != null)
-                {
-                    ConsultationPanelViewModel.MedicalCaseRemark = Remark;
-                }
+                // 使用Coordinator委托保存逻辑 (OpenSpec: refactor-viewmodel-layer VM-002)
+                var result = await _coordinator.SavePanelsSilentlyAsync(
+                    GetConsultationSaveable(),
+                    GetPrescriptionSaveable(),
+                    SyncRemarkToPanel);
 
-                // 保存诊断数据
-                if (ConsultationPanelViewModel is ISaveable consultationSaveable)
+                if (result)
                 {
-                    await consultationSaveable.SaveSilentlyAsync();
-                }
+                    // 历史修改模式下记录修改原因
+                    if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason))
+                    {
+                        Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason);
+                    }
 
-                // 保存处方数据
-                if (PrescriptionPanelViewModel is ISaveable prescriptionSaveable)
+                    await ShowSuccessMessageAsync("保存成功");
+                    Logger.LogInformation("医案数据保存成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+                }
+                else
                 {
-                    await prescriptionSaveable.SaveSilentlyAsync();
+                    await ShowErrorMessageAsync("保存失败");
                 }
-
-                // 历史修改模式下记录修改原因
-                if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason))
-                {
-                    // TODO: Phase 4实现 - 通过审计服务记录修改原因
-                    Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason);
-                }
-
-                await ShowSuccessMessageAsync("保存成功");
-                Logger.LogInformation("医案数据保存成功，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
             }
             catch (Exception ex)
             {
@@ -622,175 +535,36 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 进入编辑模式
+        /// OpenSpec: refactor-viewmodel-layer Phase 1 - 使用状态机
         /// </summary>
         private void ExecuteEnterEditMode()
         {
-            if (!CanEdit)
+            if (_editModeStateMachine.EnterEditMode())
+            {
+                Logger.LogInformation("进入编辑模式，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+            }
+            else
             {
                 Logger.LogWarning("无编辑权限，无法进入编辑模式");
-                return;
             }
-
-            IsEditing = true;
-            Logger.LogInformation("进入编辑模式，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
         }
 
         #endregion
 
         /// <summary>
         /// 返回（根据WorkspaceMode导航）
-        /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-005
-        /// OpenSpec: medicalcase-management-ui-refactor - EDITMODE-008
+        /// OpenSpec: refactor-viewmodel-layer Phase 5.2 - 委托给NavigationHandler
         /// Clinical: 返回PatientSelectionView（显示离开确认对话框）
         /// Management只读: 直接返回MedicalCaseManagementView
         /// Management编辑: 显示UnsavedChangesDialog后返回
         /// </summary>
         private async Task ExecuteBackAsync()
         {
-            try
-            {
-                // Management模式处理
-                if (WorkspaceMode == WorkspaceMode.Management)
-                {
-                    // Management只读模式: 直接返回
-                    if (IsReadOnly)
-                    {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
-                        return;
-                    }
-
-                    // Management编辑模式: 显示UnsavedChangesDialog
-                    var shouldNavigate = await HandleManagementLeaveRequestAsync();
-                    if (shouldNavigate)
-                    {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
-                    }
-                    return;
-                }
-
-                // Clinical模式: 使用现有的三选项对话框
-                var result = await HandleLeaveRequestAsync();
-                if (result.CanLeave)
-                {
-                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "返回时发生异常");
-            }
+            await _navigationHandler.ExecuteBackAsync(WorkspaceMode, IsReadOnly);
         }
 
-        /// <summary>
-        /// Management编辑模式返回确认
-        /// OpenSpec: medicalcase-management-ui-refactor (EDITMODE-008)
-        /// 三选项: 保存修改(Yes) / 放弃修改(No) / 取消(Cancel)
-        /// Issue #2247: 移除MessageBox.Show fallback，统一使用IDialogService
-        /// </summary>
-        /// <returns>true: 允许导航; false: 留在当前界面</returns>
-        private async Task<bool> HandleManagementLeaveRequestAsync()
-        {
-            if (_dialogService == null)
-            {
-                // Issue #2247: IDialogService不可用时记录日志并返回安全默认值（不允许离开）
-                Logger.LogWarning("IDialogService不可用，无法显示未保存修改对话框，默认不允许离开");
-                return false;
-            }
-
-            // 使用Prism Dialog
-            var tcs = new TaskCompletionSource<bool>();
-            _dialogService.ShowDialog(nameof(Dialogs.UnsavedChangesDialog), new DialogParameters(), async dialogResult =>
-            {
-                try
-                {
-                    switch (dialogResult.Result)
-                    {
-                        case ButtonResult.Yes: // 保存修改
-                            // 检查审计需求
-                            var auditReason = await CheckAndGetAuditReasonAsync();
-                            if (auditReason == null)
-                            {
-                                tcs.SetResult(false); // 用户取消审计
-                                return;
-                            }
-
-                            if (!string.IsNullOrEmpty(auditReason))
-                            {
-                                EditReason = auditReason;
-                            }
-
-                            await SaveDraftOnlyAsync();
-                            IsEditing = false;
-                            tcs.SetResult(true);
-                            break;
-                        case ButtonResult.No: // 放弃修改
-                            tcs.SetResult(true);
-                            break;
-                        default: // 取消
-                            tcs.SetResult(false);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "处理返回确认对话框时发生异常");
-                    tcs.SetResult(false);
-                }
-            });
-
-            return await tcs.Task;
-        }
-
-        /// <summary>
-        /// 显示离开确认对话框（三选项）并处理用户选择
-        /// OpenSpec: clarify-cancel-consultation-logic
-        /// 此方法由IActiveConsultationService调用（退出登录时）
-        /// </summary>
-        /// <remarks>Issue #2247: 使用ICommonDialogService替代直接MessageBox.Show调用</remarks>
-        private async Task<LeaveConsultationResult> HandleLeaveRequestAsync()
-        {
-            var message = "您将离开看诊界面，是否暂存当前医案？\n\n" +
-                "【是】暂存医案 - 保存当前进度，下次可继续\n" +
-                "【否】取消医案 - 作废本次就诊\n" +
-                "【取消】继续看诊 - 返回当前界面";
-
-            LeaveConsultationChoice choice;
-
-            if (CommonDialogService != null)
-            {
-                // Issue #2247: 使用抽象的对话框服务
-                var dialogResult = await CommonDialogService.ShowTripleChoiceAsync(message, "离开确认");
-                choice = dialogResult switch
-                {
-                    TripleChoiceResult.Yes => LeaveConsultationChoice.SaveDraft,
-                    TripleChoiceResult.No => LeaveConsultationChoice.CancelCase,
-                    _ => LeaveConsultationChoice.Stay
-                };
-            }
-            else
-            {
-                // Issue #2247: CommonDialogService不可用时记录日志并默认停留
-                Logger.LogWarning("CommonDialogService不可用，无法显示离开确认对话框，默认停留");
-                choice = LeaveConsultationChoice.Stay;
-            }
-
-            // 根据用户选择执行对应操作
-            switch (choice)
-            {
-                case LeaveConsultationChoice.SaveDraft:
-                    await SaveDraftOnlyAsync();
-                    return LeaveConsultationResult.AllowLeave(choice);
-
-                case LeaveConsultationChoice.CancelCase:
-                    await CancelCaseOnlyAsync();
-                    return LeaveConsultationResult.AllowLeave(choice);
-
-                case LeaveConsultationChoice.Stay:
-                default:
-                    Logger.LogDebug("用户选择继续停留");
-                    return LeaveConsultationResult.CancelLeave();
-            }
-        }
+        // [已移动] HandleManagementLeaveRequestAsync 和 HandleLeaveRequestAsync
+        // OpenSpec: refactor-viewmodel-layer Phase 5.2 - 迁移到 MedicalCaseNavigationHandler
 
         #region OpenSpec: refactor-viewmodel-layer - Coordinator辅助方法
 
@@ -874,80 +648,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 暂存医案并返回患者列表
-        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
-        /// </summary>
-        private async Task SaveDraftAndNavigateBackAsync()
-        {
-            try
-            {
-                SetIsBusy(true, "正在保存...");
-
-                var result = await _coordinator.SaveDraftAsync(
-                    MedicalCaseId,
-                    GetConsultationSaveable(),
-                    GetPrescriptionSaveable(),
-                    SyncRemarkToPanel);
-
-                if (result.IsSuccess)
-                {
-                    Logger.LogInformation("医案已暂存，返回患者列表");
-                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "暂存失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "暂存医案失败");
-                await ShowErrorMessageAsync($"暂存失败：{ex.Message}");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
-
-        /// <summary>
-        /// 取消医案并返回患者列表（软删除）
-        /// OpenSpec: clarify-cancel-consultation-logic
-        /// OpenSpec: refactor-viewmodel-layer - 使用Coordinator简化代码
-        /// </summary>
-        private async Task CancelCaseAndNavigateBackAsync()
-        {
-            try
-            {
-                SetIsBusy(true, "正在处理...");
-
-                var result = await _coordinator.CancelAsync(
-                    MedicalCaseId,
-                    GetConsultationSaveable(),
-                    GetPrescriptionSaveable(),
-                    SyncRemarkToPanel);
-
-                if (result.IsSuccess)
-                {
-                    Logger.LogInformation("医案已取消（软删除），返回患者列表");
-                    _regionManager.RequestNavigate("ContentRegion", "PatientSelectionView");
-                }
-                else
-                {
-                    await ShowErrorMessageAsync(result.ErrorMessage ?? "取消失败");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "取消医案失败");
-                await ShowErrorMessageAsync($"取消失败：{ex.Message}");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
+        // [已删除] SaveDraftAndNavigateBackAsync 和 CancelCaseAndNavigateBackAsync
+        // OpenSpec: refactor-viewmodel-layer - 无引用代码清理 (2025-12-02)
 
         /// <summary>
         /// 暂存医案（保存当前数据 + 切换到只读模式，留在当前界面）
@@ -988,7 +690,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (result.IsSuccess)
                 {
                     // OpenSpec: refine-medicalcase-edit-modes - 切换到只读模式（留在当前界面）
-                    IsEditing = false;
+                    // OpenSpec: refactor-viewmodel-layer Phase 1 - 使用状态机
+                    _editModeStateMachine.EnterReadOnlyMode();
 
                     var message = WorkspaceMode == WorkspaceMode.Management
                         ? "保存成功"
@@ -1175,7 +878,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             var editMode = navigationContext.Parameters.GetValue<string>("EditMode");
             IsFromManagement = navigationContext.Parameters.GetValue<bool>("IsFromManagement") ||
                                WorkspaceMode == WorkspaceMode.Management;
-            IsHistoricalEditMode = editMode == "HistoricalEdit";
+            var isHistoricalEdit = editMode == "HistoricalEdit";
 
             Logger.LogInformation("进入看诊界面，MedicalCaseId: {MedicalCaseId}, 患者: {PatientName}, 工作区模式: {WorkspaceMode}, 初始编辑状态: {EditState}",
                 MedicalCaseId, CurrentPatient?.Name, WorkspaceMode, initialEditState);
@@ -1190,15 +893,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             InitializeChildViewModels();
 
             // OpenSpec: refine-medicalcase-edit-modes - 根据导航参数或医案状态决定编辑模式
-            await DetermineEditModeAsync(initialEditState);
+            // OpenSpec: refactor-viewmodel-layer Phase 1 - 传递历史编辑模式标记
+            await DetermineEditModeAsync(initialEditState, isHistoricalEdit);
         }
 
         /// <summary>
         /// 根据医案状态和用户权限决定编辑模式
         /// OpenSpec: refine-medicalcase-edit-modes - EDITMODE-002
+        /// OpenSpec: refactor-viewmodel-layer Phase 1 - 使用状态机
         /// </summary>
         /// <param name="initialEditState">导航参数中的初始编辑状态（可选）</param>
-        private async Task DetermineEditModeAsync(EditState initialEditState = EditState.Editing)
+        /// <param name="isHistoricalEdit">是否为历史编辑模式（从旧参数传入）</param>
+        private async Task DetermineEditModeAsync(EditState initialEditState = EditState.Editing, bool isHistoricalEdit = false)
         {
             try
             {
@@ -1206,8 +912,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (medicalCase == null)
                 {
                     // 新建医案，默认编辑模式
-                    IsEditing = true;
-                    CanEdit = true;
+                    _editModeStateMachine.Initialize(WorkspaceMode, EditType.Create, canEdit: true, EditState.Editing);
+                    Logger.LogInformation("新建医案，初始化为编辑模式");
                     return;
                 }
 
@@ -1216,49 +922,35 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 var isAdmin = currentUserRole == Shared.Models.Enums.UserRole.Admin ||
                               currentUserRole == Shared.Models.Enums.UserRole.SuperAdmin;
 
+                var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
+                var isOwner = medicalCase.DoctorId == currentUserId;
+
                 var caseStatus = medicalCase.CaseStatus;
                 var isCompleted = caseStatus == Shared.Models.Enums.MedicalCaseStatus.Completed;
 
-                // 确定是否有编辑权限
-                if (isAdmin)
+                // 使用状态机的DetermineFromContext方法（内部自动计算EditType）
+                var preferEditing = initialEditState == EditState.Editing || isHistoricalEdit;
+                _editModeStateMachine.DetermineFromContext(
+                    WorkspaceMode,
+                    isCompleted,
+                    isOwner,
+                    isAdmin,
+                    preferEditing);
+
+                // 如果是历史编辑，强制设置EditType
+                if (isHistoricalEdit)
                 {
-                    // 管理员可以编辑所有医案
-                    CanEdit = true;
-                }
-                else
-                {
-                    // 医生只能编辑自己未完成的医案
-                    var currentUserId = SessionManager?.CurrentUser?.Id ?? Guid.Empty;
-                    var isOwner = medicalCase.DoctorId == currentUserId;
-                    var isNotCompleted = !isCompleted;
-                    CanEdit = isOwner && isNotCompleted;
+                    _editModeStateMachine.EditType = EditType.EditCompleted;
                 }
 
-                // OpenSpec: refine-medicalcase-edit-modes - 根据导航参数决定初始编辑状态
-                // 优先使用导航参数，但需检查权限
-                if (initialEditState == EditState.Editing && CanEdit)
-                {
-                    IsEditing = true;
-                }
-                else if (initialEditState == EditState.ReadOnly)
-                {
-                    IsEditing = false;
-                }
-                else
-                {
-                    // 回退到原有逻辑
-                    IsEditing = IsHistoricalEditMode || (CanEdit && !isCompleted);
-                }
-
-                Logger.LogInformation("编辑模式确定：IsEditing={IsEditing}, CanEdit={CanEdit}, CaseStatus={CaseStatus}, InitialEditState={InitialEditState}",
-                    IsEditing, CanEdit, caseStatus, initialEditState);
+                Logger.LogInformation("编辑模式确定：IsEditing={IsEditing}, CanEdit={CanEdit}, CaseStatus={CaseStatus}, InitialEditState={InitialEditState}, IsHistoricalEdit={IsHistoricalEdit}",
+                    IsEditing, CanEdit, caseStatus, initialEditState, isHistoricalEdit);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "确定编辑模式失败");
                 // 默认只读模式
-                IsEditing = false;
-                CanEdit = false;
+                _editModeStateMachine.EnterReadOnlyMode();
             }
 
             await Task.CompletedTask;
@@ -1380,7 +1072,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 existingPrescription);
 
             // OpenSpec: clarify-cancel-consultation-logic - 注册活跃医案服务
-            _activeConsultationService.Register(MedicalCaseId, HandleLeaveRequestAsync);
+            // OpenSpec: refactor-viewmodel-layer Phase 5.2 - 委托给NavigationHandler
+            _activeConsultationService.Register(MedicalCaseId, _navigationHandler.HandleLeaveRequestAsync);
 
             Logger.LogInformation("子面板ViewModel初始化完成，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
         }
@@ -1402,6 +1095,30 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         #region 事件处理
+
+        /// <summary>
+        /// 编辑状态变化事件处理
+        /// OpenSpec: refactor-viewmodel-layer Phase 1 - 状态机事件
+        /// </summary>
+        private void OnEditStateChanged(object? sender, EditStateChangedEventArgs e)
+        {
+            // 通知所有委托属性变化
+            RaisePropertyChanged(nameof(IsEditing));
+            RaisePropertyChanged(nameof(IsReadOnly));
+            RaisePropertyChanged(nameof(ShowEditButton));
+            RaisePropertyChanged(nameof(ShowEditButtonTopRight));
+            RaisePropertyChanged(nameof(ShowSaveButton));
+            RaisePropertyChanged(nameof(ShowDraftButton));
+            RaisePropertyChanged(nameof(ShowCompleteButton));
+            RaisePropertyChanged(nameof(HeaderTitle));
+            RaisePropertyChanged(nameof(BackButtonText));
+
+            // 刷新命令状态
+            SaveCommand?.RaiseCanExecuteChanged();
+            EnterEditModeCommand?.RaiseCanExecuteChanged();
+
+            Logger.LogDebug("编辑状态变化: {OldState} -> {NewState}", e.OldState, e.NewState);
+        }
 
         /// <summary>
         /// 诊断完成事件处理
@@ -1442,40 +1159,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             CanComplete = true;
         }
 
-        #region OpenSpec: controlify-workspace - Phase 4 工作区事件处理
-
-        /// <summary>
-        /// 诊断数据变更事件处理 - 脏数据追踪
-        /// </summary>
-        private void OnConsultationDataChanged(Guid medicalCaseId)
-        {
-            if (medicalCaseId != MedicalCaseId) return;
-
-            HasUnsavedConsultationChanges = true;
-            Logger.LogDebug("诊断数据变更，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-        }
-
-        /// <summary>
-        /// 处方数据变更事件处理 - 脏数据追踪
-        /// </summary>
-        private void OnPrescriptionDataChanged(Guid medicalCaseId)
-        {
-            if (medicalCaseId != MedicalCaseId) return;
-
-            HasUnsavedPrescriptionChanges = true;
-            Logger.LogDebug("处方数据变更，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
-        }
-
-        /// <summary>
-        /// 诊断保存完成事件处理
-        /// </summary>
-        private void OnConsultationSaved(ConsultationSavedPayload payload)
-        {
-            if (payload.MedicalCaseId != MedicalCaseId) return;
-
-            HasUnsavedConsultationChanges = false;
-            Logger.LogInformation("诊断保存完成，IsAutoSave: {IsAutoSave}", payload.IsAutoSave);
-        }
+        #region 工作区事件处理
 
         /// <summary>
         /// 处方保存完成事件处理
@@ -1575,12 +1259,12 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 _lifecycleHandler.ActionCompleted -= OnLifecycleActionCompleted;
                 _dataLoader.DataLoaded -= OnDataLoaded;
 
-                // OpenSpec: controlify-workspace - Phase 4 取消事件订阅
+                // OpenSpec: refactor-viewmodel-layer Phase 1 - 取消状态机事件订阅
+                _editModeStateMachine.EditStateChanged -= OnEditStateChanged;
+
+                // 取消事件订阅
                 EventAggregator.GetEvent<ConsultationCompletedEvent>().Unsubscribe(OnConsultationCompleted);
                 EventAggregator.GetEvent<PrescriptionCompletedEvent>().Unsubscribe(OnPrescriptionCompleted);
-                EventAggregator.GetEvent<ConsultationDataChangedEvent>().Unsubscribe(OnConsultationDataChanged);
-                EventAggregator.GetEvent<PrescriptionDataChangedEvent>().Unsubscribe(OnPrescriptionDataChanged);
-                EventAggregator.GetEvent<ConsultationSavedEvent>().Unsubscribe(OnConsultationSaved);
                 EventAggregator.GetEvent<PrescriptionSavedEvent>().Unsubscribe(OnPrescriptionSaved);
 
                 Logger.LogInformation("MedicalCaseWorkspaceViewModel已释放资源");

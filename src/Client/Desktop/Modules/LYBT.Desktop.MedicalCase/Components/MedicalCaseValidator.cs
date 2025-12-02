@@ -12,7 +12,7 @@ namespace LYBT.Desktop.MedicalCase.Components
     ///
     /// 职责:
     /// - 病案基本信息验证
-    /// - 诊疗数据验证(3步流程)
+    /// - 诊疗数据验证
     /// - 处方数据验证
     /// - 集成FluentValidation
     /// </summary>
@@ -205,132 +205,7 @@ namespace LYBT.Desktop.MedicalCase.Components
 
         #endregion
 
-        #region 专用验证方法
-
-        /// <summary>
-        /// 验证是否可以完成Step1（辨证）
-        /// 注意: CurrentStep在ViewModel层管理，不在DTO中
-        /// </summary>
-        public virtual bool CanCompleteStep1(out string errorMessage)
-        {
-            if (_dataManager.CurrentConsultation == null)
-            {
-                errorMessage = "诊疗数据不能为空";
-                return false;
-            }
-
-            // 检查必填字段
-            if (string.IsNullOrWhiteSpace(_dataManager.CurrentConsultation.ChiefComplaint))
-            {
-                errorMessage = "主诉不能为空";
-                return false;
-            }
-
-            // ConsultationDto中的属性是TCMDiagnosis，不是TcmSyndromeDifferentiation
-            if (string.IsNullOrWhiteSpace(_dataManager.CurrentConsultation.TCMDiagnosis))
-            {
-                errorMessage = "中医诊断不能为空";
-                return false;
-            }
-
-            errorMessage = string.Empty;
-            return true;
-        }
-
-        /// <summary>
-        /// 验证是否可以开方标记（Step2）
-        /// 注意: CurrentStep在ViewModel层管理，不在DTO中
-        /// </summary>
-        /// <param name="currentStep">由ViewModel传入当前步骤</param>
-        public virtual bool CanMarkForPrescription(ConsultationStep currentStep, out string errorMessage)
-        {
-            if (_dataManager.CurrentConsultation == null)
-            {
-                errorMessage = "诊疗数据不能为空";
-                return false;
-            }
-
-            // 检查必须完成Step1
-            if (currentStep < ConsultationStep.Prescription)
-            {
-                errorMessage = "必须先完成辨证";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(_dataManager.CurrentConsultation.TreatmentPrinciple))
-            {
-                errorMessage = "治法不能为空";
-                return false;
-            }
-
-            errorMessage = string.Empty;
-            return true;
-        }
-
-        /// <summary>
-        /// 验证是否可以创建处方（Step3）
-        /// 注意: CurrentStep在ViewModel层管理，不在DTO中
-        /// </summary>
-        /// <param name="currentStep">由ViewModel传入当前步骤</param>
-        public virtual bool CanCreatePrescription(ConsultationStep currentStep, out string errorMessage)
-        {
-            if (_dataManager.CurrentConsultation == null)
-            {
-                errorMessage = "诊疗数据不能为空";
-                return false;
-            }
-
-            // 检查必须完成Step2
-            if (currentStep < ConsultationStep.Completion)
-            {
-                errorMessage = "必须先完成开方标记";
-                return false;
-            }
-
-            errorMessage = string.Empty;
-            return true;
-        }
-
-        /// <summary>
-        /// 根据当前步骤验证
-        /// </summary>
-        public virtual async Task<bool> ValidateStepAsync(ConsultationStep currentStep)
-        {
-            try
-            {
-                _logger.LogInformation("验证当前步骤: {Step}", currentStep);
-
-                switch (currentStep)
-                {
-                    case ConsultationStep.Consultation:
-                        // 步骤1：验证病案基本信息 + 诊疗数据
-                        var result1 = await ValidateAsync();
-                        return result1.IsValid || result1.Errors.All(e =>
-                            !e.PropertyName.Contains("ChiefComplaint") &&
-                            !e.PropertyName.Contains("TCMDiagnosis"));
-
-                    case ConsultationStep.Prescription:
-                        // 步骤2：验证病案 + 诊疗 + 处方（如果存在）
-                        var result2 = await ValidateAsync();
-                        return result2.IsValid;
-
-                    case ConsultationStep.Completion:
-                        // 步骤3：验证所有数据（包括处方）
-                        var result3 = await ValidateAsync();
-                        return result3.IsValid;
-
-                    default:
-                        _logger.LogWarning("未知的工作流步骤: {Step}", currentStep);
-                        return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "验证步骤失败: {Step}", currentStep);
-                return false;
-            }
-        }
-
-        #endregion
+        // [已移除] 三步流程相关验证方法 (CanCompleteStep1, CanMarkForPrescription, CanCreatePrescription, ValidateStepAsync)
+        // 三步流程已取消，验证逻辑已简化
     }
 }
