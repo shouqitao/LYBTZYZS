@@ -117,27 +117,38 @@
 
 ### 3.1 服务职责梳理
 
-- [ ] 3.1.1 审计Foundation层所有服务
-- [ ] 3.1.2 审计Infrastructure层所有服务
-- [ ] 3.1.3 审计Presentation层所有服务
-- [ ] 3.1.4 创建服务职责矩阵文档
-- [ ] 3.1.5 识别重复和可合并服务
+- [x] 3.1.1 审计Foundation层所有服务 (41个服务文件)
+- [x] 3.1.2 审计Infrastructure层所有服务 (85个文件含控件/转换器)
+- [x] 3.1.3 审计Presentation层所有服务 (13个服务文件)
+- [x] 3.1.4 创建服务职责矩阵文档 (phase-3-service-matrix.md)
+- [x] 3.1.5 识别重复和可合并服务
 
-### 3.2 通知服务统一
+**结论**:
+- 通知服务 (IUserNotificationService vs INotificationService): 不是重复，是合理分层
+- 异常处理服务: 分层设计，Infrastructure层为主，Presentation层做UI集成
+- Token存储服务: 低优先级，可暂不处理
 
-- [ ] 3.2.1 比较INotificationService实现
-- [ ] 3.2.2 统一到Infrastructure/Notifications/
-- [ ] 3.2.3 标记旧接口为Obsolete
-- [ ] 3.2.4 更新所有使用处
-- [ ] 3.2.5 删除Presentation层重复通知代码
+### 3.2 通知服务统一 - 跳过
+
+- [~] 3.2.1-3.2.5 跳过 (分析结论: 不需要统一，是合理分层设计)
+
+**分析数据**:
+- IUserNotificationService: 35个文件使用 (主要ViewModel API)
+- INotificationService: 6个文件使用 (Presentation层内部API)
 
 ### 3.3 清理未使用代码
 
-- [ ] 3.3.1 运行代码覆盖率分析
-- [ ] 3.3.2 识别未被引用的接口和类
-- [ ] 3.3.3 确认删除安全性
-- [ ] 3.3.4 删除未使用代码
-- [ ] 3.3.5 更新相关文档
+- [x] 3.3.1 运行代码覆盖率分析 (手动检查引用)
+- [x] 3.3.2 识别未被引用的接口和类
+- [x] 3.3.3 确认删除安全性
+- [x] 3.3.4 删除未使用代码
+- [x] 3.3.5 更新相关文档
+
+**已删除的冗余代码**:
+- `Shell/Services/INavigationService.cs` - 与Presentation层重复
+- `Shell/Services/ThemeService.cs` - 与Presentation层重复
+
+**验证**: 编译通过 (0 errors, 0 warnings)
 
 ## Phase 4: 交互模式标准化
 
