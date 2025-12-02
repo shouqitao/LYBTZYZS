@@ -435,3 +435,87 @@ containerRegistry.Register<ViewModels.Components.{Feature}DataManager>();
 containerRegistry.Register<ViewModels.Components.{Feature}CommandHandler>();
 // ViewModel通过构造函数注入Components
 ```
+
+### 导航服务使用指南
+
+#### 导航服务分层
+
+| 接口 | 层 | 用途 |
+|------|------|------|
+| `IRegionManager` | Prism | 区域导航（主要使用） |
+| `INavigationService` | Presentation | 简化导航封装 |
+| `IRoleNavigationService` | Infrastructure | 角色主页路由 |
+
+#### 标准区域导航
+```csharp
+// 使用IRegionManager（推荐）
+_regionManager.RequestNavigate(
+    RegionNames.ContentRegion,
+    nameof(PatientDetailView),
+    new NavigationParameters { { "PatientId", patientId } });
+
+// 使用封装方法
+NavigateTo(RegionNames.ContentRegion, nameof(PatientDetailView),
+    new NavigationParameters { { "PatientId", patientId } });
+```
+
+#### 角色导航
+```csharp
+// 登录后根据角色导航到对应主页
+_roleNavigationService.NavigateToRoleHome(user.Role);  // "Doctor" -> ClinicalHomeView
+```
+
+#### 实现INavigationAware
+```csharp
+public class PatientDetailViewModel : UnifiedViewModelBase, INavigationAware
+{
+    public void OnNavigatedTo(NavigationContext context)
+    {
+        var patientId = context.Parameters.GetValue<Guid>("PatientId");
+        _ = LoadPatientAsync(patientId);
+    }
+
+    public bool IsNavigationTarget(NavigationContext context) => true;
+
+    public void OnNavigatedFrom(NavigationContext context)
+    {
+        // 清理订阅
+    }
+}
+```
+
+#### 导航确认（有未保存数据时）
+```csharp
+public class EditViewModel : UnifiedViewModelBase, IConfirmNavigationRequest
+{
+    public void ConfirmNavigationRequest(NavigationContext context,
+        Action<bool> continuationCallback)
+    {
+        if (!HasUnsavedChanges)
+        {
+            continuationCallback(true);
+            return;
+        }
+
+        // 使用ICommonDialogService询问用户
+        _dialogService.ShowTripleChoiceAsync("有未保存的更改，是否保存？")
+            .ContinueWith(t =>
+            {
+                var result = t.Result;
+                if (result == TripleChoiceResult.Yes)
+                {
+                    _ = SaveAsync();
+                    continuationCallback(true);
+                }
+                else if (result == TripleChoiceResult.No)
+                {
+                    continuationCallback(true);
+                }
+                else
+                {
+                    continuationCallback(false);
+                }
+            });
+    }
+}
+```

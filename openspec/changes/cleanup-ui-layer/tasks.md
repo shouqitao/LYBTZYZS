@@ -152,30 +152,31 @@
 
 ## Phase 4: 交互模式标准化
 
-### 4.1 对话框使用标准化
+### 4.1 对话框使用标准化 (已完成 2025-12-03)
 
-- [ ] 4.1.1 创建IDialogCoordinator接口
-- [ ] 4.1.2 实现DialogCoordinator
-- [ ] 4.1.3 创建dialog-patterns spec
-- [ ] 4.1.4 迁移确认对话框使用
-- [ ] 4.1.5 迁移信息对话框使用
-- [ ] 4.1.6 迁移错误对话框使用
-- [ ] 4.1.7 删除直接MessageBox调用
+- [~] 4.1.1-2 跳过 - 现有ICommonDialogService已完善，不需要新接口
+- [x] 4.1.3 创建dialog-patterns spec (`openspec/specs/dialog-patterns/spec.md`)
+- [~] 4.1.4-7 跳过 - ViewModel层已通过服务调用（Issue #2247完成）
 
-### 4.2 通知显示标准化
+**结论**: 现有对话框架构已完善:
+- `ICommonDialogService`: 通用对话框
+- `IUserNotificationService`: 用户通知
+- ViewModel层不再直接调用MessageBox（仅服务层内部使用）
 
-- [ ] 4.2.1 创建IUserNotification统一接口
-- [ ] 4.2.2 实现UserNotification服务
-- [ ] 4.2.3 更新ViewModelBase消息方法
-- [ ] 4.2.4 迁移所有通知调用
-- [ ] 4.2.5 验证通知显示一致性
+### 4.2 通知显示标准化 (已完成 2025-12-03)
 
-### 4.3 导航模式文档化
+- [~] 4.2.1-5 跳过 - 确认为合理的分层设计
 
-- [ ] 4.3.1 审计现有导航实现
-- [ ] 4.3.2 记录标准导航模式
-- [ ] 4.3.3 更新viewmodel-conventions spec
-- [ ] 4.3.4 添加导航示例代码
+**结论**: 两个通知服务是合理的分层设计，不需要统一:
+- `IUserNotificationService` (35+文件): ViewModel层API
+- `INotificationService` (6文件): Presentation层内部API + Loading状态
+
+### 4.3 导航模式文档化 (已完成 2025-12-03)
+
+- [x] 4.3.1 审计现有导航实现 (IRegionManager, IRoleNavigationService等)
+- [x] 4.3.2 记录标准导航模式
+- [x] 4.3.3 更新viewmodel-conventions spec (添加"导航服务使用指南"章节)
+- [x] 4.3.4 添加导航示例代码
 
 ## Phase 5: 验证和文档
 
