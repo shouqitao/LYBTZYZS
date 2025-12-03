@@ -7,10 +7,7 @@ using Prism.Commands;
 
 namespace LYBT.Desktop.Shell.Services;
 
-/// <summary>
-/// 菜单命令管理器 - 负责快捷键命令、主题切换、帮助设置等功能
-/// Issue #1790: 从MainWindowViewModel提取命令管理逻辑（~100行）
-/// </summary>
+/// <summary>菜单命令管理器 - 负责快捷键命令、主题切换、帮助设置等功能</summary>
 public class MenuManager
 {
     private readonly NavigationManager _navigationManager;
@@ -72,10 +69,7 @@ public class MenuManager
 
     #endregion 命令属性
 
-    /// <summary>
-    /// 初始化所有命令
-    /// Issue #1790: 从MainWindowViewModel.InitializeCommands提取
-    /// </summary>
+    /// <summary>初始化所有命令</summary>
     private void InitializeCommands()
     {
         ShowControlExamplesCommand = new DelegateCommand(ExecuteShowControlExamples);
@@ -88,93 +82,34 @@ public class MenuManager
         _logger.LogDebug("菜单命令系统已初始化");
     }
 
-    /// <summary>
-    /// 显示控件示例
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
-    private void ExecuteShowControlExamples()
-    {
-        _navigationManager.NavigateToControlExamples();
-    }
+    /// <summary>显示控件示例</summary>
+    private void ExecuteShowControlExamples() => _navigationManager.NavigateToControlExamples();
 
-    /// <summary>
-    /// 快速添加患者(Ctrl+N)
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>快速添加患者(Ctrl+N)</summary>
     private async Task ExecuteQuickAddPatientAsync()
     {
-        try
-        {
-            _navigationManager.NavigateToAddPatient();
-            await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者");
-        }
-        catch (Exception ex)
-        {
-            await _userNotificationService.ShowErrorAsync($"快速添加患者失败:{ex.Message}");
-        }
+        try { _navigationManager.NavigateToAddPatient(); await _userNotificationService.ShowSuccessAsync("已切换到患者管理页面，准备添加新患者"); }
+        catch (Exception ex) { await _userNotificationService.ShowErrorAsync($"快速添加患者失败:{ex.Message}"); }
     }
 
-    /// <summary>
-    /// 快速开始诊疗(Ctrl+Shift+C)
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>快速开始诊疗(Ctrl+Shift+C)</summary>
     private async Task ExecuteQuickStartConsultationAsync()
     {
-        try
-        {
-            _navigationManager.NavigateToMedicalCaseFlow();
-            await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者");
-        }
-        catch (Exception ex)
-        {
-            await _userNotificationService.ShowErrorAsync($"快速开始诊疗失败:{ex.Message}");
-        }
+        try { _navigationManager.NavigateToMedicalCaseFlow(); await _userNotificationService.ShowSuccessAsync("已开始诊疗流程，请选择患者"); }
+        catch (Exception ex) { await _userNotificationService.ShowErrorAsync($"快速开始诊疗失败:{ex.Message}"); }
     }
 
-    /// <summary>
-    /// 显示帮助信息 (F1)
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>显示帮助信息 (F1)</summary>
     private void ExecuteShowHelp()
     {
-        try
-        {
-            var helpMessage = "系统快捷键说明：\n\n" +
-                "• Ctrl+N - 快速添加患者\n" +
-                "• Ctrl+Shift+C - 快速开始诊疗\n" +
-                "• F1 - 显示帮助\n" +
-                "• Alt+F4 - 退出系统\n" +
-                "• Ctrl+, - 打开设置\n\n" +
-                "更多功能正在开发中...";
-
-            _ = _userNotificationService.ShowSuccessAsync(helpMessage);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"显示帮助失败: {ex.Message}");
-        }
+        var helpMessage = "系统快捷键说明：\n\n• Ctrl+N - 快速添加患者\n• Ctrl+Shift+C - 快速开始诊疗\n• F1 - 显示帮助\n• Alt+F4 - 退出系统\n• Ctrl+, - 打开设置\n\n更多功能正在开发中...";
+        _ = _userNotificationService.ShowSuccessAsync(helpMessage);
     }
 
-    /// <summary>
-    /// 显示设置页面 (Ctrl+,)
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
-    private void ExecuteShowSettings()
-    {
-        try
-        {
-            _ = _userNotificationService.ShowSuccessAsync("用户设置功能将在未来版本中实现");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"显示设置失败: {ex.Message}");
-        }
-    }
+    /// <summary>显示设置页面 (Ctrl+,)</summary>
+    private void ExecuteShowSettings() => _ = _userNotificationService.ShowSuccessAsync("用户设置功能将在未来版本中实现");
 
-    /// <summary>
-    /// 主题切换功能
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>主题切换功能</summary>
     private async Task ExecuteToggleThemeAsync()
     {
         try
@@ -204,10 +139,7 @@ public class MenuManager
         }
     }
 
-    /// <summary>
-    /// 应用浅色主题
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>应用浅色主题</summary>
     private void ApplyLightTheme()
     {
         var resources = Application.Current.Resources;
@@ -216,10 +148,7 @@ public class MenuManager
         UpdateThemeColor(resources, "TextPrimaryColor", "#FF1A1A1A");
     }
 
-    /// <summary>
-    /// 应用深色主题
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>应用深色主题</summary>
     private void ApplyDarkTheme()
     {
         var resources = Application.Current.Resources;
@@ -228,10 +157,7 @@ public class MenuManager
         UpdateThemeColor(resources, "TextPrimaryColor", "#FFFFFFFF");
     }
 
-    /// <summary>
-    /// 更新主题颜色
-    /// Issue #1790: 从MainWindowViewModel提取
-    /// </summary>
+    /// <summary>更新主题颜色</summary>
     private void UpdateThemeColor(ResourceDictionary resources, string colorKey, string colorValue)
     {
         try

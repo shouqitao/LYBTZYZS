@@ -1,44 +1,42 @@
-﻿using System.IO;
-using LYBT.Desktop.Herbs.Components; // Epic #1773: 添加Component命名空间
-using LYBT.Desktop.Herbs.Interfaces; // Epic #1962: 重新添加IHerbRepository（批量导入/导出需要）
+using System.IO;
+using LYBT.Desktop.Herbs.Components;
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs; // OpenSpec: add-global-audit-system
+using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Herbs.ViewModels
 {
-    /// <summary>
-    /// 药材管理视图模型 - 基于UnifiedListViewModelBase实现
-    /// Issue #1997 - Task 2.4: 重构继承UnifiedListViewModelBase<HerbDto>
-    /// Epic #1773: 使用HerbDataManager处理数据操作
-    /// </summary>
+    /// <summary>药材管理视图模型</summary>
     public class HerbManagementViewModel : UnifiedListViewModelBase<HerbDto>
     {
-        #region 服务依赖
-
-        // Epic #1773: 使用DataManager替代Repository依赖
         private readonly HerbDataManager _dataManager;
-        // Epic #1962: 批量导入/导出需要Repository和对话框服务
         private readonly IHerbRepository _herbRepository;
         private readonly ICommonDialogService _dialogService;
-        private readonly IDialogService _prismDialogService; // OpenSpec: add-global-audit-system
+        private readonly IDialogService _prismDialogService;
 
-        #endregion
-
-        #region 构造函数
+        public new DelegateCommand AddCommand { get; private set; } = null!;
+        public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; } = null!;
+        public DelegateCommand<HerbDto> EditCommand { get; private set; } = null!;
+        public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
+        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; } = null!;
+        public DelegateCommand<HerbDto> ShowAuditLogCommand { get; private set; } = null!;
+        public DelegateCommand ImportHerbsCommand { get; private set; } = null!;
+        public DelegateCommand ExportTemplateCommand { get; private set; } = null!;
+        public DelegateCommand ExportHerbsCommand { get; private set; } = null!;
+        public DelegateCommand<string> SearchByCategoryCommand => new(SearchByCategory);
 
         public HerbManagementViewModel(
-            HerbDataManager dataManager, // Epic #1773: 注入DataManager
-            IHerbRepository herbRepository, // Epic #1962: 注入Repository（批量导入/导出）
-            ICommonDialogService dialogService, // Epic #1962: 注入对话框服务
-            IDialogService prismDialogService, // OpenSpec: add-global-audit-system
+            HerbDataManager dataManager,
+            IHerbRepository herbRepository,
+            ICommonDialogService dialogService,
+            IDialogService prismDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -46,605 +44,192 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Epic #1773: 注入DataManager
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
-            // Epic #1962: 注入批量导入/导出依赖
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService)); // OpenSpec: add-global-audit-system
+            _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
 
             PageTitle = "药材管理";
-
-            // Issue #1997: 设置分页大小（基类提供）
             PageSize = 20;
-
-            // Issue #1997: 初始化药材特定命令
             InitializeHerbCommands();
         }
 
-        #endregion
-
-        #region 命令初始化
-
-        /// <summary>
-        /// 初始化药材特定命令
-        /// Issue #1997: 初始化AddCommand, FirstPageCommand, LastPageCommand等
-        /// </summary>
         private void InitializeHerbCommands()
         {
-            // Issue #1997: UnifiedListViewModelBase提供AddCommand，子类使用new关键字隐藏
             AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy)
-                .ObservesProperty(() => IsLoading)
-                .ObservesProperty(() => IsBusy);
-
-            // 视图导航命令
-        ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, CanViewDetail);
-        EditCommand = new DelegateCommand<HerbDto>(EditHerb, CanEditHerb);
-        CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, CanCopyHerb);
-
-            // 状态管理命令
-            ToggleStatusCommand = new DelegateCommand<HerbDto>(
-                async (herb) => await ToggleStatusAsync(herb),
-                herb => herb != null && !IsBusy
-            );
-
-            // OpenSpec: add-global-audit-system - 审计日志命令
-            ShowAuditLogCommand = new DelegateCommand<HerbDto>(ExecuteShowAuditLog, herb => herb != null);
-
-            // Epic #1962: 批量导入/导出命令（移除占位实现，启用真实功能）
-            ImportHerbsCommand = new DelegateCommand(
-                async () => await ImportHerbsAsync(),
-                () => !IsBusy && !IsLoading
-            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
-
-            ExportTemplateCommand = new DelegateCommand(
-                async () => await ExportTemplateAsync(),
-                () => !IsBusy && !IsLoading
-            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
-
-            ExportHerbsCommand = new DelegateCommand(
-                async () => await ExportHerbsAsync(),
-                () => !IsBusy && !IsLoading && Items.Count > 0
-            ).ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
+                .ObservesProperty(() => IsLoading).ObservesProperty(() => IsBusy);
+            ViewDetailsCommand = new DelegateCommand<HerbDto>(ViewHerbDetail, h => h != null && !IsBusy);
+            EditCommand = new DelegateCommand<HerbDto>(EditHerb, h => h != null && !IsBusy);
+            CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, h => h != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true);
+            ToggleStatusCommand = new DelegateCommand<HerbDto>(async h => await ToggleStatusAsync(h), h => h != null && !IsBusy);
+            ShowAuditLogCommand = new DelegateCommand<HerbDto>(ExecuteShowAuditLog, h => h != null);
+            ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbsAsync(), () => !IsBusy && !IsLoading)
+                .ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
+            ExportTemplateCommand = new DelegateCommand(async () => await ExportTemplateAsync(), () => !IsBusy && !IsLoading)
+                .ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
+            ExportHerbsCommand = new DelegateCommand(async () => await ExportHerbsAsync(), () => !IsBusy && !IsLoading && Items.Count > 0)
+                .ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => Items);
         }
 
-        #endregion
-
-        #region 实现UnifiedListViewModelBase抽象方法
-
-        /// <summary>
-        /// 获取药材列表数据（实现基类抽象方法）
-        /// Issue #1997: 返回IEnumerable，由基类自动管理分页属性
-        /// </summary>
         protected override async Task<IEnumerable<HerbDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            Logger.LogInformation("=== 药材搜索调试 === 第{Page}页, 每页{PageSize}条, 搜索关键词: '{SearchText}'", page, pageSize, searchText);
-
+            Logger.LogInformation("药材搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'", page, pageSize, searchText);
             try
             {
-                // Epic #1773: 使用DataManager包装Repository方法
                 var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
-
-                if (pagedData != null)
-                {
-                    // 基类会自动管理TotalCount等分页属性，这里只需返回数据项
-                    TotalCount = pagedData.TotalCount;
-                    return pagedData.Items;
-                }
-                else
-                {
-                    Logger.LogWarning("获取药材列表失败: DataManager返回null");
-                    TotalCount = 0;
-                    return new List<HerbDto>();
-                }
+                if (pagedData != null) { TotalCount = pagedData.TotalCount; return pagedData.Items; }
+                Logger.LogWarning("获取药材列表失败: DataManager返回null");
+                TotalCount = 0;
+                return new List<HerbDto>();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取药材列表时发生异常");
-                var contextMessage = $"获取药材列表 - 模块:{nameof(HerbManagementViewModel)}";
-                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
-
+                await UserNotificationService!.HandleExceptionAsync(ex, $"获取药材列表 - 模块:{nameof(HerbManagementViewModel)}");
                 TotalCount = 0;
                 return new List<HerbDto>();
             }
         }
 
-        #endregion
-
-        #region 重写基类虚方法
-
-        /// <summary>
-        /// 执行添加操作 - CRUD统一模式（Region Navigation）
-        /// Issue #1997: UnifiedListViewModelBase提供AddCommand，子类重写实现
-        /// </summary>
         protected override async Task OnExecuteAddAsync()
         {
-            // Region Navigation必须在UI线程执行
             Logger.LogInformation("导航到创建药材视图");
-            // Issue #2168: CRUD统一架构 - 统一使用HerbDetailView（无参数→Create模式）
             NavigateTo("ContentRegion", "HerbDetailView");
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 删除药材（实现基类虚方法）
-        /// Issue #1997: 统一删除方法签名
-        /// </summary>
         protected override async Task OnExecuteDeleteAsync(HerbDto item)
         {
-            if (item == null)
-            {
-                Logger.LogWarning("OnExecuteDeleteAsync: 药材对象为null");
-                return;
-            }
-
+            if (item == null) { Logger.LogWarning("OnExecuteDeleteAsync: 药材对象为null"); return; }
             Logger.LogDebug("删除药材: {HerbId} - {HerbName}", item.Id, item.Name);
 
             try
             {
-                // 确认删除
-                var confirmed = await ShowConfirmationAsync(
-                    $"确认删除药材 [{item.Name}] 吗？",
-                    "删除确认");
+                var confirmed = await ShowConfirmationAsync($"确认删除药材 [{item.Name}] 吗？", "删除确认");
+                if (!confirmed) { Logger.LogDebug("用户取消删除, HerbId: {HerbId}", item.Id); return; }
 
-                if (!confirmed)
-                {
-                    Logger.LogDebug("用户取消删除, HerbId: {HerbId}", item.Id);
-                    return;
-                }
-
-                // Epic #1773: 使用DataManager删除
                 var success = await _dataManager.DeleteHerbAsync(item.Id);
-                if (success)
-                {
-                    Logger.LogInformation("成功删除药材: {HerbName}", item.Name);
-                    await ShowSuccessMessageAsync($"药材 [{item.Name}] 已删除");
-                }
-                else
-                {
-                    Logger.LogError("删除药材失败: {HerbName}", item.Name);
-                    ErrorMessage = $"删除药材 {item.Name} 失败";
-                }
+                if (success) { Logger.LogInformation("成功删除药材: {HerbName}", item.Name); await ShowSuccessMessageAsync($"药材 [{item.Name}] 已删除"); }
+                else { Logger.LogError("删除药材失败: {HerbName}", item.Name); ErrorMessage = $"删除药材 {item.Name} 失败"; }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "删除药材时发生异常: {HerbName}", item.Name);
-                var contextMessage = $"删除药材 - 模块:{nameof(HerbManagementViewModel)}";
-                await UserNotificationService!.HandleExceptionAsync(ex, contextMessage);
+                await UserNotificationService!.HandleExceptionAsync(ex, $"删除药材 - 模块:{nameof(HerbManagementViewModel)}");
             }
         }
 
-        /// <summary>
-        /// 批量删除药材（实现基类抽象方法）
-        /// Issue #2156: BR-001（权限控制）、BR-003（结果反馈）、BR-004（失败不影响其他）
-        /// </summary>
-        /// <remarks>
-        /// 基类ExecuteBatchDeleteAsync已处理确认对话框（BR-002），此方法只负责执行删除逻辑
-        /// </remarks>
         protected override async Task OnExecuteBatchDeleteAsync(List<HerbDto> items)
         {
-            if (items == null || items.Count == 0)
-            {
-                Logger.LogWarning("OnExecuteBatchDeleteAsync: 药材列表为空");
-                return;
-            }
-
+            if (items == null || items.Count == 0) { Logger.LogWarning("OnExecuteBatchDeleteAsync: 药材列表为空"); return; }
             Logger.LogInformation("开始批量删除药材，数量: {Count}", items.Count);
 
-            // BR-003: 统计删除结果
             var successCount = 0;
             var failureCount = 0;
             var failedItems = new List<string>();
 
-            // BR-004: 逐个删除，部分失败不影响其他
             foreach (var item in items)
             {
                 try
                 {
-                    // BR-001: 调用DataManager.DeleteHerbAsync（包含权限检查）
                     var success = await _dataManager.DeleteHerbAsync(item.Id);
-                    if (success)
-                    {
-                        successCount++;
-                        Logger.LogInformation("成功删除药材: {HerbName}", item.Name);
-                    }
-                    else
-                    {
-                        failureCount++;
-                        failedItems.Add(item.Name);
-                        Logger.LogWarning("删除药材失败: {HerbName}", item.Name);
-                    }
+                    if (success) { successCount++; Logger.LogInformation("成功删除药材: {HerbName}", item.Name); }
+                    else { failureCount++; failedItems.Add(item.Name); Logger.LogWarning("删除药材失败: {HerbName}", item.Name); }
                 }
-                catch (Exception ex)
-                {
-                    failureCount++;
-                    failedItems.Add(item.Name);
-                    Logger.LogError(ex, "删除药材时发生异常: {HerbName}", item.Name);
-                }
+                catch (Exception ex) { failureCount++; failedItems.Add(item.Name); Logger.LogError(ex, "删除药材时发生异常: {HerbName}", item.Name); }
             }
 
-            // BR-003: 生成结果消息
-            var message = $"批量删除完成！\n\n" +
-                          $"成功：{successCount}个\n" +
-                          $"失败：{failureCount}个";
-
+            var message = $"批量删除完成！\n\n成功：{successCount}个\n失败：{failureCount}个";
             if (failureCount > 0 && failedItems.Count > 0)
             {
                 message += $"\n\n失败的药材：\n{string.Join("、", failedItems.Take(5))}";
-                if (failedItems.Count > 5)
-                {
-                    message += $"等{failedItems.Count}个";
-                }
+                if (failedItems.Count > 5) message += $"等{failedItems.Count}个";
             }
 
-            // BR-003: 显示结果反馈
-            if (failureCount > 0)
-            {
-                await ShowWarningMessageAsync(message);
-            }
-            else
-            {
-                await ShowSuccessMessageAsync(message);
-            }
-
-            Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}",
-                successCount, failureCount);
+            if (failureCount > 0) await ShowWarningMessageAsync(message);
+            else await ShowSuccessMessageAsync(message);
+            Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}", successCount, failureCount);
         }
 
-        #endregion
-
-        #region 生命周期
-
-        /// <summary>
-        /// 页面加载时调用
-        /// </summary>
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
             await base.InitializeAsync(parameters);
             await RefreshAsync();
         }
 
-        #endregion
+        private void ViewHerbDetail(HerbDto herb) { if (herb == null) return; NavigateTo("ContentRegion", "HerbDetailView", new NavigationParameters { { "HerbId", herb.Id }, { "ReadOnly", true } }); }
+        private void EditHerb(HerbDto herb) { if (herb == null) return; NavigateTo("ContentRegion", "HerbDetailView", new NavigationParameters { { "HerbId", herb.Id } }); }
+        private void CopyHerb(HerbDto herb) { if (herb == null) return; NavigateTo("ContentRegion", "HerbDetailView", new NavigationParameters { { "SourceHerbId", herb.Id }, { "Mode", "Copy" } }); }
+        private async void SearchByCategory(string category) { if (!string.IsNullOrWhiteSpace(category)) { SearchText = $"分类:{category}"; await RefreshAsync(); } }
 
-        #region 列表操作命令
-
-        /// <summary>
-        /// 添加药材命令
-        /// Issue #1997: UnifiedListViewModelBase提供AddCommand，子类使用new关键字隐藏
-        /// </summary>
-        public new DelegateCommand AddCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 查看药材详情命令
-        /// </summary>
-        public DelegateCommand<HerbDto> ViewDetailsCommand { get; private set; } = null!;
-
-        /// <summary>
-    /// 编辑药材命令
-    /// </summary>
-    public DelegateCommand<HerbDto> EditCommand { get; private set; } = null!;
-
-    /// <summary>
-    /// 复制药材命令
-    /// </summary>
-    public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 切换状态命令
-        /// </summary>
-        public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 查看审计日志命令
-        /// OpenSpec: add-global-audit-system
-        /// </summary>
-        public DelegateCommand<HerbDto> ShowAuditLogCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 导入药材命令
-        /// </summary>
-        public DelegateCommand ImportHerbsCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 导出模板命令
-        /// </summary>
-        public DelegateCommand ExportTemplateCommand { get; private set; } = null!;
-
-        /// <summary>
-        /// 导出药材命令
-        /// </summary>
-        public DelegateCommand ExportHerbsCommand { get; private set; } = null!;
-
-        
-        #endregion
-
-        #region 自定义功能
-
-        /// <summary>
-        /// 查看药材详情
-        /// </summary>
-        private void ViewHerbDetail(HerbDto herb)
-        {
-            if (herb == null) return;
-
-            var parameters = new NavigationParameters
-            {
-                { "HerbId", herb.Id },
-                { "ReadOnly", true }
-            };
-            NavigateTo("ContentRegion", "HerbDetailView", parameters);
-    }
-
-    /// <summary>
-    /// 编辑药材
-    /// </summary>
-    private void EditHerb(HerbDto herb)
-    {
-        if (herb == null) return;
-
-        var parameters = new NavigationParameters
-        {
-            { "HerbId", herb.Id }
-            // 不传ReadOnly参数，默认为编辑模式
-        };
-        NavigateTo("ContentRegion", "HerbDetailView", parameters);
-    }
-
-    /// <summary>
-    /// 复制药材
-        /// </summary>
-        private void CopyHerb(HerbDto herb)
-        {
-            if (herb == null) return;
-
-            var parameters = new NavigationParameters
-            {
-                { "SourceHerbId", herb.Id },
-                { "Mode", "Copy" }
-            };
-            NavigateTo("ContentRegion", "HerbDetailView", parameters);
-        }
-
-        /// <summary>
-        /// 检查是否可以查看详情
-        /// </summary>
-        private bool CanViewDetail(HerbDto herb)
-        {
-            return herb != null && !IsBusy;
-}
-
-/// <summary>
-/// 检查是否可以编辑
-/// </summary>
-private bool CanEditHerb(HerbDto herb)
-{
-    return herb != null && !IsBusy;
-}
-
-/// <summary>
-/// 检查是否可以复制
-        /// </summary>
-        private bool CanCopyHerb(HerbDto herb)
-        {
-            return herb != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true;
-        }
-
-        #endregion
-
-        #region 搜索功能增强
-
-        /// <summary>
-        /// 按分类搜索
-        /// </summary>
-        public DelegateCommand<string> SearchByCategoryCommand =>
-            new DelegateCommand<string>(SearchByCategory);
-
-        /// <summary>
-        /// 按分类搜索
-        /// </summary>
-        private async void SearchByCategory(string category)
-        {
-            if (string.IsNullOrWhiteSpace(category)) return;
-
-            SearchText = $"分类:{category}";
-            await RefreshAsync();
-        }
-
-        #endregion
-
-        #region 命令实现
-
-        /// <summary>
-        /// 显示审计日志
-        /// OpenSpec: add-global-audit-system
-        /// </summary>
         private void ExecuteShowAuditLog(HerbDto? herb)
         {
             if (herb == null) return;
-            Logger.LogInformation("查看药材审计日志：{HerbId} - {HerbName}", herb.Id, herb.Name);
-            var parameters = new DialogParameters
-            {
-                { "EntityType", "herb" },
-                { "EntityId", herb.Id },
-                { "EntityDescription", $"药材：{herb.Name}" }
-            };
-            _prismDialogService.ShowDialog("EntityAuditLogDialog", parameters, _ => { });
+            Logger.LogInformation("查看药材审计日志：{HerbId}", herb.Id);
+            _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters { { "EntityType", "herb" }, { "EntityId", herb.Id }, { "EntityDescription", $"药材：{herb.Name}" } }, _ => { });
         }
 
-        /// <summary>
-        /// 切换药材状态
-        /// </summary>
         private async Task ToggleStatusAsync(HerbDto herb)
         {
             if (herb == null) return;
-
-            try
-            {
-                Logger.LogInformation("切换药材状态: {HerbId}", herb.Id);
-                _ = ShowSuccessMessageAsync($"切换药材 '{herb.Name}' 状态功能开发中");
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "切换药材状态失败: {HerbId}", herb.Id);
-                await ShowErrorMessageAsync("切换药材状态失败");
-            }
+            try { Logger.LogInformation("切换药材状态: {HerbId}", herb.Id); _ = ShowSuccessMessageAsync($"切换药材 '{herb.Name}' 状态功能开发中"); await Task.CompletedTask; }
+            catch (Exception ex) { Logger.LogError(ex, "切换药材状态失败: {HerbId}", herb.Id); await ShowErrorMessageAsync("切换药材状态失败"); }
         }
 
-        /// <summary>
-        /// 导入药材
-        /// </summary>
         private async Task ImportHerbsAsync()
         {
             await ExecuteSafelyAsync(async () =>
             {
-                // ① 打开文件选择对话框
-                var filePath = await _dialogService.ShowOpenFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "选择药材导入文件");
+                var filePath = await _dialogService.ShowOpenFileDialogAsync(filter: "Excel文件|*.xlsx", title: "选择药材导入文件");
+                if (string.IsNullOrEmpty(filePath)) return;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return; // 用户取消
-                }
-
-                // ② 读取文件流
                 using var fileStream = File.OpenRead(filePath);
-                var fileName = Path.GetFileName(filePath);
+                Logger.LogInformation("开始导入药材文件：{FileName}", Path.GetFileName(filePath));
+                var result = await _herbRepository.BatchImportAsync(fileStream, Path.GetFileName(filePath));
 
-                // ③ 调用Repository导入
-                Logger.LogInformation("开始导入药材文件：{FileName}", fileName);
-                var result = await _herbRepository.BatchImportAsync(fileStream, fileName);
+                if (result == null) { await _dialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入药材"); return; }
 
-                if (result == null)
-                {
-                    await _dialogService.ShowErrorAsync("导入失败，请检查文件格式", "导入药材");
-                    return;
-                }
-
-                // ④ 显示导入结果
-                var message = $"导入完成！\n\n" +
-                              $" 成功：{result.SuccessCount}条\n" +
-                              $" 失败：{result.FailureCount}条\n" +
-                              $"⏭️ 跳过：{result.SkippedCount}条\n\n" +
-                              $"成功率：{result.SuccessRate:F1}%";
-
+                var message = $"导入完成！\n\n 成功：{result.SuccessCount}条\n 失败：{result.FailureCount}条\n⏭️ 跳过：{result.SkippedCount}条\n\n成功率：{result.SuccessRate:F1}%";
                 if (result.FailureCount > 0)
                 {
                     message += $"\n\n前{Math.Min(3, result.Failures.Count)}条失败记录：\n";
-                    foreach (var failure in result.Failures.Take(3))
-                    {
-                        message += $"\n第{failure.RowNumber}行（{failure.HerbName}）：{failure.Reason}";
-                    }
+                    foreach (var failure in result.Failures.Take(3)) message += $"\n第{failure.RowNumber}行（{failure.HerbName}）：{failure.Reason}";
                 }
-
                 await _dialogService.ShowInfoAsync(message, "导入结果");
-
-                // ⑤ 刷新列表
-                if (result.SuccessCount > 0)
-                {
-                    await RefreshAsync();
-                }
+                if (result.SuccessCount > 0) await RefreshAsync();
             }, "导入药材");
         }
 
-        /// <summary>
-        /// 导出模板
-        /// </summary>
         private async Task ExportTemplateAsync()
         {
             await ExecuteSafelyAsync(async () =>
             {
-                // ① 打开保存文件对话框
-                var filePath = await _dialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "保存药材导入模板",
-                    defaultFileName: $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(filter: "Excel文件|*.xlsx", title: "保存药材导入模板", defaultFileName: $"药材导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
+                if (string.IsNullOrEmpty(filePath)) return;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return; // 用户取消
-                }
-
-                // ② 下载模板
                 Logger.LogInformation("下载药材导入模板");
                 var bytes = await _herbRepository.ExportTemplateAsync();
+                if (bytes == null || bytes.Length == 0) { await _dialogService.ShowErrorAsync("下载模板失败，请稍后重试", "下载模板"); return; }
 
-                if (bytes == null || bytes.Length == 0)
-                {
-                    await _dialogService.ShowErrorAsync("下载模板失败，请稍后重试", "下载模板");
-                    return;
-                }
-
-                // ③ 保存文件
                 await File.WriteAllBytesAsync(filePath, bytes);
-
-                await _dialogService.ShowInfoAsync(
-                    $"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入药材」功能导入。",
-                    "下载成功");
+                await _dialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入药材」功能导入。", "下载成功");
             }, "下载模板");
         }
 
-        /// <summary>
-        /// 导出药材
-        /// </summary>
         private async Task ExportHerbsAsync()
         {
             await ExecuteSafelyAsync(async () =>
             {
-                // ① 打开保存文件对话框
-                var filePath = await _dialogService.ShowSaveFileDialogAsync(
-                    filter: "Excel文件|*.xlsx",
-                    title: "导出药材数据",
-                    defaultFileName: $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                var filePath = await _dialogService.ShowSaveFileDialogAsync(filter: "Excel文件|*.xlsx", title: "导出药材数据", defaultFileName: $"药材数据_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                if (string.IsNullOrEmpty(filePath)) return;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    return; // 用户取消
-                }
-
-                // ② 导出数据（使用当前搜索关键词）
                 Logger.LogInformation("导出药材数据，关键词：{Keyword}", SearchText);
                 var bytes = await _herbRepository.ExportHerbsAsync(SearchText);
+                if (bytes == null || bytes.Length == 0) { await _dialogService.ShowErrorAsync("导出失败，请稍后重试", "导出药材"); return; }
 
-                if (bytes == null || bytes.Length == 0)
-                {
-                    await _dialogService.ShowErrorAsync("导出失败，请稍后重试", "导出药材");
-                    return;
-                }
-
-                // ③ 保存文件
                 await File.WriteAllBytesAsync(filePath, bytes);
-
                 await _dialogService.ShowInfoAsync($"成功导出药材数据到：\n{filePath}", "导出成功");
             }, "导出药材");
         }
-
-        /// <summary>
-        /// 执行跳转到第一页
-        /// Issue #1997: UnifiedListViewModelBase提供CurrentPage属性
-        /// </summary>
-        private void ExecuteFirstPage()
-        {
-            if (CanGoPreviousPage)
-            {
-                CurrentPage = 1;
-            }
-        }
-
-        /// <summary>
-        /// 执行跳转到最后一页
-        /// Issue #1997: BaseManagementViewModel提供TotalPages属性
-        /// </summary>
-        private void ExecuteLastPage()
-        {
-            if (CanGoNextPage && TotalPages > 0)
-            {
-                CurrentPage = TotalPages;
-            }
-        }
-
-        
-        #endregion
     }
 }

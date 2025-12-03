@@ -1,37 +1,27 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Desktop.Formula.Interfaces; // Desktop层架构重构 Phase 1: 接口化
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Formula.ViewModels.Components;
-using LYBT.Desktop.Herbs.Interfaces; // Issue #2149: IHerbDataManager for loading herbs
+using LYBT.Desktop.Herbs.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs; // Issue #2149: HerbDto for herb operations
+using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using Prism.Ioc; // Issue #2149: IContainerProvider for lazy resolution
+using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
-    /// <summary>
-    /// 配方详情视图模型 - UltraThink架构重构版本
-    /// 基于UnifiedViewModelBase实现配方详细信息查看和编辑功能
-    /// </summary>
+    /// <summary>配方详情视图模型</summary>
     public class FormulaDetailViewModel : UnifiedViewModelBase
     {
-        #region 服务依赖与组件
-
-        // Issue #1787: 使用Component组件（通过DI注入）
-        private readonly IFormulaDataManager _dataManager; // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
-        private readonly IFormulaCommandHandler _commandHandler; // Desktop层架构重构 Phase 1: 接口化
-        private readonly IContainerProvider _containerProvider; // Issue #2149: 用于延迟解析跨模块依赖
-
-        #endregion
-
-        #region 私有字段
+        private readonly IFormulaDataManager _dataManager;
+        private readonly IFormulaCommandHandler _commandHandler;
+        private readonly IContainerProvider _containerProvider;
 
         private Guid _formulaId;
         private FormulaDto? _formula;
@@ -43,273 +33,72 @@ namespace LYBT.Desktop.Formula.ViewModels
         private string _remark = string.Empty;
         private bool _isShared;
         private string _category = string.Empty;
-
-        // Issue #2149: 缓存所有药材列表，供拼音码过滤使用
         private ObservableCollection<HerbDto> _allHerbs = new();
 
-        #endregion
+        public Guid FormulaId { get => _formulaId; set => SetProperty(ref _formulaId, value); }
 
-        #region 核心属性
-
-        /// <summary>
-        /// 配方ID
-        /// </summary>
-        public Guid FormulaId
-        {
-            get => _formulaId;
-            set => SetProperty(ref _formulaId, value);
-        }
-
-        /// <summary>
-        /// 配方详情
-        /// </summary>
         public FormulaDto? Formula
         {
             get => _formula;
-            set
-            {
-                if (SetProperty(ref _formula, value))
-                {
-                    LoadFormulaData();
-                }
-            }
+            set { if (SetProperty(ref _formula, value)) LoadFormulaData(); }
         }
 
-        /// <summary>
-        /// 是否为编辑模式
-        /// </summary>
         public bool IsEditMode
         {
             get => _isEditMode;
-            set
-            {
-                if (SetProperty(ref _isEditMode, value))
-                {
-                    RaisePropertyChanged(nameof(IsReadOnly)); // 通知IsReadOnly属性变更
-                    UpdateCommandStates();
-                }
-            }
+            set { if (SetProperty(ref _isEditMode, value)) { RaisePropertyChanged(nameof(IsReadOnly)); UpdateCommandStates(); } }
         }
 
-        /// <summary>
-        /// 是否为只读模式（与IsEditMode相反）
-        /// 用于XAML按钮可见性绑定
-        /// </summary>
         public bool IsReadOnly => !IsEditMode;
 
-        #endregion
-
-        #region 编辑属性
-
-        /// <summary>
-        /// 配方名称
-        /// </summary>
         [Required(ErrorMessage = "配方名称不能为空")]
         [StringLength(100, ErrorMessage = "配方名称长度不能超过100个字符")]
         public string FormulaName
         {
             get => _formulaName;
-            set
-            {
-                if (SetProperty(ref _formulaName, value))
-                {
-                    ValidateProperty();
-                    UpdateCommandStates();
-                }
-            }
+            set { if (SetProperty(ref _formulaName, value)) { ValidateProperty(); UpdateCommandStates(); } }
         }
 
-        /// <summary>
-        /// 功效
-        /// </summary>
         [StringLength(500, ErrorMessage = "功效描述长度不能超过500个字符")]
-        public string Effect
-        {
-            get => _effect;
-            set
-            {
-                if (SetProperty(ref _effect, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        public string Effect { get => _effect; set { if (SetProperty(ref _effect, value)) ValidateProperty(); } }
 
-        /// <summary>
-        /// 用法用量
-        /// </summary>
         [StringLength(500, ErrorMessage = "用法用量描述长度不能超过500个字符")]
-        public string Usage
-        {
-            get => _usage;
-            set
-            {
-                if (SetProperty(ref _usage, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        public string Usage { get => _usage; set { if (SetProperty(ref _usage, value)) ValidateProperty(); } }
 
-        /// <summary>
-        /// 性味
-        /// </summary>
         [StringLength(200, ErrorMessage = "性味描述长度不能超过200个字符")]
-        public string Property
-        {
-            get => _property;
-            set
-            {
-                if (SetProperty(ref _property, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        public string Property { get => _property; set { if (SetProperty(ref _property, value)) ValidateProperty(); } }
 
-        /// <summary>
-        /// 备注
-        /// </summary>
         [StringLength(1000, ErrorMessage = "备注长度不能超过1000个字符")]
-        public string Remark
-        {
-            get => _remark;
-            set
-            {
-                if (SetProperty(ref _remark, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        public string Remark { get => _remark; set { if (SetProperty(ref _remark, value)) ValidateProperty(); } }
 
-        /// <summary>
-        /// 是否共享
-        /// </summary>
-        public bool IsShared
-        {
-            get => _isShared;
-            set => SetProperty(ref _isShared, value);
-        }
+        public bool IsShared { get => _isShared; set => SetProperty(ref _isShared, value); }
 
-        /// <summary>
-        /// 分类
-        /// </summary>
         [StringLength(50, ErrorMessage = "分类名称长度不能超过50个字符")]
-        public string Category
-        {
-            get => _category;
-            set
-            {
-                if (SetProperty(ref _category, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        public string Category { get => _category; set { if (SetProperty(ref _category, value)) ValidateProperty(); } }
 
-        #endregion
-
-        #region 显示属性
-
-        /// <summary>
-        /// 创建时间显示
-        /// </summary>
         public string CreatedAtDisplay => Formula?.CreatedAt.ToString("yyyy-MM-dd HH:mm") ?? "未知";
-
-        /// <summary>
-        /// 更新时间显示
-        /// </summary>
         public string UpdatedAtDisplay => Formula?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "未知";
-
-        /// <summary>
-        /// 状态显示
-        /// </summary>
         public string StatusDisplay => Formula?.Status == CommonStatus.Enabled ? "正常" : "已禁用";
-
-        /// <summary>
-        /// 药材数量
-        /// </summary>
         public int HerbCount => HerbItems.Count(h => h.HerbId != Guid.Empty);
-
-        /// <summary>
-        /// 药材组成集合 - Issue #2149: 改用ViewModel支持拼音码过滤
-        /// </summary>
         public ObservableCollection<FormulaHerbItemViewModel> HerbItems { get; } = new();
-
-        /// <summary>
-        /// 所有药材列表 - Issue #2149: 供HerbCardControl拼音码过滤使用
-        /// </summary>
         public ObservableCollection<HerbDto> AllHerbs => _allHerbs;
 
-        #endregion
-
-        #region 命令
-
-        /// <summary>
-        /// 加载数据命令
-        /// </summary>
         public DelegateCommand LoadDataCommand { get; }
-
-        /// <summary>
-        /// 编辑命令
-        /// </summary>
         public DelegateCommand EditCommand { get; }
-
-        /// <summary>
-        /// 保存命令
-        /// </summary>
         public DelegateCommand SaveCommand { get; }
-
-        /// <summary>
-        /// 取消编辑命令
-        /// </summary>
         public DelegateCommand CancelEditCommand { get; }
-
-        /// <summary>
-        /// 返回命令
-        /// </summary>
         public DelegateCommand BackCommand { get; }
-
-        /// <summary>
-        /// 复制配方命令
-        /// </summary>
         public DelegateCommand CopyFormulaCommand { get; }
-
-        /// <summary>
-        /// 打印命令
-        /// </summary>
         public DelegateCommand PrintCommand { get; }
-
-        /// <summary>
-        /// 查看使用历史命令
-        /// </summary>
         public DelegateCommand ViewUsageHistoryCommand { get; }
-
-        /// <summary>
-        /// 删除药材命令 - Issue #2149
-        /// </summary>
         public DelegateCommand<FormulaHerbItemViewModel> DeleteHerbCommand { get; }
-
-        /// <summary>
-        /// 剂量输入完成命令 - Issue #2149（重复检测+跳转）
-        /// </summary>
         public DelegateCommand<FormulaHerbItemViewModel> DosageCompletedCommand { get; }
-
-        /// <summary>
-        /// 添加新行命令 - Issue #自动添加空行（到达末尾时添加一行4个空槽位）
-        /// </summary>
         public DelegateCommand AddNewRowCommand { get; }
 
-        #endregion
-
-        #region 构造函数
-
         public FormulaDetailViewModel(
-            // Issue #1787: 注入Component组件
-            IFormulaDataManager dataManager, // Desktop层架构重构 Phase 2: 接口化修复DI解析问题
-            IFormulaCommandHandler commandHandler, // Desktop层架构重构 Phase 1: 接口化
-            IContainerProvider containerProvider, // Issue #2149: 延迟解析跨模块依赖
+            IFormulaDataManager dataManager,
+            IFormulaCommandHandler commandHandler,
+            IContainerProvider containerProvider,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -317,204 +106,92 @@ namespace LYBT.Desktop.Formula.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1787: 通过DI注入组件
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
-            // 初始化命令
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            EditCommand = new DelegateCommand(EnableEdit, CanEdit);
-            SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanSave);
-            CancelEditCommand = new DelegateCommand(CancelEdit, CanCancelEdit);
-            BackCommand = new DelegateCommand(NavigateBack);
-            CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), CanCopyFormula);
-            PrintCommand = new DelegateCommand(ExecutePrint, CanPrint);
-            ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, CanViewUsageHistory);
-
-            // Issue #2149: 药材编辑命令初始化
+            EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode);
+            SaveCommand = new DelegateCommand(async () => await SaveAsync(), () => !IsBusy && Formula != null && IsEditMode && !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors);
+            CancelEditCommand = new DelegateCommand(CancelEdit, () => !IsBusy && Formula != null && IsEditMode);
+            BackCommand = new DelegateCommand(() => NavigateTo("ContentRegion", "FormulaManagementView"));
+            CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => !IsBusy && Formula != null && !IsEditMode);
+            PrintCommand = new DelegateCommand(ExecutePrint, () => !IsBusy && Formula != null);
+            ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, () => !IsBusy && Formula != null);
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
             DosageCompletedCommand = new DelegateCommand<FormulaHerbItemViewModel>(OnDosageCompleted);
             AddNewRowCommand = new DelegateCommand(AddNewRow);
 
-            // 属性变更时刷新命令状态
             PropertyChanged += (s, e) => UpdateCommandStates();
         }
 
-        #endregion
-
-        #region 导航生命周期 (Issue #1240)
-
-        /// <summary>
-        /// 处理导航参数（同步）- Issue #1240
-        /// </summary>
         protected override void ProcessNavigationParameters(NavigationParameters parameters)
         {
             base.ProcessNavigationParameters(parameters);
-
-            if (parameters.ContainsKey("FormulaId"))
-            {
-                FormulaId = parameters.GetValue<Guid>("FormulaId");
-            }
-
-            // Issue #2149修复: 根据ReadOnly参数判断是否为编辑模式
-            // 查看模式：传递ReadOnly=true → IsEditMode=false
-            // 新建/编辑模式：无ReadOnly参数或ReadOnly=false → IsEditMode=true
-            if (parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"))
-            {
-                IsEditMode = false;  // 查看模式
-            }
-            else
-            {
-                IsEditMode = true;   // 新建或编辑模式
-            }
+            if (parameters.ContainsKey("FormulaId")) FormulaId = parameters.GetValue<Guid>("FormulaId");
+            IsEditMode = !(parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"));
         }
 
-        /// <summary>
-        /// 异步初始化数据 - Issue #1240
-        /// </summary>
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
             await base.InitializeAsync(parameters);
-
-            // Issue #2149: 加载所有药材列表，供拼音码过滤使用
             await LoadAllHerbsAsync();
-
-            if (FormulaId != Guid.Empty)
-            {
-                await LoadDataAsync();
-            }
-            else
-            {
-                // 新建模式：初始化4个空白药材槽位
-                EnsureMinimumBlankRows();
-            }
+            if (FormulaId != Guid.Empty) await LoadDataAsync();
+            else EnsureMinimumBlankRows();
         }
 
-        /// <inheritdoc/>
         public override bool IsNavigationTarget(NavigationContext navigationContext)
         {
             if (navigationContext.Parameters.ContainsKey("FormulaId"))
-            {
-                var targetId = navigationContext.Parameters.GetValue<Guid>("FormulaId");
-                return FormulaId == targetId;
-            }
+                return FormulaId == navigationContext.Parameters.GetValue<Guid>("FormulaId");
             return true;
         }
 
-        #endregion
-
-        #region 数据操作
-
-        /// <summary>
-        /// 加载所有药材列表 - Issue #2149: 通过IContainerProvider延迟解析跨模块依赖
-        /// </summary>
         private async Task LoadAllHerbsAsync()
         {
             try
             {
                 Logger.LogDebug("开始加载所有药材列表");
-
-                // Issue #2149: 使用IContainerProvider延迟解析IHerbDataManager（避免构造函数强依赖）
                 var herbDataManager = _containerProvider.Resolve<IHerbDataManager>();
-
                 _allHerbs.Clear();
 
-                // 分页加载所有药材（Server端限制pageSize最大100）
                 const int pageSize = 100;
                 int currentPage = 1;
-                int totalLoaded = 0;
-
                 while (true)
                 {
                     var pagedResult = await herbDataManager.GetPagedAsync(currentPage, pageSize);
-
-                    if (pagedResult?.Items == null || !pagedResult.Items.Any())
-                    {
-                        break; // 没有更多数据
-                    }
-
-                    foreach (var herb in pagedResult.Items)
-                    {
-                        _allHerbs.Add(herb);
-                    }
-
-                    totalLoaded += pagedResult.Items.Count;
-
-                    // 如果当前页数据不足pageSize，说明已经是最后一页
-                    if (pagedResult.Items.Count < pageSize)
-                    {
-                        break;
-                    }
-
+                    if (pagedResult?.Items == null || !pagedResult.Items.Any()) break;
+                    foreach (var herb in pagedResult.Items) _allHerbs.Add(herb);
+                    if (pagedResult.Items.Count < pageSize) break;
                     currentPage++;
                 }
-
-                Logger.LogInformation("成功分页加载 {Count} 个药材", totalLoaded);
-
-                // 调试日志：输出前5个药材的Name和PinYinCode
-                if (_allHerbs.Any())
-                {
-                    Logger.LogInformation("=== 前5个药材数据 ===");
-                    foreach (var herb in _allHerbs.Take(5))
-                    {
-                        Logger.LogInformation("Name: {Name}, PinYinCode: {PinYinCode}, Unit: {Unit}",
-                            herb.Name, herb.PinYinCode ?? "(空)", herb.Unit);
-                    }
-                }
+                Logger.LogInformation("成功分页加载 {Count} 个药材", _allHerbs.Count);
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "加载药材列表时发生异常");
-                // 不阻断主流程，仅记录日志
-            }
+            catch (Exception ex) { Logger.LogError(ex, "加载药材列表时发生异常"); }
         }
 
-        /// <summary>
-        /// 加载配方数据
-        /// </summary>
         private async Task LoadDataAsync()
         {
-            if (FormulaId == Guid.Empty)
-            {
-                await ShowErrorMessageAsync("配方ID无效");
-                return;
-            }
+            if (FormulaId == Guid.Empty) { await ShowErrorMessageAsync("配方ID无效"); return; }
 
             try
             {
                 SetIsBusy(true, "正在加载配方详情...");
-
-                // 加载配方详情（药材列表已在InitializeAsync中加载）
                 var (success, formula, errorMessage) = await _dataManager.LoadFormulaAsync(FormulaId);
-
-                if (success && formula != null)
-                {
-                    Formula = formula;
-                }
-                else
-                {
-                    await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
-                }
+                if (success && formula != null) Formula = formula;
+                else await ShowErrorMessageAsync(errorMessage ?? "加载配方失败");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "加载配方详情时发生异常");
                 await ShowErrorMessageAsync("加载配方详情时发生系统错误，请稍后重试");
             }
-            finally
-            {
-                SetIsBusy(false);
-            }
+            finally { SetIsBusy(false); }
         }
 
-        /// <summary>
-        /// 加载配方数据到编辑属性
-        /// </summary>
         private void LoadFormulaData()
         {
             if (Formula == null) return;
-
             FormulaName = Formula.Name ?? string.Empty;
             Effect = Formula.Effect ?? string.Empty;
             Usage = Formula.Usage ?? string.Empty;
@@ -523,272 +200,103 @@ namespace LYBT.Desktop.Formula.ViewModels
             IsShared = Formula.IsShared;
             Category = Formula.Category ?? string.Empty;
 
-            // Issue #2149: 手动加载药材项到 ViewModel 集合
             HerbItems.Clear();
             if (Formula.Herbs?.Any() == true)
             {
                 foreach (var herb in Formula.Herbs)
                 {
-                    var herbViewModel = CreateBlankHerbItem();
-                    herbViewModel.HerbId = herb.HerbId ?? Guid.Empty;
-                    herbViewModel.HerbName = herb.HerbName;
-                    herbViewModel.Dosage = herb.Quantity;
-                    herbViewModel.Unit = herb.Unit;
-                    herbViewModel.Remark = herb.ProcessingMethod;
-                    HerbItems.Add(herbViewModel);
+                    HerbItems.Add(new FormulaHerbItemViewModel
+                    {
+                        HerbId = herb.HerbId ?? Guid.Empty,
+                        HerbName = herb.HerbName,
+                        Dosage = herb.Quantity,
+                        Unit = herb.Unit,
+                        Remark = herb.ProcessingMethod,
+                        AllHerbs = _allHerbs
+                    });
                 }
             }
-
-            // 只在编辑模式下添加空白槽位
-            if (IsEditMode)
-            {
-                EnsureMinimumBlankRows();
-            }
-
-            // 刷新显示属性
+            if (IsEditMode) EnsureMinimumBlankRows();
             RefreshDisplayProperties();
         }
 
-        /// <summary>
-        /// 保存配方
-        /// </summary>
         private async Task SaveAsync()
         {
-            if (Formula == null || !ValidateInputs())
-            {
-                return;
-            }
+            if (Formula == null || !ValidateInputs()) return;
 
             try
             {
                 SetIsBusy(true, "正在保存配方...");
+                Logger.LogInformation("保存配方: HerbItems={Count}", HerbItems.Count);
 
-                // 调试日志：输出HerbItems原始数据
-                Logger.LogInformation("=== 保存配方药材数据（原始） ===");
-                Logger.LogInformation("HerbItems总数: {Count}", HerbItems.Count);
-                for (int i = 0; i < HerbItems.Count; i++)
-                {
-                    var item = HerbItems[i];
-                    Logger.LogInformation("  [{Index}] HerbId: {HerbId}, HerbName: '{HerbName}', Dosage: {Dosage}, Unit: '{Unit}'",
-                        i, item.HerbId, item.HerbName ?? "(null)", item.Dosage, item.Unit ?? "(null)");
-                }
-
-                // Issue #2149: 将 ViewModel 转换为 DTO 列表
-                // 只保留有效的药材项：HerbId不为空、HerbName不为空、Dosage > 0
                 var herbDtos = HerbItems
-                    .Where(h => h.HerbId != Guid.Empty
-                        && !string.IsNullOrWhiteSpace(h.HerbName)
-                        && h.Dosage > 0)
+                    .Where(h => h.HerbId != Guid.Empty && !string.IsNullOrWhiteSpace(h.HerbName) && h.Dosage > 0)
                     .Select(h => h.ToDto())
                     .ToList();
 
-                // 调试日志：输出转换后的DTO信息
-                Logger.LogInformation("=== 保存配方药材数据（过滤后） ===");
                 Logger.LogInformation("有效药材数量: {Count}", herbDtos.Count);
-                foreach (var dto in herbDtos)
-                {
-                    Logger.LogInformation("药材: {HerbName}, HerbId: {HerbId}, Quantity: {Quantity}, Unit: {Unit}",
-                        dto.HerbName, dto.HerbId, dto.Quantity, dto.Unit);
-                }
 
                 var (success, updatedFormula, errorMessage) = await _commandHandler.SaveFormulaAsync(
-                    Formula,
-                    FormulaName,
-                    Effect,
-                    Usage,
-                    Property,
-                    Category,
-                    Remark,
-                    IsShared,
-                    herbDtos);
+                    Formula, FormulaName, Effect, Usage, Property, Category, Remark, IsShared, herbDtos);
 
                 if (success && updatedFormula != null)
                 {
-                    // 重要：先退出编辑模式，再更新Formula（避免LoadFormulaData添加空白槽位）
                     IsEditMode = false;
                     Formula = updatedFormula;
                     await ShowSuccessMessageAsync("配方保存成功");
                 }
-                else
-                {
-                    await ShowErrorMessageAsync(errorMessage ?? "保存配方失败");
-                }
+                else await ShowErrorMessageAsync(errorMessage ?? "保存配方失败");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "保存配方时发生异常");
                 await ShowErrorMessageAsync("保存配方时发生系统错误，请稍后重试");
             }
-            finally
-            {
-                SetIsBusy(false);
-            }
+            finally { SetIsBusy(false); }
         }
 
-        /// <summary>
-        /// 复制配方
-        /// </summary>
         private async Task CopyFormulaAsync()
         {
             if (Formula == null) return;
-
             try
             {
                 SetIsBusy(true, "正在复制配方...");
-
                 var (success, newFormula, message) = await _commandHandler.CopyFormulaAsync(Formula);
-
                 if (success && newFormula != null)
                 {
                     await ShowSuccessMessageAsync(message ?? "配方复制成功");
-
-                    // 导航到新配方
                     FormulaId = newFormula.Id;
                     await LoadDataAsync();
                 }
-                else
-                {
-                    await ShowErrorMessageAsync(message ?? "复制配方失败");
-                }
+                else await ShowErrorMessageAsync(message ?? "复制配方失败");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "复制配方时发生异常");
                 await ShowErrorMessageAsync("复制配方时发生系统错误，请稍后重试");
             }
-            finally
-            {
-                SetIsBusy(false);
-            }
+            finally { SetIsBusy(false); }
         }
 
-        #endregion
+        private void EnableEdit() { IsEditMode = true; EnsureMinimumBlankRows(); }
+        private void CancelEdit() { IsEditMode = false; LoadFormulaData(); ClearAllErrors(); }
 
-        #region 命令实现
-
-        /// <summary>
-        /// 启用编辑模式
-        /// </summary>
-        private void EnableEdit()
-        {
-            IsEditMode = true;
-            // 进入编辑模式时，确保有空白槽位供用户添加新药材
-            EnsureMinimumBlankRows();
-        }
-
-        /// <summary>
-        /// 取消编辑
-        /// </summary>
-        private void CancelEdit()
-        {
-            IsEditMode = false;
-            LoadFormulaData(); // 重新加载原始数据
-            ClearAllErrors(); // 清除验证错误
-        }
-
-        /// <summary>
-        /// 返回配方管理页面
-        /// </summary>
-        private void NavigateBack()
-        {
-            Logger.LogInformation("返回配方管理列表");
-            NavigateTo("ContentRegion", "FormulaManagementView");
-        }
-
-        /// <summary>
-        /// 打印配方
-        /// </summary>
         private async void ExecutePrint()
         {
             if (Formula == null) return;
-
-            var (success, errorMessage) = await _commandHandler.PrintFormulaAsync(Formula);
-
-            if (success)
-            {
-                await ShowSuccessMessageAsync(errorMessage ?? "打印功能开发中");
-            }
-            else
-            {
-                await ShowErrorMessageAsync(errorMessage ?? "打印配方失败");
-            }
+            var (success, msg) = await _commandHandler.PrintFormulaAsync(Formula);
+            if (success) await ShowSuccessMessageAsync(msg ?? "打印功能开发中");
+            else await ShowErrorMessageAsync(msg ?? "打印配方失败");
         }
 
-        /// <summary>
-        /// 查看使用历史
-        /// </summary>
         private async void ExecuteViewUsageHistory()
         {
             if (FormulaId == Guid.Empty) return;
-
-            var (success, errorMessage) = await _commandHandler.ViewUsageHistoryAsync(FormulaId);
-
-            if (success)
-            {
-                await ShowSuccessMessageAsync(errorMessage ?? "查看使用历史功能开发中");
-            }
-            else
-            {
-                await ShowErrorMessageAsync(errorMessage ?? "查看使用历史失败");
-            }
+            var (success, msg) = await _commandHandler.ViewUsageHistoryAsync(FormulaId);
+            if (success) await ShowSuccessMessageAsync(msg ?? "查看使用历史功能开发中");
+            else await ShowErrorMessageAsync(msg ?? "查看使用历史失败");
         }
 
-        #endregion
-
-        #region 命令状态
-
-        /// <summary>
-        /// 检查是否可以编辑
-        /// </summary>
-        private bool CanEdit()
-        {
-            return !IsBusy && Formula != null && !IsEditMode;
-        }
-
-        /// <summary>
-        /// 检查是否可以保存
-        /// </summary>
-        private bool CanSave()
-        {
-            return !IsBusy && Formula != null && IsEditMode &&
-                   !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors;
-        }
-
-        /// <summary>
-        /// 检查是否可以取消编辑
-        /// </summary>
-        private bool CanCancelEdit()
-        {
-            return !IsBusy && Formula != null && IsEditMode;
-        }
-
-        /// <summary>
-        /// 检查是否可以复制配方
-        /// </summary>
-        private bool CanCopyFormula()
-        {
-            return !IsBusy && Formula != null && !IsEditMode;
-        }
-
-        /// <summary>
-        /// 检查是否可以打印
-        /// </summary>
-        private bool CanPrint()
-        {
-            return !IsBusy && Formula != null;
-        }
-
-        /// <summary>
-        /// 检查是否可以查看使用历史
-        /// </summary>
-        private bool CanViewUsageHistory()
-        {
-            return !IsBusy && Formula != null;
-        }
-
-        /// <summary>
-        /// 更新命令状态
-        /// </summary>
         private void UpdateCommandStates()
         {
             EditCommand.RaiseCanExecuteChanged();
@@ -799,50 +307,21 @@ namespace LYBT.Desktop.Formula.ViewModels
             ViewUsageHistoryCommand.RaiseCanExecuteChanged();
         }
 
-        #endregion
-
-        #region 验证方法
-
-        /// <summary>
-        /// 验证输入
-        /// </summary>
         private bool ValidateInputs()
         {
             ClearAllErrors();
-
-            // 验证必填字段
-            if (string.IsNullOrWhiteSpace(FormulaName))
-            {
-                AddError(nameof(FormulaName), "配方名称不能为空");
-                return false;
-            }
-
+            if (string.IsNullOrWhiteSpace(FormulaName)) { AddError(nameof(FormulaName), "配方名称不能为空"); return false; }
             return !HasErrors;
         }
 
-        #endregion
-
-        #region Issue #2149: 药材编辑命令实现
-
-        /// <summary>
-        /// 删除药材命令实现（带自动前移）
-        /// </summary>
         private void DeleteHerb(FormulaHerbItemViewModel? herbItem)
         {
-            if (herbItem == null || !IsEditMode)
-                return;
-
+            if (herbItem == null || !IsEditMode) return;
             try
             {
-                // 删除指定药材
                 HerbItems.Remove(herbItem);
-
-                // 刷新HerbCount显示
                 RaisePropertyChanged(nameof(HerbCount));
-
-                // 确保至少有4个空槽位
                 EnsureMinimumBlankRows();
-
                 Logger.LogInformation("删除药材: {HerbName}", herbItem.HerbName);
             }
             catch (Exception ex)
@@ -852,48 +331,24 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        /// <summary>
-        /// 剂量输入完成命令实现（重复检测+自动前移）
-        /// </summary>
         private void OnDosageCompleted(FormulaHerbItemViewModel? herbItem)
         {
-            if (herbItem == null || !IsEditMode)
-                return;
-
+            if (herbItem == null || !IsEditMode) return;
             try
             {
-                // 1. 检测重复药材
                 if (herbItem.HerbId != Guid.Empty)
                 {
-                    var duplicates = HerbItems
-                        .Where(h => h.HerbId == herbItem.HerbId && h != herbItem)
-                        .ToList();
-
+                    var duplicates = HerbItems.Where(h => h.HerbId == herbItem.HerbId && h != herbItem).ToList();
                     if (duplicates.Any())
                     {
-                        // 取较大的剂量
-                        var maxQuantity = Math.Max(herbItem.Quantity, duplicates.Max(d => d.Quantity));
-                        herbItem.Quantity = maxQuantity;
-
-                        // 删除重复项
-                        foreach (var duplicate in duplicates)
-                        {
-                            HerbItems.Remove(duplicate);
-                        }
-
-                        // 提示用户
-                        _ = ShowWarningMessageAsync($"{herbItem.HerbName}有重复，剂量改为{maxQuantity}g（取较大值）");
-
-                        Logger.LogInformation("合并重复药材: {HerbName}, 剂量: {Quantity}",
-                            herbItem.HerbName, maxQuantity);
+                        var maxQty = Math.Max(herbItem.Quantity, duplicates.Max(d => d.Quantity));
+                        herbItem.Quantity = maxQty;
+                        foreach (var dup in duplicates) HerbItems.Remove(dup);
+                        _ = ShowWarningMessageAsync($"{herbItem.HerbName}有重复，剂量改为{maxQty}g（取较大值）");
+                        Logger.LogInformation("合并重复药材: {HerbName}, 剂量: {Quantity}", herbItem.HerbName, maxQty);
                     }
                 }
-
-                // 2. 刷新HerbCount
                 RaisePropertyChanged(nameof(HerbCount));
-
-                // 3. Issue #自动添加空行: 移除自动添加逻辑
-                // 添加空行的逻辑由MoveFocusToNextHerbName在到达末尾时处理
             }
             catch (Exception ex)
             {
@@ -902,74 +357,28 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        /// <summary>
-        /// 添加新的一行空白药材槽位（4个）
-        /// Issue #自动添加空行: 到达末尾时调用
-        /// </summary>
         private void AddNewRow()
         {
-            if (!IsEditMode)
-                return;
-
+            if (!IsEditMode) return;
             try
             {
-                // 添加一行（4个空白槽位）
-                for (int i = 0; i < 4; i++)
-                {
-                    var newItem = CreateBlankHerbItem();
-                    HerbItems.Add(newItem);
-                }
-
+                for (int i = 0; i < 4; i++) HerbItems.Add(CreateBlankHerbItem());
                 Logger.LogInformation("添加新的一行空白药材槽位（4个）");
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "添加新行时发生异常");
-            }
+            catch (Exception ex) { Logger.LogError(ex, "添加新行时发生异常"); }
         }
 
-        /// <summary>
-        /// 确保至少有4个空白槽位（一行）
-        /// </summary>
         private void EnsureMinimumBlankRows()
         {
-            const int minBlankSlots = 4;
-
-            // 统计空槽位数量（未选择药材的槽位）
             var blankSlots = HerbItems.Count(h => h.HerbId == Guid.Empty);
-
-            // 如果空槽位不足4个，补充到4个
-            while (blankSlots < minBlankSlots)
-            {
-                var newItem = CreateBlankHerbItem();
-                HerbItems.Add(newItem);
-                blankSlots++;
-            }
+            while (blankSlots < 4) { HerbItems.Add(CreateBlankHerbItem()); blankSlots++; }
         }
 
-        /// <summary>
-        /// 创建空白药材项
-        /// Phase 3: FormulaHerbItemViewModel继承HerbItemViewModelBase，简化构造
-        /// </summary>
-        private FormulaHerbItemViewModel CreateBlankHerbItem()
+        private FormulaHerbItemViewModel CreateBlankHerbItem() => new()
         {
-            return new FormulaHerbItemViewModel
-            {
-                HerbId = Guid.Empty,
-                HerbName = string.Empty,
-                Dosage = 0,  // 空白槽位初始剂量为0
-                Unit = "g",
-                AllHerbs = _allHerbs
-            };
-        }
+            HerbId = Guid.Empty, HerbName = string.Empty, Dosage = 0, Unit = "g", AllHerbs = _allHerbs
+        };
 
-        #endregion
-
-        #region 辅助方法
-
-        /// <summary>
-        /// 刷新显示属性
-        /// </summary>
         private void RefreshDisplayProperties()
         {
             RaisePropertyChanged(nameof(CreatedAtDisplay));
@@ -977,7 +386,5 @@ namespace LYBT.Desktop.Formula.ViewModels
             RaisePropertyChanged(nameof(StatusDisplay));
             RaisePropertyChanged(nameof(HerbCount));
         }
-
-        #endregion
     }
 }
