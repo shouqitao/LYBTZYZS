@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### UI层清理重构 (OpenSpec: cleanup-ui-layer)
+
+**Phase 1: ViewModel重构**
+- PrescriptionPanelViewModel拆分为7个Components (Calculator/Validator/ItemHandler/SaveHandler/ImportHandler/DataLoader)
+- PatientSelectionViewModel引入MedicalCaseStartCoordinator处理医案启动流程
+- 大型ViewModel保留1300+行但已最大化委托，剩余为核心ViewModel职责
+
+**Phase 2: 样式统一**
+- 建立全局样式系统 (`Shell/Styles/Colors.xaml`, `Typography.xaml`, `Controls.xaml`)
+- 所有模块硬编码颜色迁移到全局Brush
+- 新增状态色: SuccessLightBrush, WarningLightBrush, ErrorLightBrush
+
+**Phase 3: 基础设施整理**
+- 删除重复Shell服务 (`INavigationService`, `ThemeService`)
+- 确认通知服务分层设计合理 (IUserNotificationService vs INotificationService)
+
+**Phase 4: 交互模式标准化**
+- 创建 `dialog-patterns` spec规范对话框使用模式
+- 创建 `ui-style-conventions` spec规范样式约定
+- 更新 `viewmodel-conventions` spec添加导航服务指南
+
+**Phase 5: 验证和文档**
+- Desktop UI测试: 147/147通过
+- 更新 `viewmodel-development-guide.md` 添加样式/对话框/导航示例
+
 #### WebAPI层重构 (OpenSpec: refactor-webapi-layer)
 
 **Phase 1: Dead Endpoints清理**
