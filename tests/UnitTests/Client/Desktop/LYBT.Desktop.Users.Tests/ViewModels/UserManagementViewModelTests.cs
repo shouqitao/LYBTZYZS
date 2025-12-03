@@ -397,8 +397,8 @@ namespace LYBT.Desktop.Users.Tests.ViewModels
                 .GetProperty("CurrentPage");
             property!.SetValue(_viewModel, 5);
 
-            // Act
-            var method = typeof(UserManagementViewModel)
+            // Act - 从基类获取私有方法
+            var method = typeof(UserManagementViewModel).BaseType!
                 .GetMethod("ExecuteFirstPage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             method!.Invoke(_viewModel, null);
 
