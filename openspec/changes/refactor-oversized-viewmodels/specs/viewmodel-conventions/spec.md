@@ -70,7 +70,7 @@
 
 ### Requirement: VM-003 XAML Size Guidelines (NEW)
 
-所有XAML视图文件 SHOULD 控制在300行以内。
+所有XAML视图文件 SHALL 控制在300行以内（特殊复杂视图可适当放宽至400行）。
 
 **变更内容**:
 识别10个超大XAML文件，通过控件化重构：
