@@ -270,6 +270,56 @@ public class ConsultationModel : BaseEntity
 - **可扩展性**: 预留扩展字段，支持业务发展
 - **性能考虑**: 避免过深的导航属性嵌套
 
+### Data Annotations vs Fluent API 最佳实践
+
+**DRY原则：字符串长度只在Entity中定义一次**
+
+EF Core配置优先级：Convention < Data Annotations < Fluent API
+
+我们采用混合策略：
+
+| 配置类型 | 使用方式 | 示例 |
+|---------|---------|------|
+| **字符串长度** | Entity [StringLength] | `[StringLength(100)]` |
+| **必填验证** | Entity [Required] | `[Required]` |
+| **范围约束** | Entity [Range] | `[Range(0, 150)]` |
+| **表名配置** | Fluent API | `builder.ToTable("Users")` |
+| **索引配置** | Fluent API | `builder.HasIndex(u => u.UserName).IsUnique()` |
+| **枚举转换** | Fluent API | `builder.Property(u => u.Status).HasConversion<int>()` |
+| **decimal精度** | Fluent API | `builder.Property(h => h.Price).HasPrecision(18, 2)` |
+| **默认值** | Fluent API | `builder.Property(f => f.IsShared).HasDefaultValue(false)` |
+| **关系配置** | Fluent API | `builder.HasMany(f => f.Herbs)...` |
+
+**正确示例：**
+```csharp
+// Entity中定义长度
+public class User : BaseEntity
+{
+    [Required]
+    [StringLength(50)]  // 长度只在这里定义一次
+    public string UserName { get; set; } = string.Empty;
+}
+
+// Configuration中只配置Fluent API专属功能
+public class UserConfiguration : BaseEntityConfiguration<User>
+{
+    public override void Configure(EntityTypeBuilder<User> builder)
+    {
+        base.Configure(builder);
+        builder.ToTable("Users");
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+        builder.HasIndex(u => u.UserName).IsUnique();  // 索引 - Fluent API专属
+        builder.Property(u => u.Status).HasConversion<int>();  // 枚举转换 - Fluent API专属
+    }
+}
+```
+
+**避免的做法：**
+```csharp
+// 错误：在Configuration中重复定义长度
+builder.Property(u => u.UserName).HasMaxLength(50);  // 冗余！
+```
+
 ## 📈 性能优化
 
 ### 查询优化

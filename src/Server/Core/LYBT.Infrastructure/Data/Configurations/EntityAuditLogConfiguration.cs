@@ -15,14 +15,13 @@ public class EntityAuditLogConfiguration : IEntityTypeConfiguration<EntityAuditL
         entity.ToTable("EntityAuditLogs");
         entity.HasKey(e => e.Id);
 
-        // 字段配置
-        entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+        entity.Property(e => e.EntityType).IsRequired();
         entity.Property(e => e.EntityId).IsRequired();
         entity.Property(e => e.OperatorId).IsRequired();
-        entity.Property(e => e.OperatorName).IsRequired().HasMaxLength(50);
+        entity.Property(e => e.OperatorName).IsRequired();
         entity.Property(e => e.OperatorRole).IsRequired();
         entity.Property(e => e.OperationType).IsRequired();
-        entity.Property(e => e.Reason).HasMaxLength(500);
         entity.Property(e => e.CreatedAt).IsRequired();
 
         // JSON字段 - 不指定HasColumnType以支持跨数据库兼容（SQLite测试 + SQL Server生产）

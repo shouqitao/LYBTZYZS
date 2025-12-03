@@ -16,17 +16,8 @@ public class ConsultationConfiguration : BaseEntityConfiguration<Consultation>
         base.Configure(builder);
 
         builder.ToTable("Consultations");
-        builder.Property(c => c.ChiefComplaint).HasMaxLength(500);
-        builder.Property(c => c.PresentIllness).HasMaxLength(1000);
-        builder.Property(c => c.Inspection).HasMaxLength(500);
-        builder.Property(c => c.AuscultationOlfaction).HasMaxLength(500);
-        builder.Property(c => c.Inquiry).HasMaxLength(1000);
-        builder.Property(c => c.Palpation).HasMaxLength(500);
-        builder.Property(c => c.TCMDiagnosis).HasMaxLength(500);
-        builder.Property(c => c.TreatmentPrinciple).HasMaxLength(500);
-        builder.Property(c => c.MedicalAdvice).HasMaxLength(500);
-        builder.Property(c => c.Remark).HasMaxLength(1000);
 
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         // CreatedBy 必填（覆盖基类的可空配置）
         builder.Property(c => c.CreatedBy).IsRequired();
 

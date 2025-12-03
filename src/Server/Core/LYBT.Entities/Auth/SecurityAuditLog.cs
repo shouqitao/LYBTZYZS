@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LYBT.Entities.Auth;
 
 /// <summary>
@@ -9,11 +11,14 @@ public class SecurityAuditLog
     /// <summary>
     /// 主键ID
     /// </summary>
+    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
     /// 事件类型（Login, Logout, RefreshToken, TokenRevoked, LoginFailed等）
     /// </summary>
+    [Required]
+    [StringLength(50)]
     public string EventType { get; set; } = string.Empty;
 
     /// <summary>
@@ -24,21 +29,25 @@ public class SecurityAuditLog
     /// <summary>
     /// 用户类型（User或SuperAdmin）
     /// </summary>
+    [StringLength(50)]
     public string? UserType { get; set; }
 
     /// <summary>
     /// 用户名称
     /// </summary>
+    [StringLength(256)]
     public string? UserName { get; set; }
 
     /// <summary>
     /// 客户端IP地址
     /// </summary>
+    [StringLength(50)]
     public string? IpAddress { get; set; }
 
     /// <summary>
     /// 客户端User-Agent
     /// </summary>
+    [StringLength(500)]
     public string? UserAgent { get; set; }
 
     /// <summary>
@@ -49,6 +58,7 @@ public class SecurityAuditLog
     /// <summary>
     /// 错误消息（失败时记录）
     /// </summary>
+    [StringLength(500)]
     public string? ErrorMessage { get; set; }
 
     /// <summary>

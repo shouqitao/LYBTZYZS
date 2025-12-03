@@ -16,8 +16,8 @@ public class MedicalCaseConfiguration : BaseEntityConfiguration<MedicalCase>
         base.Configure(builder);
 
         builder.ToTable("MedicalCases");
-        builder.Property(m => m.Remark).HasMaxLength(500);
 
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
         // Epic #2175 BF-002: NeedsPrescription字段配置（nullable支持三态）
         builder.Property(m => m.NeedsPrescription).IsRequired(false);
 

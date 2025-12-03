@@ -89,7 +89,7 @@ namespace LYBT.Entities.Auth
         /// <summary>
         /// 设备名称（友好名称）
         /// </summary>
-        [StringLength(128)]
+        [StringLength(200)] // 统一为200，支持较长的设备名称
         public string? DeviceName { get; set; }
 
         /// <summary>

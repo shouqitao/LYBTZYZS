@@ -18,7 +18,7 @@ namespace LYBT.Entities.Formulas
 
         /// <summary>验方名称</summary>
         [Required]
-        [StringLength(100)]
+        [StringLength(200)] // 统一为200，支持较长的验方名称
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -43,7 +43,7 @@ namespace LYBT.Entities.Formulas
         public string? Remark { get; set; }
 
         /// <summary>性味归经</summary>
-        [StringLength(200)]
+        [StringLength(300)] // 统一为300
         [DisplayName("性味归经")]
         public string? Property { get; set; }
 

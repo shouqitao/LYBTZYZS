@@ -14,17 +14,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.ToTable("SystemLogs");
             entity.HasKey(sl => sl.Id);
 
-            // 配置字段
+            // 字符串长度由 Entity 的 [MaxLength] 定义，遵循 DRY 原则
             entity.Property(sl => sl.Timestamp).IsRequired();
-            entity.Property(sl => sl.Level).HasMaxLength(50).IsRequired();
+            entity.Property(sl => sl.Level).IsRequired();
             entity.Property(sl => sl.Message).IsRequired();
-            entity.Property(sl => sl.Exception);
-            entity.Property(sl => sl.LoggerName).HasMaxLength(255);
-            entity.Property(sl => sl.UserId);
-            entity.Property(sl => sl.RequestId).HasMaxLength(36);
-            entity.Property(sl => sl.MachineName).HasMaxLength(100);
-            entity.Property(sl => sl.ThreadId);
-            entity.Property(sl => sl.Properties);
 
             // Issue #1765: 删除5个多余索引
             // MVP阶段(<10K日志记录)无需任何索引

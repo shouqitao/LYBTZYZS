@@ -23,8 +23,8 @@ public class DesktopLayerArchTests
         Assembly.Load("LYBT.Desktop.Prescriptions"),
         Assembly.Load("LYBT.Desktop.Herbs"),
         Assembly.Load("LYBT.Desktop.Formula"),
-        Assembly.Load("LYBT.Desktop.AdminWorkstation"),
-        Assembly.Load("LYBT.Desktop.ClinicalWorkstation")
+        Assembly.Load("LYBT.Desktop.Admin"),
+        Assembly.Load("LYBT.Desktop.Clinical")
     ];
 
     /// <summary>
@@ -306,8 +306,8 @@ public class DesktopLayerArchTests
             "LYBT.Desktop.Prescriptions",
             "LYBT.Desktop.Herbs",
             "LYBT.Desktop.Formula",
-            "LYBT.Desktop.AdminWorkstation",
-            "LYBT.Desktop.ClinicalWorkstation"
+            "LYBT.Desktop.Admin",
+            "LYBT.Desktop.Clinical"
         };
 
         var forbiddenNamespaces = new[] { "Mappings" };

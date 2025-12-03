@@ -14,15 +14,10 @@ namespace LYBT.Infrastructure.Data.Configurations
         {
             entity.ToTable("RefreshTokens");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
-            entity.Property(e => e.Jti).IsRequired().HasMaxLength(128);
-            entity.Property(e => e.ClientIp).HasMaxLength(45);
-            entity.Property(e => e.UserAgent).HasMaxLength(500);
-            entity.Property(e => e.RevokedReason).HasMaxLength(200);
-            entity.Property(e => e.ReplacedByToken).HasMaxLength(500);
-            entity.Property(e => e.FamilyId).HasMaxLength(128);
-            entity.Property(e => e.DeviceId).HasMaxLength(128);
-            entity.Property(e => e.DeviceName).HasMaxLength(200);
+
+            // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+            entity.Property(e => e.Token).IsRequired();
+            entity.Property(e => e.Jti).IsRequired();
 
             // Issue #1765: Token唯一索引（JWT验证必需）
             entity.HasIndex(e => e.Token).IsUnique();

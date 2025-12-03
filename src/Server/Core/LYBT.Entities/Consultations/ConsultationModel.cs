@@ -47,7 +47,7 @@ namespace LYBT.Entities.Consultations
         public string? AuscultationOlfaction { get; set; }
 
         /// <summary>问诊</summary>
-        [StringLength(500)]
+        [StringLength(1000)] // 问诊内容较多，统一为1000
         [DisplayName("问诊")]
         public string? Inquiry { get; set; }
 
@@ -74,7 +74,7 @@ namespace LYBT.Entities.Consultations
         public string? MedicalAdvice { get; set; }
 
         /// <summary>备注信息</summary>
-        [StringLength(500)]
+        [StringLength(1000)] // 统一为1000
         [DisplayName("备注")]
         public string? Remark { get; set; }
 

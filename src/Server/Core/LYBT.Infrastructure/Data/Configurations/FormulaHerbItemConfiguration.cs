@@ -15,12 +15,10 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.ToTable("FormulaHerbItems");
             entity.HasKey(f => f.Id);
 
-            entity.Property(f => f.HerbName).IsRequired().HasMaxLength(100);
+            // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+            entity.Property(f => f.HerbName).IsRequired();
             entity.Property(f => f.Quantity).HasDefaultValue(1);
-            entity.Property(f => f.Unit).HasMaxLength(16).HasDefaultValue("g");
-            entity.Property(f => f.Usage).HasMaxLength(200);
-            entity.Property(f => f.Remark).HasMaxLength(200);
-            entity.Property(f => f.ProcessingMethod).HasMaxLength(100);
+            entity.Property(f => f.Unit).HasDefaultValue("g");
 
             // 配置与Herb的关系
             entity.HasOne<Herb>()

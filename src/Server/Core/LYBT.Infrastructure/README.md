@@ -40,6 +40,29 @@ public class AppDbContext : DbContext
 | **AppDbContext** | 统一数据库上下文，管理所有实体 |  完成 |
 | **AppDbContextFactory** | 设计时DbContext工厂，支持迁移 |  完成 |
 | **DatabaseInitializationService** | 数据库初始化和种子数据管理 |  完成 |
+| **Configurations/** | EF Core实体配置（遵循DRY原则） |  完成 |
+
+#### EF Core Configuration最佳实践
+
+**DRY原则：Configuration只配置Fluent API专属功能**
+
+```csharp
+// Configuration中只保留Data Annotations无法实现的配置：
+public class UserConfiguration : BaseEntityConfiguration<User>
+{
+    public override void Configure(EntityTypeBuilder<User> builder)
+    {
+        base.Configure(builder);
+        builder.ToTable("Users");                              // 表名
+        builder.HasIndex(u => u.UserName).IsUnique();          // 索引
+        builder.Property(u => u.Status).HasConversion<int>();  // 枚举转换
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+        // 不要使用 .HasMaxLength() - 这会造成冗余
+    }
+}
+```
+
+详见 [LYBT.Entities README](../LYBT.Entities/README.md#data-annotations-vs-fluent-api-最佳实践)
 
 ### 2. 配置管理层 (Configuration/)
 

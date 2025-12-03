@@ -27,7 +27,7 @@ namespace LYBT.Entities.Patients
         public string Name { get; set; } = string.Empty;
 
         /// <summary>拼音码（用于快速搜索）</summary>
-        [StringLength(20)] // 匹配数据库的 nvarchar(20)
+        [StringLength(50)] // 统一为50，与Fluent API配置一致
         [DisplayName("拼音码")]
         public string? PinYinCode { get; set; }
 

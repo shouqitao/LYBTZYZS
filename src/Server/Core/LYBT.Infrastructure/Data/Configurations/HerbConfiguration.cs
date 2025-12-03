@@ -16,19 +16,13 @@ public class HerbConfiguration : BaseEntityConfiguration<Herb>
         base.Configure(builder);
 
         builder.ToTable("Herbs");
-        builder.Property(h => h.Name).HasMaxLength(100);
-        builder.Property(h => h.PinYinCode).HasMaxLength(50);
-        builder.Property(h => h.Origin).HasMaxLength(100);
-        builder.Property(h => h.Spec).HasMaxLength(100);
-        builder.Property(h => h.Unit).HasMaxLength(10);
-        builder.Property(h => h.Effect).HasMaxLength(500);
-        builder.Property(h => h.Usage).HasMaxLength(500);
 
-        // decimal 精度配置
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+        // decimal 精度配置（Fluent API 专属功能）
         builder.Property(h => h.Price).HasPrecision(18, 2);
         builder.Property(h => h.CostPrice).HasPrecision(18, 2);
 
-        // 配置Status枚举字段
+        // 枚举转换（Fluent API 专属功能）
         builder.Property(h => h.Status).HasConversion<int>();
     }
 }

@@ -16,14 +16,12 @@ public class UserConfiguration : BaseEntityConfiguration<User>
         base.Configure(builder);
 
         builder.ToTable("Users");
-        builder.HasIndex(u => u.UserName).IsUnique();
-        builder.Property(u => u.UserName).HasMaxLength(50);
-        builder.Property(u => u.RealName).HasMaxLength(50);
-        builder.Property(u => u.PasswordHash).HasMaxLength(256);
-        builder.Property(u => u.PinYinCode).HasMaxLength(50);
-        builder.Property(u => u.PhoneNumber).HasMaxLength(20);
 
-        // 配置枚举字段
+        // 索引配置（Fluent API 专属功能）
+        builder.HasIndex(u => u.UserName).IsUnique();
+
+        // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+        // 枚举转换（Fluent API 专属功能）
         builder.Property(u => u.Status).HasConversion<int>();
         builder.Property(u => u.Role).HasConversion<int>();
 

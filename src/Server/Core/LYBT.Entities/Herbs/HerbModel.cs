@@ -19,9 +19,9 @@ namespace LYBT.Entities.Herbs
 
         // Id字段继承自BaseEntity
 
-        /// &lt;summary&gt;药材名称（BR-001: 1-50字符）Epic #1962&lt;/summary&gt;
+        /// <summary>药材名称（BR-001: 1-100字符）</summary>
         [Required]
-        [StringLength(50, MinimumLength = 1)]
+        [StringLength(100, MinimumLength = 1)]
         [DisplayName("药材名称")]
         public string Name { get; set; } = string.Empty;
 

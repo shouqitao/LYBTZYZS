@@ -13,9 +13,9 @@ namespace LYBT.Infrastructure.Data.Configurations
         {
             entity.ToTable("AuthSessions");
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.TokenHash).HasMaxLength(256);
-            entity.Property(e => e.IpAddress).HasMaxLength(45);
-            entity.Property(e => e.UserAgent).HasMaxLength(500);
+
+            // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
+            // 枚举转换（Fluent API 专属功能）
             entity.Property(e => e.Status).HasConversion<int>();
 
             // Issue #1765: 删除3个多余索引
