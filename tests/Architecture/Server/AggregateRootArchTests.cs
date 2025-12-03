@@ -117,8 +117,12 @@ public class AggregateRootArchTests
             "LYBT.Entities.Users.AdminSecretModel",      // 安全敏感：密码哈希不应软删除
             "LYBT.Entities.Prescriptions.PrescriptionItem", // 值对象：通过Prescription管理
             "LYBT.Entities.Formula.FormulaHerbItem",     // 值对象：通过Formula管理
+            "LYBT.Entities.Formulas.FormulaHerbItem",    // 值对象：通过Formula管理（新命名空间）
             "LYBT.Entities.Common.SystemLog",            // 日志表：只增不删，用于审计
-            "LYBT.Entities.Auth.AuthSession"             // 会话表：过期自动清理
+            "LYBT.Entities.Auth.AuthSession",            // 会话表：过期自动清理
+            "LYBT.Entities.Common.EntityAuditLog",       // 审计日志：只增不删，永久保留
+            "LYBT.Entities.Auth.SecurityAuditLog",       // 安全审计日志：只增不删，永久保留
+            "LYBT.Entities.MedicalCases.MedicalCaseAuditLog" // 医案审计日志：只增不删，永久保留
         };
 
         // 获取所有公共类（排除抽象类和静态类）

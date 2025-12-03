@@ -160,11 +160,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, DoctorId: {medicalCase.DoctorId}");
 
             // Act - 医生A检查是否可编辑（使用医生A的Client）
-            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCasePermissionDto>();
 
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.CanEdit.Should().BeTrue("同一医生应该可以编辑自己创建的医案");
@@ -184,11 +184,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             _output.WriteLine($"医生A创建的医案ID: {medicalCase.Id}, DoctorId: {medicalCase.DoctorId}");
 
             // Act - 医生B检查是否可编辑（使用医生B的Client）
-            var response = await _doctorBClient!.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
+            var response = await _doctorBClient!.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
 
             // Assert
             response.ShouldBeOk();
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCasePermissionDto>();
 
             apiResponse.Data.Should().NotBeNull();
             apiResponse.Data!.CanEdit.Should().BeFalse("不同医生不应该能编辑他人创建的医案");

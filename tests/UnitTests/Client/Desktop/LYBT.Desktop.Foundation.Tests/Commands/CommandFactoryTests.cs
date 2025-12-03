@@ -200,7 +200,7 @@ public class CommandFactoryTests
             param => !string.IsNullOrEmpty(param));
 
         // Act & Assert
-        command.CanExecute(null).Should().BeFalse();
+        command.CanExecute(null!).Should().BeFalse(); // 故意测试null输入
         command.CanExecute("").Should().BeFalse();
         command.CanExecute("valid").Should().BeTrue();
     }

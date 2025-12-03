@@ -104,11 +104,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         /// <summary>
         /// 生成特定医生的测试Token
+        /// 必须与appsettings.Test.json的JWT配置保持一致
         /// </summary>
         private string GenerateDoctorToken(Guid doctorId)
         {
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var key = System.Text.Encoding.ASCII.GetBytes("J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw==");
+            // 使用appsettings.Test.json中的测试密钥
+            var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
 
             var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
             {
@@ -119,8 +121,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Doctor")
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
-                Issuer = "LYBT.WebAPI",
-                Audience = "LYBT.Client",
+                // 使用appsettings.Test.json中的Issuer/Audience
+                Issuer = "LYBT.WebAPI.Tests",
+                Audience = "LYBT.Client.Tests",
                 SigningCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(
                     new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
                     Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256Signature)
@@ -315,11 +318,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
         /// <summary>
         /// 生成SysAdmin的测试Token
+        /// 必须与appsettings.Test.json的JWT配置保持一致
         /// </summary>
         private string GenerateSysAdminToken()
         {
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-            var key = System.Text.Encoding.ASCII.GetBytes("J4CM3t5EsIA9COGVMpQJoAHfX/mgeIbKxrlbXNKfv34T6AGxRnD/2fRJmh932xWypxhjl0nm7whrsdK9PcY9fw==");
+            // 使用appsettings.Test.json中的测试密钥
+            var key = System.Text.Encoding.ASCII.GetBytes("TestSecretKey_MinLength32Characters_ForJWTTokenGeneration_123456789");
 
             var tokenDescriptor = new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
             {
@@ -330,8 +335,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "SysAdmin")
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
-                Issuer = "LYBT.WebAPI",
-                Audience = "LYBT.Client",
+                // 使用appsettings.Test.json中的Issuer/Audience
+                Issuer = "LYBT.WebAPI.Tests",
+                Audience = "LYBT.Client.Tests",
                 SigningCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(
                     new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
                     Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256Signature)
@@ -542,7 +548,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     DoctorName = "首秋涛",
                     ConsultationDate = DateTime.Now,
                     CaseStatus = MedicalCaseStatus.Active,
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     CreatedBy = _shouqitaoUserId,
@@ -559,7 +564,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     DoctorName = "李军荣",
                     ConsultationDate = DateTime.Now,
                     CaseStatus = MedicalCaseStatus.Active,
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     CreatedBy = _jjrUserId,
@@ -661,7 +665,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     DoctorName = "首秋涛",
                     ConsultationDate = DateTime.Now,
                     CaseStatus = MedicalCaseStatus.Active,
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     CreatedBy = _shouqitaoUserId,
@@ -678,7 +681,6 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     DoctorName = "李军荣",
                     ConsultationDate = DateTime.Now,
                     CaseStatus = MedicalCaseStatus.Active,
-                    Status = CommonStatus.Enabled,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     CreatedBy = _jjrUserId,

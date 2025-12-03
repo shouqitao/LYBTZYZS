@@ -108,8 +108,8 @@ public class EntityAuditControllerIntegrationTests : IntegrationTestBase
         // Act
         var response = await Client.GetAsync($"/api/v1/EntityAudit/{invalidEntityType}/{Guid.NewGuid()}");
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK); // API returns 200 with validation error in body
+        // Assert - API返回400 BadRequest对于无效实体类型更符合RESTful规范
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<PagedResult<EntityAuditLogDto>>>();
         result.Should().NotBeNull();

@@ -21,7 +21,8 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.SingleDosePrice, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalWeight, opt => opt.Ignore())
-                .ForMember(dest => dest.Usage, opt => opt.Ignore()); // 计算属性
+                .ForMember(dest => dest.Usage, opt => opt.Ignore()) // 计算属性
+                .ForMember(dest => dest.Status, opt => opt.Ignore()); // StatusDto继承属性，实体无此字段
 
             // Prescription -> PrescriptionDetailDto
             CreateMap<Prescription, PrescriptionDetailDto>()
@@ -32,7 +33,8 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.MissingDrugWarning, opt => opt.Ignore())
                 .ForMember(dest => dest.PrescriptionNo, opt => opt.Ignore())
                 .ForMember(dest => dest.Usage, opt => opt.Ignore())
-                .ForMember(dest => dest.MedicalAdvice, opt => opt.Ignore());
+                .ForMember(dest => dest.MedicalAdvice, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore()); // StatusDto继承属性，实体无此字段
 
             // PrescriptionItem -> PrescriptionItemDto
             CreateMap<PrescriptionItem, PrescriptionItemDto>()
@@ -107,6 +109,7 @@ namespace LYBT.Module.Prescriptions.Mapping
                 .ForMember(dest => dest.Items, opt => opt.Ignore())
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
                 .ForMember(dest => dest.PrintLogs, opt => opt.Ignore())
+                .ForMember(dest => dest.PrescriptionNumber, opt => opt.Ignore()) // EditDto无此字段
                 // 忽略 BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())

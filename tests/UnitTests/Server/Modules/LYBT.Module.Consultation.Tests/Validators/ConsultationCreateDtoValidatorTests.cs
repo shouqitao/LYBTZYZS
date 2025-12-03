@@ -38,14 +38,18 @@ public class ConsultationInputDtoValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>
+    /// Issue #2231: PatientId不再验证必填
+    /// 原因：Consultation实体没有PatientId字段，它通过MedicalCase关联获取
+    /// </summary>
     [Fact]
-    public void Validate_WithEmptyPatientId_FailsValidation()
+    public void Validate_WithEmptyPatientId_PassesValidation()
     {
         // Arrange
         var dto = new ConsultationInputDto
         {
             MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.Empty,
+            PatientId = Guid.Empty, // Issue #2231: 不再验证必填
             UserId = Guid.NewGuid(),
             ChiefComplaint = "测试"
         };
@@ -53,8 +57,8 @@ public class ConsultationInputDtoValidatorTests
         // Act
         var result = _validator.TestValidate(dto);
 
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.PatientId);
+        // Assert - Issue #2231: PatientId不再要求必填
+        result.ShouldNotHaveValidationErrorFor(x => x.PatientId);
     }
 
     [Fact]

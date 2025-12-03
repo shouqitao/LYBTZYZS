@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Common;
@@ -71,6 +72,12 @@ namespace LYBT.Tests.Common
             // 设置测试环境
             builder.UseEnvironment("Test");
 
+            // 设置正确的内容根路径 - WebApplicationFactory默认使用程序集名称推断路径
+            // 但我们的项目结构是 src/Server/Services/LYBT.WebAPI，需要显式指定
+            var solutionRoot = GetSolutionRoot();
+            var webApiPath = Path.Combine(solutionRoot, "src", "Server", "Services", "LYBT.WebAPI");
+            builder.UseContentRoot(webApiPath);
+
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 ConfigureTestConfiguration(config);
@@ -80,6 +87,19 @@ namespace LYBT.Tests.Common
             {
                 ConfigureTestServices(services);
             });
+        }
+
+        /// <summary>
+        /// 获取解决方案根目录
+        /// </summary>
+        private static string GetSolutionRoot()
+        {
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "LYBT.All.sln")))
+            {
+                directory = directory.Parent;
+            }
+            return directory?.FullName ?? throw new InvalidOperationException("无法找到解决方案根目录");
         }
 
         /// <summary>
@@ -345,11 +365,11 @@ namespace LYBT.Tests.Common
         {
             base.Customize(modelBuilder, context);
 
-            // 移除MedicalCase实体的RowVersion并发令牌配置
-            var medicalCaseEntity = modelBuilder.Model.FindEntityType(typeof(LYBT.Entities.MedicalCases.MedicalCase));
-            if (medicalCaseEntity != null)
+            // 移除所有实体的RowVersion并发令牌配置
+            // InMemory数据库不支持RowVersion并发检查，会导致DbUpdateConcurrencyException
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                var rowVersionProperty = medicalCaseEntity.FindProperty("RowVersion");
+                var rowVersionProperty = entityType.FindProperty("RowVersion");
                 if (rowVersionProperty != null)
                 {
                     rowVersionProperty.IsConcurrencyToken = false;

@@ -29,7 +29,7 @@ public class BaseRepositoryTests : IDisposable
 {
     private readonly DbContextOptions<AppDbContext> _options;
     private readonly AppDbContext _context;
-    private readonly LYBT.Shared.Models.Interfaces.IRepository<User> _repository;
+    private readonly LYBT.Infrastructure.Interfaces.IRepository<User> _repository;
 
     public BaseRepositoryTests()
     {
@@ -1393,7 +1393,7 @@ public class BaseRepositoryTests : IDisposable
 /// <summary>
 /// 测试用Repository实现 - 用于测试 BaseRepository
 /// </summary>
-internal class TestRepository : BaseRepository<User>, LYBT.Shared.Models.Interfaces.IRepository<User>
+internal class TestRepository : BaseRepository<User>, LYBT.Infrastructure.Interfaces.IRepository<User>
 {
     public TestRepository(AppDbContext context)
         : base(context, NullLogger<TestRepository>.Instance)

@@ -186,6 +186,8 @@ namespace LYBT.Infrastructure.Services.Tests
                 IsAdmin = false
             };
             httpContext.Items["MedicalCaseUserInfo"] = userInfo;
+            // 注意：实现会先检查 IsAuthenticated，需要设置认证用户
+            httpContext.User = CreateAuthenticatedUser(userId, "Doctor");
 
             // Act
             var result = await _baseService.ExtractUserInfoAsync(httpContext);

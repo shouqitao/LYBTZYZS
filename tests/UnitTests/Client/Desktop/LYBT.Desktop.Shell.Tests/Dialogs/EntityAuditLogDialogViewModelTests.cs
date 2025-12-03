@@ -17,8 +17,9 @@ namespace LYBT.Desktop.Shell.Tests.Dialogs;
 /// Issue #2249: 添加审计系统单元测试
 /// OpenSpec: add-global-audit-system
 /// </summary>
-public class EntityAuditLogDialogViewModelTests
+public class EntityAuditLogDialogViewModelTests : IDisposable
 {
+    private bool _disposed;
     private readonly Mock<IApiService> _mockApiService;
     private readonly Mock<IEventAggregator> _mockEventAggregator;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
@@ -392,6 +393,29 @@ public class EntityAuditLogDialogViewModelTests
         item.OperatorId.Should().Be(operatorId);
         item.OperatorName.Should().Be("张医生");
         item.Reason.Should().Be("更正信息");
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // 释放ViewModel资源
+            (_viewModel as IDisposable)?.Dispose();
+        }
+
+        _disposed = true;
     }
 
     #endregion

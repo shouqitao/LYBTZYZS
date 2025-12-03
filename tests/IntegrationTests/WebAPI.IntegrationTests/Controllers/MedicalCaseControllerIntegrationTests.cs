@@ -374,7 +374,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task SetPrescriptionFlag_WhenStep1NotCompleted_ShouldReturn422()
+        public async Task SetPrescriptionFlag_WhenStep1NotCompleted_ShouldStillSucceed()
         {
             // Arrange - 创建病案但未辨证
             var medicalCase = await CreateTestMedicalCaseAsync();
@@ -386,8 +386,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 $"/api/v1/medicalcases/{medicalCase.Id}/prescription-flag",
                 request);
 
-            // Assert - BF-002: 三步流程验证
-            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+            // Assert - OpenSpec refactor-medicalcase-api: API已简化，不再强制step 1完成
+            // 现在允许在任何时候设置NeedsPrescription标志
+            response.ShouldBeOk();
         }
 
         #endregion
@@ -409,6 +410,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
+                        HerbName = "测试中药",
                         Quantity = 10
                     }
                 }
@@ -466,7 +468,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 UserId = medicalCase.DoctorId,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), Quantity = 6m }
+                    new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Quantity = 6m }
                 }
             };
 
@@ -533,10 +535,11 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange - 创建完整流程的病案
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            // Act
-            var response = await Client.PutAsync(
-                $"/api/v1/medicalcases/{medicalCase.Id}/complete",
-                null);
+            // Act - 使用 PUT /status 端点并传递状态
+            var statusRequest = new { Status = MedicalCaseStatus.Completed };
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/status",
+                statusRequest);
 
             // Assert
             response.ShouldBeOk();
@@ -546,18 +549,22 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task CompleteMedicalCase_WhenPrescriptionNotCompleted_ShouldReturn422()
+        public async Task CompleteMedicalCase_ViaStatusEndpoint_ShouldCompleteWithoutPrescription()
         {
             // Arrange - 创建病案但未完成处方
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            // Act
-            var response = await Client.PutAsync(
-                $"/api/v1/medicalcases/{medicalCase.Id}/complete",
-                null);
+            // Act - 使用 PUT /status 端点并传递状态
+            // OpenSpec refactor-medicalcase-api: /status 端点只验证状态转换合法性，不验证三步流程
+            var statusRequest = new { Status = MedicalCaseStatus.Completed };
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/status",
+                statusRequest);
 
-            // Assert - BF-002: 三步流程验证
-            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.UnprocessableEntity);
+            // Assert - API已简化，/status 端点允许直接完成
+            response.ShouldBeOk();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDto>();
+            apiResponse.Data!.CaseStatus.Should().Be(MedicalCaseStatus.Completed);
         }
 
         #endregion
@@ -830,13 +837,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var medicalCase = await CreateTestMedicalCaseAsync();
 
-            // Act
-            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
+            // Act - 使用正确的endpoint: /permissions (不是 /can-edit)
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
 
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCasePermissionDto>();
             apiResponse.Data!.CanEdit.Should().BeTrue();
         }
 
@@ -846,13 +853,13 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
             // Arrange
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
 
-            // Act
-            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
+            // Act - 使用正确的endpoint: /permissions (不是 /can-edit)
+            var response = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/permissions");
 
             // Assert
             response.ShouldBeOk();
 
-            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCasePermissionDto>();
             apiResponse.Data!.CanEdit.Should().BeFalse();
         }
 
@@ -994,6 +1001,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     new PrescriptionItemInputDto
                     {
                         HerbId = Guid.NewGuid(),
+                        HerbName = "测试中药",
                         Quantity = 10
                     }
                 }
@@ -1020,7 +1028,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         {
             var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
 
-            var completeResponse = await Client.PutAsync($"/api/v1/medicalcases/{medicalCase.Id}/complete", null);
+            // 使用 PUT /status 端点并传递状态
+            var statusRequest = new { Status = MedicalCaseStatus.Completed };
+            var completeResponse = await Client.PutAsJsonAsync($"/api/v1/medicalcases/{medicalCase.Id}/status", statusRequest);
 
             // ⚠️ Issue #1669: 验证完成请求是否成功
             completeResponse.ShouldBeOk();
