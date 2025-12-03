@@ -276,5 +276,222 @@ public class SearchViewModel : ViewModelBase
 
 ---
 
-*OpenSpec: refactor-viewmodel-layer Phase 4.2*
+## 对话框使用指南
+
+> **相关规范**: [dialog-patterns spec](../../openspec/specs/dialog-patterns/spec.md)
+
+### 服务选择
+
+| 场景 | 服务 | 示例 |
+|-----|------|------|
+| 确认操作 | ICommonDialogService | 删除确认、保存确认 |
+| 操作反馈 | IUserNotificationService | 成功/失败提示 |
+| 自定义对话框 | IDialogService (Prism) | 患者详情、处方编辑 |
+
+### 确认对话框
+
+```csharp
+public class PatientViewModel : UnifiedViewModelBase
+{
+    private readonly ICommonDialogService _dialogService;
+
+    private async Task DeletePatientAsync(PatientDto patient)
+    {
+        // 简单确认
+        var confirmed = await _dialogService.ShowConfirmAsync(
+            "确定要删除此患者吗？",
+            "删除确认");
+
+        if (!confirmed) return;
+
+        await _patientService.DeleteAsync(patient.Id);
+        await ShowSuccessAsync("患者已删除");
+    }
+
+    private async Task<bool> SaveChangesBeforeLeaveAsync()
+    {
+        // 三选项确认（保存/不保存/取消）
+        var result = await _dialogService.ShowTripleChoiceAsync(
+            "您有未保存的更改，是否保存？",
+            "离开确认");
+
+        return result switch
+        {
+            TripleChoiceResult.Yes => await SaveAndReturnTrueAsync(),
+            TripleChoiceResult.No => true,  // 不保存但继续
+            TripleChoiceResult.Cancel => false  // 取消导航
+        };
+    }
+}
+```
+
+### 通知显示
+
+```csharp
+// 使用ViewModelBase提供的便捷方法
+await ShowSuccessAsync("保存成功");
+await ShowErrorAsync("保存失败: " + errorMessage);
+await ShowWarningAsync("数据已过期，请刷新");
+await ShowInfoAsync("系统将在5分钟后维护");
+
+// 或直接使用IUserNotificationService
+await _notification.ShowSuccessAsync("操作完成");
+await _notification.HandleExceptionAsync(ex, "保存患者时");
+```
+
+### 禁止的做法
+
+```csharp
+// 错误: 直接使用MessageBox
+MessageBox.Show("保存成功");  // 禁止
+
+// 正确: 使用服务
+await _dialogService.ShowInfoAsync("保存成功");
+```
+
+---
+
+## 样式使用指南
+
+> **相关规范**: Phase 2 样式统一 (cleanup-ui-layer)
+
+### 全局样式资源
+
+样式文件位于 `Shell/Styles/`:
+
+| 文件 | 内容 |
+|-----|------|
+| Colors.xaml | 颜色系统 (PrimaryBrush, SurfaceBrush等) |
+| Typography.xaml | 文字样式 (TitleStyle, BodyStyle等) |
+| Controls.xaml | 控件样式 (ButtonStyle, TextBoxStyle等) |
+
+### 常用颜色
+
+```xml
+<!-- 主题色 -->
+<SolidColorBrush x:Key="PrimaryBrush" Color="#2E7D32"/>
+<SolidColorBrush x:Key="PrimaryLightBrush" Color="#60AD5E"/>
+
+<!-- 背景色 -->
+<SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+<SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
+
+<!-- 文字色 -->
+<SolidColorBrush x:Key="TextPrimaryBrush" Color="#212121"/>
+<SolidColorBrush x:Key="TextSecondaryBrush" Color="#757575"/>
+
+<!-- 状态色 -->
+<SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50"/>
+<SolidColorBrush x:Key="WarningBrush" Color="#FF9800"/>
+<SolidColorBrush x:Key="ErrorBrush" Color="#F44336"/>
+```
+
+### 在XAML中使用
+
+```xml
+<UserControl>
+    <!-- 使用全局Brush而非硬编码颜色 -->
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrush}">
+
+        <TextBlock Text="标题"
+                   Foreground="{StaticResource TextPrimaryBrush}"
+                   Style="{StaticResource TitleStyle}"/>
+
+        <Button Content="保存"
+                Style="{StaticResource PrimaryButtonStyle}"/>
+    </Border>
+</UserControl>
+```
+
+### 禁止的做法
+
+```xml
+<!-- 错误: 硬编码颜色 -->
+<Border Background="#FFFFFF"/>  <!-- 禁止 -->
+<TextBlock Foreground="#212121"/>  <!-- 禁止 -->
+
+<!-- 正确: 使用全局资源 -->
+<Border Background="{StaticResource SurfaceBrush}"/>
+<TextBlock Foreground="{StaticResource TextPrimaryBrush}"/>
+```
+
+---
+
+## 导航服务使用指南
+
+> **相关规范**: [viewmodel-conventions spec](../../openspec/specs/viewmodel-conventions/spec.md)
+
+### 区域导航
+
+```csharp
+// 标准区域导航
+_regionManager.RequestNavigate(
+    RegionNames.ContentRegion,
+    nameof(PatientDetailView),
+    new NavigationParameters { { "PatientId", patientId } });
+```
+
+### 角色导航
+
+```csharp
+// 根据用户角色导航到主页
+_roleNavigationService.NavigateToRoleHome(user.Role);
+```
+
+### 确认导航
+
+```csharp
+public class EditViewModel : ViewModelBase, IConfirmNavigationRequest
+{
+    public void ConfirmNavigationRequest(
+        NavigationContext context,
+        Action<bool> continuationCallback)
+    {
+        if (!HasUnsavedChanges)
+        {
+            continuationCallback(true);
+            return;
+        }
+
+        // 异步确认
+        _ = ConfirmNavigationAsync(continuationCallback);
+    }
+
+    private async Task ConfirmNavigationAsync(Action<bool> callback)
+    {
+        var result = await _dialogService.ShowTripleChoiceAsync(
+            "有未保存的更改，是否保存？");
+
+        var shouldContinue = result switch
+        {
+            TripleChoiceResult.Yes => await SaveAsync(),
+            TripleChoiceResult.No => true,
+            _ => false
+        };
+
+        callback(shouldContinue);
+    }
+}
+```
+
+---
+
+## 快速检查清单
+
+开发新ViewModel时，确保:
+
+- [ ] 继承 `ViewModelBase`
+- [ ] 使用 `CommandFactory` 创建命令
+- [ ] 命令初始化放在 `InitializeCommands()` 方法
+- [ ] 异步操作使用 `ExecuteSafelyAsync` 或 CommandFactory
+- [ ] 实现 `INavigationAware` 处理导航
+- [ ] 大型ViewModel拆分为Components（参考component-patterns.md）
+- [ ] 错误消息用户友好，日志详细
+- [ ] **使用对话框服务而非MessageBox**
+- [ ] **使用全局样式而非硬编码颜色**
+
+---
+
+*OpenSpec: refactor-viewmodel-layer Phase 4.2, cleanup-ui-layer Phase 5*
 *最后更新: 2025-12*
