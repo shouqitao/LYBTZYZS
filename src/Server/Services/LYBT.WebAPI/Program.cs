@@ -7,6 +7,7 @@
 /// </summary>
 using LYBT.WebAPI.Extensions;
 using LYBT.Shared.Utilities.Security;
+using LYBT.Infrastructure.Logging;
 using Serilog;
 using DotNetEnv;
 
@@ -46,9 +47,10 @@ public class Program
         // 环境变量具有最高优先级，覆盖配置文件中的默认值
         configBuilder.AddEnvironmentVariables();
 
-        // 配置Serilog
+        // 配置Serilog（集成敏感数据脱敏 Issue #2254）
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configBuilder.Build())
+            .WithSensitiveDataMasking()
             .CreateLogger();
 
         try

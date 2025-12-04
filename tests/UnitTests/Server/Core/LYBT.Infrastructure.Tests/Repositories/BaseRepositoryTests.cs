@@ -488,9 +488,10 @@ public class BaseRepositoryTests : IDisposable
         var user = CreateTestUser("ExistingUser");
         await _context.Set<User>().AddAsync(user);
         await _context.SaveChangesAsync();
+        var userId = user.Id;
 
         // Act
-        var exists = await _repository.ExistsAsync(user.Id);
+        var exists = await ((TestRepository)_repository).ExistsAsync(u => u.Id == userId);
 
         // Assert
         exists.Should().BeTrue();
@@ -503,7 +504,7 @@ public class BaseRepositoryTests : IDisposable
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var exists = await _repository.ExistsAsync(nonExistentId);
+        var exists = await ((TestRepository)_repository).ExistsAsync(u => u.Id == nonExistentId);
 
         // Assert
         exists.Should().BeFalse();
@@ -517,9 +518,10 @@ public class BaseRepositoryTests : IDisposable
         user.IsDeleted = true;
         await _context.Set<User>().AddAsync(user);
         await _context.SaveChangesAsync();
+        var userId = user.Id;
 
         // Act
-        var exists = await _repository.ExistsAsync(user.Id);
+        var exists = await ((TestRepository)_repository).ExistsAsync(u => u.Id == userId);
 
         // Assert
         exists.Should().BeFalse();
@@ -830,28 +832,30 @@ public class BaseRepositoryTests : IDisposable
         await _context.Set<User>().AddRangeAsync(users);
         await _context.SaveChangesAsync();
 
-        // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(users);
+        var userIds = users.Select(x => x.Id).ToList();
+
+        // Act - 使用表达式版本的DeleteRangeAsync
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => userIds.Contains(u.Id));
 
         // Assert
         result.Should().Be(3);
 
         var deletedUsers = await _context.Set<User>()
             .IgnoreQueryFilters()
-            .Where(u => users.Select(x => x.Id).Contains(u.Id))
+            .Where(u => userIds.Contains(u.Id))
             .ToListAsync();
         deletedUsers.Should().HaveCount(3);
         deletedUsers.Should().AllSatisfy(u => u.IsDeleted.Should().BeTrue());
     }
 
     [Fact]
-    public async Task DeleteRangeAsync_WithEmptyEntityList_Should_ReturnZero()
+    public async Task DeleteRangeAsync_WithNoMatchingPredicate_Should_ReturnZero()
     {
-        // Arrange
-        var emptyList = Array.Empty<User>();
+        // Arrange - 使用不匹配任何实体的条件
+        var nonExistentId = Guid.NewGuid();
 
         // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(emptyList);
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => u.Id == nonExistentId);
 
         // Assert
         result.Should().Be(0);
@@ -869,11 +873,13 @@ public class BaseRepositoryTests : IDisposable
         await _context.Set<User>().AddRangeAsync(user1, user2, user3);
         await _context.SaveChangesAsync();
 
-        // Act - 尝试删除所有3个用户
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(new[] { user1, user2, user3 });
+        var userIds = new[] { user1.Id, user2.Id, user3.Id };
+
+        // Act - 尝试删除所有3个用户（使用表达式）
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => userIds.Contains(u.Id));
 
         // Assert
-        result.Should().Be(2); // 只删除user1和user3
+        result.Should().Be(2); // 只删除user1和user3（user2已是删除状态）
 
         var allUsers = await _context.Set<User>()
             .IgnoreQueryFilters()
@@ -882,19 +888,19 @@ public class BaseRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteRangeAsync_WithNullEntities_Should_ThrowArgumentNullException()
+    public async Task DeleteRangeAsync_WithNullPredicate_Should_ThrowArgumentNullException()
     {
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(
-            async () => await ((TestRepository)_repository).DeleteRangeAsync((IEnumerable<User>)null!));
+            async () => await ((TestRepository)_repository).DeleteRangeAsync(null!));
     }
 
     #endregion
 
-    #region 批量操作扩展测试 - DeleteRangeAsync(ids)（4个新用例）
+    #region 批量操作扩展测试 - DeleteRangeAsync（使用表达式谓词，4个用例）
 
     [Fact]
-    public async Task DeleteRangeAsync_WithIds_Should_SoftDeleteEntitiesByIds()
+    public async Task DeleteRangeAsync_ByIdPredicate_Should_SoftDeleteEntitiesByIds()
     {
         // Arrange
         var users = new[]
@@ -908,8 +914,8 @@ public class BaseRepositoryTests : IDisposable
 
         var ids = users.Select(u => u.Id).ToList();
 
-        // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(ids);
+        // Act - 使用表达式谓词
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => ids.Contains(u.Id));
 
         // Assert
         result.Should().Be(3);
@@ -923,33 +929,44 @@ public class BaseRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteRangeAsync_WithEmptyIdList_Should_ReturnZero()
+    public async Task DeleteRangeAsync_ByNamePredicate_Should_SoftDeleteMatchingEntities()
     {
         // Arrange
-        var emptyIds = Array.Empty<Guid>();
+        var user1 = CreateTestUser("TargetUser1");
+        var user2 = CreateTestUser("TargetUser2");
+        var user3 = CreateTestUser("OtherUser");
 
-        // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(emptyIds);
+        await _context.Set<User>().AddRangeAsync(user1, user2, user3);
+        await _context.SaveChangesAsync();
+
+        // Act - 删除名字以Target开头的用户
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => u.RealName!.StartsWith("Target"));
 
         // Assert
-        result.Should().Be(0);
+        result.Should().Be(2);
+
+        var allUsers = await _context.Set<User>()
+            .IgnoreQueryFilters()
+            .ToListAsync();
+        allUsers.Where(u => u.RealName!.StartsWith("Target")).Should().AllSatisfy(u => u.IsDeleted.Should().BeTrue());
+        allUsers.First(u => u.RealName == "OtherUser").IsDeleted.Should().BeFalse();
     }
 
     [Fact]
-    public async Task DeleteRangeAsync_WithNonExistentIds_Should_ReturnZero()
+    public async Task DeleteRangeAsync_WithNonMatchingPredicate_Should_ReturnZero()
     {
         // Arrange
         var nonExistentIds = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
 
-        // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(nonExistentIds);
+        // Act - 使用不匹配的谓词
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => nonExistentIds.Contains(u.Id));
 
         // Assert
         result.Should().Be(0);
     }
 
     [Fact]
-    public async Task DeleteRangeAsync_WithIdsIncludingDeleted_Should_OnlyDeleteNonDeleted()
+    public async Task DeleteRangeAsync_ByIdPredicateIncludingDeleted_Should_OnlyDeleteNonDeleted()
     {
         // Arrange
         var user1 = CreateTestUser("User1");
@@ -962,19 +979,11 @@ public class BaseRepositoryTests : IDisposable
 
         var ids = new[] { user1.Id, user2.Id, user3.Id };
 
-        // Act
-        var result = await ((TestRepository)_repository).DeleteRangeAsync(ids);
+        // Act - 使用表达式谓词
+        var result = await ((TestRepository)_repository).DeleteRangeAsync(u => ids.Contains(u.Id));
 
         // Assert
         result.Should().Be(2); // 只删除user1和user3
-    }
-
-    [Fact]
-    public async Task DeleteRangeAsync_WithNullIds_Should_ThrowArgumentNullException()
-    {
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(
-            async () => await ((TestRepository)_repository).DeleteRangeAsync((IEnumerable<Guid>)null!));
     }
 
     #endregion

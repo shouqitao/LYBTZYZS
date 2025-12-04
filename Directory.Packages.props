@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup Label="Logging Packages">
     <!-- Serilog 结构化日志系统 - 为小型诊所优化配置 -->
+    <PackageVersion Include="Serilog" Version="4.0.2" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />

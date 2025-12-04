@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.Infrastructure.Serialization;
 using LYBT.Module.Auth;
 using LYBT.Module.Consultations;
 using LYBT.Module.Formulas;
@@ -149,6 +150,8 @@ public static class ServiceCollectionExtensions
 
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // 忽略大小写
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                // Issue #2254: 敏感数据脱敏转换器
+                options.JsonSerializerOptions.Converters.Add(new SensitiveDataJsonConverterFactory());
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 options.JsonSerializerOptions.WriteIndented = false;
