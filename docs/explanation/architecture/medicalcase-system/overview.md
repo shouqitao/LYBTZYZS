@@ -109,7 +109,6 @@ public virtual ICollection<Prescription> Prescriptions { get; set; }  // 1:N关�
 │  │  MedicalCaseRepository.cs (IRepository<MedicalCase>)   │  │
 │  │    ├─ GetByIdWithDetailsAsync() - 预加载导航属性       │  │
 │  │    ├─ GetActiveByPatientIdAsync() - 患者Active病案     │  │
-│  │    ├─ GetByDoctorIdAsync() - 医生病案列表              │  │
 │  │    └─ SearchAsync() - 多条件搜索                       │  │
 │  └────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────┘

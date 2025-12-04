@@ -396,13 +396,13 @@ Server:
 public interface IFormulaRepository : IRepository<Formula>
 {
     Task<Formula?> GetByIdWithHerbsAsync(Guid id);
-    Task<List<Formula>> GetSharedFormulasAsync();
-    Task<List<Formula>> GetByCategoryAsync(string category);
     Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
     Task<List<Formula>> GetPendingValidationFormulasAsync();
     Task<PagedResult<Formula>> GetPagedAsync(int page, int pageSize, string? keyword);
 }
 ```
+
+> **Note**: `GetSharedFormulasAsync` 和 `GetByCategoryAsync` 已在 OpenSpec cleanup-unused-methods (2025-12-04) 中删除，因为未被调用。
 
 **代码位置**: `LYBT.Module.Formula/Interfaces/IFormulaRepository.cs`
 
@@ -498,7 +498,6 @@ public class FormulaValidator
 // FormulaCommandHandler.cs - 命令处理器
 public class FormulaCommandHandler
 {
-    public async Task ExecuteBatchDeleteAsync(List<Guid> ids);
     public async Task ExecuteImportFormulasAsync(string filePath);
 }
 
