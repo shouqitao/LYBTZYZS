@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 项目README文档体系重构 (OpenSpec: document-project-architecture)
+
+**文档精简:**
+- 重写27个模块README，统一使用表格替代代码示例
+- 文档总行数从21143行精简至3645行（减少83%）
+- 标准化结构：项目定位→目录结构→核心组件(表格)→依赖关系→更新记录
+
+**覆盖范围:**
+- Server层: Entities, Infrastructure, 8个Module README
+- Shared层: Models, Components, Utilities, Validators README
+- Client Core: Presentation, Models, Infrastructure, Foundation, Contracts README
+- Client Modules: Auth, Consultation, Formula, Herbs, MedicalCase, Patients, Prescriptions, Users README
+
+**新增OpenSpec规范:**
+- `project-architecture`: 整体项目架构规范
+- `server-layer-architecture`: Server层架构规范
+- `shared-layer-architecture`: Shared层架构规范
+- `client-layer-architecture`: Client层架构规范
+- `readme-documentation`: README文档规范(DOC-001至DOC-007)
+
 #### UI层清理重构 (OpenSpec: cleanup-ui-layer)
 
 **Phase 1: ViewModel重构**
