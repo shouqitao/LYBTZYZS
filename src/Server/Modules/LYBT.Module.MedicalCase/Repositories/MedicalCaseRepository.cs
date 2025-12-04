@@ -146,13 +146,7 @@ namespace LYBT.Module.MedicalCases.Repositories
         /// <summary>
         /// 根据医生ID获取病案列表（简化版）
         /// </summary>
-        public async Task<List<MedicalCase>> GetByDoctorIdAsync(Guid doctorId)
-        {
-            return await GetBaseQuery()
-                .Where(m => m.DoctorId == doctorId)
-                .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync();
-        }
+        
 
         /// <summary>
         /// 更新医案（Issue #1571 - 级联删除关联数据）

@@ -35,14 +35,5 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<List<Formula>> GetByUserIdAsync(Guid userId);
 
-        /// <summary>
-        /// 获取共享的方剂列表（保留用于特殊场景）
-        /// </summary>
-        Task<List<Formula>> GetSharedFormulasAsync();
-
-        /// <summary>
-        /// 根据类别获取方剂列表
-        /// </summary>
-        Task<List<Formula>> GetByCategoryAsync(string category);
     }
 }

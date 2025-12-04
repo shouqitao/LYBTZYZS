@@ -33,15 +33,6 @@ namespace LYBT.Module.MedicalCases.Interfaces
         Task<PagedResult<MedicalCase>> GetPagedWithDetailsAsync(int pageNumber, int pageSize, string? keyword = null);
 
         /// <summary>
-        /// 根据医生ID获取病案列表
-        /// </summary>
-        Task<List<MedicalCase>> GetByDoctorIdAsync(Guid doctorId);
-
-        /// <summary>
-        /// 获取待看诊医案列表（Status=Active）
-        /// Epic #1583 - Phase 5
-        /// </summary>
-        /// <summary>
         /// 获取待看诊医案列表（Status=Active）
         /// Epic #1583 - Phase 5
         /// Epic #2210 Phase 3: 添加doctorId参数实现多医生数据隔离

@@ -99,26 +99,5 @@ namespace LYBT.Module.Formulas.Repositories
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// 获取共享的方剂列表（保留但简化）
-        /// </summary>
-        public async Task<List<Formula>> GetSharedFormulasAsync()
-        {
-            return await GetBaseQuery()
-                .Where(f => f.IsShared)
-                .OrderBy(f => f.Name)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// 根据类别获取方剂列表（简化版）
-        /// </summary>
-        public async Task<List<Formula>> GetByCategoryAsync(string category)
-        {
-            return await GetBaseQuery()
-                .Where(f => f.Category == category)
-                .OrderBy(f => f.Name)
-                .ToListAsync();
-        }
     }
 }

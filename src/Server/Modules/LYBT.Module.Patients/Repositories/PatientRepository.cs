@@ -90,27 +90,6 @@ namespace LYBT.Module.Patients.Repositories
         }
 
         /// <summary>
-        /// 根据日期范围获取患者（按创建日期）
-        /// </summary>
-        /// <param name="startDate">开始日期</param>
-        /// <param name="endDate">结束日期</param>
-        /// <param name="cancellationToken">取消令牌</param>
-        /// <returns>患者列表</returns>
-        public async Task<List<Patient>> GetByDateRangeAsync(
-            DateTime startDate,
-            DateTime endDate,
-            CancellationToken cancellationToken = default)
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(p => !p.IsDeleted &&
-                           p.CreatedAt >= startDate &&
-                           p.CreatedAt <= endDate)
-                .OrderBy(p => p.CreatedAt)
-                .ToListAsync(cancellationToken);
-        }
-
-        /// <summary>
         /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
         /// </summary>
         /// <param name="phoneNumber">手机号</param>

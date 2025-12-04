@@ -103,19 +103,6 @@ namespace LYBT.Module.Herbs.Repositories
             return await query.AnyAsync();
         }
 
-        /// <summary>
-        /// 按分类查询药材列表
-        /// Epic #1962 Task 1.2: 分类管理支持
-        /// </summary>
-        public async Task<List<Herb>> GetByCategoryAsync(string category)
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(h => h.Category == category && !h.IsDeleted)
-                .OrderBy(h => h.Name)
-                .ToListAsync();
-        }
-
         #endregion
     }
 }

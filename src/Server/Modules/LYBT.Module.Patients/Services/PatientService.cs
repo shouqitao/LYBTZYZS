@@ -658,34 +658,6 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
-        /// <summary>
-        /// 搜索患者（直接返回Patient Entity列表）
-        /// Phase 3 Task 3.1: 消除Entity→DTO映射
-        /// </summary>
-        public async Task<Result<List<Patient>>> SearchEntityAsync(string keyword)
-        {
-            try
-            {
-                // 如果关键字为空，返回空列表
-                if (string.IsNullOrWhiteSpace(keyword))
-                {
-                    return Result<List<Patient>>.Success(new List<Patient>());
-                }
-
-                // 搜索匹配关键字的患者（姓名、电话或身份证号）
-                var allPatients = await _repository.GetAllAsync();
-                var patients = allPatients.Where(p =>
-                    p.Name.Contains(keyword)).ToList();
-
-                return Result<List<Patient>>.Success(patients);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "搜索患者实体时发生错误，关键字：{Keyword}", keyword);
-                return Result<List<Patient>>.Failure($"搜索患者失败：{ex.Message}");
-            }
-        }
-
         #endregion
     }
 }

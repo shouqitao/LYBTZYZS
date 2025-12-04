@@ -43,11 +43,5 @@ namespace LYBT.Module.Herbs.Interfaces
         /// <param name="excludeId">排除的ID（更新时传入当前记录ID）</param>
         Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null);
 
-        /// <summary>
-        /// 按分类查询药材列表
-        /// Epic #1962 Task 1.2: 分类管理支持
-        /// </summary>
-        /// <param name="category">分类名称</param>
-        Task<List<Herb>> GetByCategoryAsync(string category);
     }
 }

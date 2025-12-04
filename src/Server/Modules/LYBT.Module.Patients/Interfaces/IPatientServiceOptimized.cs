@@ -32,11 +32,6 @@ namespace LYBT.Module.Patients.Interfaces
         Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto);
 
         /// <summary>
-        /// 搜索患者（直接返回Patient Entity列表）
-        /// </summary>
-        Task<Result<List<Patient>>> SearchEntityAsync(string keyword);
-
-        /// <summary>
         /// 删除患者
         /// </summary>
         Task<Result> DeleteAsync(Guid id);

@@ -14,15 +14,6 @@ public interface ITokenRevocationService
     Task<bool> RevokeTokenAsync(string token, string reason);
 
     /// <summary>
-    /// 批量撤销用户所有未撤销的RefreshToken
-    /// </summary>
-    /// <param name="userId">用户ID</param>
-    /// <param name="userType">用户类型（User或SuperAdmin）</param>
-    /// <param name="reason">撤销原因</param>
-    /// <returns>撤销的Token数量</returns>
-    Task<int> RevokeAllUserTokensAsync(Guid userId, string userType, string reason);
-
-    /// <summary>
     /// 查询Token是否已撤销
     /// </summary>
     /// <param name="token">Token字符串</param>

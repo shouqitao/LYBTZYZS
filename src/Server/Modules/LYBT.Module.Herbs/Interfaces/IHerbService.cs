@@ -40,12 +40,6 @@ namespace LYBT.Module.Herbs.Interfaces
         Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
-        /// 批量删除药材（软删除）(Issue #1169)
-        /// </summary>
-        /// <param name="ids">药材ID列表</param>
-        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
-
-        /// <summary>
         /// 搜索药材 - 支持多条件搜索
         /// </summary>
         Task<Result<List<HerbDto>>> SearchAsync(string keyword);

@@ -60,37 +60,11 @@ namespace LYBT.Module.Users.Interfaces
         Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
-        /// 批量删除用户（软删除）(Issue #1169)
-        /// </summary>
-        /// <param name="ids">用户ID列表</param>
-        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
-
-        /// <summary>
-        /// 禁用用户
-        /// </summary>
-        Task<Result> DisableAsync(Guid id);
-
-        /// <summary>
-        /// 启用用户
-        /// </summary>
-        Task<Result> EnableAsync(Guid id);
-
-        /// <summary>
-        /// 切换用户状态 (Issue #1162)
-        /// </summary>
-        Task<Result<UserDto>> ToggleStatusAsync(Guid id);
-
-        /// <summary>
         /// 管理员重置密码（Issue #1162: 支持自动生成临时密码）
         /// </summary>
         /// <param name="id">用户ID</param>
         /// <param name="request">重置密码请求</param>
         Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
-
-        /// <summary>
-        /// 重置密码（向后兼容方法）
-        /// </summary>
-        Task<Result> ResetPasswordAsync(Guid id, string newPassword);
 
         /// <summary>
         /// 更改密码

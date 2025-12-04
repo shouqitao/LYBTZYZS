@@ -39,12 +39,6 @@ namespace LYBT.Module.Formulas.Interfaces
         Task<Result> DeleteAsync(Guid id);
 
         /// <summary>
-        /// 批量删除验方（软删除）(Issue #1169)
-        /// </summary>
-        /// <param name="ids">验方ID列表</param>
-        Task<Result<BatchOperationResultDto>> BatchDeleteAsync(List<Guid> ids);
-
-        /// <summary>
         /// 搜索验方 - 支持多条件搜索
         /// </summary>
         Task<Result<List<FormulaDto>>> SearchAsync(string keyword);

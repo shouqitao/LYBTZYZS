@@ -21,7 +21,6 @@ namespace LYBT.Module.Patients.Interfaces
 /// 特定业务方法说明：
 /// - GetByNameAsync: 根据姓名模糊查询患者
 /// - ExistsAsync: 检查患者姓名唯一性（支持排除ID）
-/// - GetByDateRangeAsync: 按创建日期范围查询患者
 /// - GetByPhoneNumberAsync: 手机号重复检查（Epic #1934 BR-004）
 /// </remarks>
 public interface IPatientRepository : IRepository<Patient>
@@ -40,15 +39,6 @@ public interface IPatientRepository : IRepository<Patient>
     /// <param name="excludeId">排除的患者ID（用于更新时检查）</param>
     /// <returns>存在返回true，否则返回false</returns>
     Task<bool> ExistsAsync(string name, Guid? excludeId = null);
-
-    /// <summary>
-    /// 根据日期范围获取患者（按创建日期）
-    /// </summary>
-    /// <param name="startDate">开始日期</param>
-    /// <param name="endDate">结束日期</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>患者列表</returns>
-    Task<List<Patient>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 根据手机号查询患者（Epic #1934 BR-004重复检查）
