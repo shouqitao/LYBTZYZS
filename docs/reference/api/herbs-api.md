@@ -21,7 +21,6 @@
 - [批量操作（Epic #1962）](#批量操作epic-1962)
   - [POST /api/v1/herbs/batch-import](#6-post-apiv1herbsbatch-import---批量导入药材)
   - [GET /api/v1/herbs/export-all](#7-get-apiv1herbsexport-all---导出所有药材)
-  - [POST /api/v1/herbs/batch-delete](#8-post-apiv1herbsbatch-delete---批量删除药材)
 - [引用检查（Epic #1962）](#引用检查epic-1962)
   - [GET /api/v1/herbs/{id}/check-reference](#9-get-apiv1herbsidcheck-reference---检查单个药材引用)
   - [POST /api/v1/herbs/batch-check-reference](#10-post-apiv1herbsbatch-check-reference---批量检查药材引用)
@@ -479,54 +478,6 @@ Authorization: Bearer {token}
       "remark": "补血滋阴，益精填髓"
     }
   ]
-}
-```
-
----
-
-### 8. POST /api/v1/herbs/batch-delete - 批量删除药材
-
-**描述**: 批量软删除药材记录。
-
-**业务规则**:
-- **BR-006**: 单次最多删除100条
-- **BR-007**: 即使被引用也可删除（软删除）
-- 事务保证：全部成功或全部回滚
-
-**请求**:
-```http
-POST /api/v1/herbs/batch-delete
-Authorization: Bearer {token}
-Content-Type: application/json
-
-[
-  "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "7c8e9a1b-2c3d-4e5f-6a7b-8c9d0e1f2a3b"
-]
-```
-
-**请求体**: Guid数组（药材ID列表）
-
-**响应**:
-
-✅ **成功 - 200 OK**
-```json
-{
-  "success": true,
-  "message": "批量删除完成",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failedCount": 0
-  }
-}
-```
-
-❌ **失败 - 400 Bad Request**
-```json
-{
-  "success": false,
-  "message": "批量删除数量不能超过100条"
 }
 ```
 

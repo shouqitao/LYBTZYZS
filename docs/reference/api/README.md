@@ -676,3 +676,32 @@ Content-Type: application/json
 - 编译状态: ✅ 0 errors, 0 warnings
 
 **详细变更**: 参见 `docs/reports/issue-1733-subtasks-checklist.md`
+
+### 废弃代码清理 (OpenSpec: cleanup-obsolete-code) - 2025-12-04
+
+**目标**: 清理标记为`[Obsolete]`的API端点和未使用的DTO
+
+**已删除端点**:
+- `HerbsController`
+  - ❌ `DELETE /api/v1/herbs/batch` - 批量删除（从未使用）
+- `UsersController`
+  - ❌ `DELETE /api/v1/users/batch` - 批量删除（从未使用）
+  - ❌ `PUT /api/v1/users/{id}/status` - 状态切换（从未使用）
+- `PatientsController`
+  - ❌ `DELETE /api/v1/patients/batch` - 批量删除（从未使用）
+  - ❌ `PUT /api/v1/patients/{id}/archive` - 归档患者（从未使用）
+- `CacheHealthController` - 整个控制器已删除（文件移除）
+
+**已删除DTO类** (15个):
+- `BatchDeleteRequest/Response` 系列 (Herbs, Users, Patients)
+- `UserStatusChangeRequest/Response`
+- `ArchivePatientRequest/Response`
+- `PatientVisitHistoryDto`, `VisitRecordDto`, `PatientProfileManagementDto`
+- `HerbSpecialPriceDto`, `CompatibilitySuggestionDto`
+
+**成果统计**:
+- 删除文件数: 2
+- 删除API方法数: 6
+- 删除DTO类数: 15
+- 代码减少: ~570行
+- 编译状态: ✅ 0 errors, 0 warnings

@@ -21,15 +21,13 @@
   - [POST /api/v1/users](#4-post-apiv1users---创建用户)
   - [PUT /api/v1/users/{id}](#5-put-apiv1usersid---更新用户)
   - [DELETE /api/v1/users/{id}](#6-delete-apiv1usersid---删除用户)
-- [状态管理（Issue #1162）](#状态管理issue-1162)
-  - [PUT /api/v1/users/{id}/toggle-status](#7-put-apiv1usersidtoggle-status---切换用户状态)
+- [~~状态管理（Issue #1162）~~](#状态管理issue-1162) *(已废弃，使用PUT /{id}更新)*
 - [密码管理](#密码管理)
   - [POST /api/v1/users/{id}/reset-password](#8-post-apiv1usersidreset-password---管理员重置密码)
   - [POST /api/v1/users/{id}/change-password](#9-post-apiv1usersidchange-password---用户更改密码)
 - [个人资料管理（Issue #1888）](#个人资料管理issue-1888)
   - [PUT /api/v1/users/{id}/profile](#10-put-apiv1usersidprofile---修改个人资料)
-- [批量操作（Issue #1169）](#批量操作issue-1169)
-  - [POST /api/v1/users/batch-delete](#11-post-apiv1usersbatch-delete---批量删除用户)
+- [~~批量操作（Issue #1169）~~](#批量操作issue-1169) *(已废弃，使用循环调用DELETE /{id})*
 - [通用响应格式](#通用响应格式)
 - [业务规则说明](#业务规则说明)
 - [错误码说明](#错误码说明)
@@ -566,71 +564,11 @@ Content-Type: application/json
 
 ---
 
-## 批量操作（Issue #1169）
+## ~~批量操作（Issue #1169）~~ - 已废弃
 
-### 11. POST /api/v1/users/batch-delete - 批量删除用户
-
-**描述**: 批量软删除用户。
-
-**业务规则**:
-- **BR-001**: 单次最多100条
-- **BR-005**: 软删除（设置IsDeleted=true）
-- 部分成功模式：单条失败不影响其他记录
-
-**请求**:
-```http
-POST /api/v1/users/batch-delete
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "ids": [
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "4fb85f64-5717-4562-b3fc-2c963f66afa7"
-  ]
-}
-```
-
-**请求体**:
-
-| 字段 | 类型 | 必填 | 验证规则 | 说明 |
-|------|------|------|---------|------|
-| ids | Guid[] | ✅ | 数组长度≤100 | 用户ID列表 |
-
-**响应**:
-
-✅ **成功 - 200 OK**
-```json
-{
-  "success": true,
-  "message": "批量删除完成: 成功2条, 失败0条",
-  "data": {
-    "totalCount": 2,
-    "successCount": 2,
-    "failureCount": 0,
-    "failedItems": []
-  }
-}
-```
-
-❌ **部分失败 - 200 OK**
-```json
-{
-  "success": true,
-  "message": "批量删除完成: 成功1条, 失败1条",
-  "data": {
-    "totalCount": 2,
-    "successCount": 1,
-    "failureCount": 1,
-    "failedItems": [
-      {
-        "id": "4fb85f64-5717-4562-b3fc-2c963f66afa7",
-        "reason": "用户不存在"
-      }
-    ]
-  }
-}
-```
+> **注意**: 此端点已于2025-12-04废弃并删除。
+>
+> **替代方案**: 使用Client端循环调用 `DELETE /api/v1/users/{id}` 实现批量删除。
 
 ---
 
@@ -667,7 +605,7 @@ Content-Type: application/json
 
 | 规则ID | 描述 | 验证层 | 实现位置 |
 |--------|------|--------|---------|
-| **BR-001** | 批量删除数量限制（≤100条） | Service层 | UserService.BatchDeleteAsync |
+| ~~**BR-001**~~ | ~~批量删除数量限制（≤100条）~~ | ~~Service层~~ | ~~已废弃~~ |
 | **BR-002** | 用户名唯一性 | Service层 | UserService.CreateAsync/UpdateAsync |
 | **BR-003** | 邮箱唯一性 | Service层 | UserService.CreateAsync/UpdateAsync |
 | **BR-004** | 密码必须Hash存储（BCrypt） | Service层 | UserService.CreateAsync |
