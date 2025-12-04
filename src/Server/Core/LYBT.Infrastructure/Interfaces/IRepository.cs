@@ -10,7 +10,7 @@ namespace LYBT.Infrastructure.Interfaces;
 /// <typeparam name="T">实体类型</typeparam>
 /// <remarks>
 /// 设计原则：
-/// - 统一共性（14个标准CRUD方法）
+/// - 统一共性（11个标准CRUD方法）
 /// - 保持特性（各模块可保留特定业务方法）
 /// - 使用Guid作为ID类型（对齐BaseEntity设计）
 /// - 所有方法均为异步方法（Async后缀）
@@ -64,7 +64,7 @@ public interface IRepository<T> where T : class
     /// <returns>单个实体对象，不存在时返回null</returns>
     Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
 
-    // ========== 写入方法 (6个) ==========
+    // ========== 写入方法 (4个) ==========
 
     /// <summary>
     /// 新增实体
@@ -94,28 +94,7 @@ public interface IRepository<T> where T : class
     /// <returns>新增后的实体集合</returns>
     Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities);
 
-    /// <summary>
-    /// 批量删除实体（软删除）
-    /// </summary>
-    /// <param name="entities">待删除的实体集合</param>
-    /// <returns>成功删除的数量</returns>
-    Task<int> DeleteRangeAsync(IEnumerable<T> entities);
-
-    /// <summary>
-    /// 批量删除实体（根据ID集合，软删除）
-    /// </summary>
-    /// <param name="ids">待删除的实体ID集合</param>
-    /// <returns>成功删除的数量</returns>
-    Task<int> DeleteRangeAsync(IEnumerable<Guid> ids);
-
-    // ========== 辅助方法 (3个) ==========
-
-    /// <summary>
-    /// 检查实体是否存在
-    /// </summary>
-    /// <param name="id">实体唯一标识（Guid类型）</param>
-    /// <returns>存在返回true，否则返回false</returns>
-    Task<bool> ExistsAsync(Guid id);
+    // ========== 辅助方法 (2个) ==========
 
     /// <summary>
     /// 获取实体总数

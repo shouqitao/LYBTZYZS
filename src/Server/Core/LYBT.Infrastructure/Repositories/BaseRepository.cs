@@ -298,12 +298,6 @@ namespace LYBT.Infrastructure.Repositories
                 .AnyAsync(predicate);
         }
 
-        // IRepository ExistsAsync(Guid)实现 - 保留（BaseRepository无此重载）
-        async Task<bool> IRepository<TEntity>.ExistsAsync(Guid id)
-        {
-            return await ExistsAsync(e => e.Id == id);
-        }
-
         // Issue #1766: 删除显式接口实现ExistsAsync(Expression) - public方法已自动实现接口
 
         /// <summary>
@@ -463,84 +457,6 @@ namespace LYBT.Infrastructure.Repositories
             var entities = await _dbSet
                 .Where(e => !e.IsDeleted)
                 .Where(predicate)
-                .ToListAsync();
-
-            if (!entities.Any())
-            {
-                _logger?.LogWarning("没有找到符合条件的实体进行删除 - 类型: {EntityType}", typeof(TEntity).Name);
-                return 0;
-            }
-
-            foreach (var entity in entities)
-            {
-                entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.Now;
-            }
-
-            _dbSet.UpdateRange(entities);
-            await SaveChangesAsync();
-
-            _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
-                typeof(TEntity).Name, entities.Count);
-
-            return entities.Count;
-        }
-
-        /// <summary>
-        /// 批量软删除（根据实体集合）
-        /// </summary>
-        public virtual async Task<int> DeleteRangeAsync(IEnumerable<TEntity> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            var entityList = entities.ToList();
-            if (!entityList.Any())
-            {
-                _logger?.LogWarning("实体集合为空，无法删除 - 类型: {EntityType}", typeof(TEntity).Name);
-                return 0;
-            }
-
-            var deletedCount = 0;
-            foreach (var entity in entityList)
-            {
-                if (!entity.IsDeleted)
-                {
-                    entity.IsDeleted = true;
-                    entity.UpdatedAt = DateTime.Now;
-                    deletedCount++;
-                }
-            }
-
-            if (deletedCount > 0)
-            {
-                _dbSet.UpdateRange(entityList.Where(e => e.IsDeleted));
-                await SaveChangesAsync();
-
-                _logger?.LogDebug("批量软删除实体 - 类型: {EntityType}, 数量: {Count}",
-                    typeof(TEntity).Name, deletedCount);
-            }
-
-            return deletedCount;
-        }
-
-        /// <summary>
-        /// 批量软删除（根据ID集合）
-        /// </summary>
-        public virtual async Task<int> DeleteRangeAsync(IEnumerable<Guid> ids)
-        {
-            if (ids == null)
-                throw new ArgumentNullException(nameof(ids));
-
-            var idList = ids.ToList();
-            if (!idList.Any())
-            {
-                _logger?.LogWarning("ID集合为空，无法删除 - 类型: {EntityType}", typeof(TEntity).Name);
-                return 0;
-            }
-
-            var entities = await _dbSet
-                .Where(e => !e.IsDeleted && idList.Contains(e.Id))
                 .ToListAsync();
 
             if (!entities.Any())
