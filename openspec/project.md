@@ -289,6 +289,57 @@ DELETE /api/{resource}/{id}      # 删除
 - Fluent API 配置优先于 Data Annotations
 - 配置类: `{Entity}Configuration : IEntityTypeConfiguration<Entity>`
 
+## OpenSpec Architecture Specifications
+
+### 核心架构规范
+
+| 规范 | 说明 |
+|------|------|
+| [project-architecture](specs/project-architecture/spec.md) | 三层架构定义、项目命名规范、依赖方向约束 |
+| [server-layer-architecture](specs/server-layer-architecture/spec.md) | Server层(13项目)详细架构、CQRS/三层模式选择 |
+| [shared-layer-architecture](specs/shared-layer-architecture/spec.md) | Shared层(4项目)职责、DTO继承层次规范 |
+| [client-layer-architecture](specs/client-layer-architecture/spec.md) | Client层(16项目)架构、MVVM模式、模块注册 |
+
+### 模式与约定规范
+
+| 规范 | 说明 |
+|------|------|
+| [repository-patterns](specs/repository-patterns/spec.md) | Repository模式、BaseRepository方法规范 |
+| [service-conventions](specs/service-conventions/spec.md) | Service层约定、返回Result类型规范 |
+| [viewmodel-conventions](specs/viewmodel-conventions/spec.md) | ViewModel基类、命令规范 |
+| [dialog-patterns](specs/dialog-patterns/spec.md) | Prism对话框模式、IDialogAware实现 |
+| [dto-architecture](specs/dto-architecture/spec.md) | DTO设计模式、继承层次 |
+| [data-layer-conventions](specs/data-layer-conventions/spec.md) | 数据层约定、EF Core配置 |
+| [client-api-conventions](specs/client-api-conventions/spec.md) | 客户端API调用约定、Refit接口 |
+| [ui-style-conventions](specs/ui-style-conventions/spec.md) | UI样式约定、主题规范 |
+| [module-communication](specs/module-communication/spec.md) | 模块间通信、ICrossModuleQueryService |
+
+### 功能规范
+
+| 规范 | 说明 |
+|------|------|
+| [authentication](specs/authentication/spec.md) | JWT认证、登录流程 |
+| [global-audit](specs/global-audit/spec.md) | 全局审计日志规范 |
+| [medicalcase-edit-modes](specs/medicalcase-edit-modes/spec.md) | 医案编辑模式(新建/编辑/只读) |
+| [medicalcase-lifecycle](specs/medicalcase-lifecycle/spec.md) | 医案生命周期状态流转 |
+| [medicalcase-ui-layout](specs/medicalcase-ui-layout/spec.md) | 医案工作区UI布局 |
+| [login-credential-handling](specs/login-credential-handling/spec.md) | 登录凭据处理 |
+| [herb-card-control](specs/herb-card-control/spec.md) | 药材卡片控件规范 |
+
+### 文档规范
+
+| 规范 | 说明 |
+|------|------|
+| [readme-documentation](specs/readme-documentation/spec.md) | README文档统一标准(100-300行、禁止大段代码) |
+
+### 清理/迁移规范
+
+| 规范 | 说明 |
+|------|------|
+| [webapi-cleanup](specs/webapi-cleanup/spec.md) | WebAPI清理和重构 |
+
+---
+
 ## Related Documents
 
 ### Development Standards

@@ -119,20 +119,70 @@ public abstract class BaseRepository<T> : IRepository<T> where T : BaseEntity
 
 ---
 
+#### ICrossModuleQueryService - 跨模块查询服务 (OpenSpec: decouple-server-modules)
+
+**职责**: 提供模块间只读数据访问，避免直接跨模块注入Repository
+
+**位置**: `LYBT.Infrastructure/Services/ICrossModuleQueryService.cs`
+
+**设计原则**:
+- 轻量封装：不引入框架级复杂性，仅封装跨模块查询
+- 返回DTO：防止Entity泄露，符合Bounded Context
+- 批量优先：提供批量查询方法，避免N+1问题
+- 只读查询：使用AsNoTracking()优化性能
+
+**接口定义**:
+```csharp
+public interface ICrossModuleQueryService
+{
+    // 患者查询
+    Task<PatientBasicDto?> GetPatientBasicInfoAsync(Guid patientId);
+    Task<Dictionary<Guid, PatientBasicDto>> GetPatientsBasicInfoAsync(IEnumerable<Guid> patientIds);
+
+    // 医案查询(含诊断)
+    Task<MedicalCaseBasicDto?> GetMedicalCaseBasicInfoAsync(Guid medicalCaseId);
+    Task<Dictionary<Guid, MedicalCaseBasicDto>> GetMedicalCasesBasicInfoAsync(IEnumerable<Guid> medicalCaseIds);
+
+    // 药材查询
+    Task<HerbBasicDto?> GetHerbBasicInfoAsync(Guid herbId);
+    Task<HerbBasicDto?> GetHerbByNameOrPinyinAsync(string nameOrPinyin);
+}
+```
+
+**BasicDto定义** (位于LYBT.Shared.Models/Contracts/Common/):
+```csharp
+// PatientBasicDto - 患者基本信息
+public class PatientBasicDto { Guid Id; string Name; Gender Gender; string? Phone; }
+
+// MedicalCaseBasicDto - 医案基本信息(含诊断)
+public class MedicalCaseBasicDto { Guid Id; Guid PatientId; MedicalCaseStatus Status; DateTime CreatedAt; string? TCMDiagnosis; }
+
+// HerbBasicDto - 药材基本信息
+public class HerbBasicDto { Guid Id; string Name; string? Pinyin; string? Category; }
+```
+
+**DI注册**: `DatabaseServiceCollectionExtensions.RegisterInfrastructureServices()`
+
+---
+
 ### 1.2 Modules层 (8个项目)
 
 #### 模块职责对照表
 
-| 模块 | 架构模式 | 主要Service | 说明 |
-|------|----------|-------------|------|
-| LYBT.Module.Auth | 传统三层 | AuthService | 认证、令牌管理 |
-| LYBT.Module.Users | 传统三层 | UserService | 用户CRUD |
-| LYBT.Module.Patients | 传统三层 | PatientService | 患者CRUD |
-| LYBT.Module.MedicalCase | **CQRS** | 5个Service | 医案核心业务 |
-| LYBT.Module.Consultation | 传统三层 | ConsultationService | 诊断CRUD |
-| LYBT.Module.Prescriptions | 传统三层 | PrescriptionService | 处方CRUD |
-| LYBT.Module.Herbs | 传统三层 | HerbService | 药材CRUD |
-| LYBT.Module.Formula | 传统三层 | FormulaService | 经验方CRUD |
+| 模块 | 架构模式 | 主要Service | 跨模块通信 | 说明 |
+|------|----------|-------------|------------|------|
+| LYBT.Module.Auth | 传统三层 | AuthService | IUserService | 认证、令牌管理 |
+| LYBT.Module.Users | 传统三层 | UserService | - | 用户CRUD |
+| LYBT.Module.Patients | 传统三层 | PatientService | - | 患者CRUD |
+| LYBT.Module.MedicalCase | **CQRS** | 5个Service | IPatientService | 医案核心业务 |
+| LYBT.Module.Consultation | 传统三层 | ConsultationService | - | 诊断CRUD(聚合内) |
+| LYBT.Module.Prescriptions | 传统三层 | PrescriptionService | **ICrossModuleQueryService** | 处方CRUD |
+| LYBT.Module.Herbs | 传统三层 | HerbService | - | 药材CRUD |
+| LYBT.Module.Formula | 传统三层 | FormulaService | **ICrossModuleQueryService** | 经验方CRUD |
+
+**模块依赖变化** (OpenSpec: decouple-server-modules):
+- **Prescriptions**: 移除5个直接模块依赖(Patients, Consultation, MedicalCase, Herbs, Formula) → 全部通过ICrossModuleQueryService
+- **Formula**: 移除1个直接模块依赖(Herbs) → 通过ICrossModuleQueryService
 
 ---
 
@@ -595,7 +645,7 @@ LYBT.Desktop.Shell/
 
 ## Part 4: 依赖关系图
 
-### Server层依赖
+### Server层依赖 (OpenSpec: decouple-server-modules 重构后)
 
 ```mermaid
 graph TB
@@ -616,6 +666,7 @@ graph TB
 
     subgraph Infrastructure
         Infra[LYBT.Infrastructure]
+        CrossModule[ICrossModuleQueryService]
     end
 
     subgraph Domain
@@ -624,6 +675,7 @@ graph TB
 
     subgraph Shared
         Models[LYBT.Shared.Models]
+        BasicDtos[PatientBasicDto<br/>MedicalCaseBasicDto<br/>HerbBasicDto]
     end
 
     WebAPI --> Auth
@@ -636,6 +688,7 @@ graph TB
     WebAPI --> Formula
     WebAPI --> Infra
 
+    %% 模块到Infrastructure依赖
     Auth --> Infra
     Users --> Infra
     Patients --> Infra
@@ -645,8 +698,18 @@ graph TB
     Herbs --> Infra
     Formula --> Infra
 
+    %% 跨模块通信(解耦后)
+    Prescriptions -.->|跨模块查询| CrossModule
+    Formula -.->|跨模块查询| CrossModule
+    CrossModule --> Entities
+
+    %% 合法的Service接口依赖
+    Auth -->|IUserService| Users
+    MedicalCase -->|IPatientService| Patients
+
     Infra --> Entities
     Infra --> Models
+    CrossModule --> BasicDtos
 
     Auth --> Models
     Users --> Models
@@ -657,6 +720,26 @@ graph TB
     Herbs --> Models
     Formula --> Models
 ```
+
+**依赖矩阵** (重构后):
+
+```
+依赖方 →              Auth  Users  Patients  MedicalCase  Consultation  Prescriptions  Herbs  Formula
+被依赖方 ↓
+Auth                   -      -       -           -            -              -           -       -
+Users                  Y      -       -           -            -              -           -       -
+Patients               -      -       -           Y            -              -           -       -
+MedicalCase            -      -       -           -            Y              -           -       -
+Consultation           -      -       -           -            -              -           -       -
+Prescriptions          -      -       -           -            -              -           -       -
+Herbs                  -      -       -           -            -              -           -       -
+Formula                -      -       -           -            -              -           -       -
+CrossModule(Infra)     -      -       -           -            -              Y           -       Y
+```
+
+**变化总结**:
+- Prescriptions: 5个模块依赖 → 0个 (全部通过ICrossModuleQueryService)
+- Formula: 1个模块依赖 → 0个 (通过ICrossModuleQueryService)
 
 ### Client层依赖
 

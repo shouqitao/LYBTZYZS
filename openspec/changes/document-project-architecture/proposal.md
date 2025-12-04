@@ -95,7 +95,24 @@ Modules             Y           Y            -        -          Y
 WebAPI              -           Y            Y        -          Y
 ```
 
-#### 3.2 Client层依赖矩阵
+#### 3.2 模块间通信规范 (已实现: decouple-server-modules)
+
+**核心原则**: 模块间禁止直接依赖其他模块的Repository/Service，统一通过`ICrossModuleQueryService`进行跨模块只读查询。
+
+**合法依赖类型**:
+| 类型 | 实现方式 | 适用场景 |
+|------|----------|----------|
+| 高解耦 | ICrossModuleQueryService | 纯只读查询 (Prescriptions→Patients, Formula→Herbs) |
+| 中解耦 | Service接口依赖 | 需要业务方法 (Auth→Users, MedicalCase→Patients) |
+| 低解耦 | 聚合内直接引用 | DDD聚合根内部 (Consultation→MedicalCase) |
+
+**已解耦模块**:
+- Prescriptions: 移除5个模块依赖 → 全部通过ICrossModuleQueryService
+- Formula: 移除1个模块依赖(Herbs) → 通过ICrossModuleQueryService
+
+**引用规范**: `openspec/specs/module-communication/spec.md`
+
+#### 3.3 Client层依赖矩阵
 
 ```
                  Contracts  Foundation  Infrastructure  Models  Presentation  Modules
@@ -130,12 +147,13 @@ Controller → Service → Repository → DbContext
 
 ### 5. 规范文档产出
 
-| 文档 | 内容 | 位置 |
-|------|------|------|
-| project-architecture/spec.md | 项目架构总览、分层规范 | openspec/specs/ |
-| server-layer-architecture/spec.md | Server层详细架构 | openspec/specs/ |
-| client-layer-architecture/spec.md | Client层详细架构 | openspec/specs/ |
-| shared-layer-architecture/spec.md | Shared层详细架构 | openspec/specs/ |
+| 文档 | 内容 | 位置 | 状态 |
+|------|------|------|------|
+| module-communication/spec.md | 模块间通信规范、ICrossModuleQueryService | openspec/specs/ | 已完成 |
+| project-architecture/spec.md | 项目架构总览、分层规范 | openspec/specs/ | 待创建 |
+| server-layer-architecture/spec.md | Server层详细架构 | openspec/specs/ | 待创建 |
+| client-layer-architecture/spec.md | Client层详细架构 | openspec/specs/ | 待创建 |
+| shared-layer-architecture/spec.md | Shared层详细架构 | openspec/specs/ | 待创建 |
 
 ## Affected Files
 
