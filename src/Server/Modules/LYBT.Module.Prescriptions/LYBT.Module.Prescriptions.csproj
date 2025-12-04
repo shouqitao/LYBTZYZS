@@ -31,16 +31,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- OpenSpec: decouple-server-modules - 仅保留核心依赖 -->
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
-
-    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Formula\LYBT.Module.Formula.csproj" />
-    <ProjectReference Include="..\LYBT.Module.MedicalCase\LYBT.Module.MedicalCase.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Patients\LYBT.Module.Patients.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Consultation\LYBT.Module.Consultation.csproj" />
+    <!-- 跨模块引用已移除: Herbs, Formula, MedicalCase, Patients, Consultation -->
+    <!-- 改用 ICrossModuleQueryService 进行跨模块只读查询 -->
   </ItemGroup>
 
   <ItemGroup>

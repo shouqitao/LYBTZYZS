@@ -351,7 +351,7 @@ namespace LYBT.Desktop.PatientSelector.IntegrationTests
             // Act - 检查是否可编辑
             var canEditResponse = await Client.GetAsync($"/api/v1/medicalcases/{medicalCase.Id}/can-edit");
             canEditResponse.ShouldBeOk();
-            var canEditResult = await canEditResponse.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCase.Interfaces.CanEditResponse>();
+            var canEditResult = await canEditResponse.ShouldBeSuccessfulApiResponseAsync<LYBT.Module.MedicalCases.Interfaces.CanEditResponse>();
 
             // Assert
             canEditResult.Data.Should().NotBeNull();

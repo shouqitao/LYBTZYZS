@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Module.Formulas.Services;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -21,12 +22,13 @@ namespace LYBT.Module.Formulas.Tests.Services
     /// <summary>
     /// 方剂服务单元测试
     /// 测试方剂的创建、查询、更新、删除以及药材配比管理等核心业务逻辑
+    /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代IHerbRepository
     /// </summary>
     public class FormulaServiceTests : TestBase
     {
         private readonly FormulaService _formulaService;
         private readonly Mock<IFormulaRepository> _repositoryMock;
-        private readonly Mock<LYBT.Module.Herbs.Interfaces.IHerbRepository> _herbRepositoryMock;
+        private readonly Mock<ICrossModuleQueryService> _crossModuleQueryMock;
         private readonly Mock<ILogger<FormulaService>> _loggerMock;
         private readonly AppDbContext _context;
 
@@ -39,12 +41,12 @@ namespace LYBT.Module.Formulas.Tests.Services
             _context = new AppDbContext(options);
 
             _repositoryMock = CreateMock<IFormulaRepository>();
-            _herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            _crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
             _loggerMock = CreateLoggerMock<FormulaService>();
 
             _formulaService = new FormulaService(
                 _repositoryMock.Object,
-                _herbRepositoryMock.Object,
+                _crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
         }
@@ -549,7 +551,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 }
             };
 
-            var selectedHerb = new LYBT.Entities.Herbs.Herb
+            // OpenSpec: decouple-server-modules - 使用HerbBasicDto替代Herb实体
+            var selectedHerbDto = new HerbBasicDto
             {
                 Id = selectedHerbId,
                 Name = "人参"
@@ -558,13 +561,13 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            herbRepositoryMock.Setup(x => x.GetByIdAsync(selectedHerbId))
-                .ReturnsAsync(selectedHerb);
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
+                .ReturnsAsync(selectedHerbDto);
 
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 
@@ -632,7 +635,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 }
             };
 
-            var selectedHerb = new LYBT.Entities.Herbs.Herb
+            // OpenSpec: decouple-server-modules - 使用HerbBasicDto替代Herb实体
+            var selectedHerbDto = new HerbBasicDto
             {
                 Id = selectedHerbId,
                 Name = "当归"
@@ -641,13 +645,13 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            herbRepositoryMock.Setup(x => x.GetByIdAsync(selectedHerbId))
-                .ReturnsAsync(selectedHerb);
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
+                .ReturnsAsync(selectedHerbDto);
 
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 
@@ -680,10 +684,10 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync((FormulaEntity?)null);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 
@@ -724,10 +728,10 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 
@@ -766,13 +770,13 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
-            herbRepositoryMock.Setup(x => x.GetByIdAsync(selectedHerbId))
-                .ReturnsAsync((LYBT.Entities.Herbs.Herb?)null);
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
+            crossModuleQueryMock.Setup(x => x.GetHerbBasicInfoAsync(selectedHerbId))
+                .ReturnsAsync((HerbBasicDto?)null);
 
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 
@@ -813,10 +817,10 @@ namespace LYBT.Module.Formulas.Tests.Services
             _repositoryMock.Setup(x => x.GetByIdWithHerbsAsync(formulaId))
                 .ReturnsAsync(formula);
 
-            var herbRepositoryMock = CreateMock<LYBT.Module.Herbs.Interfaces.IHerbRepository>();
+            var crossModuleQueryMock = CreateMock<ICrossModuleQueryService>();
             var formulaService = new FormulaService(
                 _repositoryMock.Object,
-                herbRepositoryMock.Object,
+                crossModuleQueryMock.Object,
                 Mapper,
                 _loggerMock.Object);
 

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -141,6 +142,9 @@ namespace LYBT.Infrastructure
 
             // 添加JWT黑名单服务
             // services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>(); // 移除过度工程
+
+            // 添加跨模块查询服务 - 解耦模块间依赖
+            services.AddScoped<ICrossModuleQueryService, CrossModuleQueryService>();
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

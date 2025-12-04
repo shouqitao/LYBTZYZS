@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using LYBT.Entities.Formulas;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.Herbs.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
@@ -13,22 +13,23 @@ namespace LYBT.Module.Formulas.Services
 {
     /// <summary>
     /// 验方服务 - 简化版，只包含基础CRUD
+    /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代IHerbRepository
     /// </summary>
     public class FormulaService : IFormulaService
     {
         private readonly IFormulaRepository _repository;
-        private readonly IHerbRepository _herbRepository;
+        private readonly ICrossModuleQueryService _crossModuleQuery;
         private readonly IMapper _mapper;
         private readonly ILogger<FormulaService> _logger;
 
         public FormulaService(
             IFormulaRepository repository,
-            IHerbRepository herbRepository,
+            ICrossModuleQueryService crossModuleQuery,
             IMapper mapper,
             ILogger<FormulaService> logger)
         {
             _repository = repository;
-            _herbRepository = herbRepository;
+            _crossModuleQuery = crossModuleQuery;
             _mapper = mapper;
             _logger = logger;
         }
@@ -245,8 +246,8 @@ namespace LYBT.Module.Formulas.Services
                     return Result.Failure("该药材已校验，无需重复操作");
                 }
 
-                // 4. 查询选定的药材
-                var selectedHerb = await _herbRepository.GetByIdAsync(selectedHerbId);
+                // 4. 查询选定的药材 - OpenSpec: decouple-server-modules 使用ICrossModuleQueryService
+                var selectedHerb = await _crossModuleQuery.GetHerbBasicInfoAsync(selectedHerbId);
                 if (selectedHerb == null)
                 {
                     return Result.Failure("所选药材不存在");
@@ -557,7 +558,11 @@ namespace LYBT.Module.Formulas.Services
         /// <summary>
         /// 尝试自动匹配药材（按名称或拼音码）
         /// </summary>
-        private async Task<LYBT.Entities.Herbs.Herb?> TryMatchHerbAsync(string herbName)
+        /// <summary>
+        /// 尝试匹配药材 - OpenSpec: decouple-server-modules 使用ICrossModuleQueryService
+        /// 返回HerbBasicDto用于只读信息，不再返回完整Entity
+        /// </summary>
+        private async Task<HerbBasicDto?> TryMatchHerbAsync(string herbName)
         {
             if (string.IsNullOrWhiteSpace(herbName))
                 return null;
@@ -566,7 +571,8 @@ namespace LYBT.Module.Formulas.Services
             {
                 // Issue #1469 (FORMULA-8): 使用智能药材匹配
                 // 优先精确匹配名称，其次模糊匹配拼音码
-                var herb = await _herbRepository.GetByNameOrPinyinAsync(herbName);
+                // OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代IHerbRepository
+                var herb = await _crossModuleQuery.GetHerbByNameOrPinyinAsync(herbName);
                 return herb;
             }
             catch (Exception ex)

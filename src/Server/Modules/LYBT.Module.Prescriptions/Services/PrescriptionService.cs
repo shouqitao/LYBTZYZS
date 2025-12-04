@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using LYBT.Module.Consultations.Interfaces;
-using LYBT.Module.Formulas.Interfaces;
-using LYBT.Module.MedicalCases.Interfaces;
-using LYBT.Module.Patients.Interfaces;
+using AutoMapper;
+using LYBT.Infrastructure.Services;
 using LYBT.Module.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -14,35 +11,25 @@ namespace LYBT.Module.Prescriptions.Services
     /// 处方服务 - Read Layer（Issue #1600 Phase 3）
     /// 职责：提供处方记录的只读查询功能、价格计算和打印格式生成
     /// 所有Write操作必须通过MedicalCaseService聚合根进行
-    /// IMedicalCaseRepository用于Read关联患者信息（合法用途）
-    /// Phase 3 (Epic #1725): 简化Service层，提取重复逻辑
+    /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService替代跨模块Repository依赖
     /// </summary>
     public class PrescriptionService : IPrescriptionService
     {
         private readonly IPrescriptionRepository _repository;
-        private readonly IFormulaRepository _formulaRepository;
-        private readonly IMedicalCaseRepository _medicalCaseRepository;
-        private readonly IPatientRepository _patientRepository;
-        private readonly IConsultationRepository _consultationRepository;
+        private readonly ICrossModuleQueryService _crossModuleQuery;
         private readonly IPrescriptionNumberService _numberService;
         private readonly IMapper _mapper;
         private readonly ILogger<PrescriptionService> _logger;
 
         public PrescriptionService(
             IPrescriptionRepository repository,
-            IFormulaRepository formulaRepository,
-            IMedicalCaseRepository medicalCaseRepository,
-            IPatientRepository patientRepository,
-            IConsultationRepository consultationRepository,
+            ICrossModuleQueryService crossModuleQuery,
             IPrescriptionNumberService numberService,
             IMapper mapper,
             ILogger<PrescriptionService> logger)
         {
             _repository = repository;
-            _formulaRepository = formulaRepository;
-            _medicalCaseRepository = medicalCaseRepository;
-            _patientRepository = patientRepository;
-            _consultationRepository = consultationRepository;
+            _crossModuleQuery = crossModuleQuery;
             _numberService = numberService;
             _mapper = mapper;
             _logger = logger;
@@ -114,42 +101,34 @@ namespace LYBT.Module.Prescriptions.Services
         }
 
         /// <summary>
-        /// 加载关联数据（提取重复逻辑 - Epic #1725 Phase 3）
-        /// 统一的Dictionary构建方法，消除SearchPrescriptionsAsync和GetPatientRecentPrescriptionsAsync中的重复代码
+        /// 加载关联数据（OpenSpec: decouple-server-modules 重构版）
+        /// 使用ICrossModuleQueryService按需批量查询，避免全量加载
+        /// MedicalCaseBasicDto已包含TCMDiagnosis，无需单独查询Consultation
         /// </summary>
-        /// <param name="includePatients">是否加载所有患者数据</param>
-        /// <returns>关联数据的Dictionary集合</returns>
-        private async Task<(
-            Dictionary<Guid, LYBT.Entities.MedicalCases.MedicalCase> medicalCases,
-            Dictionary<Guid, LYBT.Entities.Consultations.Consultation> consultations,
-            Dictionary<Guid, LYBT.Entities.Patients.Patient>? patients
-        )> LoadRelatedDataAsync(bool includePatients)
+        /// <param name="medicalCaseIds">需要加载的医案ID集合</param>
+        /// <returns>医案基本信息字典（含TCMDiagnosis）</returns>
+        private async Task<Dictionary<Guid, LYBT.Shared.Models.Contracts.Common.MedicalCaseBasicDto>> LoadMedicalCasesAsync(
+            IEnumerable<Guid> medicalCaseIds)
         {
-            // 加载病历
-            var allMedicalCases = await _medicalCaseRepository.GetAllAsync();
-            var medicalCaseDict = allMedicalCases.ToDictionary(mc => mc.Id);
+            return await _crossModuleQuery.GetMedicalCasesBasicInfoAsync(medicalCaseIds);
+        }
 
-            // 加载诊疗记录
-            var allConsultations = await _consultationRepository.GetAllAsync();
-            var consultationDict = allConsultations.ToDictionary(c => c.Id);
-
-            // 可选：加载患者
-            Dictionary<Guid, LYBT.Entities.Patients.Patient>? patientDict = null;
-            if (includePatients)
-            {
-                var allPatients = await _patientRepository.GetAllAsync();
-                patientDict = allPatients.ToDictionary(p => p.Id);
-            }
-
-            return (medicalCaseDict, consultationDict, patientDict);
+        /// <summary>
+        /// 批量加载患者基本信息
+        /// </summary>
+        /// <param name="patientIds">患者ID集合</param>
+        /// <returns>患者基本信息字典</returns>
+        private async Task<Dictionary<Guid, LYBT.Shared.Models.Contracts.Common.PatientBasicDto>> LoadPatientsAsync(
+            IEnumerable<Guid> patientIds)
+        {
+            return await _crossModuleQuery.GetPatientsBasicInfoAsync(patientIds);
         }
 
 
         /// <summary>
         /// 搜索处方 - 按患者姓名或症状/诊断关键字 (Issue #1372 ENTRY-14)
+        /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService按需批量查询
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
-        /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑
-        ///  性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
         /// </summary>
         /// <param name="patientName">患者姓名关键字（可空）</param>
         /// <param name="symptomKeyword">症状/诊断关键字（可空）</param>
@@ -169,33 +148,35 @@ namespace LYBT.Module.Prescriptions.Services
                 // 获取所有处方
                 var allPrescriptions = await _repository.GetAllAsync();
 
-                // Epic #1725 Phase 3: 使用统一方法加载关联数据（消除重复代码）
-                var (medicalCaseDict, consultationDict, patientDict) = await LoadRelatedDataAsync(includePatients: true);
+                // OpenSpec: decouple-server-modules - 批量加载关联数据
+                var medicalCaseIds = allPrescriptions.Select(p => p.MedicalCaseId).Distinct().ToList();
+                var medicalCaseDict = await LoadMedicalCasesAsync(medicalCaseIds);
+
+                // 收集需要查询的患者ID
+                var patientIds = medicalCaseDict.Values.Select(mc => mc.PatientId).Distinct().ToList();
+                var patientDict = await LoadPatientsAsync(patientIds);
 
                 // 内存过滤与关联
                 var searchResults = new List<PrescriptionSearchResultDto>();
 
                 foreach (var prescription in allPrescriptions)
                 {
-                    // 关联病历
+                    // 关联病历（含TCMDiagnosis）
                     if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
                     {
                         continue; // 找不到关联病历，跳过
                     }
 
-                    // 关联患者（patientDict在MVP场景下必定不为null）
-                    if (patientDict == null || !patientDict.TryGetValue(medicalCase.PatientId, out var patient))
+                    // 关联患者
+                    if (!patientDict.TryGetValue(medicalCase.PatientId, out var patient))
                     {
                         continue; // 找不到关联患者，跳过
                     }
 
-                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
-                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
-
                     // 按患者姓名筛选
                     if (!string.IsNullOrWhiteSpace(patientName))
                     {
-                        if (patient.Name == null || !patient.Name.Contains(patientName, StringComparison.OrdinalIgnoreCase))
+                        if (string.IsNullOrEmpty(patient.Name) || !patient.Name.Contains(patientName, StringComparison.OrdinalIgnoreCase))
                         {
                             continue; // 患者姓名不匹配，跳过
                         }
@@ -204,10 +185,10 @@ namespace LYBT.Module.Prescriptions.Services
                     // 按症状/诊断关键字筛选
                     if (!string.IsNullOrWhiteSpace(symptomKeyword))
                     {
-                        var matchedInDiagnosis = consultation?.TCMDiagnosis != null &&
-                            consultation.TCMDiagnosis.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
+                        var matchedInDiagnosis = !string.IsNullOrEmpty(medicalCase.TCMDiagnosis) &&
+                            medicalCase.TCMDiagnosis.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
 
-                        var matchedInIndication = prescription.Indication != null &&
+                        var matchedInIndication = !string.IsNullOrEmpty(prescription.Indication) &&
                             prescription.Indication.Contains(symptomKeyword, StringComparison.OrdinalIgnoreCase);
 
                         if (!matchedInDiagnosis && !matchedInIndication)
@@ -222,9 +203,9 @@ namespace LYBT.Module.Prescriptions.Services
                         Id = prescription.Id,
                         CreatedAt = prescription.CreatedAt,
                         PatientId = patient.Id,
-                        PatientName = patient.Name ?? string.Empty,
+                        PatientName = patient.Name,
                         Indication = prescription.Indication,
-                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        TCMDiagnosis = medicalCase.TCMDiagnosis,
                         DosageCount = prescription.DosageCount,
                         Advice = prescription.Advice,
                         FormulaSource = prescription.FormulaSource,
@@ -247,10 +228,8 @@ namespace LYBT.Module.Prescriptions.Services
 
         /// <summary>
         /// 获取患者最近处方列表 (Issue #1371 ENTRY-13)
+        /// OpenSpec: decouple-server-modules - 使用ICrossModuleQueryService按需批量查询
         /// MVP实现：内存过滤，适用于小数据量（<1000条处方）
-        /// Epic #1725 Phase 3: 使用LoadRelatedDataAsync提取重复逻辑 + 修复N+1查询
-        ///  性能警告：全量加载 + 内存过滤，数据量增大后需优化为数据库层查询
-        ///  N+1查询（已知MVP限制）：循环内查询处方Items，数据量增大后需优化
         /// </summary>
         /// <param name="patientId">患者ID</param>
         /// <param name="count">返回数量（默认5条）</param>
@@ -261,8 +240,8 @@ namespace LYBT.Module.Prescriptions.Services
         {
             try
             {
-                // 获取患者信息（先验证患者存在）
-                var patient = await _patientRepository.GetByIdAsync(patientId);
+                // OpenSpec: decouple-server-modules - 使用CrossModuleQueryService验证患者
+                var patient = await _crossModuleQuery.GetPatientBasicInfoAsync(patientId);
                 if (patient == null)
                 {
                     return Result<List<PrescriptionSearchResultDto>>.Failure("患者不存在");
@@ -271,16 +250,16 @@ namespace LYBT.Module.Prescriptions.Services
                 // 获取所有处方
                 var allPrescriptions = await _repository.GetAllAsync();
 
-                // Epic #1725 Phase 3: 使用统一方法加载关联数据（消除重复代码）
-                var (medicalCaseDict, consultationDict, _) = await LoadRelatedDataAsync(includePatients: false);
+                // OpenSpec: decouple-server-modules - 批量加载关联数据
+                var medicalCaseIds = allPrescriptions.Select(p => p.MedicalCaseId).Distinct().ToList();
+                var medicalCaseDict = await LoadMedicalCasesAsync(medicalCaseIds);
 
                 // 内存过滤：找到该患者的处方
-                var patientPrescriptions = new List<PrescriptionSearchResultDto>();
                 var targetPrescriptionIds = new List<Guid>();
 
                 foreach (var prescription in allPrescriptions)
                 {
-                    // 关联病历
+                    // 关联病历（含TCMDiagnosis）
                     if (!medicalCaseDict.TryGetValue(prescription.MedicalCaseId, out var medicalCase))
                     {
                         continue; // 找不到关联病历，跳过
@@ -296,9 +275,12 @@ namespace LYBT.Module.Prescriptions.Services
                     targetPrescriptionIds.Add(prescription.Id);
                 }
 
-                // Task 1.5: 批量查询处方详情，解决N+1查询问题
+                // 批量查询处方详情，解决N+1查询问题
                 var prescriptionsWithItems = await _repository.GetByIdsWithItemsAsync(targetPrescriptionIds);
                 var prescriptionsDict = prescriptionsWithItems.ToDictionary(p => p.Id);
+
+                // 构建搜索结果
+                var patientPrescriptions = new List<PrescriptionSearchResultDto>();
 
                 foreach (var prescription in allPrescriptions)
                 {
@@ -314,14 +296,11 @@ namespace LYBT.Module.Prescriptions.Services
                         continue;
                     }
 
-                    // 关联诊疗记录（MedicalCase 与 Consultation 共享主键）
-                    consultationDict.TryGetValue(medicalCase.Id, out var consultation);
-
-                    //  优化后：从批量查询结果中获取处方详情
+                    // 从批量查询结果中获取处方详情
                     var prescriptionWithItems = prescriptionsDict.GetValueOrDefault(prescription.Id);
                     var herbCount = prescriptionWithItems?.Items?.Count ?? 0;
 
-                    // 构建搜索结果
+                    // 构建搜索结果 - TCMDiagnosis从MedicalCaseBasicDto获取
                     var prescriptionDto = new PrescriptionSearchResultDto
                     {
                         Id = prescription.Id,
@@ -329,15 +308,15 @@ namespace LYBT.Module.Prescriptions.Services
                         PatientId = patient.Id,
                         PatientName = patient.Name ?? string.Empty,
                         Indication = prescription.Indication,
-                        TCMDiagnosis = consultation?.TCMDiagnosis,
+                        TCMDiagnosis = medicalCase.TCMDiagnosis,
                         DosageCount = prescription.DosageCount,
                         Advice = prescription.Advice,
                         FormulaSource = prescription.FormulaSource,
                         Remark = prescription.Remark,
-                        HerbCount = herbCount, // Issue #1370 新增
+                        HerbCount = herbCount,
                         Items = prescriptionWithItems?.Items != null
                             ? _mapper.Map<List<PrescriptionItemDto>>(prescriptionWithItems.Items)
-                            : new List<PrescriptionItemDto>() // Issue #1370 新增
+                            : new List<PrescriptionItemDto>()
                     };
 
                     patientPrescriptions.Add(prescriptionDto);

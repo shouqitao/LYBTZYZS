@@ -15,11 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- OpenSpec: decouple-server-modules - 仅保留核心依赖 -->
     <ProjectReference Include="..\..\Core\LYBT.Infrastructure\LYBT.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Core/LYBT.Entities/LYBT.Entities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Models\LYBT.Shared.Models.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Utilities\LYBT.Shared.Utilities.csproj" />
     <ProjectReference Include="..\..\..\Shared\LYBT.Shared.Validators\LYBT.Shared.Validators.csproj" />
-    <ProjectReference Include="..\LYBT.Module.Herbs\LYBT.Module.Herbs.csproj" />
+    <!-- 跨模块引用已移除: Herbs -->
+    <!-- 改用 ICrossModuleQueryService 进行跨模块只读查询 -->
   </ItemGroup>
 </Project>
