@@ -84,30 +84,23 @@ namespace LYBT.Infrastructure.Services
         }
 
         /// <summary>
-        /// 从HttpContext中提取用户信息（异步版本，适用于中间件集成）
+        /// 从HttpContext中提取用户信息
+        /// refactor-authorization-system: 现直接从Claims提取，不再依赖中间件
         /// </summary>
         /// <param name="context">HttpContext上下文</param>
         /// <returns>用户信息或null</returns>
-        protected virtual async Task<(Guid UserId, bool IsAdmin, string Role)?> ExtractUserInfoAsync(HttpContext? context)
+        protected virtual Task<(Guid UserId, bool IsAdmin, string Role)?> ExtractUserInfoAsync(HttpContext? context)
         {
-            await Task.CompletedTask; // 占位符，实际为同步操作
-
             if (context?.User?.Identity?.IsAuthenticated != true)
-                return null;
+                return Task.FromResult<(Guid UserId, bool IsAdmin, string Role)?>(null);
 
-            // 尝试从中间件注入的信息获取
-            if (context.Items.TryGetValue("MedicalCaseUserInfo", out var userInfoObj) && userInfoObj is MedicalCaseUserInfo userInfo)
-            {
-                return (userInfo.UserId, userInfo.IsAdmin, userInfo.Role);
-            }
-
-            // 备用方案：直接从Claims获取
+            // 直接从Claims获取用户信息
             var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                              ?? context.User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
                              ?? context.User.FindFirst("sub")?.Value;
 
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-                return null;
+                return Task.FromResult<(Guid UserId, bool IsAdmin, string Role)?>(null);
 
             var role = context.User.FindFirst(ClaimTypes.Role)?.Value
                      ?? context.User.FindFirst("role")?.Value
@@ -116,7 +109,7 @@ namespace LYBT.Infrastructure.Services
             var isAdmin = role.Contains("Admin", StringComparison.OrdinalIgnoreCase)
                          || role.Contains("Administrator", StringComparison.OrdinalIgnoreCase);
 
-            return (userId, isAdmin, role);
+            return Task.FromResult<(Guid UserId, bool IsAdmin, string Role)?>((userId, isAdmin, role));
         }
 
         /// <summary>
@@ -389,15 +382,4 @@ namespace LYBT.Infrastructure.Services
         #endregion
     }
 }
-
-/// <summary>
-/// MedicalCase用户权限信息（从中间件传递）
-/// </summary>
-public class MedicalCaseUserInfo
-{
-    public Guid UserId { get; set; }
-    public string UserName { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
-    public bool IsAdmin { get; set; }
-    public bool CanEditToday { get; set; }
-}
+// refactor-authorization-system: MedicalCaseUserInfo 已删除，权限现通过 IAuthorizationService 处理

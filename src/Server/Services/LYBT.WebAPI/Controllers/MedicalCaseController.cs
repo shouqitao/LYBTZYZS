@@ -8,6 +8,7 @@ using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
+using LYBT.WebAPI.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ namespace LYBT.WebAPI.Controllers
         private readonly IMedicalCaseStateService _stateService;
         private readonly IMedicalCasePermissionService _permissionService;
         private readonly IMedicalCaseAuditService _auditService;
+        private readonly IAuthorizationService _authorizationService;
 
         public MedicalCaseController(
             IMedicalCaseCommandService commandService,
@@ -39,6 +41,7 @@ namespace LYBT.WebAPI.Controllers
             IMedicalCaseStateService stateService,
             IMedicalCasePermissionService permissionService,
             IMedicalCaseAuditService auditService,
+            IAuthorizationService authorizationService,
             ILogger<MedicalCaseController> logger)
             : base(logger)
         {
@@ -47,6 +50,7 @@ namespace LYBT.WebAPI.Controllers
             _stateService = stateService;
             _permissionService = permissionService;
             _auditService = auditService;
+            _authorizationService = authorizationService;
         }
 
         // ========== Write Layer（写操作，通过聚合根）==========
@@ -127,29 +131,39 @@ namespace LYBT.WebAPI.Controllers
         /// 更新辨证信息（三步流程Step 1）
         /// Epic #1612 - AR-001: 通过聚合根更新Consultation
         /// Bug Fix: 返回ConsultationDto以匹配客户端期望类型
+        /// refactor-authorization-system: AUTHZ-002 使用IAuthorizationService进行资源级授权
         /// </summary>
         [HttpPut("{id}/consultation")]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 403)]
         public async Task<ActionResult<ApiResponse<ConsultationDto>>> UpdateConsultation(
             Guid id,
             [FromBody] ConsultationInputDto request)
         {
             try
             {
-                // Epic #1731: 获取当前用户信息以进行权限检查
+                // refactor-authorization-system: 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return NotFound(ApiResponse<ConsultationDto>.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse<ConsultationDto>.CreateFail("无权编辑此病案"));
+                }
+
+                // Epic #1731: 获取当前用户信息
                 var (operatorId, _, operatorRole) = GetOperator();
-                // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _commandService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
 
-                if (result == null)
-                    return NotFound(ApiResponse<ConsultationDto>.CreateFail("病案不存在"));
-
                 // Bug Fix: 转换为ConsultationDto以匹配客户端期望
-                var consultationDto = result.Consultation != null ? new ConsultationDto
+                var consultationDto = result?.Consultation != null ? new ConsultationDto
                 {
                     Id = result.Consultation.Id,
                     MedicalCaseId = result.Id,
@@ -187,26 +201,36 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 标记是否需要开处方（三步流程Step 2）
         /// Epic #1612 - BF-002: 动态流程控制
+        /// refactor-authorization-system: AUTHZ-002 使用IAuthorizationService进行资源级授权
         /// </summary>
         [HttpPut("{id}/prescription-flag")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
         public async Task<ActionResult<ApiResponse<MedicalCase>>> SetPrescriptionFlag(
             Guid id,
             [FromBody] SetPrescriptionFlagRequest request)
         {
             try
             {
-                // Epic #1731: 获取当前用户信息以进行权限检查
+                // refactor-authorization-system: 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse<MedicalCase>.CreateFail("无权编辑此病案"));
+                }
+
+                // Epic #1731: 获取当前用户信息
                 var (operatorId, _, operatorRole) = GetOperator();
-                // Issue #2241: 使用UserRole枚举比较
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _commandService.SetPrescriptionFlagAsync(id, request.NeedsPrescription, operatorId, isAdmin);
-
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
 
                 _logger.LogInformation("处方标记更新成功，MedicalCaseId: {Id}, NeedsPrescription: {Flag}",
                     id, request.NeedsPrescription);
@@ -547,18 +571,29 @@ namespace LYBT.WebAPI.Controllers
         /// 删除病案（软删除）
         /// OpenSpec: clarify-cancel-consultation-logic
         /// 使用BaseRepository默认软删除机制（IsDeleted=true）
+        /// refactor-authorization-system: AUTHZ-002 使用IAuthorizationService进行资源级授权
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
+        [ProducesResponseType(typeof(ApiResponse), 403)]
         public async Task<ActionResult> DeleteMedicalCase(Guid id)
         {
             try
             {
-                var result = await _commandService.DeleteAsync(id);
-
-                if (!result)
+                // refactor-authorization-system: 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
                     return NotFound(ApiResponse.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Delete);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权删除病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse.CreateFail("无权删除此病案"));
+                }
+
+                var result = await _commandService.DeleteAsync(id);
 
                 _logger.LogInformation("病案已软删除，MedicalCaseId: {Id}", id);
                 return NoContent();
@@ -600,24 +635,35 @@ namespace LYBT.WebAPI.Controllers
         /// 暂存医案（保存草稿）
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-010)
         /// 保存当前数据，设置状态为Draft，不触发完成验证
+        /// refactor-authorization-system: AUTHZ-002 使用IAuthorizationService进行资源级授权
         /// </summary>
         [HttpPut("{id}/draft")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
         public async Task<ActionResult<ApiResponse<MedicalCase>>> SaveDraft(
             Guid id,
             [FromBody] ConsultationInputDto? request = null)
         {
             try
             {
+                // refactor-authorization-system: 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse<MedicalCase>.CreateFail("无权编辑此病案"));
+                }
+
                 var (operatorId, _, operatorRole) = GetOperator();
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _stateService.SaveDraftAsync(id, request, operatorId, isAdmin);
-
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
 
                 _logger.LogInformation("病案暂存成功，MedicalCaseId: {Id}", id);
                 return Ok(ApiResponse<MedicalCase>.CreateSuccess(result, "病案已暂存"));
@@ -642,24 +688,35 @@ namespace LYBT.WebAPI.Controllers
         /// 取消医案
         /// OpenSpec: refactor-medicalcase-api (LIFECYCLE-011)
         /// 设置状态为Cancelled，需要审计理由（非当天本人操作时）
+        /// refactor-authorization-system: AUTHZ-002 使用IAuthorizationService进行资源级授权
         /// </summary>
         [HttpPut("{id}/cancel")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
         public async Task<ActionResult<ApiResponse<MedicalCase>>> CancelMedicalCase(
             Guid id,
             [FromBody] CancelMedicalCaseRequest? request = null)
         {
             try
             {
+                // refactor-authorization-system: 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse<MedicalCase>.CreateFail("无权编辑此病案"));
+                }
+
                 var (operatorId, _, operatorRole) = GetOperator();
                 var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
 
                 var result = await _stateService.CancelAsync(id, operatorId, isAdmin, request?.Reason);
-
-                if (result == null)
-                    return NotFound(ApiResponse<MedicalCase>.CreateFail("病案不存在"));
 
                 _logger.LogInformation("病案取消成功，MedicalCaseId: {Id}", id);
                 return Ok(ApiResponse<MedicalCase>.CreateSuccess(result, "病案已取消"));

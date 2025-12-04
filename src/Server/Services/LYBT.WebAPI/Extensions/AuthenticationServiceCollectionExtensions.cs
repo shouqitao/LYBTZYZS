@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.WebAPI.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LYBT.WebAPI.Extensions;
@@ -121,6 +123,10 @@ public static class AuthenticationServiceCollectionExtensions
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());
         });
+
+        // 注册资源级授权处理器
+        // refactor-authorization-system: AUTHZ-001
+        services.AddSingleton<IAuthorizationHandler, MedicalCaseAuthorizationHandler>();
 
         return services;
     }

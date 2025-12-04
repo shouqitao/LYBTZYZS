@@ -327,7 +327,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
         }
 
         [Fact]
-        public async Task UpdateConsultation_WhenStatusNotActive_ShouldReturn400()
+        public async Task UpdateConsultation_WhenStatusNotActive_ShouldReturn403()
         {
             // Arrange - 创建并完成病案
             var medicalCase = await CreateAndCompleteMedicalCaseAsync();
@@ -345,7 +345,9 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 request);
 
             // Assert
-            response.ShouldBeBadRequest();
+            // refactor-authorization-system: 授权检查在业务逻辑之前执行
+            // 已完成的医案会被资源授权处理器拒绝，返回403而非400
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
         }
 
         #endregion

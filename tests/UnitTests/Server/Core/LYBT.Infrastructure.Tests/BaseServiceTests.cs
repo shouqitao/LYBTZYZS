@@ -171,33 +171,7 @@ namespace LYBT.Infrastructure.Services.Tests
         #endregion
 
         #region 用户信息提取测试
-
-        [Fact]
-        public async Task ExtractUserInfoAsync_FromMiddleware_ShouldReturnUserInfo()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-            var userId = Guid.NewGuid();
-            var userInfo = new MedicalCaseUserInfo
-            {
-                UserId = userId,
-                UserName = "testuser",
-                Role = "Doctor",
-                IsAdmin = false
-            };
-            httpContext.Items["MedicalCaseUserInfo"] = userInfo;
-            // 注意：实现会先检查 IsAuthenticated，需要设置认证用户
-            httpContext.User = CreateAuthenticatedUser(userId, "Doctor");
-
-            // Act
-            var result = await _baseService.ExtractUserInfoAsync(httpContext);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(userId, result.Value.UserId);
-            Assert.False(result.Value.IsAdmin);
-            Assert.Equal("Doctor", result.Value.Role);
-        }
+        // refactor-authorization-system: 中间件测试已移除，现在直接从 Claims 提取
 
         [Fact]
         public async Task ExtractUserInfoAsync_FromClaims_ShouldReturnUserInfo()
