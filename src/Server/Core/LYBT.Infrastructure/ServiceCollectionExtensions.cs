@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using LYBT.Infrastructure.Configuration.Options;
 using LYBT.Infrastructure.Data;
+using LYBT.Infrastructure.Errors;
 using LYBT.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -145,6 +146,9 @@ namespace LYBT.Infrastructure
 
             // 添加跨模块查询服务 - 解耦模块间依赖
             services.AddScoped<ICrossModuleQueryService, CrossModuleQueryService>();
+
+            // refactor-logging-system: 添加错误消息映射服务
+            services.AddSingleton<IErrorMessageMapper, ConfigurableErrorMessageMapper>();
 
             // 注意：API版本控制在Program.cs中单独配置
             return services;

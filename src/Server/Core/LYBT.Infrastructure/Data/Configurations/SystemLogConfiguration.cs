@@ -19,10 +19,22 @@ namespace LYBT.Infrastructure.Data.Configurations
             entity.Property(sl => sl.Level).IsRequired();
             entity.Property(sl => sl.Message).IsRequired();
 
-            // Issue #1765: 删除5个多余索引
-            // MVP阶段(<10K日志记录)无需任何索引
-            // 日志查询频率极低，全表扫描足够快
-            // 生产环境(>100K记录)时再考虑添加Timestamp索引
+            // V1.0.0: 生产环境索引优化
+            // Timestamp索引 - 日志查询按时间范围
+            entity.HasIndex(sl => sl.Timestamp)
+                .HasDatabaseName("IX_SystemLogs_Timestamp");
+
+            // Level索引 - 按级别筛选(Warning/Error)
+            entity.HasIndex(sl => sl.Level)
+                .HasDatabaseName("IX_SystemLogs_Level");
+
+            // CorrelationId索引 - 端到端请求追踪
+            entity.HasIndex(sl => sl.CorrelationId)
+                .HasDatabaseName("IX_SystemLogs_CorrelationId");
+
+            // UserId索引 - 按用户筛选日志
+            entity.HasIndex(sl => sl.UserId)
+                .HasDatabaseName("IX_SystemLogs_UserId");
         }
     }
 }

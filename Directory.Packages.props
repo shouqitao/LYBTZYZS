@@ -126,6 +126,8 @@
     <PackageVersion Include="Serilog.Sinks.MSSqlServer" Version="6.6.1" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <!-- refactor-logging-system: 客户端日志集成 -->
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup Label="Additional Packages">
     <!-- 数据库和数据处理 -->

@@ -49,6 +49,13 @@ namespace LYBT.Entities.Common
         public string? RequestId { get; set; }
 
         /// <summary>
+        /// 关联ID (用于端到端请求追踪)
+        /// refactor-logging-system: 新增字段，支持跨服务日志关联
+        /// </summary>
+        [MaxLength(36)]
+        public string? CorrelationId { get; set; }
+
+        /// <summary>
         /// 机器名
         /// </summary>
         [MaxLength(100)]

@@ -110,7 +110,7 @@ public class DatabaseStartupDiagnostics : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("🛑 [DatabaseStartupDiagnostics] 数据库诊断服务停止");
+        _logger.LogInformation("[DatabaseStartupDiagnostics] 数据库诊断服务停止");
         return Task.CompletedTask;
     }
 }

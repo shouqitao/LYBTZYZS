@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using LYBT.Infrastructure.Data;
 using LYBT.Shared.Models.Contracts.Common;
@@ -10,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -175,7 +178,38 @@ namespace LYBT.Tests.Common
             //  Issue #1668 Solution A：使用真实JWT Token（在GenerateTestToken中生成）
             // 不需要自定义认证处理器，直接使用Program.cs中配置的JWT认证
 
+            // 移除长时间运行的后台服务，避免测试后dotnet进程驻留
+            // 这些服务在测试环境中不需要，且会导致WebApplicationFactory.Dispose()无法及时完成
+            RemoveLongRunningHostedServices(services);
+
             // 子类可重写此方法来添加额外的服务配置
+        }
+
+        /// <summary>
+        /// 移除长时间运行的后台服务
+        /// 解决测试后dotnet.exe进程驻留问题
+        /// </summary>
+        private static void RemoveLongRunningHostedServices(IServiceCollection services)
+        {
+            // 需要移除的后台服务类型名称
+            var servicesToRemove = new[]
+            {
+                "SecurityAuditCleanupService",   // 等待到凌晨3点的定时清理服务
+                "LogCleanupService",             // 日志清理服务
+                "DatabaseStartupDiagnostics"    // 数据库启动诊断（测试环境不需要）
+            };
+
+            // 查找并移除这些服务
+            var hostedServiceDescriptors = services
+                .Where(d => d.ServiceType == typeof(IHostedService) &&
+                           d.ImplementationType != null &&
+                           servicesToRemove.Contains(d.ImplementationType.Name))
+                .ToList();
+
+            foreach (var descriptor in hostedServiceDescriptors)
+            {
+                services.Remove(descriptor);
+            }
         }
 
         /// <summary>

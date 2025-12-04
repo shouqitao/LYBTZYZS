@@ -1,6 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using LYBT.Infrastructure.Utilities;
+using LYBT.Infrastructure.Logging;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -100,7 +100,7 @@ public abstract class BaseControllerCore : ControllerBase
         try
         {
             var (operatorId, operatorName, _) = GetOperator();
-            var logData = data != null ? LogSanitizer.SerializeWithSanitization(data) : null;
+            var logData = data != null ? SensitiveDataMasker.SerializeWithSanitization(data) : null;
             _logger.LogInformation(
                 "{Operation}，操作者: {OperatorName}({OperatorId}), 目标ID: {TargetId}, 数据: {Data}",
                 operation, operatorName, operatorId, targetId, logData);
@@ -117,11 +117,11 @@ public abstract class BaseControllerCore : ControllerBase
     protected void HandleExceptionCore(Exception ex, string operation, object? context = null)
     {
         var sanitizedContext = context != null
-            ? LogSanitizer.SerializeWithSanitization(context)
+            ? SensitiveDataMasker.SerializeWithSanitization(context)
             : null;
         var contextInfo = sanitizedContext != null ? $", 上下文: {sanitizedContext}" : string.Empty;
 
-        var sanitizedException = LogSanitizer.SanitizeException(ex);
+        var sanitizedException = SensitiveDataMasker.SanitizeException(ex);
         _logger.LogError("{Operation}失败{Context}, 错误: {Error}", operation, contextInfo, sanitizedException);
     }
 

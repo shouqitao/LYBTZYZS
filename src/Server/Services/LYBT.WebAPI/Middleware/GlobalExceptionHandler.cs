@@ -1,4 +1,4 @@
-﻿using LYBT.Infrastructure.Utilities;
+﻿using LYBT.Infrastructure.Logging;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +7,17 @@ namespace LYBT.WebAPI.Middleware
 {
 
     /// <summary>
-    /// 全局异常处理器
+    /// 全局异常处理器（已废弃）
+    /// refactor-logging-system: 此类已被IExceptionHandler链模式替代
+    /// 请使用 BusinessExceptionHandler 处理业务异常，使用 SystemExceptionHandler 处理系统异常
     /// </summary>
+    /// <remarks>
+    /// 迁移说明：
+    /// - BusinessExceptionHandler: 处理 AppException 及其子类（ValidationException, NotFoundException, ConflictException, UnauthorizedException 等）
+    /// - SystemExceptionHandler: 兜底处理所有未被处理的系统异常
+    /// 新处理器在 ApiServiceCollectionExtensions.RegisterApiServices() 中注册
+    /// </remarks>
+    [Obsolete("请使用 BusinessExceptionHandler 和 SystemExceptionHandler 替代。此类将在下一版本中移除。")]
     public class GlobalExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<GlobalExceptionHandler> _logger;
@@ -24,17 +33,37 @@ namespace LYBT.WebAPI.Middleware
             Exception exception,
             CancellationToken cancellationToken)
         {
-            // Epic 05-P0-02 增强：结构化异常日志记录（带脱敏）
-            var sanitizedMessage = LogSanitizer.SanitizeString(exception.Message);
-            _logger.LogError(
-                exception,
-                "异常发生 - 类型: {ExceptionType}, 消息: {Message}, 路径: {RequestPath}, 方法: {HttpMethod}, 追踪ID: {TraceId}, 用户: {UserId}",
-                exception.GetType().Name,
-                sanitizedMessage,
-                httpContext.Request.Path,
-                httpContext.Request.Method,
-                httpContext.TraceIdentifier,
-                httpContext.User?.Identity?.Name ?? "匿名用户");
+            // refactor-logging-system: 获取CorrelationId
+            var correlationId = httpContext.GetCorrelationId();
+            var sanitizedMessage = SensitiveDataMasker.SanitizeText(exception.Message);
+
+            // refactor-logging-system: 根据异常类型区分日志级别
+            // 业务异常(AppException及子类)使用Warning，系统异常使用Error
+            var isBusinessException = exception is AppException;
+            if (isBusinessException)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "业务异常 - 类型: {ExceptionType}, 消息: {Message}, CorrelationId: {CorrelationId}, 路径: {RequestPath}, 方法: {HttpMethod}, 用户: {UserId}",
+                    exception.GetType().Name,
+                    sanitizedMessage,
+                    correlationId,
+                    httpContext.Request.Path,
+                    httpContext.Request.Method,
+                    httpContext.User?.Identity?.Name ?? "匿名用户");
+            }
+            else
+            {
+                _logger.LogError(
+                    exception,
+                    "系统异常 - 类型: {ExceptionType}, 消息: {Message}, CorrelationId: {CorrelationId}, 路径: {RequestPath}, 方法: {HttpMethod}, 用户: {UserId}",
+                    exception.GetType().Name,
+                    sanitizedMessage,
+                    correlationId,
+                    httpContext.Request.Path,
+                    httpContext.Request.Method,
+                    httpContext.User?.Identity?.Name ?? "匿名用户");
+            }
 
             var problemDetails = new ProblemDetails
             {
@@ -44,7 +73,8 @@ namespace LYBT.WebAPI.Middleware
                 Instance = httpContext.Request.Path
             };
 
-            // Epic 05-P0-02 增强：添加完整上下文信息
+            // refactor-logging-system: 添加CorrelationId用于日志关联
+            problemDetails.Extensions["correlationId"] = correlationId;
             problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
             problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
             problemDetails.Extensions["requestMethod"] = httpContext.Request.Method;
@@ -173,7 +203,7 @@ namespace LYBT.WebAPI.Middleware
                     if (httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
                     {
                         // 开发环境也需要脱敏
-                        problemDetails.Detail = LogSanitizer.SanitizeString(exception.Message);
+                        problemDetails.Detail = SensitiveDataMasker.SanitizeText(exception.Message);
                     }
 
                     break;

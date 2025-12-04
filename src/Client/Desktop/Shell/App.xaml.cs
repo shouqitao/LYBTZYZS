@@ -7,6 +7,7 @@ using LYBT.Desktop.Formula;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Herbs;
+using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
 using LYBT.Desktop.Prescriptions;
@@ -22,6 +23,7 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Mvvm;
+using Serilog;
 
 namespace LYBT.Desktop.Shell;
 
@@ -35,10 +37,22 @@ public partial class App : PrismApplication
     /// <summary>应用程序启动入口</summary>
     protected override void OnStartup(StartupEventArgs e)
     {
+        // refactor-logging-system: 初始化Serilog日志系统
+        DesktopSerilogConfiguration.Initialize();
+        Log.Information("应用程序启动");
+
         _splashScreen = new SplashScreenWindow();
         _splashScreen.Show();
         _splashScreen.UpdateStatus("正在初始化应用程序...");
         base.OnStartup(e);
+    }
+
+    /// <summary>应用程序退出</summary>
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.Information("应用程序退出");
+        DesktopSerilogConfiguration.CloseAndFlush();
+        base.OnExit(e);
     }
 
     /// <summary>创建应用程序主窗体</summary>

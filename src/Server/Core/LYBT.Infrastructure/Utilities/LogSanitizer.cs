@@ -8,6 +8,10 @@ namespace LYBT.Infrastructure.Utilities;
 /// 日志脱敏工具类 - 生产级安全加固
 /// 负责对日志中的敏感信息进行脱敏处理
 /// </summary>
+/// <remarks>
+/// refactor-logging-system: 此类已废弃，请使用 LYBT.Infrastructure.Logging.SensitiveDataMasker
+/// </remarks>
+[Obsolete("请使用 LYBT.Infrastructure.Logging.SensitiveDataMasker 替代。此类将在未来版本中移除。")]
 public static class LogSanitizer
 {
     private static readonly string[] SensitiveFields =

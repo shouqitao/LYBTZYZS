@@ -1,11 +1,15 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Http;
+using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
+using Serilog.Context;
 
 namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 {
     /// <summary>
     /// 用户通知服务实现 - UltraThink架构
     /// Issue #840: 从 IErrorHandlingService 更新为 IUserNotificationService
+    /// refactor-logging-system: 集成ProblemDetails解析和CorrelationId日志
     /// </summary>
     public class ErrorHandlingService : IUserNotificationService
     {
@@ -21,12 +25,75 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
         /// <inheritdoc/>
         public async Task HandleExceptionAsync(Exception exception, string? context = null)
         {
-            _logger.LogError(exception, "异常处理: {Context}", context ?? "未知上下文");
-
-            var errorMessage = GetUserFriendlyMessage(exception);
-            if (_dialogService != null)
+            var correlationId = CorrelationIdContext.CurrentOrNew;
+            using (LogContext.PushProperty("CorrelationId", correlationId))
             {
-                await _dialogService.ShowErrorAsync(errorMessage, "系统错误");
+                _logger.LogError(
+                    exception,
+                    "异常处理 - 上下文: {Context}, 类型: {ExceptionType}, CorrelationId: {CorrelationId}",
+                    context ?? "未知上下文",
+                    exception.GetType().Name,
+                    correlationId);
+
+                var errorMessage = GetUserFriendlyMessage(exception);
+                if (_dialogService != null)
+                {
+                    await _dialogService.ShowErrorAsync(errorMessage, "系统错误");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 处理ProblemDetails响应
+        /// refactor-logging-system: 新增方法，处理服务器返回的RFC 7807错误
+        /// </summary>
+        /// <param name="problemDetails">ProblemDetails响应</param>
+        /// <param name="context">上下文信息</param>
+        public async Task HandleProblemDetailsAsync(ProblemDetailsResponse problemDetails, string? context = null)
+        {
+            var correlationId = problemDetails.CorrelationId ?? CorrelationIdContext.Current;
+            using (LogContext.PushProperty("CorrelationId", correlationId))
+            {
+                // 根据错误类型选择日志级别
+                if (problemDetails.IsServerError)
+                {
+                    _logger.LogError(
+                        "服务器错误 - 状态: {StatusCode}, 错误码: {ErrorCode}, 标题: {Title}, 详情: {Detail}, CorrelationId: {CorrelationId}",
+                        problemDetails.Status,
+                        problemDetails.ErrorCode,
+                        problemDetails.Title,
+                        problemDetails.Detail,
+                        correlationId);
+                }
+                else if (problemDetails.IsValidationError)
+                {
+                    _logger.LogWarning(
+                        "验证错误 - 状态: {StatusCode}, 错误码: {ErrorCode}, 验证错误: {ValidationErrors}, CorrelationId: {CorrelationId}",
+                        problemDetails.Status,
+                        problemDetails.ErrorCode,
+                        problemDetails.GetValidationErrorMessage(),
+                        correlationId);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "业务错误 - 状态: {StatusCode}, 错误码: {ErrorCode}, 标题: {Title}, 详情: {Detail}, CorrelationId: {CorrelationId}",
+                        problemDetails.Status,
+                        problemDetails.ErrorCode,
+                        problemDetails.Title,
+                        problemDetails.Detail,
+                        correlationId);
+                }
+
+                // 获取用户友好的错误消息
+                var userMessage = problemDetails.IsValidationError
+                    ? problemDetails.GetValidationErrorMessage() ?? problemDetails.GetUserMessage()
+                    : problemDetails.GetUserMessage();
+
+                if (_dialogService != null)
+                {
+                    await _dialogService.ShowErrorAsync(userMessage, problemDetails.Title ?? "错误");
+                }
             }
         }
 
@@ -110,6 +177,7 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 
         /// <summary>
         /// 处理应用程序域未处理异常
+        /// refactor-logging-system: 增强日志，添加CorrelationId
         /// </summary>
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -117,8 +185,17 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
             {
                 if (e.ExceptionObject is Exception exception)
                 {
-                    _logger.LogCritical(exception, "应用程序域未处理异常");
-                    _ = Task.Run(async () => await HandleExceptionAsync(exception, "AppDomain未处理异常"));
+                    var correlationId = CorrelationIdContext.CurrentOrNew;
+                    using (LogContext.PushProperty("CorrelationId", correlationId))
+                    {
+                        _logger.LogCritical(
+                            exception,
+                            "应用程序域未处理异常 - 类型: {ExceptionType}, 是否终止: {IsTerminating}, CorrelationId: {CorrelationId}",
+                            exception.GetType().FullName,
+                            e.IsTerminating,
+                            correlationId);
+                        _ = Task.Run(async () => await HandleExceptionAsync(exception, "AppDomain未处理异常"));
+                    }
                 }
             }
             catch (Exception ex)
@@ -129,14 +206,24 @@ namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 
         /// <summary>
         /// 处理未观察到的任务异常
+        /// refactor-logging-system: 增强日志，添加CorrelationId
         /// </summary>
         private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             try
             {
-                _logger.LogError(e.Exception, "未观察到的任务异常");
-                _ = Task.Run(async () => await HandleExceptionAsync(e.Exception, "TaskScheduler未观察异常"));
-                e.SetObserved(); // 标记异常已被观察，防止应用程序崩溃
+                var correlationId = CorrelationIdContext.CurrentOrNew;
+                using (LogContext.PushProperty("CorrelationId", correlationId))
+                {
+                    _logger.LogError(
+                        e.Exception,
+                        "未观察到的任务异常 - 类型: {ExceptionType}, 内部异常数: {InnerExceptionCount}, CorrelationId: {CorrelationId}",
+                        e.Exception?.GetType().FullName,
+                        e.Exception?.InnerExceptions?.Count ?? 0,
+                        correlationId);
+                    _ = Task.Run(async () => await HandleExceptionAsync(e.Exception!, "TaskScheduler未观察异常"));
+                    e.SetObserved(); // 标记异常已被观察，防止应用程序崩溃
+                }
             }
             catch (Exception ex)
             {

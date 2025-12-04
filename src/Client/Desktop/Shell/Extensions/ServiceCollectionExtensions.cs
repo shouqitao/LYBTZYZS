@@ -16,6 +16,7 @@ using LYBT.Desktop.Foundation.Http;
 using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Http;
 using LYBT.Desktop.Herbs;
 using LYBT.Desktop.Herbs.Components;
 using LYBT.Desktop.Herbs.Repositories;
@@ -42,6 +43,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
+using Serilog;
 
 namespace LYBT.Desktop.Shell.Extensions
 {
@@ -87,10 +89,11 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>注册LoggerFactory和泛型ILogger&lt;&gt;</summary>
+        /// <remarks>refactor-logging-system: 使用Serilog作为日志提供程序</remarks>
         private static void RegisterLoggerFactory(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<ILoggerFactory>(() =>
-                LoggerFactory.Create(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Information)));
+                LoggerFactory.Create(builder => builder.AddSerilog(dispose: false)));
             containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
         }
 
@@ -108,6 +111,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ActiveConsultationService>(containerRegistry);
             RegisterLogger<ApplicationTickService>(containerRegistry);
             RegisterLogger<UserActivityTracker>(containerRegistry);
+            RegisterLogger<CorrelationIdDelegatingHandler>(containerRegistry);
         }
 
         /// <summary>注册Foundation层Logger</summary>
@@ -194,6 +198,7 @@ namespace LYBT.Desktop.Shell.Extensions
         }
 
         /// <summary>注册HTTP相关服务</summary>
+        /// <remarks>refactor-logging-system: 添加CorrelationIdDelegatingHandler实现端到端追踪</remarks>
         private static void RegisterHttpServices(IContainerRegistry containerRegistry, IConfiguration config)
         {
             var apiBaseUrl = config["Lybt:Client:Api:BaseUrl"] ?? "https://localhost:5001";
@@ -210,8 +215,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 catch { /* 启动阶段可能尚未注册 */ }
                 return new TokenRefreshHandler(tokenStorage, configuration, logger, userActivityState);
             });
+            containerRegistry.RegisterSingleton<CorrelationIdDelegatingHandler>(resolver =>
+                new CorrelationIdDelegatingHandler(resolver.Resolve<ILogger<CorrelationIdDelegatingHandler>>()));
 
-            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → HttpClient
+            // Handler链: HttpClientHandler → TokenRefreshHandler → AuthorizationMessageHandler → CorrelationIdDelegatingHandler → HttpClient
             containerRegistry.RegisterSingleton<HttpClient>(resolver =>
             {
                 var httpHandler = new HttpClientHandler();
@@ -222,8 +229,10 @@ namespace LYBT.Desktop.Shell.Extensions
                 tokenRefreshHandler.InnerHandler = httpHandler;
                 var authHandler = resolver.Resolve<AuthorizationMessageHandler>();
                 authHandler.InnerHandler = tokenRefreshHandler;
+                var correlationIdHandler = resolver.Resolve<CorrelationIdDelegatingHandler>();
+                correlationIdHandler.InnerHandler = authHandler;
 
-                return new HttpClient(authHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
+                return new HttpClient(correlationIdHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
             });
 
             // Refit客户端共享HttpClient实例

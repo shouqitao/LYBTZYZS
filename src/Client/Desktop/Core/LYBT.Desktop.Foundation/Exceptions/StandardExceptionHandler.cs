@@ -1,5 +1,6 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Sockets;
+using LYBT.Desktop.Foundation.Logging;
 using LYBT.Shared.Models.Contracts.Common;
 using Microsoft.Extensions.Logging;
 
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.Foundation.Exceptions
     /// <summary>
     /// 标准异常处理器实现 - 简化版本
     /// 提供统一的异常处理逻辑，遵循"适度设计、拒绝过度工程"原则
+    /// refactor-logging-system: 增强日志，添加CorrelationId支持
     /// </summary>
     public class StandardExceptionHandler : IExceptionHandler
     {
@@ -78,22 +80,24 @@ namespace LYBT.Desktop.Foundation.Exceptions
 
         /// <summary>
         /// 记录异常日志
+        /// refactor-logging-system: 增强日志，添加CorrelationId
         /// </summary>
         private void LogException(Exception exception, string methodName, string? context)
         {
             var logLevel = DetermineLogLevel(exception);
-            var message = "服务方法执行异常 - 方法: {MethodName}, 上下文: {Context}, 异常: {ExceptionType}";
+            var correlationId = CorrelationIdContext.CurrentOrNew;
+            var message = "服务方法执行异常 - 方法: {MethodName}, 上下文: {Context}, 异常: {ExceptionType}, CorrelationId: {CorrelationId}";
 
             switch (logLevel)
             {
                 case LogLevel.Error:
-                    _logger.LogError(exception, message, methodName, context ?? "无", exception.GetType().Name);
+                    _logger.LogError(exception, message, methodName, context ?? "无", exception.GetType().Name, correlationId);
                     break;
                 case LogLevel.Warning:
-                    _logger.LogWarning(exception, message, methodName, context ?? "无", exception.GetType().Name);
+                    _logger.LogWarning(exception, message, methodName, context ?? "无", exception.GetType().Name, correlationId);
                     break;
                 default:
-                    _logger.LogInformation(exception, message, methodName, context ?? "无", exception.GetType().Name);
+                    _logger.LogInformation(exception, message, methodName, context ?? "无", exception.GetType().Name, correlationId);
                     break;
             }
         }
@@ -137,6 +141,7 @@ namespace LYBT.Desktop.Foundation.Exceptions
 
         /// <summary>
         /// 记录异常（IExceptionHandler接口实现）
+        /// refactor-logging-system: 增强日志，添加CorrelationId
         /// </summary>
         public void LogException(Exception exception, ExceptionSeverity severity = ExceptionSeverity.Error)
         {
@@ -149,7 +154,8 @@ namespace LYBT.Desktop.Foundation.Exceptions
                 _ => LogLevel.Error
             };
 
-            _logger.Log(logLevel, exception, "异常发生: {ExceptionType}", exception.GetType().Name);
+            var correlationId = CorrelationIdContext.CurrentOrNew;
+            _logger.Log(logLevel, exception, "异常发生 - 类型: {ExceptionType}, CorrelationId: {CorrelationId}", exception.GetType().Name, correlationId);
         }
 
         /// <summary>

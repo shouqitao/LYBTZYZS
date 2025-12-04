@@ -1,4 +1,5 @@
 ﻿using LYBT.Infrastructure.Configuration.Options;
+using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Middleware;
 using Microsoft.Extensions.Options;
 
@@ -30,14 +31,22 @@ public static class UnifiedMiddlewareConfiguration
             app.UseExceptionHandler();
         }
 
-        // 1.2 HTTPS重定向和HSTS（生产环境）
+        // 1.1.1 StatusCodePages（处理非异常的HTTP错误状态码）
+        // refactor-logging-system: RFC 7807标准化状态码响应
+        app.UseStatusCodePagesWithProblemDetails();
+
+        // 1.2 CorrelationId追踪（尽早注册，确保所有后续日志都包含追踪ID）
+        // refactor-logging-system: 实现端到端请求追踪
+        app.UseCorrelationId();
+
+        // 1.3 HTTPS重定向和HSTS（生产环境）
         if (!app.Environment.IsDevelopment())
         {
             app.UseHttpsRedirection();
             app.UseHsts();
         }
 
-        // 1.3 安全响应头
+        // 1.4 安全响应头
         app.UseSecurityHeaders();
 
         // ===== 阶段2: 性能优化（早期执行） =====

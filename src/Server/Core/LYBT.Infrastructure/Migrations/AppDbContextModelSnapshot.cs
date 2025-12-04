@@ -111,8 +111,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ReplacedByToken")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
@@ -122,8 +122,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("RevokedReason")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -132,8 +132,8 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -145,8 +145,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserAgent")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -296,6 +296,10 @@ namespace LYBT.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
                     b.Property<string>("Exception")
                         .HasColumnType("nvarchar(max)");
 
@@ -373,8 +377,8 @@ namespace LYBT.Infrastructure.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<string>("MedicalAdvice")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Palpation")
                         .HasMaxLength(500)
@@ -802,7 +806,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("IdType")
-                        .HasMaxLength(20)
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")

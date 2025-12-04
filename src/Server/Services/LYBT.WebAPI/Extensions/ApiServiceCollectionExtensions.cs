@@ -1,4 +1,6 @@
 ﻿using LYBT.Infrastructure.Configuration.Extensions;
+using LYBT.WebAPI.Configuration;
+using LYBT.WebAPI.ExceptionHandlers;
 using LYBT.WebAPI.Middleware;
 
 namespace LYBT.WebAPI.Extensions;
@@ -37,9 +39,13 @@ public static class ApiServiceCollectionExtensions
             options.SubstituteApiVersionInUrl = true;
         });
 
-        // ProblemDetails + 全局异常处理器
-        services.AddProblemDetails();
-        services.AddExceptionHandler<GlobalExceptionHandler>();
+        // refactor-logging-system: RFC 7807 ProblemDetails + IExceptionHandler处理器链
+        services.AddProblemDetailsConfiguration();
+        // 异常处理器按优先级注册（先注册的先处理）
+        // BusinessExceptionHandler: 处理 AppException 及其子类
+        // SystemExceptionHandler: 兜底处理所有未被处理的系统异常
+        services.AddExceptionHandler<BusinessExceptionHandler>();
+        services.AddExceptionHandler<SystemExceptionHandler>();
 
         // Swagger（含 JWT）- 从服务提供者获取配置
         services.AddEndpointsApiExplorer();

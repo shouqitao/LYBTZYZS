@@ -1,0 +1,190 @@
+using LYBT.Infrastructure.Logging;
+using LYBT.WebAPI.Middleware;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+namespace LYBT.WebAPI.ExceptionHandlers;
+
+/// <summary>
+/// 系统异常处理器 - 兜底处理所有未被其他处理器处理的异常
+/// refactor-logging-system: IExceptionHandler链模式，作为最后的异常处理器
+/// </summary>
+public class SystemExceptionHandler : IExceptionHandler
+{
+    private readonly ILogger<SystemExceptionHandler> _logger;
+    private readonly IWebHostEnvironment _environment;
+
+    public SystemExceptionHandler(
+        ILogger<SystemExceptionHandler> logger,
+        IWebHostEnvironment environment)
+    {
+        _logger = logger;
+        _environment = environment;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        var correlationId = httpContext.GetCorrelationId();
+        var sanitizedMessage = SensitiveDataMasker.SanitizeText(exception.Message);
+
+        // 系统异常使用Error级别日志
+        _logger.LogError(
+            exception,
+            "系统异常 - 类型: {ExceptionType}, 消息: {Message}, CorrelationId: {CorrelationId}, 路径: {RequestPath}, 方法: {HttpMethod}, 用户: {UserId}",
+            exception.GetType().Name,
+            sanitizedMessage,
+            correlationId,
+            httpContext.Request.Path,
+            httpContext.Request.Method,
+            httpContext.User?.Identity?.Name ?? "匿名用户");
+
+        var problemDetails = CreateProblemDetails(httpContext, exception, correlationId);
+
+        httpContext.Response.StatusCode = problemDetails.Status!.Value;
+        httpContext.Response.ContentType = "application/problem+json";
+        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+
+        return true; // 始终返回true，作为兜底处理器
+    }
+
+    private ProblemDetails CreateProblemDetails(
+        HttpContext httpContext,
+        Exception exception,
+        string correlationId)
+    {
+        var (statusCode, title, detail) = GetExceptionInfo(exception);
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Instance = httpContext.Request.Path,
+            Type = GetProblemTypeUri(statusCode)
+        };
+
+        // 添加通用扩展属性
+        problemDetails.Extensions["correlationId"] = correlationId;
+        problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
+        problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
+
+        // 开发环境添加更多调试信息（已脱敏）
+        if (_environment.IsDevelopment())
+        {
+            problemDetails.Extensions["exceptionType"] = exception.GetType().FullName;
+            problemDetails.Extensions["stackTrace"] = SensitiveDataMasker.SanitizeText(
+                exception.StackTrace ?? string.Empty);
+        }
+
+        return problemDetails;
+    }
+
+    private (int StatusCode, string Title, string Detail) GetExceptionInfo(Exception exception)
+    {
+        return exception switch
+        {
+            // FluentValidation 异常
+            FluentValidation.ValidationException => (
+                400,
+                "验证失败",
+                "请求数据验证失败，请检查输入"
+            ),
+
+            // 系统级 UnauthorizedAccessException
+            UnauthorizedAccessException => (
+                401,
+                "未授权",
+                "您没有权限访问此资源"
+            ),
+
+            // 操作取消
+            OperationCanceledException => (
+                499, // Client Closed Request
+                "请求已取消",
+                "客户端取消了请求"
+            ),
+
+            // 超时
+            TimeoutException => (
+                504,
+                "请求超时",
+                "服务器处理请求超时，请稍后重试"
+            ),
+
+            // 数据库相关
+            Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException => (
+                409,
+                "并发冲突",
+                "数据已被其他用户修改，请刷新后重试"
+            ),
+
+            Microsoft.EntityFrameworkCore.DbUpdateException => (
+                500,
+                "数据库错误",
+                "数据保存失败，请稍后重试"
+            ),
+
+            // HTTP相关
+            HttpRequestException => (
+                502,
+                "外部服务错误",
+                "调用外部服务失败，请稍后重试"
+            ),
+
+            // 参数异常
+            ArgumentException => (
+                400,
+                "参数错误",
+                _environment.IsDevelopment()
+                    ? SensitiveDataMasker.SanitizeText(exception.Message)
+                    : "请求参数无效"
+            ),
+
+            // 空引用
+            NullReferenceException => (
+                500,
+                "服务器内部错误",
+                "处理请求时发生错误，请稍后重试"
+            ),
+
+            // 无效操作
+            InvalidOperationException => (
+                500,
+                "操作无效",
+                _environment.IsDevelopment()
+                    ? SensitiveDataMasker.SanitizeText(exception.Message)
+                    : "操作无法执行，请稍后重试"
+            ),
+
+            // 默认：生产环境隐藏详细信息
+            _ => (
+                500,
+                "服务器内部错误",
+                _environment.IsDevelopment()
+                    ? SensitiveDataMasker.SanitizeText(exception.Message)
+                    : "处理请求时发生错误，请稍后重试"
+            )
+        };
+    }
+
+    private static string GetProblemTypeUri(int statusCode)
+    {
+        return statusCode switch
+        {
+            400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+            401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
+            403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+            499 => "https://httpstatuses.com/499",
+            500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            502 => "https://tools.ietf.org/html/rfc7231#section-6.6.3",
+            504 => "https://tools.ietf.org/html/rfc7231#section-6.6.5",
+            _ => $"https://httpstatuses.com/{statusCode}"
+        };
+    }
+}

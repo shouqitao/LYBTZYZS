@@ -4,11 +4,14 @@
 /// UltraThink v2.0 Security: 加载.env文件和环境变量替换支持
 /// Issue #1077 Fix: 转换为传统Main方法确保WebApplicationFactory完全兼容性
 /// Issue #1932: 配置文件整合 - 统一appsettings.json + .env环境变量模式
+/// refactor-logging-system: 实现Serilog两阶段初始化(Bootstrap + Final Logger)
 /// </summary>
+using System.Text;
 using LYBT.WebAPI.Extensions;
 using LYBT.Shared.Utilities.Security;
 using LYBT.Infrastructure.Logging;
 using Serilog;
+using Serilog.Events;
 using DotNetEnv;
 
 /// <summary>
@@ -17,49 +20,82 @@ using DotNetEnv;
 /// </summary>
 public class Program
 {
+    // refactor-logging-system: 全局LoggingLevelManager实例，支持运行时动态调整
+    private static readonly LoggingLevelManager LoggingLevelManager = new(LogEventLevel.Information);
+
     public static async Task Main(string[] args)
     {
-        // Issue #1932: 简化的配置加载逻辑
+        // 修复Windows控制台中文乱码问题
+        Console.OutputEncoding = Encoding.UTF8;
+
+        // Phase 1: Bootstrap Logger - 确保启动阶段异常能够被记录
+        // 在try块外初始化，捕获配置加载阶段的任何异常
+        // refactor-logging-system: 测试环境使用普通Logger避免WebApplicationFactory"logger is already frozen"错误
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        var isTestEnvironment = environment == "Test";
 
-        // 加载 .env 文件（如果存在）
-        var envFile = environment == "Development" ? ".env.development" : ".env";
-        var envPath = Path.Combine(Directory.GetCurrentDirectory(), envFile);
-        if (File.Exists(envPath))
+        if (!isTestEnvironment)
         {
-            Env.Load(envPath);
-        }
-
-        // 配置构建
-        var configBuilder = new ConfigurationBuilder();
-
-        // 测试环境单独处理（使用SQLite内存数据库）
-        if (environment == "Test")
-        {
-            configBuilder.AddJsonFile("appsettings.Test.json", optional: false);
+            // 生产/开发环境使用Bootstrap Logger（支持两阶段初始化）
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
+                .Enrich.WithThreadId()
+                .WriteTo.Console(
+                    outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.File(
+                    path: "logs/bootstrap-.log",
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                .CreateBootstrapLogger();
         }
         else
         {
-            // 统一使用 appsettings.json（包含环境变量占位符）
-            configBuilder.AddJsonFile("appsettings.json", optional: false);
+            // 测试环境使用简单Logger，避免Bootstrap Logger冻结问题
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Warning()
+                .WriteTo.Console()
+                .CreateLogger();
         }
-
-        // 环境变量具有最高优先级，覆盖配置文件中的默认值
-        configBuilder.AddEnvironmentVariables();
-
-        // 配置Serilog（集成敏感数据脱敏 Issue #2254）
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configBuilder.Build())
-            .WithSensitiveDataMasking()
-            .CreateLogger();
 
         try
         {
+            Log.Information("应用程序启动中...(Bootstrap Logger)");
+
+            // 加载 .env 文件（如果存在）
+            var envFile = environment == "Development" ? ".env.development" : ".env";
+            var envPath = Path.Combine(Directory.GetCurrentDirectory(), envFile);
+            if (File.Exists(envPath))
+            {
+                Env.Load(envPath);
+                Log.Information("已加载环境变量文件: {EnvFile}", envFile);
+            }
             var builder = WebApplication.CreateBuilder(args);
 
             // 配置主机和服务
             builder.Host.ConfigureEnvironmentAwareHosting();
-            builder.Host.UseSerilog();
+
+            // Phase 2: Final Logger - 完整配置的生产级日志系统
+            // 从配置文件读取，添加所有Enrichers和敏感数据脱敏
+            // refactor-logging-system: 使用LoggingLevelSwitch支持运行时动态调整
+            builder.Host.UseSerilog((context, services, configuration) => configuration
+                .MinimumLevel.ControlledBy(LoggingLevelManager.LevelSwitch)
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
+                .Enrich.WithThreadId()
+                .Enrich.WithProperty("Application", "LYBT.WebAPI")
+                .WithSensitiveDataMasking());
+
+            // refactor-logging-system: 注册LoggingLevelManager为单例，供AdminController使用
+            builder.Services.AddSingleton(LoggingLevelManager);
+
+            Log.Information("已切换到Final Logger，配置加载完成");
             
             // 验证默认密码配置（所有环境）
             ValidateDefaultPasswordConfiguration(builder.Configuration);

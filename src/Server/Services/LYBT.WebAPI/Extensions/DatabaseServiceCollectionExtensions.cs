@@ -1,5 +1,6 @@
 ﻿using LYBT.Infrastructure.Configuration.Extensions;
 using LYBT.Infrastructure.DependencyInjection;
+using LYBT.Infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -173,6 +174,11 @@ public static class DatabaseServiceCollectionExtensions
 
         // Issue #1873: 安全审计日志清理后台服务
         services.AddHostedService<LYBT.WebAPI.BackgroundServices.SecurityAuditCleanupService>();
+
+        // refactor-logging-system: 日志清理后台服务
+        services.Configure<LogCleanupOptions>(
+            configuration.GetSection(LogCleanupOptions.SectionName));
+        services.AddHostedService<LogCleanupService>();
 
         return services;
     }

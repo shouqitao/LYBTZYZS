@@ -5,6 +5,7 @@ using Moq;
 using System.Security.Claims;
 using LYBT.WebAPI.Middleware;
 using LYBT.Shared.Models.Enums;
+using Xunit;
 
 namespace LYBT.WebAPI.Middleware.Tests
 {
@@ -104,7 +105,7 @@ namespace LYBT.WebAPI.Middleware.Tests
             Assert.NotNull(userInfo);
             Assert.Equal(userId, userInfo.UserId);
             Assert.Equal("testuser", userInfo.UserName);
-            Assert.Equal(UserRole.Doctor.ToString(), userInfo.Role);
+            Assert.Equal(UserRole.Doctor, userInfo.Role);
             Assert.False(userInfo.IsAdmin);
         }
 
