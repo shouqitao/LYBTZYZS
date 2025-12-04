@@ -1,6 +1,6 @@
 # API快速参考
 
-**基于13个实际控制器的完整API参考**（8个业务控制器 + 5个系统控制器） - 解决日常80%的API调用需求
+**基于11个实际控制器的完整API参考**（8个业务控制器 + 3个系统控制器） - 解决日常80%的API调用需求
 
 ## 📋 控制器总览
 
@@ -16,13 +16,14 @@
 7. **HerbsController** - 药材管理
 8. **FormulasController** - 验方管理
 
-### 系统控制器（4个）
+### 系统控制器（3个）
 位置：`src/Server/Services/LYBT.WebAPI/Controllers/`
 
 9. **HealthController** - 健康检查（Issue #1733 MVP简化）
 10. **CacheHealthController** - 缓存管理（Issue #1733 MVP简化）
-11. **RootHealthController** - 根路径健康检查
-12. **BaseApiController** - 基础控制器（抽象基类）
+11. **BaseApiController** - 基础控制器（抽象基类）
+
+> 注：根路径健康检查 `/health` 由 `MapHealthChecks()` 中间件提供，无需独立控制器
 
 ---
 
