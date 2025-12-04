@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+#### 废弃代码清理 (OpenSpec: cleanup-obsolete-code) - 2025-12-04
+
+**Phase 1: 删除废弃API端点**
+- 删除 `CacheHealthController.cs` 整个文件（运维功能，无Client调用）
+- 删除 `HerbsController.BatchDeleteHerbs` 方法
+- 删除 `FormulasController.BatchDeleteFormulas` 方法
+- 删除 `MedicalCaseController.CompleteMedicalCase` 方法（已有PUT /{id}/status替代）
+- 删除 `UsersController.BatchDeleteUsers` 方法
+- 删除 `UsersController.ToggleStatus` 方法
+
+**Phase 2: 删除未使用DTO类**
+- 删除 `FormulaAnalysisDtos.cs` 整个文件（6个未使用DTO）
+- 从 `MedicalCaseDtos.cs` 删除: CompleteMedicalCaseDto, SuspendMedicalCaseDto, ArchiveMedicalCaseDto, DoctorMedicalCaseStatisticsDto
+- 从 `PatientOperationDtos.cs` 删除: PatientVisitHistoryDto, VisitRecordDto, PatientProfileManagementDto
+- 从 `HerbOperationDtos.cs` 删除: HerbSpecialPriceDto, CompatibilitySuggestionDto
+
+**清理统计:**
+- 删除文件数: 2
+- 删除API方法数: 6
+- 删除DTO类数: 15
+- 预计清理代码行: ~570行
+
 ### Changed
 
 #### 项目README文档体系重构 (OpenSpec: document-project-architecture)

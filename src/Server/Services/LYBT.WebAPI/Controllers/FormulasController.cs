@@ -178,15 +178,7 @@ namespace LYBT.WebAPI.Controllers
         /// 此端点从未被Client调用，Client使用循环单删模式。
         /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
         /// </remarks>
-        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpPost("batch-delete")]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(400)]
-        public ActionResult<ApiResponse<BatchOperationResultDto>> BatchDeleteFormulas([FromBody] BatchDeleteRequestDto request)
-        {
-            return ValidationFail<BatchOperationResultDto>("此端点已废弃，请使用单个删除API循环调用");
-        }
+        
 
 
         /// <summary>

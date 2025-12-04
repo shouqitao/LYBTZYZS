@@ -245,15 +245,7 @@ namespace LYBT.WebAPI.Controllers
         /// 此端点从未被Client调用，Client使用循环单删模式。
         /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
         /// </remarks>
-        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpPost("batch-delete")]
-        [ProducesResponseType(typeof(ApiResponse<BatchOperationResultDto>), 200)]
-        [ProducesResponseType(400)]
-        public ActionResult<ApiResponse<BatchOperationResultDto>> BatchDeleteUsers([FromBody] BatchDeleteRequestDto request)
-        {
-            return ValidationFail<BatchOperationResultDto>("此端点已废弃，请使用单个删除API循环调用");
-        }
+        
 
         /// <summary>
         /// 管理员重置用户密码 (Issue #1162)
@@ -301,15 +293,7 @@ namespace LYBT.WebAPI.Controllers
         /// 此端点从未被Client调用，无对应UI功能。
         /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
         /// </remarks>
-        [Obsolete("此端点未被Client使用，已在 OpenSpec refactor-webapi-layer 中标记废弃")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpPost("{id:guid}/toggle-status")]
-        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
-        [ProducesResponseType(404)]
-        public ActionResult<ApiResponse<UserDto>> ToggleStatus(Guid id)
-        {
-            return ValidationFail<UserDto>("此端点已废弃");
-        }
+        
 
         /// <summary>
         /// 修改个人资料 (Issue #1889)

@@ -309,32 +309,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     }
 
     /// <summary>
-    /// 医生医案统计DTO
-    /// </summary>
-    public class DoctorMedicalCaseStatisticsDto
-    {
-        public Guid DoctorId { get; set; }
-
-        [DisplayName("医生姓名")]
-        public string DoctorName { get; set; } = string.Empty;
-
-        [DisplayName("总医案数")]
-        public int TotalMedicalCases { get; set; }
-
-        [DisplayName("完成医案数")]
-        public int CompletedCases { get; set; }
-
-        [DisplayName("完成率")]
-        public decimal CompletionRate { get; set; }
-
-        [DisplayName("平均诊疗时长(分钟)")]
-        public decimal AverageConsultationTime { get; set; }
-
-        [DisplayName("总患者数")]
-        public int TotalPatients { get; set; }
-    }
-
-    /// <summary>
     /// 医案批量操作结果DTO - 继承自通用批量操作结果基类
     /// </summary>
     public class MedicalCaseBatchOperationResultDto : BatchOperationResultDto
@@ -438,27 +412,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public string Message { get; set; } = string.Empty;
     }
 
-    // ========== 医案状态操作DTO（从Controller迁移到Shared） ==========
-
-    /// <summary>
-    /// 完成医案DTO
-    /// </summary>
-    public class CompleteMedicalCaseDto
-    {
-        [StringLength(500, ErrorMessage = "完成原因长度不能超过500个字符")]
-        [DisplayName("完成原因")]
-        public string? CompletionReason { get; set; }
-    }
-
-    /// <summary>
-    /// 暂停医案DTO
-    /// </summary>
-    public class SuspendMedicalCaseDto
-    {
-        [StringLength(500, ErrorMessage = "暂停原因长度不能超过500个字符")]
-        [DisplayName("暂停原因")]
-        public string? Reason { get; set; }
-    }
+    // ========== 医案状态操作DTO ==========
 
     /// <summary>
     /// 更新医案状态DTO
@@ -472,16 +426,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(500, ErrorMessage = "状态变更原因长度不能超过500个字符")]
         [DisplayName("状态变更原因")]
         public string? StatusChangeReason { get; set; }
-    }
-
-    /// <summary>
-    /// 归档医案DTO
-    /// </summary>
-    public class ArchiveMedicalCaseDto
-    {
-        [StringLength(500, ErrorMessage = "归档原因长度不能超过500个字符")]
-        [DisplayName("归档原因")]
-        public string? ArchiveReason { get; set; }
     }
 
     // ========== Epic #1583: 待看诊队列DTO ==========

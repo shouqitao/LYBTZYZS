@@ -164,31 +164,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
     }
 
     /// <summary>
-    /// 特价设置DTO
-    /// </summary>
-    public class HerbSpecialPriceDto
-    {
-
-        [Required]
-        public Guid Id { get; set; }
-
-        [Required]
-        [Range(0.01, double.MaxValue, ErrorMessage = "特价必须大于0")]
-        public decimal SpecialPrice { get; set; }
-
-        [Required]
-        public DateTime StartTime { get; set; }
-
-        [Required]
-        public DateTime EndTime { get; set; }
-
-        /// <summary>
-        /// 促销说明
-        /// </summary>
-        public string? Description { get; set; }
-    }
-
-    /// <summary>
     /// 特价设置请求
     /// </summary>
     public class SpecialPriceRequest
@@ -302,19 +277,6 @@ namespace LYBT.Shared.Models.Contracts.Herbs
         public List<string> SideEffects { get; set; } = new List<string>();
         public string? MaxDailyDosage { get; set; }
         public string? PregnancyCategory { get; set; }
-    }
-
-    /// <summary>
-    /// 配伍建议DTO
-    /// </summary>
-    public class CompatibilitySuggestionDto
-    {
-        public Guid HerbId { get; set; }
-        public string HerbName { get; set; } = string.Empty;
-        public string SuggestionType { get; set; } = string.Empty; // Enhance, Reduce, Replace
-        public string Reason { get; set; } = string.Empty;
-        public decimal RecommendedDosage { get; set; }
-        public string? Usage { get; set; }
     }
 
     /// <summary>

@@ -541,16 +541,7 @@ namespace LYBT.WebAPI.Controllers
         /// OpenSpec refactor-webapi-layer: 此端点从未被Client调用，
         /// Client使用 PUT /{id}/status 并指定 Completed 状态。
         /// </remarks>
-        [Obsolete("此端点未被Client使用，请使用 PUT /{id}/status 并指定 Completed 状态")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpPut("{id}/complete")]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
-        [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
-        public ActionResult<ApiResponse<MedicalCase>> CompleteMedicalCase(Guid id)
-        {
-            return ValidationFail<MedicalCase>("此端点已废弃，请使用 PUT /{id}/status 并指定 Completed 状态");
-        }
+        
 
         /// <summary>
         /// 删除病案（软删除）
