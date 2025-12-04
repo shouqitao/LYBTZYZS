@@ -33,7 +33,14 @@ README SHALL 遵循以下原则:
 
 Server模块README SHALL 采用以下结构:
 
-```markdown
+#### Scenario: Server模块核心接口
+- **WHEN** 描述核心接口
+- **THEN** SHALL 使用表格列出接口名、方法数、说明
+- **AND** SHALL NOT 展示完整方法签名
+
+模板格式:
+
+````markdown
 # LYBT.Module.{Domain}
 
 > {一句话描述} | {架构模式} | {依赖方式}
@@ -84,12 +91,7 @@ LYBT.Module.{Domain}/
 | 日期 | 变更 |
 |------|------|
 | YYYY-MM-DD | {变更说明} |
-```
-
-#### Scenario: Server模块核心接口
-- **WHEN** 描述核心接口
-- **THEN** SHALL 使用表格列出接口名、方法数、说明
-- **AND** SHALL NOT 展示完整方法签名
+````
 
 ---
 
@@ -97,7 +99,14 @@ LYBT.Module.{Domain}/
 
 Client模块README SHALL 采用以下结构:
 
-```markdown
+#### Scenario: Client模块View列表
+- **WHEN** 描述Views
+- **THEN** SHALL 使用表格列出View、ViewModel、说明
+- **AND** 复杂模块 MAY 分组展示(主视图、弹窗等)
+
+模板格式:
+
+````markdown
 # LYBT.Desktop.{Domain}
 
 > {一句话描述} | ViewModel数: {N} | View数: {M}
@@ -147,12 +156,7 @@ LYBT.Desktop.{Domain}/
 | 日期 | 变更 |
 |------|------|
 | YYYY-MM-DD | {变更说明} |
-```
-
-#### Scenario: Client模块View列表
-- **WHEN** 描述Views
-- **THEN** SHALL 使用表格列出View、ViewModel、说明
-- **AND** 复杂模块 MAY 分组展示(主视图、弹窗等)
+````
 
 ---
 
@@ -160,7 +164,14 @@ LYBT.Desktop.{Domain}/
 
 Shared项目README SHALL 采用以下结构:
 
-```markdown
+#### Scenario: Shared项目主要内容
+- **WHEN** 描述Shared项目内容
+- **THEN** SHALL 使用表格列出分类、文件数、说明
+- **AND** SHALL 列出关键类型及其说明
+
+模板格式:
+
+````markdown
 # LYBT.Shared.{Purpose}
 
 > {一句话描述} | 文件数: {N}
@@ -207,7 +218,7 @@ LYBT.Shared.{Purpose}/
 | 日期 | 变更 |
 |------|------|
 | YYYY-MM-DD | {变更说明} |
-```
+````
 
 ---
 
@@ -215,7 +226,14 @@ LYBT.Shared.{Purpose}/
 
 Core项目(Infrastructure、Entities等) SHALL 采用以下结构:
 
-```markdown
+#### Scenario: Core项目核心组件
+- **WHEN** 描述Core项目组件
+- **THEN** SHALL 使用表格列出核心组件及说明
+- **AND** SHALL 列出扩展点及其用途
+
+模板格式:
+
+````markdown
 # LYBT.{Project}
 
 > {一句话描述} | 核心基础设施
@@ -258,7 +276,7 @@ LYBT.{Project}/
 | 日期 | 变更 |
 |------|------|
 | YYYY-MM-DD | {变更说明} |
-```
+````
 
 ---
 
