@@ -10,19 +10,20 @@ using LYBT.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using LYBT.Shared.Utilities.Security;
 
 namespace LYBT.Module.Auth.Services
 {
     /// <summary>
     /// 认证服务 - 简化版本（遵循适度设计原则）
     /// Issue #1008: 改为直接使用IUserRepository，移除对IUserService的依赖
+    /// Issue #1864: 重新引入IUserService实现Auth/User职责分离，密码验证委托给UserService
     /// 仅提供小型中医诊所系统所需的基础认证功能，移除企业级复杂功能
     /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IJwtService _jwtService;
         private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService; // Issue #1864: 职责分离
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
         private readonly AppDbContext _dbContext;
@@ -33,6 +34,7 @@ namespace LYBT.Module.Auth.Services
         public AuthService(
             IJwtService jwtService,
             IUserRepository userRepository,
+            IUserService userService, // Issue #1864: 职责分离
             IMapper mapper,
             ILogger<AuthService> logger,
             AppDbContext dbContext,
@@ -42,6 +44,7 @@ namespace LYBT.Module.Auth.Services
         {
             _jwtService = jwtService;
             _userRepository = userRepository;
+            _userService = userService; // Issue #1864: 职责分离
             _mapper = mapper;
             _logger = logger;
             _dbContext = dbContext;
@@ -56,36 +59,41 @@ namespace LYBT.Module.Auth.Services
         /// 验证用户凭据（统一认证）
         /// Issue #1008: 改为直接使用IUserRepository和BCrypt验证
         /// Issue #1909: 三角色统一认证（SuperAdmin/Admin/Doctor）
+        /// Issue #1864: 返回结构化错误码，职责分离委托给IUserService验证密码
         /// </summary>
         public async Task<Result<string>> VerifyCredentialsAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
-                return Result<string>.Failure("用户名和密码不能为空");
+                return Result<string>.Failure(AuthErrorCode.InvalidCredentials, "用户名和密码不能为空");
 
             try
             {
-                // 统一认证流程 - 所有用户（包括SuperAdmin）都从Users表验证
-                var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
-                if (userEntity == null)
-                    return Result<string>.Failure("用户名或密码错误");
+                // Issue #1864: 职责分离 - 密码验证委托给UserService
+                var validationResult = await _userService.ValidatePasswordAsync(request.UserName, request.Password);
 
-                // 使用统一密码帮助类验证密码
-                var verificationResult = PasswordHelper.VerifyPassword(request.Password, userEntity.PasswordHash, userEntity.Role, _logger);
-                if (verificationResult.IsSuccess)
+                if (!validationResult.IsSuccess)
                 {
-                    _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
-                        request.UserName, userEntity.Role, DateTime.UtcNow);
-                    return Result<string>.Success(userEntity.Id.ToString());
+                    // 根据错误消息映射到对应的AuthErrorCode
+                    var errorCode = validationResult.ErrorMessage switch
+                    {
+                        "用户已被禁用" => AuthErrorCode.UserDisabled,
+                        _ => AuthErrorCode.InvalidCredentials
+                    };
+
+                    _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: {Reason}] [时间: {Timestamp}]",
+                        request.UserName, validationResult.ErrorMessage, DateTime.UtcNow);
+                    return Result<string>.Failure(errorCode, validationResult.ErrorMessage);
                 }
 
-                _logger.LogWarning("用户认证失败 [用户名: {UserName}] [原因: 密码错误] [时间: {Timestamp}]",
-                    request.UserName, DateTime.UtcNow);
-                return Result<string>.Failure("用户名或密码错误");
+                var userDto = validationResult.Data!;
+                _logger.LogInformation("用户认证成功 [用户名: {UserName}] [角色: {Role}] [时间: {Timestamp}]",
+                    request.UserName, userDto.Role, DateTime.UtcNow);
+                return Result<string>.Success(userDto.Id.ToString());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "验证用户凭据时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
-                return Result<string>.Failure("认证过程中发生错误");
+                return Result<string>.Failure(AuthErrorCode.InternalError, "认证过程中发生错误");
             }
         }
 
@@ -99,6 +107,7 @@ namespace LYBT.Module.Auth.Services
         /// <summary>
         /// 用户登录（统一流程）
         /// Issue #1909: 三角色统一登录流程（SuperAdmin/Admin/Doctor）
+        /// Issue #1864: 返回结构化错误码
         /// </summary>
         public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
         {
@@ -116,13 +125,16 @@ namespace LYBT.Module.Auth.Services
                         Success = false,
                         ErrorMessage = credentialsResult.ErrorMessage ?? "凭据验证失败"
                     });
-                    return Result<LoginResponse>.Failure(credentialsResult.ErrorMessage ?? "凭据验证失败");
+                    // Issue #1864: 传递错误码
+                    return Result<LoginResponse>.Failure(
+                        credentialsResult.ErrorCode ?? AuthErrorCode.InvalidCredentials,
+                        credentialsResult.ErrorMessage);
                 }
 
                 // 统一用户登录流程（包括SuperAdmin） - 所有角色都从Users表获取
                 var userEntity = await _userRepository.GetByUsernameAsync(request.UserName);
                 if (userEntity == null)
-                    return Result<LoginResponse>.Failure("获取用户信息失败");
+                    return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
                 var userDto = _mapper.Map<UserDto>(userEntity);
 
@@ -179,25 +191,48 @@ namespace LYBT.Module.Auth.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "用户登录时发生错误 [时间: {Timestamp}]", DateTime.UtcNow);
-                return Result<LoginResponse>.Failure("登录过程中发生错误");
+                return Result<LoginResponse>.Failure(AuthErrorCode.InternalError, "登录过程中发生错误");
             }
         }
 
         /// <summary>
         /// 用户登出
         /// Issue #1872: 集成Token撤销和审计日志
+        /// Issue #1864 AUTH-008: 支持过期Token登出
+        /// Issue #1864 AUTH-009: Logout后Token必须失效，强制重新登录
         /// </summary>
         public async Task<Result<bool>> LogoutAsync(LogoutRequest request)
         {
             try
             {
-                // Issue #1872: 查找并撤销RefreshToken
-                var tokenRecord = await _dbContext.RefreshTokens
-                    .FirstOrDefaultAsync(t => t.Token == request.RefreshToken);
+                LYBT.Entities.Auth.RefreshToken? tokenRecord = null;
+                string? userName = request.UserName;
 
-                if (tokenRecord != null && !tokenRecord.IsRevoked && !string.IsNullOrEmpty(request.RefreshToken))
+                // Issue #1864: 优先通过RefreshToken查找会话
+                if (!string.IsNullOrEmpty(request.RefreshToken))
                 {
-                    await _revocationService.RevokeTokenAsync(request.RefreshToken, "用户主动登出");
+                    tokenRecord = await _dbContext.RefreshTokens
+                        .FirstOrDefaultAsync(t => t.Token == request.RefreshToken);
+
+                    // 从Token记录获取用户信息（用于审计日志）
+                    if (tokenRecord != null && string.IsNullOrEmpty(userName))
+                    {
+                        var user = await _userRepository.GetByIdAsync(tokenRecord.UserId);
+                        userName = user?.UserName;
+                    }
+
+                    // Issue #1864 AUTH-009: 撤销RefreshToken确保无法恢复会话
+                    // 即使Token已过期或已使用，也尝试撤销以确保安全
+                    if (tokenRecord != null && !tokenRecord.IsRevoked)
+                    {
+                        await _revocationService.RevokeTokenAsync(request.RefreshToken, "用户主动登出");
+
+                        // Issue #1864 AUTH-007: 同时撤销整个Token Family
+                        if (!string.IsNullOrEmpty(tokenRecord.FamilyId))
+                        {
+                            await RevokeTokenFamilyAsync(tokenRecord.FamilyId, "用户主动登出，撤销整个Token Family");
+                        }
+                    }
                 }
 
                 // Issue #1872: 记录登出审计日志
@@ -206,27 +241,31 @@ namespace LYBT.Module.Auth.Services
                     EventType = "Logout",
                     UserId = tokenRecord?.UserId,
                     UserType = tokenRecord?.UserType,
-                    UserName = request.Username, // 修正：属性名为Username
+                    UserName = userName,
                     Success = true
                 });
+
+                _logger.LogInformation("用户登出成功 [用户名: {UserName}] [时间: {Timestamp}]",
+                    userName ?? "(unknown)", DateTime.UtcNow);
 
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "用户登出时发生错误");
-                // 即使撤销失败，也返回成功，因为客户端已经清除了Token
+                // 即使撤销失败，也返回成功，因为客户端应该清除Token
                 return Result<bool>.Success(true);
             }
         }
 
         /// <summary>
         /// 刷新令牌 - Issue #1838: 实现Token自动刷新机制
+        /// Issue #1864: 返回结构化错误码
         /// </summary>
         public async Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
-                return Result<LoginResponse>.Failure("RefreshToken不能为空");
+                return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenInvalid, "RefreshToken不能为空");
 
             try
             {
@@ -243,15 +282,56 @@ namespace LYBT.Module.Auth.Services
                         Success = false,
                         ErrorMessage = "Token不存在"
                     });
-                    return Result<LoginResponse>.Failure("RefreshToken不存在");
+                    return Result<LoginResponse>.Failure(AuthErrorCode.RefreshTokenInvalid, "RefreshToken不存在");
                 }
 
-                // 2. 验证Token是否有效
+                // 2. Issue #1864 AUTH-007: 检测重放攻击
+                // 如果Token已经被使用过，说明检测到重放攻击
+                if (tokenRecord.IsUsed)
+                {
+                    _logger.LogWarning("检测到Token重放攻击！[TokenId: {TokenId}] [FamilyId: {FamilyId}] [UserId: {UserId}]",
+                        tokenRecord.Id, tokenRecord.FamilyId, tokenRecord.UserId);
+
+                    // 安全措施：使整个Token Family失效
+                    if (!string.IsNullOrEmpty(tokenRecord.FamilyId))
+                    {
+                        await RevokeTokenFamilyAsync(tokenRecord.FamilyId, "检测到重放攻击，整个Token Family已失效");
+                    }
+
+                    // Issue #1872: 记录重放攻击审计日志
+                    await _auditService.LogAsync(new SecurityAuditEvent
+                    {
+                        EventType = "TokenReplayAttack",
+                        UserId = tokenRecord.UserId,
+                        UserType = tokenRecord.UserType,
+                        Success = false,
+                        ErrorMessage = "检测到Token重放攻击"
+                    });
+
+                    return Result<LoginResponse>.Failure(AuthErrorCode.TokenRevoked, "检测到安全威胁，请重新登录");
+                }
+
+                // 3. 验证Token是否有效
                 if (!tokenRecord.IsValid())
                 {
-                    var reason = tokenRecord.IsRevoked ? "已撤销" :
-                                tokenRecord.IsDeleted ? "已删除" :
-                                "已过期";
+                    AuthErrorCode errorCode;
+                    string reason;
+
+                    if (tokenRecord.IsRevoked)
+                    {
+                        errorCode = AuthErrorCode.TokenRevoked;
+                        reason = "已撤销";
+                    }
+                    else if (tokenRecord.IsDeleted)
+                    {
+                        errorCode = AuthErrorCode.TokenRevoked;
+                        reason = "已删除";
+                    }
+                    else
+                    {
+                        errorCode = AuthErrorCode.RefreshTokenExpired;
+                        reason = "已过期";
+                    }
 
                     // Issue #1872: 记录Token无效审计日志
                     await _auditService.LogAsync(new SecurityAuditEvent
@@ -264,7 +344,7 @@ namespace LYBT.Module.Auth.Services
                     });
 
                     _logger.LogWarning("RefreshToken验证失败：{Reason}", reason);
-                    return Result<LoginResponse>.Failure($"RefreshToken{reason}，请重新登录");
+                    return Result<LoginResponse>.Failure(errorCode, $"RefreshToken{reason}，请重新登录");
                 }
 
                 // 3. 记录使用并检查异常使用
@@ -277,7 +357,7 @@ namespace LYBT.Module.Auth.Services
                 // 4. 统一从Users表获取用户信息（包括SuperAdmin） - Issue #1909
                 var userEntity = await _userRepository.GetByIdAsync(tokenRecord.UserId);
                 if (userEntity == null)
-                    return Result<LoginResponse>.Failure("用户不存在");
+                    return Result<LoginResponse>.Failure(AuthErrorCode.UserNotFound);
 
                 var userDto = _mapper.Map<UserDto>(userEntity);
 
@@ -293,15 +373,16 @@ namespace LYBT.Module.Auth.Services
                     userDto.Role,
                     userType); // 传入userType以设置正确的user_type claim
 
-                // 6. 生成新的Refresh Token并撤销旧Token（Token轮换）
+                // 6. Issue #1864 AUTH-007: 生成新的Refresh Token（Token轮换）
+                // 使用MarkAsUsed而非Revoke，以支持重放攻击检测
                 var newRefreshToken = GenerateRefreshToken();
                 var refreshTokenExpireDays = _configuration.GetValue<int?>("Lybt:Jwt:RefreshTokenExpirationDays") ?? 7;
 
-                // 撤销旧Token
-                tokenRecord.Revoke("已被新Token替换", $"User:{userDto.Id}");
-                tokenRecord.ReplacedByToken = newRefreshToken;
+                // 标记旧Token为已使用（而不是撤销）
+                // 这样当攻击者尝试重用时，IsUsed=true会触发重放攻击检测
+                tokenRecord.MarkAsUsed(newRefreshToken);
 
-                // 创建新Token记录
+                // 创建新Token记录，继承FamilyId
                 var newTokenRecord = new LYBT.Entities.Auth.RefreshToken
                 {
                     Token = newRefreshToken,
@@ -309,7 +390,7 @@ namespace LYBT.Module.Auth.Services
                     UserType = userType, // Issue #1861: 继承用户类型
                     Jti = Guid.NewGuid().ToString(),
                     ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpireDays),
-                    FamilyId = tokenRecord.FamilyId // 继承家族ID
+                    FamilyId = tokenRecord.FamilyId ?? Guid.NewGuid().ToString() // 继承或创建家族ID
                 };
 
                 _dbContext.RefreshTokens.Add(newTokenRecord);
@@ -343,7 +424,7 @@ namespace LYBT.Module.Auth.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "刷新Token时发生错误");
-                return Result<LoginResponse>.Failure("刷新Token失败");
+                return Result<LoginResponse>.Failure(AuthErrorCode.InternalError, "刷新Token失败");
             }
         }
 
@@ -361,6 +442,7 @@ namespace LYBT.Module.Auth.Services
 
         /// <summary>
         /// 验证令牌
+        /// Issue #1864: 返回结构化错误码
         /// </summary>
         public async Task<Result<bool>> ValidateTokenAsync(string token)
         {
@@ -369,16 +451,20 @@ namespace LYBT.Module.Auth.Services
             try
             {
                 var principal = _jwtService.ValidateToken(token);
-                return Result<bool>.Success(principal != null);
+                if (principal != null)
+                    return Result<bool>.Success(true);
+
+                return Result<bool>.Failure(AuthErrorCode.TokenInvalid);
             }
             catch
             {
-                return Result<bool>.Success(false);
+                return Result<bool>.Failure(AuthErrorCode.TokenInvalid);
             }
         }
 
         /// <summary>
         /// 获取会话信息
+        /// Issue #1864: 返回结构化错误码
         /// </summary>
         public async Task<Result<object>> GetSessionInfoAsync(string token)
         {
@@ -388,7 +474,7 @@ namespace LYBT.Module.Auth.Services
             {
                 var principal = _jwtService.ValidateToken(token);
                 if (principal == null)
-                    return Result<object>.Failure("令牌无效");
+                    return Result<object>.Failure(AuthErrorCode.TokenInvalid);
 
                 var sessionInfo = new
                 {
@@ -401,7 +487,7 @@ namespace LYBT.Module.Auth.Services
             }
             catch
             {
-                return Result<object>.Failure("获取会话信息失败");
+                return Result<object>.Failure(AuthErrorCode.InternalError, "获取会话信息失败");
             }
         }
 
@@ -412,6 +498,36 @@ namespace LYBT.Module.Auth.Services
         {
             await Task.CompletedTask;
             return Result<bool>.Success(true);
+        }
+
+        /// <summary>
+        /// 撤销整个Token Family（用于重放攻击检测）
+        /// Issue #1864 AUTH-007: 当检测到重放攻击时，使整个Token Family失效
+        /// </summary>
+        /// <param name="familyId">Token Family ID</param>
+        /// <param name="reason">撤销原因</param>
+        private async Task RevokeTokenFamilyAsync(string familyId, string reason)
+        {
+            try
+            {
+                var familyTokens = await _dbContext.RefreshTokens
+                    .Where(t => t.FamilyId == familyId && !t.IsRevoked)
+                    .ToListAsync();
+
+                foreach (var token in familyTokens)
+                {
+                    token.Revoke(reason, "System:ReplayAttackDetection");
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogWarning("Token Family已撤销 [FamilyId: {FamilyId}] [撤销Token数量: {Count}] [原因: {Reason}]",
+                    familyId, familyTokens.Count, reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "撤销Token Family失败 [FamilyId: {FamilyId}]", familyId);
+            }
         }
 
         #endregion 认证流程操作

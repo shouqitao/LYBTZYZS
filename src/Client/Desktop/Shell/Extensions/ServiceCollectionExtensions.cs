@@ -128,6 +128,7 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<LocalTokenValidator>(containerRegistry);
             RegisterLogger<ModuleLoadingService>(containerRegistry);
             RegisterLogger<StartupOptimizationService>(containerRegistry);
+            RegisterLogger<TokenLifecycleService>(containerRegistry);
         }
 
         /// <summary>注册Presentation和Shell层Logger</summary>
@@ -260,6 +261,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IApiHealthCheckService, ApiHealthCheckService>();
             containerRegistry.RegisterSingleton<IApiService, ApiService>();
             containerRegistry.RegisterSingleton<IStartupOptimizationService, StartupOptimizationService>();
+            containerRegistry.RegisterSingleton<ITokenLifecycleService, TokenLifecycleService>();
         }
 
         /// <summary>注册Presentation层服务</summary>

@@ -8,6 +8,8 @@
         Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="NoResize"
         Background="White">
 
     <Window.Resources>

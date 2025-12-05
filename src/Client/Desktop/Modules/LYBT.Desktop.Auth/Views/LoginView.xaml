@@ -111,37 +111,83 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <!--  Issue #1826: 优化间距 - 统一使用4的倍数  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  0: 标题  -->
-                        <RowDefinition Height="36" />     
+                        <RowDefinition Height="36" />
                         <!--  1: 间距（优化：32→36）  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  2: 用户名输入  -->
-                        <RowDefinition Height="24" />     
+                        <RowDefinition Height="24" />
                         <!--  3: 间距（优化：20→24）  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  4: 密码输入  -->
-                        <RowDefinition Height="24" />     
+                        <RowDefinition Height="24" />
                         <!--  5: 间距（优化：20→24）  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  6: 记住用户名  -->
-                        <RowDefinition Height="12" />     
+                        <RowDefinition Height="12" />
                         <!--  7: 间距（优化：10→12）  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  8: 记住密码  -->
-                        <RowDefinition Height="20" />     
+                        <RowDefinition Height="20" />
                         <!--  9: 间距  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  10: 连接模式  -->
-                        <RowDefinition Height="28" />     
+                        <RowDefinition Height="28" />
                         <!--  11: 间距（优化：24→28）  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  12: 登录按钮  -->
-                        <RowDefinition Height="16" />     
+                        <RowDefinition Height="16" />
                         <!--  13: 间距  -->
-                        <RowDefinition Height="Auto" />   
+                        <RowDefinition Height="Auto" />
                         <!--  14: 状态消息  -->
                     </Grid.RowDefinitions>
+
+                    <!--  remove-titlebar-add-close-button: 关闭按钮（右上角）  -->
+                    <Button
+                        Grid.Row="0"
+                        Width="28"
+                        Height="28"
+                        Margin="0,-28,-36,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Command="{Binding CloseApplicationCommand}"
+                        Content="X"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        ToolTip="关闭程序">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Foreground" Value="#6D4C41" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="14">
+                                                <ContentPresenter
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E53935" />
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background" Value="#C62828" />
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
                     <!--  标题  -->
                     <StackPanel Grid.Row="0" HorizontalAlignment="Center">
@@ -281,17 +327,16 @@
                         </PasswordBox>
                     </StackPanel>
 
-                    <!--  记住用户名  -->
-                    <CheckBox
-                        Grid.Row="6"
-                        Content="记住用户名"
-                        FontSize="13"
-                        Foreground="#64748B"
-                        IsChecked="{Binding RememberMe}" />
-
-                    <!--  记住密码  -->
-                    <StackPanel Grid.Row="8" Orientation="Horizontal">
+                    <!--  记住用户名 + 记住密码（水平对齐）  -->
+                    <StackPanel Grid.Row="6" Orientation="Horizontal">
                         <CheckBox
+                            VerticalAlignment="Center"
+                            Content="记住用户名"
+                            FontSize="13"
+                            Foreground="#64748B"
+                            IsChecked="{Binding RememberMe}" />
+                        <CheckBox
+                            Margin="24,0,0,0"
                             VerticalAlignment="Center"
                             Content="记住密码"
                             FontSize="13"
@@ -302,8 +347,10 @@
                             VerticalAlignment="Center"
                             FontSize="11"
                             Foreground="#D97706"
-                            Text=" 仅在可信设备使用" />
+                            Text="仅在可信设备使用" />
                     </StackPanel>
+
+                    <!--  Row 8: 保留为空行，保持后续行号不变  -->
 
                     <!--  连接模式选择  -->
                     <Border

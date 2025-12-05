@@ -67,6 +67,15 @@ namespace LYBT.Module.Users.Interfaces
         Task<Result<ResetPasswordResponseDto>> ResetPasswordAsync(Guid id, ResetPasswordRequestDto request);
 
         /// <summary>
+        /// 验证用户密码
+        /// Issue #1864: Auth/User职责分离，密码验证由UserService负责
+        /// </summary>
+        /// <param name="userName">用户名</param>
+        /// <param name="password">明文密码</param>
+        /// <returns>验证成功返回用户信息，失败返回错误</returns>
+        Task<Result<UserDto>> ValidatePasswordAsync(string userName, string password);
+
+        /// <summary>
         /// 更改密码
         /// </summary>
         Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword);

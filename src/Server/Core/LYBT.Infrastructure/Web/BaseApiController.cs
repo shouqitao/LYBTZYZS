@@ -255,6 +255,64 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
+        /// 处理带AuthErrorCode的Result返回值 - 根据错误码返回正确HTTP状态码
+        /// Issue #1864: 统一认证错误处理
+        /// </summary>
+        protected IActionResult HandleAuthResult<T>(Result<T> result, string successMessage = "操作成功")
+        {
+            if (result.IsSuccess)
+            {
+                return Success(result.Data!, successMessage);
+            }
+
+            var errorCode = result.ErrorCode;
+            var message = result.ErrorMessage ?? "操作失败";
+
+            // 根据ErrorCode映射HTTP状态码
+            return errorCode switch
+            {
+                // 认证错误 1xx -> 401 Unauthorized
+                AuthErrorCode.InvalidCredentials => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.UserNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.UserDisabled => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.PasswordExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+
+                // Token错误 2xx -> 401 Unauthorized
+                AuthErrorCode.TokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.TokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.TokenRevoked => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.RefreshTokenExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.RefreshTokenInvalid => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+
+                // 会话错误 3xx -> 401 Unauthorized
+                AuthErrorCode.SessionNotFound => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.SessionExpired => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.ConcurrentSessionLimit => Unauthorized(CreateAuthErrorResponse<T>(message, errorCode)),
+
+                // 系统错误 9xx -> 500 Internal Server Error
+                AuthErrorCode.InternalError => StatusCode(500, CreateAuthErrorResponse<T>(message, errorCode)),
+                AuthErrorCode.ServiceUnavailable => StatusCode(503, CreateAuthErrorResponse<T>(message, errorCode)),
+
+                // 默认返回业务失败(200 with success=false)
+                _ => BusinessFail(message, errorCode?.ToString())
+            };
+        }
+
+        /// <summary>
+        /// 创建认证错误响应对象
+        /// </summary>
+        private ApiResponse<T> CreateAuthErrorResponse<T>(string message, AuthErrorCode? errorCode)
+        {
+            var response = ApiResponse<T>.CreateFail(message);
+            response.RequestId = GetRequestId();
+            if (errorCode.HasValue)
+            {
+                response.Errors = new { code = errorCode.Value.ToString(), numericCode = (int)errorCode.Value };
+            }
+            return response;
+        }
+
+        /// <summary>
         /// 处理异常
         /// </summary>
         protected IActionResult HandleException(Exception ex, string operation, object? context = null)

@@ -27,6 +27,11 @@ namespace LYBT.Infrastructure.Data.Configurations
                 .HasDatabaseName("IX_RefreshTokens_IsRevoked_Token")
                 .IncludeProperties(e => new { e.UserId, e.UserType, e.ExpiresAt });
 
+            // Issue #1864 AUTH-007: Token重放攻击检测索引
+            // 用于快速查找同一Family下的所有Token
+            entity.HasIndex(e => e.FamilyId)
+                .HasDatabaseName("IX_RefreshTokens_FamilyId");
+
             // 与用户的关系
             entity.HasOne<User>()
                 .WithMany()

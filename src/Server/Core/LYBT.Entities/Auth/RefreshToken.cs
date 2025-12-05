@@ -110,23 +110,39 @@ namespace LYBT.Entities.Auth
 
         /// <summary>
         /// 令牌家族ID（用于检测令牌重用攻击）
+        /// Issue #1864 AUTH-007: Token Family用于Refresh Token轮换
         /// </summary>
         [StringLength(128)]
         public string? FamilyId { get; set; }
 
         /// <summary>
+        /// 是否已使用（用于重放攻击检测）
+        /// Issue #1864 AUTH-007: 当Token被用于刷新后标记为已使用
+        /// 如果已使用的Token再次被使用，则检测到重放攻击
+        /// </summary>
+        public bool IsUsed { get; set; }
+
+        /// <summary>
+        /// 使用时间（用于重放攻击检测）
+        /// </summary>
+        public DateTime? UsedAt { get; set; }
+
+        /// <summary>
         /// 是否激活（计算属性）
+        /// Issue #1864: 增加IsUsed检查，已使用的Token不再激活
         /// </summary>
         [NotMapped]
-        public bool IsActive => !IsRevoked && !IsDeleted && ExpiresAt > DateTime.UtcNow;
+        public bool IsActive => !IsRevoked && !IsDeleted && !IsUsed && ExpiresAt > DateTime.UtcNow;
 
         /// <summary>
         /// 检查Token是否有效
+        /// Issue #1864: 增加IsUsed检查，已使用的Token不再有效
         /// </summary>
         public bool IsValid()
         {
             return !IsRevoked &&
                    !IsDeleted &&
+                   !IsUsed &&
                    ExpiresAt > DateTime.UtcNow;
         }
 
@@ -149,5 +165,23 @@ namespace LYBT.Entities.Auth
             UsageCount++;
             LastUsedAt = DateTime.UtcNow;
         }
+
+        /// <summary>
+        /// 标记为已使用（用于Token轮换）
+        /// Issue #1864 AUTH-007: 当Token被用于刷新后标记为已使用
+        /// </summary>
+        /// <param name="replacedByToken">替换此Token的新Token</param>
+        public void MarkAsUsed(string? replacedByToken = null)
+        {
+            IsUsed = true;
+            UsedAt = DateTime.UtcNow;
+            ReplacedByToken = replacedByToken;
+        }
+
+        /// <summary>
+        /// 检测是否为重放攻击（已使用的Token再次被使用）
+        /// Issue #1864 AUTH-007: 如果Token已被使用，说明检测到重放攻击
+        /// </summary>
+        public bool IsReplayAttack => IsUsed;
     }
 }

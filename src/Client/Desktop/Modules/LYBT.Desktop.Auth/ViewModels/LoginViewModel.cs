@@ -5,6 +5,7 @@ using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Auth;
@@ -26,6 +27,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ISecureCredentialStorage? _credentialStorage;
         private readonly IConnectionSettingsService? _connectionSettingsService;
+        private readonly ICommonDialogService? _dialogService;
 
         private string _username = string.Empty;
         private string _password = string.Empty;
@@ -74,6 +76,12 @@ namespace LYBT.Desktop.Auth.ViewModels
         public string ConnectionModeDisplay => ConnectionMode switch { ConnectionMode.Remote => "远程模式 - 连接到WebAPI服务", ConnectionMode.Local => "本地模式 - 使用本地数据库（v2.0）", _ => "未知模式" };
         public ICommand LoginCommand { get; }
 
+        /// <summary>
+        /// 关闭应用程序命令
+        /// remove-titlebar-add-close-button: 仅在登录界面可用的关闭按钮
+        /// </summary>
+        public ICommand CloseApplicationCommand { get; }
+
         public LoginViewModel(
             IAuthenticationService authService,
             ITokenStorageService tokenStorage,
@@ -83,15 +91,18 @@ namespace LYBT.Desktop.Auth.ViewModels
             IApplicationStateService applicationStateService,
             IUsernameStorageService? usernameStorage = null,
             ISecureCredentialStorage? credentialStorage = null,
-            IConnectionSettingsService? connectionSettingsService = null)
+            IConnectionSettingsService? connectionSettingsService = null,
+            ICommonDialogService? dialogService = null)
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage; _credentialStorage = credentialStorage; _connectionSettingsService = connectionSettingsService;
+            _dialogService = dialogService;
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
+            CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
             _connectionMode = _connectionSettingsService?.GetConnectionMode() ?? ConnectionMode.Remote;
 
             _ = Task.Run(async () => { await Task.Delay(100); await LoadSavedCredentialsAsync(); await LoadApiStatusFromStateServiceAsync(); });
@@ -191,6 +202,22 @@ namespace LYBT.Desktop.Auth.ViewModels
             }
             catch (Exception ex) { Logger.LogError(ex, "登录过程中发生错误"); ErrorMessage = "登录失败：" + ex.Message; Password = string.Empty; }
             finally { IsLoading = false; StatusMessage = string.Empty; }
+        }
+
+        /// <summary>
+        /// 关闭应用程序
+        /// remove-titlebar-add-close-button: 使用ICommonDialogService显示确认框后退出程序
+        /// </summary>
+        private async Task ExecuteCloseApplicationAsync()
+        {
+            var confirmed = _dialogService != null
+                ? await _dialogService.ShowConfirmAsync("确定要退出程序吗？", "退出确认")
+                : MessageBox.Show("确定要退出程序吗？", "退出确认", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+
+            if (confirmed)
+            {
+                Application.Current.Shutdown();
+            }
         }
     }
 }

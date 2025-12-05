@@ -7,6 +7,7 @@ using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Shared.Models.Contracts.Users;
@@ -32,6 +33,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private readonly IApplicationTickService _tickService;
     private readonly IUserActivityTracker _userActivityTracker;
     private readonly IAuthenticationService _authenticationService;
+    private readonly ITokenLifecycleService _tokenLifecycleService;
+    private readonly ITokenStorageService _tokenStorageService;
 
     /// <summary>构造函数</summary>
     public MainWindowViewModel(
@@ -49,6 +52,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IApplicationTickService tickService,
         IUserActivityTracker userActivityTracker,
         IAuthenticationService authenticationService,
+        ITokenLifecycleService tokenLifecycleService,
+        ITokenStorageService tokenStorageService,
         ICommonDialogService commonDialogService)
         : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService, commonDialogService)
     {
@@ -63,6 +68,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
         _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+        _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
+        _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
 
         InitializeViewModel();
     }
@@ -222,6 +229,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
         EventAggregator.GetEvent<PasswordChangedEvent>().Subscribe(OnPasswordChanged);
+        EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Subscribe(OnTokenLifecycleStateChanged);
         _navigationManager.SubscribeToRegionCollection();
     }
 
@@ -296,6 +304,55 @@ public class MainWindowViewModel : UnifiedViewModelBase
         });
     }
 
+    /// <summary>
+    /// Token生命周期状态变更事件处理
+    /// Issue #1864: 客户端Token生命周期管理
+    /// </summary>
+    private async void OnTokenLifecycleStateChanged(TokenLifecycleStateChangedEventArgs args)
+    {
+        Logger.LogDebug("Token生命周期状态变更: {Previous} -> {Current}", args.PreviousState, args.CurrentState);
+
+        await Application.Current.Dispatcher.InvokeAsync(async () =>
+        {
+            switch (args.CurrentState)
+            {
+                case TokenLifecycleState.Warning:
+                    await HandleTokenWarningAsync(args);
+                    break;
+
+                case TokenLifecycleState.Expired:
+                    await HandleTokenExpiredAsync();
+                    break;
+            }
+        });
+    }
+
+    /// <summary>处理Token即将过期警告</summary>
+    private async Task HandleTokenWarningAsync(TokenLifecycleStateChangedEventArgs args)
+    {
+        var remainingMinutes = args.RemainingTime?.TotalMinutes ?? 0;
+        var message = $"您的登录凭证将在约 {remainingMinutes:F0} 分钟后过期。\n\n系统正在尝试自动刷新，如果刷新失败，您需要重新登录。";
+
+        Logger.LogWarning("Token即将过期，剩余时间: {RemainingMinutes:F1} 分钟", remainingMinutes);
+
+        // 显示提示信息（非阻塞）
+        await ShowSuccessMessageAsync(message);
+    }
+
+    /// <summary>处理Token已过期</summary>
+    private async Task HandleTokenExpiredAsync()
+    {
+        Logger.LogWarning("Token已过期，执行自动登出");
+
+        await ShowSuccessMessageAsync("您的登录凭证已过期，请重新登录。");
+
+        // 重置Token生命周期服务
+        _tokenLifecycleService.Reset();
+
+        // 执行登出
+        await PerformLogoutAsync();
+    }
+
     /// <summary>退出登录命令执行</summary>
     private async Task ExecuteLogoutAsync()
     {
@@ -334,6 +391,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private Task PerformLogoutAsync()
     {
         _userActivityTracker.StopTracking();
+        _tokenLifecycleService.Reset(); // Issue #1864: 重置Token生命周期
         CurrentUser = null;
         IsLoggedIn = false;
         Title = "凌隐宝堂中医诊所诊疗系统";
@@ -365,11 +423,41 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IsLoggedIn = true;
         CurrentUser = user;
         _userActivityTracker.StartTracking();
+
+        // Issue #1864: 启动Token生命周期监控
+        _ = StartTokenLifecycleMonitoringAsync();
+
         _ = Task.Run(async () =>
         {
             await EnsureWorkstationModulesLoaded(user);
             await Application.Current.Dispatcher.InvokeAsync(() => LoadMainContent());
         });
+    }
+
+    /// <summary>
+    /// 启动Token生命周期监控
+    /// Issue #1864: 客户端Token生命周期管理
+    /// </summary>
+    private async Task StartTokenLifecycleMonitoringAsync()
+    {
+        try
+        {
+            var loginResponse = await _tokenStorageService.GetLoginResponseAsync();
+
+            if (loginResponse != null && loginResponse.ExpiresAt > DateTime.UtcNow)
+            {
+                _tokenLifecycleService.StartMonitoring(loginResponse.ExpiresAt);
+                Logger.LogInformation("Token生命周期监控已启动 [过期时间: {ExpiresAt}]", loginResponse.ExpiresAt);
+            }
+            else
+            {
+                Logger.LogWarning("无法启动Token生命周期监控：LoginResponse为空或已过期");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "启动Token生命周期监控时发生异常");
+        }
     }
 
     /// <summary>密码修改成功事件处理</summary>
@@ -490,12 +578,34 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
+    /// <summary>
+    /// 请求关闭应用程序（显示确认框）
+    /// remove-titlebar-add-close-button: 供Alt+F4调用，仅在登录界面可用
+    /// </summary>
+    /// <returns>用户是否确认关闭</returns>
+    public async Task<bool> RequestCloseApplicationAsync()
+    {
+        var confirmed = await ShowConfirmationAsync("确定要退出程序吗？", "退出确认");
+        if (confirmed)
+        {
+            Application.Current.Shutdown();
+        }
+        return confirmed;
+    }
+
     #region IDisposable
 
     /// <summary>重写OnDisposing方法，清理资源防止内存泄漏</summary>
     protected override void OnDisposing()
     {
-        try { CleanupTickSubscription(); UnsubscribeLoginEvent(); _navigationManager.UnsubscribeFromRegionCollection(); }
+        try
+        {
+            CleanupTickSubscription();
+            UnsubscribeLoginEvent();
+            UnsubscribeTokenLifecycleEvent();
+            _navigationManager.UnsubscribeFromRegionCollection();
+            _tokenLifecycleService.Dispose(); // Issue #1864: 释放Token生命周期服务
+        }
         catch (Exception ex) { Logger.LogError(ex, "资源清理异常"); }
         finally { base.OnDisposing(); }
     }
@@ -514,6 +624,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
     {
         try { EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess); }
         catch (Exception ex) { Logger.LogError(ex, "取消EventAggregator订阅失败"); }
+    }
+
+    /// <summary>取消Token生命周期事件订阅</summary>
+    private void UnsubscribeTokenLifecycleEvent()
+    {
+        try { EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Unsubscribe(OnTokenLifecycleStateChanged); }
+        catch (Exception ex) { Logger.LogError(ex, "取消TokenLifecycle事件订阅失败"); }
     }
 
     #endregion

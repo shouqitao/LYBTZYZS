@@ -39,6 +39,7 @@ namespace LYBT.WebAPI.Controllers
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), 401)]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
         {
             try
@@ -55,7 +56,8 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("密码不能为空");
 
                 var result = await _authService.LoginAsync(request);
-                return HandleResult(result, "登录成功");
+                // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
+                return HandleAuthResult(result, "登录成功");
             }
             catch (Exception ex)
             {
@@ -65,8 +67,11 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 用户登出
+        /// Issue #1864 AUTH-008: 允许过期Token登出，确保服务端会话被正确清理
+        /// Issue #1864 AUTH-009: Logout后必须重新登录，不支持会话恢复
         /// </summary>
         [HttpPost("logout")]
+        [AllowAnonymous] // Issue #1864: 允许过期Token访问登出端点
         [ProducesResponseType(typeof(ApiResponse), 200)]
         public async Task<IActionResult> LogoutAsync([FromBody] LogoutRequest request)
         {
@@ -77,8 +82,10 @@ namespace LYBT.WebAPI.Controllers
                 if (request == null)
                     return ValidationFail("登出请求不能为空");
 
-                if (string.IsNullOrWhiteSpace(request.Username))
-                    return ValidationFail("用户名不能为空");
+                // Issue #1864: 登出请求必须提供RefreshToken或用户名
+                // RefreshToken用于精确定位会话，用户名用于审计日志
+                if (string.IsNullOrWhiteSpace(request.RefreshToken) && string.IsNullOrWhiteSpace(request.UserName))
+                    return ValidationFail("必须提供RefreshToken或用户名");
 
                 var result = await _authService.LogoutAsync(request);
                 return HandleBoolResult(result, "登出成功");
@@ -109,13 +116,9 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("RefreshToken不能为空");
 
                 var result = await _authService.RefreshTokenAsync(request.RefreshToken);
-
-                if (!result.IsSuccess)
-                {
-                    return Unauthorized(ApiResponse<LoginResponse>.CreateFail(result.ErrorMessage ?? "RefreshToken无效"));
-                }
-
-                return Success(result.Data!, "Token刷新成功");
+                // Issue #1864: 使用HandleAuthResult根据ErrorCode返回正确HTTP状态码
+                // TokenRevoked/RefreshTokenExpired/RefreshTokenInvalid -> 401
+                return HandleAuthResult(result, "Token刷新成功");
             }
             catch (Exception ex)
             {
@@ -128,6 +131,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("validate")]
         [ProducesResponseType(typeof(ApiResponse<object>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 401)]
         public async Task<IActionResult> ValidateTokenFromHeaderAsync()
         {
             try
@@ -135,18 +139,18 @@ namespace LYBT.WebAPI.Controllers
                 var authHeader = Request.Headers.Authorization.FirstOrDefault();
                 if (string.IsNullOrWhiteSpace(authHeader))
                 {
-                    return Unauthorized(new { valid = false, message = "Missing Authorization header" });
+                    return Unauthorized(new { valid = false, message = "Missing Authorization header", errorCode = "TokenInvalid" });
                 }
 
                 if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Unauthorized(new { valid = false, message = "Invalid Authorization header format" });
+                    return Unauthorized(new { valid = false, message = "Invalid Authorization header format", errorCode = "TokenInvalid" });
                 }
 
                 var token = authHeader.Substring("Bearer ".Length).Trim();
                 if (string.IsNullOrWhiteSpace(token))
                 {
-                    return Unauthorized(new { valid = false, message = "Missing token in Authorization header" });
+                    return Unauthorized(new { valid = false, message = "Missing token in Authorization header", errorCode = "TokenInvalid" });
                 }
 
                 var result = await _authService.ValidateTokenAsync(token);
@@ -164,7 +168,9 @@ namespace LYBT.WebAPI.Controllers
                 }
                 else
                 {
-                    return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid" });
+                    // Issue #1864: 返回结构化错误码
+                    var errorCode = result.ErrorCode?.ToString() ?? "TokenInvalid";
+                    return Unauthorized(new { valid = false, message = result.ErrorMessage ?? "Token is invalid", errorCode });
                 }
             }
             catch (Exception ex)

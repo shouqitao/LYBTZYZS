@@ -443,6 +443,60 @@ namespace LYBT.Module.Users.Services
         }
 
         /// <summary>
+        /// 验证用户密码
+        /// Issue #1864: Auth/User职责分离，密码验证由UserService负责
+        /// </summary>
+        public async Task<Result<UserDto>> ValidatePasswordAsync(string userName, string password)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userName))
+                    return Result<UserDto>.Failure("用户名不能为空");
+
+                if (string.IsNullOrWhiteSpace(password))
+                    return Result<UserDto>.Failure("密码不能为空");
+
+                var entity = await _repository.GetByUsernameAsync(userName);
+                if (entity == null)
+                {
+                    _logger.LogWarning("用户不存在: {UserName}", userName);
+                    return Result<UserDto>.Failure("用户名或密码错误");
+                }
+
+                // 检查用户状态
+                if (entity.Status == CommonStatus.Disabled)
+                {
+                    _logger.LogWarning("用户已被禁用: {UserName}", userName);
+                    return Result<UserDto>.Failure("用户已被禁用");
+                }
+
+                // 验证密码
+                var verificationResult = PasswordHelper.VerifyPassword(password, entity.PasswordHash, entity.Role, _logger);
+                if (!verificationResult.IsSuccess)
+                {
+                    _logger.LogWarning("密码验证失败: {UserName}", userName);
+                    return Result<UserDto>.Failure("用户名或密码错误");
+                }
+
+                // 如果需要重新哈希密码（升级哈希算法场景）
+                if (verificationResult.NewHashedPassword != null)
+                {
+                    entity.PasswordHash = verificationResult.NewHashedPassword;
+                    await _repository.UpdateAsync(entity);
+                    _logger.LogInformation("用户密码哈希已升级: {UserName}", userName);
+                }
+
+                var userDto = _mapper.Map<UserDto>(entity);
+                return Result<UserDto>.Success(userDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "验证用户密码时发生异常: {UserName}", userName);
+                return Result<UserDto>.Failure("验证密码时发生内部错误");
+            }
+        }
+
+        /// <summary>
         /// 更改密码
         /// </summary>
         public async Task<Result> ChangePasswordAsync(Guid id, string oldPassword, string newPassword)

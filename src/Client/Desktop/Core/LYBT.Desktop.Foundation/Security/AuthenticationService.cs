@@ -77,10 +77,19 @@ namespace LYBT.Desktop.Foundation.Security
                 var loginResponse = await _tokenStorage.GetLoginResponseAsync();
                 var username = loginResponse?.User.UserName ?? "unknown";
 
+                // 检查Token是否已过期，过期则跳过API调用（避免401异常）
+                var isExpired = await _tokenStorage.IsTokenExpiredAsync();
+                if (isExpired)
+                {
+                    _logger.LogInformation("Token已过期，跳过服务端登出API调用");
+                    await _tokenStorage.ClearAuthenticationAsync();
+                    return ServiceResult.Success("本地登出成功");
+                }
+
                 // 调用 IAuthApi.LogoutAsync(LogoutRequest)
                 var logoutRequest = new LogoutRequest
                 {
-                    Username = username,
+                    UserName = username,
                     RefreshToken = loginResponse?.RefreshToken
                 };
 
