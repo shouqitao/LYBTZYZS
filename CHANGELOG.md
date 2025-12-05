@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Shell启动流程重构 (OpenSpec: refactor-shell-startup-flow) - 2025-12-05
+
+**架构改进:**
+- 引入`IApplicationLifecycle`状态机管理启动阶段（Initializing→Authenticating→Ready→Running）
+- 使用`StartupPipeline`管道模式统一初始化流程
+- 新增`LoginCoordinator`编排完整登录流程（认证→保存Token→启动会话→加载模块→导航）
+- 新增`SessionLifecycleManager`管理会话状态和Token生命周期
+
+**新增组件:**
+- `IStartupStep`接口和5个实现步骤：ErrorHandling、ModuleCoordinator、CoreServices、ApiHealthCheck、Warmup
+- `StartupPipeline`管道执行器
+- `StartupDiagnostics`启动诊断日志
+
+**精简优化:**
+- `MainWindowViewModel`从18个依赖减少到15个，移除3个死方法
+- `ApplicationBootstrapper`标记废弃方法，保留角色模块加载
+
+**测试覆盖:**
+- 新增91个Shell单元测试
+- 覆盖Lifecycle、Login、Session、Startup、Diagnostics组件
+
 #### 登录界面优化 (OpenSpec: remove-titlebar-add-close-button) - 2025-12-05
 
 **无边框全屏界面:**
