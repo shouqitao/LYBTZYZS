@@ -17,7 +17,7 @@ namespace LYBT.Module.Users.Interfaces
 /// 
 /// 特定业务方法说明：
 /// - GetByUsernameAsync: 用户名登录查询
-/// - IsUsernameExistsAsync: 用户名唯一性校验
+/// - UsernameExistsAsync: 用户名唯一性校验
 /// </remarks>
 public interface IUserRepository : IRepository<User>
 {
@@ -33,6 +33,6 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     /// <param name="username">待检查的用户名</param>
     /// <returns>存在返回true，否则返回false</returns>
-    Task<bool> IsUsernameExistsAsync(string username);
+    Task<bool> UsernameExistsAsync(string username);
 }
 }

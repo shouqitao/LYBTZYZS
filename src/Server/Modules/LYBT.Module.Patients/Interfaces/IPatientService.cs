@@ -1,11 +1,13 @@
-﻿using LYBT.Shared.Models.Common;
+﻿using LYBT.Entities.Patients;
+using LYBT.Shared.Models.Common;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
 namespace LYBT.Module.Patients.Interfaces
 {
     /// <summary>
-    /// 患者服务接口 - 简化版，只包含基础CRUD
+    /// 患者服务接口 - 统一接口，包含DTO和Entity两种返回模式
+    /// 合并自IPatientServiceOptimized
     /// </summary>
     public interface IPatientService
     {
@@ -61,5 +63,29 @@ namespace LYBT.Module.Patients.Interfaces
         /// <param name="keyword">搜索关键词（可选）</param>
         /// <returns>Excel文件流</returns>
         Task<MemoryStream> ExportPatientsAsync(string? keyword = null);
+
+        #region Entity直接返回方法 (合并自IPatientServiceOptimized)
+
+        /// <summary>
+        /// 获取分页患者数据（直接返回Patient Entity）
+        /// </summary>
+        Task<Result<PagedResult<Patient>>> GetPagedEntityAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
+        /// 根据ID获取患者（直接返回Patient Entity）
+        /// </summary>
+        Task<Result<Patient>> GetByIdEntityAsync(Guid id);
+
+        /// <summary>
+        /// 创建患者（直接返回Patient Entity）
+        /// </summary>
+        Task<Result<Patient>> CreateEntityAsync(PatientInputDto dto);
+
+        /// <summary>
+        /// 更新患者（直接返回Patient Entity）
+        /// </summary>
+        Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto);
+
+        #endregion
     }
 }

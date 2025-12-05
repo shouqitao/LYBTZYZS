@@ -15,7 +15,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
     /// - Read-only模式：所有写操作必须通过MedicalCase聚合根
     ///
     /// 特定业务方法说明：
-    /// - GetByIdWithItemsAsync: 获取处方详情（包含处方项和药材信息）
+    /// - GetByIdWithDetailsAsync: 获取处方详情（包含处方项和药材信息）
     /// - GetPagedWithDetailsAsync: 分页查询（包含关联数据）
     /// - GetByPatientIdAsync: 患者处方列表查询
     /// - GetByMedicalCaseIdAsync: 病案关联查询
@@ -26,7 +26,7 @@ namespace LYBT.Module.Prescriptions.Interfaces
         /// <summary>
         /// 根据ID获取处方（包含处方项和药材信息）
         /// </summary>
-        Task<Prescription?> GetByIdWithItemsAsync(Guid id);
+        Task<Prescription?> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>
         /// 获取分页列表（包含关联数据）

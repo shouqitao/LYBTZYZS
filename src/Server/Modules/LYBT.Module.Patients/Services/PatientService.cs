@@ -14,12 +14,11 @@ using LYBT.Shared.Utilities.Text;
 namespace LYBT.Module.Patients.Services
 {
     /// <summary>
-    /// 患者服务 - 简化版，只包含基础CRUD
-    /// 同时实现 Module 内部接口和 Shared 跨平台接口
-    /// Phase 3 Task 3.1: 实现优化版本，消除双重映射
+    /// 患者服务 - 统一接口实现
+    /// 包含DTO和Entity两种返回模式
     /// Phase 2: 继承BaseService<Patient>复用统一错误处理和验证逻辑
     /// </summary>
-    public class PatientService : BaseService<Patient>, IPatientService, IPatientServiceOptimized
+    public class PatientService : BaseService<Patient>, IPatientService
     {
         private readonly IPatientRepository _repository;
         private readonly IValidator<PatientInputDto> _validator;

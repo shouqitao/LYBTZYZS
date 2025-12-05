@@ -263,7 +263,7 @@ namespace LYBT.Module.Users.Services
                 // Issue #1262: 检查用户名是否已存在（唯一性验证）
                 // 使用IUserRepository特定方法检查用户名是否存在
                 // FluentValidation已确保UserName不为null，使用!操作符消除编译器警告
-                var existingUser = await _repository.IsUsernameExistsAsync(dto.UserName!);
+                var existingUser = await _repository.UsernameExistsAsync(dto.UserName!);
                 if (existingUser)
                 {
                     _logger.LogWarning("尝试创建重复的用户名: {UserName}", dto.UserName);

@@ -28,7 +28,7 @@ namespace LYBT.Module.Prescriptions.Repositories
         /// <summary>
         /// 根据ID获取处方（包含处方项和药材信息）
         /// </summary>
-        public async Task<Prescription?> GetByIdWithItemsAsync(Guid id)
+        public async Task<Prescription?> GetByIdWithDetailsAsync(Guid id)
         {
             return await DbSet
                 .AsNoTracking()

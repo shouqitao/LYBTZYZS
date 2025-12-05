@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -6,7 +6,6 @@ using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace LYBT.WebAPI.Controllers
 {
@@ -30,17 +29,12 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 获取用户列表（分页）（Issue #1162: 支持角色和状态筛选）
+        /// 获取用户列表（分页）
         /// </summary>
-        /// <param name="page">页码</param>
-        /// <param name="pageSize">每页数量</param>
-        /// <param name="keyword">搜索关键字</param>
-        /// <param name="role">角色筛选</param>
-        /// <param name="status">状态筛选</param>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<UserDto>>), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
+        public async Task<IActionResult> GetUsers(
             int page = 1,
             int pageSize = 20,
             string? keyword = null,
@@ -50,11 +44,11 @@ namespace LYBT.WebAPI.Controllers
             try
             {
                 var result = await _userService.GetPagedAsync(page, pageSize, keyword, role, status);
-                return Success(result.Data!, "查询成功");
+                return SuccessPaged(result.Data!, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<UserDto>>(ex, "获取用户列表");
+                return HandleException(ex, "获取用户列表");
             }
         }
 
@@ -64,7 +58,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("current")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(401)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> GetCurrentUser()
+        public async Task<IActionResult> GetCurrentUser()
         {
             try
             {
@@ -74,7 +68,6 @@ namespace LYBT.WebAPI.Controllers
                     return Unauthorized("无法获取当前用户信息");
                 }
 
-                // 特殊处理超级管理员
                 if (userId == Guid.Empty)
                 {
                     var username = User.Identity?.Name ?? "sysadmin";
@@ -82,7 +75,6 @@ namespace LYBT.WebAPI.Controllers
 
                     if (isSuperAdmin)
                     {
-                        // 返回超级管理员的虚拟用户信息
                         var superAdminDto = new UserDto
                         {
                             Id = Guid.Empty,
@@ -102,13 +94,13 @@ namespace LYBT.WebAPI.Controllers
                 var result = await _userService.GetByIdAsync(userId);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<UserDto>(result.ErrorMessage ?? "用户不存在");
+                    return NotFound(result.ErrorMessage ?? "用户不存在");
                 }
                 return Success(result.Data);
             }
             catch (Exception ex)
             {
-                return HandleException<UserDto>(ex, "获取当前用户信息");
+                return HandleException(ex, "获取当前用户信息");
             }
         }
 
@@ -118,25 +110,22 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<UserDto>("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
                 var result = await _userService.GetByIdAsync(id);
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return NotFound<UserDto>(result.ErrorMessage ?? "用户不存在");
+                    return NotFound(result.ErrorMessage ?? "用户不存在");
                 }
                 return Success(result.Data);
             }
             catch (Exception ex)
             {
-                return HandleException<UserDto>(ex, "获取用户", new { UserId = id });
+                return HandleException(ex, "获取用户", new { UserId = id });
             }
         }
 
@@ -146,27 +135,25 @@ namespace LYBT.WebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] UserInputDto dto)
+        public async Task<IActionResult> CreateUser([FromBody] UserInputDto dto)
         {
             try
             {
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.CreateAsync(dto);
 
                 if (result.IsSuccess && result.Data != null)
                 {
                     LogOperation("创建用户", dto, result.Data.Id);
-                    // Issue #1262: 添加 version 参数以匹配版本化路由
                     return CreatedAtAction(nameof(GetUser),
                         new { id = result.Data.Id, version = "1" },
-                        Success(result.Data));
+                        ApiResponse<UserDto>.CreateSuccess(result.Data, "创建成功"));
                 }
 
-                return BusinessFail<UserDto>(result.ErrorMessage ?? "创建用户失败");
+                return BusinessFail(result.ErrorMessage ?? "创建用户失败");
             }
             catch (Exception ex)
             {
-                return HandleException<UserDto>(ex, "创建用户", dto);
+                return HandleException(ex, "创建用户", dto);
             }
         }
 
@@ -176,16 +163,12 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UserInputDto dto)
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserInputDto dto)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<UserDto>("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.UpdateAsync(id, dto);
 
                 if (result.IsSuccess && result.Data != null)
@@ -194,11 +177,11 @@ namespace LYBT.WebAPI.Controllers
                     return Success(result.Data, "用户更新成功");
                 }
 
-                return BusinessFail<UserDto>(result.ErrorMessage ?? "更新用户失败");
+                return BusinessFail(result.ErrorMessage ?? "更新用户失败");
             }
             catch (Exception ex)
             {
-                return HandleException<UserDto>(ex, "更新用户", new { UserId = id, UpdateData = dto });
+                return HandleException(ex, "更新用户", new { UserId = id, UpdateData = dto });
             }
         }
 
@@ -208,14 +191,11 @@ namespace LYBT.WebAPI.Controllers
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse>> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
                 var result = await _userService.DeleteAsync(id);
 
@@ -233,38 +213,17 @@ namespace LYBT.WebAPI.Controllers
             }
         }
 
-
         /// <summary>
-        /// 批量删除用户（软删除）(Issue #1169)
+        /// 管理员重置用户密码
         /// </summary>
-        /// <param name="request">批量删除请求</param>
-        /// <summary>
-        /// 批量删除用户（软删除）- 已废弃
-        /// </summary>
-        /// <remarks>
-        /// 此端点从未被Client调用，Client使用循环单删模式。
-        /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
-        /// </remarks>
-        
-
-        /// <summary>
-        /// 管理员重置用户密码 (Issue #1162)
-        /// </summary>
-        /// <param name="id">用户ID</param>
-        /// <param name="request">重置密码请求（新密码可选，不提供则自动生成）</param>
         [HttpPost("{id:guid}/reset-password")]
         [ProducesResponseType(typeof(ApiResponse<ResetPasswordResponseDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<ResetPasswordResponseDto>>> ResetPassword(
-            Guid id,
-            [FromBody] ResetPasswordRequestDto request)
+        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordRequestDto request)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<ResetPasswordResponseDto>("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
                 var result = await _userService.ResetPasswordAsync(id, request);
 
@@ -274,49 +233,27 @@ namespace LYBT.WebAPI.Controllers
                     return Success(result.Data, "密码重置成功");
                 }
 
-                return BusinessFail<ResetPasswordResponseDto>(result.ErrorMessage ?? "密码重置失败");
+                return BusinessFail(result.ErrorMessage ?? "密码重置失败");
             }
             catch (Exception ex)
             {
-                return HandleException<ResetPasswordResponseDto>(ex, "重置用户密码", new { UserId = id });
+                return HandleException(ex, "重置用户密码", new { UserId = id });
             }
         }
 
         /// <summary>
-        /// 切换用户状态（启用/禁用）(Issue #1162)
+        /// 修改个人资料
         /// </summary>
-        /// <param name="id">用户ID</param>
-        /// <summary>
-        /// 切换用户状态（启用/禁用）- 已废弃
-        /// </summary>
-        /// <remarks>
-        /// 此端点从未被Client调用，无对应UI功能。
-        /// 根据 OpenSpec refactor-webapi-layer 决策，此端点已移除。
-        /// </remarks>
-        
-
-        /// <summary>
-        /// 修改个人资料 (Issue #1889)
-        /// </summary>
-        /// <param name="id">用户ID</param>
-        /// <param name="dto">个人资料信息</param>
         [HttpPut("{id:guid}/profile")]
         [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<UserDto>>> ChangeProfile(
-            Guid id,
-            [FromBody] ChangeProfileDto dto)
+        public async Task<IActionResult> ChangeProfile(Guid id, [FromBody] ChangeProfileDto dto)
         {
             try
             {
-                // 验证用户ID
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<UserDto>("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.ChangeProfileAsync(id, dto);
 
                 if (result.IsSuccess && result.Data != null)
@@ -325,37 +262,27 @@ namespace LYBT.WebAPI.Controllers
                     return Success(result.Data, "个人资料修改成功");
                 }
 
-                return BusinessFail<UserDto>(result.ErrorMessage ?? "个人资料修改失败");
+                return BusinessFail(result.ErrorMessage ?? "个人资料修改失败");
             }
             catch (Exception ex)
             {
-                return HandleException<UserDto>(ex, "修改个人资料", new { UserId = id, ProfileData = dto });
+                return HandleException(ex, "修改个人资料", new { UserId = id, ProfileData = dto });
             }
         }
 
-
         /// <summary>
-        /// 用户修改密码 (Issue #1887-1892)
+        /// 用户修改密码
         /// </summary>
-        /// <param name="id">用户ID</param>
-        /// <param name="request">修改密码请求</param>
         [HttpPut("{id:guid}/change-password")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse>> ChangePassword(
-            Guid id,
-            [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
+        public async Task<IActionResult> ChangePassword(Guid id, [FromBody] LYBT.Shared.Models.Contracts.Auth.ChangePasswordRequest request)
         {
             try
             {
-                // 验证用户ID
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail("用户ID不能为空");
-                }
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
 
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
                 var result = await _userService.ChangePasswordAsync(id, request.OldPassword, request.NewPassword);
 
                 if (result.IsSuccess)

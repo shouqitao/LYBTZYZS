@@ -28,7 +28,6 @@ namespace LYBT.Module.Patients
 
             // 注册服务实现类（统一使用Shared接口）
             services.AddScoped<IPatientService, PatientService>();
-            services.AddScoped<IPatientServiceOptimized, PatientService>();  // Phase 3 优化版本接口
 
             // services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 

@@ -41,7 +41,7 @@ namespace LYBT.Module.Prescriptions.Services
             try
             {
                 // 使用优化后的查询方法，包含处方项
-                var entity = await _repository.GetByIdWithItemsAsync(id);
+                var entity = await _repository.GetByIdWithDetailsAsync(id);
                 if (entity == null)
                     return Result<PrescriptionDto>.Failure("处方不存在");
 

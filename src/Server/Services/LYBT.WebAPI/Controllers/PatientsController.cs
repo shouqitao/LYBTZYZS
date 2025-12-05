@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using AutoMapper;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Patients.Interfaces;
@@ -20,24 +20,22 @@ namespace LYBT.WebAPI.Controllers
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;
-        private readonly IPatientServiceOptimized _optimizedService;
         private readonly IMapper _mapper;
 
-        public PatientsController(IPatientService service, IPatientServiceOptimized optimizedService, IMapper mapper, ILogger<PatientsController> logger)
+        public PatientsController(IPatientService service, IMapper mapper, ILogger<PatientsController> logger)
             : base(logger)
         {
             _service = service;
-            _optimizedService = optimizedService;
             _mapper = mapper;
         }
 
         /// <summary>
-        /// 获取患者列表 - 支持分页和查询（优化版本：Entity直接返回 + 延迟映射）
-        /// Phase 3 Task 3.1: 消除双重映射，提升性能15-20%
+        /// 获取患者列表 - 支持分页和查询
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "PatientsCache")]
-        public async Task<ActionResult<ApiResponse<PagedResult<PatientDto>>>> GetList(
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientDto>>), 200)]
+        public async Task<IActionResult> GetList(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? keyword = null)
@@ -46,21 +44,18 @@ namespace LYBT.WebAPI.Controllers
             {
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFail<PagedResult<PatientDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                // Phase 3 Task 3.1: 使用优化版本，获取Entity数据
-                var entityResult = await _optimizedService.GetPagedEntityAsync(page, pageSize, keyword);
+                var entityResult = await _service.GetPagedEntityAsync(page, pageSize, keyword);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    return BusinessFail<PagedResult<PatientDto>>(entityResult.ErrorMessage ?? "查询失败");
+                    return BusinessFail(entityResult.ErrorMessage ?? "查询失败");
                 }
 
-                // Controller层延迟映射：Entity → DTO
                 var entityPagedResult = entityResult.Data;
                 var patientDtos = _mapper.Map<List<PatientDto>>(entityPagedResult.Items);
 
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 foreach (var item in patientDtos)
                 {
                     var entity = entityPagedResult.Items.FirstOrDefault(e => e.Id == item.Id);
@@ -78,71 +73,60 @@ namespace LYBT.WebAPI.Controllers
                     PageSize = entityPagedResult.PageSize
                 };
 
-                return Success(dtoPagedResult, "查询成功");
+                return SuccessPaged(dtoPagedResult, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<PatientDto>>(ex, "获取患者列表", new { page, pageSize, keyword });
+                return HandleException(ex, "获取患者列表", new { page, pageSize, keyword });
             }
         }
 
         /// <summary>
-        /// 获取患者详情（优化版本：Entity直接返回 + 延迟映射）
-        /// Phase 3 Task 3.1: 消除Entity→DTO映射，提升性能
+        /// 获取患者详情
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDto>>> GetById(Guid id)
+        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<PatientDto>("患者ID不能为空");
-                }
+                if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-                // Phase 3 Task 3.1: 使用优化版本，获取Entity数据
-                var entityResult = await _optimizedService.GetByIdEntityAsync(id);
+                var entityResult = await _service.GetByIdEntityAsync(id);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    return NotFound<PatientDto>(entityResult.ErrorMessage ?? "患者不存在");
+                    return NotFound(entityResult.ErrorMessage ?? "患者不存在");
                 }
 
-                // Controller层延迟映射：Entity → DTO
                 var patientEntity = entityResult.Data;
                 var patientDto = _mapper.Map<PatientDto>(patientEntity);
-
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 patientDto.Age = patientEntity.Age;
 
                 return Success(patientDto, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<PatientDto>(ex, "获取患者详情", id);
+                return HandleException(ex, "获取患者详情", id);
             }
         }
 
         /// <summary>
-        /// 新增患者（优化版本：Entity直接返回 + 延迟映射）
-        /// Phase 3 Task 3.1: 消除DTO→Entity→DTO双重映射
+        /// 新增患者
         /// </summary>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<PatientDto>>> Add([FromBody] PatientInputDto dto)
+        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        public async Task<IActionResult> Add([FromBody] PatientInputDto dto)
         {
             try
             {
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
-                var entityResult = await _optimizedService.CreateEntityAsync(dto);
+                var entityResult = await _service.CreateEntityAsync(dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    return ValidationFail<PatientDto>(entityResult.ErrorMessage ?? "新增患者失败");
+                    return ValidationFail(entityResult.ErrorMessage ?? "新增患者失败");
                 }
 
-                // Controller层延迟映射：Entity → DTO
                 var patientEntity = entityResult.Data;
                 var patientDto = _mapper.Map<PatientDto>(patientEntity);
-
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 patientDto.Age = patientEntity.Age;
 
                 LogOperation("新增患者成功", patientDto, patientEntity.Id);
@@ -150,41 +134,33 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PatientDto>(ex, "新增患者", dto);
+                return HandleException(ex, "新增患者", dto);
             }
         }
 
         /// <summary>
-        /// 更新患者信息（优化版本：Entity直接返回 + 延迟映射）
-        /// Phase 3 Task 3.1: 消除DTO→Entity→DTO双重映射
+        /// 更新患者信息
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<PatientDto>>> Update(Guid id, [FromBody] PatientInputDto dto)
+        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] PatientInputDto dto)
         {
             try
             {
-                if (id == Guid.Empty)
-                {
-                    return ValidationFail<PatientDto>("患者ID不能为空");
-                }
+                if (ValidateGuid(id, "患者ID") is { } error) return error;
 
-                // FluentValidation自动验证已在全局配置，无需手动检查ModelState
-                var entityResult = await _optimizedService.UpdateEntityAsync(id, dto);
+                var entityResult = await _service.UpdateEntityAsync(id, dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
                 {
-                    // Issue #2245: 根据错误类型返回正确的HTTP状态码
                     if (entityResult.ErrorMessage?.Contains("不存在") == true)
                     {
-                        return NotFound<PatientDto>(entityResult.ErrorMessage);
+                        return NotFound(entityResult.ErrorMessage);
                     }
-                    return ValidationFail<PatientDto>(entityResult.ErrorMessage ?? "更新患者失败");
+                    return ValidationFail(entityResult.ErrorMessage ?? "更新患者失败");
                 }
 
-                // Controller层延迟映射：Entity → DTO
                 var patientEntity = entityResult.Data;
                 var patientDto = _mapper.Map<PatientDto>(patientEntity);
-
-                // 确保Age属性正确计算（从实体的计算属性复制到DTO）
                 patientDto.Age = patientEntity.Age;
 
                 LogOperation("更新患者成功", patientDto, id);
@@ -192,7 +168,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PatientDto>(ex, "更新患者", new { id, dto });
+                return HandleException(ex, "更新患者", new { id, dto });
             }
         }
 
@@ -200,20 +176,17 @@ namespace LYBT.WebAPI.Controllers
         /// 删除患者（软删除）
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<bool>>> Delete(Guid id)
+        [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid<bool>(id, "患者ID");
-                if (validationResult != null)
-                {
-                    return validationResult;
-                }
+                if (ValidateGuid(id, "患者ID") is { } error) return error;
 
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
                 {
-                    return NotFound<bool>("患者不存在");
+                    return NotFound("患者不存在");
                 }
 
                 LogOperation("删除患者成功", null, id);
@@ -221,56 +194,45 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<bool>(ex, "删除患者", id);
+                return HandleException(ex, "删除患者", id);
             }
         }
 
         /// <summary>
-        /// 批量导入患者数据 (Epic #1934 FR-001)
+        /// 批量导入患者数据
         /// </summary>
-        /// <param name="file">Excel文件（.xlsx格式，最大10MB）</param>
-        /// <returns>导入结果，包含成功/失败/跳过数量和详细失败信息</returns>
-        /// <response code="200">导入成功，返回导入统计结果</response>
-        /// <response code="400">文件验证失败（文件为空、格式错误、大小超限）</response>
-        /// <response code="500">服务器内部错误</response>
         [HttpPost("import")]
-        [RequestSizeLimit(10 * 1024 * 1024)] // 限制10MB
+        [RequestSizeLimit(10 * 1024 * 1024)]
         [ProducesResponseType(typeof(ApiResponse<BatchImportResultDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<BatchImportResultDto>), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ApiResponse<BatchImportResultDto>>> Import(IFormFile file)
+        public async Task<IActionResult> Import(IFormFile file)
         {
             try
             {
-                // 验证文件
                 if (file == null || file.Length == 0)
                 {
-                    return ValidationFail<BatchImportResultDto>("文件不能为空");
+                    return ValidationFail("文件不能为空");
                 }
 
-                // 验证文件扩展名
                 var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 if (extension != ".xlsx")
                 {
-                    return ValidationFail<BatchImportResultDto>("仅支持.xlsx格式的Excel文件");
+                    return ValidationFail("仅支持.xlsx格式的Excel文件");
                 }
 
-                // 验证文件大小（10MB）
                 if (file.Length > 10 * 1024 * 1024)
                 {
-                    return ValidationFail<BatchImportResultDto>("文件大小不能超过10MB");
+                    return ValidationFail("文件大小不能超过10MB");
                 }
 
-                // Epic #1934: 批量导入患者（支持BR-002失败恢复机制）
                 using var stream = file.OpenReadStream();
                 var result = await _service.BatchImportAsync(stream, file.FileName);
 
                 if (!result.IsSuccess || result.Data == null)
                 {
-                    return BusinessFail<BatchImportResultDto>(result.ErrorMessage ?? "导入失败");
+                    return BusinessFail(result.ErrorMessage ?? "导入失败");
                 }
 
-                // 记录操作日志
                 LogOperation("批量导入患者",
                     new { FileName = file.FileName, SuccessCount = result.Data.SuccessCount, FailureCount = result.Data.FailureCount, SkippedCount = result.Data.SkippedCount },
                     null);
@@ -279,22 +241,18 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<BatchImportResultDto>(ex, "批量导入患者", new { FileName = file?.FileName });
+                return HandleException(ex, "批量导入患者", new { FileName = file?.FileName });
             }
         }
 
         /// <summary>
-        /// 下载患者导入模板 (Epic #1934 FR-002)
+        /// 下载患者导入模板
         /// </summary>
-        /// <returns>包含示例数据的Excel模板文件</returns>
-        /// <response code="200">返回Excel模板文件</response>
-        /// <response code="500">生成模板失败</response>
         [HttpGet("import-template")]
-        [AllowAnonymous] // 模板下载不需要认证
+        [AllowAnonymous]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<ActionResult> ExportTemplate()
+        public async Task<IActionResult> ExportTemplate()
         {
             try
             {
@@ -318,17 +276,12 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 导出患者数据到Excel (Epic #1934 FR-003)
+        /// 导出患者数据到Excel
         /// </summary>
-        /// <param name="keyword">搜索关键词（可选），支持姓名、手机号、拼音码模糊查询</param>
-        /// <returns>包含患者数据的Excel文件（最大10000条记录）</returns>
-        /// <response code="200">返回包含患者数据的Excel文件</response>
-        /// <response code="500">导出失败</response>
         [HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public async Task<ActionResult> ExportPatients([FromQuery] string? keyword = null)
+        public async Task<IActionResult> ExportPatients([FromQuery] string? keyword = null)
         {
             try
             {

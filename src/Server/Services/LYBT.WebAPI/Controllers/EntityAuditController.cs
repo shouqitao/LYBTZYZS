@@ -50,7 +50,7 @@ namespace LYBT.WebAPI.Controllers
         /// <param name="pageSize">每页大小（默认20）</param>
         /// <returns>审计日志分页结果</returns>
         [HttpGet("{entityType}/{entityId}")]
-        public async Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetLogs(
+        public async Task<IActionResult> GetLogs(
             string entityType,
             Guid entityId,
             [FromQuery] int page = 1,
@@ -62,14 +62,14 @@ namespace LYBT.WebAPI.Controllers
                 var validEntityTypes = new[] { "Patient", "Prescription", "Herb", "Formula", "User", "Consultation" };
                 if (!validEntityTypes.Contains(entityType, StringComparer.OrdinalIgnoreCase))
                 {
-                    return ValidationFail<PagedResult<EntityAuditLogDto>>(
+                    return ValidationFail(
                         $"不支持的实体类型: {entityType}。支持的类型: {string.Join(", ", validEntityTypes)}");
                 }
 
                 // 验证分页参数
                 if (page <= 0 || pageSize <= 0 || pageSize > 100)
                 {
-                    return ValidationFail<PagedResult<EntityAuditLogDto>>("页码和页大小参数无效（页码>0，页大小1-100）");
+                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
                 // 查询审计日志
@@ -107,7 +107,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<EntityAuditLogDto>>(ex, "获取审计日志", new { entityType, entityId });
+                return HandleException(ex, "获取审计日志", new { entityType, entityId });
             }
         }
 
@@ -115,7 +115,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取患者的审计日志（快捷方法）
         /// </summary>
         [HttpGet("patients/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetPatientLogs(
+        public Task<IActionResult> GetPatientLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -125,7 +125,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取处方的审计日志（快捷方法）
         /// </summary>
         [HttpGet("prescriptions/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetPrescriptionLogs(
+        public Task<IActionResult> GetPrescriptionLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -135,7 +135,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取药材的审计日志（快捷方法）
         /// </summary>
         [HttpGet("herbs/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetHerbLogs(
+        public Task<IActionResult> GetHerbLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -145,7 +145,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取验方的审计日志（快捷方法）
         /// </summary>
         [HttpGet("formulas/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetFormulaLogs(
+        public Task<IActionResult> GetFormulaLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -155,7 +155,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取用户的审计日志（快捷方法）
         /// </summary>
         [HttpGet("users/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetUserLogs(
+        public Task<IActionResult> GetUserLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -165,7 +165,7 @@ namespace LYBT.WebAPI.Controllers
         /// 获取诊断的审计日志（快捷方法）
         /// </summary>
         [HttpGet("consultations/{entityId}")]
-        public Task<ActionResult<ApiResponse<PagedResult<EntityAuditLogDto>>>> GetConsultationLogs(
+        public Task<IActionResult> GetConsultationLogs(
             Guid entityId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)

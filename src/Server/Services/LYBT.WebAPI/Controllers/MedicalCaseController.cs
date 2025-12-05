@@ -67,7 +67,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 422)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> CreateMedicalCase(
+        public async Task<IActionResult> CreateMedicalCase(
             [FromBody] CreateMedicalCaseRequest request)
         {
             try
@@ -123,7 +123,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseDto>(ex, "创建病案", request);
+                return HandleException(ex, "创建病案", request);
             }
         }
 
@@ -138,7 +138,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 400)]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 403)]
-        public async Task<ActionResult<ApiResponse<ConsultationDto>>> UpdateConsultation(
+        public async Task<IActionResult> UpdateConsultation(
             Guid id,
             [FromBody] ConsultationInputDto request)
         {
@@ -194,7 +194,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<ConsultationDto>(ex, "更新辨证信息", new { id, request });
+                return HandleException(ex, "更新辨证信息", new { id, request });
             }
         }
 
@@ -208,7 +208,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> SetPrescriptionFlag(
+        public async Task<IActionResult> SetPrescriptionFlag(
             Guid id,
             [FromBody] SetPrescriptionFlagRequest request)
         {
@@ -244,7 +244,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCase>(ex, "更新处方标记", new { id, request });
+                return HandleException(ex, "更新处方标记", new { id, request });
             }
         }
 
@@ -256,7 +256,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 200)]
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 404)]
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 422)]
-        public async Task<ActionResult<ApiResponse<Prescription>>> CreatePrescription(
+        public async Task<IActionResult> CreatePrescription(
             Guid id,
             [FromBody] PrescriptionCreateDto request)
         {
@@ -279,7 +279,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<Prescription>(ex, "创建处方", new { id, request });
+                return HandleException(ex, "创建处方", new { id, request });
             }
         }
 
@@ -291,7 +291,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 200)]
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 404)]
         [ProducesResponseType(typeof(ApiResponse<Prescription>), 403)]
-        public async Task<ActionResult<ApiResponse<Prescription>>> UpdatePrescription(
+        public async Task<IActionResult> UpdatePrescription(
             Guid id,
             Guid prescriptionId,
             [FromBody] PrescriptionEditDto request)
@@ -320,7 +320,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<Prescription>(ex, "更新处方", new { id, prescriptionId, request });
+                return HandleException(ex, "更新处方", new { id, prescriptionId, request });
             }
         }
 
@@ -380,7 +380,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 422)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> CreatePrescriptionSimple(
+        public async Task<IActionResult> CreatePrescriptionSimple(
             Guid id,
             [FromBody] PrescriptionCreateDto request)
         {
@@ -405,7 +405,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDto>(ex, "创建处方", new { id, request });
+                return HandleException(ex, "创建处方", new { id, request });
             }
         }
 
@@ -417,7 +417,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<PrescriptionDto>), 403)]
-        public async Task<ActionResult<ApiResponse<PrescriptionDto>>> UpdatePrescriptionSimple(
+        public async Task<IActionResult> UpdatePrescriptionSimple(
             Guid id,
             [FromBody] PrescriptionUpdateDto request)
         {
@@ -473,7 +473,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PrescriptionDto>(ex, "更新处方", new { id, request });
+                return HandleException(ex, "更新处方", new { id, request });
             }
         }
 
@@ -527,7 +527,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> UpdateStatus(
+        public async Task<IActionResult> UpdateStatus(
             Guid id,
             [FromBody] UpdateStatusRequest request)
         {
@@ -550,7 +550,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCase>(ex, "更新病案状态", new { id, request });
+                return HandleException(ex, "更新病案状态", new { id, request });
             }
         }
 
@@ -613,7 +613,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpPut("{id}/close")]
         [ProducesResponseType(typeof(ApiResponse), 200)]
         [ProducesResponseType(typeof(ApiResponse), 404)]
-        public async Task<ActionResult<ApiResponse>> CloseMedicalCase(Guid id)
+        public async Task<IActionResult> CloseMedicalCase(Guid id)
         {
             try
             {
@@ -642,7 +642,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> SaveDraft(
+        public async Task<IActionResult> SaveDraft(
             Guid id,
             [FromBody] ConsultationInputDto? request = null)
         {
@@ -680,7 +680,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCase>(ex, "暂存病案", new { id });
+                return HandleException(ex, "暂存病案", new { id });
             }
         }
 
@@ -695,7 +695,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 422)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 403)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> CancelMedicalCase(
+        public async Task<IActionResult> CancelMedicalCase(
             Guid id,
             [FromBody] CancelMedicalCaseRequest? request = null)
         {
@@ -733,7 +733,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCase>(ex, "取消病案", new { id });
+                return HandleException(ex, "取消病案", new { id });
             }
         }
 
@@ -746,7 +746,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCase>), 404)]
-        public async Task<ActionResult<ApiResponse<MedicalCase>>> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
@@ -759,7 +759,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCase>(ex, "获取病案详情", new { id });
+                return HandleException(ex, "获取病案详情", new { id });
             }
         }
 
@@ -778,7 +778,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}/with-details")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDetailDto>>> GetMedicalCaseByIdWithDetails(Guid id)
+        public async Task<IActionResult> GetMedicalCaseByIdWithDetails(Guid id)
         {
             try
             {
@@ -876,7 +876,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseDetailDto>(ex, "获取病案详情（含关联数据）", new { id });
+                return HandleException(ex, "获取病案详情（含关联数据）", new { id });
             }
         }
 
@@ -890,7 +890,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}/permissions")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCasePermissionDto>), 404)]
-        public async Task<ActionResult<ApiResponse<MedicalCasePermissionDto>>> GetPermissions(Guid id)
+        public async Task<IActionResult> GetPermissions(Guid id)
         {
             try
             {
@@ -912,7 +912,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCasePermissionDto>(ex, "获取病案权限", new { id });
+                return HandleException(ex, "获取病案权限", new { id });
             }
         }
 
@@ -928,7 +928,7 @@ namespace LYBT.WebAPI.Controllers
         [HttpGet("{id}/audit-logs")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseAuditLogPagedResultDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseAuditLogPagedResultDto>), 404)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseAuditLogPagedResultDto>>> GetAuditLogs(
+        public async Task<IActionResult> GetAuditLogs(
             Guid id,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
@@ -981,7 +981,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseAuditLogPagedResultDto>(ex, "获取审计日志", new { id, page, pageSize });
+                return HandleException(ex, "获取审计日志", new { id, page, pageSize });
             }
         }
 
@@ -991,7 +991,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<PagedResult<MedicalCaseDto>>>> GetList(
+        public async Task<IActionResult> GetList(
             [FromQuery] MedicalCaseStatus? status = null,
             [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
@@ -1034,7 +1034,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<PagedResult<MedicalCaseDto>>(ex, "获取病案列表",
+                return HandleException(ex, "获取病案列表",
                     new { status, patientId, page, pageSize });
             }
         }
@@ -1045,7 +1045,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{medicalCaseId}/consultations")]
         [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetConsultationList(
+        public async Task<IActionResult> GetConsultationList(
             Guid medicalCaseId)
         {
             try
@@ -1056,7 +1056,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<List<ConsultationDto>>(ex, "获取辨证记录列表",
+                return HandleException(ex, "获取辨证记录列表",
                     new { medicalCaseId });
             }
         }
@@ -1067,7 +1067,7 @@ namespace LYBT.WebAPI.Controllers
         /// </summary>
         [HttpGet("{medicalCaseId}/prescriptions")]
         [ProducesResponseType(typeof(ApiResponse<List<PrescriptionDto>>), 200)]
-        public async Task<ActionResult<ApiResponse<List<PrescriptionDto>>>> GetPrescriptionList(
+        public async Task<IActionResult> GetPrescriptionList(
             Guid medicalCaseId)
         {
             try
@@ -1078,7 +1078,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<List<PrescriptionDto>>(ex, "获取处方列表",
+                return HandleException(ex, "获取处方列表",
                     new { medicalCaseId });
             }
         }
@@ -1101,7 +1101,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 200)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 401)]
         [ProducesResponseType(typeof(ApiResponse<List<PendingMedicalCaseDto>>), 403)]
-        public async Task<ActionResult<ApiResponse<List<PendingMedicalCaseDto>>>> GetPendingCases()
+        public async Task<IActionResult> GetPendingCases()
         {
             try
             {
@@ -1143,7 +1143,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<List<PendingMedicalCaseDto>>(ex, "获取待诊队列", null);
+                return HandleException(ex, "获取待诊队列", null);
             }
         }
 
@@ -1152,7 +1152,7 @@ namespace LYBT.WebAPI.Controllers
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 401)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 403)]
-        public async Task<ActionResult<ApiResponse<MedicalCaseDto>>> GetUnfinishedCaseByPatientId(
+        public async Task<IActionResult> GetUnfinishedCaseByPatientId(
             Guid patientId,
             [FromQuery] Guid? doctorId = null,
             [FromQuery] bool checkAllDoctors = false)
@@ -1223,7 +1223,7 @@ namespace LYBT.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return HandleException<MedicalCaseDto>(ex, "获取患者未完成医案",
+                return HandleException(ex, "获取患者未完成医案",
                     new { patientId, doctorId });
             }
         }

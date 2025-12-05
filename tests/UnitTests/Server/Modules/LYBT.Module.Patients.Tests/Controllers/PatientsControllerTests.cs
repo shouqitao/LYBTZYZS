@@ -26,17 +26,15 @@ namespace LYBT.Module.Patients.Tests.Controllers
     {
         private readonly PatientsController _controller;
         private readonly Mock<IPatientService> _mockService;
-        private readonly Mock<IPatientServiceOptimized> _mockServiceOptimized;
         private readonly Mock<IMapper> _mockMapper;
 
         public PatientsControllerTests()
         {
             _mockService = CreateMock<IPatientService>();
-            _mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
             _mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
 
-            _controller = new PatientsController(_mockService.Object, _mockServiceOptimized.Object, _mockMapper.Object, mockLogger.Object);
+            _controller = new PatientsController(_mockService.Object, _mockMapper.Object, mockLogger.Object);
         }
 
         #region Constructor Tests
@@ -46,10 +44,9 @@ namespace LYBT.Module.Patients.Tests.Controllers
         {
             // Act
             var mockService = CreateMock<IPatientService>();
-            var mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
             var mockMapper = CreateMock<IMapper>();
             var mockLogger = CreateLoggerMock<PatientsController>();
-            var controller = new PatientsController(mockService.Object, mockServiceOptimized.Object, mockMapper.Object, mockLogger.Object);
+            var controller = new PatientsController(mockService.Object, mockMapper.Object, mockLogger.Object);
 
             // Assert
             controller.Should().NotBeNull();
@@ -61,9 +58,8 @@ namespace LYBT.Module.Patients.Tests.Controllers
             // Note: 当前实现不验证null参数，这是一个已知的技术债务
             // Controller依赖.NET的NRT（Nullable Reference Types）在编译时检查
             // 实际运行时不会抛出异常，但会在首次使用null服务时失败
-            var mockServiceOptimized = CreateMock<IPatientServiceOptimized>();
             var mockMapper = CreateMock<IMapper>();
-            var controller = new PatientsController(null!, mockServiceOptimized.Object, mockMapper.Object, CreateLoggerMock<PatientsController>().Object);
+            var controller = new PatientsController(null!, mockMapper.Object, CreateLoggerMock<PatientsController>().Object);
 
             // 构造函数不会抛出异常，但对象会被创建
             controller.Should().NotBeNull();
@@ -90,10 +86,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var result = await _controller.GetList(page: invalidPageNumber);
 
             // Assert
-            var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]
@@ -106,10 +102,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var result = await _controller.GetList(pageSize: invalidPageSize);
 
             // Assert
-            var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]
@@ -122,10 +118,10 @@ namespace LYBT.Module.Patients.Tests.Controllers
             var result = await _controller.GetList(pageSize: invalidPageSize);
 
             // Assert
-            var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequestResult.StatusCode.Should().Be(400);
 
-            _mockService.Verify(s => s.GetPagedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
+            _mockService.Verify(s => s.GetPagedEntityAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>()), Times.Never);
         }
 
         #endregion
@@ -148,14 +144,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = pageSize
             });
 
-            _mockServiceOptimized.Setup(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword))
+            _mockService.Setup(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword))
                        .ReturnsAsync(mockEntityResult);
 
             // Act
             await _controller.GetList(pageNumber, pageSize, keyword);
 
             // Assert
-            _mockServiceOptimized.Verify(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword), Times.Once);
+            _mockService.Verify(s => s.GetPagedEntityAsync(pageNumber, pageSize, keyword), Times.Once);
         }
 
         [Fact]
@@ -170,14 +166,14 @@ namespace LYBT.Module.Patients.Tests.Controllers
                 PageSize = 20
             });
 
-            _mockServiceOptimized.Setup(s => s.GetPagedEntityAsync(1, 20, null))
+            _mockService.Setup(s => s.GetPagedEntityAsync(1, 20, null))
                        .ReturnsAsync(mockEntityResult);
 
             // Act
             await _controller.GetList();
 
             // Assert
-            _mockServiceOptimized.Verify(s => s.GetPagedEntityAsync(1, 20, null), Times.Once);
+            _mockService.Verify(s => s.GetPagedEntityAsync(1, 20, null), Times.Once);
         }
 
         #endregion

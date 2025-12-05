@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using LYBT.Infrastructure.Web;
 using LYBT.Module.Consultations.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
@@ -33,58 +33,43 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 获取诊疗详情
         /// </summary>
-        /// <param name="id">诊疗ID</param>
-        /// <returns>诊疗详情</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<ConsultationDto>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<ConsultationDto>>> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
-                var validationResult = ValidateGuid<ConsultationDto>(id, "诊疗ID");
-                if (validationResult != null) return validationResult;
+                if (ValidateGuid(id, "诊疗ID") is { } error) return error;
 
                 var result = await _consultationService.GetByIdAsync(id);
-                return HandleServiceResult(result);
+                return HandleResult(result, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<ConsultationDto>(ex, "获取诊疗详情", new { ConsultationId = id });
+                return HandleException(ex, "获取诊疗详情", new { ConsultationId = id });
             }
         }
-
-        // Issue #1562 Phase 4: 已删除 CreateConsultation（请使用 POST /api/medicalcases/with-details）
-
-        // Issue #1562 Phase 4: 已删除 UpdateConsultation（请使用 PUT /api/medicalcases/{id}/consultation）
-
-        // Issue #1562 Phase 4: 已删除 DeleteConsultation（请通过 DELETE /api/medicalcases/{id} 级联删除）
 
         /// <summary>
         /// 根据医案ID获取诊疗记录列表
         /// </summary>
-        /// <param name="medicalCaseId">医案ID</param>
-        /// <returns>诊疗记录列表</returns>
         [HttpGet("medicalcase/{medicalCaseId}")]
         [ProducesResponseType(typeof(ApiResponse<List<ConsultationDto>>), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ApiResponse<List<ConsultationDto>>>> GetByMedicalCaseId(Guid medicalCaseId)
+        public async Task<IActionResult> GetByMedicalCaseId(Guid medicalCaseId)
         {
             try
             {
-                var validationResult = ValidateGuid<List<ConsultationDto>>(medicalCaseId, "医案ID");
-                if (validationResult != null) return validationResult;
+                if (ValidateGuid(medicalCaseId, "医案ID") is { } error) return error;
 
                 var result = await _consultationService.GetByMedicalCaseIdAsync(medicalCaseId);
-                return HandleServiceResult(result);
+                return HandleResult(result, "查询成功");
             }
             catch (Exception ex)
             {
-                return HandleException<List<ConsultationDto>>(ex, "根据医案ID获取诊疗记录", new { MedicalCaseId = medicalCaseId });
+                return HandleException(ex, "根据医案ID获取诊疗记录", new { MedicalCaseId = medicalCaseId });
             }
         }
-
-        // ========== Write方法已移除（Issue #1600 Phase 4）==========
-        // CompleteStep1 已删除，请使用 POST /api/v1/medicalcases/{id}/complete-step1
     }
 }

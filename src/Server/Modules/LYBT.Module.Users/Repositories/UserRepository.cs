@@ -70,7 +70,7 @@ namespace LYBT.Module.Users.Repositories
         /// <summary>
         /// 检查用户名是否已存在
         /// </summary>
-        public async Task<bool> IsUsernameExistsAsync(string username)
+        public async Task<bool> UsernameExistsAsync(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return false;
