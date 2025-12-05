@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using LYBT.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,10 +6,6 @@ using Microsoft.Extensions.Options;
 
 namespace LYBT.Infrastructure.Configuration.Extensions;
 
-/// <summary>
-/// 配置注册扩展方法
-/// 简化统一配置选项的注册和验证
-/// </summary>
 /// <summary>
 /// 配置注册扩展方法
 /// 简化统一配置选项的注册和验证
@@ -28,9 +24,6 @@ public static class ConfigurationExtensions
     {
         // 注册统一配置
         services.Configure<LybtOptions>(configuration.GetSection(LybtOptions.SectionName));
-
-        // 注册各子配置选项（向后兼容）
-        RegisterLegacyCompatibilityOptions(services, configuration);
 
         // 添加配置验证
         services.AddConfigurationValidation<LybtOptions>();
@@ -51,26 +44,6 @@ public static class ConfigurationExtensions
     }
 
     /// <summary>
-    /// 注册传统兼容性配置选项
-    /// 用于向后兼容，逐步迁移到统一配置
-    /// </summary>
-    private static void RegisterLegacyCompatibilityOptions(
-        IServiceCollection services,
-        IConfiguration configuration)
-    {
-        var lybtOptions = configuration.GetLybtOptions();
-
-        // 注册传统 CacheOptions（仅保留真实使用的配置）
-        // MemoryCacheAdapter依赖此配置
-        services.Configure<CacheOptions>(opt =>
-        {
-            opt.Enabled = true; // 默认启用
-            opt.GlobalKeyPrefix = "LYBT:";
-            opt.Memory = MapToLegacyMemoryCacheConfig(lybtOptions.MemoryCache);
-        });
-    }
-
-    /// <summary>
     /// 添加配置验证
     /// </summary>
     private static IServiceCollection AddConfigurationValidation<TOptions>(this IServiceCollection services)
@@ -79,18 +52,6 @@ public static class ConfigurationExtensions
         services.AddSingleton<IValidateOptions<TOptions>, ConfigurationValidator<TOptions>>();
         return services;
     }
-
-    #region Legacy Mapping Methods（仅保留CacheOptions相关）
-
-    private static MemoryCacheConfig MapToLegacyMemoryCacheConfig(MemoryCacheConfiguration config)
-    {
-        return new MemoryCacheConfig
-        {
-            // 映射到实际字段，需要根据 MemoryCacheConfig 类确定具体字段
-        };
-    }
-
-    #endregion
 }
 
 /// <summary>

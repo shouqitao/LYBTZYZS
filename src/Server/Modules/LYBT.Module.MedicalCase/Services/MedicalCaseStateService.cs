@@ -1,7 +1,6 @@
 using AutoMapper;
 using LYBT.Entities.MedicalCases;
 using LYBT.Infrastructure.Services;
-using LYBT.Infrastructure.Utilities;
 using LYBT.Module.MedicalCases.Interfaces;
 using LYBT.Module.Users.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
@@ -55,8 +54,8 @@ namespace LYBT.Module.MedicalCases.Services
                     return null;
                 }
 
-                // 业务规则验证：状态流转合法性（Issue #1757: 使用ValidationHelper）
-                if (!ValidationHelper.IsValidMedicalCaseStatusTransition(medicalCase.CaseStatus, status))
+                // 业务规则验证：状态流转合法性（Issue #1757: 使用MedicalCaseValidationHelper）
+                if (!MedicalCaseValidationHelper.IsValidStatusTransition(medicalCase.CaseStatus, status))
                 {
                     _logger.LogWarning("非法的状态流转，从{OldStatus}到{NewStatus}",
                         medicalCase.CaseStatus, status);

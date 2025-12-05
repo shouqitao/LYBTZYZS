@@ -1,12 +1,13 @@
-﻿using LYBT.Shared.Models.Enums;
+using LYBT.Shared.Models.Enums;
 
-namespace LYBT.Infrastructure.Utilities
+namespace LYBT.Module.MedicalCases.Services
 {
     /// <summary>
-    /// 验证工具类
+    /// 病案验证工具类
+    /// 从Infrastructure层迁移，遵循DDD原则 - 领域逻辑应位于领域模块中
     /// Issue #1757: 从MedicalCaseService提取纯验证方法
     /// </summary>
-    public static class ValidationHelper
+    public static class MedicalCaseValidationHelper
     {
         /// <summary>
         /// 验证病案状态流转是否合法
@@ -15,7 +16,7 @@ namespace LYBT.Infrastructure.Utilities
         /// <param name="from">原状态</param>
         /// <param name="to">目标状态</param>
         /// <returns>是否允许流转</returns>
-        public static bool IsValidMedicalCaseStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
+        public static bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         {
             // 状态机规则（Issue #2242简化版：Draft ↔ Active → Completed）
             return (from, to) switch

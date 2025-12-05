@@ -78,25 +78,6 @@ namespace LYBT.Infrastructure.DependencyInjection
             return services;
         }
 
-        /// <summary>
-        /// 注册Repository支持的辅助服务
-        /// </summary>
-        /// <param name="services">服务集合</param>
-        /// <returns>服务集合</returns>
-        public static IServiceCollection AddRepositorySupportServices(this IServiceCollection services)
-        {
-            // 注册Specification相关服务（如果需要）
-            // services.AddScoped<ISpecificationEvaluator, SpecificationEvaluator>();
-
-            // 注册性能监控服务（如果需要）
-            // services.AddScoped<IQueryPerformanceMonitor, QueryPerformanceMonitor>();
-
-            // 注册缓存服务（如果需要）
-            // services.AddScoped<IQueryCache, MemoryQueryCache>();
-
-            return services;
-        }
-
         #region 私有方法
 
         /// <summary>
@@ -129,15 +110,5 @@ namespace LYBT.Infrastructure.DependencyInjection
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// 服务生命周期枚举（兼容.NET Core）
-    /// </summary>
-    public enum ServiceLifetime
-    {
-        Singleton,
-        Scoped,
-        Transient
     }
 }

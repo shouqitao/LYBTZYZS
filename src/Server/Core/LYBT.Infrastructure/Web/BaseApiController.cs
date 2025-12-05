@@ -182,7 +182,7 @@ namespace LYBT.Infrastructure.Web
         /// <summary>
         /// 返回未找到响应（404 Not Found）
         /// </summary>
-        protected new IActionResult NotFound(string message = "资源未找到")
+        protected IActionResult NotFound(string message = "资源未找到")
         {
             var response = ApiResponse.CreateFail(message);
             response.RequestId = GetRequestId();
