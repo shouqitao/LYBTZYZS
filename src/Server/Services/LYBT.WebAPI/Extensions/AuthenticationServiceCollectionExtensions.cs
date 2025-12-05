@@ -126,7 +126,8 @@ public static class AuthenticationServiceCollectionExtensions
 
         // 注册资源级授权处理器
         // refactor-authorization-system: AUTHZ-001
-        services.AddSingleton<IAuthorizationHandler, MedicalCaseAuthorizationHandler>();
+        // 必须使用Scoped，因为依赖Scoped的IMedicalCasePermissionService
+        services.AddScoped<IAuthorizationHandler, MedicalCaseAuthorizationHandler>();
 
         return services;
     }
