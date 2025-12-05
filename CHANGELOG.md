@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### 登录界面优化 (OpenSpec: remove-titlebar-add-close-button) - 2025-12-05
+
+**无边框全屏界面:**
+- 移除Windows标题栏 (WindowStyle="None")
+- 添加登录界面关闭按钮(X)和Alt+F4拦截逻辑
+- 已登录用户必须先退出登录才能关闭程序
+
+**登录界面布局优化:**
+- 左右分屏居中对称设计
+- 诊所标题在左半边中心，登录框在右半边中心
+- 登录框尺寸优化：460px宽，自适应高度
+- 增大字体：主标题72px，副标题54px
+
+**新增OpenSpec规范:**
+- `login-ui`: 登录界面设计规范
+
 ### Removed
 
 #### 废弃代码清理 (OpenSpec: cleanup-obsolete-code) - 2025-12-04
