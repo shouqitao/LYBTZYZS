@@ -6,10 +6,10 @@
 
   <!-- 测试项目特定配置 -->
   <PropertyGroup>
-    <!-- 测试结果输出路径（统一到根目录BIN） -->
+    <!-- 测试结果输出路径（统一到BIN目录） -->
     <TestResultsDirectory>$(MSBuildThisFileDirectory)..\BIN\TestResults\</TestResultsDirectory>
 
-    <!-- 覆盖率报告输出路径（统一到根目录BIN） -->
+    <!-- 覆盖率报告输出路径（统一到BIN目录） -->
     <CoverletOutputDirectory>$(MSBuildThisFileDirectory)..\BIN\TestResults\Coverage\</CoverletOutputDirectory>
 
     <!-- 测试项目不生成XML文档 -->

@@ -2,8 +2,8 @@
 <RunSettings>
   <!-- 测试运行配置 - VS2022兼容 -->
   <RunConfiguration>
-    <!-- 测试结果输出目录（统一到根目录BIN） -->
-    <ResultsDirectory>..\BIN\TestResults</ResultsDirectory>
+    <!-- 测试结果输出目录（统一到BIN目录） -->
+    <ResultsDirectory>BIN\TestResults</ResultsDirectory>
 
     <!-- 最大CPU并行数 (0=自动检测) -->
     <MaxCpuCount>0</MaxCpuCount>
