@@ -264,10 +264,12 @@ public partial class App : PrismApplication
             throw new ArgumentException($"无效的用户角色: {userRole}");
     }
 
-    /// <summary>检查是否有可用的控制台窗口</summary>
+    /// <summary>检查是否有可用的控制台窗口（使用Windows API避免异常）</summary>
     private static bool HasConsole()
     {
-        try { _ = System.Console.WindowHeight; return true; }
-        catch { return false; }
+        return GetConsoleWindow() != IntPtr.Zero;
     }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern IntPtr GetConsoleWindow();
 }
