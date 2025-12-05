@@ -342,7 +342,7 @@
 
                     <!--  Row 8: 保留为空行，保持后续行号不变  -->
 
-                    <!--  连接模式选择  -->
+                    <!--  连接模式选择 + API状态（remove-statusbar-relocate-status）  -->
                     <Border
                         Grid.Row="10"
                         Padding="18,14"
@@ -351,12 +351,98 @@
                         BorderThickness="1"
                         CornerRadius="12">
                         <StackPanel>
-                            <TextBlock
-                                Margin="0,0,0,10"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Foreground="#5D4037"
-                                Text="连接模式" />
+                            <!--  标题行：连接模式 + API状态指示器  -->
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#5D4037"
+                                    Text="连接模式" />
+                                <!--  API状态（仅远程模式显示）  -->
+                                <StackPanel
+                                    Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsRemoteModeSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Ellipse
+                                        Width="8"
+                                        Height="8"
+                                        Margin="0,0,6,0"
+                                        VerticalAlignment="Center"
+                                        Cursor="Hand"
+                                        ToolTip="{Binding ApiStatusMessage}">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="#FFC107" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Healthy">
+                                                        <Setter Property="Fill" Value="#4CAF50" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                                        <Setter Property="Fill" Value="#F44336" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Checking">
+                                                        <Setter Property="Fill" Value="#FFC107" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                        <Ellipse.InputBindings>
+                                            <MouseBinding Command="{Binding RetryApiCheckCommand}" MouseAction="LeftClick" />
+                                        </Ellipse.InputBindings>
+                                    </Ellipse>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="12"
+                                        ToolTip="{Binding ApiStatusMessage}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="检查中" />
+                                                <Setter Property="Foreground" Value="#FFC107" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Healthy">
+                                                        <Setter Property="Text" Value="已连接" />
+                                                        <Setter Property="Foreground" Value="#4CAF50" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                                        <Setter Property="Text" Value="连接失败" />
+                                                        <Setter Property="Foreground" Value="#F44336" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!--  重试按钮（仅连接失败时显示）  -->
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Cursor="Hand">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                        <Hyperlink
+                                            Command="{Binding RetryApiCheckCommand}"
+                                            Foreground="#5D4037"
+                                            TextDecorations="Underline">
+                                            <Run Text="重试" />
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                            <!--  模式选择  -->
                             <StackPanel Orientation="Horizontal">
                                 <RadioButton
                                     Margin="0,0,20,0"
@@ -370,6 +456,7 @@
                                     Foreground="#6D4C41"
                                     IsChecked="{Binding IsLocalModeSelected}" />
                             </StackPanel>
+                            <!--  模式说明  -->
                             <TextBlock
                                 Margin="0,8,0,0"
                                 FontSize="12"

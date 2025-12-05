@@ -30,10 +30,9 @@
     </Window.InputBindings>
 
     <Grid>
-        <!-- 外层布局：主内容区 + 底部状态栏（始终显示） -->
+        <!-- remove-statusbar-relocate-status: 移除底部状态栏，主内容区占满整个窗口 -->
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />   <!-- 主内容区（登录前/登录后） -->
-            <RowDefinition Height="30" />  <!-- 底部状态栏 -->
         </Grid.RowDefinitions>
 
         <!-- Grid.Row="0" 主内容区 -->
@@ -62,8 +61,47 @@
                         <TextBlock Text="凌隐宝堂中医诊所诊疗系统" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                     </StackPanel>
 
+                    <!--  remove-statusbar-relocate-status: 顶部栏右侧状态信息  -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!--  时间显示  -->
+                        <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="0,0,15,0" Opacity="0.9" />
+
+                        <!--  API状态指示器  -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,5,0" />
+                            <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
+                                       FontSize="12"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"
+                                       Opacity="0.9" />
+                            <!--  重试按钮（仅在连接失败时显示）  -->
+                            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Cursor="Hand">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Hyperlink Command="{Binding RetryHealthCheckCommand}" Foreground="#FFCDD2" TextDecorations="None">
+                                    <Run Text="重试" />
+                                </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!--  分隔线  -->
+                        <Border Width="1" Height="20" Background="White" Opacity="0.3" Margin="0,0,15,0" />
+
+                        <!--  用户名  -->
                         <TextBlock Text="{Binding CurrentUser.RealName}" FontSize="14" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                        <!--  退出登录按钮  -->
                         <Button Content="退出登录" Background="Transparent" Foreground="White" BorderThickness="1" BorderBrush="White"
                                 Padding="10,5" FontSize="12" Cursor="Hand" Command="{Binding LogoutCommand}">
                             <Button.Style>
@@ -115,59 +153,6 @@
             </Grid>
 
         </Grid>
-
-        <!-- 底部状态栏（Grid.Row="1"，始终显示） -->
-        <Border Grid.Row="1" Background="{StaticResource StatusBarBrush}" BorderBrush="{StaticResource AlternateBorderBrush}" BorderThickness="0,1,0,0">
-                <Grid Margin="20,5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Column="0" Text="就绪" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-
-                    <!-- API 健康状态指示器 -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,15,0" VerticalAlignment="Center">
-                        <!-- 状态指示灯 -->
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
-                                 Margin="0,0,5,0"
-                                 VerticalAlignment="Center" />
-
-                        <!-- 状态文本 -->
-                        <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,5,0" />
-
-                        <!-- 重试按钮（仅在连接失败时显示） -->
-                        <Button Content="重试"
-                                Command="{Binding RetryHealthCheckCommand}"
-                                FontSize="10"
-                                Padding="4,2"
-                                Background="Transparent"
-                                Foreground="{StaticResource TextSecondaryBrush}"
-                                BorderBrush="{StaticResource AlternateBorderBrush}"
-                                BorderThickness="1"
-                                Cursor="Hand"
-                                ToolTip="手动重试 API 连接">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-
-                    <TextBlock Grid.Column="2" Text="{Binding CurrentTime}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                </Grid>
-            </Border>
+        <!-- remove-statusbar-relocate-status: 底部状态栏已移除，状态信息已迁移到顶部工具栏 -->
     </Grid>
 </Window>

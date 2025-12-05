@@ -54,7 +54,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         public bool RememberPassword { get => _rememberPassword; set { if (SetProperty(ref _rememberPassword, value) && value && !RememberMe) RememberMe = true; } }
         public bool HasMessage => !string.IsNullOrWhiteSpace(StatusMessage) || !string.IsNullOrWhiteSpace(ErrorMessage);
         public bool HasSavedPassword { get => _hasSavedPassword; set => SetProperty(ref _hasSavedPassword, value); }
-        public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) RaisePropertyChanged(nameof(IsApiUnhealthy)); } }
+        public ApiHealthStatus ApiStatus { get => _apiStatus; set { if (SetProperty(ref _apiStatus, value)) { RaisePropertyChanged(nameof(IsApiUnhealthy)); (RetryApiCheckCommand as DelegateCommand)?.RaiseCanExecuteChanged(); } } }
         public string ApiStatusMessage { get => _apiStatusMessage; set => SetProperty(ref _apiStatusMessage, value); }
         public bool IsApiUnhealthy => ApiStatus == ApiHealthStatus.Unhealthy;
 
@@ -82,6 +82,12 @@ namespace LYBT.Desktop.Auth.ViewModels
         /// </summary>
         public ICommand CloseApplicationCommand { get; }
 
+        /// <summary>
+        /// 重试API连接命令
+        /// remove-statusbar-relocate-status: 登录界面API状态指示器重试功能
+        /// </summary>
+        public ICommand RetryApiCheckCommand { get; }
+
         public LoginViewModel(
             IAuthenticationService authService,
             ITokenStorageService tokenStorage,
@@ -103,6 +109,7 @@ namespace LYBT.Desktop.Auth.ViewModels
 
             LoginCommand = new DelegateCommand(async () => await ExecuteLoginAsync(), () => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoading);
             CloseApplicationCommand = new DelegateCommand(async () => await ExecuteCloseApplicationAsync());
+            RetryApiCheckCommand = new DelegateCommand(async () => await ExecuteRetryApiCheckAsync(), () => ApiStatus == ApiHealthStatus.Unhealthy);
             _connectionMode = _connectionSettingsService?.GetConnectionMode() ?? ConnectionMode.Remote;
 
             _ = Task.Run(async () => { await Task.Delay(100); await LoadSavedCredentialsAsync(); await LoadApiStatusFromStateServiceAsync(); });
@@ -217,6 +224,45 @@ namespace LYBT.Desktop.Auth.ViewModels
             if (confirmed)
             {
                 Application.Current.Shutdown();
+            }
+        }
+
+        /// <summary>
+        /// 重试API连接检查
+        /// remove-statusbar-relocate-status: 登录界面API状态指示器重试功能
+        /// </summary>
+        private async Task ExecuteRetryApiCheckAsync()
+        {
+            try
+            {
+                ApiStatus = ApiHealthStatus.Checking;
+                ApiStatusMessage = "正在检查连接...";
+
+                // 触发ApplicationStateService重新检查API健康状态
+                await _applicationStateService.CheckApiHealthAsync();
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (_applicationStateService.IsApiHealthy)
+                    {
+                        ApiStatus = ApiHealthStatus.Healthy;
+                        ApiStatusMessage = "WebAPI 已连接";
+                    }
+                    else
+                    {
+                        ApiStatus = ApiHealthStatus.Unhealthy;
+                        ApiStatusMessage = $"WebAPI 连接失败: {_applicationStateService.ConnectionStatus}";
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "重试API连接检查失败");
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    ApiStatus = ApiHealthStatus.Unhealthy;
+                    ApiStatusMessage = $"连接检查失败: {ex.Message}";
+                });
             }
         }
     }
