@@ -9,6 +9,25 @@
 
 ## [Unreleased]
 
+### Changed - 变更
+
+#### 🖥️ Shell布局优化（OpenSpec remove-statusbar-relocate-status）
+
+**状态栏移除与状态信息重布局**
+- 移除MainWindow底部30px状态栏，内容区占满整个窗口高度
+- 登录界面：API状态集成到"连接模式"区域
+  - 仅远程模式时显示状态指示器
+  - 圆点(8px) + 文字标签（已连接/连接失败/检查中）
+  - 支持点击重试连接
+- 工作台界面：状态信息移至顶部工具栏右侧
+  - 布局：时间(HH:mm) → API状态 → 分隔线 → 用户名 → 退出登录
+  - API状态使用圆点指示器 + 文字 + 重试链接
+- 新增LoginViewModel.RetryApiCheckCommand支持登录界面重试
+
+**相关Spec**
+- `openspec/specs/shell-layout/spec.md` - 新增 REQ-SHELL-001/002/003
+- `openspec/specs/login-ui/spec.md` - 更新 REQ-LOGIN-UI-005
+
 ### Added - 新增功能
 
 #### 🔐 Token认证安全重构（Epic #1861）
