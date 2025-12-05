@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Infrastructure.Services
                 .Get<Dictionary<string, bool>>() ?? new Dictionary<string, bool>();
 
             // 记录加载的功能开关数量（便于调试）
-            Console.WriteLine($"[FeatureToggleService] 已加载 {_features.Count} 个功能开关配置");
+            System.Diagnostics.Debug.WriteLine($"[FeatureToggleService] 已加载 {_features.Count} 个功能开关配置");
         }
 
         /// <summary>

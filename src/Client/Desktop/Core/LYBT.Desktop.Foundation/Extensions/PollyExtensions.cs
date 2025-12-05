@@ -26,7 +26,7 @@ namespace LYBT.Desktop.Foundation.Extensions
                     onRetry: (outcome, timespan, retryNumber, context) =>
                     {
                         var statusCode = outcome.Result?.StatusCode;
-                        Console.WriteLine($"重试 {retryNumber}/{retryCount}，状态码: {statusCode}，等待 {timespan.TotalSeconds} 秒");
+                        System.Diagnostics.Debug.WriteLine($"重试 {retryNumber}/{retryCount}，状态码: {statusCode}，等待 {timespan.TotalSeconds} 秒");
                     });
         }
 
@@ -44,15 +44,15 @@ namespace LYBT.Desktop.Foundation.Extensions
                     TimeSpan.FromSeconds(durationOfBreakInSeconds),
                     onBreak: (result, duration) =>
                     {
-                        Console.WriteLine($"熔断器开启，持续 {duration.TotalSeconds} 秒");
+                        System.Diagnostics.Debug.WriteLine($"熔断器开启，持续 {duration.TotalSeconds} 秒");
                     },
                     onReset: () =>
                     {
-                        Console.WriteLine("熔断器重置");
+                        System.Diagnostics.Debug.WriteLine("熔断器重置");
                     },
                     onHalfOpen: () =>
                     {
-                        Console.WriteLine("熔断器半开状态");
+                        System.Diagnostics.Debug.WriteLine("熔断器半开状态");
                     });
         }
 
@@ -66,7 +66,7 @@ namespace LYBT.Desktop.Foundation.Extensions
                     timeoutSeconds,
                     onTimeoutAsync: async (context, timespan, task) =>
                     {
-                        Console.WriteLine($"请求超时，已等待 {timespan.TotalSeconds} 秒");
+                        System.Diagnostics.Debug.WriteLine($"请求超时，已等待 {timespan.TotalSeconds} 秒");
                         await System.Threading.Tasks.Task.CompletedTask;
                     });
         }
