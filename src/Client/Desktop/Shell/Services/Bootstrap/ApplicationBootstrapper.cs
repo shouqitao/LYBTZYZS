@@ -1,16 +1,15 @@
-﻿using LYBT.Desktop.Foundation.Performance;
+using LYBT.Desktop.Foundation.Performance;
 using LYBT.Desktop.Presentation.Notifications;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using Prism.Modularity;
 
 namespace LYBT.Desktop.Shell.Services.Bootstrap
 {
     /// <summary>
     /// 应用程序启动引导服务实现
-    /// 集中管理所有初始化逻辑，通过构造函数注入所有依赖
-    /// 避免使用Service Locator反模式
+    /// 职责：角色驱动的模块加载
+    /// 注意：初始化逻辑已迁移至IStartupPipeline和各StartupStep
     /// </summary>
     public class ApplicationBootstrapper : IApplicationBootstrapper
     {
@@ -34,85 +33,58 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// 初始化核心服务
-        /// Issue #1239: 移除异常降级处理，让异常向上传播
-        /// </summary>
+        #region 已迁移到IStartupPipeline的方法（保留向后兼容）
+
+        /// <inheritdoc />
+        [Obsolete("已迁移至IStartupPipeline，使用CoreServicesStartupStep替代")]
         public async Task InitializeCoreServicesAsync()
         {
-            _logger.LogInformation("开始初始化核心服务");
-
-            //  不捕获异常，让异常向上传播到 App.InitializeApplicationAsync
+            _logger.LogWarning("调用已废弃的方法 InitializeCoreServicesAsync，请使用IStartupPipeline");
             await _initializationService.InitializeCoreServicesAsync();
-
-            _logger.LogInformation("核心服务初始化完成");
         }
 
-        /// <summary>
-        /// 初始化应用程序预热
-        /// </summary>
+        /// <inheritdoc />
+        [Obsolete("已迁移至IStartupPipeline，使用WarmupStartupStep替代")]
         public async Task InitializeApplicationWarmupAsync()
         {
+            _logger.LogWarning("调用已废弃的方法 InitializeApplicationWarmupAsync，请使用IStartupPipeline");
             try
             {
-                _logger.LogInformation("开始应用程序预热");
                 await _startupOptimizationService.WarmupApplicationAsync().ConfigureAwait(false);
-                _logger.LogInformation("应用程序预热完成");
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "应用预热失败，但不影响主流程");
-                // 预热失败不影响主流程，仅记录日志
             }
         }
 
-        /// <summary>
-        /// 初始化错误处理服务
-        /// </summary>
-        /// <summary>
-        /// 初始化错误处理服务
-        /// Issue #1239: 移除异常降级处理，让异常向上传播到 Fail-Fast 机制
-        /// </summary>
+        /// <inheritdoc />
+        [Obsolete("已迁移至IStartupPipeline，使用ErrorHandlingStartupStep替代")]
         public void InitializeErrorHandlingService()
         {
-            _logger.LogInformation("注册全局异常处理器");
-
-            //  不捕获异常，让错误处理服务初始化失败时直接终止应用
-            // 这是关键的基础设施，初始化失败应该触发 Fail-Fast
+            _logger.LogWarning("调用已废弃的方法 InitializeErrorHandlingService，请使用IStartupPipeline");
             _errorHandlingService.RegisterGlobalExceptionHandlers();
-
-            _logger.LogInformation("全局异常处理器注册完成");
         }
 
-        /// <summary>
-        /// 初始化简化的模块协调器
-        /// </summary>
+        /// <inheritdoc />
+        [Obsolete("已迁移至IStartupPipeline，使用ModuleCoordinatorStartupStep替代")]
         public void InitializeSimplifiedModuleCoordinator()
         {
-            try
-            {
-                _logger.LogInformation("UltraThink简化模块协调器初始化完成");
-
-                // 订阅模块事件
-                SubscribeToModuleEvents();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "简化模块协调器初始化异常");
-                // 模块协调器初始化失败不应阻塞应用启动
-            }
+            _logger.LogWarning("调用已废弃的方法 InitializeSimplifiedModuleCoordinator，请使用IStartupPipeline");
+            // 模块事件订阅已移至ModuleCoordinatorStartupStep
         }
 
-        /// <summary>
-        /// 根据用户角色加载模块
-        /// </summary>
+        #endregion
+
+        #region 当前使用的方法
+
+        /// <inheritdoc />
         public Task LoadModulesForRoleAsync(UserRole userRole)
         {
             try
             {
                 _logger.LogInformation("开始为角色 {UserRole} 加载模块", userRole);
 
-                // 根据角色确定需要加载的模块
                 var modulesToLoad = DetermineModulesToLoad(userRole);
 
                 foreach (var moduleName in modulesToLoad)
@@ -138,47 +110,14 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
             }
         }
 
-        /// <summary>
-        /// 订阅模块事件
-        /// </summary>
-        private void SubscribeToModuleEvents()
-        {
-            var moduleInitTimes = new System.Collections.Generic.Dictionary<string, DateTime>();
+        #endregion
 
-            // 模块开始加载事件
-            _moduleManager.ModuleDownloadProgressChanged += (sender, e) =>
-            {
-                if (e.ProgressPercentage == 0) // 开始加载
-                {
-                    moduleInitTimes[e.ModuleInfo.ModuleName] = DateTime.Now;
-                    _logger.LogDebug("模块 {ModuleName} 开始加载", e.ModuleInfo.ModuleName);
-                }
-            };
-
-            // 模块加载完成事件
-            _moduleManager.LoadModuleCompleted += (sender, e) =>
-            {
-                var moduleName = e.ModuleInfo.ModuleName;
-                if (moduleInitTimes.TryGetValue(moduleName, out var startTime))
-                {
-                    var initializationTime = DateTime.Now - startTime;
-                    moduleInitTimes.Remove(moduleName);
-
-                    _logger.LogInformation("模块 {ModuleName} 加载完成，耗时 {ElapsedTime}ms",
-                        moduleName, initializationTime.TotalMilliseconds);
-                }
-
-                if (e.Error != null)
-                {
-                    _logger.LogError(e.Error, "模块 {ModuleName} 加载失败", moduleName);
-                }
-            };
-        }
+        #region 私有方法
 
         /// <summary>
         /// 根据用户角色确定需要加载的模块
         /// </summary>
-        private string[] DetermineModulesToLoad(UserRole userRole)
+        private static string[] DetermineModulesToLoad(UserRole userRole)
         {
             // 基础模块 - 所有角色都需要
             var baseModules = new[]
@@ -208,11 +147,12 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "ConsultationModule",
                     "PrescriptionsModule"
                 },
-                // UserRole.Pharmacist 已统一到 Doctor 角色
                 _ => Array.Empty<string>()
             };
 
             return baseModules.Concat(roleSpecificModules).ToArray();
         }
+
+        #endregion
     }
 }

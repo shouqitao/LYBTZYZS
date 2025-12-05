@@ -7,6 +7,7 @@ using LYBT.Desktop.Formula;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Herbs;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Infrastructure.Logging;
 using LYBT.Desktop.MedicalCase;
 using LYBT.Desktop.Patients;
@@ -31,6 +32,7 @@ namespace LYBT.Desktop.Shell;
 public partial class App : PrismApplication
 {
     private IApplicationBootstrapper? _bootstrapper;
+    private IStartupPipeline? _startupPipeline;
     private StartupPerformanceMonitor? _performanceMonitor;
     private SplashScreenWindow? _splashScreen;
 
@@ -105,16 +107,28 @@ public partial class App : PrismApplication
         _ = InitializeApplicationAsync();
     }
 
-    /// <summary>异步初始化应用程序（Fail-Fast错误处理）</summary>
+    /// <summary>异步初始化应用程序（使用启动管道）</summary>
     private async Task InitializeApplicationAsync()
     {
         try
         {
+            // 保留bootstrapper用于角色模块加载
             _bootstrapper = Container.Resolve<IApplicationBootstrapper>();
-            InitializeErrorHandling();
-            InitializeModuleCoordinator();
-            await InitializeCoreServicesAsync();
-            await InitializeApplicationWarmupAsync();
+
+            // 使用启动管道执行初始化流程
+            _startupPipeline = Container.Resolve<IStartupPipeline>();
+            RegisterStartupSteps();
+            SubscribeToPipelineEvents();
+
+            var progress = new Progress<string>(message => _splashScreen?.UpdateStatus(message));
+            var result = await _startupPipeline.ExecuteAsync(progress);
+
+            if (!result.Success)
+            {
+                throw new InvalidOperationException(
+                    $"启动步骤 '{result.FailedStepName}' 执行失败: {result.ErrorMessage}");
+            }
+
             await ShowMainWindowAfterInitializationAsync();
         }
         catch (Exception ex)
@@ -123,44 +137,48 @@ public partial class App : PrismApplication
         }
     }
 
-    /// <summary>错误处理初始化</summary>
-    private void InitializeErrorHandling()
+    /// <summary>注册启动步骤到管道</summary>
+    private void RegisterStartupSteps()
     {
-        _performanceMonitor?.EndStage();
-        _performanceMonitor?.StartStage("错误处理初始化");
-        _splashScreen?.UpdateStatus("正在初始化错误处理...");
-        _bootstrapper!.InitializeErrorHandlingService();
+        // 从DI容器解析并注册所有启动步骤
+        var steps = new[]
+        {
+            Container.Resolve<IStartupStep>("ErrorHandling"),
+            Container.Resolve<IStartupStep>("ModuleCoordinator"),
+            Container.Resolve<IStartupStep>("CoreServices"),
+            Container.Resolve<IStartupStep>("ApiHealthCheck"),
+            Container.Resolve<IStartupStep>("Warmup")
+        };
+
+        foreach (var step in steps)
+        {
+            _startupPipeline!.RegisterStep(step);
+        }
     }
 
-    /// <summary>模块协调器初始化</summary>
-    private void InitializeModuleCoordinator()
+    /// <summary>订阅管道事件</summary>
+    private void SubscribeToPipelineEvents()
     {
-        _performanceMonitor?.EndStage();
-        _performanceMonitor?.StartStage("模块协调器初始化");
-        _splashScreen?.UpdateStatus("正在初始化模块协调器...");
-        _bootstrapper!.InitializeSimplifiedModuleCoordinator();
-    }
+        _startupPipeline!.StepCompleted += (_, e) =>
+        {
+            _performanceMonitor?.EndStage();
+            if (e.CompletedCount < e.TotalCount)
+            {
+                _performanceMonitor?.StartStage(e.StepName);
+            }
 
-    /// <summary>核心服务初始化</summary>
-    private async Task InitializeCoreServicesAsync()
-    {
-        _performanceMonitor?.EndStage();
-        _performanceMonitor?.StartStage("核心服务初始化");
-        _splashScreen?.UpdateStatus("正在初始化核心服务...");
-        await _bootstrapper!.InitializeCoreServicesAsync();
-
-        _splashScreen?.UpdateStatus("正在检查API连接...");
-        var appStateService = Container.Resolve<IApplicationStateService>();
-        await appStateService.CheckApiHealthAsync(timeoutSeconds: 10);
-    }
-
-    /// <summary>应用预热</summary>
-    private async Task InitializeApplicationWarmupAsync()
-    {
-        _performanceMonitor?.EndStage();
-        _performanceMonitor?.StartStage("应用预热");
-        _splashScreen?.UpdateStatus("正在预热应用程序...");
-        await _bootstrapper!.InitializeApplicationWarmupAsync();
+            var logger = Container.Resolve<ILogger<App>>();
+            if (e.Result.Success)
+            {
+                logger.LogInformation("启动步骤 {StepName} 完成，耗时 {Duration}ms",
+                    e.StepName, e.Result.Duration.TotalMilliseconds);
+            }
+            else
+            {
+                logger.LogWarning("启动步骤 {StepName} 失败: {Error}",
+                    e.StepName, e.Result.ErrorMessage);
+            }
+        };
     }
 
     /// <summary>完成启动，显示主窗口</summary>

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Auth.Models;
 using LYBT.Desktop.Auth.Services;
+using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.HealthCheck;
 using LYBT.Desktop.Foundation.Security;
@@ -18,11 +19,10 @@ using Prism.Regions;
 
 namespace LYBT.Desktop.Auth.ViewModels
 {
-    /// <summary>登录视图模型 - 实现基于角色的导航（ADR-002合规）</summary>
+    /// <summary>登录视图模型 - 使用LoginCoordinator编排登录流程</summary>
     public class LoginViewModel : UnifiedViewModelBase
     {
-        private readonly IAuthenticationService _authService;
-        private readonly ITokenStorageService _tokenStorage;
+        private readonly ILoginCoordinator _loginCoordinator;
         private readonly IApplicationStateService _applicationStateService;
         private readonly IUsernameStorageService? _usernameStorage;
         private readonly ISecureCredentialStorage? _credentialStorage;
@@ -89,8 +89,7 @@ namespace LYBT.Desktop.Auth.ViewModels
         public ICommand RetryApiCheckCommand { get; }
 
         public LoginViewModel(
-            IAuthenticationService authService,
-            ITokenStorageService tokenStorage,
+            ILoginCoordinator loginCoordinator,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -101,8 +100,7 @@ namespace LYBT.Desktop.Auth.ViewModels
             ICommonDialogService? dialogService = null)
             : base(eventAggregator, loggerFactory, regionManager, null, null)
         {
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            _tokenStorage = tokenStorage ?? throw new ArgumentNullException(nameof(tokenStorage));
+            _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
             _applicationStateService = applicationStateService ?? throw new ArgumentNullException(nameof(applicationStateService));
             _usernameStorage = usernameStorage; _credentialStorage = credentialStorage; _connectionSettingsService = connectionSettingsService;
             _dialogService = dialogService;
@@ -136,23 +134,9 @@ namespace LYBT.Desktop.Auth.ViewModels
 
         private async Task TryAutoLoginWithTokenAsync()
         {
-            try
-            {
-                var token = await _tokenStorage.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-                var validationResult = await _authService.ValidateTokenAsync(token);
-                if (!validationResult.IsSuccess || validationResult.Data == null || !validationResult.Data.IsValid) { await ClearInvalidTokenAsync(); return; }
-                var loginResponse = await _tokenStorage.GetLoginResponseAsync();
-                if (loginResponse?.User == null) { await ClearInvalidTokenAsync(); return; }
-                await Application.Current.Dispatcher.InvokeAsync(() => EventAggregator.GetEvent<LoginSuccessEvent>().Publish(loginResponse.User));
-            }
-            catch { await ClearInvalidTokenAsync(); }
-        }
-
-        private async Task ClearInvalidTokenAsync()
-        {
-            try { await _tokenStorage.ClearAuthenticationAsync(); }
-            catch (Exception ex) { Logger.LogError(ex, "清除无效Token时发生错误"); }
+            // 委托给LoginCoordinator处理自动登录流程
+            // LoginCoordinator会负责Token验证、会话启动、模块加载和导航
+            await _loginCoordinator.TryAutoLoginAsync();
         }
 
         private async Task LoadSavedCredentialsAsync()
@@ -191,23 +175,36 @@ namespace LYBT.Desktop.Auth.ViewModels
             {
                 IsLoading = true; ErrorMessage = string.Empty; StatusMessage = "正在登录...";
                 if (ConnectionMode == ConnectionMode.Local) { ErrorMessage = "本地模式暂未实现，请切换到\"远程模式\""; return; }
-                var loginRequest = new LoginRequest { UserName = Username, Password = Password, RememberMe = RememberMe };
-                var response = await _authService.LoginAsync(loginRequest);
-                if (response.IsSuccess && response.Data != null)
+
+                // 使用LoginCoordinator执行完整登录流程（认证→会话→模块→导航）
+                var result = await _loginCoordinator.LoginAsync(Username, Password, RememberMe);
+
+                if (result.Success)
                 {
-                    StatusMessage = "登录成功，正在跳转...";
-                    await _tokenStorage.SaveAuthenticationAsync(response.Data, RememberMe);
-                    if (_credentialStorage != null && RememberPassword) await _credentialStorage.SaveCredentialsAsync(Username, Password, RememberPassword);
+                    // 登录成功，处理凭据存储（Remember Password功能）
+                    if (_credentialStorage != null && RememberPassword)
+                        await _credentialStorage.SaveCredentialsAsync(Username, Password, RememberPassword);
                     else
                     {
-                        if (_usernameStorage != null && RememberMe && !RememberPassword) await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
-                        if (_credentialStorage != null && !RememberPassword) await _credentialStorage.ClearCredentialsAsync();
+                        if (_usernameStorage != null && RememberMe && !RememberPassword)
+                            await _usernameStorage.SaveUsernameAsync(Username, RememberMe);
+                        if (_credentialStorage != null && !RememberPassword)
+                            await _credentialStorage.ClearCredentialsAsync();
                     }
-                    EventAggregator.GetEvent<LoginSuccessEvent>().Publish(response.Data.User);
+                    // LoginCoordinator已处理会话启动、模块加载和导航
                 }
-                else { ErrorMessage = response.Message ?? "登录失败，请检查用户名和密码"; Password = string.Empty; }
+                else
+                {
+                    ErrorMessage = result.ErrorMessage ?? "登录失败，请检查用户名和密码";
+                    Password = string.Empty;
+                }
             }
-            catch (Exception ex) { Logger.LogError(ex, "登录过程中发生错误"); ErrorMessage = "登录失败：" + ex.Message; Password = string.Empty; }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "登录过程中发生错误");
+                ErrorMessage = "登录失败：" + ex.Message;
+                Password = string.Empty;
+            }
             finally { IsLoading = false; StatusMessage = string.Empty; }
         }
 

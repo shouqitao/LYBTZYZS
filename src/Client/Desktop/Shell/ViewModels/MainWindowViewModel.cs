@@ -1,13 +1,11 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using LYBT.Desktop.Foundation.HealthCheck;
-using LYBT.Desktop.Foundation.Modules;
 using LYBT.Desktop.Foundation.Security;
 using LYBT.Desktop.Infrastructure.Commands;
 using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Shared.Models.Contracts.Users;
@@ -23,18 +21,15 @@ namespace LYBT.Desktop.Shell.ViewModels;
 public class MainWindowViewModel : UnifiedViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
-    private readonly IRegionManager _regionManager;
-    private readonly IModuleLoadingService _moduleLoadingService;
     private readonly IApiHealthCheckService _apiHealthCheckService;
-    private readonly IRoleNavigationService _roleNavigationService;
     private readonly NavigationManager _navigationManager;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
     private readonly IApplicationTickService _tickService;
     private readonly IUserActivityTracker _userActivityTracker;
-    private readonly IAuthenticationService _authenticationService;
     private readonly ITokenLifecycleService _tokenLifecycleService;
     private readonly ITokenStorageService _tokenStorageService;
+    private readonly ILoginCoordinator _loginCoordinator;
 
     /// <summary>构造函数</summary>
     public MainWindowViewModel(
@@ -43,33 +38,28 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
         LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
-        IModuleLoadingService moduleLoadingService,
         IApiHealthCheckService apiHealthCheckService,
-        IRoleNavigationService roleNavigationService,
         NavigationManager navigationManager,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
         IApplicationTickService tickService,
         IUserActivityTracker userActivityTracker,
-        IAuthenticationService authenticationService,
         ITokenLifecycleService tokenLifecycleService,
         ITokenStorageService tokenStorageService,
+        ILoginCoordinator loginCoordinator,
         ICommonDialogService commonDialogService)
         : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService, commonDialogService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
-        _regionManager = regionManager ?? throw new ArgumentNullException(nameof(regionManager));
-        _moduleLoadingService = moduleLoadingService ?? throw new ArgumentNullException(nameof(moduleLoadingService));
         _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
-        _roleNavigationService = roleNavigationService ?? throw new ArgumentNullException(nameof(roleNavigationService));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
         _tickService = tickService ?? throw new ArgumentNullException(nameof(tickService));
         _userActivityTracker = userActivityTracker ?? throw new ArgumentNullException(nameof(userActivityTracker));
-        _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _tokenLifecycleService = tokenLifecycleService ?? throw new ArgumentNullException(nameof(tokenLifecycleService));
         _tokenStorageService = tokenStorageService ?? throw new ArgumentNullException(nameof(tokenStorageService));
+        _loginCoordinator = loginCoordinator ?? throw new ArgumentNullException(nameof(loginCoordinator));
 
         InitializeViewModel();
     }
@@ -125,9 +115,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>退出登录命令</summary>
     public DelegateCommand LogoutCommand { get; set; } = null!;
 
-    /// <summary>API测试命令</summary>
-    public DelegateCommand TestApiCommand { get; set; } = null!;
-
     /// <summary>重试 API 健康检查命令</summary>
     public DelegateCommand RetryHealthCheckCommand { get; set; } = null!;
 
@@ -173,8 +160,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private new void InitializeCommands()
     {
         LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
-        TestApiCommand = new DelegateCommand(async () => await ExecuteTestApiAsync().ConfigureAwait(false))
-            .ObservesProperty(() => IsLoggedIn);
         RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
 
         Logger.LogDebug("核心命令已初始化");
@@ -227,7 +212,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>初始化事件订阅</summary>
     private void InitializeEvents()
     {
-        EventAggregator.GetEvent<LoginSuccessEvent>().Subscribe(OnLoginSuccess);
+        // 订阅LoginCoordinator的登录成功事件（取代EventAggregator的LoginSuccessEvent）
+        _loginCoordinator.LoginSucceeded += OnLoginCoordinatorSuccess;
         EventAggregator.GetEvent<PasswordChangedEvent>().Subscribe(OnPasswordChanged);
         EventAggregator.GetEvent<TokenLifecycleStateChangedEvent>().Subscribe(OnTokenLifecycleStateChanged);
         _navigationManager.SubscribeToRegionCollection();
@@ -417,20 +403,37 @@ public class MainWindowViewModel : UnifiedViewModelBase
         catch (Exception ex) { await ShowErrorMessageAsync($"初始化登录界面失败:{ex.Message}"); _navigationManager.ShowLoginDialog(); }
     }
 
-    /// <summary>登录成功事件处理</summary>
-    private void OnLoginSuccess(UserDto user)
+    /// <summary>
+    /// LoginCoordinator登录成功事件处理
+    /// 负责更新UI状态（LoginCoordinator已处理模块加载和导航）
+    /// </summary>
+    private void OnLoginCoordinatorSuccess(object? sender, LoginSuccessEventArgs args)
     {
-        IsLoggedIn = true;
-        CurrentUser = user;
-        _userActivityTracker.StartTracking();
+        var user = args.User;
 
-        // Issue #1864: 启动Token生命周期监控
-        _ = StartTokenLifecycleMonitoringAsync();
-
-        _ = Task.Run(async () =>
+        Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            await EnsureWorkstationModulesLoaded(user);
-            await Application.Current.Dispatcher.InvokeAsync(() => LoadMainContent());
+            // 更新UI状态
+            IsLoggedIn = true;
+            CurrentUser = user;
+
+            // 设置窗口标题
+            bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true
+                           || user.Role == UserRole.Admin;
+            var userDisplayName = string.IsNullOrEmpty(user.RealName) ? user.UserName : user.RealName;
+            Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({(isAdmin ? "管理员" : "医生")})";
+
+            // 清理登录区域
+            _navigationManager.ClearLoginRegion();
+
+            // 启动用户活动追踪
+            _userActivityTracker.StartTracking();
+
+            // Issue #1864: 启动Token生命周期监控
+            _ = StartTokenLifecycleMonitoringAsync();
+
+            Logger.LogInformation("登录成功UI更新完成 [用户: {Username}, 自动登录: {IsAutoLogin}]",
+                user.UserName, args.IsAutoLogin);
         });
     }
 
@@ -481,103 +484,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
         await CheckLoginStatusAsync();
     }
 
-    /// <summary>加载主界面内容</summary>
-    private void LoadMainContent()
-    {
-        if (CurrentUser == null) throw new InvalidOperationException("当前用户信息为空，无法加载主界面");
-
-        string roleName = CurrentUser.Role.ToString();
-        bool isAdmin = CurrentUser.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true || CurrentUser.Role == UserRole.Admin;
-        var userDisplayName = string.IsNullOrEmpty(CurrentUser.RealName) ? CurrentUser.UserName : CurrentUser.RealName;
-        Title = $"凌隐宝堂中医诊所诊疗系统 - {userDisplayName} ({(isAdmin ? "管理员" : "医生")})";
-
-        _navigationManager.ClearLoginRegion();
-        Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            try { _roleNavigationService.NavigateToRoleHome(roleName); }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "角色导航失败");
-                IsLoggedIn = false; CurrentUser = null; Title = "凌隐宝堂中医诊所诊疗系统";
-                _ = Task.Run(async () => { await ShowErrorMessageAsync($"无法加载工作台：{ex.Message}"); await Application.Current.Dispatcher.InvokeAsync(() => _navigationManager.ShowLoginDialog()); });
-            }
-        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-    }
-
-    /// <summary>确保工作台模块已加载</summary>
-    private async Task EnsureWorkstationModulesLoaded(UserDto user)
-    {
-        try
-        {
-            bool isAdmin = user.UserName?.Equals(SystemConstants.SuperAdminUsername, StringComparison.OrdinalIgnoreCase) == true ||
-                           user.Role == UserRole.Admin;
-
-            await LoadBasicModulesAsync();
-
-            if (isAdmin)
-            {
-                Logger.LogInformation("管理员登录，加载管理工作台模块");
-                await LoadAdminModulesAsync();
-            }
-            else if (user.Role == UserRole.Doctor)
-            {
-                Logger.LogInformation("医生登录，加载诊疗模块");
-                await LoadBasicModulesAsync();
-            }
-
-            Logger.LogInformation("角色模块加载完成");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "工作台模块加载失败");
-        }
-    }
-
-    /// <summary>加载基础模块</summary>
-    private async Task LoadBasicModulesAsync()
-    {
-        await _moduleLoadingService.LoadModulesAsync(new[] { "PatientsModule" });
-    }
-
-    /// <summary>加载管理员模块</summary>
-    private async Task LoadAdminModulesAsync()
-    {
-        await _moduleLoadingService.LoadModulesAsync(new[]
-        {
-            "UsersModule",
-            "HerbsModule",
-            "FormulaModule",
-            "ConsultationModule",
-            "MedicalCaseModule",
-            "PrescriptionsModule"
-        });
-    }
-
-    /// <summary>用户点击药材管理时触发</summary>
-    public async Task LoadHerbsManagementAsync()
-    {
-        await _moduleLoadingService.LoadModuleAsync("HerbsModule");
-    }
-
-    /// <summary>用户点击方剂管理时触发</summary>
-    public async Task LoadFormulaManagementAsync()
-    {
-        await _moduleLoadingService.LoadModuleAsync("FormulaModule");
-    }
-
-    /// <summary>执行API测试</summary>
-    private async Task ExecuteTestApiAsync()
-    {
-        try
-        {
-            await ShowSuccessMessageAsync("API测试功能将在未来版本中实现");
-        }
-        catch (Exception ex)
-        {
-            await ShowErrorMessageAsync($"API测试失败: {ex.Message}");
-        }
-    }
-
     /// <summary>
     /// 请求关闭应用程序（显示确认框）
     /// remove-titlebar-add-close-button: 供Alt+F4调用，仅在登录界面可用
@@ -622,8 +528,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>取消登录事件订阅</summary>
     private void UnsubscribeLoginEvent()
     {
-        try { EventAggregator.GetEvent<LoginSuccessEvent>().Unsubscribe(OnLoginSuccess); }
-        catch (Exception ex) { Logger.LogError(ex, "取消EventAggregator订阅失败"); }
+        try { _loginCoordinator.LoginSucceeded -= OnLoginCoordinatorSuccess; }
+        catch (Exception ex) { Logger.LogError(ex, "取消LoginCoordinator事件订阅失败"); }
     }
 
     /// <summary>取消Token生命周期事件订阅</summary>

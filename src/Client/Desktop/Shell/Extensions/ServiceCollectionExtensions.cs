@@ -36,6 +36,12 @@ using LYBT.Desktop.Presentation.Notifications;
 using LYBT.Desktop.Presentation.UserExperience;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
+using LYBT.Desktop.Shell.Services.Diagnostics;
+using LYBT.Desktop.Shell.Services.Lifecycle;
+using LYBT.Desktop.Shell.Services.Login;
+using LYBT.Desktop.Shell.Services.Session;
+using LYBT.Desktop.Shell.Services.Startup;
+using LYBT.Desktop.Shell.Services.Startup.Steps;
 using LYBT.Desktop.Users;
 using LYBT.Desktop.Users.Repositories;
 using LYBT.Desktop.Users.ViewModels.Components;
@@ -142,6 +148,14 @@ namespace LYBT.Desktop.Shell.Extensions
             RegisterLogger<ApplicationStateService>(containerRegistry);
             RegisterLogger<NavigationManager>(containerRegistry);
             RegisterLogger<MenuManager>(containerRegistry);
+
+            // Shell启动流程重构 - Phase 1 新增Logger
+            RegisterLogger<ApplicationLifecycle>(containerRegistry);
+            RegisterLogger<SessionLifecycleManager>(containerRegistry);
+            RegisterLogger<StartupDiagnostics>(containerRegistry);
+
+            // Shell启动流程重构 - Phase 2 新增Logger
+            RegisterLogger<LoginCoordinator>(containerRegistry);
         }
 
         /// <summary>注册业务模块Logger</summary>
@@ -321,6 +335,22 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IApplicationInitializationService, ApplicationInitializationService>();
             containerRegistry.RegisterSingleton<IApplicationBootstrapper, ApplicationBootstrapper>();
             containerRegistry.RegisterSingleton<IApplicationStateService, ApplicationStateService>();
+
+            // Shell启动流程重构 - Phase 1 新增服务
+            containerRegistry.RegisterSingleton<IApplicationLifecycle, ApplicationLifecycle>();
+            containerRegistry.RegisterSingleton<ISessionLifecycleManager, SessionLifecycleManager>();
+            containerRegistry.RegisterSingleton<IStartupDiagnostics, StartupDiagnostics>();
+
+            // Shell启动流程重构 - Phase 2 新增服务
+            containerRegistry.RegisterSingleton<ILoginCoordinator, LoginCoordinator>();
+
+            // Shell启动流程重构 - Phase 3 新增服务
+            containerRegistry.RegisterSingleton<IStartupPipeline, StartupPipeline>();
+            containerRegistry.Register<IStartupStep, ErrorHandlingStartupStep>("ErrorHandling");
+            containerRegistry.Register<IStartupStep, ModuleCoordinatorStartupStep>("ModuleCoordinator");
+            containerRegistry.Register<IStartupStep, CoreServicesStartupStep>("CoreServices");
+            containerRegistry.Register<IStartupStep, ApiHealthCheckStartupStep>("ApiHealthCheck");
+            containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
         }
     }
 }
