@@ -225,44 +225,5 @@ namespace LYBT.Module.MedicalCases.Services
             }
         }
 
-        #region BaseService抽象方法实现
-
-        /// <summary>
-        /// 获取MedicalCase实体ID
-        /// </summary>
-        protected override Guid GetEntityId<TEntity>(TEntity entity) where TEntity : class
-        {
-            return entity switch
-            {
-                MedicalCase medicalCase => medicalCase.Id,
-                _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
-            };
-        }
-
-        /// <summary>
-        /// 获取MedicalCase创建用户ID
-        /// </summary>
-        protected override Guid GetCreatedUserId<TEntity>(TEntity entity) where TEntity : class
-        {
-            return entity switch
-            {
-                MedicalCase medicalCase => medicalCase.CreatedBy ?? Guid.Empty,
-                _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
-            };
-        }
-
-        /// <summary>
-        /// 获取MedicalCase创建时间
-        /// </summary>
-        protected override DateTime GetCreatedDate<TEntity>(TEntity entity) where TEntity : class
-        {
-            return entity switch
-            {
-                MedicalCase medicalCase => medicalCase.CreatedAt,
-                _ => throw new ArgumentException($"不支持的实体类型: {typeof(TEntity).Name}")
-            };
-        }
-
-        #endregion
     }
 }

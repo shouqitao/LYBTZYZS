@@ -336,50 +336,7 @@ namespace LYBT.Infrastructure.Services
 
         #endregion
 
-        /// <summary>
-        /// 验证实体编辑权限（泛型版本）
-        /// </summary>
-        protected virtual (bool IsAuthorized, string ErrorMessage) ValidateEditPermission<TEntity>(
-            TEntity entity,
-            Guid currentUserId,
-            bool isAdmin = false) where TEntity : class
-        {
-            // 使用反射获取实体的关键属性
-            var entityType = typeof(TEntity).Name;
-            var entityId = GetEntityId(entity);
-            var createdUserId = GetCreatedUserId(entity);
-            var createdDate = GetCreatedDate(entity);
 
-            return ValidateEditPermission(entityId, currentUserId, createdUserId, createdDate, isAdmin, entityType);
-        }
-
-        #region 实体属性反射方法（虚方法，需要权限验证功能的子类需重写）
-
-        /// <summary>
-        /// 获取实体ID（需要权限验证的子类需重写此方法）
-        /// </summary>
-        protected virtual Guid GetEntityId<TEntity>(TEntity entity) where TEntity : class
-        {
-            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetEntityId 方法以支持权限验证");
-        }
-
-        /// <summary>
-        /// 获取创建用户ID（需要权限验证的子类需重写此方法）
-        /// </summary>
-        protected virtual Guid GetCreatedUserId<TEntity>(TEntity entity) where TEntity : class
-        {
-            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetCreatedUserId 方法以支持权限验证");
-        }
-
-        /// <summary>
-        /// 获取创建时间（需要权限验证的子类需重写此方法）
-        /// </summary>
-        protected virtual DateTime GetCreatedDate<TEntity>(TEntity entity) where TEntity : class
-        {
-            throw new NotImplementedException($"子类 {GetType().Name} 需要重写 GetCreatedDate 方法以支持权限验证");
-        }
-
-        #endregion
     }
 }
 // refactor-authorization-system: MedicalCaseUserInfo 已删除，权限现通过 IAuthorizationService 处理
