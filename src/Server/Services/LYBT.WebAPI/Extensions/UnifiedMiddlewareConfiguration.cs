@@ -1,7 +1,5 @@
-﻿using LYBT.Infrastructure.Configuration.Options;
-using LYBT.WebAPI.Configuration;
+﻿using LYBT.WebAPI.Configuration;
 using LYBT.WebAPI.Middleware;
-using Microsoft.Extensions.Options;
 
 namespace LYBT.WebAPI.Extensions;
 
@@ -127,48 +125,3 @@ public static class UnifiedMiddlewareConfiguration
     }
 
 }
-
-/// <summary>
-/// 安全响应头：按配置应用 CSP/Frame/Referrer/CTO/Permissions-Policy 等
-/// </summary>
-internal static class SecurityHeadersMiddleware
-{
-    public static WebApplication ConfigureSecurityHeadersFromOptions(this WebApplication app)
-    {
-        // Issue #1761 Phase 3.1: SecurityOptions → LybtOptions.SecurityHeaders（完全扁平化）
-        var lybtOptions = app.Services.GetService<IOptions<LybtOptions>>()?.Value;
-        if (lybtOptions == null)
-        {
-            return app;
-        }
-
-        var headers = lybtOptions.SecurityHeaders;
-        app.Use(async (context, next) =>
-        {
-            if (!string.IsNullOrWhiteSpace(headers.ContentSecurityPolicy))
-            {
-                context.Response.Headers["Content-Security-Policy"] = headers.ContentSecurityPolicy;
-            }
-            if (!string.IsNullOrWhiteSpace(headers.FrameOptions))
-            {
-                context.Response.Headers["X-Frame-Options"] = headers.FrameOptions;
-            }
-            if (!string.IsNullOrWhiteSpace(headers.ContentTypeOptions))
-            {
-                context.Response.Headers["X-Content-Type-Options"] = headers.ContentTypeOptions;
-            }
-            if (!string.IsNullOrWhiteSpace(headers.ReferrerPolicy))
-            {
-                context.Response.Headers["Referrer-Policy"] = headers.ReferrerPolicy;
-            }
-            if (!string.IsNullOrWhiteSpace(headers.PermissionsPolicy))
-            {
-                context.Response.Headers["Permissions-Policy"] = headers.PermissionsPolicy;
-            }
-            await next();
-        });
-
-        return app;
-    }
-}
-
