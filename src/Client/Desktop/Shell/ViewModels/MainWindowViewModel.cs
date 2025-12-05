@@ -72,6 +72,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private long _lastHealthCheckTick;
     private const int HealthCheckIntervalSeconds = 10;
 
+    // poc-drawer-layout: Drawer状态
+    private bool _isDrawerOpen = false;
+
     /// <summary>获取或设置窗口标题</summary>
     public string Title
     {
@@ -109,6 +112,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>获取是否未登录状态，用于界面绑定</summary>
     public bool IsNotLoggedIn => !_isLoggedIn;
+
+    /// <summary>poc-drawer-layout: Drawer是否打开</summary>
+    public bool IsDrawerOpen
+    {
+        get => _isDrawerOpen;
+        set => SetProperty(ref _isDrawerOpen, value);
+    }
 
     #region 命令属性
 
@@ -154,6 +164,18 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>全局重做命令 (Ctrl+Y) - 委托给MenuManager</summary>
     public ICommand RedoCommand => _menuManager.RedoCommand;
 
+    /// <summary>poc-drawer-layout: 切换Drawer命令 (Ctrl+M)</summary>
+    public DelegateCommand ToggleDrawerCommand { get; private set; } = null!;
+
+    /// <summary>poc-drawer-layout: 关闭Drawer命令 (Escape)</summary>
+    public DelegateCommand CloseDrawerCommand { get; private set; } = null!;
+
+    /// <summary>poc-drawer-layout: 修改个人资料命令 - 委托给MenuManager</summary>
+    public DelegateCommand EditProfileCommand => _menuManager.EditProfileCommand;
+
+    /// <summary>poc-drawer-layout: 修改密码命令 - 委托给MenuManager</summary>
+    public DelegateCommand ChangePasswordCommand => _menuManager.ChangePasswordCommand;
+
     #endregion
 
     /// <summary>初始化核心命令</summary>
@@ -162,7 +184,28 @@ public class MainWindowViewModel : UnifiedViewModelBase
         LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
         RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
 
+        // poc-drawer-layout: Drawer命令
+        ToggleDrawerCommand = new DelegateCommand(ExecuteToggleDrawer);
+        CloseDrawerCommand = new DelegateCommand(ExecuteCloseDrawer);
+
         Logger.LogDebug("核心命令已初始化");
+    }
+
+    /// <summary>poc-drawer-layout: 切换Drawer状态</summary>
+    private void ExecuteToggleDrawer()
+    {
+        IsDrawerOpen = !IsDrawerOpen;
+        Logger.LogDebug("Drawer状态切换: {IsOpen}", IsDrawerOpen);
+    }
+
+    /// <summary>poc-drawer-layout: 关闭Drawer</summary>
+    private void ExecuteCloseDrawer()
+    {
+        if (IsDrawerOpen)
+        {
+            IsDrawerOpen = false;
+            Logger.LogDebug("Drawer已关闭");
+        }
     }
 
     /// <summary>初始化时钟计时器</summary>

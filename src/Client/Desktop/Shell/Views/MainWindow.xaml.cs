@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using LYBT.Desktop.Shell.ViewModels;
 
 namespace LYBT.Desktop.Shell.Views
@@ -7,6 +9,7 @@ namespace LYBT.Desktop.Shell.Views
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// remove-titlebar-add-close-button: 添加Alt+F4拦截逻辑
+    /// poc-drawer-layout: 添加Drawer动画触发逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -18,6 +21,35 @@ namespace LYBT.Desktop.Shell.Views
             // 原因：构造函数中启动Task.Run可能在Region注册前执行导航
             // 解决：订阅Loaded事件，确保所有XAML元素和Region已就绪
             Loaded += OnWindowLoaded;
+
+            // poc-drawer-layout: 订阅DataContext变化以监听IsDrawerOpen
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        /// <summary>poc-drawer-layout: DataContext变化时订阅PropertyChanged</summary>
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is INotifyPropertyChanged oldVm)
+                oldVm.PropertyChanged -= OnViewModelPropertyChanged;
+
+            if (e.NewValue is INotifyPropertyChanged newVm)
+                newVm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        /// <summary>poc-drawer-layout: 监听IsDrawerOpen变化触发动画</summary>
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.IsDrawerOpen))
+            {
+                if (DataContext is MainWindowViewModel vm)
+                {
+                    var storyboardKey = vm.IsDrawerOpen ? "OpenDrawerStoryboard" : "CloseDrawerStoryboard";
+                    if (TryFindResource(storyboardKey) is Storyboard storyboard)
+                    {
+                        storyboard.Begin(this);
+                    }
+                }
+            }
         }
 
         /// <summary>

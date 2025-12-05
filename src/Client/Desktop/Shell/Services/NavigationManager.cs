@@ -61,6 +61,25 @@ public class NavigationManager
     /// <summary>快速导航到医案工作区视图</summary>
     public void NavigateToMedicalCaseFlow() => _regionManager.RequestNavigate(RegionNames.ContentRegion, "MedicalCaseWorkspaceView");
 
+    /// <summary>poc-drawer-layout: 通用导航到指定视图</summary>
+    /// <param name="viewName">视图名称</param>
+    public void NavigateTo(string viewName)
+    {
+        try
+        {
+            _logger.LogInformation("导航到 {ViewName}", viewName);
+            _regionManager.RequestNavigate(RegionNames.ContentRegion, viewName, result =>
+            {
+                if (result.Result != true)
+                    _logger.LogError("导航失败：{ViewName}，错误：{Error}", viewName, result.Error?.Message ?? "未知错误");
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "导航到 {ViewName} 时发生异常", viewName);
+        }
+    }
+
     /// <summary>订阅Region集合变化事件</summary>
     public void SubscribeToRegionCollection()
     {
