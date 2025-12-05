@@ -11,6 +11,7 @@ namespace LYBT.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // 添加 RefreshTokens 表的新列
             migrationBuilder.AddColumn<bool>(
                 name: "IsUsed",
                 table: "RefreshTokens",
@@ -24,54 +25,61 @@ namespace LYBT.Infrastructure.Data.Migrations
                 type: "datetime2",
                 nullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemLogs_CorrelationId",
-                table: "SystemLogs",
-                column: "CorrelationId");
+            // 使用条件创建索引（如果不存在）
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_CorrelationId' AND object_id = OBJECT_ID('SystemLogs'))
+                CREATE INDEX [IX_SystemLogs_CorrelationId] ON [SystemLogs] ([CorrelationId]);
+            ");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemLogs_Level",
-                table: "SystemLogs",
-                column: "Level");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_Level' AND object_id = OBJECT_ID('SystemLogs'))
+                CREATE INDEX [IX_SystemLogs_Level] ON [SystemLogs] ([Level]);
+            ");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemLogs_Timestamp",
-                table: "SystemLogs",
-                column: "Timestamp");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_Timestamp' AND object_id = OBJECT_ID('SystemLogs'))
+                CREATE INDEX [IX_SystemLogs_Timestamp] ON [SystemLogs] ([Timestamp]);
+            ");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemLogs_UserId",
-                table: "SystemLogs",
-                column: "UserId");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_UserId' AND object_id = OBJECT_ID('SystemLogs'))
+                CREATE INDEX [IX_SystemLogs_UserId] ON [SystemLogs] ([UserId]);
+            ");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_FamilyId",
-                table: "RefreshTokens",
-                column: "FamilyId");
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_RefreshTokens_FamilyId' AND object_id = OBJECT_ID('RefreshTokens'))
+                CREATE INDEX [IX_RefreshTokens_FamilyId] ON [RefreshTokens] ([FamilyId]);
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_SystemLogs_CorrelationId",
-                table: "SystemLogs");
+            // 使用条件删除索引（如果存在）
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_CorrelationId' AND object_id = OBJECT_ID('SystemLogs'))
+                DROP INDEX [IX_SystemLogs_CorrelationId] ON [SystemLogs];
+            ");
 
-            migrationBuilder.DropIndex(
-                name: "IX_SystemLogs_Level",
-                table: "SystemLogs");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_Level' AND object_id = OBJECT_ID('SystemLogs'))
+                DROP INDEX [IX_SystemLogs_Level] ON [SystemLogs];
+            ");
 
-            migrationBuilder.DropIndex(
-                name: "IX_SystemLogs_Timestamp",
-                table: "SystemLogs");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_Timestamp' AND object_id = OBJECT_ID('SystemLogs'))
+                DROP INDEX [IX_SystemLogs_Timestamp] ON [SystemLogs];
+            ");
 
-            migrationBuilder.DropIndex(
-                name: "IX_SystemLogs_UserId",
-                table: "SystemLogs");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_SystemLogs_UserId' AND object_id = OBJECT_ID('SystemLogs'))
+                DROP INDEX [IX_SystemLogs_UserId] ON [SystemLogs];
+            ");
 
-            migrationBuilder.DropIndex(
-                name: "IX_RefreshTokens_FamilyId",
-                table: "RefreshTokens");
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_RefreshTokens_FamilyId' AND object_id = OBJECT_ID('RefreshTokens'))
+                DROP INDEX [IX_RefreshTokens_FamilyId] ON [RefreshTokens];
+            ");
 
             migrationBuilder.DropColumn(
                 name: "IsUsed",

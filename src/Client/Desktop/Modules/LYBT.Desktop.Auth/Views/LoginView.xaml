@@ -7,98 +7,88 @@
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <!--  Issue #1826: 全屏中医风格背景 + 左右布局  -->
+    <!--  remove-titlebar-add-close-button: 使用背景图替代渐变，FHD优化  -->
     <Grid>
-        <!--  背景层：中医风格渐变  -->
+        <!--  背景层：中医风格背景图  -->
         <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Offset="0" Color="#3E2723" />
-                <GradientStop Offset="0.5" Color="#5D4037" />
-                <GradientStop Offset="1" Color="#6D4C41" />
-            </LinearGradientBrush>
+            <ImageBrush
+                ImageSource="pack://application:,,,/LYBT.Desktop.Shell;component/Assets/Images/Backgrounds/img-login-background.jpg"
+                Stretch="UniformToFill" />
         </Grid.Background>
 
-        <!--  半透明遮罩层  -->
-        <Border Background="#50000000" />
+        <!--  半透明遮罩层：降低透明度以突显背景图  -->
+        <Border Background="#20000000" />
 
-        <!--  主内容区：左右布局  -->
-        <Grid Margin="80,60">
+        <!--  主内容区：左右布局 - FHD(1920x1080)优化  -->
+        <Grid Margin="60,40">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />      
-                <!--  左侧：品牌文字区  -->
-                <ColumnDefinition Width="560" />    
-                <!--  右侧：登录框（1080P最佳宽度，长宽比1.21）  -->
+                <!--  左右对称分屏：左侧品牌区 / 右侧登录区  -->
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--  左侧：品牌文字区 - Issue #1826: 调整左边距向中间靠拢  -->
+            <!--  左侧：品牌文字区 - 在左半边区域的中心  -->
             <StackPanel
                 x:Name="LeftBrandPanel"
                 Grid.Column="0"
-                Margin="120,0,0,0"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-                <!--  系统名称 - Issue #1826: 直接显示中文名称  -->
+                <!--  系统名称 - 深棕色配合背景  -->
                 <TextBlock
                     Margin="0,0,0,16"
-                    FontSize="56"
+                    FontSize="72"
                     FontWeight="Bold"
-                    Foreground="#FFD54F"
+                    Foreground="#5D4037"
                     Text="凌隐宝堂">
                     <TextBlock.Effect>
                         <DropShadowEffect
-                            BlurRadius="10"
-                            Opacity="0.5"
-                            ShadowDepth="2"
+                            BlurRadius="8"
+                            Opacity="0.2"
+                            ShadowDepth="1"
                             Color="#000000" />
                     </TextBlock.Effect>
                 </TextBlock>
 
                 <TextBlock
                     Margin="0,0,0,32"
-                    FontSize="42"
+                    FontSize="54"
                     FontWeight="SemiBold"
-                    Foreground="White"
+                    Foreground="#6D4C41"
                     Text="中医诊疗管理系统">
                     <TextBlock.Effect>
                         <DropShadowEffect
-                            BlurRadius="8"
-                            Opacity="0.4"
-                            ShadowDepth="2"
+                            BlurRadius="6"
+                            Opacity="0.15"
+                            ShadowDepth="1"
                             Color="#000000" />
                     </TextBlock.Effect>
                 </TextBlock>
 
                 <!--  Slogan  -->
                 <TextBlock
-                    Margin="0,0,0,60"
-                    FontSize="22"
-                    Foreground="#BCAAA4"
-                    Text="传承经典 · 数字化诊疗">
-                    <TextBlock.Effect>
-                        <DropShadowEffect
-                            BlurRadius="6"
-                            Opacity="0.3"
-                            ShadowDepth="1"
-                            Color="#000000" />
-                    </TextBlock.Effect>
-                </TextBlock>
+                    Margin="0,0,0,48"
+                    FontSize="24"
+                    Foreground="#8D6E63"
+                    Text="传承经典 · 数字化诊疗" />
 
                 <!--  版本号  -->
                 <TextBlock
+                    HorizontalAlignment="Center"
                     FontSize="14"
-                    Foreground="#8D6E63"
-                    Opacity="0.7"
+                    Foreground="#A1887F"
                     Text="Version 1.0.0.0" />
             </StackPanel>
 
-            <!--  右侧：登录框 - Issue #1826: 调整右边距向中间靠拢  -->
+            <!--  右侧：登录框 - 在右半边区域的中心  -->
             <Border
                 x:Name="RightLoginBox"
                 Grid.Column="1"
-                Margin="0,0,120,0"
-                Padding="48,40"
+                Width="460"
+                Padding="44,40"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="White"
-                CornerRadius="20">
+                Background="#FAFAFA"
+                CornerRadius="16">
                 <Border.Effect>
                     <!--  Issue #1826: 优化阴影效果 - 更柔和的扩散阴影  -->
                     <DropShadowEffect
@@ -193,14 +183,14 @@
                     <StackPanel Grid.Row="0" HorizontalAlignment="Center">
                         <TextBlock
                             HorizontalAlignment="Center"
-                            FontSize="24"
+                            FontSize="30"
                             FontWeight="SemiBold"
                             Foreground="#3E2723"
                             Text="凌隐宝堂中医诊所" />
                         <TextBlock
-                            Margin="0,6,0,0"
+                            Margin="0,10,0,0"
                             HorizontalAlignment="Center"
-                            FontSize="14"
+                            FontSize="16"
                             Foreground="#6D4C41"
                             Text="用户登录" />
                     </StackPanel>
@@ -208,20 +198,20 @@
                     <!--  用户名输入  -->
                     <StackPanel Grid.Row="2">
                         <TextBlock
-                            Margin="0,0,0,8"
-                            FontSize="14"
+                            Margin="0,0,0,10"
+                            FontSize="15"
                             FontWeight="Medium"
                             Foreground="#475569"
                             Text="用户名" />
                         <TextBox
-                            Height="48"
-                            Padding="16,0"
+                            Height="54"
+                            Padding="18,0"
                             VerticalContentAlignment="Center"
                             AutomationProperties.Name="用户名"
                             Background="White"
                             BorderBrush="#D1D5DB"
                             BorderThickness="1.5"
-                            FontSize="14"
+                            FontSize="15"
                             Foreground="#1E293B"
                             Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}">
                             <TextBox.Style>
@@ -233,7 +223,7 @@
                                                     Background="{TemplateBinding Background}"
                                                     BorderBrush="{TemplateBinding BorderBrush}"
                                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="10">
+                                                    CornerRadius="12">
                                                     <ScrollViewer
                                                         x:Name="PART_ContentHost"
                                                         Margin="{TemplateBinding Padding}"
@@ -266,29 +256,29 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
-                                Margin="0,0,0,8"
-                                FontSize="14"
+                                Margin="0,0,0,10"
+                                FontSize="15"
                                 FontWeight="Medium"
                                 Foreground="#475569"
                                 Text="密码" />
                             <TextBlock
                                 Grid.Column="1"
-                                Margin="0,0,0,8"
+                                Margin="0,0,0,10"
                                 HorizontalAlignment="Right"
-                                FontSize="12"
+                                FontSize="13"
                                 Foreground="#6D4C41"
                                 Text="（已保存）"
                                 Visibility="{Binding HasSavedPassword, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </Grid>
                         <PasswordBox
                             x:Name="PasswordBox"
-                            Height="48"
-                            Padding="16,0"
+                            Height="54"
+                            Padding="18,0"
                             AutomationProperties.Name="密码"
                             Background="White"
                             BorderBrush="#D1D5DB"
                             BorderThickness="1.5"
-                            FontSize="14"
+                            FontSize="15"
                             Foreground="#1E293B"
                             PasswordChanged="PasswordBox_PasswordChanged">
                             <PasswordBox.Style>
@@ -300,7 +290,7 @@
                                                     Background="{TemplateBinding Background}"
                                                     BorderBrush="{TemplateBinding BorderBrush}"
                                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="10">
+                                                    CornerRadius="12">
                                                     <ScrollViewer
                                                         x:Name="PART_ContentHost"
                                                         Margin="{TemplateBinding Padding}"
@@ -332,20 +322,20 @@
                         <CheckBox
                             VerticalAlignment="Center"
                             Content="记住用户名"
-                            FontSize="13"
+                            FontSize="14"
                             Foreground="#64748B"
                             IsChecked="{Binding RememberMe}" />
                         <CheckBox
-                            Margin="24,0,0,0"
+                            Margin="28,0,0,0"
                             VerticalAlignment="Center"
                             Content="记住密码"
-                            FontSize="13"
+                            FontSize="14"
                             Foreground="#64748B"
                             IsChecked="{Binding RememberPassword}" />
                         <TextBlock
-                            Margin="6,0,0,0"
+                            Margin="8,0,0,0"
                             VerticalAlignment="Center"
-                            FontSize="11"
+                            FontSize="12"
                             Foreground="#D97706"
                             Text="仅在可信设备使用" />
                     </StackPanel>
@@ -355,50 +345,50 @@
                     <!--  连接模式选择  -->
                     <Border
                         Grid.Row="10"
-                        Padding="16,12"
+                        Padding="18,14"
                         Background="#F8F5F3"
                         BorderBrush="#D7CCC8"
                         BorderThickness="1"
-                        CornerRadius="10">
+                        CornerRadius="12">
                         <StackPanel>
                             <TextBlock
-                                Margin="0,0,0,8"
-                                FontSize="13"
+                                Margin="0,0,0,10"
+                                FontSize="14"
                                 FontWeight="SemiBold"
                                 Foreground="#5D4037"
                                 Text="连接模式" />
                             <StackPanel Orientation="Horizontal">
                                 <RadioButton
-                                    Margin="0,0,16,0"
+                                    Margin="0,0,20,0"
                                     Content="远程模式"
-                                    FontSize="12"
+                                    FontSize="13"
                                     Foreground="#6D4C41"
                                     IsChecked="{Binding IsRemoteModeSelected}" />
                                 <RadioButton
                                     Content="本地模式（v2.0）"
-                                    FontSize="12"
+                                    FontSize="13"
                                     Foreground="#6D4C41"
                                     IsChecked="{Binding IsLocalModeSelected}" />
                             </StackPanel>
                             <TextBlock
-                                Margin="0,6,0,0"
-                                FontSize="11"
+                                Margin="0,8,0,0"
+                                FontSize="12"
                                 FontStyle="Italic"
                                 Foreground="#8D6E63"
                                 Text="{Binding ConnectionModeDisplay}" />
                         </StackPanel>
                     </Border>
 
-                    <!--  登录按钮 - Issue #1826: 优化高度  -->
+                    <!--  登录按钮 - 增大尺寸优化  -->
                     <Button
                         Grid.Row="12"
-                        Height="52"
+                        Height="58"
                         Background="#5D4037"
                         BorderThickness="0"
                         Command="{Binding LoginCommand}"
                         Content="登录"
                         Cursor="Hand"
-                        FontSize="15"
+                        FontSize="16"
                         FontWeight="SemiBold"
                         Foreground="White">
                         <Button.Style>
@@ -406,7 +396,7 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="12">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
                                             <ControlTemplate.Triggers>
