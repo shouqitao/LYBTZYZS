@@ -102,9 +102,8 @@ src/Server/
     │   └── Migrations/
     ├── Repositories/               # 仓储基类实现
     │   └── BaseRepository.cs
-    ├── Utilities/                  # 工具类（Issue #1757）
-    │   ├── ValidationHelper.cs     # 验证工具类
-    │   └── PasswordHelper.cs       # 密码工具类
+    ├── Utilities/                  # 工具类
+    │   └── SensitiveDataMasker.cs  # 敏感数据脱敏
     ├── Configuration/              # 基础设施配置
     ├── Services/                   # 基础设施服务
     └── Extensions/                 # 扩展方法

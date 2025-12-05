@@ -174,7 +174,7 @@ git rm -r docs/archive
 | `src/Shared/LYBT.Shared.Utilities/Helpers/PasswordHelper.cs` | - | ✅ 保留（安全必需） |
 | `src/Shared/LYBT.Shared.Utilities/Security/ClaimsHelper.cs` | - | ✅ 保留（认证必需） |
 | `src/Shared/LYBT.Shared.Utilities/Security/RoleHelper.cs` | - | ✅ 保留（授权必需） |
-| `src/Server/Core/LYBT.Infrastructure/Utilities/ValidationHelper.cs` | - | ✅ 保留（验证必需） |
+| `src/Server/Modules/LYBT.Module.MedicalCase/Services/MedicalCaseValidationHelper.cs` | - | ✅ 已迁移（DDD原则，从Infrastructure迁移到领域模块） |
 | `tests/UnitTests/Server/Common/TestHelpers/TestHelper.cs` | - | ✅ 保留（测试必需） |
 
 **后续任务**:
