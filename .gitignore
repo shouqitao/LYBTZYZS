@@ -37,6 +37,7 @@
 # Project specific temporary files
 # ========================================
 temp/
+temp_hash_gen/
 *.temp
 *.tmp
 *.local.md

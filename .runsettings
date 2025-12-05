@@ -4,8 +4,8 @@
   <RunConfiguration>
     <!-- 并行执行的最大CPU数，设为1确保测试稳定性 -->
     <MaxCpuCount>1</MaxCpuCount>
-    <!-- 测试结果目录 -->
-    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <!-- 测试结果目录 - 统一输出到BIN目录 -->
+    <ResultsDirectory>.\BIN\TestResults</ResultsDirectory>
     <!-- 测试超时时间（毫秒）：5分钟 -->
     <TestSessionTimeout>300000</TestSessionTimeout>
     <!-- 没有测试时不视为错误 -->
