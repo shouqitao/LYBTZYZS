@@ -16,6 +16,8 @@
         <local:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <local:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <local:FirstCharConverter x:Key="FirstCharConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
+        <local:BoolToTranslateXConverter x:Key="BoolToTranslateXConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
+        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter" xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
 
         <!-- poc-drawer-layout: Drawer打开动画 -->
@@ -144,24 +146,22 @@
                 </Button>
             </Grid>
 
-            <!-- poc-drawer-layout: 遮罩层（始终存在，通过Opacity和IsHitTestVisible控制） -->
+            <!-- poc-drawer-layout: 遮罩层（使用直接绑定控制透明度） -->
             <Border x:Name="DrawerOverlay"
                     Background="#80000000"
-                    Opacity="0"
+                    Opacity="{Binding IsDrawerOpen, Converter={StaticResource BoolToOpacityConverter}}"
                     IsHitTestVisible="{Binding IsDrawerOpen}">
                 <Border.InputBindings>
                     <MouseBinding Command="{Binding CloseDrawerCommand}" Gesture="LeftClick" />
                 </Border.InputBindings>
             </Border>
 
-            <!-- poc-drawer-layout: Drawer面板（始终存在，通过TranslateTransform控制位置） -->
+            <!-- poc-drawer-layout: Drawer面板（先用Visibility测试绑定，确认后再加动画） -->
             <Border x:Name="DrawerPanel"
                     Width="260"
                     HorizontalAlignment="Left"
-                    Background="White">
-                <Border.RenderTransform>
-                    <TranslateTransform X="-260" />
-                </Border.RenderTransform>
+                    Background="White"
+                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Border.Effect>
                     <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0" Opacity="0.3" BlurRadius="20" />
                 </Border.Effect>
