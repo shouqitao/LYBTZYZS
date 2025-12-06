@@ -1,8 +1,9 @@
 <Window x:Class="LYBT.Desktop.Shell.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters"
+        xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding Title}"
         Height="800" Width="1200"
@@ -13,59 +14,29 @@
         Background="White">
 
     <Window.Resources>
-        <local:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
-        <local:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
-        <local:FirstCharConverter x:Key="FirstCharConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
-        <local:BoolToTranslateXConverter x:Key="BoolToTranslateXConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
-        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
-        <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter" xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
+        <local:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" />
+        <local:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" />
+        <local:FirstCharConverter x:Key="FirstCharConverter" />
+        <local:BoolToSidebarWidthConverter x:Key="BoolToSidebarWidthConverter" />
+        <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
 
-        <!-- poc-drawer-layout: Drawer打开动画 -->
-        <Storyboard x:Key="OpenDrawerStoryboard">
-            <DoubleAnimation Storyboard.TargetName="DrawerPanel"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                             To="0" Duration="0:0:0.25">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut" />
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="DrawerOverlay"
-                             Storyboard.TargetProperty="Opacity"
-                             To="1" Duration="0:0:0.25" />
-        </Storyboard>
-
-        <!-- poc-drawer-layout: Drawer关闭动画 -->
-        <Storyboard x:Key="CloseDrawerStoryboard">
-            <DoubleAnimation Storyboard.TargetName="DrawerPanel"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                             To="-260" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseIn" />
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="DrawerOverlay"
-                             Storyboard.TargetProperty="Opacity"
-                             To="0" Duration="0:0:0.2" />
-        </Storyboard>
-
-        <!-- poc-drawer-layout: Drawer菜单项样式 -->
-        <Style x:Key="DrawerMenuItemStyle" TargetType="Button">
+        <!-- 侧边栏菜单项样式 -->
+        <Style x:Key="SidebarMenuItemStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="Padding" Value="20,14" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Height" Value="48" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="16,0">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#3D5A80" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -74,15 +45,12 @@
         </Style>
     </Window.Resources>
 
-    <!-- poc-drawer-layout: 全局键盘快捷键 -->
     <Window.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding QuickAddPatientCommand}" />
         <KeyBinding Key="C" Modifiers="Ctrl+Shift" Command="{Binding QuickStartConsultationCommand}" />
         <KeyBinding Key="F1" Command="{Binding ShowHelpCommand}" />
         <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding ShowSettingsCommand}" />
-        <!-- poc-drawer-layout: Drawer快捷键 -->
         <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding ToggleDrawerCommand}" />
-        <KeyBinding Key="Escape" Command="{Binding CloseDrawerCommand}" />
     </Window.InputBindings>
 
     <Grid>
@@ -91,200 +59,132 @@
             <ContentControl prism:RegionManager.RegionName="LoginRegion" />
         </Grid>
 
-        <!-- poc-drawer-layout: 登录后主界面（无Header，全屏工作区） -->
+        <!-- 登录后主界面：侧边栏 + 工作区 -->
         <Grid Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <!-- 侧边栏：宽度根据展开状态变化 -->
+                <ColumnDefinition Width="{Binding IsDrawerOpen, Converter={StaticResource BoolToSidebarWidthConverter}}" />
+                <!-- 工作区：占用剩余空间 -->
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <!-- 主内容区域（100%空间） -->
-            <Grid Background="{StaticResource SurfaceBrush}">
-                <Border Background="White" Margin="12" CornerRadius="8">
-                    <Border.Effect>
-                        <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.2" BlurRadius="5" />
-                    </Border.Effect>
-                    <Grid Margin="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <ContentControl Grid.Row="1" prism:RegionManager.RegionName="ContentRegion" />
-                    </Grid>
-                </Border>
-
-                <!-- poc-drawer-layout: 汉堡按钮（左上角浮动） -->
-                <Button x:Name="HamburgerButton"
-                        Width="48" Height="48"
-                        HorizontalAlignment="Left" VerticalAlignment="Top"
-                        Margin="20,20,0,0"
-                        Command="{Binding ToggleDrawerCommand}"
-                        Cursor="Hand"
-                        ToolTip="菜单 (Ctrl+M)">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="ButtonBorder"
-                                                Background="{TemplateBinding Background}"
-                                                CornerRadius="8">
-                                            <Border.Effect>
-                                                <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="6" />
-                                            </Border.Effect>
-                                            <!-- 汉堡图标(三条横线) -->
-                                            <Path Fill="White" Stretch="Uniform" Width="22" Height="18"
-                                                  Data="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z" />
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ButtonBorder" Property="Background" Value="#357ABD" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </Grid>
-
-            <!-- poc-drawer-layout: 遮罩层（使用直接绑定控制透明度） -->
-            <Border x:Name="DrawerOverlay"
-                    Background="#80000000"
-                    Opacity="{Binding IsDrawerOpen, Converter={StaticResource BoolToOpacityConverter}}"
-                    IsHitTestVisible="{Binding IsDrawerOpen}">
-                <Border.InputBindings>
-                    <MouseBinding Command="{Binding CloseDrawerCommand}" Gesture="LeftClick" />
-                </Border.InputBindings>
-            </Border>
-
-            <!-- poc-drawer-layout: Drawer面板（先用Visibility测试绑定，确认后再加动画） -->
-            <Border x:Name="DrawerPanel"
-                    Width="260"
-                    HorizontalAlignment="Left"
-                    Background="White"
-                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Border.Effect>
-                    <DropShadowEffect Color="Black" Direction="0" ShadowDepth="0" Opacity="0.3" BlurRadius="20" />
-                </Border.Effect>
-
+            <!-- 左侧边栏 -->
+            <Border Grid.Column="0" Background="#2B4162">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />  <!-- Logo/系统名称 -->
-                        <RowDefinition Height="Auto" />  <!-- 状态信息 -->
+                        <RowDefinition Height="Auto" />  <!-- 展开/收缩按钮 -->
                         <RowDefinition Height="Auto" />  <!-- 用户信息 -->
                         <RowDefinition Height="Auto" />  <!-- 分隔线 -->
-                        <RowDefinition Height="*" />     <!-- 菜单项 -->
+                        <RowDefinition Height="Auto" />  <!-- 状态信息 -->
+                        <RowDefinition Height="*" />     <!-- 菜单区域 -->
                         <RowDefinition Height="Auto" />  <!-- 退出登录 -->
                     </Grid.RowDefinitions>
 
-                    <!-- Logo和系统名称 -->
-                    <Border Grid.Row="0" Background="{StaticResource PrimaryBrush}" Padding="20,24">
-                        <StackPanel>
-                            <TextBlock Text="凌隐宝堂" FontSize="22" FontWeight="Bold" Foreground="White" />
-                            <TextBlock Text="中医诊所诊疗系统" FontSize="13" Foreground="White" Opacity="0.85" Margin="0,4,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <!-- 状态信息（时间+API状态） -->
-                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" Padding="20,12">
-                        <StackPanel>
-                            <!-- 时间显示 -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Path Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"
-                                      Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-                                <TextBlock Text="{Binding CurrentTime, StringFormat=yyyy-MM-dd HH:mm:ss}"
-                                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <!-- API状态 -->
+                    <!-- 展开/收缩按钮 + Logo -->
+                    <Button Grid.Row="0" Style="{StaticResource SidebarMenuItemStyle}"
+                            Command="{Binding ToggleDrawerCommand}" Height="56" ToolTip="展开/收缩 (Ctrl+M)">
+                        <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Button}}">
                             <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="10" Height="10"
-                                         Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}"
-                                         VerticalAlignment="Center" Margin="0,0,8,0" />
-                                <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
-                                           FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                                <!-- 重试按钮 -->
-                                <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Cursor="Hand">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ApiStatus}" Value="Unhealthy">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                    <Hyperlink Command="{Binding RetryHealthCheckCommand}" Foreground="{StaticResource PrimaryBrush}">
-                                        <Run Text="重试" />
-                                    </Hyperlink>
-                                </TextBlock>
+                                <!-- 汉堡图标 -->
+                                <Path Fill="White" Width="24" Height="24" Stretch="Uniform"
+                                      Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                                <!-- 系统名称（展开时显示） -->
+                                <TextBlock Text="凌隐宝堂" FontSize="16" FontWeight="Bold" Foreground="White"
+                                           VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
+                        </Grid>
+                    </Button>
 
-                    <!-- 用户信息区域 -->
-                    <Border Grid.Row="2" Padding="20,16">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <!-- 用户头像 -->
-                                <Border Width="48" Height="48" CornerRadius="24" Background="{StaticResource PrimaryBrush}">
-                                    <TextBlock Text="{Binding CurrentUser.RealName, Converter={StaticResource FirstCharConverter}}"
-                                               FontSize="20" FontWeight="SemiBold" Foreground="White"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                                <StackPanel VerticalAlignment="Center" Margin="12,0,0,0">
-                                    <TextBlock Text="{Binding CurrentUser.RealName}"
-                                               FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding CurrentUser.Role, Converter={StaticResource EnumDescriptionConverter}}"
-                                               FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
-                                </StackPanel>
+                    <!-- 用户信息 -->
+                    <Border Grid.Row="1" Padding="12,12">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- 用户头像 -->
+                            <Border Width="32" Height="32" CornerRadius="16" Background="#4A90D9">
+                                <TextBlock Text="{Binding CurrentUser.RealName, Converter={StaticResource FirstCharConverter}}"
+                                           FontSize="14" FontWeight="SemiBold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <!-- 用户名和角色（展开时显示） -->
+                            <StackPanel VerticalAlignment="Center" Margin="10,0,0,0"
+                                        Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding CurrentUser.RealName}" FontSize="13" Foreground="White" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding CurrentUser.Role, Converter={StaticResource EnumDescriptionConverter}}"
+                                           FontSize="11" Foreground="#9DB5CC" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- 分隔线 -->
-                    <Border Grid.Row="3" Height="1" Background="{StaticResource BorderBrush}" Margin="20,0" />
+                    <Border Grid.Row="2" Height="1" Background="#3D5A80" Margin="12,0" />
+
+                    <!-- 状态信息（时间+API） -->
+                    <StackPanel Grid.Row="3" Margin="12,12">
+                        <!-- 时间 -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Path Fill="#9DB5CC" Width="16" Height="16" Stretch="Uniform"
+                                  Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                            <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" Foreground="#9DB5CC"
+                                       VerticalAlignment="Center" Margin="8,0,0,0"
+                                       Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </StackPanel>
+                        <!-- API状态 -->
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                                     Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}" />
+                            <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
+                                       FontSize="11" Foreground="#9DB5CC" VerticalAlignment="Center" Margin="8,0,0,0"
+                                       Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </StackPanel>
+                    </StackPanel>
 
                     <!-- 菜单项 -->
                     <StackPanel Grid.Row="4" Margin="0,8">
-                        <Button Style="{StaticResource DrawerMenuItemStyle}" Command="{Binding EditProfileCommand}">
+                        <!-- 修改个人信息 -->
+                        <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding EditProfileCommand}" ToolTip="修改个人信息">
                             <StackPanel Orientation="Horizontal">
-                                <Path Fill="{StaticResource TextSecondaryBrush}" Width="20" Height="20" Stretch="Uniform" Margin="0,0,12,0"
+                                <Path Fill="White" Width="20" Height="20" Stretch="Uniform"
                                       Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                <TextBlock Text="修改个人信息" VerticalAlignment="Center" />
+                                <TextBlock Text="修改个人信息" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource DrawerMenuItemStyle}" Command="{Binding ChangePasswordCommand}">
+                        <!-- 修改密码 -->
+                        <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding ChangePasswordCommand}" ToolTip="修改密码">
                             <StackPanel Orientation="Horizontal">
-                                <Path Fill="{StaticResource TextSecondaryBrush}" Width="20" Height="20" Stretch="Uniform" Margin="0,0,12,0"
+                                <Path Fill="White" Width="20" Height="20" Stretch="Uniform"
                                       Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
-                                <TextBlock Text="修改密码" VerticalAlignment="Center" />
+                                <TextBlock Text="修改密码" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
 
-                    <!-- 退出登录（底部固定） -->
-                    <Border Grid.Row="5" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderBrush}">
-                        <Button Style="{StaticResource DrawerMenuItemStyle}" Command="{Binding LogoutCommand}" Foreground="#E53935">
+                    <!-- 退出登录（底部） -->
+                    <Border Grid.Row="5" BorderThickness="0,1,0,0" BorderBrush="#3D5A80">
+                        <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding LogoutCommand}" ToolTip="退出登录">
                             <StackPanel Orientation="Horizontal">
-                                <Path Fill="#E53935" Width="20" Height="20" Stretch="Uniform" Margin="0,0,12,0"
+                                <Path Fill="#FF6B6B" Width="20" Height="20" Stretch="Uniform"
                                       Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
-                                <TextBlock Text="退出登录" VerticalAlignment="Center" />
+                                <TextBlock Text="退出登录" Foreground="#FF6B6B" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
                             </StackPanel>
                         </Button>
                     </Border>
                 </Grid>
             </Border>
+
+            <!-- 右侧工作区 -->
+            <Grid Grid.Column="1" Background="{StaticResource SurfaceBrush}">
+                <Border Background="White" Margin="12" CornerRadius="8">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.15" BlurRadius="8" />
+                    </Border.Effect>
+                    <Grid Margin="16">
+                        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
-
-    <!-- poc-drawer-layout: Drawer状态触发器 -->
-    <Window.Triggers>
-        <EventTrigger RoutedEvent="Window.Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="DrawerOverlay" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0" />
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </Window.Triggers>
 </Window>
