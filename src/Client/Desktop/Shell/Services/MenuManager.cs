@@ -67,6 +67,12 @@ public class MenuManager
     /// <summary>全局重做命令 (Ctrl+Y)</summary>
     public ICommand RedoCommand => _applicationCommands.RedoCommand;
 
+    /// <summary>poc-drawer-layout: 修改个人资料命令</summary>
+    public DelegateCommand EditProfileCommand { get; private set; } = null!;
+
+    /// <summary>poc-drawer-layout: 修改密码命令</summary>
+    public DelegateCommand ChangePasswordCommand { get; private set; } = null!;
+
     #endregion 命令属性
 
     /// <summary>初始化所有命令</summary>
@@ -79,7 +85,25 @@ public class MenuManager
         ShowSettingsCommand = new DelegateCommand(ExecuteShowSettings);
         ToggleThemeCommand = new DelegateCommand(async () => await ExecuteToggleThemeAsync().ConfigureAwait(false));
 
+        // poc-drawer-layout: 用户菜单命令
+        EditProfileCommand = new DelegateCommand(ExecuteEditProfile);
+        ChangePasswordCommand = new DelegateCommand(ExecuteChangePassword);
+
         _logger.LogDebug("菜单命令系统已初始化");
+    }
+
+    /// <summary>poc-drawer-layout: 修改个人资料</summary>
+    private void ExecuteEditProfile()
+    {
+        _logger.LogInformation("导航到个人资料页面");
+        _navigationManager.NavigateTo("UserProfileView");
+    }
+
+    /// <summary>poc-drawer-layout: 修改密码</summary>
+    private void ExecuteChangePassword()
+    {
+        _logger.LogInformation("导航到修改密码页面");
+        _navigationManager.NavigateTo("ChangePasswordView");
     }
 
     /// <summary>显示控件示例</summary>

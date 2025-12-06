@@ -86,21 +86,6 @@
                             FontSize="16"
                             FontWeight="SemiBold"
                             Text="{Binding CurrentUserName, FallbackValue='系统管理员'}" />
-                        <!--  Issue #1887-1892: 独立的修改信息和修改密码按钮  -->
-                        <!--  sysadmin 用户隐藏"修改个人信息"按钮  -->
-                        <Button
-                            Margin="0,0,10,0"
-                            Padding="15,8"
-                            Command="{Binding EditProfileCommand}"
-                            Content="修改个人信息"
-                            Style="{StaticResource PrimaryButton}"
-                            Visibility="{Binding IsNotSysAdmin, Converter={StaticResource BoolToVisConverter}}" />
-                        <Button
-                            Margin="0"
-                            Padding="15,8"
-                            Command="{Binding ChangePasswordCommand}"
-                            Content="修改密码"
-                            Style="{StaticResource PrimaryButton}" />
                     </StackPanel>
                 </Border>
 

@@ -67,10 +67,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private string _title = SystemConstants.SystemTitle;
     private UserDto? _currentUser;
     private bool _isLoggedIn = false;
-    private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    private DateTime _currentTime = DateTime.Now;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
     private long _lastHealthCheckTick;
     private const int HealthCheckIntervalSeconds = 10;
+
+    // poc-drawer-layout: Drawer状态
+    private bool _isDrawerOpen = false;
 
     /// <summary>获取或设置窗口标题</summary>
     public string Title
@@ -93,8 +96,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         set { SetProperty(ref _isLoggedIn, value); RaisePropertyChanged(nameof(IsNotLoggedIn)); }
     }
 
-    /// <summary>获取或设置当前系统时间显示</summary>
-    public string CurrentTime
+    /// <summary>获取或设置当前系统时间</summary>
+    public DateTime CurrentTime
     {
         get => _currentTime;
         set => SetProperty(ref _currentTime, value);
@@ -109,6 +112,13 @@ public class MainWindowViewModel : UnifiedViewModelBase
 
     /// <summary>获取是否未登录状态，用于界面绑定</summary>
     public bool IsNotLoggedIn => !_isLoggedIn;
+
+    /// <summary>poc-drawer-layout: Drawer是否打开</summary>
+    public bool IsDrawerOpen
+    {
+        get => _isDrawerOpen;
+        set => SetProperty(ref _isDrawerOpen, value);
+    }
 
     #region 命令属性
 
@@ -154,6 +164,18 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>全局重做命令 (Ctrl+Y) - 委托给MenuManager</summary>
     public ICommand RedoCommand => _menuManager.RedoCommand;
 
+    /// <summary>poc-drawer-layout: 切换Drawer命令 (Ctrl+M)</summary>
+    public DelegateCommand ToggleDrawerCommand { get; private set; } = null!;
+
+    /// <summary>poc-drawer-layout: 关闭Drawer命令 (Escape)</summary>
+    public DelegateCommand CloseDrawerCommand { get; private set; } = null!;
+
+    /// <summary>poc-drawer-layout: 修改个人资料命令 - 委托给MenuManager</summary>
+    public DelegateCommand EditProfileCommand => _menuManager.EditProfileCommand;
+
+    /// <summary>poc-drawer-layout: 修改密码命令 - 委托给MenuManager</summary>
+    public DelegateCommand ChangePasswordCommand => _menuManager.ChangePasswordCommand;
+
     #endregion
 
     /// <summary>初始化核心命令</summary>
@@ -162,7 +184,28 @@ public class MainWindowViewModel : UnifiedViewModelBase
         LogoutCommand = new DelegateCommand(async () => await ExecuteLogoutAsync().ConfigureAwait(false));
         RetryHealthCheckCommand = new DelegateCommand(async () => await ExecuteRetryHealthCheckAsync().ConfigureAwait(false));
 
+        // poc-drawer-layout: Drawer命令
+        ToggleDrawerCommand = new DelegateCommand(ExecuteToggleDrawer);
+        CloseDrawerCommand = new DelegateCommand(ExecuteCloseDrawer);
+
         Logger.LogDebug("核心命令已初始化");
+    }
+
+    /// <summary>poc-drawer-layout: 切换Drawer状态</summary>
+    private void ExecuteToggleDrawer()
+    {
+        IsDrawerOpen = !IsDrawerOpen;
+        Logger.LogDebug("Drawer状态切换: {IsOpen}", IsDrawerOpen);
+    }
+
+    /// <summary>poc-drawer-layout: 关闭Drawer</summary>
+    private void ExecuteCloseDrawer()
+    {
+        if (IsDrawerOpen)
+        {
+            IsDrawerOpen = false;
+            Logger.LogDebug("Drawer已关闭");
+        }
     }
 
     /// <summary>初始化时钟计时器</summary>
@@ -231,7 +274,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>统一Tick处理 - 时钟更新和健康检查</summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
-        CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        // UI线程更新时间显示（避免应用关闭时空引用）
+        Application.Current?.Dispatcher.BeginInvoke(() => CurrentTime = DateTime.Now);
+
         if (e.TickCount - _lastHealthCheckTick >= HealthCheckIntervalSeconds)
         {
             _lastHealthCheckTick = e.TickCount;
@@ -239,41 +284,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    /// <summary>会话即将过期事件处理</summary>
-    private async void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
+    /// <summary>会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户</summary>
+    private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
     {
-        await Application.Current.Dispatcher.InvokeAsync(async () =>
-        {
-            _userActivityTracker.StopTracking();
-
-            try
-            {
-                var remainingMinutes = e.RemainingTime.TotalMinutes;
-                var message = $"您已有一段时间未操作，会话将在约 {remainingMinutes:F0} 分钟后过期。\n\n是否继续当前会话？";
-
-                var result = await ShowConfirmationAsync(message, "会话即将过期");
-
-                if (result)
-                {
-                    // 用户选择继续，重启追踪并重置计时器
-                    _userActivityTracker.StartTracking();
-                    _userActivityTracker.ResetActivity();
-                    Logger.LogInformation("用户选择继续会话，活动计时器已重置");
-                }
-                else
-                {
-                    // 用户选择不继续，立即执行登出
-                    Logger.LogInformation("用户选择结束会话，执行登出");
-                    _ = PerformLogoutAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "处理会话过期警告时出错");
-                // 出错时恢复追踪
-                _userActivityTracker.StartTracking();
-            }
-        });
+        // 静默处理，等待会话自然过期后自动登出
+        Logger.LogDebug("会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
     }
 
     /// <summary>会话已过期事件处理 - 执行自动登出</summary>

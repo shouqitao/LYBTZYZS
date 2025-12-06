@@ -30,6 +30,9 @@
     <Color x:Key="DangerColor">#F44336</Color>
     <Color x:Key="DangerDarkColor">#D32F2F</Color>
     <Color x:Key="DangerLightColor">#FFEBEE</Color>
+    <Color x:Key="InfoColor">#3498DB</Color>
+    <Color x:Key="InfoDarkColor">#2980B9</Color>
+    <Color x:Key="InfoLightColor">#E3F2FD</Color>
 
     <!-- ==================== 中性色/背景色 ==================== -->
     <Color x:Key="BackgroundColor">#F5F5F5</Color>
@@ -54,6 +57,14 @@
     <Color x:Key="StatusPendingColor">#9E9E9E</Color>
     <Color x:Key="StatusInProgressColor">#FFC107</Color>
 
+    <!-- ==================== 侧边栏颜色 (poc-drawer-layout) ==================== -->
+    <Color x:Key="SidebarBackgroundColor">#2B4162</Color>
+    <Color x:Key="SidebarHoverColor">#3D5A80</Color>
+    <Color x:Key="SidebarDividerColor">#3D5A80</Color>
+    <Color x:Key="SidebarTextColor">#FFFFFF</Color>
+    <Color x:Key="SidebarTextSecondaryColor">#9DB5CC</Color>
+    <Color x:Key="SidebarAvatarColor">#4A90D9</Color>
+
     <!-- ==================== 主色调画刷 ==================== -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}" />
@@ -73,6 +84,9 @@
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
     <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource DangerDarkColor}" />
     <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource DangerLightColor}" />
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
+    <SolidColorBrush x:Key="InfoDarkBrush" Color="{StaticResource InfoDarkColor}" />
+    <SolidColorBrush x:Key="InfoLightBrush" Color="{StaticResource InfoLightColor}" />
 
     <!-- ==================== 中性色画刷 ==================== -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
@@ -96,6 +110,14 @@
     <SolidColorBrush x:Key="StatusCompleteBrush" Color="{StaticResource StatusCompleteColor}" />
     <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
     <SolidColorBrush x:Key="StatusInProgressBrush" Color="{StaticResource StatusInProgressColor}" />
+
+    <!-- ==================== 侧边栏画刷 (poc-drawer-layout) ==================== -->
+    <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="{StaticResource SidebarBackgroundColor}" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="{StaticResource SidebarHoverColor}" />
+    <SolidColorBrush x:Key="SidebarDividerBrush" Color="{StaticResource SidebarDividerColor}" />
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="{StaticResource SidebarTextColor}" />
+    <SolidColorBrush x:Key="SidebarTextSecondaryBrush" Color="{StaticResource SidebarTextSecondaryColor}" />
+    <SolidColorBrush x:Key="SidebarAvatarBrush" Color="{StaticResource SidebarAvatarColor}" />
 
     <!-- ==================== 间距常量 (4px网格系统) ==================== -->
     <Thickness x:Key="SpacingXS">4</Thickness>

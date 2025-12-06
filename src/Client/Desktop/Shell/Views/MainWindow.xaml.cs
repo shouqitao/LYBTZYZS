@@ -7,6 +7,7 @@ namespace LYBT.Desktop.Shell.Views
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// remove-titlebar-add-close-button: 添加Alt+F4拦截逻辑
+    /// poc-drawer-layout: Drawer通过XAML绑定控制显示
     /// </summary>
     public partial class MainWindow : Window
     {
