@@ -177,7 +177,7 @@
                                     <Path Fill="{StaticResource SidebarTextSecondaryBrush}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"
                                           Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
                                     <StackPanel Margin="8,0,0,0">
-                                        <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
+                                        <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm:ss}" FontSize="12" FontWeight="SemiBold"
                                                    Foreground="{StaticResource SidebarTextBrush}" />
                                         <TextBlock Text="{Binding CurrentTime, StringFormat=yyyy-MM-dd}" FontSize="10"
                                                    Foreground="{StaticResource SidebarTextSecondaryBrush}" />
