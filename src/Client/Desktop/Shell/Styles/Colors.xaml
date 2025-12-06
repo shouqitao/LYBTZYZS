@@ -30,6 +30,9 @@
     <Color x:Key="DangerColor">#F44336</Color>
     <Color x:Key="DangerDarkColor">#D32F2F</Color>
     <Color x:Key="DangerLightColor">#FFEBEE</Color>
+    <Color x:Key="InfoColor">#3498DB</Color>
+    <Color x:Key="InfoDarkColor">#2980B9</Color>
+    <Color x:Key="InfoLightColor">#E3F2FD</Color>
 
     <!-- ==================== 中性色/背景色 ==================== -->
     <Color x:Key="BackgroundColor">#F5F5F5</Color>
@@ -81,6 +84,9 @@
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
     <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource DangerDarkColor}" />
     <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource DangerLightColor}" />
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
+    <SolidColorBrush x:Key="InfoDarkBrush" Color="{StaticResource InfoDarkColor}" />
+    <SolidColorBrush x:Key="InfoLightBrush" Color="{StaticResource InfoLightColor}" />
 
     <!-- ==================== 中性色画刷 ==================== -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
