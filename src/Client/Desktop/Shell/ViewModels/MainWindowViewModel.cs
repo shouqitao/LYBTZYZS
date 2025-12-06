@@ -284,41 +284,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
         }
     }
 
-    /// <summary>会话即将过期事件处理</summary>
-    private async void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
+    /// <summary>会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户</summary>
+    private void OnSessionExpiring(object? sender, SessionExpiringEventArgs e)
     {
-        await Application.Current.Dispatcher.InvokeAsync(async () =>
-        {
-            _userActivityTracker.StopTracking();
-
-            try
-            {
-                var remainingMinutes = e.RemainingTime.TotalMinutes;
-                var message = $"您已有一段时间未操作，会话将在约 {remainingMinutes:F0} 分钟后过期。\n\n是否继续当前会话？";
-
-                var result = await ShowConfirmationAsync(message, "会话即将过期");
-
-                if (result)
-                {
-                    // 用户选择继续，重启追踪并重置计时器
-                    _userActivityTracker.StartTracking();
-                    _userActivityTracker.ResetActivity();
-                    Logger.LogInformation("用户选择继续会话，活动计时器已重置");
-                }
-                else
-                {
-                    // 用户选择不继续，立即执行登出
-                    Logger.LogInformation("用户选择结束会话，执行登出");
-                    _ = PerformLogoutAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "处理会话过期警告时出错");
-                // 出错时恢复追踪
-                _userActivityTracker.StartTracking();
-            }
-        });
+        // 静默处理，等待会话自然过期后自动登出
+        Logger.LogDebug("会话即将过期，剩余时间: {RemainingTime}", e.RemainingTime);
     }
 
     /// <summary>会话已过期事件处理 - 执行自动登出</summary>
