@@ -16,6 +16,7 @@
         <local:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <local:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
         <local:FirstCharConverter x:Key="FirstCharConverter" xmlns:local="clr-namespace:LYBT.Desktop.Shell.Converters" />
+        <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter" xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure" />
 
         <!-- poc-drawer-layout: Drawer打开动画 -->
         <Storyboard x:Key="OpenDrawerStoryboard">
@@ -143,22 +144,21 @@
                 </Button>
             </Grid>
 
-            <!-- poc-drawer-layout: 遮罩层 -->
+            <!-- poc-drawer-layout: 遮罩层（始终存在，通过Opacity和IsHitTestVisible控制） -->
             <Border x:Name="DrawerOverlay"
                     Background="#80000000"
                     Opacity="0"
-                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    IsHitTestVisible="{Binding IsDrawerOpen}">
                 <Border.InputBindings>
                     <MouseBinding Command="{Binding CloseDrawerCommand}" Gesture="LeftClick" />
                 </Border.InputBindings>
             </Border>
 
-            <!-- poc-drawer-layout: Drawer面板 -->
+            <!-- poc-drawer-layout: Drawer面板（始终存在，通过TranslateTransform控制位置） -->
             <Border x:Name="DrawerPanel"
                     Width="260"
                     HorizontalAlignment="Left"
-                    Background="White"
-                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    Background="White">
                 <Border.RenderTransform>
                     <TranslateTransform X="-260" />
                 </Border.RenderTransform>
@@ -234,7 +234,7 @@
                                 <StackPanel VerticalAlignment="Center" Margin="12,0,0,0">
                                     <TextBlock Text="{Binding CurrentUser.RealName}"
                                                FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding CurrentUser.RoleName}"
+                                    <TextBlock Text="{Binding CurrentUser.Role, Converter={StaticResource EnumDescriptionConverter}}"
                                                FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                                 </StackPanel>
                             </StackPanel>
