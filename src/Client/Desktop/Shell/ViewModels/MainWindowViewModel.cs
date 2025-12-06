@@ -274,8 +274,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>统一Tick处理 - 时钟更新和健康检查</summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
-        // UI线程更新时间显示
-        Application.Current.Dispatcher.Invoke(() => CurrentTime = DateTime.Now);
+        // UI线程更新时间显示（避免应用关闭时空引用）
+        Application.Current?.Dispatcher.BeginInvoke(() => CurrentTime = DateTime.Now);
 
         if (e.TickCount - _lastHealthCheckTick >= HealthCheckIntervalSeconds)
         {
