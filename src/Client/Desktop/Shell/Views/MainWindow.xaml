@@ -153,12 +153,12 @@
                                     <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"
                                              Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}" />
                                 </Border>
-                                <!-- 时间(下) -->
+                                <!-- 时间(下): 时间+日期 -->
                                 <StackPanel HorizontalAlignment="Center" ToolTip="当前时间">
-                                    <Path Fill="{StaticResource SidebarTextSecondaryBrush}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center"
-                                          Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-                                    <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="10" Foreground="{StaticResource SidebarTextSecondaryBrush}"
-                                               HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource SidebarTextBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding CurrentTime, StringFormat=MM/dd}" FontSize="9"
+                                               Foreground="{StaticResource SidebarTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
                                 </StackPanel>
                             </StackPanel>
 
@@ -172,12 +172,16 @@
                                     <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
                                                FontSize="11" Foreground="{StaticResource SidebarTextSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
                                 </StackPanel>
-                                <!-- 时间(下) -->
+                                <!-- 时间(下): 时间+日期 -->
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Fill="{StaticResource SidebarTextSecondaryBrush}" Width="14" Height="14" Stretch="Uniform"
+                                    <Path Fill="{StaticResource SidebarTextSecondaryBrush}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"
                                           Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-                                    <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="11" Foreground="{StaticResource SidebarTextSecondaryBrush}"
-                                               VerticalAlignment="Center" Margin="8,0,0,0" />
+                                    <StackPanel Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource SidebarTextBrush}" />
+                                        <TextBlock Text="{Binding CurrentTime, StringFormat=yyyy-MM-dd}" FontSize="10"
+                                                   Foreground="{StaticResource SidebarTextSecondaryBrush}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
