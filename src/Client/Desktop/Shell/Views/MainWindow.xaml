@@ -157,7 +157,7 @@
                                 <StackPanel HorizontalAlignment="Center" ToolTip="当前时间">
                                     <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
                                                Foreground="{StaticResource SidebarTextBrush}" HorizontalAlignment="Center" />
-                                    <TextBlock Text="{Binding CurrentTime, StringFormat=MM/dd}" FontSize="9"
+                                    <TextBlock Text="{Binding CurrentTime, StringFormat=MM-dd}" FontSize="9"
                                                Foreground="{StaticResource SidebarTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
                                 </StackPanel>
                             </StackPanel>

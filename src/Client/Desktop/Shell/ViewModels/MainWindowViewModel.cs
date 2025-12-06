@@ -67,7 +67,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private string _title = SystemConstants.SystemTitle;
     private UserDto? _currentUser;
     private bool _isLoggedIn = false;
-    private string _currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    private DateTime _currentTime = DateTime.Now;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
     private long _lastHealthCheckTick;
     private const int HealthCheckIntervalSeconds = 10;
@@ -96,8 +96,8 @@ public class MainWindowViewModel : UnifiedViewModelBase
         set { SetProperty(ref _isLoggedIn, value); RaisePropertyChanged(nameof(IsNotLoggedIn)); }
     }
 
-    /// <summary>获取或设置当前系统时间显示</summary>
-    public string CurrentTime
+    /// <summary>获取或设置当前系统时间</summary>
+    public DateTime CurrentTime
     {
         get => _currentTime;
         set => SetProperty(ref _currentTime, value);
@@ -274,7 +274,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>统一Tick处理 - 时钟更新和健康检查</summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
-        CurrentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        CurrentTime = DateTime.Now;
         if (e.TickCount - _lastHealthCheckTick >= HealthCheckIntervalSeconds)
         {
             _lastHealthCheckTick = e.TickCount;
