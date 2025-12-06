@@ -118,25 +118,47 @@
                     <!-- 分隔线 -->
                     <Border Grid.Row="2" Height="1" Background="#3D5A80" Margin="12,0" />
 
-                    <!-- 状态信息（时间+API） -->
-                    <StackPanel Grid.Row="3" Margin="12,12">
-                        <!-- 时间 -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Path Fill="#9DB5CC" Width="16" Height="16" Stretch="Uniform"
-                                  Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-                            <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" Foreground="#9DB5CC"
-                                       VerticalAlignment="Center" Margin="8,0,0,0"
-                                       Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        </StackPanel>
-                        <!-- API状态 -->
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="10" Height="10" VerticalAlignment="Center"
-                                     Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}" />
-                            <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
-                                       FontSize="11" Foreground="#9DB5CC" VerticalAlignment="Center" Margin="8,0,0,0"
-                                       Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        </StackPanel>
-                    </StackPanel>
+                    <!-- 状态信息（时间+API）- 收缩/展开自适应 -->
+                    <Border Grid.Row="3" Padding="8,12">
+                        <Grid>
+                            <!-- 收缩状态: 垂直居中的图标+小文字 -->
+                            <StackPanel Visibility="{Binding IsDrawerOpen, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                        HorizontalAlignment="Center">
+                                <!-- 时间: 图标+时间竖排 -->
+                                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" ToolTip="当前时间">
+                                    <Path Fill="#9DB5CC" Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center"
+                                          Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                                    <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="10" Foreground="#9DB5CC"
+                                               HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <!-- API状态: 带边框的圆点 -->
+                                <Border Width="24" Height="24" CornerRadius="12" Background="#1A1A1A"
+                                        HorizontalAlignment="Center" ToolTip="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}">
+                                    <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- 展开状态: 水平布局带文字 -->
+                            <StackPanel Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Margin="4,0,0,0">
+                                <!-- 时间 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Path Fill="#9DB5CC" Width="16" Height="16" Stretch="Uniform"
+                                          Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                                    <TextBlock Text="{Binding CurrentTime, StringFormat=HH:mm}" FontSize="12" Foreground="#9DB5CC"
+                                               VerticalAlignment="Center" Margin="8,0,0,0" />
+                                </StackPanel>
+                                <!-- API状态 -->
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                                             Fill="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToColorConverter}}" />
+                                    <TextBlock Text="{Binding ApiStatus, Converter={StaticResource ApiHealthStatusToTextConverter}}"
+                                               FontSize="11" Foreground="#9DB5CC" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <!-- 菜单项 -->
                     <StackPanel Grid.Row="4" Margin="0,8">
