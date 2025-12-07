@@ -12,9 +12,9 @@
     - 控件高度: 36px (标准) / 40px (大按钮)
     -->
 
-    <!-- ========== 按钮样式 ========== -->
+    <!-- ========== 按钮样式 (OpenSpec: optimize-module-list-ui - UI-025) ========== -->
 
-    <!-- 主按钮 (Primary Button) -->
+    <!-- 主按钮 (Primary Button) - Fluent Design #0078D4 -->
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -32,17 +32,17 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.9" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryPressedBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
@@ -54,7 +54,7 @@
         </Setter>
     </Style>
 
-    <!-- 次级按钮 (Secondary Button) -->
+    <!-- 次级按钮 (Secondary Button) - Fluent Design -->
     <Style x:Key="SecondaryButton" TargetType="Button">
         <Setter Property="Background" Value="White" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
@@ -73,7 +73,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />
@@ -95,9 +95,9 @@
         </Setter>
     </Style>
 
-    <!-- 危险按钮 (Danger Button) -->
+    <!-- 危险按钮 (Danger Button) - #D32F2F, Hover: #B71C1C -->
     <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource ErrorBrush}" />
+        <Setter Property="Background" Value="{StaticResource DangerBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Height" Value="36" />
@@ -113,17 +113,17 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.9" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DangerHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource DangerDarkBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
@@ -332,7 +332,7 @@
 
     <!-- ========== 成功按钮样式 ========== -->
 
-    <!-- 成功按钮 (Success Button) -->
+    <!-- 成功按钮 (Success Button) - #388E3C, Hover: #2E7D32 -->
     <Style x:Key="SuccessButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -350,17 +350,17 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource SuccessDarkBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SuccessHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource SuccessDarkBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
@@ -456,7 +456,7 @@
 
     <!-- ========== 警告按钮样式 ========== -->
 
-    <!-- 警告按钮 (Warning Button) -->
+    <!-- 警告按钮 (Warning Button) - #F57C00, Hover: #E65100 -->
     <Style x:Key="WarningButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource WarningBrush}" />
         <Setter Property="Foreground" Value="White" />
@@ -474,17 +474,17 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="{StaticResource WarningDarkBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource WarningHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Opacity" Value="0.8" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource WarningDarkBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
@@ -496,7 +496,7 @@
         </Setter>
     </Style>
 
-    <!-- 轮廓按钮 (Outline Button) -->
+    <!-- 轮廓按钮 (Outline Button) - Fluent Design -->
     <Style x:Key="OutlineButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
@@ -515,7 +515,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="2">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           Margin="{TemplateBinding Padding}" />

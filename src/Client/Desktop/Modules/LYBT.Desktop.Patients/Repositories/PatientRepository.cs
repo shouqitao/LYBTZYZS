@@ -148,5 +148,36 @@ namespace LYBT.Desktop.Patients.Repositories
         }
 
         #endregion
+
+        #region OpenSpec: optimize-module-list-ui - 恢复功能
+
+        /// <summary>
+        /// 恢复已删除的患者
+        /// 注：患者实体无Status字段，因此无ToggleStatus方法
+        /// </summary>
+        public async Task<PatientDto?> RestoreAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("恢复患者：{Id}", id);
+                var response = await _api.RestoreAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("恢复患者失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("患者已恢复：{Id}", id);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复患者时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

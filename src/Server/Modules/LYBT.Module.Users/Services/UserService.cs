@@ -576,5 +576,84 @@ namespace LYBT.Module.Users.Services
         // Issue #1757: GenerateTemporaryPassword已移至PasswordHelper.GenerateTemporaryPassword
 
         #endregion
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        public async Task<Result<UserDto>> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                    return Result<UserDto>.Failure("用户不存在");
+
+                // 权限检查
+                var currentRole = GetCurrentUserRole();
+                if (!CanManageUser(currentRole, entity.Role))
+                {
+                    _logger.LogWarning("用户 {CurrentRole} 尝试切换无权限的用户状态: {TargetUserId}, {TargetRole}",
+                        currentRole, id, entity.Role);
+                    return Result<UserDto>.Failure("您没有权限修改该用户状态");
+                }
+
+                entity.Status = entity.Status == CommonStatus.Enabled
+                    ? CommonStatus.Disabled
+                    : CommonStatus.Enabled;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<UserDto>(result);
+
+                _logger.LogInformation("用户状态已切换: {UserId}, 新状态: {Status}", id, entity.Status);
+                return Result<UserDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换用户状态失败: {UserId}", id);
+                return Result<UserDto>.Failure("切换用户状态失败");
+            }
+        }
+
+        /// <summary>
+        /// 恢复软删除的用户
+        /// </summary>
+        public async Task<Result<UserDto>> RestoreAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+                if (entity == null)
+                    return Result<UserDto>.Failure("用户不存在");
+
+                if (!entity.IsDeleted)
+                    return Result<UserDto>.Failure("该用户未被删除，无需恢复");
+
+                // 权限检查
+                var currentRole = GetCurrentUserRole();
+                if (!CanManageUser(currentRole, entity.Role))
+                {
+                    _logger.LogWarning("用户 {CurrentRole} 尝试恢复无权限的用户: {TargetUserId}, {TargetRole}",
+                        currentRole, id, entity.Role);
+                    return Result<UserDto>.Failure("您没有权限恢复该用户");
+                }
+
+                entity.IsDeleted = false;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<UserDto>(result);
+
+                _logger.LogInformation("用户已恢复: {UserId}, {UserName}", id, entity.UserName);
+                return Result<UserDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复用户失败: {UserId}", id);
+                return Result<UserDto>.Failure("恢复用户失败");
+            }
+        }
     }
 }

@@ -2,37 +2,44 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-    全局颜色系统 (Issue #1484, OpenSpec: cleanup-ui-layer)
+    全局颜色系统 (Issue #1484, OpenSpec: cleanup-ui-layer, optimize-module-list-ui)
     定义应用的核心颜色规范，所有界面统一使用
 
     设计规范:
-    - 主色调: Material Design Blue #2196F3
+    - 主色调: Fluent Design Blue #0078D4 (UI-025)
     - 目标分辨率: 1920x1080 (Full HD)
     - 最小支持: 1366x768
     -->
 
-    <!-- ==================== 主色调 ==================== -->
-    <Color x:Key="PrimaryColor">#2196F3</Color>
-    <Color x:Key="PrimaryDarkColor">#1976D2</Color>
-    <Color x:Key="PrimaryLightColor">#BBDEFB</Color>
+    <!-- ==================== 主色调 (Fluent Design) ==================== -->
+    <Color x:Key="PrimaryColor">#0078D4</Color>
+    <Color x:Key="PrimaryDarkColor">#005A9E</Color>
+    <Color x:Key="PrimaryLightColor">#E5F3FF</Color>
+    <!-- 悬停/按下状态颜色 - OpenSpec: optimize-module-list-ui UI-025 -->
+    <Color x:Key="PrimaryHoverColor">#106EBE</Color>
+    <Color x:Key="PrimaryPressedColor">#005A9E</Color>
 
-    <!-- ==================== 功能色 ==================== -->
-    <Color x:Key="SuccessColor">#4CAF50</Color>
-    <Color x:Key="SuccessDarkColor">#388E3C</Color>
+    <!-- ==================== 功能色 (Fluent Design - UI-025) ==================== -->
+    <Color x:Key="SuccessColor">#388E3C</Color>
+    <Color x:Key="SuccessDarkColor">#2E7D32</Color>
     <Color x:Key="SuccessLightColor">#E8F5E9</Color>
-    <Color x:Key="WarningColor">#FF9800</Color>
-    <Color x:Key="WarningDarkColor">#F57C00</Color>
+    <Color x:Key="SuccessHoverColor">#2E7D32</Color>
+    <Color x:Key="WarningColor">#F57C00</Color>
+    <Color x:Key="WarningDarkColor">#E65100</Color>
     <Color x:Key="WarningLightColor">#FFF3E0</Color>
-    <Color x:Key="ErrorColor">#F44336</Color>
-    <Color x:Key="ErrorDarkColor">#D32F2F</Color>
+    <Color x:Key="WarningHoverColor">#E65100</Color>
+    <Color x:Key="ErrorColor">#D32F2F</Color>
+    <Color x:Key="ErrorDarkColor">#B71C1C</Color>
     <Color x:Key="ErrorLightColor">#FFEBEE</Color>
     <!-- 别名: DangerColor = ErrorColor (兼容MedicalCaseStyles) -->
-    <Color x:Key="DangerColor">#F44336</Color>
-    <Color x:Key="DangerDarkColor">#D32F2F</Color>
+    <Color x:Key="DangerColor">#D32F2F</Color>
+    <Color x:Key="DangerDarkColor">#B71C1C</Color>
     <Color x:Key="DangerLightColor">#FFEBEE</Color>
-    <Color x:Key="InfoColor">#3498DB</Color>
-    <Color x:Key="InfoDarkColor">#2980B9</Color>
-    <Color x:Key="InfoLightColor">#E3F2FD</Color>
+    <Color x:Key="DangerHoverColor">#B71C1C</Color>
+    <Color x:Key="InfoColor">#00B7C3</Color>
+    <Color x:Key="InfoDarkColor">#00939B</Color>
+    <Color x:Key="InfoLightColor">#E0F7FA</Color>
+    <Color x:Key="InfoHoverColor">#00A5AF</Color>
 
     <!-- ==================== 中性色/背景色 ==================== -->
     <Color x:Key="BackgroundColor">#F5F5F5</Color>
@@ -69,14 +76,19 @@
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}" />
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}" />
+    <!-- OpenSpec: optimize-module-list-ui - UI-025 悬停/按下画刷 -->
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}" />
 
-    <!-- ==================== 功能色画刷 ==================== -->
+    <!-- ==================== 功能色画刷 (含悬停状态 - UI-025) ==================== -->
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
     <SolidColorBrush x:Key="SuccessDarkBrush" Color="{StaticResource SuccessDarkColor}" />
     <SolidColorBrush x:Key="SuccessLightBrush" Color="{StaticResource SuccessLightColor}" />
+    <SolidColorBrush x:Key="SuccessHoverBrush" Color="{StaticResource SuccessHoverColor}" />
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
     <SolidColorBrush x:Key="WarningDarkBrush" Color="{StaticResource WarningDarkColor}" />
     <SolidColorBrush x:Key="WarningLightBrush" Color="{StaticResource WarningLightColor}" />
+    <SolidColorBrush x:Key="WarningHoverBrush" Color="{StaticResource WarningHoverColor}" />
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
     <SolidColorBrush x:Key="ErrorDarkBrush" Color="{StaticResource ErrorDarkColor}" />
     <SolidColorBrush x:Key="ErrorLightBrush" Color="{StaticResource ErrorLightColor}" />
@@ -84,9 +96,11 @@
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
     <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource DangerDarkColor}" />
     <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource DangerLightColor}" />
+    <SolidColorBrush x:Key="DangerHoverBrush" Color="{StaticResource DangerHoverColor}" />
     <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}" />
     <SolidColorBrush x:Key="InfoDarkBrush" Color="{StaticResource InfoDarkColor}" />
     <SolidColorBrush x:Key="InfoLightBrush" Color="{StaticResource InfoLightColor}" />
+    <SolidColorBrush x:Key="InfoHoverBrush" Color="{StaticResource InfoHoverColor}" />
 
     <!-- ==================== 中性色画刷 ==================== -->
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />

@@ -50,5 +50,17 @@ namespace LYBT.Desktop.Users.Interfaces
         /// <param name="request">批量导入请求（包含用户列表和重复处理策略）</param>
         /// <returns>导入结果</returns>
         Task<UserBatchImportResultDto?> BatchImportAsync(UserBatchImportRequestDto request);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        Task<UserDto?> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的用户
+        /// </summary>
+        Task<UserDto?> RestoreAsync(Guid id);
     }
 }

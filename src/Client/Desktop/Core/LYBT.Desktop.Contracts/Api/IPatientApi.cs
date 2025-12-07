@@ -66,5 +66,14 @@ namespace LYBT.Desktop.Contracts.Api
         /// <returns>包含患者数据的Excel文件流</returns>
         [Refit.Get("/api/v1/patients/export")]
         Task<HttpResponseMessage> ExportPatientsAsync([Refit.Query] string? keyword = null);
+
+        // ========== OpenSpec: optimize-module-list-ui - 恢复功能 ==========
+
+        /// <summary>
+        /// 恢复已删除的患者
+        /// 注：患者实体无Status字段，因此无ToggleStatus方法
+        /// </summary>
+        [Refit.Post("/api/v1/patients/{id}/restore")]
+        Task<ApiResponse<PatientDto>> RestoreAsync(Guid id);
     }
 }

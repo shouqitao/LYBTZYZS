@@ -644,5 +644,77 @@ namespace LYBT.Module.Herbs.Services
                 return Result<List<HerbReferenceCheckDto>>.Failure($"批量检查失败: {ex.Message}");
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+
+        /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        public async Task<Result<HerbDto>> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                {
+                    return Result<HerbDto>.Failure("药材不存在");
+                }
+
+                // 切换状态
+                entity.Status = entity.Status == CommonStatus.Enabled
+                    ? CommonStatus.Disabled
+                    : CommonStatus.Enabled;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<HerbDto>(result);
+
+                _logger.LogInformation("药材状态已切换: {HerbId}, 新状态: {Status}", id, entity.Status);
+
+                return Result<HerbDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换药材状态失败: {HerbId}", id);
+                return Result<HerbDto>.Failure("切换药材状态失败");
+            }
+        }
+
+        /// <summary>
+        /// 恢复软删除的药材
+        /// </summary>
+        public async Task<Result<HerbDto>> RestoreAsync(Guid id)
+        {
+            try
+            {
+                // 使用GetByIdIncludingDeletedAsync获取包括已删除的实体
+                var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+                if (entity == null)
+                {
+                    return Result<HerbDto>.Failure("药材不存在");
+                }
+
+                if (!entity.IsDeleted)
+                {
+                    return Result<HerbDto>.Failure("该药材未被删除，无需恢复");
+                }
+
+                // 恢复软删除
+                entity.IsDeleted = false;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<HerbDto>(result);
+
+                _logger.LogInformation("药材已恢复: {HerbId}, {HerbName}", id, entity.Name);
+
+                return Result<HerbDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复药材失败: {HerbId}", id);
+                return Result<HerbDto>.Failure("恢复药材失败");
+            }
+        }
     }
 }

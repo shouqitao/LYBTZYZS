@@ -46,5 +46,14 @@ public interface IPatientRepository : IRepository<Patient>
     /// <param name="phoneNumber">手机号</param>
     /// <returns>患者对象，不存在返回null</returns>
     Task<Patient?> GetByPhoneNumberAsync(string phoneNumber);
+
+    // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
+
+    /// <summary>
+    /// 根据ID获取实体（包括已软删除的）
+    /// 用于Restore操作时获取已删除的实体
+    /// </summary>
+    /// <param name="id">实体ID</param>
+    Task<Patient?> GetByIdIncludingDeletedAsync(Guid id);
 }
 }

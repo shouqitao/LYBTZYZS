@@ -679,5 +679,77 @@ namespace LYBT.Module.Formulas.Services
                 throw;
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法实现 ==========
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        public async Task<Result<FormulaDto>> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdAsync(id);
+                if (entity == null)
+                {
+                    return Result<FormulaDto>.Failure("验方不存在");
+                }
+
+                // 切换状态
+                entity.Status = entity.Status == CommonStatus.Enabled
+                    ? CommonStatus.Disabled
+                    : CommonStatus.Enabled;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<FormulaDto>(result);
+
+                _logger.LogInformation("验方状态已切换: {FormulaId}, 新状态: {Status}", id, entity.Status);
+
+                return Result<FormulaDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换验方状态失败: {FormulaId}", id);
+                return Result<FormulaDto>.Failure("切换验方状态失败");
+            }
+        }
+
+        /// <summary>
+        /// 恢复软删除的验方
+        /// </summary>
+        public async Task<Result<FormulaDto>> RestoreAsync(Guid id)
+        {
+            try
+            {
+                // 使用GetByIdIncludingDeletedAsync获取包括已删除的实体
+                var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+                if (entity == null)
+                {
+                    return Result<FormulaDto>.Failure("验方不存在");
+                }
+
+                if (!entity.IsDeleted)
+                {
+                    return Result<FormulaDto>.Failure("该验方未被删除，无需恢复");
+                }
+
+                // 恢复软删除
+                entity.IsDeleted = false;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<FormulaDto>(result);
+
+                _logger.LogInformation("验方已恢复: {FormulaId}, {FormulaName}", id, entity.Name);
+
+                return Result<FormulaDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复验方失败: {FormulaId}", id);
+                return Result<FormulaDto>.Failure("恢复验方失败");
+            }
+        }
     }
 }

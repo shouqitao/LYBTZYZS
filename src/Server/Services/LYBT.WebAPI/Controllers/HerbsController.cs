@@ -396,5 +396,61 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "批量检查药材引用", new { Count = request.HerbIds?.Count });
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
+
+        /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        [HttpPost("{id}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "药材ID") is { } error) return error;
+
+                var result = await _herbService.ToggleStatusAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                }
+
+                LogOperation("切换药材状态", new { NewStatus = result.Data.Status }, id);
+                return Success(result.Data, $"药材已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "切换药材状态", id);
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的药材
+        /// </summary>
+        [HttpPost("{id}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "药材ID") is { } error) return error;
+
+                var result = await _herbService.RestoreAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                }
+
+                LogOperation("恢复药材", null, id);
+                return Success(result.Data, "药材已恢复");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "恢复药材", id);
+            }
+        }
     }
 }

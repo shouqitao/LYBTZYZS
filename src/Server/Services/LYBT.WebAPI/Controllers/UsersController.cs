@@ -299,5 +299,61 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "修改密码", new { UserId = id });
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        [HttpPost("{id:guid}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+                var result = await _userService.ToggleStatusAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                }
+
+                LogOperation("切换用户状态", new { NewStatus = result.Data.Status }, id);
+                return Success(result.Data, $"用户已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "切换用户状态", new { UserId = id });
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的用户
+        /// </summary>
+        [HttpPost("{id:guid}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<UserDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "用户ID") is { } error) return error;
+
+                var result = await _userService.RestoreAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                }
+
+                LogOperation("恢复用户", null, id);
+                return Success(result.Data, "用户已恢复");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "恢复用户", new { UserId = id });
+            }
+        }
     }
 }

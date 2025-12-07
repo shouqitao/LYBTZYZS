@@ -162,5 +162,61 @@ namespace LYBT.Desktop.Herbs.Repositories
         }
 
         #endregion
+
+        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+
+        /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        public async Task<HerbDto?> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("切换药材状态：{Id}", id);
+                var response = await _api.ToggleStatusAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("切换药材状态失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("药材状态已切换为：{Status}", response.Data.Status);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换药材状态时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的药材
+        /// </summary>
+        public async Task<HerbDto?> RestoreAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("恢复药材：{Id}", id);
+                var response = await _api.RestoreAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("恢复药材失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("药材已恢复：{Id}", id);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复药材时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

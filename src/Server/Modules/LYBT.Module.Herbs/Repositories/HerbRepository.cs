@@ -104,5 +104,18 @@ namespace LYBT.Module.Herbs.Repositories
         }
 
         #endregion
+
+        #region OpenSpec: optimize-module-list-ui - 恢复功能支持
+
+        /// <summary>
+        /// 根据ID获取实体（包括已软删除的）
+        /// 使用EF Core FindAsync直接通过主键查询，绕过软删除过滤器
+        /// </summary>
+        public async Task<Herb?> GetByIdIncludingDeletedAsync(Guid id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        #endregion
     }
 }

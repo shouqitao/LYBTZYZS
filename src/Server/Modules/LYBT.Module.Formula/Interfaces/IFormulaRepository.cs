@@ -35,5 +35,13 @@ namespace LYBT.Module.Formulas.Interfaces
         /// </summary>
         Task<List<Formula>> GetByUserIdAsync(Guid userId);
 
+        // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
+
+        /// <summary>
+        /// 根据ID获取实体（包括已软删除的）
+        /// 用于Restore操作时获取已删除的实体
+        /// </summary>
+        /// <param name="id">实体ID</param>
+        Task<Formula?> GetByIdIncludingDeletedAsync(Guid id);
     }
 }

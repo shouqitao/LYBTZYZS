@@ -87,5 +87,19 @@ namespace LYBT.Module.Herbs.Interfaces
         /// </summary>
         /// <param name="herbIds">药材ID列表（≤100条，BR-006）</param>
         Task<Result<List<HerbReferenceCheckDto>>> BatchCheckReferenceAsync(List<Guid> herbIds);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+
+        /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        Task<Result<HerbDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复软删除的药材
+        /// </summary>
+        /// <param name="id">药材ID</param>
+        Task<Result<HerbDto>> RestoreAsync(Guid id);
     }
 }

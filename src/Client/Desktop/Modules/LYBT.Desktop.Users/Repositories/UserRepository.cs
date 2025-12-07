@@ -238,5 +238,61 @@ namespace LYBT.Desktop.Users.Repositories
                 return null;
             }
         }
+
+        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        public async Task<UserDto?> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("切换用户状态：{Id}", id);
+                var response = await _api.ToggleStatusAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("切换用户状态失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("用户状态已切换为：{Status}", response.Data.Status);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换用户状态时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的用户
+        /// </summary>
+        public async Task<UserDto?> RestoreAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("恢复用户：{Id}", id);
+                var response = await _api.RestoreAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("恢复用户失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("用户已恢复：{Id}", id);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复用户时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

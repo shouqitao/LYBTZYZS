@@ -95,10 +95,15 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
             var checkBoxColumn = new DataGridCheckBoxColumn { Header = _selectAllCheckBox, Width = new DataGridLength(40), CanUserResize = false, CanUserSort = false, DisplayIndex = 0 };
             checkBoxColumn.Binding = new Binding("IsSelected") { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1), Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
-            // 设置checkbox垂直居中
+            // OpenSpec: optimize-module-list-ui - UI-020 CheckBox列垂直水平居中对齐
             checkBoxColumn.ElementStyle = new Style(typeof(CheckBox))
             {
                 Setters = { new Setter(CheckBox.HorizontalAlignmentProperty, HorizontalAlignment.Center), new Setter(CheckBox.VerticalAlignmentProperty, VerticalAlignment.Center) }
+            };
+            // 同时设置CellStyle确保DataGridCell也居中
+            checkBoxColumn.CellStyle = new Style(typeof(DataGridCell))
+            {
+                Setters = { new Setter(DataGridCell.HorizontalAlignmentProperty, HorizontalAlignment.Center), new Setter(DataGridCell.VerticalAlignmentProperty, VerticalAlignment.Center), new Setter(DataGridCell.VerticalContentAlignmentProperty, VerticalAlignment.Center) }
             };
             DataGrid.Columns.Insert(0, checkBoxColumn);
         }

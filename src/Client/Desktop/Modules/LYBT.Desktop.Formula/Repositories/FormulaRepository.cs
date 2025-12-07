@@ -105,5 +105,61 @@ namespace LYBT.Desktop.Formula.Repositories
         }
 
         #endregion
+
+        #region OpenSpec: optimize-module-list-ui - 状态切换和恢复
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        public async Task<FormulaDto?> ToggleStatusAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("切换验方状态：{Id}", id);
+                var response = await _api.ToggleStatusAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("切换验方状态失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("验方状态已切换为：{Status}", response.Data.Status);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切换验方状态时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        public async Task<FormulaDto?> RestoreAsync(Guid id)
+        {
+            try
+            {
+                _logger.LogInformation("恢复验方：{Id}", id);
+                var response = await _api.RestoreAsync(id);
+
+                if (!response.Success || response.Data == null)
+                {
+                    _logger.LogError("恢复验方失败：{Message}", response.Message);
+                    return null;
+                }
+
+                _logger.LogInformation("验方已恢复：{Id}", id);
+                return response.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复验方时发生异常：{Id}", id);
+                return null;
+            }
+        }
+
+        #endregion
     }
 }

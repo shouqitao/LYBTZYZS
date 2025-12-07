@@ -87,5 +87,13 @@ namespace LYBT.Module.Patients.Interfaces
         Task<Result<Patient>> UpdateEntityAsync(Guid id, PatientInputDto dto);
 
         #endregion
+
+        // ========== OpenSpec: optimize-module-list-ui - 恢复方法 ==========
+
+        /// <summary>
+        /// 恢复软删除的患者
+        /// </summary>
+        /// <param name="id">患者ID</param>
+        Task<Result<PatientDto>> RestoreAsync(Guid id);
     }
 }

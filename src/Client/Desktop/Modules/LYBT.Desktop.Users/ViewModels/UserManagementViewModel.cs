@@ -48,6 +48,9 @@ namespace LYBT.Desktop.Users.ViewModels
         public IEnumerable<UserRole> RoleOptions { get; }
         public IEnumerable<CommonStatus> StatusOptions { get; }
 
+        /// <summary>是否为管理员（Admin或SuperAdmin角色）- OpenSpec: optimize-module-list-ui UI-022</summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+
         public new DelegateCommand AddCommand { get; private set; } = null!;
         public DelegateCommand<UserDto> EditCommand { get; private set; } = null!;
         public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; } = null!;
@@ -55,6 +58,8 @@ namespace LYBT.Desktop.Users.ViewModels
         public DelegateCommand<UserDto> ViewDetailsCommand { get; private set; } = null!;
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
         public DelegateCommand<UserDto> ShowAuditLogCommand { get; private set; } = null!;
+        /// <summary>恢复软删除数据命令 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        public DelegateCommand<UserDto> RestoreCommand { get; private set; } = null!;
         public ICommand ImportCommand { get; }
         public ICommand ExportCommand { get; }
         public ICommand DownloadTemplateCommand { get; }
@@ -98,6 +103,8 @@ namespace LYBT.Desktop.Users.ViewModels
             ViewDetailsCommand = new DelegateCommand<UserDto>(ExecuteViewDetails, u => u != null);
             ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters, () => HasActiveFilters);
             ShowAuditLogCommand = new DelegateCommand<UserDto>(ExecuteShowAuditLog, u => u != null);
+            // OpenSpec: optimize-module-list-ui UI-022 - 初始化恢复命令
+            RestoreCommand = new DelegateCommand<UserDto>(async u => await RestoreAsync(u), u => u != null && !IsLoading && IsAdmin);
         }
 
         protected override async Task OnExecuteAddAsync()
@@ -358,6 +365,31 @@ namespace LYBT.Desktop.Users.ViewModels
             if (user == null) return;
             Logger.LogInformation("查看用户审计日志：{UserId}", user.Id);
             _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters { { "EntityType", "user" }, { "EntityId", user.Id }, { "EntityDescription", $"用户：{user.RealName ?? user.UserName}" } }, _ => { });
+        }
+
+        /// <summary>恢复软删除的用户 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        private async Task RestoreAsync(UserDto user)
+        {
+            if (user == null) return;
+            try
+            {
+                Logger.LogInformation("恢复软删除用户: {UserId} - {UserName}", user.Id, user.UserName);
+                var confirmed = await ShowConfirmationAsync($"确认恢复用户 [{user.RealName ?? user.UserName}] 吗？", "恢复确认");
+                if (!confirmed) return;
+
+                var result = await _userRepository.RestoreAsync(user.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("用户已恢复: {UserName}", user.UserName);
+                    await ShowSuccessMessageAsync($"用户 '{user.RealName ?? user.UserName}' 已恢复");
+                    await RefreshAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("恢复用户失败");
+                }
+            }
+            catch (Exception ex) { Logger.LogError(ex, "恢复用户失败: {UserId}", user.Id); await ShowErrorMessageAsync("恢复用户失败"); }
         }
     }
 }

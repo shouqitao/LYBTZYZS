@@ -34,5 +34,14 @@ public interface IUserRepository : IRepository<User>
     /// <param name="username">待检查的用户名</param>
     /// <returns>存在返回true，否则返回false</returns>
     Task<bool> UsernameExistsAsync(string username);
+
+    // ========== OpenSpec: optimize-module-list-ui - 恢复功能支持 ==========
+
+    /// <summary>
+    /// 根据ID获取实体（包括已软删除的）
+    /// 用于Restore操作时获取已删除的实体
+    /// </summary>
+    /// <param name="id">实体ID</param>
+    Task<User?> GetByIdIncludingDeletedAsync(Guid id);
 }
 }

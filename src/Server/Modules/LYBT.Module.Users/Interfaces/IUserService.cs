@@ -88,5 +88,19 @@ namespace LYBT.Module.Users.Interfaces
         Task<Result<UserDto>> ChangeProfileAsync(Guid userId, ChangeProfileDto dto);
 
         #endregion
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        Task<Result<UserDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复软删除的用户
+        /// </summary>
+        /// <param name="id">用户ID</param>
+        Task<Result<UserDto>> RestoreAsync(Guid id);
     }
 }

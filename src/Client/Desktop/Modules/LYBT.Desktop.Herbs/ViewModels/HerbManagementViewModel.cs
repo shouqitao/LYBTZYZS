@@ -27,10 +27,15 @@ namespace LYBT.Desktop.Herbs.ViewModels
         public DelegateCommand<HerbDto> CopyCommand { get; private set; } = null!;
         public DelegateCommand<HerbDto> ToggleStatusCommand { get; private set; } = null!;
         public DelegateCommand<HerbDto> ShowAuditLogCommand { get; private set; } = null!;
+        /// <summary>恢复软删除数据命令 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        public DelegateCommand<HerbDto> RestoreCommand { get; private set; } = null!;
         public DelegateCommand ImportHerbsCommand { get; private set; } = null!;
         public DelegateCommand ExportTemplateCommand { get; private set; } = null!;
         public DelegateCommand ExportHerbsCommand { get; private set; } = null!;
         public DelegateCommand<string> SearchByCategoryCommand => new(SearchByCategory);
+
+        /// <summary>是否为管理员（Admin或SuperAdmin角色）- OpenSpec: optimize-module-list-ui UI-022</summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         public HerbManagementViewModel(
             HerbDataManager dataManager,
@@ -63,6 +68,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
             CopyCommand = new DelegateCommand<HerbDto>(CopyHerb, h => h != null && !IsBusy && SessionManager?.HasPermission(UserRole.Admin) == true);
             ToggleStatusCommand = new DelegateCommand<HerbDto>(async h => await ToggleStatusAsync(h), h => h != null && !IsBusy);
             ShowAuditLogCommand = new DelegateCommand<HerbDto>(ExecuteShowAuditLog, h => h != null);
+            // OpenSpec: optimize-module-list-ui UI-022 - 恢复命令
+            RestoreCommand = new DelegateCommand<HerbDto>(async h => await RestoreAsync(h), h => h != null && !IsBusy && IsAdmin);
             ImportHerbsCommand = new DelegateCommand(async () => await ImportHerbsAsync(), () => !IsBusy && !IsLoading)
                 .ObservesProperty(() => IsBusy).ObservesProperty(() => IsLoading);
             ExportTemplateCommand = new DelegateCommand(async () => await ExportTemplateAsync(), () => !IsBusy && !IsLoading)
@@ -172,8 +179,51 @@ namespace LYBT.Desktop.Herbs.ViewModels
         private async Task ToggleStatusAsync(HerbDto herb)
         {
             if (herb == null) return;
-            try { Logger.LogInformation("切换药材状态: {HerbId}", herb.Id); _ = ShowSuccessMessageAsync($"切换药材 '{herb.Name}' 状态功能开发中"); await Task.CompletedTask; }
+            try
+            {
+                Logger.LogInformation("切换药材状态: {HerbId} - {HerbName}", herb.Id, herb.Name);
+                var newStatus = herb.Status == CommonStatus.Enabled ? "禁用" : "启用";
+                var confirmed = await ShowConfirmationAsync($"确认{newStatus}药材 [{herb.Name}] 吗？", "状态切换确认");
+                if (!confirmed) return;
+
+                var result = await _herbRepository.ToggleStatusAsync(herb.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("药材状态已切换: {HerbName} -> {NewStatus}", herb.Name, result.Status);
+                    await ShowSuccessMessageAsync($"药材 '{herb.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+                    await RefreshAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("切换药材状态失败");
+                }
+            }
             catch (Exception ex) { Logger.LogError(ex, "切换药材状态失败: {HerbId}", herb.Id); await ShowErrorMessageAsync("切换药材状态失败"); }
+        }
+
+        /// <summary>恢复软删除的药材 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        private async Task RestoreAsync(HerbDto herb)
+        {
+            if (herb == null) return;
+            try
+            {
+                Logger.LogInformation("恢复软删除药材: {HerbId} - {HerbName}", herb.Id, herb.Name);
+                var confirmed = await ShowConfirmationAsync($"确认恢复药材 [{herb.Name}] 吗？", "恢复确认");
+                if (!confirmed) return;
+
+                var result = await _herbRepository.RestoreAsync(herb.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("药材已恢复: {HerbName}", herb.Name);
+                    await ShowSuccessMessageAsync($"药材 '{herb.Name}' 已恢复");
+                    await RefreshAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("恢复药材失败");
+                }
+            }
+            catch (Exception ex) { Logger.LogError(ex, "恢复药材失败: {HerbId}", herb.Id); await ShowErrorMessageAsync("恢复药材失败"); }
         }
 
         private async Task ImportHerbsAsync()

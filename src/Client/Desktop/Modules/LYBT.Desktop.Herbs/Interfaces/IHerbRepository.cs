@@ -33,5 +33,17 @@ namespace LYBT.Desktop.Herbs.Interfaces
         /// 导出药材数据到Excel
         /// </summary>
         Task<byte[]?> ExportHerbsAsync(string? keyword = null);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+
+        /// <summary>
+        /// 切换药材状态（启用/禁用）
+        /// </summary>
+        Task<HerbDto?> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的药材
+        /// </summary>
+        Task<HerbDto?> RestoreAsync(Guid id);
     }
 }

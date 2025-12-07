@@ -18,6 +18,8 @@
     <UserControl.Resources>
         <!-- 转换器资源 -->
         <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <!-- Bool到Visibility转换器 - OpenSpec: optimize-module-list-ui UI-022 -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
     <!-- Issue #1999: 应用 BaseMasterDataListView 模板 -->
@@ -120,6 +122,13 @@
                                     Margin="4,0"
                                     ToolTip="查看变更记录"
                                     Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: optimize-module-list-ui - UI-022 恢复按钮（仅管理员可见） -->
+                            <Button Content="恢复"
+                                    Style="{StaticResource WarningButton}"
+                                    Margin="4,0"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <Button Content="删除"
                                     Style="{StaticResource DangerButton}"

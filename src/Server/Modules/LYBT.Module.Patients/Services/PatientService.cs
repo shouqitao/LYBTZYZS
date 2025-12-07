@@ -658,5 +658,40 @@ namespace LYBT.Module.Patients.Services
         }
 
         #endregion
+
+        // ========== OpenSpec: optimize-module-list-ui - 恢复方法实现 ==========
+
+        /// <summary>
+        /// 恢复软删除的患者
+        /// </summary>
+        public async Task<Result<PatientDto>> RestoreAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _repository.GetByIdIncludingDeletedAsync(id);
+                if (entity == null)
+                    return Result<PatientDto>.Failure("患者不存在");
+
+                if (!entity.IsDeleted)
+                    return Result<PatientDto>.Failure("该患者未被删除，无需恢复");
+
+                entity.IsDeleted = false;
+                entity.UpdatedAt = DateTime.Now;
+
+                var result = await _repository.UpdateAsync(entity);
+                var dto = _mapper.Map<PatientDto>(result);
+
+                // 确保Age属性正确计算
+                dto.Age = result.Age;
+
+                _logger.LogInformation("患者已恢复: {PatientId}, {PatientName}", id, entity.Name);
+                return Result<PatientDto>.Success(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "恢复患者失败: {PatientId}", id);
+                return Result<PatientDto>.Failure("恢复患者失败");
+            }
+        }
     }
 }

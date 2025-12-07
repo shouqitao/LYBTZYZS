@@ -68,5 +68,19 @@ namespace LYBT.Desktop.Contracts.Api
         /// </summary>
         [Refit.Post("/api/v1/users/batch-import")]
         Task<ApiResponse<UserBatchImportResultDto>> BatchImportAsync([Refit.Body] UserBatchImportRequestDto request);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+
+        /// <summary>
+        /// 切换用户状态（启用/禁用）
+        /// </summary>
+        [Refit.Post("/api/v1/users/{id}/toggle-status")]
+        Task<ApiResponse<UserDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的用户
+        /// </summary>
+        [Refit.Post("/api/v1/users/{id}/restore")]
+        Task<ApiResponse<UserDto>> RestoreAsync(Guid id);
     }
 }

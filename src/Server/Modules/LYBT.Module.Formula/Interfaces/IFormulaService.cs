@@ -82,5 +82,19 @@ namespace LYBT.Module.Formulas.Interfaces
         /// 查询所有 ValidationStatus = Draft 的验方，包含未验证的药材项
         /// </summary>
         Task<Result<List<FormulaDto>>> GetPendingValidationFormulasAsync();
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复方法 ==========
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        Task<Result<FormulaDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复软删除的验方
+        /// </summary>
+        /// <param name="id">验方ID</param>
+        Task<Result<FormulaDto>> RestoreAsync(Guid id);
     }
 }

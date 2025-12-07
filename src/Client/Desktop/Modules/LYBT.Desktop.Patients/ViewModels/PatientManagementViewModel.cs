@@ -7,6 +7,7 @@ using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.ViewModels.Components;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -27,9 +28,14 @@ namespace LYBT.Desktop.Patients.ViewModels
         public DelegateCommand<PatientDto> ViewDetailsCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> EditCommand { get; private set; } = null!;
         public DelegateCommand<PatientDto> ShowAuditLogCommand { get; private set; } = null!;
+        /// <summary>恢复软删除数据命令 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        public DelegateCommand<PatientDto> RestoreCommand { get; private set; } = null!;
         public ICommand ImportCommand { get; }
         public ICommand ExportCommand { get; }
         public ICommand DownloadTemplateCommand { get; }
+
+        /// <summary>是否为管理员（Admin或SuperAdmin角色）- OpenSpec: optimize-module-list-ui UI-022</summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         public PatientManagementViewModel(
             PatientCommandHandler commandHandler,
@@ -54,6 +60,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, p => p != null);
             EditCommand = new DelegateCommand<PatientDto>(ExecuteEdit, p => p != null);
             ShowAuditLogCommand = new DelegateCommand<PatientDto>(ExecuteShowAuditLog, p => p != null);
+            // OpenSpec: optimize-module-list-ui UI-022 - 初始化恢复命令
+            RestoreCommand = new DelegateCommand<PatientDto>(async p => await RestoreAsync(p), p => p != null && !IsBusy && IsAdmin);
 
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
@@ -130,6 +138,31 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (patient == null) return;
             _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters { { "EntityType", "patient" }, { "EntityId", patient.Id }, { "EntityDescription", $"患者：{patient.Name}" } }, _ => { });
+        }
+
+        /// <summary>恢复软删除的患者 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        private async Task RestoreAsync(PatientDto patient)
+        {
+            if (patient == null) return;
+            try
+            {
+                Logger.LogInformation("恢复软删除患者: {PatientId} - {PatientName}", patient.Id, patient.Name);
+                var confirmed = await ShowConfirmationAsync($"确认恢复患者 [{patient.Name}] 吗？", "恢复确认");
+                if (!confirmed) return;
+
+                var result = await _patientRepository.RestoreAsync(patient.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("患者已恢复: {PatientName}", patient.Name);
+                    await ShowSuccessMessageAsync($"患者 '{patient.Name}' 已恢复");
+                    await RefreshAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("恢复患者失败");
+                }
+            }
+            catch (Exception ex) { Logger.LogError(ex, "恢复患者失败: {PatientId}", patient.Id); await ShowErrorMessageAsync("恢复患者失败"); }
         }
 
         private async Task ExecuteImportAsync()

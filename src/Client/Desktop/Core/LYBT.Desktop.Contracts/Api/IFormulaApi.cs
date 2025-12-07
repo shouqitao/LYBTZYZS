@@ -61,5 +61,19 @@ namespace LYBT.Desktop.Contracts.Api
             Guid formulaId,
             Guid herbItemId,
             [Refit.Body] Guid selectedHerbId);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{id}/toggle-status")]
+        Task<ApiResponse<FormulaDto>> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        [Refit.Post("/api/v1/formulas/{id}/restore")]
+        Task<ApiResponse<FormulaDto>> RestoreAsync(Guid id);
     }
 }

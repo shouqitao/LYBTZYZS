@@ -312,5 +312,61 @@ namespace LYBT.WebAPI.Controllers
                 return HandleException(ex, "验证验方药材", new { formulaId, herbItemId, selectedHerbId });
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复端点 ==========
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        [HttpPost("{id}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+                var result = await _service.ToggleStatusAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "状态切换失败");
+                }
+
+                LogOperation("切换验方状态", new { NewStatus = result.Data.Status }, id);
+                return Success(result.Data, $"验方已{(result.Data.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "切换验方状态", id);
+            }
+        }
+
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        [HttpPost("{id}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "验方ID") is { } error) return error;
+
+                var result = await _service.RestoreAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                }
+
+                LogOperation("恢复验方", null, id);
+                return Success(result.Data, "验方已恢复");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "恢复验方", id);
+            }
+        }
     }
 }

@@ -50,5 +50,13 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// 导出患者数据到Excel (Epic #1934 FR-003)
         /// </summary>
         Task<byte[]?> ExportPatientsAsync(string? keyword = null);
+
+        // ========== OpenSpec: optimize-module-list-ui - 恢复功能 ==========
+
+        /// <summary>
+        /// 恢复已删除的患者
+        /// 注：患者实体无Status字段，因此无ToggleStatus方法
+        /// </summary>
+        Task<PatientDto?> RestoreAsync(Guid id);
     }
 }

@@ -16,10 +16,12 @@ namespace LYBT.Desktop.Formula.ViewModels
     public class FormulaManagementViewModel : UnifiedListViewModelBase<FormulaDto>
     {
         private readonly IFormulaCommandHandler _commandHandler;
+        private readonly IFormulaRepository _formulaRepository;
         private readonly IDialogService _prismDialogService;
 
         public FormulaManagementViewModel(
             IFormulaCommandHandler commandHandler,
+            IFormulaRepository formulaRepository,
             IDialogService prismDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
@@ -29,9 +31,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
             PageTitle = "配方管理";
             ShowAuditLogCommand = new DelegateCommand<FormulaDto>(ExecuteShowAuditLog, f => f != null);
+            // OpenSpec: optimize-module-list-ui UI-021/UI-022 - 初始化状态切换和恢复命令
+            ToggleStatusCommand = new DelegateCommand<FormulaDto>(async f => await ToggleStatusAsync(f), f => f != null && !IsBusy);
+            RestoreCommand = new DelegateCommand<FormulaDto>(async f => await RestoreAsync(f), f => f != null && !IsBusy && IsAdmin);
         }
 
         protected override async Task<IEnumerable<FormulaDto>> GetItemsAsync(int page, int pageSize, string? searchText)
@@ -82,6 +88,13 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand AddFormulaCommand => AddCommand;
         public DelegateCommand<FormulaDto> ViewDetailsCommand => ViewDetailCommand;
         public DelegateCommand<FormulaDto> ShowAuditLogCommand { get; private set; } = null!;
+        /// <summary>状态切换命令 - OpenSpec: optimize-module-list-ui UI-021</summary>
+        public DelegateCommand<FormulaDto> ToggleStatusCommand { get; private set; } = null!;
+        /// <summary>恢复软删除数据命令 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        public DelegateCommand<FormulaDto> RestoreCommand { get; private set; } = null!;
+
+        /// <summary>是否为管理员（Admin或SuperAdmin角色）- OpenSpec: optimize-module-list-ui UI-022</summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         public DelegateCommand<FormulaDto> ViewDetailCommand => new(f => { if (f != null) NavigateTo("ContentRegion", "FormulaDetailView", new NavigationParameters { { "FormulaId", f.Id }, { "ReadOnly", true } }); }, f => f != null && !IsBusy);
         public DelegateCommand<FormulaDto> EditCommand => new(f => { if (f != null) NavigateTo("ContentRegion", "FormulaDetailView", new NavigationParameters { { "FormulaId", f.Id } }); }, f => f != null && !IsBusy);
@@ -91,6 +104,57 @@ namespace LYBT.Desktop.Formula.ViewModels
         {
             if (formula == null) return;
             _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters { { "EntityType", "formula" }, { "EntityId", formula.Id }, { "EntityDescription", $"验方：{formula.Name}" } }, _ => { });
+        }
+
+        /// <summary>切换验方状态 - OpenSpec: optimize-module-list-ui UI-021</summary>
+        private async Task ToggleStatusAsync(FormulaDto formula)
+        {
+            if (formula == null) return;
+            try
+            {
+                Logger.LogInformation("切换验方状态: {FormulaId} - {FormulaName}", formula.Id, formula.Name);
+                var newStatus = formula.Status == CommonStatus.Enabled ? "禁用" : "启用";
+                var confirmed = await ShowConfirmationAsync($"确认{newStatus}验方 [{formula.Name}] 吗？", "状态切换确认");
+                if (!confirmed) return;
+
+                var result = await _formulaRepository.ToggleStatusAsync(formula.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("验方状态已切换: {FormulaName} -> {NewStatus}", formula.Name, result.Status);
+                    await ShowSuccessMessageAsync($"验方 '{formula.Name}' 已{(result.Status == CommonStatus.Enabled ? "启用" : "禁用")}");
+                    await LoadPageAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("切换验方状态失败");
+                }
+            }
+            catch (Exception ex) { Logger.LogError(ex, "切换验方状态失败: {FormulaId}", formula.Id); await ShowErrorMessageAsync("切换验方状态失败"); }
+        }
+
+        /// <summary>恢复软删除的验方 - OpenSpec: optimize-module-list-ui UI-022</summary>
+        private async Task RestoreAsync(FormulaDto formula)
+        {
+            if (formula == null) return;
+            try
+            {
+                Logger.LogInformation("恢复软删除验方: {FormulaId} - {FormulaName}", formula.Id, formula.Name);
+                var confirmed = await ShowConfirmationAsync($"确认恢复验方 [{formula.Name}] 吗？", "恢复确认");
+                if (!confirmed) return;
+
+                var result = await _formulaRepository.RestoreAsync(formula.Id);
+                if (result != null)
+                {
+                    Logger.LogInformation("验方已恢复: {FormulaName}", formula.Name);
+                    await ShowSuccessMessageAsync($"验方 '{formula.Name}' 已恢复");
+                    await LoadPageAsync();
+                }
+                else
+                {
+                    await ShowErrorMessageAsync("恢复验方失败");
+                }
+            }
+            catch (Exception ex) { Logger.LogError(ex, "恢复验方失败: {FormulaId}", formula.Id); await ShowErrorMessageAsync("恢复验方失败"); }
         }
 
         public DelegateCommand ImportFormulasCommand => new(async () => await ShowSuccessMessageAsync("导入配方功能开发中"), () => !IsLoading);

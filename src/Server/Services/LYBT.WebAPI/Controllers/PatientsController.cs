@@ -303,5 +303,35 @@ namespace LYBT.WebAPI.Controllers
                 return StatusCode(500);
             }
         }
+
+        // ========== OpenSpec: optimize-module-list-ui - 恢复端点 ==========
+
+        /// <summary>
+        /// 恢复已删除的患者
+        /// 注：患者实体无Status字段，因此无ToggleStatus端点
+        /// </summary>
+        [HttpPost("{id}/restore")]
+        [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse), 404)]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            try
+            {
+                if (ValidateGuid(id, "患者ID") is { } error) return error;
+
+                var result = await _service.RestoreAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                {
+                    return BusinessFail(result.ErrorMessage ?? "恢复失败");
+                }
+
+                LogOperation("恢复患者", null, id);
+                return Success(result.Data, "患者已恢复");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "恢复患者", id);
+            }
+        }
     }
 }

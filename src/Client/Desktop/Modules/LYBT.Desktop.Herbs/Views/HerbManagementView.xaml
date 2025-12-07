@@ -18,6 +18,8 @@
     <UserControl.Resources>
         <!-- 枚举描述转换器 -->
         <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <!-- Bool到Visibility转换器 - OpenSpec: optimize-module-list-ui UI-022 -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
     <!-- Issue #2001: 应用 BaseMasterDataListView 模板 -->
@@ -40,7 +42,7 @@
         BusyMessage="{Binding BusyMessage}"
         EmptyStateText="暂无中药材数据">
 
-        <!-- 定义药材特定的 DataGrid 列 -->
+        <!-- 定义药材特定的 DataGrid 列 - OpenSpec: optimize-module-list-ui UI-023 -->
         <views:BaseMasterDataListView.Columns>
             <!-- 药材名称 -->
             <DataGridTextColumn Header="药材名称"
@@ -50,7 +52,7 @@
             <!-- 拼音码 -->
             <DataGridTextColumn Header="拼音码"
                                 Binding="{Binding PinYinCode}"
-                                Width="80" />
+                                Width="100" />
 
             <!-- 产地 -->
             <DataGridTextColumn Header="产地"
@@ -77,19 +79,10 @@
                                 Binding="{Binding Effect}"
                                 Width="*" />
 
-            <!-- 状态 - 使用UnifiedStatusBadge -->
-            <DataGridTemplateColumn Header="状态" Width="80">
-                <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate>
-                        <controls:UnifiedStatusBadge
-                            Text="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"
-                            Type="Success" />
-                    </DataTemplate>
-                </DataGridTemplateColumn.CellTemplate>
-            </DataGridTemplateColumn>
+            <!-- OpenSpec: optimize-module-list-ui - UI-021 移除状态列，使用按钮切换 -->
 
-            <!-- 操作列 - OpenSpec: add-global-audit-system 增加审计按钮 -->
-            <DataGridTemplateColumn Header="操作" Width="360">
+            <!-- 操作列 - OpenSpec: optimize-module-list-ui UI-021/UI-022 -->
+            <DataGridTemplateColumn Header="操作" Width="420">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -104,18 +97,39 @@
                                     ToolTip="查看药材详情"
                                     Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
-                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
-                            <Button Content="状态"
-                                    Style="{StaticResource PrimaryButton}"
+                            <!-- OpenSpec: optimize-module-list-ui - UI-021 状态切换按钮 -->
+                            <Button Style="{StaticResource PrimaryButton}"
                                     Margin="4,0"
                                     Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                                    CommandParameter="{Binding}">
+                                <Button.Content>
+                                    <TextBlock>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="启用" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Enabled">
+                                                        <Setter Property="Text" Value="禁用" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Button.Content>
+                            </Button>
                             <!-- OpenSpec: add-global-audit-system -->
                             <Button Content="记录"
                                     Style="{StaticResource SecondaryButton}"
                                     Margin="4,0"
                                     ToolTip="查看变更记录"
                                     Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: optimize-module-list-ui - UI-022 恢复按钮（仅管理员可见） -->
+                            <Button Content="恢复"
+                                    Style="{StaticResource WarningButton}"
+                                    Margin="4,0"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <Button Content="删除"
                                     Style="{StaticResource DangerButton}"

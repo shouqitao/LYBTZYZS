@@ -26,5 +26,17 @@ namespace LYBT.Desktop.Formula.Interfaces
         /// 验证验方药材 - 手动绑定药材到系统药材库 (Issue #1348)
         /// </summary>
         Task<bool> ValidateFormulaHerbAsync(Guid formulaId, Guid herbItemId, Guid selectedHerbId);
+
+        // ========== OpenSpec: optimize-module-list-ui - 状态切换和恢复 ==========
+
+        /// <summary>
+        /// 切换验方状态（启用/禁用）
+        /// </summary>
+        Task<FormulaDto?> ToggleStatusAsync(Guid id);
+
+        /// <summary>
+        /// 恢复已删除的验方
+        /// </summary>
+        Task<FormulaDto?> RestoreAsync(Guid id);
     }
 }
