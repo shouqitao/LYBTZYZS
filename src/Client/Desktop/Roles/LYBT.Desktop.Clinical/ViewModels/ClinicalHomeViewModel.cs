@@ -189,17 +189,18 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到病历查询 - Issue #1827
+        /// 修复: MedicalCaseQueryView不存在，使用MedicalCaseManagementView
         /// </summary>
         private void ExecuteNavigateToMedicalCaseQuery()
         {
             try
             {
-                Logger.LogInformation("导航到病历查询视图");
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseQueryView");
+                Logger.LogInformation("导航到医案管理视图");
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "导航到病历查询时发生异常");
+                Logger.LogError(ex, "导航到医案管理时发生异常");
             }
         }
 

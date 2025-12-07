@@ -75,7 +75,7 @@
             <!-- 功效 -->
             <DataGridTextColumn Header="功效"
                                 Binding="{Binding Effect}"
-                                Width="200" />
+                                Width="*" />
 
             <!-- 状态 - 使用UnifiedStatusBadge -->
             <DataGridTemplateColumn Header="状态" Width="80">
@@ -89,51 +89,37 @@
             </DataGridTemplateColumn>
 
             <!-- 操作列 - OpenSpec: add-global-audit-system 增加审计按钮 -->
-            <DataGridTemplateColumn Header="操作" Width="380">
+            <DataGridTemplateColumn Header="操作" Width="360">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
-                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="HorizontalContentAlignment" Value="Right" />
                     </Style>
                 </DataGridTemplateColumn.CellStyle>
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
                             <Button Content="查看"
-                                    Style="{StaticResource PrimaryButton}"
-                                    Padding="8,4"
-                                    FontSize="12"
-                                    Margin="2"
+                                    Style="{StaticResource InfoButton}"
+                                    Margin="4,0"
                                     ToolTip="查看药材详情"
                                     Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
-                            <Button Content="编辑"
-                                    Style="{StaticResource SuccessButton}"
-                                    Padding="8,4"
-                                    FontSize="12"
-                                    Margin="2"
-                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
                             <Button Content="状态"
-                                    Style="{StaticResource InfoButton}"
-                                    Padding="8,4"
-                                    FontSize="12"
-                                    Margin="2"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="4,0"
                                     Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <!-- OpenSpec: add-global-audit-system -->
                             <Button Content="记录"
                                     Style="{StaticResource SecondaryButton}"
-                                    Padding="8,4"
-                                    FontSize="12"
-                                    Margin="2"
+                                    Margin="4,0"
                                     ToolTip="查看变更记录"
                                     Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                             <Button Content="删除"
                                     Style="{StaticResource DangerButton}"
-                                    Padding="8,4"
-                                    FontSize="12"
-                                    Margin="2"
+                                    Margin="4,0"
                                     Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
                         </StackPanel>

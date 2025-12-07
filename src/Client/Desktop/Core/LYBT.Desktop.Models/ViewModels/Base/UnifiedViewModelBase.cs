@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using LYBT.Desktop.Infrastructure.Interfaces;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
+using Prism.Ioc;
 using Prism.Regions;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
@@ -98,7 +100,45 @@ namespace LYBT.Desktop.Models.ViewModels.Base
             catch (Exception ex) { Logger.LogError(ex, "返回主页失败"); HandleError(ex, "返回主页"); }
         }
 
-        protected virtual string GetHomeViewName() => "AdminHomeView";
+        protected virtual string GetHomeViewName()
+        {
+            // 获取 SessionManager - 优先使用构造函数注入的，否则从容器获取
+            var sessionManager = SessionManager;
+            if (sessionManager == null)
+            {
+                try
+                {
+                    sessionManager = ContainerLocator.Container?.Resolve<ISessionManager>();
+                    Logger.LogDebug("GetHomeViewName: SessionManager 为 null，从容器获取");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "GetHomeViewName: 无法从容器获取 SessionManager");
+                }
+            }
+
+            var role = sessionManager?.CurrentUser?.Role;
+            Logger.LogDebug("GetHomeViewName: 当前用户角色 = {Role}, SessionManager = {HasSession}",
+                role, sessionManager != null ? "已获取" : "null");
+
+            // 管理员角色优先判断 - 返回管理员主页
+            if (role == UserRole.Admin || role == UserRole.SuperAdmin)
+            {
+                Logger.LogDebug("导航到管理员主页: AdminHomeView");
+                return "AdminHomeView";
+            }
+
+            // 医生角色 - 返回临床主页
+            if (role == UserRole.Doctor)
+            {
+                Logger.LogDebug("导航到临床主页: ClinicalHomeView");
+                return "ClinicalHomeView";
+            }
+
+            // 默认返回管理员主页（未知角色或未登录时）
+            Logger.LogWarning("未知用户角色 {Role}，默认返回管理员主页", role);
+            return "AdminHomeView";
+        }
 
         public virtual bool IsNavigationTarget(NavigationContext navigationContext) => true;
         public virtual void OnNavigatedFrom(NavigationContext navigationContext) => Logger.LogDebug("离开页面: {PageTitle}", PageTitle);

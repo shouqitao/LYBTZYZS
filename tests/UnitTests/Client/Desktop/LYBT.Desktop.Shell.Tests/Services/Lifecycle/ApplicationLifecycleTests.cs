@@ -300,12 +300,7 @@ public class ApplicationLifecycleTests
     public void RemoveStateHandler_ShouldRemoveHandler()
     {
         // Arrange
-        var handlerCalled = false;
-        _sut.RegisterStateHandler(ApplicationState.Initializing, () =>
-        {
-            handlerCalled = true;
-            return Task.CompletedTask;
-        });
+        _sut.RegisterStateHandler(ApplicationState.Initializing, () => Task.CompletedTask);
 
         // Act
         _sut.RemoveStateHandler(ApplicationState.Initializing);

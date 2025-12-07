@@ -24,7 +24,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     // 状态
     private DateTime _lastActivityTime;
     private bool _isTracking;
-    private bool _warningShown;
     private bool _disposed;
     private long _lastCheckTickCount;
 
@@ -131,7 +130,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
             }
 
             _lastActivityTime = DateTime.Now;
-            _warningShown = false;
             _lastCheckTickCount = _tickService.TickCount;
 
             // 订阅输入事件
@@ -161,7 +159,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
             _tickService.Tick -= OnTick;
 
             _isTracking = false;
-            _warningShown = false;
             _logger.LogInformation("UserActivityTracker已停止追踪");
         }
     }
@@ -172,7 +169,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         lock (_lock)
         {
             _lastActivityTime = DateTime.Now;
-            _warningShown = false;
         }
 
         _logger.LogDebug("用户活动计时器已重置");
@@ -196,13 +192,6 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
         lock (_lock)
         {
             _lastActivityTime = DateTime.Now;
-
-            // 如果之前显示过警告,现在用户有活动,重置警告状态
-            if (_warningShown)
-            {
-                _warningShown = false;
-                _logger.LogDebug("用户活动检测到,警告状态已重置");
-            }
         }
     }
 
@@ -222,13 +211,11 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
     private void CheckInactivity()
     {
         DateTime lastActivity;
-        bool warningShown;
         bool isTracking;
 
         lock (_lock)
         {
             lastActivity = _lastActivityTime;
-            warningShown = _warningShown;
             isTracking = _isTracking;
         }
 
@@ -239,30 +226,21 @@ public class UserActivityTracker : IUserActivityTracker, IUserActivityState, IDi
 
         var elapsed = DateTime.Now - lastActivity;
         var totalTimeoutMinutes = _inactivityTimeoutMinutes;
-        var warningThresholdMinutes = totalTimeoutMinutes - _warningBeforeTimeoutMinutes;
 
-        // 检查是否已超时
+        // 检查是否已超时 - 直接过期，不显示警告对话框
         if (elapsed.TotalMinutes >= totalTimeoutMinutes)
         {
             _logger.LogWarning("用户不活跃时间已超过{Timeout}分钟,触发会话过期", totalTimeoutMinutes);
+
+            // 先停止追踪，避免重复触发
+            StopTracking();
+
             OnSessionExpired();
             return;
         }
 
-        // 检查是否需要显示警告
-        if (!warningShown && elapsed.TotalMinutes >= warningThresholdMinutes)
-        {
-            lock (_lock)
-            {
-                _warningShown = true;
-            }
-
-            var remainingTime = TimeSpan.FromMinutes(totalTimeoutMinutes) - elapsed;
-            _logger.LogInformation("用户不活跃时间已达{Elapsed:F1}分钟,显示过期警告 (剩余{Remaining:F1}分钟)",
-                elapsed.TotalMinutes, remainingTime.TotalMinutes);
-
-            OnSessionExpiring(remainingTime);
-        }
+        // 移除警告逻辑 - 静默等待会话过期，避免弹窗打扰用户
+        // SessionExpiring事件不再触发，会话直接过期后再提示用户重新登录
     }
 
     private void OnSessionExpiring(TimeSpan remainingTime)

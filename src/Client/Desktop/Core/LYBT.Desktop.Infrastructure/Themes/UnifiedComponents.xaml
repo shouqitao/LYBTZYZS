@@ -55,9 +55,12 @@
          Color System - 颜色系统
          ==================================================================== -->
     <!-- Primary Colors -->
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#0078D4"/>
+    <Color x:Key="PrimaryColor">#0078D4</Color>
+    <Color x:Key="PrimaryLightColor">#4A90E2</Color>
+    <Color x:Key="PrimaryDarkColor">#005A9E</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
     <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#106EBE"/>
-    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#005A9E"/>
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryDarkColor}"/>
 
     <!-- Secondary Colors -->
     <SolidColorBrush x:Key="SecondaryBrush" Color="#8A8886"/>
@@ -326,6 +329,80 @@
         </Setter>
     </Style>
 
+    <!-- 可编辑文本框样式 - 支持只读/编辑模式切换
+         OpenSpec: unify-detail-view-style - 用于详情页表单字段 -->
+    <Style x:Key="EditableTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource CornerRadiusSmall}">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- 只读模式：浅灰背景，无边框高亮 -->
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+                        </Trigger>
+                        <!-- 编辑模式：聚焦时蓝色边框 -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="True"/>
+                                <Condition Property="IsReadOnly" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </MultiTrigger>
+                        <!-- 悬停效果（非只读时） -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsReadOnly" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource SecondaryBrush}"/>
+                        </MultiTrigger>
+                        <!-- 禁用状态 -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{StaticResource DividerBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 查看模式值显示样式 - OpenSpec: refactor-detail-view-container
+         用于详情页查看模式下的只读值展示，无边框纯文本 -->
+    <Style x:Key="ValueDisplayStyle" TargetType="TextBlock">
+        <Setter Property="Padding" Value="0,10"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- 标签+值对样式 - OpenSpec: refactor-detail-view-container
+         用于查看模式下的标签-值组合展示 -->
+    <Style x:Key="LabelValueStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
+
     <!-- ====================================================================
          ComboBox Styles - 下拉框样式
          ==================================================================== -->
@@ -454,6 +531,116 @@
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Padding" Value="{StaticResource SpacingMedium}"/>
+    </Style>
+
+    <!-- ====================================================================
+         Detail View Styles - 详情页样式
+         OpenSpec: unify-detail-view-style
+         统一所有实体详情页的布局和样式
+         ==================================================================== -->
+
+    <!-- 详情页顶部工具栏样式 - 高度56px，主色调背景 -->
+    <Style x:Key="DetailViewToolbarStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Height" Value="56"/>
+        <Setter Property="Padding" Value="16,0"/>
+    </Style>
+
+    <!-- 详情页标题样式 - 白色粗体文字 -->
+    <Style x:Key="DetailViewTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- 详情页工具栏按钮样式（返回按钮等） -->
+    <Style x:Key="DetailViewToolbarButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource CornerRadiusSmall}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#20FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#40FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 详情页编辑按钮样式（右上角醒目） -->
+    <Style x:Key="DetailViewEditButtonStyle" TargetType="Button" BasedOn="{StaticResource DetailViewToolbarButtonStyle}">
+        <Setter Property="Background" Value="#20FFFFFF"/>
+        <Setter Property="Padding" Value="20,8"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- 详情页内容区域样式 - 自适应高度，适当边距 -->
+    <Style x:Key="DetailViewContentStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="24,20"/>
+    </Style>
+
+    <!-- 详情页底部操作栏样式 - 高度56px，浅色背景 -->
+    <Style x:Key="DetailViewFooterStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Height" Value="56"/>
+        <Setter Property="Padding" Value="24,0"/>
+    </Style>
+
+    <!-- 表单字段容器样式 -->
+    <Style x:Key="FormFieldStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,24,16"/>
+    </Style>
+
+    <!-- 表单标签样式 - 小号灰色文字 -->
+    <Style x:Key="FormLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <!-- 表单值样式 - 正常大小文字 -->
+    <Style x:Key="FormValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- 加载遮罩样式 - 半透明黑色背景 -->
+    <Style x:Key="LoadingOverlayStyle" TargetType="Grid">
+        <Setter Property="Background" Value="#80000000"/>
+    </Style>
+
+    <!-- 加载中文字样式 -->
+    <Style x:Key="LoadingTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
 </ResourceDictionary>

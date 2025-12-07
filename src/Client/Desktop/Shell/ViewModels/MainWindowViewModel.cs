@@ -308,6 +308,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>
     /// Token生命周期状态变更事件处理
     /// Issue #1864: 客户端Token生命周期管理
+    /// 移除Warning对话框，静默处理，仅在Token真正过期时提示
     /// </summary>
     private async void OnTokenLifecycleStateChanged(TokenLifecycleStateChangedEventArgs args)
     {
@@ -318,7 +319,9 @@ public class MainWindowViewModel : UnifiedViewModelBase
             switch (args.CurrentState)
             {
                 case TokenLifecycleState.Warning:
-                    await HandleTokenWarningAsync(args);
+                    // 静默处理，仅记录日志，不打扰用户（Token会自动刷新）
+                    var remainingMinutes = args.RemainingTime?.TotalMinutes ?? 0;
+                    Logger.LogDebug("Token即将过期，剩余时间: {RemainingMinutes:F1} 分钟，系统将自动刷新", remainingMinutes);
                     break;
 
                 case TokenLifecycleState.Expired:
@@ -326,18 +329,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
                     break;
             }
         });
-    }
-
-    /// <summary>处理Token即将过期警告</summary>
-    private async Task HandleTokenWarningAsync(TokenLifecycleStateChangedEventArgs args)
-    {
-        var remainingMinutes = args.RemainingTime?.TotalMinutes ?? 0;
-        var message = $"您的登录凭证将在约 {remainingMinutes:F0} 分钟后过期。\n\n系统正在尝试自动刷新，如果刷新失败，您需要重新登录。";
-
-        Logger.LogWarning("Token即将过期，剩余时间: {RemainingMinutes:F1} 分钟", remainingMinutes);
-
-        // 显示提示信息（非阻塞）
-        await ShowSuccessMessageAsync(message);
     }
 
     /// <summary>处理Token已过期</summary>

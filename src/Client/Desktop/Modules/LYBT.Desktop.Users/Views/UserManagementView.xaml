@@ -71,10 +71,10 @@
             <!-- 邮箱 -->
             <DataGridTextColumn Header="邮箱"
                                 Binding="{Binding Email}"
-                                Width="220" />
+                                Width="*" />
 
             <!-- 操作列 - OpenSpec: add-global-audit-system 增加审计按钮 -->
-            <DataGridTemplateColumn Header="操作" Width="510">
+            <DataGridTemplateColumn Header="操作" Width="420">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -82,17 +82,14 @@
                 </DataGridTemplateColumn.CellStyle>
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
                             <Button Content="查看"
-                                    Style="{StaticResource SecondaryButton}"
+                                    Style="{StaticResource InfoButton}"
                                     Margin="4,0"
+                                    ToolTip="查看用户详情"
                                     Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
-                            <Button Content="编辑"
-                                    Style="{StaticResource SuccessButton}"
-                                    Margin="4,0"
-                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
                             <Button Content="重置密码"
                                     Style="{StaticResource WarningButton}"
                                     Margin="4,0"

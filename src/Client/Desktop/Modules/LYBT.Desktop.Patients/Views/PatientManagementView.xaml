@@ -59,7 +59,7 @@
             <!-- 身份证号 -->
             <DataGridTextColumn Header="身份证号"
                                 Binding="{Binding IdNumber}"
-                                Width="180" />
+                                Width="*" />
 
             <!-- 就诊次数 -->
             <DataGridTextColumn Header="就诊次数"
@@ -75,19 +75,14 @@
                 </DataGridTemplateColumn.CellStyle>
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
                             <Button Content="查看"
-                                    Style="{StaticResource PrimaryButton}"
+                                    Style="{StaticResource InfoButton}"
                                     Margin="4,0"
                                     ToolTip="查看患者详情"
                                     Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}" />
-                            <Button Content="编辑"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Margin="4,0"
-                                    ToolTip="编辑患者信息"
-                                    Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
                             <!-- OpenSpec: add-global-audit-system -->
                             <Button Content="记录"
                                     Style="{StaticResource SecondaryButton}"

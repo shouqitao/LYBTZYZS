@@ -77,7 +77,7 @@
 
             <!--  主诉  -->
             <DataGridTextColumn
-                Width="200"
+                Width="*"
                 Binding="{Binding ChiefComplaint}"
                 Header="主诉症状" />
 
@@ -97,67 +97,53 @@
             </DataGridTemplateColumn>
 
             <!--  操作  -->
-            <DataGridTemplateColumn Width="480" Header="操作">
+            <DataGridTemplateColumn Width="460" Header="操作">
+                <DataGridTemplateColumn.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="HorizontalContentAlignment" Value="Right" />
+                    </Style>
+                </DataGridTemplateColumn.CellStyle>
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,12,0">
                             <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Content="查看详情"
-                                FontSize="12"
+                                Content="查看"
                                 Style="{StaticResource InfoButton}" />
+                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
                             <Button
-                                Margin="2"
-                                Padding="8,4"
-                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Content="编辑"
-                                FontSize="12"
-                                Style="{StaticResource SuccessButton}" />
-                            <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Content="诊疗记录"
-                                FontSize="12"
-                                Style="{StaticResource InfoButton}" />
+                                Content="诊疗"
+                                Style="{StaticResource PrimaryButton}" />
                             <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Content="开具处方"
-                                FontSize="12"
+                                Content="处方"
                                 Style="{StaticResource WarningButton}" />
                             <!--  OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 变更记录按钮  -->
                             <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.ViewAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
-                                Content="变更记录"
-                                FontSize="12"
+                                Content="记录"
                                 Style="{StaticResource SecondaryButton}"
                                 ToolTip="查看医案变更历史" />
                             <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Content="打印"
-                                FontSize="12"
                                 Style="{StaticResource SecondaryButton}" />
                             <Button
-                                Margin="2"
-                                Padding="8,4"
+                                Margin="4,0"
                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Content="删除"
-                                FontSize="12"
                                 Style="{StaticResource DangerButton}" />
                         </StackPanel>
                     </DataTemplate>
@@ -208,15 +194,17 @@
 
         <!--  操作按钮区域  -->
         <!--  refactor-medicalcase-management: 移除"新建案例"按钮，创建入口仅限临床工作流  -->
+        <!--  使用 RelativeSource 绑定确保 DataContext 正确传递  -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
                 <Button
                     Margin="{StaticResource SpacingSmall}"
-                    Command="{Binding RefreshCommand}"
+                    Command="{Binding DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                     Content="刷新"
                     Style="{StaticResource SecondaryButton}" />
                 <Button
-                    Command="{Binding NavigateToHomeCommand}"
+                    Margin="{StaticResource SpacingSmall}"
+                    Command="{Binding DataContext.NavigateToHomeCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                     Content="返回主页"
                     Style="{StaticResource PrimaryButton}"
                     ToolTip="返回管理员主页" />
