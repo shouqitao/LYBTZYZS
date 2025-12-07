@@ -50,6 +50,19 @@ LYBT.Desktop.Shell/
 │   ├── ServiceCollectionExtensions.cs          # 服务注册扩展（批量服务注册）
 │   └── ErrorHandlingServiceExtensions.cs       # 错误处理扩展（全局异常捕获）
 │
+├── Services/                                   # Shell层服务
+│   ├── Bootstrap/                              # 启动引导服务
+│   │   ├── IApplicationBootstrapper.cs         # 启动引导接口（角色驱动模块加载）
+│   │   └── ApplicationBootstrapper.cs          # 启动引导实现
+│   ├── HealthCheck/                            # API健康检查服务
+│   │   ├── IHealthCheckCoordinator.cs          # 健康检查协调器接口
+│   │   └── HealthCheckCoordinator.cs           # 健康检查协调器实现（定时检查、状态通知）
+│   └── Startup/                                # 启动管道服务
+│       ├── IStartupPipeline.cs                 # 启动管道接口
+│       ├── StartupPipeline.cs                  # 启动管道实现（唯一启动入口）
+│       └── Steps/                              # 启动步骤
+│           └── ...                             # 各启动步骤实现
+│
 └── Styles/                                     # 样式资源（1个通用样式）
     └── CommonStyles.xaml                       # 通用样式定义（按钮、文本框、标题等）
 ```
@@ -59,6 +72,10 @@ LYBT.Desktop.Shell/
 - **MainWindow**: 主窗口容器（标题栏显示用户信息、菜单栏导航、Region内容区、状态栏实时时间）
 - **Dialogs**: Prism对话框服务实现（3个标准对话框覆盖常见交互场景）
 - **Extensions**: 服务注册和错误处理的扩展方法（简化启动配置）
+- **Services**: Shell层核心服务
+  - **Bootstrap**: 角色驱动的模块加载（ApplicationBootstrapper）
+  - **HealthCheck**: API健康检查协调器（定时检查、状态变更事件、与MainWindowViewModel解耦）
+  - **Startup**: 启动管道（唯一启动入口，替代分散的初始化逻辑）
 - **Styles**: 共享样式资源（Material Design风格，支持主题切换）
 
 ## 🔗 依赖关系
@@ -1830,5 +1847,5 @@ LYBT.Desktop.Shell.exe
 
 ---
 
-**最后更新**: 2025-10-29
+**最后更新**: 2025-12-07
 **维护负责**: Client端开发组

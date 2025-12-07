@@ -37,6 +37,7 @@ using LYBT.Desktop.Presentation.UserExperience;
 using LYBT.Desktop.Shell.Services;
 using LYBT.Desktop.Shell.Services.Bootstrap;
 using LYBT.Desktop.Shell.Services.Diagnostics;
+using LYBT.Desktop.Shell.Services.HealthCheck;
 using LYBT.Desktop.Shell.Services.Lifecycle;
 using LYBT.Desktop.Shell.Services.Login;
 using LYBT.Desktop.Shell.Services.Session;
@@ -156,6 +157,9 @@ namespace LYBT.Desktop.Shell.Extensions
 
             // Shell启动流程重构 - Phase 2 新增Logger
             RegisterLogger<LoginCoordinator>(containerRegistry);
+
+            // Shell架构整合 - HealthCheckCoordinator Logger
+            RegisterLogger<HealthCheckCoordinator>(containerRegistry);
         }
 
         /// <summary>注册业务模块Logger</summary>
@@ -351,6 +355,9 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.Register<IStartupStep, CoreServicesStartupStep>("CoreServices");
             containerRegistry.Register<IStartupStep, ApiHealthCheckStartupStep>("ApiHealthCheck");
             containerRegistry.Register<IStartupStep, WarmupStartupStep>("Warmup");
+
+            // Shell架构整合 - HealthCheckCoordinator服务
+            containerRegistry.RegisterSingleton<IHealthCheckCoordinator, HealthCheckCoordinator>();
         }
     }
 }

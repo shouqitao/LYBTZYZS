@@ -1,7 +1,7 @@
 # shell-layout Specification
 
 ## Purpose
-TBD - created by archiving change remove-statusbar-relocate-status. Update Purpose after archive.
+定义Shell层的布局结构规范，包括无状态栏设计、顶部工具栏状态集成、时间显示规范和健康检查协调器。本规范确保主窗口布局的一致性和可维护性，支持登录后工作台的信息展示需求。
 ## Requirements
 ### Requirement: REQ-SHELL-001 无底部状态栏
 
@@ -72,4 +72,73 @@ TBD - created by archiving change remove-statusbar-relocate-status. Update Purpo
 - **WHEN** 用户查看顶部工具栏
 - **THEN** 时间显示为"14:30"
 - **AND** 不显示秒数
+
+---
+
+### Requirement: REQ-SHELL-004 健康检查协调器
+
+系统 SHALL 使用独立的HealthCheckCoordinator服务管理API健康检查的调度和状态。
+
+**Acceptance Criteria:**
+- 健康检查逻辑从MainWindowViewModel分离到独立服务
+- 健康检查间隔可配置(默认30秒)
+- 支持手动触发重新检查
+- 状态变更通过事件通知订阅者
+
+#### Scenario: 定时健康检查
+- **GIVEN** 用户已登录
+- **AND** 系统正常运行
+- **WHEN** 健康检查间隔时间到达
+- **THEN** HealthCheckCoordinator自动执行健康检查
+- **AND** 更新ApiStatus属性
+- **AND** 触发状态变更事件
+
+#### Scenario: 手动重试健康检查
+- **GIVEN** 用户已登录
+- **AND** API状态显示连接失败
+- **WHEN** 用户点击重试按钮
+- **THEN** HealthCheckCoordinator立即执行健康检查
+- **AND** 更新显示最新状态
+
+## Architecture Overview
+
+Shell层负责应用程序的生命周期管理、窗口布局和用户会话。
+
+### 核心组件
+
+```
+Shell Layer
+├── App.xaml.cs                    # Prism应用入口
+├── ViewModels/
+│   └── MainWindowViewModel.cs     # 主窗口VM
+├── Views/
+│   └── MainWindow.xaml/cs         # 主窗口视图
+└── Services/
+    ├── Bootstrap/                 # 应用启动引导
+    │   └── ApplicationBootstrapper.cs
+    ├── Lifecycle/                 # 应用生命周期状态机
+    │   └── ApplicationLifecycle.cs
+    ├── Login/                     # 登录流程编排
+    │   └── LoginCoordinator.cs
+    ├── Session/                   # 会话生命周期管理
+    │   └── SessionLifecycleManager.cs
+    ├── Startup/                   # 启动管道
+    │   └── StartupPipeline.cs
+    ├── HealthCheck/               # 健康检查协调
+    │   └── HealthCheckCoordinator.cs
+    └── Diagnostics/               # 启动诊断
+        └── StartupDiagnostics.cs
+```
+
+### 生命周期状态机
+
+```
+Initializing → Authenticating → Ready → Running → ShuttingDown
+```
+
+- **Initializing**: 应用启动，执行StartupPipeline
+- **Authenticating**: 等待用户登录
+- **Ready**: 登录成功，准备进入工作台
+- **Running**: 工作台运行中
+- **ShuttingDown**: 应用退出
 

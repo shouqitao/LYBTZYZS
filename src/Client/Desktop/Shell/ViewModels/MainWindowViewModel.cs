@@ -8,6 +8,7 @@ using LYBT.Desktop.Infrastructure.Events;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Shell.Services;
+using LYBT.Desktop.Shell.Services.HealthCheck;
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ namespace LYBT.Desktop.Shell.ViewModels;
 public class MainWindowViewModel : UnifiedViewModelBase
 {
     private readonly IMainWindowServicesFacade _servicesFacade;
-    private readonly IApiHealthCheckService _apiHealthCheckService;
+    private readonly IHealthCheckCoordinator _healthCheckCoordinator;
     private readonly NavigationManager _navigationManager;
     private readonly MenuManager _menuManager;
     private readonly IActiveConsultationService _activeConsultationService;
@@ -38,7 +39,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         IMainWindowServicesFacade servicesFacade,
         ILoggerFactory loggerFactory,
         LYBT.Desktop.Infrastructure.Interfaces.IUserNotificationService userNotificationService,
-        IApiHealthCheckService apiHealthCheckService,
+        IHealthCheckCoordinator healthCheckCoordinator,
         NavigationManager navigationManager,
         MenuManager menuManager,
         IActiveConsultationService activeConsultationService,
@@ -51,7 +52,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         : base(eventAggregator, loggerFactory, regionManager, null, userNotificationService, commonDialogService)
     {
         _servicesFacade = servicesFacade ?? throw new ArgumentNullException(nameof(servicesFacade));
-        _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
+        _healthCheckCoordinator = healthCheckCoordinator ?? throw new ArgumentNullException(nameof(healthCheckCoordinator));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _menuManager = menuManager ?? throw new ArgumentNullException(nameof(menuManager));
         _activeConsultationService = activeConsultationService ?? throw new ArgumentNullException(nameof(activeConsultationService));
@@ -69,8 +70,6 @@ public class MainWindowViewModel : UnifiedViewModelBase
     private bool _isLoggedIn = false;
     private DateTime _currentTime = DateTime.Now;
     private ApiHealthStatus _apiStatus = ApiHealthStatus.Checking;
-    private long _lastHealthCheckTick;
-    private const int HealthCheckIntervalSeconds = 10;
 
     // poc-drawer-layout: Drawer状态
     private bool _isDrawerOpen = false;
@@ -220,36 +219,21 @@ public class MainWindowViewModel : UnifiedViewModelBase
     /// <summary>初始化API健康检查</summary>
     private void InitializeHealthCheck()
     {
-        _lastHealthCheckTick = _tickService.TickCount;
-        _ = Task.Run(async () => await OnHealthCheckTickAsync());
+        _healthCheckCoordinator.StatusChanged += OnHealthStatusChanged;
+        _healthCheckCoordinator.Start();
     }
 
-    /// <summary>健康检查定时器Tick事件处理</summary>
-    private async Task OnHealthCheckTickAsync()
+    /// <summary>健康状态变更事件处理</summary>
+    private void OnHealthStatusChanged(object? sender, HealthStatusChangedEventArgs e)
     {
-        try
-        {
-            ApiStatus = ApiHealthStatus.Checking;
-            var status = await _apiHealthCheckService.CheckHealthAsync(timeout: 5000);
-            ApiStatus = status;
-
-            if (status == ApiHealthStatus.Unhealthy)
-            {
-                Logger.LogWarning("API 健康检查失败: {ErrorMessage}", _apiHealthCheckService.LastErrorMessage);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "执行 API 健康检查时发生异常");
-            ApiStatus = ApiHealthStatus.Unhealthy;
-        }
+        Application.Current?.Dispatcher.BeginInvoke(() => ApiStatus = e.CurrentStatus);
     }
 
     /// <summary>执行重试API健康检查</summary>
     private async Task ExecuteRetryHealthCheckAsync()
     {
         Logger.LogInformation("用户手动触发 API 健康检查");
-        await OnHealthCheckTickAsync();
+        await _healthCheckCoordinator.CheckNowAsync();
     }
 
     /// <summary>初始化事件订阅</summary>
@@ -271,17 +255,11 @@ public class MainWindowViewModel : UnifiedViewModelBase
         InitializeEvents();
     }
 
-    /// <summary>统一Tick处理 - 时钟更新和健康检查</summary>
+    /// <summary>统一Tick处理 - 时钟更新</summary>
     private void OnTick(object? sender, ApplicationTickEventArgs e)
     {
         // UI线程更新时间显示（避免应用关闭时空引用）
         Application.Current?.Dispatcher.BeginInvoke(() => CurrentTime = DateTime.Now);
-
-        if (e.TickCount - _lastHealthCheckTick >= HealthCheckIntervalSeconds)
-        {
-            _lastHealthCheckTick = e.TickCount;
-            _ = OnHealthCheckTickAsync();
-        }
     }
 
     /// <summary>会话即将过期事件处理 - 仅记录日志，不弹窗打扰用户</summary>
@@ -513,6 +491,7 @@ public class MainWindowViewModel : UnifiedViewModelBase
         try
         {
             CleanupTickSubscription();
+            CleanupHealthCheckCoordinator();
             UnsubscribeLoginEvent();
             UnsubscribeTokenLifecycleEvent();
             _navigationManager.UnsubscribeFromRegionCollection();
@@ -529,6 +508,17 @@ public class MainWindowViewModel : UnifiedViewModelBase
         _userActivityTracker.SessionExpiring -= OnSessionExpiring;
         _userActivityTracker.SessionExpired -= OnSessionExpired;
         _userActivityTracker.StopTracking();
+    }
+
+    /// <summary>清理健康检查协调器订阅</summary>
+    private void CleanupHealthCheckCoordinator()
+    {
+        try
+        {
+            _healthCheckCoordinator.StatusChanged -= OnHealthStatusChanged;
+            _healthCheckCoordinator.Dispose();
+        }
+        catch (Exception ex) { Logger.LogError(ex, "清理健康检查协调器失败"); }
     }
 
     /// <summary>取消登录事件订阅</summary>

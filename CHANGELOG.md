@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Shell层架构整合 (OpenSpec: consolidate-shell-architecture) - 2025-12-07
+
+**健康检查服务提取:**
+- 新增`IHealthCheckCoordinator`接口和`HealthCheckCoordinator`实现
+- 从`MainWindowViewModel`提取健康检查逻辑，降低ViewModel复杂度
+- 健康检查通过事件驱动通知UI状态变更
+
+**启动架构规范化:**
+- 清理`ApplicationBootstrapper`废弃方法，仅保留`LoadModulesForRoleAsync`
+- 确认`StartupPipeline`为唯一启动入口
+- 更新`IApplicationBootstrapper`接口，移除死代码
+
+**规范文档更新:**
+- `login-ui`规范添加Purpose描述
+- `shell-layout`规范添加Purpose描述和Shell层架构概述
+- `Shell/README.md`更新Services目录结构
+
 #### DetailView UI风格统一 (OpenSpec: unify-detail-view-style) - 2025-12-07
 
 **操作模式统一:**
