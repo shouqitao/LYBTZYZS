@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### DetailView容器化重构 (OpenSpec: refactor-detail-view-container) - 2025-12-07
+
+**新增容器组件:**
+- `BaseDetailContainer` - 详情页容器控件，支持查看/编辑模式独立内容定义
+- `InfoCard` - 信息卡片控件，用于查看模式下的信息分组展示
+
+**容器化迁移:**
+- `HerbDetailView` - 药材详情页
+- `PatientDetailView` - 患者详情页
+- `UserDetailView` - 用户详情页
+- `FormulaDetailView` - 验方详情页
+- `MedicalCaseDetailView` - 医案详情页
+
+**过渡动画:**
+- 页面加载淡入动画 (0.3s CubicEase)
+- 查看/编辑模式切换动画 (0.25s 淡入+滑动)
+- Footer 底部滑入动画
+
+**新增OpenSpec规范:**
+- `desktop-detail-views`: 详情页容器组件规范
+
 #### Shell启动流程重构 (OpenSpec: refactor-shell-startup-flow) - 2025-12-05
 
 **架构改进:**
