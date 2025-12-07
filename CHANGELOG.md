@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### DetailView UI风格统一 (OpenSpec: unify-detail-view-style) - 2025-12-07
+
+**操作模式统一:**
+- 编辑按钮从列表页移至详情页右上角
+- 所有5个ManagementView移除编辑按钮
+- 统一操作流程：查看 -> 详情页 -> 编辑
+
+**样式规范扩展:**
+- 新增 `ui-style-conventions` 规范要求:
+  - UI-010: Detail View Layout Convention (三行布局)
+  - UI-011: Detail View Shared Styles (共享样式)
+  - UI-012: Form Layout Flexibility (表单布局)
+  - UI-013: Detail View Style Prohibition (禁止重复样式)
+
 ### Added
 
 #### DetailView容器化重构 (OpenSpec: refactor-detail-view-container) - 2025-12-07
