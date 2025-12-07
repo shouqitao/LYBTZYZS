@@ -88,13 +88,11 @@
 - **THEN** 使用 `Width="*"` 比例宽度
 - **AND** NOT 使用固定像素宽度
 
-## MODIFIED Requirements
+### Requirement: UI-013 Detail View Style Prohibition
 
-### Requirement: UI-003 Style Reference Pattern (Modified)
+详情页 MUST NOT 定义重复的本地样式。
 
-View中引用样式 MUST 使用StaticResource，详情页 MUST NOT 定义重复的本地样式。
-
-**新增规范**:
+**规范**:
 - 详情页禁止定义 `FormLabelStyle`、`EditableTextBoxStyle` 等本地样式
 - 所有详情页共享样式定义在 `UnifiedComponents.xaml`
 
