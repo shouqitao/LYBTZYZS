@@ -11,12 +11,21 @@ namespace LYBT.Module.Formulas.Interfaces
     {
         /// <summary>
         /// 分页查询验方（Issue #1164: 扩展支持分类筛选）
+        /// optimize-api-permissions: 添加角色过滤参数
         /// </summary>
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页数量</param>
         /// <param name="keyword">搜索关键字</param>
         /// <param name="category">分类筛选（可选）</param>
-        Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
+        /// <param name="currentUserId">当前用户ID（用于角色过滤）</param>
+        /// <param name="isAdmin">是否为Admin/SuperAdmin角色</param>
+        Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            string? category = null,
+            Guid? currentUserId = null,
+            bool isAdmin = false);
 
         /// <summary>
         /// 根据ID获取验方详情

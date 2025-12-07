@@ -112,13 +112,14 @@ public static class AuthenticationServiceCollectionExtensions
             //     .Build();
 
             // 定义基于角色的策略
+            // optimize-api-permissions: 添加SuperAdmin支持
             options.AddPolicy("AdminOnly", policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("Admin"));
+                      .RequireRole("SuperAdmin", "Admin"));
 
             options.AddPolicy("DoctorOrAdmin", policy =>
                 policy.RequireAuthenticatedUser()
-                      .RequireRole("Doctor", "Admin"));
+                      .RequireRole("SuperAdmin", "Admin", "Doctor"));
 
             options.AddPolicy("RequireAuthenticated", policy =>
                 policy.RequireAuthenticatedUser());
@@ -128,6 +129,10 @@ public static class AuthenticationServiceCollectionExtensions
         // refactor-authorization-system: AUTHZ-001
         // 必须使用Scoped，因为依赖Scoped的IMedicalCasePermissionService
         services.AddScoped<IAuthorizationHandler, MedicalCaseAuthorizationHandler>();
+
+        // optimize-api-permissions: 注册Formula授权处理器
+        // FormulaAuthorizationHandler只依赖ILogger，可以使用Scoped或Singleton
+        services.AddScoped<IAuthorizationHandler, FormulaAuthorizationHandler>();
 
         return services;
     }

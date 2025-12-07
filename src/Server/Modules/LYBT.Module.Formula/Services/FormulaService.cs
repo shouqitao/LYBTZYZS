@@ -34,16 +34,35 @@ namespace LYBT.Module.Formulas.Services
             _logger = logger;
         }
 
-        public async Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        public async Task<Result<PagedResult<FormulaDto>>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            string? category = null,
+            Guid? currentUserId = null,
+            bool isAdmin = false)
         {
             try
             {
                 // 使用优化后的查询方法，包含Herbs集合
                 var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
 
-                // Issue #1164: 应用分类筛选（MVP阶段内存过滤，Formula实体有Category字段）
+                // optimize-api-permissions: 应用角色过滤
+                // Admin/SuperAdmin可以看到所有Formula
+                // Doctor只能看到自己创建的或共享的Formula
                 var filteredItems = pagedResult.Items.AsEnumerable();
 
+                if (!isAdmin && currentUserId.HasValue)
+                {
+                    filteredItems = filteredItems.Where(f =>
+                        f.UserId == currentUserId.Value || f.IsShared);
+
+                    _logger.LogDebug(
+                        "应用角色过滤: UserId={UserId}, 原数量={OriginalCount}",
+                        currentUserId.Value, pagedResult.Items.Count);
+                }
+
+                // Issue #1164: 应用分类筛选（MVP阶段内存过滤，Formula实体有Category字段）
                 if (!string.IsNullOrWhiteSpace(category))
                 {
                     filteredItems = filteredItems.Where(f =>
@@ -53,10 +72,13 @@ namespace LYBT.Module.Formulas.Services
 
                 var filteredList = filteredItems.ToList();
 
+                // 注意: 当应用了角色过滤或分类过滤时，TotalCount需要更新
+                var needsRecalculateTotal = (!isAdmin && currentUserId.HasValue) || !string.IsNullOrWhiteSpace(category);
+
                 var dto = new PagedResult<FormulaDto>
                 {
                     Items = _mapper.Map<List<FormulaDto>>(filteredList),
-                    TotalCount = !string.IsNullOrWhiteSpace(category) ? filteredList.Count : pagedResult.TotalCount,
+                    TotalCount = needsRecalculateTotal ? filteredList.Count : pagedResult.TotalCount,
                     CurrentPage = pagedResult.CurrentPage,
                     PageSize = pagedResult.PageSize
                 };

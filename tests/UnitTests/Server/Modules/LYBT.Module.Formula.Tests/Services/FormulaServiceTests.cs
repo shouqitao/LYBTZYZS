@@ -280,7 +280,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 .ReturnsAsync(pagedResult);
 
             // Act
-            var result = await _formulaService.GetPagedAsync(1, 20, null);
+            // optimize-api-permissions: 使用新签名，Admin查看所有
+            var result = await _formulaService.GetPagedAsync(1, 20, null, null, null, true);
 
             // Assert
             result.Should().NotBeNull();
@@ -306,7 +307,8 @@ namespace LYBT.Module.Formulas.Tests.Services
                 .ReturnsAsync(pagedResult);
 
             // Act
-            var result = await _formulaService.GetPagedAsync(0, 20, null);
+            // optimize-api-permissions: 使用新签名
+            var result = await _formulaService.GetPagedAsync(0, 20, null, null, null, true);
 
             // Assert
             result.Should().NotBeNull();

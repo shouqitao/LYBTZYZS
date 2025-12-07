@@ -13,10 +13,11 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 患者管理 API - 基础CRUD功能
     /// </summary>
+    /// optimize-api-permissions: 患者管理需Doctor或Admin角色
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "DoctorOrAdmin")]
     public class PatientsController : BaseApiController
     {
         private readonly IPatientService _service;

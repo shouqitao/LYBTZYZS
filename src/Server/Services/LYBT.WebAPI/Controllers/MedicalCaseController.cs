@@ -22,10 +22,12 @@ namespace LYBT.WebAPI.Controllers
     /// 所有写操作通过MedicalCase聚合根
     /// Phase 3: 拆分为三个职责单一的Service
     /// </summary>
+    /// optimize-api-permissions: 医案管理需Doctor或Admin角色
+    /// 资源级授权通过MedicalCaseAuthorizationHandler实现
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/medicalcases")]
-    [Authorize]
+    [Authorize(Policy = "DoctorOrAdmin")]
     public class MedicalCaseController : BaseApiController
     {
         private readonly IMedicalCaseCommandService _commandService;
@@ -60,9 +62,11 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612 - AR-001: 通过聚合根创建
         /// Issue #2212: 提取当前医生ID并传递给Service层
         /// Epic #2210 Phase 3 P0 Bug修复: Entity→DTO映射避免枚举转换错误
+        /// optimize-api-permissions: 只有Doctor可以创建新病案，Admin不能创建
         /// </summary>
         /// <param name="request">创建请求</param>
         [HttpPost]
+        [Authorize(Roles = "Doctor")]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 200)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 404)]
         [ProducesResponseType(typeof(ApiResponse<MedicalCaseDto>), 400)]

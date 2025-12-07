@@ -75,7 +75,7 @@ namespace LYBT.Module.MedicalCases.Services
 
         /// <summary>
         /// 检查用户是否有权创建医案
-        /// 所有已登录用户（医生、管理员）都可以创建医案
+        /// optimize-api-permissions: 只有医生(Doctor)可以创建医案，管理员不能创建
         /// </summary>
         public bool CanCreate(Guid userId, UserRole role)
         {
@@ -86,10 +86,15 @@ namespace LYBT.Module.MedicalCases.Services
                 return false;
             }
 
-            // 医生和管理员都可以创建
-            return role == UserRole.Doctor
-                || role == UserRole.Admin
-                || role == UserRole.SuperAdmin;
+            // optimize-api-permissions: Admin/SuperAdmin不能创建医案，只有Doctor可以
+            // 医案必须由接诊医生创建，管理员只能查看和编辑
+            if (IsAdmin(role))
+            {
+                _logger.LogDebug("权限检查: 管理员({Role})不能创建医案", role);
+                return false;
+            }
+
+            return role == UserRole.Doctor;
         }
 
         /// <summary>

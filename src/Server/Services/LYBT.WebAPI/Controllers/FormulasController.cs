@@ -3,6 +3,7 @@ using LYBT.Infrastructure.Web;
 using LYBT.Module.Formulas.Interfaces;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Formula;
+using LYBT.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -12,10 +13,12 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 验方管理 API - 基础CRUD功能
     /// </summary>
+    /// optimize-api-permissions: 验方管理需Doctor或Admin角色
+    /// 资源级授权通过FormulaAuthorizationHandler实现
     [ApiController]
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "DoctorOrAdmin")]
     public class FormulasController : BaseApiController
     {
         private readonly IFormulaService _service;
@@ -28,6 +31,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 获取验方列表 - 支持分页和查询（Issue #1164: 扩展支持分类筛选）
+        /// optimize-api-permissions: 添加角色过滤，Doctor只能看到自己的和共享的验方
         /// </summary>
         [HttpGet]
         [OutputCache(PolicyName = "FormulasCache")]
@@ -45,7 +49,14 @@ namespace LYBT.WebAPI.Controllers
                     return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
                 }
 
-                var result = await _service.GetPagedAsync(page, pageSize, keyword, category);
+                // optimize-api-permissions: 获取当前用户信息用于角色过滤
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+
+                var result = await _service.GetPagedAsync(
+                    page, pageSize, keyword, category,
+                    currentUserId: operatorId,
+                    isAdmin: isAdmin);
                 return HandlePagedResult(result, "查询成功");
             }
             catch (Exception ex)

@@ -12,10 +12,11 @@ namespace LYBT.WebAPI.Controllers
     /// <summary>
     /// 用户管理控制器 - 简化版（仅CRUD）
     /// </summary>
+    /// optimize-api-permissions: 用户管理仅限Admin角色访问
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
