@@ -54,8 +54,14 @@ namespace LYBT.Module.Formulas.Services
 
                 if (!isAdmin && currentUserId.HasValue)
                 {
+                    // 过滤条件：用户可以看到:
+                    // 1. UserId匹配的验方（优先）
+                    // 2. CreatedBy匹配的验方（当UserId为NULL时的回退）
+                    // 3. IsShared=true的共享验方
                     filteredItems = filteredItems.Where(f =>
-                        f.UserId == currentUserId.Value || f.IsShared);
+                        f.UserId == currentUserId.Value ||
+                        f.CreatedBy == currentUserId.Value ||
+                        f.IsShared);
 
                     _logger.LogDebug(
                         "应用角色过滤: UserId={UserId}, 原数量={OriginalCount}",
@@ -110,11 +116,12 @@ namespace LYBT.Module.Formulas.Services
             }
         }
 
-        public async Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto)
+        public async Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null)
         {
             try
             {
                 // Issue #2014: 手动创建entity（不依赖AutoMapper处理Herbs集合）
+                // OpenSpec: implement-formula-copy-flow - 设置UserId用于所有权过滤
                 var entity = new Formula
                 {
                     Name = dto.Name,
@@ -128,6 +135,7 @@ namespace LYBT.Module.Formulas.Services
                     IsShared = dto.IsShared,
                     Status = CommonStatus.Enabled,
                     ValidationStatus = FormulaValidationStatus.Draft,
+                    UserId = creatorId, // OpenSpec: implement-formula-copy-flow - 设置创建者ID
                     Herbs = dto.Herbs?.Select(h => new FormulaHerbItem
                     {
                         HerbId = h.HerbId,

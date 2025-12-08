@@ -92,6 +92,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 新增验方
+        /// OpenSpec: implement-formula-copy-flow - 传递当前用户ID用于设置验方所有权
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
@@ -99,7 +100,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                var result = await _service.CreateAsync(dto);
+                // OpenSpec: implement-formula-copy-flow - 获取当前用户ID并传递给服务
+                var (operatorId, _, _) = GetOperator();
+                var result = await _service.CreateAsync(dto, operatorId);
                 if (!result.IsSuccess || result.Data == null)
                 {
                     return BusinessFail(result.ErrorMessage ?? "新增验方失败");

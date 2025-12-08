@@ -46,10 +46,29 @@ namespace LYBT.Desktop.Formula.ViewModels
         public bool IsEditMode
         {
             get => _isEditMode;
-            set { if (SetProperty(ref _isEditMode, value)) { RaisePropertyChanged(nameof(IsReadOnly)); UpdateCommandStates(); } }
+            set
+            {
+                if (SetProperty(ref _isEditMode, value))
+                {
+                    RaisePropertyChanged(nameof(IsReadOnly));
+                    RaisePropertyChanged(nameof(CanCopy));  // OpenSpec: implement-formula-copy-flow
+                    UpdateCommandStates();
+                }
+            }
         }
 
         public bool IsReadOnly => !IsEditMode;
+
+        /// <summary>是否是自己创建的验方 - OpenSpec: implement-formula-copy-flow</summary>
+        public bool IsOwnFormula =>
+            FormulaId == Guid.Empty ||  // 新建模式
+            (Formula?.CreatedBy != null && Formula.CreatedBy == SessionManager?.CurrentUser?.Id);
+
+        /// <summary>是否可编辑 - 自己的验方或管理员可编辑</summary>
+        public bool CanEdit => IsOwnFormula || SessionManager?.IsAdmin() == true;
+
+        /// <summary>是否显示复制按钮 - 查看模式下所有验方都可复制（自己的可微调，他人的可借鉴）</summary>
+        public bool CanCopy => Formula != null && !IsEditMode && FormulaId != Guid.Empty;
 
         [Required(ErrorMessage = "配方名称不能为空")]
         [StringLength(100, ErrorMessage = "配方名称长度不能超过100个字符")]
@@ -113,12 +132,12 @@ namespace LYBT.Desktop.Formula.ViewModels
             _containerProvider = containerProvider ?? throw new ArgumentNullException(nameof(containerProvider));
 
             LoadDataCommand = new DelegateCommand(async () => await LoadDataAsync());
-            EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode);
+            EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode && CanEdit);
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), () => !IsBusy && Formula != null && IsEditMode && !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors);
             CancelEditCommand = new DelegateCommand(CancelEdit, () => !IsBusy && Formula != null && IsEditMode);
             BackCommand = new DelegateCommand(() => NavigateTo("ContentRegion", "FormulaManagementView"));
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => !IsBusy && Formula != null && !IsEditMode);
-            CopyAsMyFormulaCommand = new DelegateCommand(ExecuteCopyAsMyFormula, () => !IsBusy && Formula != null && !IsEditMode);
+            CopyAsMyFormulaCommand = new DelegateCommand(ExecuteCopyAsMyFormula, () => !IsBusy && Formula != null && CanCopy);
             PrintCommand = new DelegateCommand(ExecutePrint, () => !IsBusy && Formula != null);
             ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, () => !IsBusy && Formula != null);
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
@@ -175,16 +194,46 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         /// <summary>从复制源验方加载数据用于预填充</summary>
         /// <remarks>
-        /// OpenSpec: optimize-module-list-ui - 占位符实现
-        /// 完整的复制逻辑将在验方权限提案中实现:
-        /// 1. 自己的验方：可编辑 + 可复制
-        /// 2. 共享的验方：仅查看 + 可复制
-        /// 3. 复制时预填充名称为"原名(副本)"
+        /// OpenSpec: implement-formula-copy-flow - 实现"复制为我的验方"功能
+        /// 1. 从源验方复制所有字段
+        /// 2. 名称添加"(副本)"后缀
+        /// 3. Id设为Empty（新建模式）
+        /// 4. IsShared设为false（默认不共享）
+        /// 5. 加载药材列表
         /// </remarks>
         private void LoadFromCopySource(FormulaDto source)
         {
-            Logger.LogWarning("复制验方功能占位: {FormulaName}，完整实现待新提案", source.Name);
-            throw new NotImplementedException("复制验方功能正在开发中，请参考OpenSpec提案：formula-permission-and-copy");
+            Logger.LogInformation("从复制源加载验方数据: {SourceName} (ID: {SourceId})", source.Name, source.Id);
+
+            // 创建新的Formula对象，Id为Empty表示新建
+            // 注：Category是只读计算属性（基于Name自动计算），无需设置
+            Formula = new FormulaDto
+            {
+                Id = Guid.Empty,  // 新建模式
+                Name = $"{source.Name}(副本)",
+                Effect = source.Effect,
+                Usage = source.Usage,
+                Property = source.Property,
+                Remark = source.Remark,
+                IsShared = false,  // 默认不共享
+                Status = CommonStatus.Enabled,
+                CreatedBy = SessionManager?.CurrentUser?.Id,  // 设置当前用户为创建者
+                Herbs = source.Herbs?.Select(h => new FormulaHerbItemDto
+                {
+                    HerbId = h.HerbId,
+                    HerbName = h.HerbName,
+                    Quantity = h.Quantity,
+                    Unit = h.Unit,
+                    ProcessingMethod = h.ProcessingMethod
+                }).ToList() ?? new List<FormulaHerbItemDto>()
+            };
+
+            // LoadFormulaData会在Formula setter中自动调用
+            // 确保编辑模式下有空白行
+            EnsureMinimumBlankRows();
+
+            Logger.LogInformation("验方复制预填充完成: {NewName}, 药材数量: {HerbCount}",
+                FormulaName, HerbItems.Count(h => h.HerbId != Guid.Empty));
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)
@@ -449,6 +498,10 @@ namespace LYBT.Desktop.Formula.ViewModels
             RaisePropertyChanged(nameof(UpdatedAtDisplay));
             RaisePropertyChanged(nameof(StatusDisplay));
             RaisePropertyChanged(nameof(HerbCount));
+            // OpenSpec: implement-formula-copy-flow - 确保权限相关属性正确更新
+            RaisePropertyChanged(nameof(CanCopy));
+            RaisePropertyChanged(nameof(CanEdit));
+            RaisePropertyChanged(nameof(IsOwnFormula));
         }
     }
 }

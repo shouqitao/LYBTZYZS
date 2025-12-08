@@ -39,7 +39,8 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
         {
             try
             {
-                _logger.LogInformation("保存配方: {FormulaId}", currentFormula.Id);
+                var isNewFormula = currentFormula.Id == Guid.Empty;
+                _logger.LogInformation("保存配方: {FormulaId}, 是否新建: {IsNew}", currentFormula.Id, isNewFormula);
 
                 // 验证至少有一味药材
                 if (herbInputDtos == null || herbInputDtos.Count == 0)
@@ -47,7 +48,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     return (false, null, "验方必须包含至少一味中药材");
                 }
 
-                var updateDto = new FormulaInputDto
+                var inputDto = new FormulaInputDto
                 {
                     Id = currentFormula.Id,
                     Name = formulaName.Trim(),
@@ -60,8 +61,20 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Herbs = herbInputDtos
                 };
 
-                var updatedFormula = await _repository.UpdateAsync(updateDto);
-                return (true, updatedFormula, null);
+                // OpenSpec: implement-formula-copy-flow - 根据Id判断新建或更新
+                FormulaDto resultFormula;
+                if (isNewFormula)
+                {
+                    _logger.LogInformation("创建新验方: {Name}", formulaName);
+                    resultFormula = await _repository.CreateAsync(inputDto);
+                }
+                else
+                {
+                    _logger.LogInformation("更新验方: {Id}", currentFormula.Id);
+                    resultFormula = await _repository.UpdateAsync(inputDto);
+                }
+
+                return (true, resultFormula, null);
             }
             catch (Exception ex)
             {

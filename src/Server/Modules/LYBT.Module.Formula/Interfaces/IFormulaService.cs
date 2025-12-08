@@ -34,8 +34,11 @@ namespace LYBT.Module.Formulas.Interfaces
 
         /// <summary>
         /// 创建新验方
+        /// OpenSpec: implement-formula-copy-flow - 添加creatorId用于设置验方所有权
         /// </summary>
-        Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto);
+        /// <param name="dto">验方输入数据</param>
+        /// <param name="creatorId">创建者用户ID（用于设置UserId字段）</param>
+        Task<Result<FormulaDto>> CreateAsync(FormulaInputDto dto, Guid? creatorId = null);
 
         /// <summary>
         /// 更新验方信息
