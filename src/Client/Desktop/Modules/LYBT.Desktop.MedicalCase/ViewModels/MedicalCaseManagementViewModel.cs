@@ -30,6 +30,16 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         // Issue #1803: 删除ActiveView属性（MedicalCaseListView已删除，不再需要子视图导航）
 
+        #region 权限属性
+
+        /// <summary>
+        /// 是否为管理员 - OpenSpec: optimize-module-list-ui
+        /// 用于控制管理员专属功能的可见性
+        /// </summary>
+        public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
+
+        #endregion
+
         #region 筛选属性
 
         /// <summary>
@@ -202,13 +212,57 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 批量删除病历（实现基类抽象方法）
-        /// TODO: MedicalCase模块批量删除功能待实现
+        /// OpenSpec: optimize-module-list-ui - 实现批量软删除
         /// </summary>
         protected override async Task OnExecuteBatchDeleteAsync(List<MedicalCaseDto> items)
         {
-            // TODO: 待实现批量删除逻辑
-            await Task.CompletedTask;
-            Logger.LogWarning("MedicalCase模块批量删除功能尚未实现");
+            if (items == null || items.Count == 0)
+            {
+                Logger.LogWarning("OnExecuteBatchDeleteAsync: 病历列表为空");
+                return;
+            }
+
+            Logger.LogInformation("开始批量删除病历，数量: {Count}", items.Count);
+
+            var successCount = 0;
+            var failedCount = 0;
+
+            foreach (var item in items)
+            {
+                try
+                {
+                    // 使用软删除API
+                    var response = await _dataManager.SoftDeleteMedicalCaseAsync(item.Id);
+                    if (response?.Data?.Success == true)
+                    {
+                        successCount++;
+                        Logger.LogInformation("病历删除成功: {CaseNumber}", item.CaseNumber);
+                    }
+                    else
+                    {
+                        failedCount++;
+                        Logger.LogWarning("病历删除失败: {CaseNumber}, 原因: {Message}",
+                            item.CaseNumber, response?.Data?.Message ?? "未知错误");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failedCount++;
+                    Logger.LogError(ex, "病历删除异常: {CaseNumber}", item.CaseNumber);
+                }
+            }
+
+            // 显示结果
+            if (failedCount == 0)
+            {
+                await ShowSuccessMessageAsync($"成功删除 {successCount} 条病历");
+            }
+            else
+            {
+                await ShowWarningMessageAsync($"删除完成：成功 {successCount} 条，失败 {failedCount} 条");
+            }
+
+            Logger.LogInformation("批量删除完成: 成功={SuccessCount}, 失败={FailedCount}", successCount, failedCount);
         }
 
         #endregion
