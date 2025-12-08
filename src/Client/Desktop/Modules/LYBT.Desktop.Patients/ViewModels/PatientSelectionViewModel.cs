@@ -41,6 +41,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     private System.Threading.Timer? _searchDebounceTimer;
     private bool _disposed;
     private Prism.Events.SubscriptionToken? _patientUpdatedToken;
+    private Prism.Events.SubscriptionToken? _patientCreatedToken;  // OpenSpec: refactor-patient-selection Task 1.3
 
     #endregion
 
@@ -367,7 +368,7 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
         _searchDebounceTimer?.Dispose();
         _searchDebounceTimer = new System.Threading.Timer(
             _ => System.Windows.Application.Current.Dispatcher.Invoke(async () => await ExecuteSearchAsync()),
-            null, 300, System.Threading.Timeout.Infinite);
+            null, 500, System.Threading.Timeout.Infinite);  // 防抖时间500ms（优化自300ms）
     }
 
     private void ClearPendingSelection()
@@ -455,19 +456,36 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
     #region 事件处理
     private new void SubscribeToEvents()
     {
-        _searchManager.SearchCompleted += (_, e) => Logger.LogDebug("搜索完成: {Count}条", e.ResultCount);
+        _searchManager.SearchCompleted += (_, e) => Logger.LogDebug("搜索完成: {Count}条，来自缓存: {FromCache}", e.ResultCount, e.FromCache);
         _unfinishedCaseHandler.CaseCheckCompleted += (_, _) => { };
         _unfinishedCaseHandler.CaseClosed += (_, _) => { };
         _pendingQueueManager.PendingQueueLoaded += (_, _) => RaisePropertyChanged(nameof(HasNoPendingPatients));
         _pendingQueueManager.PatientLoaded += (_, e) => CurrentPatient = e.Patient;
         _patientUpdatedToken = EventAggregator.GetEvent<PatientUpdatedEvent>().Subscribe(OnPatientUpdated);
+        // OpenSpec: refactor-patient-selection Task 1.3 - 患者创建时失效缓存
+        _patientCreatedToken = EventAggregator.GetEvent<PatientCreatedEvent>().Subscribe(OnPatientCreated);
+    }
+
+    /// <summary>
+    /// 患者创建事件处理
+    /// OpenSpec: refactor-patient-selection Task 1.3 - 失效缓存
+    /// </summary>
+    private void OnPatientCreated(PatientDto patient)
+    {
+        Logger.LogDebug("患者创建事件：{PatientName}，失效搜索缓存", patient.Name);
+        _searchManager.InvalidateCache();
     }
 
     private void OnPatientUpdated(PatientDto patient)
     {
+        // 更新本地状态
         if (CurrentPatient?.Id == patient.Id) CurrentPatient = patient;
         var idx = Patients.ToList().FindIndex(p => p.Id == patient.Id);
         if (idx >= 0) Patients[idx] = patient;
+
+        // OpenSpec: refactor-patient-selection Task 1.3 - 失效缓存
+        Logger.LogDebug("患者更新事件：{PatientName}，失效搜索缓存", patient.Name);
+        _searchManager.InvalidateCache();
     }
 
     #endregion
@@ -490,6 +508,12 @@ public class PatientSelectionViewModel : UnifiedViewModelBase
             {
                 EventAggregator.GetEvent<PatientUpdatedEvent>().Unsubscribe(_patientUpdatedToken);
                 _patientUpdatedToken = null;
+            }
+            // OpenSpec: refactor-patient-selection Task 1.3
+            if (_patientCreatedToken != null)
+            {
+                EventAggregator.GetEvent<PatientCreatedEvent>().Unsubscribe(_patientCreatedToken);
+                _patientCreatedToken = null;
             }
             _searchDebounceTimer?.Dispose();
         }

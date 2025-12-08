@@ -11,26 +11,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
-
-        <!-- OpenSpec: cleanup-ui-layer Issue #2251 - 使用全局样式系统 -->
-        <!-- 按钮样式 -->
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="15,8"/>
-        </Style>
-
-        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource TextSecondaryBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="15,8"/>
-        </Style>
+        <!-- OpenSpec: refactor-patient-selection - 使用UnifiedDesignSystem全局样式 -->
     </UserControl.Resources>
 
     <Grid Background="{StaticResource BackgroundBrush}">
@@ -48,7 +29,7 @@
                 <Button Content="返回主页"
                        Command="{Binding BackToHomeCommand}"
                        HorizontalAlignment="Right"
-                       Style="{StaticResource SecondaryButtonStyle}"/>
+                       Style="{StaticResource SecondaryButton}"/>
             </Grid>
         </Border>
 
@@ -193,10 +174,13 @@
                                  BorderThickness="0"
                                  Background="Transparent">
 
-                            <!-- 双击事件：进入看诊 -->
+                            <!-- OpenSpec: refactor-patient-selection Task 2.1 - 键盘导航支持 -->
+                            <!-- 双击/回车：进入看诊 -->
                             <DataGrid.InputBindings>
                                 <MouseBinding Gesture="LeftDoubleClick"
                                             Command="{Binding StartConsultationCommand}"/>
+                                <KeyBinding Key="Return"
+                                           Command="{Binding StartConsultationCommand}"/>
                             </DataGrid.InputBindings>
 
                             <DataGrid.Columns>
@@ -273,10 +257,11 @@
                     <Grid Grid.Row="1" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>    <!-- 搜索框 -->
+                            <ColumnDefinition Width="Auto"/> <!-- 搜索状态指示 -->
                             <ColumnDefinition Width="Auto"/> <!-- 新建患者按钮 -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- 搜索框（实时搜索，300ms防抖） -->
+                        <!-- 搜索框（实时搜索，500ms防抖） -->
                         <TextBox Grid.Column="0"
                                 Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}"
                                 Height="35"
@@ -307,12 +292,21 @@
                             </TextBox.Style>
                         </TextBox>
 
+                        <!-- OpenSpec: refactor-patient-selection Task 2.2 - 搜索状态指示 -->
+                        <TextBlock Grid.Column="1"
+                                  Text="搜索中..."
+                                  FontSize="12"
+                                  Foreground="{StaticResource TextHintBrush}"
+                                  VerticalAlignment="Center"
+                                  Margin="10,0,0,0"
+                                  Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
                         <!-- 新建患者按钮 -->
-                        <Button Grid.Column="1"
+                        <Button Grid.Column="2"
                                Content="+ 新建患者"
                                Command="{Binding NewPatientCommand}"
                                Width="100" Height="35" Margin="10,0,0,0"
-                               Style="{StaticResource SecondaryButtonStyle}"/>
+                               Style="{StaticResource SecondaryButton}"/>
                     </Grid>
 
                     <!-- 患者列表 -->
@@ -330,10 +324,13 @@
                              BorderBrush="{StaticResource BorderBrush}"
                              BorderThickness="1">
 
-                        <!-- 双击事件：进入看诊 -->
+                        <!-- OpenSpec: refactor-patient-selection Task 2.1 - 键盘导航支持 -->
+                        <!-- 双击/回车：进入看诊 -->
                         <DataGrid.InputBindings>
                             <MouseBinding Gesture="LeftDoubleClick"
                                         Command="{Binding StartConsultationCommand}"/>
+                            <KeyBinding Key="Return"
+                                       Command="{Binding StartConsultationCommand}"/>
                         </DataGrid.InputBindings>
 
                         <DataGrid.Columns>
@@ -417,7 +414,7 @@
                             <Button Content="上一页"
                                    Command="{Binding PreviousPageCommand}"
                                    Width="80" Height="30" Margin="0,0,10,0"
-                                   Style="{StaticResource SecondaryButtonStyle}"/>
+                                   Style="{StaticResource SecondaryButton}"/>
 
                             <TextBlock Text="{Binding CurrentPage}"
                                       VerticalAlignment="Center"
@@ -437,7 +434,7 @@
                             <Button Content="下一页"
                                    Command="{Binding NextPageCommand}"
                                    Width="80" Height="30"
-                                   Style="{StaticResource SecondaryButtonStyle}"/>
+                                   Style="{StaticResource SecondaryButton}"/>
                         </StackPanel>
                     </Grid>
                 </Grid>
@@ -478,7 +475,7 @@
                        Content="开始诊断"
                        Command="{Binding StartConsultationCommand}"
                        Width="120" Height="40"
-                       Style="{StaticResource PrimaryButtonStyle}"/>
+                       Style="{StaticResource PrimaryButton}"/>
             </Grid>
         </Border>
     </Grid>

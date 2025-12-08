@@ -42,6 +42,7 @@ namespace LYBT.Desktop.Patients
 
             // Issue #1790: 注册PatientSelectionViewModel组件化服务
             containerRegistry.Register<PatientSearchManager>();
+            containerRegistry.RegisterSingleton<IPatientSearchCache, PatientSearchCache>();  // OpenSpec: refactor-patient-selection - 搜索缓存
             containerRegistry.Register<UnfinishedCaseHandler>();
             containerRegistry.Register<PendingQueueManager>();
 

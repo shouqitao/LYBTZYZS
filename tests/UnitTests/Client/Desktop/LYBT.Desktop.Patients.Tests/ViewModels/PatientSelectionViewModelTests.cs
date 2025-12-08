@@ -107,9 +107,12 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
                 medicalCaseDataManagerLoggerMock.Object
             );
 
-            // 3. PatientSearchManager（依赖：PatientCommandHandler, ILogger）
+            // 3. PatientSearchManager（依赖：PatientCommandHandler, IPatientSearchCache, ILogger）
+            // OpenSpec: refactor-patient-selection Task 1.3 - 添加搜索缓存
+            var searchCacheMock = new Mock<IPatientSearchCache>();
             _searchManager = new PatientSearchManager(
                 _commandHandler,
+                searchCacheMock.Object,
                 searchManagerLoggerMock.Object
             );
 
