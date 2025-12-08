@@ -2,8 +2,10 @@ using System.Collections;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace LYBT.Desktop.Infrastructure.Controls
 {
@@ -86,32 +88,93 @@ namespace LYBT.Desktop.Infrastructure.Controls
         private void AddCheckBoxColumn()
         {
             if (DataGrid == null) return;
-            var existingColumn = DataGrid.Columns.FirstOrDefault(c => c is DataGridCheckBoxColumn);
+            var existingColumn = DataGrid.Columns.FirstOrDefault(c => c.Header is CheckBox);
             if (existingColumn != null) return;
 
-            _selectAllCheckBox = new CheckBox { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsThreeState = true, ToolTip = "全选/取消全选" };
+            // 创建标题行checkbox - 透明背景
+            _selectAllCheckBox = new CheckBox
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                IsThreeState = true,
+                ToolTip = "全选/取消全选",
+                Background = System.Windows.Media.Brushes.Transparent,
+                BorderBrush = System.Windows.Media.Brushes.Gray
+            };
             _selectAllCheckBox.Checked += SelectAllCheckBox_Changed;
             _selectAllCheckBox.Unchecked += SelectAllCheckBox_Changed;
 
-            var checkBoxColumn = new DataGridCheckBoxColumn { Header = _selectAllCheckBox, Width = new DataGridLength(40), CanUserResize = false, CanUserSort = false, DisplayIndex = 0 };
-            checkBoxColumn.Binding = new Binding("IsSelected") { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1), Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged };
-            // OpenSpec: optimize-module-list-ui - UI-020 CheckBox列垂直水平居中对齐
-            checkBoxColumn.ElementStyle = new Style(typeof(CheckBox))
+            // 使用DataGridTemplateColumn替代DataGridCheckBoxColumn，解决点击checkbox不选中行的问题
+            var checkBoxColumn = new DataGridTemplateColumn
             {
-                Setters = { new Setter(CheckBox.HorizontalAlignmentProperty, HorizontalAlignment.Center), new Setter(CheckBox.VerticalAlignmentProperty, VerticalAlignment.Center) }
+                Header = _selectAllCheckBox,
+                Width = new DataGridLength(40),
+                CanUserResize = false,
+                CanUserSort = false
             };
-            // 同时设置CellStyle确保DataGridCell也居中
+
+            // 创建CellTemplate - 使用Border包装checkbox，让整个单元格区域都响应点击
+            var cellTemplate = new DataTemplate();
+
+            // 外层Border - 填满单元格，处理点击事件
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, System.Windows.Media.Brushes.Transparent);
+            borderFactory.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            borderFactory.SetValue(Border.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+            // 在Border上处理点击事件，这样点击单元格任意位置都能触发选择
+            borderFactory.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(RowCheckBox_PreviewMouseDown));
+            borderFactory.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(RowCheckBox_PreviewMouseUp));
+            borderFactory.AddHandler(Control.PreviewMouseDoubleClickEvent, new MouseButtonEventHandler(RowCheckBox_PreviewMouseDoubleClick));
+
+            // 内层CheckBox - 绑定行选中状态
+            var checkBoxFactory = new FrameworkElementFactory(typeof(CheckBox));
+            checkBoxFactory.SetBinding(CheckBox.IsCheckedProperty, new Binding("IsSelected")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1),
+                Mode = BindingMode.OneWay // 只读绑定，选择逻辑由事件处理
+            });
+            checkBoxFactory.SetValue(CheckBox.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            checkBoxFactory.SetValue(CheckBox.VerticalAlignmentProperty, VerticalAlignment.Center);
+            checkBoxFactory.SetValue(CheckBox.BackgroundProperty, System.Windows.Media.Brushes.Transparent);
+            // 禁用Focusable和HitTest，让点击穿透到Border处理
+            checkBoxFactory.SetValue(CheckBox.FocusableProperty, false);
+            checkBoxFactory.SetValue(CheckBox.IsHitTestVisibleProperty, false);
+
+            // 组装模板
+            borderFactory.AppendChild(checkBoxFactory);
+            cellTemplate.VisualTree = borderFactory;
+            checkBoxColumn.CellTemplate = cellTemplate;
+
+            // OpenSpec: optimize-module-list-ui - UI-020 CheckBox列标题和内容垂直水平居中对齐
+            // 设置HeaderStyle - 只覆盖对齐和Padding，其他样式继承默认
+            var baseHeaderStyle = Application.Current.TryFindResource("BaseDataGridColumnHeader") as Style;
+            checkBoxColumn.HeaderStyle = new Style(typeof(DataGridColumnHeader), baseHeaderStyle)
+            {
+                Setters = {
+                    new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
+                    new Setter(DataGridColumnHeader.VerticalContentAlignmentProperty, VerticalAlignment.Center),
+                    new Setter(DataGridColumnHeader.PaddingProperty, new Thickness(0))
+                }
+            };
+
+            // 设置CellStyle - 只设置对齐，不设置Background以保留选中状态的背景色
             checkBoxColumn.CellStyle = new Style(typeof(DataGridCell))
             {
-                Setters = { new Setter(DataGridCell.HorizontalAlignmentProperty, HorizontalAlignment.Center), new Setter(DataGridCell.VerticalAlignmentProperty, VerticalAlignment.Center), new Setter(DataGridCell.VerticalContentAlignmentProperty, VerticalAlignment.Center) }
+                Setters = {
+                    new Setter(DataGridCell.HorizontalContentAlignmentProperty, HorizontalAlignment.Center),
+                    new Setter(DataGridCell.VerticalContentAlignmentProperty, VerticalAlignment.Center),
+                    new Setter(DataGridCell.PaddingProperty, new Thickness(0)),
+                    new Setter(DataGridCell.BorderThicknessProperty, new Thickness(0))
+                }
             };
+
             DataGrid.Columns.Insert(0, checkBoxColumn);
         }
 
         private void RemoveCheckBoxColumn()
         {
             if (DataGrid == null) return;
-            var checkBoxColumn = DataGrid.Columns.FirstOrDefault(c => c is DataGridCheckBoxColumn);
+            var checkBoxColumn = DataGrid.Columns.FirstOrDefault(c => c.Header is CheckBox);
             if (checkBoxColumn != null) DataGrid.Columns.Remove(checkBoxColumn);
         }
 
@@ -122,6 +185,70 @@ namespace LYBT.Desktop.Infrastructure.Controls
             if (_selectAllCheckBox.IsChecked == true) DataGrid.SelectAll();
             else if (_selectAllCheckBox.IsChecked == false) DataGrid.UnselectAll();
             _isSelectingFromCheckBox = false;
+        }
+
+        private void RowCheckBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (DataGrid == null || sender is not FrameworkElement element) return;
+            // 使用VisualTreeHelper查找父级DataGridRow
+            var row = FindVisualParent<DataGridRow>(element);
+            if (row == null || row.Item == null) return;
+
+            // 记录当前状态和数据项
+            var shouldSelect = !row.IsSelected;
+            var dataItem = row.Item;
+
+            // 使用Dispatcher延迟执行选择操作，避免与DataGrid内部选择逻辑冲突
+            // 延迟到当前事件处理完成后执行，确保DataGrid状态稳定
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (DataGrid == null) return;
+                try
+                {
+                    if (shouldSelect)
+                    {
+                        if (!DataGrid.SelectedItems.Contains(dataItem))
+                            DataGrid.SelectedItems.Add(dataItem);
+                    }
+                    else
+                    {
+                        if (DataGrid.SelectedItems.Contains(dataItem))
+                            DataGrid.SelectedItems.Remove(dataItem);
+                    }
+                    // 确保DataGrid获得焦点，显示活动选中状态（蓝色而非灰色）
+                    DataGrid.Focus();
+                }
+                catch (InvalidOperationException)
+                {
+                    // 忽略集合修改异常，可能在虚拟化滚动时发生
+                }
+            }), System.Windows.Threading.DispatcherPriority.Input);
+
+            // 标记事件已处理，阻止事件继续传播到DataGrid
+            e.Handled = true;
+        }
+
+        private void RowCheckBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            // 阻止MouseUp事件传播到DataGrid，防止DataGrid的选择逻辑干扰
+            e.Handled = true;
+        }
+
+        private void RowCheckBox_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // 阻止双击事件传播到DataGrid
+            e.Handled = true;
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            while (parent != null)
+            {
+                if (parent is T typedParent) return typedParent;
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
         }
 
         private void UpdateSelectAllCheckBoxState()

@@ -39,6 +39,17 @@
         IsLoading="{Binding IsLoading}"
         LoadingMessage="正在加载验方信息...">
 
+        <!-- OpenSpec: optimize-module-list-ui - 复制功能移至DetailView，类似"另存为"流程 -->
+        <!-- TODO: OpenSpec提案 formula-permission-and-copy 实现后启用此按钮 -->
+        <views:BaseDetailContainer.ActionButtons>
+            <Button Content="复制为我的验方"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CopyAsMyFormulaCommand}"
+                    ToolTip="基于当前验方创建副本，可修改后保存为我的验方（功能开发中）"
+                    Visibility="Collapsed"
+                    Margin="0,0,8,0" />
+        </views:BaseDetailContainer.ActionButtons>
+
         <!-- ========================================
              查看模式内容 (ViewContent)
              使用纯展示控件，无输入框边框

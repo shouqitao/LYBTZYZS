@@ -89,6 +89,8 @@ namespace LYBT.Desktop.Formula.ViewModels
         public DelegateCommand CancelEditCommand { get; }
         public DelegateCommand BackCommand { get; }
         public DelegateCommand CopyFormulaCommand { get; }
+        /// <summary>复制为我的验方命令 - 导航到新建界面预填充数据，类似"另存为"流程</summary>
+        public DelegateCommand CopyAsMyFormulaCommand { get; }
         public DelegateCommand PrintCommand { get; }
         public DelegateCommand ViewUsageHistoryCommand { get; }
         public DelegateCommand<FormulaHerbItemViewModel> DeleteHerbCommand { get; }
@@ -116,6 +118,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             CancelEditCommand = new DelegateCommand(CancelEdit, () => !IsBusy && Formula != null && IsEditMode);
             BackCommand = new DelegateCommand(() => NavigateTo("ContentRegion", "FormulaManagementView"));
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => !IsBusy && Formula != null && !IsEditMode);
+            CopyAsMyFormulaCommand = new DelegateCommand(ExecuteCopyAsMyFormula, () => !IsBusy && Formula != null && !IsEditMode);
             PrintCommand = new DelegateCommand(ExecutePrint, () => !IsBusy && Formula != null);
             ViewUsageHistoryCommand = new DelegateCommand(ExecuteViewUsageHistory, () => !IsBusy && Formula != null);
             DeleteHerbCommand = new DelegateCommand<FormulaHerbItemViewModel>(DeleteHerb);
@@ -130,14 +133,58 @@ namespace LYBT.Desktop.Formula.ViewModels
             base.ProcessNavigationParameters(parameters);
             if (parameters.ContainsKey("FormulaId")) FormulaId = parameters.GetValue<Guid>("FormulaId");
             IsEditMode = !(parameters.ContainsKey("ReadOnly") && parameters.GetValue<bool>("ReadOnly"));
+
+            // OpenSpec: optimize-module-list-ui - 支持"复制为我的验方"预填充
+            if (parameters.ContainsKey("CopyFromFormula"))
+            {
+                var sourceFormula = parameters.GetValue<FormulaDto>("CopyFromFormula");
+                if (sourceFormula != null)
+                {
+                    // 不设置FormulaId（保持Empty），表示新建模式
+                    FormulaId = Guid.Empty;
+                    IsEditMode = true;
+                    // 预填充数据将在InitializeAsync中通过_copyFromFormula处理
+                    _copyFromFormula = sourceFormula;
+                    Logger.LogInformation("从验方 {SourceName} 复制创建新验方", sourceFormula.Name);
+                }
+            }
         }
+
+        private FormulaDto? _copyFromFormula;
 
         protected override async Task InitializeAsync(NavigationParameters parameters)
         {
             await base.InitializeAsync(parameters);
             await LoadAllHerbsAsync();
-            if (FormulaId != Guid.Empty) await LoadDataAsync();
-            else EnsureMinimumBlankRows();
+
+            if (FormulaId != Guid.Empty)
+            {
+                await LoadDataAsync();
+            }
+            else if (_copyFromFormula != null)
+            {
+                // 从复制的验方预填充数据（"另存为"流程）
+                LoadFromCopySource(_copyFromFormula);
+                _copyFromFormula = null;  // 清理引用
+            }
+            else
+            {
+                EnsureMinimumBlankRows();
+            }
+        }
+
+        /// <summary>从复制源验方加载数据用于预填充</summary>
+        /// <remarks>
+        /// OpenSpec: optimize-module-list-ui - 占位符实现
+        /// 完整的复制逻辑将在验方权限提案中实现:
+        /// 1. 自己的验方：可编辑 + 可复制
+        /// 2. 共享的验方：仅查看 + 可复制
+        /// 3. 复制时预填充名称为"原名(副本)"
+        /// </remarks>
+        private void LoadFromCopySource(FormulaDto source)
+        {
+            Logger.LogWarning("复制验方功能占位: {FormulaName}，完整实现待新提案", source.Name);
+            throw new NotImplementedException("复制验方功能正在开发中，请参考OpenSpec提案：formula-permission-and-copy");
         }
 
         public override bool IsNavigationTarget(NavigationContext navigationContext)
@@ -281,6 +328,22 @@ namespace LYBT.Desktop.Formula.ViewModels
         private void EnableEdit() { IsEditMode = true; EnsureMinimumBlankRows(); }
         private void CancelEdit() { IsEditMode = false; LoadFormulaData(); ClearAllErrors(); }
 
+        /// <summary>复制为我的验方 - 导航到新建界面预填充当前验方数据</summary>
+        private void ExecuteCopyAsMyFormula()
+        {
+            if (Formula == null) return;
+
+            // 导航到FormulaDetailView，传递预填充数据（不传FormulaId表示新建模式）
+            var parameters = new NavigationParameters
+            {
+                { "CopyFromFormula", Formula },  // 传递当前验方数据用于预填充
+                { "ReadOnly", false }  // 进入编辑模式
+            };
+
+            Logger.LogInformation("复制为我的验方: 从 {FormulaName} (ID: {FormulaId}) 创建副本", Formula.Name, Formula.Id);
+            NavigateTo("ContentRegion", "FormulaDetailView", parameters);
+        }
+
         private async void ExecutePrint()
         {
             if (Formula == null) return;
@@ -303,6 +366,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             SaveCommand.RaiseCanExecuteChanged();
             CancelEditCommand.RaiseCanExecuteChanged();
             CopyFormulaCommand.RaiseCanExecuteChanged();
+            CopyAsMyFormulaCommand.RaiseCanExecuteChanged();
             PrintCommand.RaiseCanExecuteChanged();
             ViewUsageHistoryCommand.RaiseCanExecuteChanged();
         }

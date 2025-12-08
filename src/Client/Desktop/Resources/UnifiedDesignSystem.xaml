@@ -91,6 +91,16 @@
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
 
+    <!-- DataGrid颜色 - OpenSpec: optimize-module-list-ui -->
+    <Color x:Key="DataGridAlternateRowColor">#F5F7FA</Color>
+    <Color x:Key="DataGridHoverColor">#EBEEF2</Color>
+    <Color x:Key="DataGridSelectedColor">#CCE4F7</Color>
+    <Color x:Key="DataGridSelectedHoverColor">#B8D4ED</Color>
+    <SolidColorBrush x:Key="DataGridAlternateRowBrush" Color="{StaticResource DataGridAlternateRowColor}" />
+    <SolidColorBrush x:Key="DataGridHoverBrush" Color="{StaticResource DataGridHoverColor}" />
+    <SolidColorBrush x:Key="DataGridSelectedBrush" Color="{StaticResource DataGridSelectedColor}" />
+    <SolidColorBrush x:Key="DataGridSelectedHoverBrush" Color="{StaticResource DataGridSelectedHoverColor}" />
+
     <!-- ===================== 字体系统 ===================== -->
 
     <!-- 字体大小 -->
@@ -408,17 +418,24 @@
         <Setter Property="RowHeight" Value="40" />
     </Style>
 
-    <!-- 基础DataGrid行样式 -->
+    <!-- 基础DataGrid行样式 - OpenSpec: optimize-module-list-ui 使用统一颜色资源 -->
     <Style x:Key="BaseDataGridRow" TargetType="DataGridRow">
         <Setter Property="Height" Value="{StaticResource ControlHeightLarge}" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#F0F8F0" />
+                <Setter Property="Background" Value="{StaticResource DataGridHoverBrush}" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
-                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Background" Value="{StaticResource DataGridSelectedBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True"/>
+                    <Condition Property="IsMouseOver" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{StaticResource DataGridSelectedHoverBrush}"/>
+            </MultiTrigger>
         </Style.Triggers>
     </Style>
 

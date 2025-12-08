@@ -22,6 +22,7 @@
     </UserControl.Resources>
 
     <!--  Issue #1999: 应用 BaseMasterDataListView 模板  -->
+    <!-- OpenSpec: optimize-module-list-ui - 添加多选支持 -->
     <views:BaseMasterDataListView
         BusyMessage="{Binding BusyMessage}"
         CurrentPage="{Binding CurrentPage, Mode=TwoWay}"
@@ -36,6 +37,8 @@
         SearchCommand="{Binding SearchCommand}"
         SearchText="{Binding SearchText, Mode=TwoWay}"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+        ShowCheckBoxColumn="True"
         TotalCount="{Binding TotalCount}"
         TotalPages="{Binding TotalPages}">
 
@@ -97,7 +100,7 @@
             </DataGridTemplateColumn>
 
             <!--  操作  -->
-            <DataGridTemplateColumn Width="460" Header="操作">
+            <DataGridTemplateColumn Width="Auto" Header="操作">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -108,43 +111,38 @@
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,12,0">
                             <Button
                                 Margin="4,0"
-                                Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                 CommandParameter="{Binding}"
                                 Content="查看"
                                 Style="{StaticResource InfoButton}" />
                             <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
                             <Button
                                 Margin="4,0"
-                                Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Command="{Binding DataContext.ViewConsultationCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                 CommandParameter="{Binding}"
                                 Content="诊疗"
                                 Style="{StaticResource PrimaryButton}" />
                             <Button
                                 Margin="4,0"
-                                Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Command="{Binding DataContext.CreatePrescriptionCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                 CommandParameter="{Binding}"
                                 Content="处方"
                                 Style="{StaticResource WarningButton}" />
                             <!--  OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 变更记录按钮  -->
                             <Button
                                 Margin="4,0"
-                                Command="{Binding DataContext.ViewAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                 CommandParameter="{Binding}"
                                 Content="记录"
                                 Style="{StaticResource SecondaryButton}"
                                 ToolTip="查看医案变更历史" />
                             <Button
                                 Margin="4,0"
-                                Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Command="{Binding DataContext.PrintCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                 CommandParameter="{Binding}"
                                 Content="打印"
                                 Style="{StaticResource SecondaryButton}" />
-                            <Button
-                                Margin="4,0"
-                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding}"
-                                Content="删除"
-                                Style="{StaticResource DangerButton}" />
+                            <!-- OpenSpec: optimize-module-list-ui - 删除按钮移至工具栏批量删除，减少误操作 -->
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
@@ -197,6 +195,13 @@
         <!--  使用 RelativeSource 绑定确保 DataContext 正确传递  -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
+                <!-- OpenSpec: optimize-module-list-ui - 批量删除移至工具栏 -->
+                <Button
+                    Margin="{StaticResource SpacingSmall}"
+                    Command="{Binding BatchDeleteCommand}"
+                    Content="批量删除"
+                    Style="{StaticResource DangerButton}"
+                    ToolTip="删除选中的病案" />
                 <Button
                     Margin="{StaticResource SpacingSmall}"
                     Command="{Binding DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"

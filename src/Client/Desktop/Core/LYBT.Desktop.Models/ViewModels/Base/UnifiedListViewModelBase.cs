@@ -27,7 +27,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public string SearchText { get => _searchText; set { if (SetProperty(ref _searchText, value)) _ = SearchWithDebounceAsync(); } }
         public int TotalCount { get => _totalCount; protected set => SetProperty(ref _totalCount, value); }
         public int CurrentPage { get => _currentPage; set { if (SetProperty(ref _currentPage, value)) _ = LoadPageAsync(); } }
-        public int PageSize { get => _pageSize; set => SetProperty(ref _pageSize, value); }
+        public int PageSize { get => _pageSize; set { if (SetProperty(ref _pageSize, value)) { CurrentPage = 1; } } }
         public bool HasSelection { get => _hasSelection; private set => SetProperty(ref _hasSelection, value); }
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
         public bool CanGoPreviousPage => CurrentPage > 1;

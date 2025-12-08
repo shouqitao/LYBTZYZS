@@ -69,7 +69,7 @@
             <!-- OpenSpec: optimize-module-list-ui - UI-021 移除状态列，使用按钮切换 -->
 
             <!-- 操作列 - OpenSpec: optimize-module-list-ui UI-021/UI-022 -->
-            <DataGridTemplateColumn Header="操作" Width="420">
+            <DataGridTemplateColumn Header="操作" Width="Auto">
                 <DataGridTemplateColumn.CellStyle>
                     <Style TargetType="DataGridCell">
                         <Setter Property="HorizontalContentAlignment" Value="Right" />
@@ -82,12 +82,12 @@
                                     Style="{StaticResource InfoButton}"
                                     Margin="4,0"
                                     ToolTip="查看验方详情"
-                                    Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Command="{Binding DataContext.ViewDetailsCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                     CommandParameter="{Binding}" />
                             <!-- OpenSpec: optimize-module-list-ui - UI-021 状态切换按钮 -->
                             <Button Style="{StaticResource PrimaryButton}"
                                     Margin="4,0"
-                                    Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Command="{Binding DataContext.ToggleStatusCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                     CommandParameter="{Binding}">
                                 <Button.Content>
                                     <TextBlock>
@@ -104,31 +104,22 @@
                                     </TextBlock>
                                 </Button.Content>
                             </Button>
-                            <!-- OpenSpec: unify-detail-view-style - 编辑按钮移至DetailView顶部 -->
-                            <Button Content="复制"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Margin="4,0"
-                                    Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: optimize-module-list-ui - 复制功能移至DetailView，类似"另存为"流程 -->
                             <!-- OpenSpec: add-global-audit-system -->
                             <Button Content="记录"
                                     Style="{StaticResource SecondaryButton}"
                                     Margin="4,0"
                                     ToolTip="查看变更记录"
-                                    Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Command="{Binding DataContext.ShowAuditLogCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                     CommandParameter="{Binding}" />
                             <!-- OpenSpec: optimize-module-list-ui - UI-022 恢复按钮（仅管理员可见） -->
                             <Button Content="恢复"
                                     Style="{StaticResource WarningButton}"
                                     Margin="4,0"
-                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
-                                    Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Command="{Binding DataContext.RestoreCommand, RelativeSource={RelativeSource AncestorType=views:BaseMasterDataListView}}"
                                     CommandParameter="{Binding}" />
-                            <Button Content="删除"
-                                    Style="{StaticResource DangerButton}"
-                                    Margin="4,0"
-                                    Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!-- OpenSpec: optimize-module-list-ui - 删除按钮移至工具栏批量删除，减少误操作 -->
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>

@@ -99,6 +99,12 @@
     <SolidColorBrush x:Key="TertiaryTextBrush" Color="#8A8886"/>
     <SolidColorBrush x:Key="DisabledTextBrush" Color="#C8C6C4"/>
 
+    <!-- DataGrid Colors - OpenSpec: optimize-module-list-ui -->
+    <SolidColorBrush x:Key="DataGridAlternateRowBrush" Color="#F5F7FA"/>
+    <SolidColorBrush x:Key="DataGridHoverBrush" Color="#EBEEF2"/>
+    <SolidColorBrush x:Key="DataGridSelectedBrush" Color="#CCE4F7"/>
+    <SolidColorBrush x:Key="DataGridSelectedHoverBrush" Color="#B8D4ED"/>
+
     <!-- ====================================================================
          Button Styles - 按钮样式
          ==================================================================== -->
@@ -436,7 +442,8 @@
         <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
         <Setter Property="Background" Value="White"/>
-        <Setter Property="AlternatingRowBackground" Value="{StaticResource SurfaceBrush}"/>
+        <!-- OpenSpec: optimize-module-list-ui - 使用统一定义的颜色资源 -->
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource DataGridAlternateRowBrush}"/>
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
         <Setter Property="EnableRowVirtualization" Value="True"/>
@@ -447,13 +454,21 @@
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
         <Style.Triggers>
+            <!-- OpenSpec: optimize-module-list-ui - 使用统一定义的颜色资源 -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#E5F3FF"/>
+                <Setter Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
                 <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
             </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True"/>
+                    <Condition Property="IsMouseOver" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{StaticResource DataGridSelectedHoverBrush}"/>
+            </MultiTrigger>
         </Style.Triggers>
     </Style>
 
