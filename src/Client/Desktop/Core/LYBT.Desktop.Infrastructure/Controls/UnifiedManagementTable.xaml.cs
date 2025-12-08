@@ -58,12 +58,31 @@ namespace LYBT.Desktop.Infrastructure.Controls
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SelectedItems != null)
-            {
-                SelectedItems.Clear();
-                foreach (var item in DataGrid.SelectedItems) SelectedItems.Add(item);
-            }
+            // 同步DataGrid.SelectedItems到绑定的SelectedItems集合
+            SyncSelectedItems();
             UpdateSelectAllCheckBoxState();
+        }
+
+        private void SyncSelectedItems()
+        {
+            if (SelectedItems == null) return;
+
+            // 使用增量更新避免Clear()触发CollectionChanged时HasSelection=false
+            // 1. 移除不再选中的项
+            var itemsToRemove = SelectedItems.Cast<object>().Where(item => !DataGrid.SelectedItems.Contains(item)).ToList();
+            foreach (var item in itemsToRemove)
+            {
+                SelectedItems.Remove(item);
+            }
+
+            // 2. 添加新选中的项
+            foreach (var item in DataGrid.SelectedItems)
+            {
+                if (!SelectedItems.Contains(item))
+                {
+                    SelectedItems.Add(item);
+                }
+            }
         }
 
         private static void OnSelectedItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
