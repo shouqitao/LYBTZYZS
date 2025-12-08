@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, dialogService)
         {
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
             _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
@@ -116,7 +116,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                 if (!confirmed) { Logger.LogDebug("用户取消删除, HerbId: {HerbId}", item.Id); return; }
 
                 var success = await _dataManager.DeleteHerbAsync(item.Id);
-                if (success) { Logger.LogInformation("成功删除药材: {HerbName}", item.Name); await ShowSuccessMessageAsync($"药材 [{item.Name}] 已删除"); }
+                if (success) { Logger.LogInformation("成功删除药材: {HerbName}", item.Name); await ShowSuccessMessageAsync($"药材 [{item.Name}] 已删除"); await RefreshAsync(); }
                 else { Logger.LogError("删除药材失败: {HerbName}", item.Name); ErrorMessage = $"删除药材 {item.Name} 失败"; }
             }
             catch (Exception ex)
@@ -156,6 +156,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
             if (failureCount > 0) await ShowWarningMessageAsync(message);
             else await ShowSuccessMessageAsync(message);
             Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}", successCount, failureCount);
+            // 刷新列表显示最新数据
+            if (successCount > 0) await RefreshAsync();
         }
 
         protected override async Task InitializeAsync(NavigationParameters parameters)

@@ -23,12 +23,13 @@ namespace LYBT.Desktop.Formula.ViewModels
             IFormulaCommandHandler commandHandler,
             IFormulaRepository formulaRepository,
             IDialogService prismDialogService,
+            ICommonDialogService commonDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
@@ -73,6 +74,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             var message = $"批量删除完成！\n\n成功：{successCount}个\n失败：{failureCount}个";
             if (failureCount > 0 && failedItems.Count > 0) { message += $"\n\n失败的验方：\n{string.Join("、", failedItems.Take(5))}"; if (failedItems.Count > 5) message += $"等{failedItems.Count}个"; }
             if (failureCount > 0) await ShowWarningMessageAsync(message); else await ShowSuccessMessageAsync(message);
+            // 刷新列表显示最新数据
+            if (successCount > 0) await LoadPageAsync();
         }
 
         protected override async Task InitializeAsync(NavigationParameters parameters) { await base.InitializeAsync(parameters); await LoadPageAsync(); }

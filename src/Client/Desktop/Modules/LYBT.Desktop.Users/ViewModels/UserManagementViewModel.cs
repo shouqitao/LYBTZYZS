@@ -147,6 +147,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 {
                     Logger.LogInformation("成功删除用户: {UserName}", item.UserName);
                     await ShowSuccessMessageAsync($"用户 [{item.RealName ?? item.UserName}] 已删除");
+                    await RefreshAsync();
                 }
                 else
                 {
@@ -200,6 +201,8 @@ namespace LYBT.Desktop.Users.ViewModels
             if (failureCount > 0) await ShowWarningMessageAsync(message);
             else await ShowSuccessMessageAsync(message);
             Logger.LogInformation("批量删除完成，成功: {SuccessCount}, 失败: {FailureCount}", successCount, failureCount);
+            // 刷新列表显示最新数据
+            if (successCount > 0) await RefreshAsync();
         }
 
         private IEnumerable<UserDto> ApplyFilters(IEnumerable<UserDto> items)

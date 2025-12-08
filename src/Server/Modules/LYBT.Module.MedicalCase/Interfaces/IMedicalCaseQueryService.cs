@@ -23,17 +23,22 @@ namespace LYBT.Module.MedicalCases.Interfaces
 
         /// <summary>
         /// 查询病案列表（分页）
+        /// OpenSpec: optimize-module-list-ui - 添加角色过滤支持
         /// </summary>
         /// <param name="status">病案状态（可选）</param>
         /// <param name="patientId">患者ID（可选）</param>
         /// <param name="page">页码（从1开始）</param>
         /// <param name="pageSize">每页大小</param>
+        /// <param name="currentDoctorId">当前用户ID（用于角色过滤）</param>
+        /// <param name="isAdmin">是否为管理员</param>
         /// <returns>分页结果</returns>
         Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
-            int pageSize);
+            int pageSize,
+            Guid? currentDoctorId = null,
+            bool isAdmin = false);
 
         /// <summary>
         /// 查询辨证记录列表

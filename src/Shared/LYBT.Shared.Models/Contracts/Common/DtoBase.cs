@@ -32,6 +32,16 @@ namespace LYBT.Shared.Models.Contracts.Common
     }
 
     /// <summary>
+    /// 创建者追踪接口 - 提供创建者信息
+    /// OpenSpec: optimize-module-list-ui - 支持所有权检查
+    /// </summary>
+    public interface ICreatorTrackable
+    {
+        /// <summary>创建者ID</summary>
+        Guid? CreatedBy { get; set; }
+    }
+
+    /// <summary>
     /// 状态管理接口 - 提供通用状态字段
     /// </summary>
     public interface IStatusManageable
@@ -80,8 +90,9 @@ namespace LYBT.Shared.Models.Contracts.Common
     /// <summary>
     /// 时间戳DTO抽象类 - 包含ID和审计时间字段
     /// UltraThink简化：统一审计时间管理
+    /// OpenSpec: optimize-module-list-ui - 添加CreatedBy支持所有权检查
     /// </summary>
-    public abstract class TimestampDto : BaseDto, IAuditable
+    public abstract class TimestampDto : BaseDto, IAuditable, ICreatorTrackable
     {
 
         /// <summary>创建时间</summary>
@@ -91,6 +102,10 @@ namespace LYBT.Shared.Models.Contracts.Common
         /// <summary>更新时间</summary>
         [DisplayName("更新时间")]
         public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>创建者ID - 用于所有权检查</summary>
+        [DisplayName("创建者")]
+        public Guid? CreatedBy { get; set; }
     }
 
     /// <summary>

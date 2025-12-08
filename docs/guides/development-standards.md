@@ -1,8 +1,8 @@
 # LYBTZYZS开发规范（Development Standards）
 
 **项目**: 凌隐宝堂中医诊所管理系统（LYBTZYZS）
-**版本**: v1.0
-**最后更新**: 2025-11-22
+**版本**: v1.1
+**最后更新**: 2025-12-08
 **维护者**: Claude Code
 
 ---
@@ -10,8 +10,9 @@
 ## 目录
 
 1. [用户上下文传递规范](#1-用户上下文传递规范)
-2. [代码规范（待补充）](#2-代码规范)
-3. [测试规范（待补充）](#3-测试规范)
+2. [枚举使用规范](#2-枚举使用规范enum-usage-standards)
+3. [API所有权验证规范](#3-api所有权验证规范ownership-validation-standards)
+4. [测试规范（待补充）](#4-测试规范)
 
 ---
 
@@ -1042,7 +1043,222 @@ A: 推荐策略：
 
 ---
 
-## 3. 测试规范
+## 3. API所有权验证规范（Ownership Validation Standards）
+
+> **架构决策**: API端点执行修改/删除操作前必须验证资源所有权
+>
+> **制定背景**: OpenSpec optimize-module-list-ui 反思报告发现多Controller存在重复的所有权验证代码，提炼统一模式
+
+### 3.1 核心原则
+
+**统一验证 > 分散代码**
+
+在Controller层执行写操作（Update/Delete/ToggleStatus/Restore）时：
+- 必须验证资源存在性
+- 必须验证当前用户是资源创建者或管理员
+- 使用BaseApiController提供的统一方法而非重复编写
+
+### 3.2 所有权验证方法
+
+#### 3.2.1 GetEntityWithOwnershipCheckAsync
+
+统一的所有权验证方法，用于Service层返回`Result<TDto>`的场景。所有DTO通过继承`TimestampDto`自动实现`ICreatorTrackable`接口。
+
+**方法签名**:
+```csharp
+protected async Task<(TDto? data, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
+    Guid id,
+    Func<Guid, Task<Result<TDto>>> getByIdFunc,
+    string resourceName = "资源") where TDto : class, ICreatorTrackable
+```
+
+**使用示例**:
+```csharp
+[HttpPut("{id}")]
+public async Task<IActionResult> Update(Guid id, [FromBody] HerbInputDto dto)
+{
+    try
+    {
+        // 使用统一的所有权检查方法
+        var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+        if (ownershipError != null) return ownershipError;
+
+        // 所有权验证通过，执行更新
+        var result = await _herbService.UpdateAsync(id, dto);
+        // ...
+    }
+    catch (Exception ex) { /* ... */ }
+}
+```
+
+**适用场景**（所有Controller统一使用此方法）:
+- HerbsController（药材管理）
+- FormulasController（验方管理）
+- PatientsController（患者管理）
+- 其他所有需要所有权验证的Controller
+
+**DTO继承链**:
+```
+PatientDto/HerbDto/FormulaDto → StatusDto → TimestampDto → BaseDto
+                                              ↓
+                                    实现 ICreatorTrackable (CreatedBy属性)
+```
+
+### 3.3 ICreatorTrackable接口
+
+#### 3.3.1 接口定义
+
+```csharp
+/// <summary>
+/// 标记DTO包含创建者信息，用于统一所有权验证
+/// </summary>
+public interface ICreatorTrackable
+{
+    /// <summary>创建者ID</summary>
+    Guid? CreatedBy { get; }
+}
+```
+
+#### 3.3.2 DTO实现
+
+所有需要所有权验证的DTO应继承自`DtoBase`（已实现ICreatorTrackable）：
+
+```csharp
+public class HerbDto : DtoBase
+{
+    // 继承自DtoBase的CreatedBy属性
+    public string Name { get; set; }
+    // ...
+}
+```
+
+### 3.4 验证逻辑
+
+统一方法内部执行以下验证：
+
+1. **Guid有效性验证**: 检查id不为Guid.Empty
+2. **资源存在性验证**: 调用Service层GetById方法
+3. **所有权验证**: 调用ValidateOwnership方法
+
+```csharp
+protected IActionResult? ValidateOwnership(Guid? createdBy, string resourceName = "资源")
+{
+    var (operatorId, _, operatorRole) = GetOperator();
+    var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+
+    // 管理员可操作所有资源
+    if (isAdmin) return null;
+
+    // 非管理员只能操作自己创建的资源
+    if (createdBy != operatorId)
+    {
+        _logger.LogWarning("非管理员尝试操作他人创建的{ResourceName}：CreatedBy={CreatedBy}, OperatorId={OperatorId}",
+            resourceName, createdBy, operatorId);
+        return Forbid($"只能操作自己创建的{resourceName}");
+    }
+
+    return null;
+}
+```
+
+### 3.5 返回值说明
+
+两个方法都返回元组`(TData? data, IActionResult? error)`：
+
+| 场景 | data | error | 处理方式 |
+|------|------|-------|----------|
+| 验证通过 | 实体数据 | null | 继续执行业务逻辑 |
+| Guid无效 | null | ValidationFail结果 | 直接return error |
+| 资源不存在 | null | NotFound结果 | 直接return error |
+| 无权限 | null | Forbid结果 | 直接return error |
+
+### 3.6 需要所有权验证的操作
+
+以下API操作**必须**使用统一所有权验证方法：
+
+| 操作类型 | HTTP Method | 说明 |
+|----------|-------------|------|
+| Update | PUT | 更新资源信息 |
+| Delete | DELETE | 删除资源（软删除） |
+| ToggleStatus | POST | 切换启用/禁用状态 |
+| Restore | POST | 恢复软删除的资源 |
+
+### 3.7 不需要所有权验证的操作
+
+以下操作**不需要**所有权验证：
+
+| 操作类型 | HTTP Method | 说明 |
+|----------|-------------|------|
+| GetList | GET | 列表查询（通过Service层角色过滤） |
+| GetById | GET | 详情查询（可查看不一定能修改） |
+| Create | POST | 新增资源（无现有资源所有者） |
+| Import | POST | 批量导入（创建操作） |
+| Export | GET | 导出数据（读操作） |
+
+### 3.8 Code Review检查清单
+
+#### 3.8.1 方法选择检查
+
+```markdown
+- [ ] Update/Delete/ToggleStatus/Restore操作是否使用统一所有权验证方法
+- [ ] 是否使用GetEntityWithOwnershipCheckAsync（所有DTO已通过继承实现ICreatorTrackable）
+- [ ] 是否正确处理返回的error（if (ownershipError != null) return ownershipError）
+```
+
+#### 3.8.2 验证逻辑检查
+
+```markdown
+- [ ] 是否在业务逻辑之前执行所有权验证
+- [ ] 资源名称参数是否使用中文（用于错误消息）
+- [ ] 是否避免了重复的Guid验证代码
+- [ ] 是否避免了重复的资源存在性检查代码
+```
+
+### 3.9 迁移指南
+
+将旧代码迁移到统一模式：
+
+**迁移1: 手动验证代码 → 统一方法**
+
+旧模式（4行）:
+```csharp
+if (ValidateGuid(id, "药材ID") is { } guidError) return guidError;
+var existing = await _herbService.GetByIdAsync(id);
+if (!existing.IsSuccess || existing.Data == null) return NotFound("药材不存在");
+if (ValidateOwnership(existing.Data.CreatedBy, "药材") is { } ownerError) return ownerError;
+```
+
+新模式（2行）:
+```csharp
+var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+if (ownershipError != null) return ownershipError;
+```
+
+**迁移2: Entity版本 → DTO版本（已废弃GetDataWithOwnershipCheckAsync）**
+
+旧模式（使用选择器函数）:
+```csharp
+// 已废弃 - GetDataWithOwnershipCheckAsync方法已删除
+var (_, ownershipError) = await GetDataWithOwnershipCheckAsync(
+    id, _service.GetByIdEntityAsync, e => e.CreatedBy, "患者");
+```
+
+新模式（统一使用DTO）:
+```csharp
+// 所有DTO通过TimestampDto继承链自动实现ICreatorTrackable
+var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+    id, _service.GetByIdAsync, "患者");
+```
+
+**设计说明**: 所有DTO通过继承`TimestampDto`自动获得`CreatedBy`属性，AutoMapper自动映射Entity到DTO时会包含此属性，因此不再需要Entity版本的所有权验证方法。
+
+### 3.10 相关Issue/OpenSpec
+
+- OpenSpec: optimize-module-list-ui - 模块列表UI优化反思报告
+
+---
+
+## 4. 测试规范
 
 （待补充）
 
@@ -1063,6 +1279,6 @@ A: 推荐策略：
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2025-11-22
+**文档版本**: v1.1
+**最后更新**: 2025-12-08
 **维护者**: Claude Code

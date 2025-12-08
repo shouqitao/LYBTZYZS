@@ -47,7 +47,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, dialogService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
             _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
@@ -94,7 +94,11 @@ namespace LYBT.Desktop.Patients.ViewModels
             {
                 if (!await ShowConfirmationAsync($"确认删除患者 [{item.Name}] 吗？", "删除确认")) return;
                 var result = await _commandHandler.DeletePatientAsync(item.Id);
-                if (result.IsSuccess) await ShowSuccessMessageAsync($"患者 [{item.Name}] 已删除");
+                if (result.IsSuccess)
+                {
+                    await ShowSuccessMessageAsync($"患者 [{item.Name}] 已删除");
+                    await RefreshAsync();
+                }
                 else ErrorMessage = result.ErrorMessage ?? "删除患者失败";
             }
             catch (Exception ex) { Logger.LogError(ex, "删除患者时发生异常"); await UserNotificationService!.HandleExceptionAsync(ex, $"删除患者"); }
@@ -118,6 +122,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             if (failureCount > 0 && failedItems.Count > 0) { message += $"\n\n失败的患者：\n{string.Join("、", failedItems.Take(5))}"; if (failedItems.Count > 5) message += $"等{failedItems.Count}个"; }
             if (failureCount > 0) await ShowWarningMessageAsync(message);
             else await ShowSuccessMessageAsync(message);
+            // 刷新列表显示最新数据
+            if (successCount > 0) await RefreshAsync();
         }
 
         protected override async Task OnExecuteAddAsync() { NavigateTo("ContentRegion", "PatientDetailView"); await Task.CompletedTask; }

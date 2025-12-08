@@ -108,6 +108,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 更新药材信息
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
@@ -115,7 +116,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+                if (ownershipError != null) return ownershipError;
 
                 dto.Id = id;
 
@@ -136,6 +139,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除药材（软删除）
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -143,7 +147,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _herbService.DeleteAsync(id);
                 if (!result.IsSuccess)
@@ -401,6 +407,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 切换药材状态（启用/禁用）
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
@@ -409,7 +416,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _herbService.ToggleStatusAsync(id);
                 if (!result.IsSuccess || result.Data == null)
@@ -428,6 +437,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 恢复已删除的药材
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<HerbDto>), 200)]
@@ -436,7 +446,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "药材ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _herbService.GetByIdAsync, "药材");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _herbService.RestoreAsync(id);
                 if (!result.IsSuccess || result.Data == null)

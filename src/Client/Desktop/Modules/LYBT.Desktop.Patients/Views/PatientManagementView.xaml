@@ -111,10 +111,12 @@
         <!-- 定义操作按钮区域 -->
         <views:BaseMasterDataListView.ActionButtons>
             <StackPanel Orientation="Horizontal">
+                <!-- OpenSpec: optimize-module-list-ui - 批量删除仅管理员可见 -->
                 <Button Content="批量删除"
                         Style="{StaticResource DangerButton}"
                         Command="{Binding BatchDeleteCommand}"
                         ToolTip="删除选中的患者"
+                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}"
                         Margin="{StaticResource SpacingSmall}" />
                 <Button Command="{Binding AddCommand}"
                         Style="{StaticResource SuccessButton}"

@@ -347,6 +347,104 @@ namespace LYBT.Infrastructure.Web
         }
 
         /// <summary>
+        /// 检查当前用户是否是管理员或资源所有者
+        /// OpenSpec: optimize-module-list-ui - 所有权检查
+        /// </summary>
+        /// <param name="createdBy">资源创建者ID</param>
+        /// <returns>true表示有权限（管理员或所有者），false表示无权限</returns>
+        protected bool IsAdminOrOwner(Guid? createdBy)
+        {
+            try
+            {
+                var (operatorId, _, operatorRole) = GetOperator();
+
+                // 管理员（Admin或SuperAdmin）可以操作所有资源
+                if (operatorRole == UserRole.Admin || operatorRole == UserRole.SuperAdmin)
+                {
+                    return true;
+                }
+
+                // 非管理员需要检查所有权
+                return createdBy.HasValue && createdBy.Value == operatorId;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 验证所有权，返回null表示验证通过
+        /// 使用模式: if (ValidateOwnership(createdBy) is { } error) return error;
+        /// OpenSpec: optimize-module-list-ui - 所有权检查
+        /// </summary>
+        protected IActionResult? ValidateOwnership(Guid? createdBy, string resourceName = "资源")
+        {
+            if (!IsAdminOrOwner(createdBy))
+            {
+                _logger?.LogWarning("所有权检查失败: 用户无权操作此{ResourceName}", resourceName);
+                return Forbid($"您没有权限操作此{resourceName}，只能操作自己创建的数据");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 返回禁止访问响应（403 Forbidden）
+        /// </summary>
+        protected IActionResult Forbid(string message)
+        {
+            var response = ApiResponse.CreateFail(message);
+            response.RequestId = GetRequestId();
+            return StatusCode(403, response);
+        }
+
+        /// <summary>
+        /// 获取实体并验证所有权 - 重构后的统一方法
+        /// 使用模式: var (dto, error) = await GetEntityWithOwnershipCheckAsync(() => _service.GetByIdAsync(id), "资源");
+        ///          if (error != null) return error;
+        /// OpenSpec: optimize-module-list-ui - 统一所有权检查模式
+        /// </summary>
+        /// <typeparam name="TDto">实现ICreatorTrackable的DTO类型</typeparam>
+        /// <param name="getEntityFunc">获取实体的异步函数</param>
+        /// <param name="resourceName">资源名称（用于错误消息）</param>
+        /// <returns>元组：(实体数据, 错误响应)，如果error为null则表示验证通过</returns>
+        protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
+            Func<Task<Result<TDto>>> getEntityFunc,
+            string resourceName = "资源") where TDto : class, ICreatorTrackable
+        {
+            var result = await getEntityFunc();
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return (null, NotFound($"{resourceName}不存在"));
+            }
+
+            if (ValidateOwnership(result.Data.CreatedBy, resourceName) is { } ownerError)
+            {
+                return (null, ownerError);
+            }
+
+            return (result.Data, null);
+        }
+
+        /// <summary>
+        /// 获取实体并验证所有权（使用Guid ID） - 便捷重载方法
+        /// OpenSpec: optimize-module-list-ui - 统一所有权检查模式
+        /// </summary>
+        protected async Task<(TDto? dto, IActionResult? error)> GetEntityWithOwnershipCheckAsync<TDto>(
+            Guid id,
+            Func<Guid, Task<Result<TDto>>> getByIdFunc,
+            string resourceName = "资源") where TDto : class, ICreatorTrackable
+        {
+            if (ValidateGuid(id, $"{resourceName}ID") is { } guidError)
+            {
+                return (null, guidError);
+            }
+
+            return await GetEntityWithOwnershipCheckAsync(() => getByIdFunc(id), resourceName);
+        }
+
+        /// <summary>
         /// 验证模型状态，返回null表示验证通过
         /// 使用模式: if (ValidateModel() is { } error) return error;
         /// </summary>

@@ -141,6 +141,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 更新患者信息
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
@@ -148,7 +149,10 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "患者ID") is { } error) return error;
+                // 使用统一的所有权检查方法（DTO版本）
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                    id, _service.GetByIdAsync, "患者");
+                if (ownershipError != null) return ownershipError;
 
                 var entityResult = await _service.UpdateEntityAsync(id, dto);
                 if (!entityResult.IsSuccess || entityResult.Data == null)
@@ -175,6 +179,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除患者（软删除）
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -182,7 +187,10 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "患者ID") is { } error) return error;
+                // 使用统一的所有权检查方法（DTO版本）
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                    id, _service.GetByIdAsync, "患者");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
@@ -309,6 +317,7 @@ namespace LYBT.WebAPI.Controllers
         /// <summary>
         /// 恢复已删除的患者
         /// 注：患者实体无Status字段，因此无ToggleStatus端点
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<PatientDto>), 200)]
@@ -317,7 +326,10 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "患者ID") is { } error) return error;
+                // 使用统一的所有权检查方法（DTO版本）
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(
+                    id, _service.GetByIdAsync, "患者");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.RestoreAsync(id);
                 if (!result.IsSuccess || result.Data == null)

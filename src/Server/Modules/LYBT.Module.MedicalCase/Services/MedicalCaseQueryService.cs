@@ -50,12 +50,15 @@ namespace LYBT.Module.MedicalCases.Services
         /// <summary>
         /// 查询病案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
+        /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
         /// </summary>
         public async Task<PagedResult<MedicalCase>> GetListAsync(
             MedicalCaseStatus? status,
             Guid? patientId,
             int page,
-            int pageSize)
+            int pageSize,
+            Guid? currentDoctorId = null,
+            bool isAdmin = false)
         {
             try
             {
@@ -74,6 +77,14 @@ namespace LYBT.Module.MedicalCases.Services
                 if (patientId.HasValue)
                 {
                     filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
+                }
+
+                // OpenSpec: optimize-module-list-ui - 角色过滤
+                // 非管理员只能看到自己创建的医案
+                if (!isAdmin && currentDoctorId.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.DoctorId == currentDoctorId.Value);
+                    _logger.LogDebug("应用角色过滤，DoctorId: {DoctorId}", currentDoctorId.Value);
                 }
 
                 return new PagedResult<MedicalCase>

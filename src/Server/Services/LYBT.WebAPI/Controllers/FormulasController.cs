@@ -116,6 +116,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 更新验方
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
@@ -123,7 +124,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "验方ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.UpdateAsync(id, dto);
                 if (!result.IsSuccess || result.Data == null)
@@ -142,6 +145,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 删除验方
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
@@ -149,7 +153,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "验方ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.DeleteAsync(id);
                 if (!result.IsSuccess)
@@ -317,6 +323,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 切换验方状态（启用/禁用）
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/toggle-status")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
@@ -325,7 +332,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "验方ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.ToggleStatusAsync(id);
                 if (!result.IsSuccess || result.Data == null)
@@ -344,6 +353,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 恢复已删除的验方
+        /// OpenSpec: optimize-module-list-ui - 使用统一所有权检查模式
         /// </summary>
         [HttpPost("{id}/restore")]
         [ProducesResponseType(typeof(ApiResponse<FormulaDto>), 200)]
@@ -352,7 +362,9 @@ namespace LYBT.WebAPI.Controllers
         {
             try
             {
-                if (ValidateGuid(id, "验方ID") is { } error) return error;
+                // 使用统一的所有权检查方法
+                var (_, ownershipError) = await GetEntityWithOwnershipCheckAsync(id, _service.GetByIdAsync, "验方");
+                if (ownershipError != null) return ownershipError;
 
                 var result = await _service.RestoreAsync(id);
                 if (!result.IsSuccess || result.Data == null)

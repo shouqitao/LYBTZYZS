@@ -109,12 +109,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public MedicalCaseManagementViewModel(
             MedicalCaseDataManager dataManager, // Issue #1783: 注入DataManager
             IDialogService dialogService, // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
+            ICommonDialogService commonDialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
             ISessionManager? sessionManager = null,
             IUserNotificationService? userNotificationService = null)
-            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
+            : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService, commonDialogService)
         {
             // Issue #1783: 注入DataManager（容器ViewModel暂不使用数据操作，但保持架构一致性）
             _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
@@ -263,6 +264,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
 
             Logger.LogInformation("批量删除完成: 成功={SuccessCount}, 失败={FailedCount}", successCount, failedCount);
+            // 刷新列表显示最新数据
+            if (successCount > 0) await LoadPageAsync();
         }
 
         #endregion
