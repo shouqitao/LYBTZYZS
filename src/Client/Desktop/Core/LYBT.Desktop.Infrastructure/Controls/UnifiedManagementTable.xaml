@@ -17,13 +17,16 @@
     </UserControl.InputBindings>
 
     <Grid>
-        <!-- 数据表格 -->
+        <!-- 数据表格 - OpenSpec: optimize-module-list-ui 应用单元格样式修复垂直对齐 -->
         <DataGrid x:Name="DataGrid"
                   ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}"
                   SelectionMode="Extended"
                   SelectionUnit="FullRow"
                   Style="{StaticResource BaseDataGridStyle}"
+                  CellStyle="{StaticResource BaseDataGridCell}"
+                  RowStyle="{StaticResource BaseDataGridRow}"
+                  ColumnHeaderStyle="{StaticResource BaseDataGridColumnHeader}"
                   AutoGenerateColumns="False" />
 
         <!-- 空状态提示 -->
