@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 患者选择组件重构 (OpenSpec: refactor-patient-selection) - 2025-12-08
+
+**搜索性能优化:**
+- 新增`PatientSearchCache`服务，LRU缓存策略(最大100条，5分钟过期)
+- 搜索输入防抖优化(300ms延迟)
+- 缓存命中时跳过API调用，提升响应速度
+
+**用户体验改进:**
+- 支持Enter键触发搜索(DataGrid KeyBinding)
+- 搜索状态指示器(IsBusy绑定显示加载状态)
+- 统一PatientSelectionView UI风格(与ManagementView一致)
+
+**架构精简:**
+- 提取`PatientSearchManager`服务封装搜索和分页逻辑
+- 删除废弃`PatientSelectorControl`组件(约350行)
+- `PatientSelectionViewModel`职责更清晰
+
+**延迟任务:**
+- Task 1.4: 轻量级DTO优化(需后端配合)
+- Task 2.3: 关键字高亮(需UI框架评估)
+
 #### Shell层架构整合 (OpenSpec: consolidate-shell-architecture) - 2025-12-07
 
 **健康检查服务提取:**
