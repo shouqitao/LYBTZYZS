@@ -42,6 +42,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### 验方复制为我的验方功能 (OpenSpec: implement-formula-copy-flow) - 2025-12-08
+
+**新增功能:**
+- 验方详情页添加"复制为我的验方"按钮
+- 用户可复制他人共享验方或自己的验方，保存为新副本
+- 复制后自动进入编辑模式，可调整后保存
+
+**技术实现:**
+- Server: `FormulaService.CreateAsync` 添加 `creatorId` 参数设置所有权
+- Server: `FormulasController` 获取当前用户ID传递给服务
+- Client: `FormulaDetailViewModel` 实现 `CopyAsMyFormulaCommand`
+
+**修复:**
+- 复制验方保存后无法在列表显示（UserId未设置导致过滤排除）
+
 #### DetailView容器化重构 (OpenSpec: refactor-detail-view-container) - 2025-12-07
 
 **新增容器组件:**
