@@ -423,6 +423,7 @@
 
     <!-- ====================================================================
          DataGrid Styles - 数据表格样式
+         UI美化: 优化行高、字体、间距，提升视觉舒适度
          ==================================================================== -->
     <Style x:Key="BaseDataGridStyle" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False"/>
@@ -438,10 +439,10 @@
         <Setter Property="HeadersVisibility" Value="Column"/>
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="RowHeight" Value="40"/>
-        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="RowHeight" Value="42"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="Microsoft YaHei"/>
+        <Setter Property="Background" Value="Transparent"/>
         <!-- OpenSpec: optimize-module-list-ui - 使用统一定义的颜色资源 -->
         <Setter Property="AlternatingRowBackground" Value="{StaticResource DataGridAlternateRowBrush}"/>
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>

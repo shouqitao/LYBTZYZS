@@ -38,37 +38,87 @@
         BusyMessage="{Binding BusyMessage}"
         EmptyStateText="暂无患者数据">
 
-        <!-- 定义患者特定的 DataGrid 列 -->
+        <!-- 定义患者特定的 DataGrid 列 - UI美化: 对齐、字体优化 -->
         <views:BaseMasterDataListView.Columns>
             <!-- 姓名 -->
             <DataGridTextColumn Header="姓名"
                                 Binding="{Binding Name}"
-                                Width="120" />
+                                Width="120">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 性别 -->
             <DataGridTextColumn Header="性别"
                                 Binding="{Binding Gender}"
-                                Width="80" />
+                                Width="80">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 年龄 -->
             <DataGridTextColumn Header="年龄"
-                                Binding="{Binding Age}"
-                                Width="80" />
+                                Width="80">
+                <DataGridTextColumn.Binding>
+                    <Binding Path="Age" StringFormat="{}{0}岁"/>
+                </DataGridTextColumn.Binding>
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 手机号 -->
             <DataGridTextColumn Header="手机号"
                                 Binding="{Binding PhoneNumber}"
-                                Width="140" />
+                                Width="140">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="FontFamily" Value="Consolas"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 身份证号 -->
             <DataGridTextColumn Header="身份证号"
                                 Binding="{Binding IdNumber}"
-                                Width="*" />
+                                Width="*">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="FontFamily" Value="Consolas"/>
+                        <Setter Property="FontSize" Value="12"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 就诊次数 -->
             <DataGridTextColumn Header="就诊次数"
                                 Binding="{Binding VisitCount}"
-                                Width="100" />
+                                Width="100">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        <Setter Property="FontWeight" Value="Medium"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+            </DataGridTextColumn>
 
             <!-- 操作列 - OpenSpec: optimize-module-list-ui UI-022 -->
             <DataGridTemplateColumn Header="操作" Width="Auto">

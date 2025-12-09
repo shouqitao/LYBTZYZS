@@ -158,7 +158,7 @@
                                    Cursor="Hand"/>
                         </Grid>
 
-                        <!-- 待看诊列表 -->
+                        <!-- 待看诊列表 - UI美化: 对齐、字体、间距优化 -->
                         <DataGrid Grid.Row="1"
                                  Visibility="{Binding HasNoPendingPatients, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                  ItemsSource="{Binding PendingQueue}"
@@ -172,7 +172,10 @@
                                  HeadersVisibility="Column"
                                  GridLinesVisibility="None"
                                  BorderThickness="0"
-                                 Background="Transparent">
+                                 Background="Transparent"
+                                 RowHeight="42"
+                                 FontFamily="Microsoft YaHei"
+                                 FontSize="13">
 
                             <!-- OpenSpec: refactor-patient-selection Task 2.1 - 键盘导航支持 -->
                             <!-- 双击/回车：进入看诊 -->
@@ -183,34 +186,102 @@
                                            Command="{Binding StartConsultationCommand}"/>
                             </DataGrid.InputBindings>
 
+                            <!-- 列头样式 -->
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="FontWeight" Value="Medium"/>
+                                    <Setter Property="Height" Value="32"/>
+                                    <Setter Property="Padding" Value="8,0"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+
+                            <!-- 单元格样式 -->
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="Padding" Value="8,0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+
                             <DataGrid.Columns>
                                 <!-- 患者姓名 -->
                                 <DataGridTextColumn Header="姓名"
                                                   Binding="{Binding PatientName}"
-                                                  Width="80"/>
+                                                  Width="70">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
 
                                 <!-- 手机号（脱敏） -->
                                 <DataGridTextColumn Header="电话"
                                                   Binding="{Binding PhoneMasked}"
-                                                  Width="100"/>
+                                                  Width="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
 
                                 <!-- 状态 -->
                                 <DataGridTextColumn Header="状态"
                                                   Binding="{Binding Type}"
-                                                  Width="*"/>
+                                                  Width="*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter Property="FontWeight" Value="Medium"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
                             </DataGrid.Columns>
 
-                            <!-- 行样式：选中高亮 -->
+                            <!-- 行样式：选中高亮 + 斑马纹 -->
                             <DataGrid.RowStyle>
                                 <Style TargetType="DataGridRow">
                                     <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#F0F0F0"/>
+                                    <Setter Property="Margin" Value="0"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                                            <Setter Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+                                            <Setter Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="AlternationIndex" Value="1">
+                                            <Setter Property="Background" Value="{StaticResource DataGridAlternateRowBrush}"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
@@ -309,7 +380,7 @@
                                Style="{StaticResource SecondaryButton}"/>
                     </Grid>
 
-                    <!-- 患者列表 -->
+                    <!-- 患者列表 - UI美化: 对齐、字体、间距优化 -->
                     <DataGrid Grid.Row="2"
                              ItemsSource="{Binding Patients}"
                              SelectedItem="{Binding SelectedPatient}"
@@ -320,9 +391,14 @@
                              CanUserDeleteRows="False"
                              CanUserResizeRows="False"
                              HeadersVisibility="Column"
-                             GridLinesVisibility="Horizontal"
+                             GridLinesVisibility="None"
                              BorderBrush="{StaticResource BorderBrush}"
-                             BorderThickness="1">
+                             BorderThickness="1"
+                             Background="Transparent"
+                             RowHeight="42"
+                             AlternationCount="2"
+                             FontFamily="Microsoft YaHei"
+                             FontSize="13">
 
                         <!-- OpenSpec: refactor-patient-selection Task 2.1 - 键盘导航支持 -->
                         <!-- 双击/回车：进入看诊 -->
@@ -333,6 +409,47 @@
                                        Command="{Binding StartConsultationCommand}"/>
                         </DataGrid.InputBindings>
 
+                        <!-- 列头样式 -->
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="FontWeight" Value="Medium"/>
+                                <Setter Property="Height" Value="36"/>
+                                <Setter Property="Padding" Value="12,0"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+
+                        <!-- 单元格样式 -->
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="12,0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="{TemplateBinding Padding}"
+                                                   Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.CellStyle>
+
                         <DataGrid.Columns>
                             <!-- 姓名 -->
                             <DataGridTextColumn Header="姓名"
@@ -340,8 +457,9 @@
                                               Width="100">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -349,7 +467,14 @@
                             <!-- 性别 -->
                             <DataGridTextColumn Header="性别"
                                               Binding="{Binding Gender}"
-                                              Width="60"/>
+                                              Width="60">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                             <!-- 年龄 -->
                             <DataGridTextColumn Header="年龄"
@@ -357,34 +482,70 @@
                                 <DataGridTextColumn.Binding>
                                     <Binding Path="Age" StringFormat="{}{0}岁"/>
                                 </DataGridTextColumn.Binding>
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
 
                             <!-- 电话 -->
                             <DataGridTextColumn Header="电话"
                                               Binding="{Binding PhoneNumber}"
-                                              Width="120"/>
+                                              Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontFamily" Value="Consolas"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                             <!-- 拼音码 -->
                             <DataGridTextColumn Header="拼音码"
                                               Binding="{Binding PinYinCode}"
-                                              Width="100"/>
+                                              Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontFamily" Value="Consolas"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                             <!-- 创建时间 -->
                             <DataGridTextColumn Header="创建时间"
                                               Binding="{Binding CreatedAt, StringFormat='{}{0:yyyy-MM-dd}'}"
-                                              Width="*"/>
+                                              Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextHintBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
 
-                        <!-- 行样式 -->
+                        <!-- 行样式：选中高亮 + 斑马纹 + 悬停效果 -->
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow">
-                                <Setter Property="Height" Value="40"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#F0F0F0"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                                        <Setter Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+                                        <Setter Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="AlternationIndex" Value="1">
+                                        <Setter Property="Background" Value="{StaticResource DataGridAlternateRowBrush}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
