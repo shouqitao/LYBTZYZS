@@ -470,7 +470,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 UserId = medicalCase.DoctorId,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Quantity = 6m }
+                    new() { HerbId = Guid.NewGuid(), HerbName = "测试中药", Quantity = 6 }
                 }
             };
 
@@ -863,6 +863,263 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
 
             var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCasePermissionDto>();
             apiResponse.Data!.CanEdit.Should().BeFalse();
+        }
+
+        #endregion
+
+        #region Write Layer Tests - SaveAggregate (OpenSpec: refactor-medicalcase-aggregate-crud)
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud - PERSIST-001
+        /// 验证聚合保存端点：仅诊断无处方场景
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WithConsultationOnly_ShouldSaveSuccessfully()
+        {
+            // Arrange - 创建Active状态的病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = medicalCase.Id,
+                Remark = "仅诊断无处方测试",
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "头痛三天",
+                    TCMDiagnosis = "肝阳上亢"
+                },
+                Prescription = new PrescriptionAggregateDto
+                {
+                    NeedsPrescription = false,
+                    Items = new List<PrescriptionItemInputDto>()
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.Id.Should().Be(medicalCase.Id);
+            apiResponse.Data.Remark.Should().Be("仅诊断无处方测试");
+
+            _output.WriteLine($"✅ SaveAggregate(仅诊断)成功");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud - PERSIST-002
+        /// 验证聚合保存端点：诊断+处方完整保存
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WithConsultationAndPrescription_ShouldSaveSuccessfully()
+        {
+            // Arrange - 创建Active状态的病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = medicalCase.Id,
+                Remark = "完整保存测试",
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "头痛三天",
+                    TCMDiagnosis = "肝阳上亢",
+                    TreatmentPrinciple = "平肝潜阳"
+                },
+                Prescription = new PrescriptionAggregateDto
+                {
+                    NeedsPrescription = true,
+                    DosageCount = 7,
+                    Usage = "每日一剂，早晚分服",
+                    Advice = "忌辛辣",
+                    Items = new List<PrescriptionItemInputDto>
+                    {
+                        new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Quantity = 15 },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Quantity = 10 }
+                    }
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
+            apiResponse.Data.Should().NotBeNull();
+            apiResponse.Data!.Id.Should().Be(medicalCase.Id);
+
+            _output.WriteLine($"✅ SaveAggregate(诊断+处方)成功");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud
+        /// 验证聚合保存端点：ID不匹配时返回400
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WithMismatchedId_ShouldReturn400()
+        {
+            // Arrange - 创建病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+            var wrongId = Guid.NewGuid();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = wrongId, // 与URL中的ID不匹配
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "测试"
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.BadRequest);
+
+            _output.WriteLine($"✅ SaveAggregate ID不匹配正确返回400");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud
+        /// 验证聚合保存端点：对已完成病案返回403
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WhenStatusCompleted_ShouldReturn403()
+        {
+            // Arrange - 创建并完成病案
+            var medicalCase = await CreateAndCompleteMedicalCaseAsync();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = medicalCase.Id,
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "尝试修改已完成病案"
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert - 已完成的医案不可编辑
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.Forbidden);
+
+            _output.WriteLine($"✅ SaveAggregate正确拒绝已完成的医案");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud
+        /// 验证聚合保存端点：不存在的病案返回404
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WithNonExistingId_ShouldReturn404()
+        {
+            // Arrange
+            var nonExistingId = Guid.NewGuid();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = nonExistingId,
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "测试"
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{nonExistingId}/aggregate",
+                request);
+
+            // Assert
+            response.ShouldBeNotFound();
+
+            _output.WriteLine($"✅ SaveAggregate不存在的病案正确返回404");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud
+        /// 验证聚合保存端点：空ID与路径ID不匹配返回400
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_WithEmptyId_ShouldReturn400()
+        {
+            // Arrange - 创建病案
+            var medicalCase = await CreateTestMedicalCaseAsync();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = Guid.Empty // 空ID与URL中的ID不匹配
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert - 空ID与URL路径ID不匹配，返回400
+            response.ShouldHaveStatusCode(System.Net.HttpStatusCode.BadRequest);
+
+            _output.WriteLine($"SaveAggregate空ID正确返回400(ID不匹配)");
+        }
+
+        /// <summary>
+        /// OpenSpec: refactor-medicalcase-aggregate-crud
+        /// 验证聚合保存端点：更新现有处方
+        /// </summary>
+        [Fact]
+        public async Task SaveAggregate_UpdateExistingPrescription_ShouldUpdateSuccessfully()
+        {
+            // Arrange - 创建病案并创建处方
+            var (medicalCase, _) = await CreateTestMedicalCaseWithPrescriptionAsync();
+
+            var request = new MedicalCaseAggregateInputDto
+            {
+                Id = medicalCase.Id,
+                Consultation = new ConsultationInputDto
+                {
+                    ChiefComplaint = "更新后的主诉",
+                    TCMDiagnosis = "更新后的诊断"
+                },
+                Prescription = new PrescriptionAggregateDto
+                {
+                    NeedsPrescription = true,
+                    DosageCount = 14, // 更新剂数
+                    Items = new List<PrescriptionItemInputDto>
+                    {
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材1", Quantity = 20 },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材2", Quantity = 15 },
+                        new() { HerbId = Guid.NewGuid(), HerbName = "新药材3", Quantity = 10 }
+                    }
+                }
+            };
+
+            // Act
+            var response = await Client.PutAsJsonAsync(
+                $"/api/v1/medicalcases/{medicalCase.Id}/aggregate",
+                request);
+
+            // Assert
+            response.ShouldBeOk();
+
+            var apiResponse = await response.ShouldBeSuccessfulApiResponseAsync<MedicalCaseDetailDto>();
+            apiResponse.Data.Should().NotBeNull();
+
+            _output.WriteLine($"✅ SaveAggregate更新现有处方成功");
         }
 
         #endregion

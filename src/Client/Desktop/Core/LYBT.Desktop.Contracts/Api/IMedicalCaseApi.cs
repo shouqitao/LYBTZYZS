@@ -222,5 +222,18 @@ namespace LYBT.Desktop.Contracts.Api
             Guid id,
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20);
+
+        /// <summary>
+        /// 聚合保存医案（诊断+处方一次性保存）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
+        /// 简化前端保存逻辑，减少API调用次数
+        /// </summary>
+        /// <param name="id">医案ID</param>
+        /// <param name="request">聚合输入DTO（包含诊断和处方数据）</param>
+        /// <returns>更新后的医案详情</returns>
+        [Refit.Put("/api/v1/medicalcases/{id}/aggregate")]
+        Task<ApiResponse<MedicalCaseDetailDto>> SaveAggregateAsync(
+            Guid id,
+            [Refit.Body] MedicalCaseAggregateInputDto request);
     }
 }

@@ -75,7 +75,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "HerbsModule",
                     "FormulaModule",
                     "MedicalCaseModule",
-                    "ConsultationModule",
+                    // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
                     "PrescriptionsModule"
                 },
                 UserRole.Doctor => new[]
@@ -84,7 +84,7 @@ namespace LYBT.Desktop.Shell.Services.Bootstrap
                     "HerbsModule",
                     "FormulaModule",
                     "MedicalCaseModule",
-                    "ConsultationModule",
+                    // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
                     "PrescriptionsModule"
                 },
                 _ => Array.Empty<string>()

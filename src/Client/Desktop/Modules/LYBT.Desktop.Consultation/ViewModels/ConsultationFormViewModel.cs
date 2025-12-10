@@ -11,8 +11,11 @@ using Prism.Regions;
 
 namespace LYBT.Desktop.Consultation.ViewModels
 {
-    /// <summary>诊断表单ViewModel - 填写诊断信息</summary>
-    public class ConsultationFormViewModel : UnifiedViewModelBase, IValidatable, ISaveable
+    /// <summary>
+    /// 诊断表单ViewModel - 填写诊断信息
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.4) - 移除ISaveable，使用内部保存方法
+    /// </summary>
+    public class ConsultationFormViewModel : UnifiedViewModelBase, IValidatable
     {
         private readonly ConsultationDataManager _dataManager;
         private readonly ConsultationCommandHandler _commandHandler;
@@ -82,7 +85,11 @@ namespace LYBT.Desktop.Consultation.ViewModels
             ValidationMessage = string.Empty; return true;
         }
 
-        public async Task<bool> SaveAsync()
+        /// <summary>
+        /// 保存诊断数据
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.4) - 内部方法，供命令使用
+        /// </summary>
+        private async Task<bool> SaveAsync()
         {
             try
             {

@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 医案聚合根CRUD重构 (OpenSpec: refactor-medicalcase-aggregate-crud) - 2025-12-10
+
+**统一保存端点:**
+- 新增`PUT /api/medicalcase/{id}/aggregate`聚合根保存API
+- 创建`MedicalCaseAggregateInputDto`统一Consultation+Prescription数据
+- 事务保证诊断和处方原子性写入
+
+**ISaveable到IDataProvider迁移:**
+- 移除ISaveable接口依赖，使用IDataProvider模式
+- ConsultationPanelViewModel实现IDataProvider<ConsultationInputDto>
+- PrescriptionPanelViewModel实现IDataProvider<List<PrescriptionAggregateDto>>
+
+**工作区协调器优化:**
+- MedicalCaseWorkspaceCoordinator统一收集子面板数据
+- 移除独立的Consultation/Prescription保存API调用
+- 保存API调用从2-3次减少到1次
+
+**ConsultationModule禁用:**
+- 从Shell层移除ConsultationModule注册（功能已迁移至MedicalCase模块）
+- 保留项目目录供参考
+
 #### 患者选择组件重构 (OpenSpec: refactor-patient-selection) - 2025-12-08
 
 **搜索性能优化:**

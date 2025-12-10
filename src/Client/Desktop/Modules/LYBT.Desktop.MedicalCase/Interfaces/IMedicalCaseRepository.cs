@@ -102,5 +102,15 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         /// <param name="medicalCaseId">医案ID</param>
         /// <returns>权限详情</returns>
         Task<MedicalCasePermissionDto?> GetPermissionsAsync(Guid medicalCaseId);
+
+        /// <summary>
+        /// 聚合保存医案（诊断+处方一次性保存）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
+        /// 简化前端保存逻辑，减少API调用次数
+        /// </summary>
+        /// <param name="medicalCaseId">医案ID</param>
+        /// <param name="dto">聚合输入DTO（包含诊断和处方数据）</param>
+        /// <returns>更新后的医案详情</returns>
+        Task<MedicalCaseDetailDto> SaveAggregateAsync(Guid medicalCaseId, MedicalCaseAggregateInputDto dto);
     }
 }

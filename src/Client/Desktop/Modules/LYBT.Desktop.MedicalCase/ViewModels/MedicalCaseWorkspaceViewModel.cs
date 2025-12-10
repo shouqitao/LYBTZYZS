@@ -203,9 +203,11 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         try
         {
             SetIsBusy(true, "正在保存...");
-            var result = await _coordinator.SavePanelsSilentlyAsync(GetConsultationSaveable(), GetPrescriptionSaveable(), SyncRemarkToPanel);
-            if (result) { if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason)) Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason); await ShowSuccessMessageAsync("保存成功"); }
-            else await ShowErrorMessageAsync("保存失败");
+            // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合保存
+            SyncRemarkToPanel();
+            var result = await _coordinator.SaveAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark, EditReason);
+            if (result.IsSuccess) { if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason)) Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason); await ShowSuccessMessageAsync("保存成功"); }
+            else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
         catch (Exception ex) { Logger.LogError(ex, "保存医案数据失败"); await ShowErrorMessageAsync($"保存失败：{ex.Message}"); }
         finally { SetIsBusy(false); }
@@ -220,18 +222,24 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     private async Task ExecuteBackAsync() => await _navigationHandler.ExecuteBackAsync(WorkspaceMode, IsReadOnly);
 
     private void SyncRemarkToPanel() { if (ConsultationPanelViewModel != null) ConsultationPanelViewModel.MedicalCaseRemark = Remark; }
-    private ISaveable? GetConsultationSaveable() => ConsultationPanelViewModel as ISaveable;
-    private ISaveable? GetPrescriptionSaveable() => PrescriptionPanelViewModel as ISaveable;
+
+    // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 迁移到IDataProvider
+    private IDataProvider? GetConsultationProvider() => ConsultationPanelViewModel as IDataProvider;
+    private IDataProvider? GetPrescriptionProvider() => PrescriptionPanelViewModel as IDataProvider;
+    private IValidatable? GetConsultationValidator() => ConsultationPanelViewModel as IValidatable;
+    private IValidatable? GetPrescriptionValidator() => PrescriptionPanelViewModel as IValidatable;
 
     private async Task SaveDraftOnlyAsync()
     {
-        try { SetIsBusy(true, "正在保存..."); await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationSaveable(), GetPrescriptionSaveable(), SyncRemarkToPanel); }
+        // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合暂存
+        try { SetIsBusy(true, "正在保存..."); await _coordinator.SaveDraftWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
         finally { SetIsBusy(false); }
     }
 
     private async Task CancelCaseOnlyAsync()
     {
-        try { SetIsBusy(true, "正在处理..."); await _coordinator.CancelAsync(MedicalCaseId, GetConsultationSaveable(), GetPrescriptionSaveable(), SyncRemarkToPanel); }
+        // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合取消
+        try { SetIsBusy(true, "正在处理..."); await _coordinator.CancelWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark); }
         finally { SetIsBusy(false); }
     }
 
@@ -246,7 +254,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
                 if (!string.IsNullOrEmpty(auditReason)) EditReason = auditReason;
             }
             SetIsBusy(true, WorkspaceMode == WorkspaceMode.Management ? "正在保存..." : "正在暂存...");
-            var result = await _coordinator.SaveDraftAsync(MedicalCaseId, GetConsultationSaveable(), GetPrescriptionSaveable(), SyncRemarkToPanel);
+            // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合暂存
+            var result = await _coordinator.SaveDraftWithAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark);
             if (result.IsSuccess) { _editModeStateMachine.EnterReadOnlyMode(); await ShowSuccessMessageAsync(WorkspaceMode == WorkspaceMode.Management ? "保存成功" : "医案已暂存，可随时点击'修改医案'继续编辑"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
         }
@@ -285,7 +294,10 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         try
         {
             SetIsBusy(true, "正在完成看诊...");
-            var result = await _coordinator.CompleteAsync(MedicalCaseId, GetConsultationSaveable(), GetPrescriptionSaveable(), SyncRemarkToPanel, IsPrescriptionEnabled);
+            // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合完成
+            var result = await _coordinator.CompleteWithAggregateAsync(
+                MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(),
+                GetConsultationValidator(), GetPrescriptionValidator(), Remark, IsPrescriptionEnabled);
             if (result.IsSuccess)
             {
                 await ShowSuccessMessageAsync("看诊已完成");

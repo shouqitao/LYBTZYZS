@@ -21,14 +21,15 @@ public class PrescriptionItemHandler
     #region 常量
 
     /// <summary>
-    /// 最小空槽位数量（N+1行原则）
+    /// 最小空槽位数量（只保留1个用于输入）
+    /// OpenSpec: unify-medicalcase-view-edit-pattern - 用户要求只保留1个空白槽位
     /// </summary>
-    private const int MinBlankSlots = 4;
+    private const int MinBlankSlots = 1;
 
     /// <summary>
-    /// 初始槽位数量（2行4列）
+    /// 初始槽位数量（1个空槽位用于输入）
     /// </summary>
-    private const int InitialSlotCount = 8;
+    private const int InitialSlotCount = 1;
 
     #endregion
 
@@ -124,15 +125,11 @@ public class PrescriptionItemHandler
 
     #endregion
 
-    #region N+1行原则
+    #region 空槽位管理
 
     /// <summary>
-    /// 确保至少有4个空槽位（N+1行原则）
-    /// 逻辑：
-    /// - 0~4种药材 -> 8个槽位（2行）
-    /// - 5~8种药材 -> 12个槽位（3行）
-    /// - 9~12种药材 -> 16个槽位（4行）
-    /// - 以此类推...
+    /// 确保至少有1个空槽位用于输入新药材
+    /// OpenSpec: unify-medicalcase-view-edit-pattern - 改为只保留1个空白槽位
     /// </summary>
     /// <param name="herbItems">药材项集合</param>
     /// <param name="allHerbs">所有药材列表</param>
@@ -157,7 +154,7 @@ public class PrescriptionItemHandler
 
         if (addedCount > 0)
         {
-            _logger.LogDebug("添加{Count}个空槽位以满足N+1行原则", addedCount);
+            _logger.LogDebug("添加{Count}个空槽位以确保输入框可用", addedCount);
         }
     }
 
@@ -293,7 +290,7 @@ public class PrescriptionItemHandler
                 {
                     HerbId = herbItem.HerbId,
                     HerbName = herbItem.HerbName,
-                    Quantity = herbItem.Dosage,
+                    Quantity = (int)herbItem.Dosage,
                     Dosage = herbItem.Dosage,
                     Unit = "g"
                 });

@@ -1,5 +1,6 @@
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Services;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
@@ -8,6 +9,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels.Components;
 /// 医案工作区协调器
 /// 负责协调面板保存、生命周期操作和审计检查
 /// OpenSpec: refactor-viewmodel-layer - VM-002 Components Pattern
+/// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4) - 支持聚合保存
 /// </summary>
 public class MedicalCaseWorkspaceCoordinator
 {
@@ -15,6 +17,7 @@ public class MedicalCaseWorkspaceCoordinator
 
     private readonly MedicalCaseLifecycleHandler _lifecycleHandler;
     private readonly MedicalCaseDataLoader _dataLoader;
+    private readonly IMedicalCaseRepository _repository;
     private readonly IAuditRequirementChecker? _auditRequirementChecker;
     private readonly ILogger<MedicalCaseWorkspaceCoordinator> _logger;
 
@@ -25,185 +28,125 @@ public class MedicalCaseWorkspaceCoordinator
     public MedicalCaseWorkspaceCoordinator(
         MedicalCaseLifecycleHandler lifecycleHandler,
         MedicalCaseDataLoader dataLoader,
+        IMedicalCaseRepository repository,
         ILoggerFactory loggerFactory,
         IAuditRequirementChecker? auditRequirementChecker = null)
     {
         _lifecycleHandler = lifecycleHandler ?? throw new ArgumentNullException(nameof(lifecycleHandler));
         _dataLoader = dataLoader ?? throw new ArgumentNullException(nameof(dataLoader));
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = loggerFactory.CreateLogger<MedicalCaseWorkspaceCoordinator>();
         _auditRequirementChecker = auditRequirementChecker;
     }
 
     #endregion
 
-    #region 面板保存操作
+    #region 聚合保存操作
 
     /// <summary>
-    /// 保存所有面板数据（静默模式）
+    /// 使用IDataProvider收集数据并聚合保存（单次API调用）
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    /// <param name="consultationPanel">诊断面板ViewModel</param>
-    /// <param name="prescriptionPanel">处方面板ViewModel</param>
-    /// <param name="syncRemarkAction">同步备注的回调（由ViewModel提供）</param>
-    /// <returns>保存是否成功</returns>
-    public async Task<bool> SavePanelsSilentlyAsync(
-        ISaveable? consultationPanel,
-        ISaveable? prescriptionPanel,
-        Action? syncRemarkAction = null)
+    /// <param name="medicalCaseId">医案ID</param>
+    /// <param name="consultationProvider">诊断数据提供者</param>
+    /// <param name="prescriptionProvider">处方数据提供者</param>
+    /// <param name="remark">医案备注</param>
+    /// <param name="editReason">编辑原因（审计用）</param>
+    /// <returns>保存结果</returns>
+    public async Task<AggregateSaveResult> SaveAggregateAsync(
+        Guid medicalCaseId,
+        IDataProvider? consultationProvider,
+        IDataProvider? prescriptionProvider,
+        string? remark = null,
+        string? editReason = null)
     {
         try
         {
-            // 同步备注到诊断面板（通过回调）
-            syncRemarkAction?.Invoke();
+            _logger.LogInformation("开始聚合保存，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
 
-            // 保存诊断数据
-            if (consultationPanel != null)
+            // 从IDataProvider收集数据
+            var consultationData = consultationProvider?.GetConsultationData();
+            var prescriptionData = prescriptionProvider?.GetPrescriptionData();
+
+            // 构建聚合DTO
+            var aggregateDto = new MedicalCaseAggregateInputDto
             {
-                var consultationResult = await consultationPanel.SaveSilentlyAsync();
-                _logger.LogDebug("诊断面板静默保存结果: {Result}", consultationResult);
-            }
+                Id = medicalCaseId,
+                Remark = remark,
+                EditReason = editReason,
+                Consultation = consultationData,
+                Prescription = prescriptionData
+            };
 
-            // 保存处方数据
-            if (prescriptionPanel != null)
-            {
-                var prescriptionResult = await prescriptionPanel.SaveSilentlyAsync();
-                _logger.LogDebug("处方面板静默保存结果: {Result}", prescriptionResult);
-            }
+            // 调用聚合保存API（单次调用）
+            var result = await _repository.SaveAggregateAsync(medicalCaseId, aggregateDto);
 
-            return true;
+            _logger.LogInformation("聚合保存成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+
+            return AggregateSaveResult.Success(result);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "面板静默保存失败");
-            return false;
+            _logger.LogError(ex, "聚合保存失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            return AggregateSaveResult.Failed($"保存失败: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 保存所有面板数据（完整模式，显示验证错误）
+    /// 暂存医案（使用聚合保存）
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    /// <param name="consultationPanel">诊断面板ViewModel</param>
-    /// <param name="prescriptionPanel">处方面板ViewModel</param>
-    /// <param name="syncRemarkAction">同步备注的回调</param>
-    /// <param name="isPrescriptionEnabled">处方是否启用</param>
-    /// <returns>保存结果</returns>
-    public async Task<PanelSaveResult> SavePanelsAsync(
-        ISaveable? consultationPanel,
-        ISaveable? prescriptionPanel,
-        Action? syncRemarkAction,
-        bool isPrescriptionEnabled)
-    {
-        // 同步备注到诊断面板（通过回调）
-        syncRemarkAction?.Invoke();
-
-        // 保存诊断数据
-        if (consultationPanel != null)
-        {
-            var consultationResult = await consultationPanel.SaveAsync();
-            if (!consultationResult)
-            {
-                return PanelSaveResult.Failed("保存诊断数据失败");
-            }
-        }
-
-        // 保存处方数据（如果启用）
-        if (isPrescriptionEnabled && prescriptionPanel != null)
-        {
-            var prescriptionResult = await prescriptionPanel.SaveAsync();
-            if (!prescriptionResult)
-            {
-                return PanelSaveResult.Failed("保存处方数据失败");
-            }
-        }
-
-        return PanelSaveResult.Success();
-    }
-
-    #endregion
-
-    #region 生命周期操作
-
-    /// <summary>
-    /// 暂存医案
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <param name="consultationPanel">诊断面板</param>
-    /// <param name="prescriptionPanel">处方面板</param>
-    /// <param name="syncRemarkAction">同步备注的回调</param>
-    /// <returns>操作结果</returns>
-    public async Task<LifecycleResult> SaveDraftAsync(
+    public async Task<LifecycleResult> SaveDraftWithAggregateAsync(
         Guid medicalCaseId,
-        ISaveable? consultationPanel,
-        ISaveable? prescriptionPanel,
-        Action? syncRemarkAction = null)
+        IDataProvider? consultationProvider,
+        IDataProvider? prescriptionProvider,
+        string? remark = null)
     {
-        // 先保存面板数据
-        await SavePanelsSilentlyAsync(consultationPanel, prescriptionPanel, syncRemarkAction);
+        // 先聚合保存数据
+        var saveResult = await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
+        if (!saveResult.IsSuccess)
+        {
+            return new LifecycleResult(false, saveResult.ErrorMessage);
+        }
 
         // 更新状态为Draft
         var result = await _lifecycleHandler.SaveDraftAsync(medicalCaseId);
-        
+
         if (result.success)
         {
-            _logger.LogInformation("医案已暂存，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("医案已暂存（聚合模式），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
         }
 
         return new LifecycleResult(result.success, result.errorMessage);
     }
 
     /// <summary>
-    /// 取消医案（软删除）
+    /// 完成医案（使用聚合保存）
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
     /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <param name="consultationPanel">诊断面板</param>
-    /// <param name="prescriptionPanel">处方面板</param>
-    /// <param name="syncRemarkAction">同步备注的回调</param>
-    /// <returns>操作结果</returns>
-    public async Task<LifecycleResult> CancelAsync(
+    public async Task<LifecycleResult> CompleteWithAggregateAsync(
         Guid medicalCaseId,
-        ISaveable? consultationPanel,
-        ISaveable? prescriptionPanel,
-        Action? syncRemarkAction = null)
+        IDataProvider? consultationProvider,
+        IDataProvider? prescriptionProvider,
+        IValidatable? consultationValidator,
+        IValidatable? prescriptionValidator,
+        string? remark = null,
+        bool isPrescriptionEnabled = true)
     {
-        // 取消前自动保存（供审计）
-        try
+        // 验证诊断数据
+        if (consultationValidator != null && !consultationValidator.Validate())
         {
-            await SavePanelsSilentlyAsync(consultationPanel, prescriptionPanel, syncRemarkAction);
-            _logger.LogDebug("取消前数据已保存（供审计）");
-        }
-        catch (Exception saveEx)
-        {
-            _logger.LogWarning(saveEx, "取消前保存失败，继续执行取消操作");
+            return new LifecycleResult(false, consultationValidator.ValidationMessage);
         }
 
-        // 执行软删除
-        var result = await _lifecycleHandler.CancelAsync(medicalCaseId);
-
-        if (result.success)
+        // 验证处方数据（如果启用）
+        if (isPrescriptionEnabled && prescriptionValidator != null && !prescriptionValidator.Validate())
         {
-            _logger.LogInformation("医案已取消（软删除），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            return new LifecycleResult(false, prescriptionValidator.ValidationMessage);
         }
 
-        return new LifecycleResult(result.success, result.errorMessage);
-    }
-
-    /// <summary>
-    /// 完成医案
-    /// </summary>
-    /// <param name="medicalCaseId">医案ID</param>
-    /// <param name="consultationPanel">诊断面板</param>
-    /// <param name="prescriptionPanel">处方面板</param>
-    /// <param name="syncRemarkAction">同步备注的回调</param>
-    /// <param name="isPrescriptionEnabled">处方是否启用</param>
-    /// <returns>操作结果</returns>
-    public async Task<LifecycleResult> CompleteAsync(
-        Guid medicalCaseId,
-        ISaveable? consultationPanel,
-        ISaveable? prescriptionPanel,
-        Action? syncRemarkAction,
-        bool isPrescriptionEnabled)
-    {
-        // 保存面板数据（完整模式）
-        var saveResult = await SavePanelsAsync(consultationPanel, prescriptionPanel, syncRemarkAction, isPrescriptionEnabled);
+        // 聚合保存数据
+        var saveResult = await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
         if (!saveResult.IsSuccess)
         {
             return new LifecycleResult(false, saveResult.ErrorMessage);
@@ -214,7 +157,39 @@ public class MedicalCaseWorkspaceCoordinator
 
         if (result.success)
         {
-            _logger.LogInformation("医案已完成，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+            _logger.LogInformation("医案已完成（聚合模式），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+        }
+
+        return new LifecycleResult(result.success, result.errorMessage);
+    }
+
+    /// <summary>
+    /// 取消医案（使用聚合保存后取消）
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.2)
+    /// </summary>
+    public async Task<LifecycleResult> CancelWithAggregateAsync(
+        Guid medicalCaseId,
+        IDataProvider? consultationProvider,
+        IDataProvider? prescriptionProvider,
+        string? remark = null)
+    {
+        // 取消前先聚合保存数据（供审计）
+        try
+        {
+            await SaveAggregateAsync(medicalCaseId, consultationProvider, prescriptionProvider, remark);
+            _logger.LogDebug("取消前数据已保存（聚合模式，供审计）");
+        }
+        catch (Exception saveEx)
+        {
+            _logger.LogWarning(saveEx, "取消前聚合保存失败，继续执行取消操作");
+        }
+
+        // 执行软删除
+        var result = await _lifecycleHandler.CancelAsync(medicalCaseId);
+
+        if (result.success)
+        {
+            _logger.LogInformation("医案已取消（聚合模式），MedicalCaseId: {MedicalCaseId}", medicalCaseId);
         }
 
         return new LifecycleResult(result.success, result.errorMessage);
@@ -256,24 +231,6 @@ public class MedicalCaseWorkspaceCoordinator
 #region 结果类型
 
 /// <summary>
-/// 面板保存结果
-/// </summary>
-public class PanelSaveResult
-{
-    public bool IsSuccess { get; }
-    public string? ErrorMessage { get; }
-
-    private PanelSaveResult(bool isSuccess, string? errorMessage)
-    {
-        IsSuccess = isSuccess;
-        ErrorMessage = errorMessage;
-    }
-
-    public static PanelSaveResult Success() => new(true, null);
-    public static PanelSaveResult Failed(string errorMessage) => new(false, errorMessage);
-}
-
-/// <summary>
 /// 生命周期操作结果
 /// </summary>
 public class LifecycleResult
@@ -286,6 +243,30 @@ public class LifecycleResult
         IsSuccess = isSuccess;
         ErrorMessage = errorMessage;
     }
+}
+
+/// <summary>
+/// 聚合保存结果
+/// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.4)
+/// </summary>
+public class AggregateSaveResult
+{
+    public bool IsSuccess { get; }
+    public string? ErrorMessage { get; }
+    public LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDetailDto? Data { get; }
+
+    private AggregateSaveResult(bool isSuccess, string? errorMessage, LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDetailDto? data)
+    {
+        IsSuccess = isSuccess;
+        ErrorMessage = errorMessage;
+        Data = data;
+    }
+
+    public static AggregateSaveResult Success(LYBT.Shared.Models.Contracts.MedicalCase.MedicalCaseDetailDto data)
+        => new(true, null, data);
+
+    public static AggregateSaveResult Failed(string errorMessage)
+        => new(false, errorMessage, null);
 }
 
 #endregion

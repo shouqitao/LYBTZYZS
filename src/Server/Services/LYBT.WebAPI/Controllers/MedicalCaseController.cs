@@ -558,6 +558,170 @@ namespace LYBT.WebAPI.Controllers
 
         #endregion
 
+        #region 聚合保存端点
+
+        /// <summary>
+        /// 保存医案聚合根（统一保存Consultation和Prescription）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-001, PERSIST-002)
+        /// 在单个事务中同时保存诊断和处方数据
+        /// </summary>
+        /// <param name="id">病案ID</param>
+        /// <param name="request">聚合保存请求</param>
+        /// <returns>更新后的病案详情</returns>
+        [HttpPut("{id}/aggregate")]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 404)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 400)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 403)]
+        [ProducesResponseType(typeof(ApiResponse<MedicalCaseDetailDto>), 422)]
+        public async Task<IActionResult> SaveAggregate(
+            Guid id,
+            [FromBody] MedicalCaseAggregateInputDto request)
+        {
+            try
+            {
+                // 验证请求ID与路由ID一致
+                if (request.Id != id)
+                {
+                    return BadRequest(ApiResponse<MedicalCaseDetailDto>.CreateFail("请求ID与路由ID不一致"));
+                }
+
+                // 资源级授权检查
+                var medicalCase = await _queryService.GetByIdAsync(id);
+                if (medicalCase == null)
+                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+
+                var authResult = await _authorizationService.AuthorizeAsync(User, medicalCase, MedicalCaseOperations.Edit);
+                if (!authResult.Succeeded)
+                {
+                    _logger.LogWarning("授权失败: 用户无权编辑病案 {MedicalCaseId}", id);
+                    return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail("无权编辑此病案"));
+                }
+
+                // 获取当前用户信息
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole == UserRole.SuperAdmin || operatorRole == UserRole.Admin;
+
+                // 调用聚合保存服务
+                var result = await _commandService.SaveAggregateAsync(request, operatorId, isAdmin);
+
+                if (result == null)
+                {
+                    return NotFound(ApiResponse<MedicalCaseDetailDto>.CreateFail("病案不存在"));
+                }
+
+                // Entity → MedicalCaseDetailDto 映射
+                var detailDto = MapToMedicalCaseDetailDto(result);
+
+                _logger.LogInformation("医案聚合保存成功，MedicalCaseId: {MedicalCaseId}", id);
+                return Ok(ApiResponse<MedicalCaseDetailDto>.CreateSuccess(detailDto, "保存成功"));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "聚合保存失败：权限不足");
+                return StatusCode(403, ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "聚合保存失败：业务规则验证失败");
+                return UnprocessableEntity(ApiResponse<MedicalCaseDetailDto>.CreateFail(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "保存医案聚合", new { id, request });
+            }
+        }
+
+        /// <summary>
+        /// 将医案实体映射为详情DTO（包含Consultation和Prescription）
+        /// </summary>
+        private static MedicalCaseDetailDto MapToMedicalCaseDetailDto(MedicalCase entity)
+        {
+            return new MedicalCaseDetailDto
+            {
+                // 基础字段
+                Id = entity.Id,
+                PatientId = entity.PatientId,
+                PatientName = entity.PatientName,
+                DoctorId = entity.DoctorId,
+                DoctorName = entity.DoctorName,
+                ConsultationDate = entity.ConsultationDate,
+                CaseStatus = entity.CaseStatus,
+                Remark = entity.Remark,
+                Diagnosis = entity.Consultation?.TCMDiagnosis,
+                CreatedAt = entity.CreatedAt,
+
+                // 详细字段
+                ChiefComplaint = entity.Consultation?.ChiefComplaint,
+                PresentIllness = entity.Consultation?.PresentIllness,
+                DiagnosisResult = entity.Consultation?.TCMDiagnosis,
+                TreatmentPlan = entity.Consultation?.TreatmentPrinciple,
+
+                // Consultation
+                Consultation = entity.Consultation != null ? new ConsultationDto
+                {
+                    Id = entity.Consultation.Id,
+                    MedicalCaseId = entity.Id,
+                    PatientId = entity.PatientId,
+                    UserId = entity.DoctorId,
+                    PatientName = entity.PatientName,
+                    DoctorName = entity.DoctorName,
+                    ChiefComplaint = entity.Consultation.ChiefComplaint,
+                    PresentIllness = entity.Consultation.PresentIllness,
+                    Inspection = entity.Consultation.Inspection,
+                    AuscultationOlfaction = entity.Consultation.AuscultationOlfaction,
+                    Inquiry = entity.Consultation.Inquiry,
+                    Palpation = entity.Consultation.Palpation,
+                    TCMDiagnosis = entity.Consultation.TCMDiagnosis,
+                    TreatmentPrinciple = entity.Consultation.TreatmentPrinciple,
+                    MedicalAdvice = entity.Consultation.MedicalAdvice,
+                    Remark = entity.Consultation.Remark,
+                    CreatedAt = entity.Consultation.CreatedAt,
+                    UpdatedAt = entity.Consultation.UpdatedAt
+                } : null,
+
+                // Prescription
+                Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted ? new PrescriptionDto
+                {
+                    Id = entity.Prescription.Id,
+                    MedicalCaseId = entity.Id,
+                    PatientId = entity.PatientId,
+                    UserId = entity.DoctorId,
+                    PrescriptionNumber = entity.Prescription.PrescriptionNumber,
+                    Indication = entity.Prescription.Indication,
+                    DosageCount = entity.Prescription.DosageCount,
+                    Discount = entity.Prescription.Discount,
+                    Advice = entity.Prescription.Advice,
+                    FormulaSource = entity.Prescription.FormulaSource,
+                    ReferencedFormulas = entity.Prescription.ReferencedFormulas,
+                    Remark = entity.Prescription.Remark,
+                    Items = entity.Prescription.Items?.Select(item => new PrescriptionItemDto
+                    {
+                        Id = item.Id,
+                        HerbId = item.HerbId,
+                        HerbName = item.HerbName,
+                        Quantity = item.Quantity,
+                        Unit = item.Unit,
+                        UnitPrice = item.UnitPrice,
+                        Dosage = item.Quantity,
+                        TotalPrice = item.Amount,
+                        TotalWeight = item.Quantity,
+                        Subtotal = item.Amount,
+                        Usage = item.Usage,
+                        Remark = item.Remark
+                    }).ToList() ?? new List<PrescriptionItemDto>(),
+                    SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
+                    TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
+                    TotalWeight = entity.Prescription.Items?.Sum(x => x.Quantity) ?? 0,
+                    Status = CommonStatus.Enabled,
+                    CreatedAt = entity.Prescription.CreatedAt,
+                    UpdatedAt = entity.Prescription.UpdatedAt
+                } : null
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// 更新病案状态
         /// Epic #1612修正版: 支持Draft/Active/Completed/Cancelled状态流转

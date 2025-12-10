@@ -157,7 +157,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10m
+                        Quantity = 10
                     }
                 }
             };
@@ -203,7 +203,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10m
+                        Quantity = 10
                     }
                 }
             };
@@ -265,7 +265,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 10m
+                        Quantity = 10
                     }
                 }
             };
@@ -299,7 +299,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                     {
                         HerbId = _testHerbId,
                         HerbName = "甘草",
-                        Quantity = 15m
+                        Quantity = 15
                     }
                 }
             };
@@ -359,7 +359,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 10m }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 10 }
                 }
             };
 
@@ -390,7 +390,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 DosageCount = 14,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 15m }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 15 }
                 }
             };
 
@@ -418,7 +418,7 @@ namespace LYBT.WebAPI.IntegrationTests.Controllers
                 DosageCount = 21,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 20m }
+                    new PrescriptionItemInputDto { HerbId = _testHerbId, HerbName = "甘草", Quantity = 20 }
                 }
             };
 

@@ -2,7 +2,7 @@ using System.Windows;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Auth;
 using LYBT.Desktop.Clinical;
-using LYBT.Desktop.Consultation;
+// [已删除] using LYBT.Desktop.Consultation; - 模块已废弃，功能已迁移到MedicalCase模块
 using LYBT.Desktop.Formula;
 using LYBT.Desktop.Foundation.Application;
 using LYBT.Desktop.Foundation.Security;
@@ -243,7 +243,7 @@ public partial class App : PrismApplication
         moduleCatalog.AddModule<PatientsModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<HerbsModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<FormulaModule>(InitializationMode.WhenAvailable);
-        moduleCatalog.AddModule<ConsultationModule>(InitializationMode.WhenAvailable);
+        // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块的ConsultationPanelViewModel
         moduleCatalog.AddModule<PrescriptionsModule>(InitializationMode.WhenAvailable);
         moduleCatalog.AddModule<MedicalCaseModule>(InitializationMode.WhenAvailable);
 

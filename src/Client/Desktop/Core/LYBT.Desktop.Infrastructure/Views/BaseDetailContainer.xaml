@@ -39,6 +39,9 @@
             <!-- 布尔值转可见性转换器 -->
             <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <infrastructure:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <!-- Null转可见性转换器 - OpenSpec: unify-medicalcase-view-edit-pattern -->
+            <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <infrastructure:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
 
             <!-- 卡片阴影 -->
             <DropShadowEffect x:Key="CardShadow"
@@ -255,48 +258,69 @@
         </Grid>
 
         <!-- Row 1: Content - 内容区域 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="40,28,40,0">
+        <!-- 带滚动的内容区域（默认模式） -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="40,28,40,0"
+                      Visibility="{Binding UseContentScrolling, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
                 <!-- 查看模式面板 - 带过渡动画 -->
-                <ContentPresenter x:Name="ViewContentPresenter"
-                                  Content="{Binding ViewContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                <ContentPresenter Content="{Binding ViewContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   Style="{StaticResource ViewContentStyle}" />
 
                 <!-- 编辑模式面板 - 带过渡动画 -->
-                <ContentPresenter x:Name="EditContentPresenter"
-                                  Content="{Binding EditContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                <ContentPresenter Content="{Binding EditContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   Style="{StaticResource EditContentStyle}" />
             </Grid>
         </ScrollViewer>
 
+        <!-- 不带滚动的内容区域（用于需要Height="*"填充的布局） -->
+        <Grid Grid.Row="1" Margin="40,28,40,0"
+              Visibility="{Binding UseContentScrolling, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <!-- 查看模式面板 - 带过渡动画 -->
+            <ContentPresenter Content="{Binding ViewContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              Style="{StaticResource ViewContentStyle}" />
+
+            <!-- 编辑模式面板 - 带过渡动画 -->
+            <ContentPresenter Content="{Binding EditContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              Style="{StaticResource EditContentStyle}" />
+        </Grid>
+
         <!-- Row 2: Footer - 底部操作栏（仅编辑模式显示）- 带过渡动画 -->
+        <!-- OpenSpec: unify-medicalcase-view-edit-pattern - 支持FooterContent自定义 -->
         <Grid Grid.Row="2" Margin="40,28,40,28"
               Style="{StaticResource FooterStyle}">
             <Border Background="{StaticResource SurfaceBrush}"
                     CornerRadius="16"
                     Padding="32,24"
                     Effect="{StaticResource CardShadow}">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <!-- 取消按钮 -->
-                    <Button Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            Style="{StaticResource SecondaryButton}"
-                            Content="取消"
-                            Padding="32,12"
-                            FontSize="15"
-                            MinWidth="120"/>
+                <Grid>
+                    <!-- 默认Footer：保存/取消按钮（当FooterContent为null时显示） -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                Visibility="{Binding FooterContent, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseNullToVisibilityConverter}}">
+                        <!-- 取消按钮 -->
+                        <Button Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Style="{StaticResource SecondaryButton}"
+                                Content="取消"
+                                Padding="32,12"
+                                FontSize="15"
+                                MinWidth="120"/>
 
-                    <!-- 保存按钮 -->
-                    <Button Command="{Binding SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            Style="{StaticResource PrimaryButton}"
-                            Padding="32,12"
-                            FontSize="15"
-                            MinWidth="120"
-                            Margin="16,0,0,0">
-                        <Button.Content>
-                            <TextBlock Text="{Binding SaveButtonText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                        </Button.Content>
-                    </Button>
-                </StackPanel>
+                        <!-- 保存按钮 -->
+                        <Button Command="{Binding SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Style="{StaticResource PrimaryButton}"
+                                Padding="32,12"
+                                FontSize="15"
+                                MinWidth="120"
+                                Margin="16,0,0,0">
+                            <Button.Content>
+                                <TextBlock Text="{Binding SaveButtonText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                            </Button.Content>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 自定义Footer：当FooterContent有值时显示 -->
+                    <ContentPresenter Content="{Binding FooterContent, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      Visibility="{Binding FooterContent, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
+                </Grid>
             </Border>
         </Grid>
 

@@ -377,7 +377,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             return items.Select(i => new PrescriptionItemInputDto
             {
                 HerbId = i.HerbId,
-                Quantity = i.Quantity,
+                Quantity = (int)i.Quantity,
                 Unit = i.Unit,
                 Remark = i.Remark
             }).ToList();
@@ -393,7 +393,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
             return items.Select(i => new PrescriptionItemInputDto
             {
                 HerbId = i.HerbId,
-                Quantity = i.Quantity,
+                Quantity = (int)i.Quantity,
                 Unit = i.Unit,
                 Dosage = i.Quantity, // 临时使用数量作为剂量
                 Remark = i.Remark

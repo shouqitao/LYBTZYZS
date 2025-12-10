@@ -7,15 +7,13 @@
 
     <!--
     Epic #2210 Phase 4: 处方面板UserControl
-    OpenSpec: refactor-medicalcase-ui - UI重构版本
+    OpenSpec: unify-medicalcase-view-edit-pattern - Task 2.4 使用HerbListEditor
     用于MedicalCaseWorkspaceView的右侧60%区域
 
     设计变更:
-    - 保留顶部快速导入按钮
-    - 移除中间操作按钮行（添加行/保存草稿/删除处方）
-    - 移除重复的治法方案/治疗原则字段（诊断区已有）
-    - 优化药材卡片区视觉间距
-    - 底部价格信息区使用卡片样式
+    - 使用HerbListEditor控件（4列UniformGrid）
+    - 顶部保留统计信息 + 快速导入按钮
+    - 底部保留价格信息区（外部于HerbListEditor）
     -->
 
     <!-- OpenSpec: cleanup-ui-layer - 使用全局样式系统，移除MedicalCaseStyles.xaml引用 -->
@@ -28,18 +26,19 @@
         </Grid.RowDefinitions>
 
         <!-- Row 0: 药材卡片区域 -->
-        <Grid Grid.Row="0" Margin="12,8,12,0">
+        <Grid Grid.Row="0" Margin="8,4,8,0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- 统计信息 + 操作提示 -->
+                <RowDefinition Height="Auto"/> <!-- 统计信息 + 导入按钮 -->
                 <RowDefinition Height="*"/>    <!-- 卡片列表 -->
             </Grid.RowDefinitions>
 
             <!-- 统计信息与操作提示 -->
+            <!-- 注: 导入按钮已在MedicalCaseWorkspaceView处方区标题栏中 -->
             <Border Grid.Row="0"
                     BorderBrush="{StaticResource DividerBrush}"
                     BorderThickness="0,0,0,1"
-                    Padding="0,0,0,4"
-                    Margin="0,0,0,8">
+                    Padding="0,0,0,2"
+                    Margin="0,0,0,4">
                 <Grid>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                         <TextBlock Text="药材总数："
@@ -64,37 +63,19 @@
                 </Grid>
             </Border>
 
-            <!-- 药材卡片列表（Grid固定4列，铺满宽度，紧凑高度） -->
+            <!-- OpenSpec: unify-medicalcase-view-edit-pattern - Task 2.4 使用HerbListEditor -->
+            <!-- 药材卡片列表 - ScrollViewer仅在内容超出时显示滚动条 -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding HerbItems}"
-                              VerticalAlignment="Top">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="VerticalAlignment" Value="Top" />
-                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <!-- OpenSpec: unify-herb-card-control - 使用共享HerbCardControl -->
-                            <sharedControls:HerbCardControl
-                                Margin="2"
-                                Height="46"
-                                ShowPrice="False"
-                                IsEditMode="True"
-                                DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="0">
+                <sharedControls:HerbListEditor
+                    HerbItems="{Binding HerbItems}"
+                    IsEditMode="True"
+                    DeleteHerbCommand="{Binding DeleteHerbCommand}"
+                    DosageCompletedCommand="{Binding DosageCompletedCommand}"
+                    AddNewRowCommand="{Binding AddNewRowCommand}"
+                    VerticalAlignment="Top"/>
             </ScrollViewer>
         </Grid>
 
@@ -126,8 +107,8 @@
         <Border Grid.Row="2"
                 Background="{StaticResource BackgroundBrush}"
                 CornerRadius="4"
-                Padding="12,8"
-                Margin="12,8,12,12">
+                Padding="8,6"
+                Margin="8,4,8,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

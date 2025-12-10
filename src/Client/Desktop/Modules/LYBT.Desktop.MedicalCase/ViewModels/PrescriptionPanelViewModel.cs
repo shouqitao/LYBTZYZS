@@ -5,6 +5,7 @@ using LYBT.Desktop.MedicalCase.Events;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -21,8 +22,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 /// <summary>
 /// 处方面板ViewModel
 /// OpenSpec: refactor-oversized-viewmodels - 重构后 < 500行
+/// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.3) - 移除ISaveable，使用IDataProvider
 /// </summary>
-public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
+public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 {
     #region 字段
 
@@ -49,10 +51,29 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
     #region 处方属性
 
     private string _treatmentMethod = string.Empty;
+    /// <summary>
+    /// 主治/适应症 (映射到 Indication)
+    /// </summary>
     public string TreatmentMethod { get => _treatmentMethod; set => SetProperty(ref _treatmentMethod, value); }
 
     private string _treatmentPrinciple = string.Empty;
+    /// <summary>
+    /// 医嘱/用药建议 (映射到 Advice)
+    /// </summary>
     public string TreatmentPrinciple { get => _treatmentPrinciple; set => SetProperty(ref _treatmentPrinciple, value); }
+
+    private string _referencedFormulas = string.Empty;
+    /// <summary>
+    /// 引用的验方名称列表，逗号分隔
+    /// OpenSpec: refactor-medicalcase-aggregate-crud
+    /// </summary>
+    public string ReferencedFormulas { get => _referencedFormulas; set => SetProperty(ref _referencedFormulas, value); }
+
+    private string _remark = string.Empty;
+    /// <summary>
+    /// 备注
+    /// </summary>
+    public string Remark { get => _remark; set => SetProperty(ref _remark, value); }
 
     private int _dosageCount = 7;
     public int DosageCount
@@ -107,6 +128,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
     public DelegateCommand AddNewRowCommand { get; }
     public DelegateCommand OpenFormulaImportDialogCommand { get; }
     public DelegateCommand OpenHistoryCopyDialogCommand { get; }
+    public DelegateCommand ClearHerbItemsCommand { get; }
 
     #endregion
 
@@ -140,6 +162,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
         AddNewRowCommand = new DelegateCommand(() => _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged));
         OpenFormulaImportDialogCommand = new DelegateCommand(ExecuteOpenFormulaImportDialog);
         OpenHistoryCopyDialogCommand = new DelegateCommand(ExecuteOpenHistoryCopyDialog);
+        ClearHerbItemsCommand = new DelegateCommand(ExecuteClearHerbItems);
 
         _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
         EventAggregator.GetEvent<SaveAllRequestedEvent>().Subscribe(OnSaveAllRequested, ThreadOption.UIThread);
@@ -175,6 +198,8 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
             _prescriptionId = dto.Id;
             TreatmentMethod = dto.Indication ?? string.Empty;
             TreatmentPrinciple = dto.Advice ?? string.Empty;
+            ReferencedFormulas = dto.ReferencedFormulas ?? string.Empty;
+            Remark = dto.Remark ?? string.Empty;
             DosageCount = dto.DosageCount;
             Usage = dto.Usage ?? string.Empty;
             SingleDosagePrice = dto.SingleDosePrice;
@@ -213,9 +238,14 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
 
     #endregion
 
-    #region ISaveable
+    #region 内部保存（供命令使用）
 
-    public async Task<bool> SaveAsync()
+    /// <summary>
+    /// 保存处方数据到服务器
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.3) - 内部方法，供命令使用
+    /// 注意：主要的保存流程已迁移到聚合保存模式，此方法仅供内部命令使用
+    /// </summary>
+    private async Task<bool> SaveAsync()
     {
         try
         {
@@ -245,21 +275,6 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
         }
     }
 
-    public async Task<bool> SaveSilentlyAsync()
-    {
-        var context = CreateSaveContext();
-        var result = await _saveHandler.SaveSilentlyAsync(context);
-        if (result.IsEmpty) return true;
-        if (result.IsSuccess)
-        {
-            _prescriptionId = result.PrescriptionId;
-            _itemHandler.CompactHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
-            HasUnsavedChanges = false;
-            return true;
-        }
-        return false;
-    }
-
     private PrescriptionSaveContext CreateSaveContext() => new()
     {
         MedicalCaseId = _medicalCaseId,
@@ -271,6 +286,56 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
         Items = _itemHandler.CollectPrescriptionItems(HerbItems),
         TotalPrice = TotalPrice
     };
+
+    #endregion
+
+    #region IDataProvider
+
+    /// <summary>
+    /// 获取诊断数据
+    /// PrescriptionPanel不提供诊断数据，返回null
+    /// </summary>
+    /// <returns>null（诊断数据由ConsultationPanel提供）</returns>
+    public ConsultationInputDto? GetConsultationData() => null;
+
+    /// <summary>
+    /// 获取处方数据
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.3)
+    /// </summary>
+    /// <returns>处方聚合DTO</returns>
+    public PrescriptionAggregateDto? GetPrescriptionData()
+    {
+        var items = _itemHandler.CollectPrescriptionItems(HerbItems);
+
+        // 如果没有有效药材项，返回表示不需要处方的DTO
+        if (items.Count == 0)
+        {
+            return new PrescriptionAggregateDto
+            {
+                NeedsPrescription = false,
+                DosageCount = DosageCount,
+                Usage = Usage,
+                Indication = TreatmentMethod,
+                Advice = TreatmentPrinciple,
+                ReferencedFormulas = ReferencedFormulas,
+                Remark = Remark,
+                Id = _prescriptionId
+            };
+        }
+
+        return new PrescriptionAggregateDto
+        {
+            NeedsPrescription = true,
+            DosageCount = DosageCount,
+            Usage = Usage,
+            Indication = TreatmentMethod,
+            Advice = TreatmentPrinciple,
+            ReferencedFormulas = ReferencedFormulas,
+            Remark = Remark,
+            Items = items,
+            Id = _prescriptionId
+        };
+    }
 
     #endregion
 
@@ -334,8 +399,40 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
         HerbItems.Clear();
         _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
         TreatmentMethod = TreatmentPrinciple = string.Empty;
+        ReferencedFormulas = Remark = string.Empty;
         SingleDosagePrice = TotalPrice = 0;
         ItemCount = 0;
+    }
+
+    /// <summary>
+    /// 清空当前处方药材
+    /// </summary>
+    private async void ExecuteClearHerbItems()
+    {
+        // 检查是否有有效药材
+        var validItemCount = HerbItems.Count(i => i.HerbId != Guid.Empty && i.Dosage > 0);
+        if (validItemCount == 0)
+        {
+            await ShowSuccessMessageAsync("当前没有可清空的药材");
+            return;
+        }
+
+        // 确认对话框
+        if (!await ShowConfirmationAsync($"确定要清空当前所有药材（共{validItemCount}项）吗？", "清空药材"))
+            return;
+
+        // 清空药材项
+        HerbItems.Clear();
+        _itemHandler.AddDefaultHerbItems(HerbItems, _allHerbs, OnHerbItemChanged);
+
+        // 更新统计
+        UpdateItemCount();
+        CalculatePrices();
+        CheckDuplicateHerbs();
+        NotifyDataChanged();
+
+        Logger.LogInformation("已清空处方药材，共{Count}项", validItemCount);
+        await ShowSuccessMessageAsync($"已清空{validItemCount}项药材");
     }
 
     #endregion
@@ -388,6 +485,16 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
             _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
             UpdateItemCount();
             CalculatePrices();
+
+            // 记录引用的验方名称
+            if (!string.IsNullOrEmpty(importResult.FormulaName))
+            {
+                if (string.IsNullOrEmpty(ReferencedFormulas))
+                    ReferencedFormulas = importResult.FormulaName;
+                else if (!ReferencedFormulas.Contains(importResult.FormulaName))
+                    ReferencedFormulas = $"{ReferencedFormulas}, {importResult.FormulaName}";
+            }
+
             await ShowSuccessMessageAsync($"已导入验方「{importResult.FormulaName}」，添加 {addedCount} 味药材");
         }
         catch (Exception ex)
@@ -428,8 +535,25 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, ISaveable
 
     #region 事件处理
 
+    /// <summary>
+    /// 处理全局保存请求事件
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4) - 使用SaveAsync替代SaveSilentlyAsync
+    /// 注意：此事件处理逻辑将在聚合保存模式下逐步废弃
+    /// </summary>
     private async void OnSaveAllRequested(Guid medicalCaseId)
-    { if (medicalCaseId == _medicalCaseId) await SaveSilentlyAsync(); }
+    {
+        if (medicalCaseId == _medicalCaseId)
+        {
+            try
+            {
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "SaveAllRequested保存失败，静默处理");
+            }
+        }
+    }
 
     private void NotifyDataChanged()
     {

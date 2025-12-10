@@ -129,23 +129,13 @@
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
 
-                <!-- 药材组成卡片 -->
+                <!-- OpenSpec: unify-medicalcase-view-edit-pattern - Task 2.5 使用HerbListEditor -->
+                <!-- 药材组成卡片 - 查看模式 -->
                 <controls:InfoCard Title="{Binding HerbCount, StringFormat=药材组成 (共{0}味)}">
                     <controls:InfoCard.Content>
-                        <ItemsControl ItemsSource="{Binding HerbItems}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="4" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <sharedControls:HerbCardControl
-                                        IsEditMode="False"
-                                        ShowPrice="False"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <sharedControls:HerbListEditor
+                            HerbItems="{Binding HerbItems}"
+                            IsEditMode="False"/>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
             </StackPanel>
@@ -250,26 +240,16 @@
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
 
+                <!-- OpenSpec: unify-medicalcase-view-edit-pattern - Task 2.5 使用HerbListEditor -->
                 <!-- 药材组成卡片 - 编辑模式 -->
                 <controls:InfoCard Title="{Binding HerbCount, StringFormat=药材组成 (共{0}味)}">
                     <controls:InfoCard.Content>
-                        <ItemsControl ItemsSource="{Binding HerbItems}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="4" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <sharedControls:HerbCardControl
-                                        IsEditMode="True"
-                                        ShowPrice="False"
-                                        DeleteCommand="{Binding DataContext.DeleteHerbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        DosageCompletedCommand="{Binding DataContext.DosageCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                        AddNewRowCommand="{Binding DataContext.AddNewRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <sharedControls:HerbListEditor
+                            HerbItems="{Binding HerbItems}"
+                            IsEditMode="True"
+                            DeleteHerbCommand="{Binding DeleteHerbCommand}"
+                            DosageCompletedCommand="{Binding DosageCompletedCommand}"
+                            AddNewRowCommand="{Binding AddNewRowCommand}"/>
                     </controls:InfoCard.Content>
                 </controls:InfoCard>
             </StackPanel>

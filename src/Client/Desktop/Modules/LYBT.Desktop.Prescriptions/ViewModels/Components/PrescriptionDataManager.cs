@@ -107,7 +107,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels.Components
                     Diagnosis = "中医诊断", DosageCount = DosageCount, Quantity = DosageCount, Usage = Usage,
                     TotalAmount = PrescriptionItems.Sum(x => x.Quantity * x.UnitPrice) * DosageCount * Discount,
                     Advice = MedicalAdvice, Remark = Remark,
-                    Items = PrescriptionItems.Select(i => new PrescriptionItemInputDto { HerbId = i.HerbId, HerbName = i.HerbName, Quantity = i.Quantity, Unit = i.Unit, UnitPrice = i.UnitPrice, Remark = i.Remark }).ToList()
+                    Items = PrescriptionItems.Select(i => new PrescriptionItemInputDto { HerbId = i.HerbId, HerbName = i.HerbName, Quantity = (int)i.Quantity, Unit = i.Unit, UnitPrice = i.UnitPrice, Remark = i.Remark }).ToList()
                 };
                 var result = await _medicalCaseRepository.CreatePrescriptionAsync(MedicalCaseId, dto);
                 if (result != null) { PrescriptionNumber = result.PrescriptionNumber; PrescriptionId = result.Id; CurrentPrescription = result; IsNewPrescription = false; HasChanges = false; return true; }

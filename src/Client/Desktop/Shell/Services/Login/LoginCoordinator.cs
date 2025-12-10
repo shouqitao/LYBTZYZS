@@ -346,7 +346,7 @@ public class LoginCoordinator : ILoginCoordinator
                 "UsersModule",
                 "HerbsModule",
                 "FormulaModule",
-                "ConsultationModule",
+                // [已删除] ConsultationModule - 功能已迁移到MedicalCase模块
                 "MedicalCaseModule",
                 "PrescriptionsModule"
             });

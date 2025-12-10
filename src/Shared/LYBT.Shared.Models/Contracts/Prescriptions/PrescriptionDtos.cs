@@ -351,9 +351,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? HerbName { get; set; }
 
         /// <summary>数量</summary>
-        [Range(0.01, 9999.99)]
+        [Range(1, 9999)]
         [DisplayName("数量")]
-        public decimal Quantity { get; set; }
+        public int Quantity { get; set; }
 
         /// <summary>单位</summary>
         [Required]

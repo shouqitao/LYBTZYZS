@@ -177,5 +177,42 @@ namespace LYBT.Desktop.Infrastructure.Views
                 new PropertyMetadata(true));
 
         #endregion
+
+        #region FooterContent - 自定义Footer内容
+
+        /// <summary>
+        /// 自定义Footer内容，当设置此属性时，将替代默认的保存/取消按钮
+        /// OpenSpec: unify-medicalcase-view-edit-pattern
+        /// </summary>
+        public object FooterContent
+        {
+            get => GetValue(FooterContentProperty);
+            set => SetValue(FooterContentProperty, value);
+        }
+
+        public static readonly DependencyProperty FooterContentProperty =
+            DependencyProperty.Register(nameof(FooterContent), typeof(object), typeof(BaseDetailContainer),
+                new PropertyMetadata(null));
+
+        #endregion
+
+        #region UseContentScrolling - 是否启用内容区域滚动
+
+        /// <summary>
+        /// 是否启用内容区域的ScrollViewer，默认为true
+        /// 当内容需要使用Height="*"填充可用空间时，应设置为false
+        /// OpenSpec: unify-medicalcase-view-edit-pattern
+        /// </summary>
+        public bool UseContentScrolling
+        {
+            get => (bool)GetValue(UseContentScrollingProperty);
+            set => SetValue(UseContentScrollingProperty, value);
+        }
+
+        public static readonly DependencyProperty UseContentScrollingProperty =
+            DependencyProperty.Register(nameof(UseContentScrolling), typeof(bool), typeof(BaseDetailContainer),
+                new PropertyMetadata(true));
+
+        #endregion
     }
 }

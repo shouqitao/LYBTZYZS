@@ -353,6 +353,45 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             }
         }
 
+        /// <summary>
+        /// 聚合保存医案（诊断+处方一次性保存）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.5)
+        /// 简化前端保存逻辑，减少API调用次数
+        /// </summary>
+        public async Task<MedicalCaseDetailDto> SaveAggregateAsync(Guid medicalCaseId, MedicalCaseAggregateInputDto dto)
+        {
+            if (medicalCaseId == Guid.Empty)
+                throw new ArgumentException("医案ID不能为空", nameof(medicalCaseId));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            try
+            {
+                _logger.LogInformation("聚合保存医案，MedicalCaseId: {MedicalCaseId}, HasConsultation: {HasConsultation}, HasPrescription: {HasPrescription}",
+                    medicalCaseId,
+                    dto.Consultation != null,
+                    dto.Prescription != null);
+
+                // 确保DTO的ID与参数一致
+                dto.Id = medicalCaseId;
+
+                var response = await _api.SaveAggregateAsync(medicalCaseId, dto);
+
+                if (response.Success && response.Data != null)
+                {
+                    _logger.LogInformation("聚合保存医案成功，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                    return response.Data;
+                }
+
+                throw new InvalidOperationException($"聚合保存医案失败: {response.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "聚合保存医案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)
         {
             return _api.GetMedicalCaseByIdAsync(id);

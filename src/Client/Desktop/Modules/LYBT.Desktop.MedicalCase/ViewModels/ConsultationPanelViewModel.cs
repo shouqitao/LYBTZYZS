@@ -3,6 +3,7 @@ using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -13,9 +14,10 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
     /// <summary>
     /// Epic #2210 Phase 4: 诊断面板ViewModel
     /// 用于MedicalCaseWorkspaceView的左侧40%区域
-    /// 实现ISaveable和IValidatable接口
+    /// 实现IValidatable和IDataProvider接口
+    /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.3) - 移除ISaveable，使用IDataProvider
     /// </summary>
-    public class ConsultationPanelViewModel : UnifiedViewModelBase, ISaveable, IValidatable
+    public class ConsultationPanelViewModel : UnifiedViewModelBase, IValidatable, IDataProvider
     {
         #region 字段
 
@@ -228,9 +230,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         #endregion
 
-        #region ISaveable
+        #region 内部保存（供命令使用）
 
-        public async Task<bool> SaveAsync()
+        /// <summary>
+        /// 保存诊断数据到服务器
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.3) - 内部方法，供命令使用
+        /// 注意：主要的保存流程已迁移到聚合保存模式，此方法仅供内部命令使用
+        /// </summary>
+        private async Task<bool> SaveAsync()
         {
             try
             {
@@ -250,8 +257,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     AuscultationOlfaction = AuscultationOlfaction,
                     Inquiry = Inquiry,
                     Palpation = Palpation,
-                    // OpenSpec: clarify-cancel-consultation-logic
-                    // 诊断不需要独立备注，使用MedicalCaseRemark保存到医案
                     MedicalCaseRemark = MedicalCaseRemark
                 };
 
@@ -274,57 +279,37 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
+        #endregion
+
+        #region IDataProvider
+
         /// <summary>
-        /// 静默保存（不显示验证错误对话框）
-        /// OpenSpec: clarify-cancel-consultation-logic - 取消前保存使用
+        /// 获取诊断数据（四诊信息）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.2)
         /// </summary>
-        public async Task<bool> SaveSilentlyAsync()
+        /// <returns>诊断数据DTO</returns>
+        public ConsultationInputDto? GetConsultationData()
         {
-            try
+            return new ConsultationInputDto
             {
-                // Bug诊断：记录调用信息
-                Logger.LogInformation("[诊断] SaveSilentlyAsync被调用，MedicalCaseId: {MedicalCaseId}, ChiefComplaint: {ChiefComplaint}",
-                    _medicalCaseId, ChiefComplaint ?? "(空)");
-
-                if (_medicalCaseId == Guid.Empty)
-                {
-                    Logger.LogWarning("[诊断] _medicalCaseId为空，跳过保存");
-                    return false;
-                }
-
-                // 跳过验证，直接保存当前填写的内容（供审计用途）
-                var request = new ConsultationInputDto
-                {
-                    ChiefComplaint = ChiefComplaint,
-                    PresentIllness = PresentIllness,
-                    TCMDiagnosis = TCMDiagnosis,
-                    TreatmentPrinciple = TreatmentPrinciple,
-                    Inspection = Inspection,
-                    AuscultationOlfaction = AuscultationOlfaction,
-                    Inquiry = Inquiry,
-                    Palpation = Palpation,
-                    MedicalCaseRemark = MedicalCaseRemark
-                };
-
-                Logger.LogInformation("[诊断] 准备调用API保存诊断数据，MedicalCaseId: {MedicalCaseId}", _medicalCaseId);
-                var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
-
-                if (result != null)
-                {
-                    Logger.LogInformation("[诊断] 诊断数据静默保存成功");
-                    return true;
-                }
-
-                Logger.LogWarning("[诊断] 诊断数据静默保存失败：API返回null");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // 静默保存不显示错误，只记录日志
-                Logger.LogWarning(ex, "[诊断] 静默保存诊断数据异常（不阻止后续操作），MedicalCaseId: {MedicalCaseId}", _medicalCaseId);
-                return false;
-            }
+                ChiefComplaint = ChiefComplaint,
+                PresentIllness = PresentIllness,
+                TCMDiagnosis = TCMDiagnosis,
+                TreatmentPrinciple = TreatmentPrinciple,
+                Inspection = Inspection,
+                AuscultationOlfaction = AuscultationOlfaction,
+                Inquiry = Inquiry,
+                Palpation = Palpation,
+                MedicalCaseRemark = MedicalCaseRemark
+            };
         }
+
+        /// <summary>
+        /// 获取处方数据
+        /// ConsultationPanel不提供处方数据，返回null
+        /// </summary>
+        /// <returns>null（处方数据由PrescriptionPanel提供）</returns>
+        public PrescriptionAggregateDto? GetPrescriptionData() => null;
 
         #endregion
 

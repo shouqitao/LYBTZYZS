@@ -1,6 +1,7 @@
 using LYBT.Entities.MedicalCases;
 using LYBT.Entities.Prescriptions;
 using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Module.MedicalCases.Interfaces
@@ -95,5 +96,19 @@ namespace LYBT.Module.MedicalCases.Interfaces
         /// <param name="id">病案ID</param>
         /// <returns>删除是否成功</returns>
         Task<bool> DeleteAsync(Guid id);
+
+        /// <summary>
+        /// 保存医案聚合根（统一保存Consultation和Prescription）
+        /// OpenSpec: refactor-medicalcase-aggregate-crud (PERSIST-001, PERSIST-002)
+        /// 在单个事务中同时保存诊断和处方数据
+        /// </summary>
+        /// <param name="request">医案聚合输入DTO</param>
+        /// <param name="currentUserId">当前操作用户ID</param>
+        /// <param name="isAdmin">是否管理员</param>
+        /// <returns>更新后的病案实体（包含Consultation和Prescription）</returns>
+        Task<MedicalCase?> SaveAggregateAsync(
+            MedicalCaseAggregateInputDto request,
+            Guid currentUserId,
+            bool isAdmin = false);
     }
 }

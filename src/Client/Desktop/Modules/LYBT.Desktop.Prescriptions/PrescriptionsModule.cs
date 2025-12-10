@@ -13,7 +13,7 @@ namespace LYBT.Desktop.Prescriptions
     /// Issue #1606 Phase 3: 移除IPrescriptionRepository（已迁移至MedicalCaseRepository聚合根）
     /// </summary>
     [Module(ModuleName = nameof(PrescriptionsModule))]
-    [ModuleDependency("ConsultationModule")] // 处方依赖诊疗
+    // [已删除] ConsultationModule依赖 - 模块已废弃，功能已迁移到MedicalCase模块
     [ModuleDependency("HerbsModule")] // 处方依赖药材
     [ModuleDependency("FormulaModule")] // 处方依赖方剂
     public class PrescriptionsModule : IModule
