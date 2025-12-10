@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.MedicalCase.Components; // Epic #1773: 添加Component命名空间
+﻿// OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.MedicalCase.Dialogs; // Issue #2246: 弹窗组件
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.MedicalCase.Repositories;

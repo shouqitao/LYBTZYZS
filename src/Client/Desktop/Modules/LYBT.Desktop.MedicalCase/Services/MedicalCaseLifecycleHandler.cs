@@ -1,4 +1,4 @@
-﻿using LYBT.Desktop.MedicalCase.Components;
+﻿// MedicalCaseDataManager now in same namespace (Services)
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Enums;

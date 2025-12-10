@@ -3,7 +3,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using LYBT.Desktop.Contracts.Api;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
-using LYBT.Desktop.MedicalCase.Components;
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Interfaces;
 // [已移除] using LYBT.Desktop.MedicalCase.Models; - ConsultationStep枚举已删除
 using LYBT.Shared.Models.Contracts.Consultation;

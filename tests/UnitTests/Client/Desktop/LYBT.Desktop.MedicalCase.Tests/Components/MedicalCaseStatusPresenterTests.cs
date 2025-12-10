@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.Components;
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using System.Windows.Media;
 using Xunit;
 

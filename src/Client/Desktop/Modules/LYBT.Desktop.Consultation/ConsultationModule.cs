@@ -23,10 +23,11 @@ namespace LYBT.Desktop.Consultation
             // 所有Write操作通过MedicalCaseRepository聚合根
             // Read操作使用IConsultationApi
 
-            // Issue #1784: 注册Components（Epic #1773 Component-Based架构）
-            containerRegistry.Register<Components.ConsultationDataManager>();
-            containerRegistry.Register<Components.ConsultationCommandHandler>();
-            containerRegistry.Register<Components.ConsultationValidator>();
+            // Issue #1784: 注册Services（Epic #1773 Component-Based架构）
+            // OpenSpec: standardize-module-structure - Components重命名为Services
+            containerRegistry.Register<Services.ConsultationDataManager>();
+            containerRegistry.Register<Services.ConsultationCommandHandler>();
+            containerRegistry.Register<Services.ConsultationValidator>();
 
             // 注册视图模型 - MVP核心功能
             // Issue #1800: 删除ConsultationManagementViewModel（违反AR-001聚合根约束）

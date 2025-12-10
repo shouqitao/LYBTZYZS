@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Patients.Components;
+// OpenSpec: standardize-module-structure - Components已合并到Services
 using LYBT.Desktop.Patients.Interfaces;
 using LYBT.Desktop.Patients.Repositories;
-using LYBT.Desktop.Patients.Services; // Issue #1790: 引入Manager服务
+using LYBT.Desktop.Patients.Services;
 using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Validators.Patients;
 using Prism.Ioc;

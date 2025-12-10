@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Prism.Events;
 
-namespace LYBT.Desktop.MedicalCase.Components
+namespace LYBT.Desktop.MedicalCase.Services
 {
     /// <summary>
     /// 病案事件协调器 - 负责事件发布/订阅协调

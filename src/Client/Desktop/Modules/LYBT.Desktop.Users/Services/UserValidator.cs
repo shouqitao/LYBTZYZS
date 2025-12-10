@@ -1,12 +1,13 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Users.Components
+namespace LYBT.Desktop.Users.Services
 {
     /// <summary>
     /// 用户验证器
     /// Issue #1779: Users模块组件化改造
+    /// OpenSpec: standardize-module-structure - Components重命名为Services
     ///
     /// 职责:
     /// - 用户数据验证

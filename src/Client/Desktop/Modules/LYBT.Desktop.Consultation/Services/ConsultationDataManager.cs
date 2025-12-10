@@ -1,10 +1,10 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Consultation.Components
+namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
     /// 诊断数据管理器

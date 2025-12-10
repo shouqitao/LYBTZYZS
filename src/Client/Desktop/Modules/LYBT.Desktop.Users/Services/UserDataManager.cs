@@ -1,12 +1,13 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Shared.Models.Contracts.Users;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Users.Components
+namespace LYBT.Desktop.Users.Services
 {
     /// <summary>
     /// 用户数据管理器
     /// Issue #1779: Users模块组件化改造
+    /// OpenSpec: standardize-module-structure - Components重命名为Services
     ///
     /// 职责:
     /// - 管理用户实体数据

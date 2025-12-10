@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Regions;
 using Prism.Services.Dialogs;
 
-namespace LYBT.Desktop.MedicalCase.Components
+namespace LYBT.Desktop.MedicalCase.Services
 {
     /// <summary>
     /// 医案导航处理器 - 负责工作区返回导航和离开确认逻辑

@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
-using LYBT.Desktop.Users.Components;
+using LYBT.Desktop.Users.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Shared.Models.Contracts.Users;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;

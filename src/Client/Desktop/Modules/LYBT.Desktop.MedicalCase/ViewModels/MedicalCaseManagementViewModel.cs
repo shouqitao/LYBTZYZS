@@ -1,5 +1,5 @@
 ﻿using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.MedicalCase.Components; // Issue #1783: 添加Component命名空间
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Dialogs; // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
 using LYBT.Desktop.MedicalCase.Models; // OpenSpec: refine-medicalcase-edit-modes
 using LYBT.Desktop.Models.ViewModels.Base;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LYBT.Desktop.MedicalCase.Components;
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 // [已移除] using LYBT.Desktop.MedicalCase.Models; - ConsultationStep枚举已删除
 using Microsoft.Extensions.Logging;
 using Moq;

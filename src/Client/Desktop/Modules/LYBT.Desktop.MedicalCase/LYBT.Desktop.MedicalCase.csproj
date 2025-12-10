@@ -88,6 +88,8 @@
     <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
     <!-- Task 3.8: MedicalCase需要Formula模块以支持经验方导入 -->
     <ProjectReference Include="..\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
+    <!-- OpenSpec: refactor-prescription-module-consolidation - 使用统一验方选择对话框和处方计算器 -->
+    <ProjectReference Include="..\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj" />
   </ItemGroup>
 
   <!-- Epic #1676 Phase 4 Task 4.5: 移除循环依赖 - MedicalCase不需要引用Patients -->

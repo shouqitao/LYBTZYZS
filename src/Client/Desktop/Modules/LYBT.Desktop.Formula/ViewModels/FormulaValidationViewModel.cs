@@ -3,20 +3,18 @@ using LYBT.Desktop.Formula.ViewModels.Components;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Formula;
-using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
-using Prism.Services.Dialogs;
 
 namespace LYBT.Desktop.Formula.ViewModels
 {
     /// <summary>验方校验视图模型 - 用于处理导入验方的药材映射和校验</summary>
+    /// <remarks>Issue #2256: HerbSelectionDialog已废弃，药材映射功能待重构为内嵌编辑方式</remarks>
     public class FormulaValidationViewModel : UnifiedViewModelBase
     {
         private readonly FormulaCommandHandler _commandHandler;
-        private readonly IDialogService _dialogService;
 
         private FormulaDto? _selectedFormula;
         private int _pendingFormulaCount;
@@ -42,7 +40,6 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         public FormulaValidationViewModel(
             FormulaCommandHandler commandHandler,
-            IDialogService dialogService,
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -51,7 +48,6 @@ namespace LYBT.Desktop.Formula.ViewModels
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
             _commandHandler = commandHandler ?? throw new ArgumentNullException(nameof(commandHandler));
-            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             PageTitle = "验方校验管理";
 
@@ -130,38 +126,9 @@ namespace LYBT.Desktop.Formula.ViewModels
             if (herbItem == null || SelectedFormula == null) return;
             if (herbItem.IsValidated) { await ShowWarningMessageAsync("该药材已校验，无需重复操作"); return; }
 
-            try
-            {
-                SetIsBusy(true, $"正在处理药材「{herbItem.HerbName}」...");
-                var parameters = new DialogParameters { { "AllowMultipleSelection", false }, { "Title", $"为「{herbItem.OriginalHerbName ?? herbItem.HerbName}」选择系统药材" } };
-                _dialogService.ShowDialog("HerbSelectionDialog", parameters, async result => await HandleHerbSelectionResultAsync(result, herbItem));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "选择药材时发生异常：{HerbName}", herbItem.HerbName);
-                await ShowErrorMessageAsync("选择药材时发生系统错误，请稍后重试");
-            }
-            finally { SetIsBusy(false); }
-        }
-
-        private async Task HandleHerbSelectionResultAsync(IDialogResult result, FormulaHerbItemDto herbItem)
-        {
-            try
-            {
-                if (result.Result == ButtonResult.OK)
-                {
-                    var selectedHerbs = result.Parameters.GetValue<List<HerbDto>>("SelectedHerbs");
-                    if (selectedHerbs != null && selectedHerbs.Any())
-                    {
-                        Logger.LogInformation("用户为验方「{FormulaName}」的药材「{OriginalName}」选择了系统药材ID: {HerbId}", SelectedFormula!.Name, herbItem.OriginalHerbName ?? herbItem.HerbName, selectedHerbs.First().Id);
-                        var validateResult = await _commandHandler.ValidateFormulaHerbAsync(SelectedFormula!.Id, herbItem.Id, selectedHerbs.First().Id);
-                        if (validateResult.success) { await ShowSuccessMessageAsync($"药材「{herbItem.OriginalHerbName ?? herbItem.HerbName}」已成功映射到系统药材库"); await LoadPendingFormulasAsync(); }
-                        else await ShowErrorMessageAsync("药材映射失败，请重试");
-                    }
-                }
-                else Logger.LogInformation("用户取消了药材选择");
-            }
-            finally { SetIsBusy(false); }
+            // Issue #2256: HerbSelectionDialog已删除，药材映射功能将在验方审核控件中用内嵌编辑方式重新实现
+            await ShowWarningMessageAsync("药材映射功能正在重构中，请稍后使用");
+            Logger.LogInformation("用户尝试映射药材「{HerbName}」，功能待重构", herbItem.HerbName);
         }
 
         private async Task RefreshAsync() { await LoadPendingFormulasAsync(); await ShowSuccessMessageAsync("数据已刷新"); }

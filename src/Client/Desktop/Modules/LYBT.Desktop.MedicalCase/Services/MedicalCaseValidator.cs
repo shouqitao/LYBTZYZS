@@ -1,10 +1,10 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.MedicalCase.Components
+namespace LYBT.Desktop.MedicalCase.Services
 {
     /// <summary>
     /// 病案验证器 - 聚合根验证模式

@@ -1,4 +1,4 @@
-using LYBT.Desktop.Consultation.Components;
+using LYBT.Desktop.Consultation.Services;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;

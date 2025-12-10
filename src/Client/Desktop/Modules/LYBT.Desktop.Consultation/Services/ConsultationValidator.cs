@@ -1,8 +1,8 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Consultation.Components
+namespace LYBT.Desktop.Consultation.Services
 {
     /// <summary>
     /// 诊断验证器

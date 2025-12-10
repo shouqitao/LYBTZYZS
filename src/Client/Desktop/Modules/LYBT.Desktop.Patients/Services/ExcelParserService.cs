@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.IO;
 using System.Text.RegularExpressions;
 using LYBT.Desktop.Contracts.Models;
@@ -6,10 +6,11 @@ using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Infrastructure.Helpers;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Patients.Components
+namespace LYBT.Desktop.Patients.Services
 {
     /// <summary>
     /// Excel解析服务实现（Issue #1781 Task 8 Phase 1）
+    /// OpenSpec: standardize-module-structure - Components重命名为Services
     ///
     /// 职责：
     /// 1. Excel文件解析：读取Excel文件为DataTable

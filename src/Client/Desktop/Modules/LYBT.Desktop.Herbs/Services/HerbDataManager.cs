@@ -4,7 +4,7 @@ using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.Herbs.Components
+namespace LYBT.Desktop.Herbs.Services
 {
     /// <summary>药材数据管理器 - 管理药材实体数据、保存和变更检测</summary>
     public class HerbDataManager : IHerbDataManager

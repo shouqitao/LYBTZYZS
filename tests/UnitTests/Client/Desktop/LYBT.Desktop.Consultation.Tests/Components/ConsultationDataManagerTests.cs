@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using LYBT.Desktop.Consultation.Components;
+using LYBT.Desktop.Consultation.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.MedicalCase;

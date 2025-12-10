@@ -1,6 +1,6 @@
 using FluentAssertions;
 using LYBT.Desktop.Infrastructure.Interfaces;
-using LYBT.Desktop.MedicalCase.Components;
+using LYBT.Desktop.MedicalCase.Services; // OpenSpec: standardize-module-structure - Components重命名为Services
 using LYBT.Desktop.MedicalCase.Models;
 using Microsoft.Extensions.Logging;
 using Moq;

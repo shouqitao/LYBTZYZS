@@ -1,10 +1,10 @@
-﻿using LYBT.Desktop.Infrastructure.Interfaces.Components;
+using LYBT.Desktop.Infrastructure.Interfaces.Components;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
 using Prism.Regions;
 
-namespace LYBT.Desktop.MedicalCase.Components
+namespace LYBT.Desktop.MedicalCase.Services
 {
     /// <summary>
     /// 病案命令处理器 - 业务逻辑协调者

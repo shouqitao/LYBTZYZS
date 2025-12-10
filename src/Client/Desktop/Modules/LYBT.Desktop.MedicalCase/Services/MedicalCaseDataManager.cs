@@ -8,7 +8,7 @@ using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace LYBT.Desktop.MedicalCase.Components;
+namespace LYBT.Desktop.MedicalCase.Services;
 
 /// <summary>
 /// 病案数据管理器 - 聚合根模式实现

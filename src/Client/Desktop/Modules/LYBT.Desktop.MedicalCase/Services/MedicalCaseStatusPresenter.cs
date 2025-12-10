@@ -1,7 +1,7 @@
 using System.Windows.Media;
 using Prism.Mvvm;
 
-namespace LYBT.Desktop.MedicalCase.Components
+namespace LYBT.Desktop.MedicalCase.Services
 {
     /// <summary>
     /// 医案状态展示器 - 负责状态文本/颜色计算和展示
