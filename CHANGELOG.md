@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 处方模块整合与死代码清理 (OpenSpec: refactor-prescription-module-consolidation) - 2025-12-10
+
+**循环依赖消除:**
+- 确立正确依赖方向: MedicalCase -> Prescriptions (无反向依赖)
+- MedicalCase通过IPrescriptionEditorService接口依赖处方功能(依赖倒置原则)
+- Prescriptions模块不再引用MedicalCase模块
+
+**死代码删除:**
+- 删除FormulaTemplateDialog及其ViewModel (无调用入口)
+- 删除SelectFormulaDialog及其ViewModel (无调用入口)
+- 删除PrescriptionEditorDialog及其代码隐藏文件 (无调用入口)
+- 共删除8个文件，约1605行代码
+
+**模块精简:**
+- PrescriptionsModule仅注册2个核心服务:
+  - IPrescriptionPrintService (打印服务)
+  - IPrescriptionEditorService (编辑器服务)
+- 处方UI功能已完全迁移至MedicalCase模块
+
 #### 医案聚合根CRUD重构 (OpenSpec: refactor-medicalcase-aggregate-crud) - 2025-12-10
 
 **统一保存端点:**
