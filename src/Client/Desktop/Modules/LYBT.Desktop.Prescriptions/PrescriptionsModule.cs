@@ -1,5 +1,4 @@
 ﻿using LYBT.Desktop.Contracts.Services;
-using LYBT.Desktop.Modules.Prescriptions.Services; // Issue #1790: 新的Manager服务命名空间
 using LYBT.Desktop.Modules.Prescriptions.ViewModels;
 using LYBT.Desktop.Prescriptions.Services;
 using LYBT.Desktop.Services.Print;
@@ -35,9 +34,8 @@ namespace LYBT.Desktop.Prescriptions
             // 实现依赖倒置：MedicalCase模块依赖IPrescriptionEditorService接口
             containerRegistry.RegisterSingleton<IPrescriptionEditorService, PrescriptionEditorService>();
 
-            // Issue #1790: 注册PrescriptionViewModel组件化服务
-            containerRegistry.Register<PrescriptionHerbFilterManager>();
-            containerRegistry.Register<PrescriptionHistoryManager>();
+            // OpenSpec: refactor-prescription-module-consolidation - 已删除死代码
+            // [已删除] Issue #1790 PrescriptionHerbFilterManager/PrescriptionHistoryManager - 从未被使用
 
             //  Issue #1606 Phase 3: 临时注释，待Issue #1608重构这些ViewModel
             // 原因：依赖已删除的IPrescriptionRepository
@@ -54,7 +52,7 @@ namespace LYBT.Desktop.Prescriptions
 
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.FormulaTemplateDialog, FormulaTemplateDialogViewModel>();
-            containerRegistry.RegisterDialog<Views.HerbSelectionDialog, HerbSelectionDialogViewModel>();
+            // [已删除] Issue #2256: HerbSelectionDialog已废弃，药材选择功能使用经验方编辑控件
             //  Issue #1606 Phase 3: 临时注释，待Issue #1608重构
             // containerRegistry.RegisterDialog<Views.PrescriptionEditorDialog, PrescriptionEditorDialogViewModel>();  // 待重构 Issue #1608
             containerRegistry.RegisterDialog<Views.SelectFormulaDialog, SelectFormulaDialogViewModel>();

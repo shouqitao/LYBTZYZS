@@ -78,10 +78,12 @@
     <ProjectReference Include="..\..\Core\LYBT.Desktop.Models\LYBT.Desktop.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup Label="Cross-Module Dependencies - Phase 2">
+  <!-- OpenSpec: refactor-prescription-module-consolidation - 消除循环依赖 -->
+  <!-- MedicalCase依赖Prescriptions，而非反向。处方是医案的组成部分 -->
+  <ItemGroup Label="Cross-Module Dependencies">
     <ProjectReference Include="..\LYBT.Desktop.Formula\LYBT.Desktop.Formula.csproj" />
     <ProjectReference Include="..\LYBT.Desktop.Herbs\LYBT.Desktop.Herbs.csproj" />
-    <ProjectReference Include="..\LYBT.Desktop.MedicalCase\LYBT.Desktop.MedicalCase.csproj" />
+    <!-- [已删除] MedicalCase引用 - 循环依赖根源 -->
   </ItemGroup>
 
   <ItemGroup Label="Desktop Core">

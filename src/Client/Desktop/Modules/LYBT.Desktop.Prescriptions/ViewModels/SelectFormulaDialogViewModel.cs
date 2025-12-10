@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Formula;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -12,15 +12,15 @@ using Prism.Services.Dialogs;
 namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
-    /// 选择验方对话框视图模型 - UltraThink精简架构
-    /// 用于从验方库中选择验方模板
+    /// 选择验方对话框视图模型
+    /// OpenSpec: refactor-prescription-module-consolidation - 直接使用IFormulaRepository，消除循环依赖
     /// </summary>
     public class SelectFormulaDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         #region 服务依赖
 
-        // Issue #1786: 使用DataManager替代直接Repository访问
-        private readonly PrescriptionDataManager _dataManager;
+        // OpenSpec: 直接使用IFormulaRepository替代PrescriptionDataManager
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -204,7 +204,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 构造函数
 
         public SelectFormulaDialogViewModel(
-            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
+            IFormulaRepository formulaRepository, // OpenSpec: 直接注入IFormulaRepository
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -212,8 +212,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1786: 注入DataManager
-            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -287,8 +286,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载验方列表...");
 
-                // Issue #1786: 使用DataManager包装Repository方法
-                var pagedData = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
+                // OpenSpec: 直接使用IFormulaRepository
+                var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 Formulas.Clear();
                 foreach (var item in pagedData.Items)
                 {
@@ -317,8 +316,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                // Issue #1786: 使用DataManager包装Repository方法
-                var allFormulas = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
+                // OpenSpec: 直接使用IFormulaRepository
+                var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 var filtered = allFormulas.Items.AsEnumerable();
 
                 // 按关键字筛选
@@ -407,7 +406,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     var composition = "组成:\n";
                     foreach (var item in formula.Herbs)
                     {
-                        composition += $"• {item.HerbName} {item.Quantity}{item.Unit}";
+                        composition += $"- {item.HerbName} {item.Quantity}{item.Unit}";
                         if (!string.IsNullOrEmpty(item.Processing))
                         {
                             composition += $" ({item.Processing})";
@@ -538,7 +537,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                 info += "\n药材组成:\n";
                 foreach (var item in formula.Herbs)
                 {
-                    info += $"• {item.HerbName} {item.Quantity}{item.Unit}";
+                    info += $"- {item.HerbName} {item.Quantity}{item.Unit}";
                     if (!string.IsNullOrEmpty(item.Processing))
                     {
                         info += $" ({item.Processing})";

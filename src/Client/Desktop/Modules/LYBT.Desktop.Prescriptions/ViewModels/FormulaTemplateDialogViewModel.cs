@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
+using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
-using LYBT.Desktop.Modules.Prescriptions.ViewModels.Components; // Issue #1786: 添加Component命名空间
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -14,14 +14,15 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
 {
     /// <summary>
     /// 验方模板对话框视图模型 - UltraThink精简架构
-    /// 提供验方模板的选择和预览功能
+    /// OpenSpec: refactor-prescription-module-consolidation - 直接使用IFormulaRepository，移除导入功能
+    /// 对话框职责：只选择验方，由调用者(MedicalCase)处理导入逻辑
     /// </summary>
     public class FormulaTemplateDialogViewModel : UnifiedViewModelBase, IDialogAware
     {
         #region 服务依赖
 
-        // Issue #1786: 使用DataManager替代直接Repository访问
-        private readonly PrescriptionDataManager _dataManager;
+        // OpenSpec: 直接使用IFormulaRepository替代PrescriptionDataManager，消除循环依赖
+        private readonly IFormulaRepository _formulaRepository;
 
         #endregion
 
@@ -83,16 +84,6 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             "化痰止咳方", "理气方", "活血化瘀方", "温里方", "其他"
         };
 
-        /// <summary>
-        /// 处方ID - 用于导入验方功能 (Issue #1367 ENTRY-9)
-        /// </summary>
-        public Guid PrescriptionId { get; private set; }
-
-        /// <summary>
-        /// 医案ID（Epic #1600 Phase 5）
-        /// </summary>
-        public Guid MedicalCaseId { get; private set; }
-
         #endregion
 
         #region 对话框属性
@@ -146,17 +137,12 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         /// </summary>
         public DelegateCommand ViewDetailsCommand { get; }
 
-        /// <summary>
-        /// 导入验方命令 (Issue #1367 ENTRY-9)
-        /// </summary>
-        public DelegateCommand ImportCommand { get; }
-
         #endregion
 
         #region 构造函数
 
         public FormulaTemplateDialogViewModel(
-            PrescriptionDataManager dataManager, // Issue #1786: 注入DataManager
+            IFormulaRepository formulaRepository, // OpenSpec: 直接注入IFormulaRepository
             IEventAggregator eventAggregator,
             ILoggerFactory loggerFactory,
             IRegionManager regionManager,
@@ -164,8 +150,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             IUserNotificationService? userNotificationService = null)
             : base(eventAggregator, loggerFactory, regionManager, sessionManager, userNotificationService)
         {
-            // Issue #1786: 注入DataManager
-            _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
+            _formulaRepository = formulaRepository ?? throw new ArgumentNullException(nameof(formulaRepository));
 
             // 初始化命令
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
@@ -173,7 +158,6 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             CancelCommand = new DelegateCommand(Cancel);
             PreviewCommand = new DelegateCommand(Preview, CanPreview);
             RefreshCommand = new DelegateCommand(async () => await RefreshAsync());
-            ImportCommand = new DelegateCommand(async () => await ImportFormulaAsync(), CanImport);
 
             // Phase 4B 别名命令
             SelectCommand = ConfirmCommand;
@@ -215,18 +199,6 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
                     CategoryFilter = parameters.GetValue<string>("Category");
                 }
 
-                // Issue #1367 ENTRY-9: 获取处方ID用于导入功能
-                if (parameters.ContainsKey("PrescriptionId"))
-                {
-                    PrescriptionId = parameters.GetValue<Guid>("PrescriptionId");
-                }
-
-                // Epic #1600 Phase 5: 获取医案ID用于聚合根方法
-                if (parameters.ContainsKey("MedicalCaseId"))
-                {
-                    MedicalCaseId = parameters.GetValue<Guid>("MedicalCaseId");
-                }
-
                 // 加载数据
                 Task.Run(async () => await LoadDataAsync());
             }
@@ -250,8 +222,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在加载验方模板...");
 
-                // Issue #1786: 使用DataManager包装Repository方法
-                var pagedData = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
+                // OpenSpec: 直接使用IFormulaRepository
+                var pagedData = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 FormulaTemplates.Clear();
                 // Issue #1354: 只显示已验证的验方
                 foreach (var item in pagedData.Items.Where(f => f.ValidationStatus == FormulaValidationStatus.Validated))
@@ -281,8 +253,8 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             {
                 SetIsBusy(true, "正在搜索...");
 
-                // Issue #1786: 使用DataManager包装Repository方法
-                var allFormulas = await _dataManager.GetFormulasPagedAsync(1, int.MaxValue, null);
+                // OpenSpec: 直接使用IFormulaRepository
+                var allFormulas = await _formulaRepository.GetPagedAsync(1, int.MaxValue, null);
                 var filtered = allFormulas.Items.AsEnumerable();
 
                 // Issue #1354: 只显示已验证的验方
@@ -336,7 +308,7 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
         #region 命令实现
 
         /// <summary>
-        /// 确定
+        /// 确定 - 返回选中的验方，由调用者处理导入逻辑
         /// </summary>
         private void Confirm()
         {
@@ -372,59 +344,17 @@ namespace LYBT.Desktop.Modules.Prescriptions.ViewModels
             }
         }
 
-        /// <summary>
-        /// 导入验方到处方 (Issue #1367 ENTRY-9)
-        /// </summary>
-        private async Task ImportFormulaAsync()
-        {
-            if (SelectedFormula == null || PrescriptionId == Guid.Empty || MedicalCaseId == Guid.Empty)
-            {
-                return;
-            }
-
-            try
-            {
-                SetIsBusy(true, $"正在导入验方\"{SelectedFormula.Name}\"...");
-
-                // Issue #1786: 使用DataManager包装Repository方法
-                await _dataManager.ImportFormulaIntoPrescriptionAsync(MedicalCaseId, SelectedFormula.Id);
-
-                Logger.LogInformation("验方\"{FormulaName}\"导入成功", SelectedFormula.Name);
-                await ShowSuccessMessageAsync($"验方\"{SelectedFormula.Name}\"已成功导入到处方");
-
-                // 关闭对话框并通知刷新
-                var parameters = new DialogParameters
-                {
-                    { "Imported", true },
-                    { "FormulaName", SelectedFormula.Name }
-                };
-
-                RequestClose?.Invoke(new DialogResult(ButtonResult.OK, parameters));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "导入验方时发生异常: {FormulaName}", SelectedFormula?.Name);
-                await ShowErrorMessageAsync($"导入验方失败: {ex.Message}");
-            }
-            finally
-            {
-                SetIsBusy(false);
-            }
-        }
-
         #endregion
 
         #region 命令状态检查
 
         private bool CanConfirm() => SelectedFormula != null && !IsBusy;
         private bool CanPreview() => SelectedFormula != null;
-        private bool CanImport() => SelectedFormula != null && PrescriptionId != Guid.Empty && !IsBusy;
 
         private void UpdateCommandStates()
         {
             ConfirmCommand.RaiseCanExecuteChanged();
             PreviewCommand.RaiseCanExecuteChanged();
-            ImportCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

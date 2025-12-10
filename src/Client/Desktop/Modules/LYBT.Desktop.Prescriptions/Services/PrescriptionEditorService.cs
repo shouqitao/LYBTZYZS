@@ -1,7 +1,6 @@
 ﻿using LYBT.Desktop.Contracts.Api; // Issue #1606 Phase 3: 改用IPrescriptionApi
 using LYBT.Desktop.Contracts.Services;
 using LYBT.Desktop.Herbs.Interfaces;
-using LYBT.Desktop.MedicalCase.Interfaces;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
