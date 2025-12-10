@@ -28,6 +28,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - IPrescriptionEditorService (编辑器服务)
 - 处方UI功能已完全迁移至MedicalCase模块
 
+#### 处方模块冗余代码清理 (OpenSpec: cleanup-prescription-redundancy) - 2025-12-10
+
+**删除冗余文件 (共9个):**
+- ViewModels/Components/PrescriptionCalculator.cs (与MedicalCase重复)
+- ViewModels/Components/PrescriptionValidator.cs (与MedicalCase重复)
+- ViewModels/Components/PrescriptionEventCoordinator.cs (无外部引用)
+- ViewModels/PrescriptionItemViewModel.cs (与MedicalCase重复)
+- ViewModels/PrescriptionItemRow.cs (无外部引用)
+- Components/BasicValidator.cs (无外部引用)
+- Components/PriceCalculator.cs (无外部引用)
+- Constants/PrescriptionConstants.cs (无外部引用)
+- Models/PrescriptionItem.cs (无外部引用)
+
+**保留文件:**
+- Models/PrescriptionPrintDto.cs (Print服务使用)
+- Services/PrescriptionEditorService.cs (核心服务)
+- Services/PrescriptionPrintService.cs (核心服务)
+
+**代码减少:** 约2200行
+
 #### 医案聚合根CRUD重构 (OpenSpec: refactor-medicalcase-aggregate-crud) - 2025-12-10
 
 **统一保存端点:**
