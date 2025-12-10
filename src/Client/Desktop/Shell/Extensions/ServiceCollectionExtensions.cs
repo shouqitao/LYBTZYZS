@@ -2,6 +2,7 @@
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Auth;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Clinical;
 using LYBT.Desktop.Consultation;

@@ -1,6 +1,6 @@
 using LYBT.Desktop.Auth.Models;
 
-namespace LYBT.Desktop.Auth.Services;
+namespace LYBT.Desktop.Auth.Interfaces;
 
 /// <summary>
 /// 连接设置服务接口 - Issue #1825

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Models;
 using Microsoft.Extensions.Logging;
 

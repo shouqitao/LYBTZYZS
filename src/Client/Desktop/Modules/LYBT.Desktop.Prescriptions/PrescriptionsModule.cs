@@ -1,6 +1,6 @@
 using LYBT.Desktop.Contracts.Services;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Prescriptions.Services;
-using LYBT.Desktop.Services.Print;
 using Prism.Ioc;
 using Prism.Modularity;
 

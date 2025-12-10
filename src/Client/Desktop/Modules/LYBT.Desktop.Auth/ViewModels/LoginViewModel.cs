@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using LYBT.Desktop.Auth.Interfaces;
 using LYBT.Desktop.Auth.Models;
 using LYBT.Desktop.Auth.Services;
 using LYBT.Desktop.Contracts.Services;

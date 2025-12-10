@@ -1,6 +1,6 @@
-﻿using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 
-namespace LYBT.Desktop.Services.Print
+namespace LYBT.Desktop.Prescriptions.Interfaces
 {
     /// <summary>
     /// 处方打印服务接口 - 简化版本

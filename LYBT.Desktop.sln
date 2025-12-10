@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessModules", "Business
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedResources", "SharedResources", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workstations", "Workstations", "{7EF7A4B6-4114-4BD8-AE7A-674AE81362E2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Shell", "src\Client\Desktop\Shell\LYBT.Desktop.Shell.csproj", "{A1234567-1234-1234-1234-123456789001}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LYBT.Desktop.Infrastructure", "src\Client\Desktop\Core\LYBT.Desktop.Infrastructure\LYBT.Desktop.Infrastructure.csproj", "{A1234567-1234-1234-1234-123456789004}"
@@ -38,10 +36,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Prescriptions", "src\Client\Desktop\Modules\LYBT.Desktop.Prescriptions\LYBT.Desktop.Prescriptions.csproj", "{A9A88A29-1982-FD6C-7A42-1FA728E171D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Users", "src\Client\Desktop\Modules\LYBT.Desktop.Users\LYBT.Desktop.Users.csproj", "{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.AdminWorkstation", "src\Client\Desktop\Workstations\AdminWorkstation\LYBT.Desktop.AdminWorkstation.csproj", "{865D0E4C-1630-AD2C-D315-CDECBFEFD753}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.ClinicalWorkstation", "src\Client\Desktop\Workstations\ClinicalWorkstation\LYBT.Desktop.ClinicalWorkstation.csproj", "{9A33A25D-E9FB-67CA-9C59-AFA983D1242D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LYBT.Desktop.Foundation", "src\Client\Desktop\Core\LYBT.Desktop.Foundation\LYBT.Desktop.Foundation.csproj", "{77064CCA-7B03-419B-9192-0A98FC48369C}"
 EndProject
@@ -107,14 +101,6 @@ Global
 		{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411}.Release|Any CPU.Build.0 = Release|Any CPU
-		{865D0E4C-1630-AD2C-D315-CDECBFEFD753}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{865D0E4C-1630-AD2C-D315-CDECBFEFD753}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{865D0E4C-1630-AD2C-D315-CDECBFEFD753}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{865D0E4C-1630-AD2C-D315-CDECBFEFD753}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A33A25D-E9FB-67CA-9C59-AFA983D1242D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A33A25D-E9FB-67CA-9C59-AFA983D1242D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A33A25D-E9FB-67CA-9C59-AFA983D1242D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A33A25D-E9FB-67CA-9C59-AFA983D1242D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{77064CCA-7B03-419B-9192-0A98FC48369C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{77064CCA-7B03-419B-9192-0A98FC48369C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77064CCA-7B03-419B-9192-0A98FC48369C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -147,8 +133,6 @@ Global
 		{CE7094CA-1795-7D22-C606-2BE51D5620F4} = {B1234567-1234-1234-1234-123456789999}
 		{A9A88A29-1982-FD6C-7A42-1FA728E171D2} = {B1234567-1234-1234-1234-123456789999}
 		{3CDE3D2B-F2F7-FA0E-51BC-0F4CD9831411} = {B1234567-1234-1234-1234-123456789999}
-		{865D0E4C-1630-AD2C-D315-CDECBFEFD753} = {7EF7A4B6-4114-4BD8-AE7A-674AE81362E2}
-		{9A33A25D-E9FB-67CA-9C59-AFA983D1242D} = {7EF7A4B6-4114-4BD8-AE7A-674AE81362E2}
 		{8F4BA2EB-C809-4204-922E-94A2DDDA04CC} = {A1234567-1234-1234-1234-123456789020}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

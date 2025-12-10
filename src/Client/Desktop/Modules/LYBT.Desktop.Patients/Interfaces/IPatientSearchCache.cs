@@ -1,7 +1,7 @@
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Patients;
 
-namespace LYBT.Desktop.Patients.Services
+namespace LYBT.Desktop.Patients.Interfaces
 {
     /// <summary>
     /// 患者搜索缓存服务接口

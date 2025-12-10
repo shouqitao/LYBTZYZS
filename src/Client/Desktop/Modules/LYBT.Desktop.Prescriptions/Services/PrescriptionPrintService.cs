@@ -5,8 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Xps.Packaging;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Prescriptions.Models;
-using LYBT.Desktop.Services.Print;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using Microsoft.Extensions.Logging;
 
