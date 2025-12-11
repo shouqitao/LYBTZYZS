@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
+             prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              Width="800" Height="600">
     <!--
     Epic #2175 BF-002 Task 3.9: 历史处方选择对话框

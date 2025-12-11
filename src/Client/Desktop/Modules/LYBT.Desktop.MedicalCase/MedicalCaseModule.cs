@@ -59,7 +59,7 @@ namespace LYBT.Desktop.MedicalCase
 
             // Issue #1807: 注册PrescriptionEditorViewModel组件化服务 Phase 2
             containerRegistry.Register<PrescriptionCalculator>();
-            containerRegistry.Register<FormulaImportHandler>();
+            // [已移除] FormulaImportHandler - 死代码，功能已由FormulaImportDialog + PrescriptionImportHandler实现
             containerRegistry.Register<HerbSelectionManager>();
 
             // Issue #1548: CreateMedicalCaseDialog已删除（由MedicalCaseFlowView的4步流程替代）

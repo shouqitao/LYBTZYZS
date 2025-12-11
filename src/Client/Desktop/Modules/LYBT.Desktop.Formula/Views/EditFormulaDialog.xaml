@@ -7,7 +7,7 @@
              xmlns:sharedControls="clr-namespace:LYBT.Desktop.Presentation.Components;assembly=LYBT.Desktop.Presentation"
              xmlns:prism="http://prismlibrary.com/"
              mc:Ignorable="d"
-             prism:Dialog.WindowStyle="{StaticResource CustomDialogWindowStyle}"
+             prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
              d:DesignHeight="600" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=viewmodels:EditFormulaDialogViewModel}">
 
