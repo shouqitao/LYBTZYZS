@@ -107,6 +107,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `shell-layout`规范添加Purpose描述和Shell层架构概述
 - `Shell/README.md`更新Services目录结构
 
+#### 模块目录结构标准化 (OpenSpec: standardize-module-structure) - 2025-12-11
+
+**Components文件夹重命名:**
+- 将所有Desktop模块中的`Components/`文件夹重命名为`Services/`
+- 统一命名符合.NET命名约定和职责描述
+- 涉及模块: Auth, MedicalCase, Patients, Users
+
+**命名空间同步更新:**
+- 更新所有相关文件的命名空间从`.Components`到`.Services`
+- 更新引用这些组件的文件的using语句
+- 保持向后兼容的模块内部结构
+
+**测试文件适配:**
+- 更新单元测试文件中的using语句以匹配新命名空间
+- 修复因重命名导致的测试编译问题
+
 #### DetailView UI风格统一 (OpenSpec: unify-detail-view-style) - 2025-12-07
 
 **操作模式统一:**
@@ -381,4 +397,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**最后更新**: 2025-11-09
+**最后更新**: 2025-12-11
