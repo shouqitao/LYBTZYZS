@@ -293,9 +293,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
+            // Issue #1799: 导航目标已更新为MedicalCaseManagementView
             _mockRegionManager.Verify(x => x.RequestNavigate(
                 "ContentRegion",
-                "MedicalCaseListView",
+                "MedicalCaseManagementView",
                 It.Is<NavigationParameters>(p => p.ContainsKey("PatientId"))),
                 Times.Once);
         }
@@ -308,9 +309,10 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
 
             // Assert
             result.Should().BeTrue();
+            // Issue #1799: 导航目标已更新为MedicalCaseManagementView
             _mockRegionManager.Verify(x => x.RequestNavigate(
                 "ContentRegion",
-                "MedicalCaseListView"),
+                "MedicalCaseManagementView"),
                 Times.Once);
         }
 

@@ -100,7 +100,9 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
             await _sut.InitializeAsync(medicalCaseId);
 
             // 修改数据触发变更
-            _sut.Current!.ChiefComplaint = "新的主诉";
+            // 注意: MedicalCaseDetailDto使用new关键字隐藏了ChiefComplaint属性，
+            // 必须cast到正确类型才能修改派生类属性
+            ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint = "新的主诉";
 
             // Act
             var result = await _sut.SaveAsync();
@@ -226,14 +228,16 @@ namespace LYBT.Desktop.MedicalCase.Tests.Components
                 .ReturnsAsync(reloadedDetail);
 
             await _sut.InitializeAsync(medicalCaseId);
-            var originalComplaint = _sut.Current!.ChiefComplaint;
+            // 注意: MedicalCaseDetailDto使用new关键字隐藏了ChiefComplaint属性，
+            // 必须cast到正确类型才能访问派生类属性
+            var originalComplaint = ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint;
 
             // Act
             await _sut.ReloadAsync();
 
             // Assert
-            _sut.Current!.ChiefComplaint.Should().Be("重新加载后的主诉");
-            _sut.Current.ChiefComplaint.Should().NotBe(originalComplaint);
+            ((MedicalCaseDetailDto)_sut.Current!).ChiefComplaint.Should().Be("重新加载后的主诉");
+            ((MedicalCaseDetailDto)_sut.Current).ChiefComplaint.Should().NotBe(originalComplaint);
         }
 
         #endregion

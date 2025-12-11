@@ -92,6 +92,11 @@ namespace LYBT.Desktop.Patients.Tests.ViewModels
             _eventAggregatorMock.Setup(x => x.GetEvent<LYBT.Desktop.Patients.Events.PatientUpdatedEvent>())
                 .Returns(patientUpdatedEventMock.Object);
 
+            // OpenSpec: standardize-module-structure - Mock PatientCreatedEvent
+            var patientCreatedEventMock = new Mock<LYBT.Desktop.Patients.Events.PatientCreatedEvent>();
+            _eventAggregatorMock.Setup(x => x.GetEvent<LYBT.Desktop.Patients.Events.PatientCreatedEvent>())
+                .Returns(patientCreatedEventMock.Object);
+
             // Epic #2210 Issue #2218: 构建依赖链（按依赖顺序）
             // 1. PatientCommandHandler（依赖：IPatientRepository, ILogger, IRegionManager）
             _commandHandler = new PatientCommandHandler(
