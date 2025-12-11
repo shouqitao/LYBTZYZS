@@ -107,6 +107,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `shell-layout`规范添加Purpose描述和Shell层架构概述
 - `Shell/README.md`更新Services目录结构
 
+#### Desktop层空目录清理与接口整理 (OpenSpec: cleanup-desktop-empty-directories) - 2025-12-11
+
+**空目录删除:**
+- 删除 `LYBT.Desktop.Admin` 空模块目录
+- 删除 `LYBT.Desktop.Services` 空Core目录
+- 删除 `LYBT.Desktop.Infrastructure/Enums` 空目录
+
+**接口文件整理:**
+- Prescriptions模块: `IPrescriptionPrintService.cs` 移至 `Interfaces/`
+- Auth模块: `IConnectionSettingsService.cs` 移至 `Interfaces/`
+- Patients模块: `IPatientSearchCache.cs` 移至 `Interfaces/`
+
+**解决方案清理:**
+- 移除LYBT.Desktop.sln中不存在的项目引用(AdminWorkstation, ClinicalWorkstation)
+
 #### 模块目录结构标准化 (OpenSpec: standardize-module-structure) - 2025-12-11
 
 **Components文件夹重命名:**
