@@ -126,7 +126,7 @@ namespace LYBT.Module.MedicalCases.Repositories
             int pageSize,
             string? keyword = null)
         {
-            var query = GetBaseQuery();
+            var query = GetDetailQuery();
 
             // 简化搜索逻辑 - 只搜索基本字段
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -252,30 +252,12 @@ namespace LYBT.Module.MedicalCases.Repositories
                 // RowVersion同步已由BaseRepository.SaveChangesAsync()全局处理（Issue #2250）
             }
 
-            // 检测状态变更：从Active/Draft变为Completed - Issue #2242简化版
-            bool isMovingToTerminalState =
-                (existingEntity.CaseStatus == MedicalCaseStatus.Active || existingEntity.CaseStatus == MedicalCaseStatus.Draft) &&
-                entity.CaseStatus == MedicalCaseStatus.Completed;
-
-            if (isMovingToTerminalState)
+            // Issue #2242 修正：完成医案时保留关联数据（Consultation、Prescription）
+            // 这些数据需要供历史医案查询功能使用
+            // 只有当医案被软删除（IsDeleted=true）时，关联数据才会被级联清理
+            if (entity.CaseStatus == MedicalCaseStatus.Completed)
             {
-                _logger?.LogInformation("检测到医案状态变更为终态（Completed），准备级联删除关联数据，MedicalCaseId: {MedicalCaseId}", entity.Id);
-
-                // 删除关联的Consultation（如果存在）
-                if (existingEntity.Consultation != null)
-                {
-                    _logger?.LogInformation("删除关联的Consultation，ConsultationId: {ConsultationId}", existingEntity.Consultation.Id);
-                    _context.Set<Consultation>().Remove(existingEntity.Consultation);
-                }
-
-                // 删除关联的Prescription（如果存在）
-                if (existingEntity.Prescription != null)
-                {
-                    _logger?.LogInformation("删除关联的Prescription，PrescriptionId: {PrescriptionId}", existingEntity.Prescription.Id);
-                    _context.Set<Prescription>().Remove(existingEntity.Prescription);
-                }
-
-                _logger?.LogInformation("级联删除完成，即将更新医案状态");
+                _logger?.LogInformation("医案状态变更为Completed，保留关联数据供历史查询，MedicalCaseId: {MedicalCaseId}", entity.Id);
             }
 
             //  Issue #1669 Phase 7: SaveChanges前诊断 - 记录所有tracked entities状态

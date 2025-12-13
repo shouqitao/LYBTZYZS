@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewmodels="clr-namespace:LYBT.Desktop.Patients.ViewModels"
         Title="{Binding Title}"
-        Width="450" Height="280"
+        Width="550" Height="360"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"

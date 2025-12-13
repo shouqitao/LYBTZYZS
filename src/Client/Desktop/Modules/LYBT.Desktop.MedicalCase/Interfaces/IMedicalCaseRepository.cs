@@ -12,6 +12,13 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
     public interface IMedicalCaseRepository
     {
         Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
+        /// 获取医案分页列表（包含所有医生的数据）
+        /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
+        /// </summary>
+        Task<PagedResult<MedicalCaseDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
         Task<MedicalCaseDto?> GetByIdAsync(Guid id);
         /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
         Task<MedicalCaseDto> CreateAsync(MedicalCaseInputDto dto);

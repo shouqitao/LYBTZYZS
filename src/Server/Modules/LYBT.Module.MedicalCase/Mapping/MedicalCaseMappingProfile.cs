@@ -18,8 +18,13 @@ namespace LYBT.Module.MedicalCases.Mapping
             // ========== Response映射（保持兼容性） ==========
 
             // MedicalCase -> MedicalCaseDto
+            // OpenSpec: fix-history-copy-all-patients - 添加PrescriptionId和ConsultationId映射
             CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDto>()
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
+                .ForMember(dest => dest.PrescriptionId, opt => opt.MapFrom(src =>
+                    src.Prescription != null && !src.Prescription.IsDeleted ? src.Prescription.Id : (Guid?)null))
+                .ForMember(dest => dest.ConsultationId, opt => opt.MapFrom(src =>
+                    src.Consultation != null && !src.Consultation.IsDeleted ? src.Consultation.Id : (Guid?)null))
                 .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())

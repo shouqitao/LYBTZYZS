@@ -63,6 +63,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("诊断")]
         [StringLength(500, ErrorMessage = "诊断信息长度不能超过500个字符")]
         public string? Diagnosis { get; set; }
+
+        /// <summary>是否有诊疗记录（计算属性）</summary>
+        public bool HasConsultation => ConsultationId.HasValue;
+
+        /// <summary>是否有处方（计算属性）</summary>
+        public bool HasPrescription => PrescriptionId.HasValue;
     }
 
     /// <summary>

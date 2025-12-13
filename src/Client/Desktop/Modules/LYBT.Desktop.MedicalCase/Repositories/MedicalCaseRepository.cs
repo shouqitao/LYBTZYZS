@@ -402,6 +402,32 @@ namespace LYBT.Desktop.MedicalCase.Repositories
             return _api.GetMedicalCasesAsync(page, pageSize, keyword);
         }
 
+        /// <summary>
+        /// 获取医案分页列表（包含所有医生的数据）
+        /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
+        /// 此方法绕过医生过滤，返回所有医生的医案数据
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseDto>> GetPagedIncludeAllDoctorsAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            try
+            {
+                _logger.LogInformation("获取全部医生医案列表，page={Page}, pageSize={PageSize}", page, pageSize);
+                var response = await _api.GetMedicalCasesAsync(page, pageSize, keyword, includeAllDoctors: true);
+                return response.Data ?? new PagedResult<MedicalCaseDto>
+                {
+                    Items = new List<MedicalCaseDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取全部医生医案列表失败");
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiCreateAsync(MedicalCaseInputDto dto)
         {
             return _api.CreateMedicalCaseAsync(dto);

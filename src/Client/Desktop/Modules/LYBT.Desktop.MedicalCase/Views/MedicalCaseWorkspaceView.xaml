@@ -308,7 +308,7 @@
                                             Command="{Binding PrescriptionPanelViewModel.OpenFormulaImportDialogCommand}"
                                             Style="{StaticResource SecondaryButton}"
                                             Margin="0,0,8,0"/>
-                                    <Button Content="历史处方查询"
+                                    <Button Content="历史医案查询"
                                             Command="{Binding PrescriptionPanelViewModel.OpenHistoryCopyDialogCommand}"
                                             Style="{StaticResource SecondaryButton}"
                                             Margin="0,0,8,0"/>

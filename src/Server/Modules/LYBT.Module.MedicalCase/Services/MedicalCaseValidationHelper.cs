@@ -19,13 +19,15 @@ namespace LYBT.Module.MedicalCases.Services
         public static bool IsValidStatusTransition(MedicalCaseStatus from, MedicalCaseStatus to)
         {
             // 状态机规则（Issue #2242简化版：Draft ↔ Active → Completed）
+            // 补充：允许Draft直接到Completed（"完成看诊"按钮一步完成）
             return (from, to) switch
             {
                 // Draft <-> Active
                 (MedicalCaseStatus.Draft, MedicalCaseStatus.Active) => true,   // 继续看诊
                 (MedicalCaseStatus.Active, MedicalCaseStatus.Draft) => true,   // 暂存 (Issue #1647)
 
-                // Active -> Completed (终态)
+                // Draft/Active -> Completed (终态)
+                (MedicalCaseStatus.Draft, MedicalCaseStatus.Completed) => true,   // 一步完成（完成看诊按钮）
                 (MedicalCaseStatus.Active, MedicalCaseStatus.Completed) => true,  // 完成三步流程
 
                 _ => false // 其他流转禁止

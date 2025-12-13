@@ -63,7 +63,17 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     public PrescriptionPanelViewModel? PrescriptionPanelViewModel { get => _prescriptionPanelViewModel; set => SetProperty(ref _prescriptionPanelViewModel, value); }
 
     private bool _isPrescriptionEnabled;
-    public bool IsPrescriptionEnabled { get => _isPrescriptionEnabled; set => SetProperty(ref _isPrescriptionEnabled, value); }
+    public bool IsPrescriptionEnabled
+    {
+        get => _isPrescriptionEnabled;
+        set
+        {
+            if (SetProperty(ref _isPrescriptionEnabled, value))
+            {
+                UpdateCanComplete();
+            }
+        }
+    }
 
     private bool _showPrescriptionStatus;
     public bool ShowPrescriptionStatus { get => _showPrescriptionStatus; set => SetProperty(ref _showPrescriptionStatus, value); }
@@ -389,6 +399,15 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         ConsultationPanelViewModel?.Initialize(MedicalCaseId, _dataLoader.CachedConsultation);
         _ = PrescriptionPanelViewModel?.InitializeAsync(MedicalCaseId, CurrentPatient?.Id ?? Guid.Empty, CurrentPatient?.Name ?? string.Empty, _dataLoader.CachedPrescription);
         _activeConsultationService.Register(MedicalCaseId, _navigationHandler.HandleLeaveRequestAsync);
+
+        // 订阅子ViewModel属性变更以实时更新CanComplete
+        if (ConsultationPanelViewModel != null)
+            ConsultationPanelViewModel.PropertyChanged += OnChildViewModelPropertyChanged;
+        if (PrescriptionPanelViewModel != null)
+            PrescriptionPanelViewModel.PropertyChanged += OnChildViewModelPropertyChanged;
+
+        // 初始计算CanComplete状态
+        UpdateCanComplete();
     }
 
     public override bool IsNavigationTarget(NavigationContext navigationContext) => false;
@@ -418,12 +437,15 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         UpdateConsultationStatus(true);
         IsPrescriptionEnabled = payload.NeedsPrescription;
         if (payload.NeedsPrescription) UpdatePrescriptionStatus(false, "待开方");
-        else { UpdatePrescriptionStatus(false, "无需开方"); CanComplete = true; }
+        else UpdatePrescriptionStatus(false, "无需开方");
+        // CanComplete由UpdateCanComplete()实时计算，IsPrescriptionEnabled变更时自动触发
     }
 
     private void OnPrescriptionCompleted(PrescriptionCompletedPayload payload)
     {
-        UpdatePrescriptionStatus(true); CanPrintPrescription = true; CanComplete = true;
+        UpdatePrescriptionStatus(true);
+        CanPrintPrescription = true;
+        UpdateCanComplete();
     }
 
     private void OnPrescriptionSaved(PrescriptionSavedPayload payload)
@@ -444,6 +466,29 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     #endregion
 
     #region 状态更新
+
+    /// <summary>
+    /// 更新完成看诊按钮可用性
+    /// 简化逻辑：诊断必填有值 && (不需要开方 || 药材数量>0)
+    /// </summary>
+    private void UpdateCanComplete()
+    {
+        var consultationValid = ConsultationPanelViewModel?.Validate() ?? false;
+        var prescriptionSatisfied = !IsPrescriptionEnabled || (PrescriptionPanelViewModel?.ItemCount > 0);
+        CanComplete = consultationValid && prescriptionSatisfied;
+    }
+
+    /// <summary>
+    /// 子ViewModel属性变更处理 - 用于实时更新CanComplete
+    /// </summary>
+    private void OnChildViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // 监听影响CanComplete的属性变化
+        if (e.PropertyName is "ChiefComplaint" or "TCMDiagnosis" or "ItemCount")
+        {
+            UpdateCanComplete();
+        }
+    }
 
     private void UpdateConsultationStatus(bool isCompleted)
     {

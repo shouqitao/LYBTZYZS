@@ -12,12 +12,14 @@ namespace LYBT.Desktop.Contracts.Api
     {
         /// <summary>
         /// 获取医疗案例列表（支持分页和查询）
+        /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数
         /// </summary>
         [Refit.Get("/api/v1/medicalcases")]
         Task<ApiResponse<PagedResult<MedicalCaseDto>>> GetMedicalCasesAsync(
             [Refit.Query] int page = 1,
             [Refit.Query] int pageSize = 20,
-            [Refit.Query] string? keyword = null);
+            [Refit.Query] string? keyword = null,
+            [Refit.Query] bool includeAllDoctors = false);
 
         /// <summary>
         /// 获取医疗案例详情

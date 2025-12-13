@@ -1212,6 +1212,7 @@ namespace LYBT.WebAPI.Controllers
         /// 查询病案列表（分页）
         /// Epic #1612: 支持按状态、患者ID过滤
         /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
+        /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数支持历史医案复制
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDto>>), 200)]
@@ -1219,7 +1220,8 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] MedicalCaseStatus? status = null,
             [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 20,
+            [FromQuery] bool includeAllDoctors = false)
         {
             try
             {
@@ -1230,8 +1232,9 @@ namespace LYBT.WebAPI.Controllers
                 }
 
                 // OpenSpec: optimize-module-list-ui - 获取当前用户信息用于角色过滤
+                // OpenSpec: fix-history-copy-all-patients - includeAllDoctors=true时跳过医生过滤
                 var (operatorId, _, operatorRole) = GetOperator();
-                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin;
+                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
 
                 var entityResult = await _queryService.GetListAsync(
                     status, patientId, page, pageSize,
@@ -1239,6 +1242,7 @@ namespace LYBT.WebAPI.Controllers
                     isAdmin: isAdmin);
 
                 // Entity → DTO映射
+                // OpenSpec: fix-history-copy-all-patients - 添加ConsultationId/PrescriptionId映射
                 var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDto
                 {
                     Id = entity.Id,
@@ -1250,7 +1254,10 @@ namespace LYBT.WebAPI.Controllers
                     CaseStatus = entity.CaseStatus,
                     Remark = entity.Remark,
                     Diagnosis = entity.Consultation?.TCMDiagnosis, // 关联查询诊断信息
-                    CreatedAt = entity.CreatedAt
+                    CreatedAt = entity.CreatedAt,
+                    // 设置ID字段，计算属性HasConsultation/HasPrescription会自动计算
+                    ConsultationId = entity.Consultation != null ? entity.Id : null,
+                    PrescriptionId = (entity.Prescription != null && !entity.Prescription.IsDeleted) ? entity.Prescription.Id : null
                 }).ToList();
 
                 var dtoResult = new PagedResult<MedicalCaseDto>
@@ -1375,6 +1382,58 @@ namespace LYBT.WebAPI.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "获取待诊队列", null);
+            }
+        }
+
+        /// <summary>
+        /// 根据患者ID获取医案列表
+        /// OpenSpec: redesign-history-copy-ui - 补充缺失的API端点
+        /// 复用GetListAsync方法，仅包装为专用路由
+        /// </summary>
+        /// <param name="patientId">患者ID</param>
+        /// <returns>患者的所有医案列表</returns>
+        [HttpGet("by-patient/{patientId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<MedicalCaseDto>>), 200)]
+        public async Task<IActionResult> GetMedicalCasesByPatientId(Guid patientId)
+        {
+            try
+            {
+                // 复用GetListAsync，设置patientId筛选，不分页（取大量数据）
+                var entityResult = await _queryService.GetListAsync(
+                    status: null,
+                    patientId: patientId,
+                    page: 1,
+                    pageSize: 1000, // 取全部历史医案
+                    currentDoctorId: null,
+                    isAdmin: true); // 历史查询不限制医生
+
+                // Entity → DTO映射
+                // HasConsultation/HasPrescription是计算属性，只需设置ConsultationId/PrescriptionId
+                var dtoItems = entityResult.Items.Select(entity => new MedicalCaseDto
+                {
+                    Id = entity.Id,
+                    PatientId = entity.PatientId,
+                    PatientName = entity.PatientName,
+                    DoctorId = entity.DoctorId,
+                    DoctorName = entity.DoctorName,
+                    ConsultationDate = entity.ConsultationDate,
+                    CaseStatus = entity.CaseStatus,
+                    Remark = entity.Remark,
+                    Diagnosis = entity.Consultation?.TCMDiagnosis,
+                    CreatedAt = entity.CreatedAt,
+                    // 设置ID字段，计算属性HasConsultation/HasPrescription会自动计算
+                    ConsultationId = entity.Consultation != null ? entity.Id : null,
+                    PrescriptionId = (entity.Prescription != null && !entity.Prescription.IsDeleted) ? entity.Prescription.Id : null
+                }).ToList();
+
+                _logger.LogInformation("根据患者ID查询医案列表，PatientId: {PatientId}, Count: {Count}",
+                    patientId, dtoItems.Count);
+
+                return Ok(ApiResponse<List<MedicalCaseDto>>.CreateSuccess(dtoItems, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "根据患者ID获取医案列表", new { patientId });
             }
         }
 

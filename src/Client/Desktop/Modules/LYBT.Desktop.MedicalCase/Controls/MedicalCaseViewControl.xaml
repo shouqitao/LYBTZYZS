@@ -170,7 +170,8 @@
                 <Expander Header="处方信息" IsExpanded="True">
                     <StackPanel Margin="0,16,0,0">
                         <!-- 处方基本信息 -->
-                        <Grid Style="{StaticResource LabelValueStyle}">
+                        <!-- OpenSpec: fix-history-copy-all-patients - 修正绑定路径使用Prescription导航属性 -->
+                        <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
@@ -180,39 +181,39 @@
 
                             <StackPanel Grid.Column="0" Margin="0,0,16,0">
                                 <TextBlock Text="处方编号" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionNumber}" Style="{StaticResource ValueDisplayStyle}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.PrescriptionNumber}" Style="{StaticResource ValueDisplayStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                                <TextBlock Text="处方类型" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionType}" Style="{StaticResource ValueDisplayStyle}" />
+                                <TextBlock Text="配方来源" Style="{StaticResource FormLabelStyle}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.FormulaSource}" Style="{StaticResource ValueDisplayStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Margin="0,0,16,0">
                                 <TextBlock Text="剂数" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionQuantity}" Style="{StaticResource ValueDisplayStyle}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.DosageCount}" Style="{StaticResource ValueDisplayStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="3">
                                 <TextBlock Text="总价" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.TotalAmount, StringFormat=￥{0:F2}}" Style="{StaticResource ValueDisplayStyle}" />
+                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.TotalPrice, StringFormat=￥{0:F2}}" Style="{StaticResource ValueDisplayStyle}" />
                             </StackPanel>
                         </Grid>
 
                         <!-- 用法用量 -->
                         <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.PrescriptionUsage, Converter={StaticResource NullToVisibilityConverter}}">
+                                    Visibility="{Binding MedicalCaseDetail.Prescription.Usage, Converter={StaticResource NullToVisibilityConverter}}">
                             <TextBlock Text="用法用量" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.PrescriptionUsage}"
+                            <TextBlock Text="{Binding MedicalCaseDetail.Prescription.Usage}"
                                        Style="{StaticResource ValueDisplayStyle}"
                                        TextWrapping="Wrap" />
                         </StackPanel>
 
                         <!-- 处方明细 -->
-                        <StackPanel Visibility="{Binding MedicalCaseDetail.PrescriptionItems, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel Visibility="{Binding MedicalCaseDetail.Prescription.Items, Converter={StaticResource NullToVisibilityConverter}}">
                             <TextBlock Text="处方明细" Style="{StaticResource FormLabelStyle}" />
 
-                            <DataGrid ItemsSource="{Binding MedicalCaseDetail.PrescriptionItems}"
+                            <DataGrid ItemsSource="{Binding MedicalCaseDetail.Prescription.Items}"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False"
                                       MaxHeight="200"

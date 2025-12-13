@@ -5,138 +5,318 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="clr-namespace:LYBT.Desktop.MedicalCase.Dialogs"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:medicalCaseControls="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
+             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
              mc:Ignorable="d"
              prism:Dialog.WindowStyle="{DynamicResource CustomDialogWindowStyle}"
-             d:DesignHeight="550" d:DesignWidth="700"
+             d:DesignHeight="680" d:DesignWidth="1100"
              d:DataContext="{d:DesignInstance Type=viewmodels:HistoryCopyDialogViewModel}">
 
     <!--
-    Issue #2246: 历史处方复制弹窗
-    用于从当前患者历史处方中选择复制药材到当前处方
+    OpenSpec: redesign-history-copy-ui
+    重新设计的历史医案查询弹窗 - 左右双栏布局
+    左栏: 搜索筛选 + 历史医案卡片列表
+    右栏: 医案详情预览 (复用MedicalCaseViewControl)
     -->
 
-    <Grid>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <infrastructure:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" />
+
+        <!-- 历史医案卡片样式 -->
+        <Style x:Key="HistoryCaseCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#E0E0E0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F5F9FF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                    <Setter Property="Background" Value="#E3F2FD" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+                    <Setter Property="BorderThickness" Value="2" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Width="1100" Height="680">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />   <!-- 标题栏 -->
+            <RowDefinition Height="*" />      <!-- 内容区域 -->
+            <RowDefinition Height="Auto" />   <!-- 按钮栏 -->
         </Grid.RowDefinitions>
 
-        <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryColorBrush}" Padding="15,10">
-            <TextBlock Text="从历史处方复制" Foreground="White" FontSize="18" FontWeight="Bold" />
+        <!-- Row 0: 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
+            <Grid>
+                <TextBlock Text="从历史医案复制" Foreground="White" FontSize="18" FontWeight="Bold" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="当前患者: " Foreground="White" FontSize="14" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PatientName}" Foreground="White" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- 内容区域 -->
-        <Grid Grid.Row="1" Margin="15">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>  <!-- 患者信息 -->
-                <RowDefinition Height="Auto"/>  <!-- 搜索框 -->
-                <RowDefinition Height="*"/>      <!-- 历史处方列表 -->
-                <RowDefinition Height="Auto"/>  <!-- 预览区域 -->
-            </Grid.RowDefinitions>
+        <!-- Row 1: 内容区域 - 左右双栏布局 -->
+        <Grid Grid.Row="1" Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" />  <!-- 左栏: 历史医案列表 -->
+                <ColumnDefinition Width="*" />    <!-- 右栏: 详情预览 -->
+            </Grid.ColumnDefinitions>
 
-            <!-- 患者信息 -->
-            <Border Grid.Row="0" Background="#E3F2FD" Padding="10" Margin="0,0,0,10" CornerRadius="3">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="当前患者: " FontWeight="Bold" Foreground="#1976D2"/>
-                    <TextBlock Text="{Binding PatientName}" Foreground="#1976D2"/>
-                </StackPanel>
-            </Border>
-
-            <!-- 搜索框 -->
-            <Grid Grid.Row="1" Margin="0,0,0,10">
-                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="8,6"
-                         FontSize="13"/>
-                <TextBlock Text="输入诊断关键词或日期搜索..."
-                           IsHitTestVisible="False"
-                           Foreground="#999"
-                           Padding="10,8"
-                           FontSize="13">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SearchText}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </Grid>
-
-            <!-- 历史处方列表 -->
-            <ListView Grid.Row="2"
-                      ItemsSource="{Binding FilteredCases}"
-                      SelectedItem="{Binding SelectedCase}"
-                      BorderBrush="#E0E0E0"
-                      BorderThickness="1">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="就诊日期" Width="120">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding ConsultationDate, StringFormat=yyyy-MM-dd}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="诊断" Width="200" DisplayMemberBinding="{Binding Diagnosis}"/>
-                        <GridViewColumn Header="主诉" Width="180" DisplayMemberBinding="{Binding ChiefComplaint}"/>
-                        <GridViewColumn Header="状态" Width="80">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding CaseStatus}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-
-            <!-- 预览区域 -->
-            <Border Grid.Row="3"
-                    Background="#F5F5F5"
+            <!-- 左栏: 搜索 + 时间筛选 + 历史医案卡片列表 -->
+            <Border Grid.Column="0"
+                    Background="#F8F9FA"
                     BorderBrush="#E0E0E0"
-                    BorderThickness="1"
-                    CornerRadius="3"
-                    Padding="10"
-                    Margin="0,10,0,0"
-                    MinHeight="80">
-                <StackPanel>
-                    <TextBlock Text="处方药材预览:" FontWeight="Bold" FontSize="12" Foreground="#666"/>
-                    <TextBlock Text="{Binding PreviewText}"
-                               TextWrapping="Wrap"
+                    BorderThickness="0,0,1,0">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />  <!-- 查看模式切换 -->
+                        <RowDefinition Height="Auto" />  <!-- 搜索框 -->
+                        <RowDefinition Height="Auto" />  <!-- 时间区间筛选 -->
+                        <RowDefinition Height="*" />     <!-- 历史医案列表 -->
+                        <RowDefinition Height="Auto" />  <!-- 显示更多按钮 -->
+                        <RowDefinition Height="Auto" />  <!-- 统计信息 -->
+                    </Grid.RowDefinitions>
+
+                    <!-- 查看模式切换 -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding ViewModeText}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#333"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Command="{Binding ToggleAllPatientsCommand}"
+                                Padding="8,4"
+                                FontSize="12"
+                                Cursor="Hand"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                BorderThickness="1"
+                                Foreground="{DynamicResource PrimaryBrush}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Content" Value="查看全部患者" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsShowingAllPatients}" Value="True">
+                                            <Setter Property="Content" Value="返回本患者" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+
+                    <!-- 搜索框 -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="10,8"
+                                 FontSize="13"
+                                 BorderBrush="#D0D0D0"
+                                 BorderThickness="1" />
+                        <TextBlock Text="搜索患者姓名或诊断..."
+                                   IsHitTestVisible="False"
+                                   Foreground="#999"
+                                   Padding="12,10"
+                                   FontSize="13">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchText}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <!-- 时间区间筛选 -->
+                    <Grid Grid.Row="2" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <DatePicker Grid.Column="0"
+                                    SelectedDate="{Binding StartDate}"
+                                    FontSize="12"
+                                    VerticalContentAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text=" ~ "
+                                   VerticalAlignment="Center"
+                                   FontSize="13"
+                                   Margin="4,0" />
+                        <DatePicker Grid.Column="2"
+                                    SelectedDate="{Binding EndDate}"
+                                    FontSize="12"
+                                    VerticalContentAlignment="Center" />
+                    </Grid>
+
+                    <!-- 历史医案卡片列表 -->
+                    <ListBox Grid.Row="3"
+                             ItemsSource="{Binding FilteredCases}"
+                             SelectedItem="{Binding SelectedCase}"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource HistoryCaseCardStyle}">
+                                    <StackPanel>
+                                        <!-- 患者维度: 患者姓名 + 就诊日期 -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding PatientName}"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#333" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding ConsultationDate, StringFormat={}{0:yyyy-MM-dd}}"
+                                                       FontSize="12"
+                                                       Foreground="#999" />
+                                        </Grid>
+
+                                        <!-- 诊断维度: 中医诊断（核心信息） -->
+                                        <TextBlock Text="{Binding Diagnosis, TargetNullValue=暂无诊断}"
+                                                   FontSize="14"
+                                                   FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,6,0,0" />
+
+                                        <!-- 状态标签 -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <Border Background="#4CAF50"
+                                                    CornerRadius="3"
+                                                    Padding="6,2"
+                                                    Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="已诊疗" FontSize="10" Foreground="White" />
+                                            </Border>
+                                            <Border Background="#2196F3"
+                                                    CornerRadius="3"
+                                                    Padding="6,2"
+                                                    Margin="4,0,0,0"
+                                                    Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="已开方" FontSize="10" Foreground="White" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- 显示更多按钮 (仅在当前患者模式且有更多记录时显示) -->
+                    <Button Grid.Row="4"
+                            Content="显示更多记录..."
+                            Command="{Binding ShowMoreCurrentPatientCommand}"
+                            HorizontalAlignment="Center"
+                            Padding="16,6"
+                            FontSize="12"
+                            Margin="0,8,0,0"
+                            Cursor="Hand"
+                            Background="Transparent"
+                            BorderBrush="#999"
+                            BorderThickness="1"
+                            Foreground="#666"
+                            Visibility="{Binding CanShowMoreCurrentPatient, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                    <!-- 统计信息 -->
+                    <TextBlock Grid.Row="5"
+                               Text="{Binding StatusMessage}"
                                FontSize="12"
-                               Foreground="#333"
-                               Margin="0,5,0,0"/>
-                </StackPanel>
+                               Foreground="#666"
+                               Margin="0,10,0,0" />
+                </Grid>
             </Border>
+
+            <!-- 右栏: 医案详情预览 - 复用MedicalCaseViewControl -->
+            <Grid Grid.Column="1" Margin="10,10">
+                <!-- 无选中时的提示 -->
+                <TextBlock Text="请从左侧选择一个历史医案"
+                           FontSize="14"
+                           Foreground="#999"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding SelectedCaseDetail, Converter={StaticResource InverseNullToVisibilityConverter}}" />
+
+                <!-- 加载状态提示 -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="正在加载详情..."
+                               FontSize="14"
+                               Foreground="#666"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 有选中时显示详情 - 使用MedicalCaseViewControl -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Visibility="{Binding SelectedCaseDetail, Converter={StaticResource NullToVisibilityConverter}}">
+                    <medicalCaseControls:MedicalCaseViewControl
+                        MedicalCaseDetail="{Binding SelectedCaseDetail}"
+                        HasConsultation="{Binding SelectedCaseHasConsultation}"
+                        HasPrescription="{Binding SelectedCaseHasPrescription}"/>
+                </ScrollViewer>
+            </Grid>
         </Grid>
 
-        <!-- 按钮栏 -->
-        <Border Grid.Row="2" Background="#F5F5F5" Padding="15,10">
+        <!-- Row 2: 按钮栏 -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="20,12">
             <Grid>
-                <TextBlock Text="{Binding StatusMessage}"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           Foreground="#666" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="确认复制"
+                            Command="{Binding ConfirmCommand}"
+                            Width="100"
+                            Padding="12,8"
+                            FontSize="14"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Foreground="White"
+                            Margin="0,0,12,0" />
                     <Button Content="取消"
                             Command="{Binding CancelCommand}"
                             Width="80"
-                            Margin="0,0,10,0"
-                            Padding="8,6"/>
-                    <Button Content="确认复制"
-                            Command="{Binding ConfirmCommand}"
-                            Width="90"
-                            Padding="8,6"
-                            Background="{DynamicResource PrimaryColorBrush}"
-                            Foreground="White"/>
+                            Padding="12,8"
+                            FontSize="14" />
                 </StackPanel>
             </Grid>
         </Border>
