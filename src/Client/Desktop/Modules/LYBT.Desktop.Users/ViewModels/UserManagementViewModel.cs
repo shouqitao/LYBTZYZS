@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows.Input;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Users.Interfaces;
@@ -83,7 +84,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
             RoleOptions = Enum.GetValues<UserRole>();
             StatusOptions = Enum.GetValues<CommonStatus>();
-            PageSize = 20;
+            PageSize = SystemConstants.DefaultPageSize;
 
             InitializeUserCommands();
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());

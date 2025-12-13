@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows.Input;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Desktop.Patients.Events;
@@ -54,7 +55,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
 
-            PageTitle = "患者管理"; PageSize = 20;
+            PageTitle = "患者管理"; PageSize = SystemConstants.DefaultPageSize;
 
             AddCommand = new DelegateCommand(async () => await OnExecuteAddAsync(), () => !IsLoading && !IsBusy).ObservesProperty(() => IsLoading).ObservesProperty(() => IsBusy);
             ViewDetailsCommand = new DelegateCommand<PatientDto>(ExecuteViewDetails, p => p != null);

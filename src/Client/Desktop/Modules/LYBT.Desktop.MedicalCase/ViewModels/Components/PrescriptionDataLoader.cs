@@ -1,5 +1,6 @@
 using LYBT.Desktop.Formula.Interfaces;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.MedicalCase;
@@ -26,9 +27,9 @@ public class PrescriptionDataLoader
     #region 常量
 
     /// <summary>
-    /// 分页大小（后端限制最大100）
+    /// 分页大小（使用系统最大值，用于批量加载场景）
     /// </summary>
-    private const int PageSize = 100;
+    private static int PageSize => SystemConstants.MaxPageSize;
 
     #endregion
 

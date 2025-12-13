@@ -1,6 +1,7 @@
 using System.IO;
 using LYBT.Desktop.Herbs.Services;
 using LYBT.Desktop.Herbs.Interfaces;
+using LYBT.Desktop.Infrastructure.Constants;
 using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
@@ -55,7 +56,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
             _prismDialogService = prismDialogService ?? throw new ArgumentNullException(nameof(prismDialogService));
 
             PageTitle = "药材管理";
-            PageSize = 20;
+            PageSize = SystemConstants.DefaultPageSize;
             InitializeHerbCommands();
         }
 

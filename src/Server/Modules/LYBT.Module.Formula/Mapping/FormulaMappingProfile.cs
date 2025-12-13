@@ -16,7 +16,9 @@ namespace LYBT.Module.Formulas.Mapping
             // Formula -> FormulaDto
             CreateMap<LYBT.Entities.Formulas.Formula, FormulaDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)) // Issue #2014: Entity.Indication → DTO.Indications
+                .ForMember(dest => dest.HerbCount, opt => opt.MapFrom(src => src.Herbs != null ? src.Herbs.Count : 0))
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // FormulaHerbItem没有Herb导航属性，无法计算总价
 
             // FormulaHerbItem -> FormulaHerbItemDto
             CreateMap<LYBT.Entities.Formulas.FormulaHerbItem, FormulaHerbItemDto>();
@@ -24,27 +26,11 @@ namespace LYBT.Module.Formulas.Mapping
             // Formula -> FormulaDetailDto
             CreateMap<LYBT.Entities.Formulas.Formula, FormulaDetailDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)); // Issue #2014: Entity.Indication → DTO.Indications
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)) // Issue #2014: Entity.Indication → DTO.Indications
+                .ForMember(dest => dest.HerbCount, opt => opt.MapFrom(src => src.Herbs != null ? src.Herbs.Count : 0))
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // FormulaHerbItem没有Herb导航属性，无法计算总价
 
-            // FormulaInputDto -> Formula
-            CreateMap<FormulaInputDto, LYBT.Entities.Formulas.Formula>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => CommonStatus.Enabled))
-                .ForMember(dest => dest.Property, opt => opt.Ignore())
-                .ForMember(dest => dest.Herbs, opt => opt.Ignore())
-                .ForSourceMember(src => src.Instructions, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.Indications, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.Contraindications, opt => opt.DoNotValidate())
-                .ForSourceMember(src => src.Preparation, opt => opt.DoNotValidate())
-                // BaseEntity 审计字段
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.RowVersion, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());
-
-            // FormulaInputDto -> Formula
+            // FormulaInputDto -> Formula (用于更新场景，null值不覆盖)
             CreateMap<FormulaInputDto, LYBT.Entities.Formulas.Formula>()
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
                 .ForMember(dest => dest.Property, opt => opt.Ignore())

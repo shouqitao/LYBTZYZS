@@ -100,34 +100,14 @@ namespace LYBT.Shared.Models.Contracts.Formula
             return herbNames.Any() ? string.Join("、", herbNames) : "暂无药材";
         }
 
-        /// <summary>分类</summary>
+        private string? _category;
+
+        /// <summary>分类（从数据库读取，默认为"验方"）</summary>
+        [DisplayName("分类")]
         public string Category
         {
-            get
-            {
-                // 根据验方名称智能判断分类
-                if (Name?.Contains("感冒") == true)
-                {
-                    return "内科方";
-                }
-
-                if (Name?.Contains("外伤") == true)
-                {
-                    return "外科方";
-                }
-
-                if (Name?.Contains("妇科") == true)
-                {
-                    return "妇科方";
-                }
-
-                if (Name?.Contains("儿童") == true)
-                {
-                    return "儿科方";
-                }
-
-                return "验方"; // 默认分类
-            }
+            get => string.IsNullOrWhiteSpace(_category) ? "验方" : _category;
+            set => _category = value;
         }
     }
 
@@ -168,6 +148,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("用量")]
         public decimal Quantity { get; set; }
+
+        [DisplayName("剂量")]
+        public decimal Dosage { get; set; }
 
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
