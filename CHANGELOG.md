@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### DetailView控件提取重构 (OpenSpec: extract-detail-controls) - 2025-12-13
+
+**新增独立预览/编辑控件:**
+- FormulaViewControl + FormulaEditControl (验方模块)
+- HerbViewControl + HerbEditControl (药材模块)
+- PatientViewControl + PatientEditControl (患者模块)
+- UserViewControl + UserEditControl (用户模块)
+- MedicalCaseViewControl (医案模块，无标准编辑模式)
+
+**重构收益:**
+- 控件与ViewModel解耦，支持多场景复用
+- FormulaImportDialog右侧面板复用FormulaViewControl
+- 各DetailView统一使用BaseDetailContainer布局
+- 使用DependencyProperty接收数据对象
+
+**技术规范:**
+- 控件位于各模块Controls目录
+- 通过DependencyProperty绑定数据
+- 新增17个文件，代码复用率提升
+
 #### 处方模块整合与死代码清理 (OpenSpec: refactor-prescription-module-consolidation) - 2025-12-10
 
 **循环依赖消除:**
