@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 验方导入对话框UI重设计 (OpenSpec: redesign-formula-import-ui) - 2025-12-13
+
+**UI布局重构:**
+- 对话框尺寸调整为 1100x680
+- 左右双栏布局 (320:*)
+- 左栏: 搜索区 + 分类筛选 + 验方卡片列表
+- 右栏: 复用FormulaViewControl显示验方详情
+
+**功能增强:**
+- 分类筛选下拉框 (全部 + 各分类)
+- 搜索支持名称、适应症、功效字段
+- 选中验方异步加载详情
+- 空状态提示
+
 #### DetailView控件提取重构 (OpenSpec: extract-detail-controls) - 2025-12-13
 
 **新增独立预览/编辑控件:**
