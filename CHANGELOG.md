@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 历史医案复制对话框UI重设计 (OpenSpec: redesign-history-copy-ui) - 2025-12-13
+
+**UI布局重构:**
+- 对话框采用左右双栏布局 (400:*)
+- 左栏: 搜索区 + 医案列表(显示所有医生的医案)
+- 右栏: 复用MedicalCaseViewControl显示医案详情预览
+
+**功能修复:**
+- 修复"查看全部患者"功能0条记录问题
+- 修复处方药材组合绑定路径(使用Prescription.导航属性)
+- 新增GetPagedIncludeAllDoctorsAsync API支持跨医生查询
+
+**技术要点:**
+- WPF XAML数据绑定导航属性模式
+- MedicalCaseDetailDto.Prescription嵌套绑定
+
+#### MedicalCase UI架构统一 (OpenSpec: unify-medicalcase-view-edit-pattern) - 2025-12-13
+
+**架构重构:**
+- 统一BaseDetailContainer ViewContent/EditContent模式
+- 15个任务全部完成 (Phase 0: 3, Phase 1: 6, Phase 2: 6)
+
+**技术规范:**
+- 使用DependencyProperty接收数据对象
+- Prism MVVM模式
+- Master-Detail对话框布局
+
 #### 验方导入对话框UI重设计 (OpenSpec: redesign-formula-import-ui) - 2025-12-13
 
 **UI布局重构:**
