@@ -316,6 +316,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IStandardErrorHandler, StandardErrorHandler>();
             containerRegistry.RegisterSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
             containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
+            containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
             containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
             containerRegistry.RegisterSingleton<IUserExperienceService>(resolver =>

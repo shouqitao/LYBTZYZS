@@ -335,6 +335,9 @@ namespace LYBT.Desktop.MedicalCase.Dialogs
                     SelectedFormulaHerbs = new ObservableCollection<FormulaHerbItemDto>();
                 }
 
+                // 药材加载完成后刷新确认按钮状态
+                ConfirmCommand.RaiseCanExecuteChanged();
+
                 LoadingMessage = string.Empty;
             }
             catch (Exception ex)

@@ -46,7 +46,7 @@
 
                 <!-- 历史处方列表 -->
                 <DataGrid ItemsSource="{Binding Prescriptions}"
-                         SelectedItem="{Binding SelectedPrescription}"
+                         SelectedItem="{Binding SelectedPrescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          AutoGenerateColumns="False"
                          IsReadOnly="True"
                          SelectionMode="Single"

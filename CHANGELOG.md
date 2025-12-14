@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 重复药材提醒逐个确认 (OpenSpec: enhance-duplicate-herb-dialog) - 2025-12-14
+
+**功能改进:**
+- 处方导入/历史复制时重复药材提醒从批量对话框改为逐个确认
+- 每个重复药材单独弹窗显示"[药材名] 重复"，医生逐个确认
+- 剂量合并策略可配置化(appsettings.json Prescription节点)
+  - 支持5种策略: Max(默认)/Min/Sum/Import/Keep
+
+**技术要点:**
+- 使用TaskCompletionSource实现异步等待用户确认
+- 新增IPrescriptionSettingsService接口和实现
+- 静态访问器模式供POCO类(DuplicateHerbInfo)访问配置
+- 同时适用于验方导入和历史处方复制
+
 #### 历史医案复制对话框UI重设计 (OpenSpec: redesign-history-copy-ui) - 2025-12-13
 
 **UI布局重构:**

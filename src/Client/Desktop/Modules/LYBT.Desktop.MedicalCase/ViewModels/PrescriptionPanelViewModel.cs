@@ -140,8 +140,9 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
         IRegionManager regionManager, PrescriptionCalculator calculator,
         PrescriptionValidator validator, PrescriptionItemHandler itemHandler,
         PrescriptionSaveHandler saveHandler, PrescriptionImportHandler importHandler,
-        PrescriptionDataLoader dataLoader, ISessionManager? sessionManager = null)
-        : base(eventAggregator, loggerFactory, regionManager, sessionManager)
+        PrescriptionDataLoader dataLoader, ISessionManager? sessionManager = null,
+        ICommonDialogService? commonDialogService = null)
+        : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, commonDialogService)
     {
         _medicalCaseRepository = medicalCaseRepository ?? throw new ArgumentNullException(nameof(medicalCaseRepository));
         _herbRepository = herbRepository ?? throw new ArgumentNullException(nameof(herbRepository));
@@ -479,7 +480,16 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
             var importResult = _importHandler.ProcessFormulaImport(formula, herbs, HerbItems, _allHerbs);
             if (!importResult.IsSuccess) { await ShowErrorMessageAsync(importResult.ErrorMessage ?? "导入失败"); return; }
-            if (importResult.HasDuplicates) { DuplicateHerbsWarningText = importResult.DuplicateWarningText; IsDuplicateHerbsWarningVisible = true; }
+
+            // OpenSpec: enhance-duplicate-herb-dialog - 使用逐个弹窗确认重复药材
+            Logger.LogInformation("验方导入处理: HasDuplicates={HasDuplicates}, DuplicateCount={Count}",
+                importResult.HasDuplicates, importResult.DuplicateInfos.Count);
+            if (importResult.HasDuplicates)
+            {
+                Logger.LogInformation("开始逐个弹窗确认重复药材...");
+                await ShowDuplicateHerbDialogsAsync(importResult.DuplicateInfos);
+                Logger.LogInformation("重复药材确认完成");
+            }
 
             var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, importResult.ItemsToAdd, () => _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged));
             _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
@@ -515,7 +525,16 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
 
             var copyResult = _importHandler.ProcessHistoryCopy(items, HerbItems);
             if (!copyResult.IsSuccess) { await ShowErrorMessageAsync(copyResult.ErrorMessage ?? "复制失败"); return; }
-            if (copyResult.HasDuplicates) { DuplicateHerbsWarningText = copyResult.DuplicateWarningText; IsDuplicateHerbsWarningVisible = true; }
+
+            // OpenSpec: enhance-duplicate-herb-dialog - 使用逐个弹窗确认重复药材
+            Logger.LogInformation("历史复制处理: HasDuplicates={HasDuplicates}, DuplicateCount={Count}",
+                copyResult.HasDuplicates, copyResult.DuplicateInfos.Count);
+            if (copyResult.HasDuplicates)
+            {
+                Logger.LogInformation("开始逐个弹窗确认重复药材...");
+                await ShowDuplicateHerbDialogsAsync(copyResult.DuplicateInfos);
+                Logger.LogInformation("重复药材确认完成");
+            }
 
             var addedCount = _importHandler.AddHerbItemsToCollection(HerbItems, copyResult.ItemsToAdd, () => _itemHandler.CreateHerbItem(_allHerbs, OnHerbItemChanged));
             _itemHandler.EnsureMinimumBlankRows(HerbItems, _allHerbs, OnHerbItemChanged);
@@ -529,6 +548,56 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
             await ShowErrorMessageAsync($"复制失败：{ex.Message}");
         }
         finally { SetIsBusy(false); }
+    }
+
+    /// <summary>
+    /// 逐个显示重复药材确认对话框
+    /// OpenSpec: enhance-duplicate-herb-dialog
+    /// </summary>
+    private async Task ShowDuplicateHerbDialogsAsync(List<DuplicateHerbInfo> duplicates)
+    {
+        Logger.LogInformation("ShowDuplicateHerbDialogsAsync: 开始处理 {Count} 个重复药材", duplicates.Count);
+        foreach (var duplicate in duplicates)
+        {
+            Logger.LogInformation("显示重复药材对话框: {HerbName}", duplicate.HerbName);
+            var parameters = new DialogParameters
+            {
+                { "HerbName", duplicate.HerbName }
+            };
+
+            var tcs = new TaskCompletionSource<bool>();
+            _dialogService.ShowDialog("DuplicateHerbAlertDialog", parameters, result =>
+            {
+                Logger.LogInformation("对话框已关闭: {HerbName}, Result={Result}", duplicate.HerbName, result.Result);
+                tcs.SetResult(true);
+            });
+
+            await tcs.Task;
+        }
+
+        Logger.LogInformation("所有对话框已确认，开始合并剂量");
+        // 所有确认完成后执行剂量合并
+        MergeDuplicateHerbs(duplicates);
+    }
+
+    /// <summary>
+    /// 合并重复药材的剂量（取最大值）
+    /// OpenSpec: enhance-duplicate-herb-dialog
+    /// </summary>
+    private void MergeDuplicateHerbs(List<DuplicateHerbInfo> duplicates)
+    {
+        foreach (var duplicate in duplicates)
+        {
+            var existingItem = HerbItems.FirstOrDefault(h => h.HerbId == duplicate.HerbId);
+            if (existingItem != null)
+            {
+                existingItem.Dosage = duplicate.MergedDosage;
+                Logger.LogDebug("合并重复药材: {HerbName}, 剂量: {CurrentDosage}g -> {MergedDosage}g",
+                    duplicate.HerbName, duplicate.CurrentDosage, duplicate.MergedDosage);
+            }
+        }
+
+        CalculatePrices();
     }
 
     #endregion

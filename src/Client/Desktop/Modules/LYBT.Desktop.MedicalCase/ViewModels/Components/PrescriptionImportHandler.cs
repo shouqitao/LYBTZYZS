@@ -1,3 +1,4 @@
+using LYBT.Desktop.MedicalCase.ViewModels;
 using LYBT.Shared.Models.Contracts.Formula;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Contracts.Prescriptions;
@@ -50,15 +51,25 @@ public class PrescriptionImportHandler
         }
 
         // 检查重复药材（过滤掉HerbId为null的药材）
-        var existingHerbIds = existingHerbItems
+        // OpenSpec: enhance-duplicate-herb-dialog - 返回详细的重复药材信息用于逐个弹窗确认
+        var existingHerbMap = existingHerbItems
             .Where(h => h.HerbId != Guid.Empty)
-            .Select(h => h.HerbId)
-            .ToHashSet();
+            .ToDictionary(h => h.HerbId, h => h);
 
-        var duplicates = herbs
-            .Where(h => h.HerbId.HasValue && existingHerbIds.Contains(h.HerbId.Value))
-            .Select(h => h.HerbName)
-            .ToList();
+        var duplicateInfos = new List<DuplicateHerbInfo>();
+        foreach (var herb in herbs.Where(h => h.HerbId.HasValue && existingHerbMap.ContainsKey(h.HerbId.Value)))
+        {
+            var existing = existingHerbMap[herb.HerbId!.Value];
+            duplicateInfos.Add(new DuplicateHerbInfo
+            {
+                HerbId = herb.HerbId.Value,
+                HerbName = herb.HerbName ?? string.Empty,
+                CurrentDosage = existing.Dosage,
+                ImportedDosage = herb.Quantity
+            });
+        }
+
+        var duplicates = duplicateInfos.Select(d => d.HerbName).ToList();
 
         // 准备要添加的药材
         var itemsToAdd = new List<HerbItemToAdd>();
@@ -71,7 +82,7 @@ public class PrescriptionImportHandler
             }
 
             // 跳过已存在的药材
-            if (existingHerbIds.Contains(herb.HerbId.Value))
+            if (existingHerbMap.ContainsKey(herb.HerbId.Value))
             {
                 continue;
             }
@@ -89,9 +100,9 @@ public class PrescriptionImportHandler
         }
 
         _logger.LogInformation("验方导入处理完成: {FormulaName}, 准备添加{Count}味药材, 重复{DupCount}味",
-            formula.Name, itemsToAdd.Count, duplicates.Count);
+            formula.Name, itemsToAdd.Count, duplicateInfos.Count);
 
-        return FormulaImportResult.Success(formula.Name, itemsToAdd, duplicates);
+        return FormulaImportResult.Success(formula.Name, itemsToAdd, duplicateInfos);
     }
 
     #endregion
@@ -114,22 +125,30 @@ public class PrescriptionImportHandler
         }
 
         // 检查重复药材
-        var existingHerbIds = existingHerbItems
+        // OpenSpec: enhance-duplicate-herb-dialog - 返回详细的重复药材信息用于逐个弹窗确认
+        var existingHerbMap = existingHerbItems
             .Where(h => h.HerbId != Guid.Empty)
-            .Select(h => h.HerbId)
-            .ToHashSet();
+            .ToDictionary(h => h.HerbId, h => h);
 
-        var duplicates = historyItems
-            .Where(i => existingHerbIds.Contains(i.HerbId))
-            .Select(i => i.HerbName)
-            .ToList();
+        var duplicateInfos = new List<DuplicateHerbInfo>();
+        foreach (var item in historyItems.Where(i => existingHerbMap.ContainsKey(i.HerbId)))
+        {
+            var existing = existingHerbMap[item.HerbId];
+            duplicateInfos.Add(new DuplicateHerbInfo
+            {
+                HerbId = item.HerbId,
+                HerbName = item.HerbName ?? string.Empty,
+                CurrentDosage = existing.Dosage,
+                ImportedDosage = item.Dosage
+            });
+        }
 
         // 准备要添加的药材
         var itemsToAdd = new List<HerbItemToAdd>();
         foreach (var item in historyItems)
         {
             // 跳过已存在的药材
-            if (existingHerbIds.Contains(item.HerbId))
+            if (existingHerbMap.ContainsKey(item.HerbId))
             {
                 continue;
             }
@@ -144,9 +163,9 @@ public class PrescriptionImportHandler
         }
 
         _logger.LogInformation("历史处方复制处理完成: 准备添加{Count}味药材, 重复{DupCount}味",
-            itemsToAdd.Count, duplicates.Count);
+            itemsToAdd.Count, duplicateInfos.Count);
 
-        return HistoryCopyResult.Success(itemsToAdd, duplicates);
+        return HistoryCopyResult.Success(itemsToAdd, duplicateInfos);
     }
 
     #endregion
@@ -205,28 +224,29 @@ public class HerbItemToAdd
 
 /// <summary>
 /// 验方导入结果
+/// OpenSpec: enhance-duplicate-herb-dialog - 新增DuplicateInfos用于逐个弹窗确认
 /// </summary>
 public class FormulaImportResult
 {
     public bool IsSuccess { get; private init; }
     public string FormulaName { get; private init; } = string.Empty;
     public List<HerbItemToAdd> ItemsToAdd { get; private init; } = new();
-    public List<string> DuplicateNames { get; private init; } = new();
+    public List<DuplicateHerbInfo> DuplicateInfos { get; private init; } = new();
     public string? ErrorMessage { get; private init; }
 
-    public bool HasDuplicates => DuplicateNames.Any();
+    public bool HasDuplicates => DuplicateInfos.Any();
     public string DuplicateWarningText => HasDuplicates
-        ? $"发现重复药材：{string.Join("、", DuplicateNames)}"
+        ? $"发现重复药材：{string.Join("、", DuplicateInfos.Select(d => d.HerbName))}"
         : string.Empty;
 
     private FormulaImportResult() { }
 
-    public static FormulaImportResult Success(string formulaName, List<HerbItemToAdd> itemsToAdd, List<string> duplicates) => new()
+    public static FormulaImportResult Success(string formulaName, List<HerbItemToAdd> itemsToAdd, List<DuplicateHerbInfo> duplicateInfos) => new()
     {
         IsSuccess = true,
         FormulaName = formulaName,
         ItemsToAdd = itemsToAdd,
-        DuplicateNames = duplicates
+        DuplicateInfos = duplicateInfos
     };
 
     public static FormulaImportResult Failed(string errorMessage) => new()
@@ -238,26 +258,27 @@ public class FormulaImportResult
 
 /// <summary>
 /// 历史处方复制结果
+/// OpenSpec: enhance-duplicate-herb-dialog - 新增DuplicateInfos用于逐个弹窗确认
 /// </summary>
 public class HistoryCopyResult
 {
     public bool IsSuccess { get; private init; }
     public List<HerbItemToAdd> ItemsToAdd { get; private init; } = new();
-    public List<string> DuplicateNames { get; private init; } = new();
+    public List<DuplicateHerbInfo> DuplicateInfos { get; private init; } = new();
     public string? ErrorMessage { get; private init; }
 
-    public bool HasDuplicates => DuplicateNames.Any();
+    public bool HasDuplicates => DuplicateInfos.Any();
     public string DuplicateWarningText => HasDuplicates
-        ? $"发现重复药材：{string.Join("、", DuplicateNames)}"
+        ? $"发现重复药材：{string.Join("、", DuplicateInfos.Select(d => d.HerbName))}"
         : string.Empty;
 
     private HistoryCopyResult() { }
 
-    public static HistoryCopyResult Success(List<HerbItemToAdd> itemsToAdd, List<string> duplicates) => new()
+    public static HistoryCopyResult Success(List<HerbItemToAdd> itemsToAdd, List<DuplicateHerbInfo> duplicateInfos) => new()
     {
         IsSuccess = true,
         ItemsToAdd = itemsToAdd,
-        DuplicateNames = duplicates
+        DuplicateInfos = duplicateInfos
     };
 
     public static HistoryCopyResult Failed(string errorMessage) => new()

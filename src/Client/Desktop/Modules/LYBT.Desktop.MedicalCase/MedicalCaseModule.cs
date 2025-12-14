@@ -83,8 +83,7 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
             containerRegistry.Register<ViewModels.MedicalCaseDetailViewModel>();  // Issue #2167: 医案详情视图模型
 
-            // Epic #2175 BF-002 Task 3.8: 注册经验方选择对话框
-            containerRegistry.RegisterDialog<Views.FormulaSelectionDialog, ViewModels.FormulaSelectionDialogViewModel>();
+            // [已删除] FormulaSelectionDialog - 过时代码，已被FormulaImportDialog替代
 
             // Epic #2175 BF-002 Task 3.9: 注册历史处方选择对话框
             containerRegistry.RegisterDialog<Views.HistoryPrescriptionSelectionDialog, ViewModels.HistoryPrescriptionSelectionDialogViewModel>();

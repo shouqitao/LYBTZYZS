@@ -304,7 +304,7 @@
         <Border Grid.Row="2" Background="#F5F5F5" Padding="20,12">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="确认复制"
+                    <Button Content="确认导入"
                             Command="{Binding ConfirmCommand}"
                             Width="100"
                             Padding="12,8"
