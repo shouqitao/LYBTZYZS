@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 处方打印功能增强 (OpenSpec: print-prescription-slip, enhance-prescription-print) - 2025-12-15
+
+**功能实现:**
+- XAML模板实现A5处方笺布局(PrescriptionPrintTemplate.xaml)
+- FixedDocument实现WYSIWYG所见即所得打印
+- 打印预览窗口左右分栏布局(设置面板+DocumentViewer)
+- 支持A5/A4纸张尺寸动态切换
+- 打印机选择、份数设置功能
+- 所有字段下划线两端对齐(Grid布局)
+- 签名行(医师签字/审核/调配)留空供手写
+
+**技术要点:**
+- UserControl转FixedPage技术(Measure/Arrange/UpdateLayout)
+- IAddChild接口添加页面到FixedDocument
+- 动态纸张尺寸切换重建文档
+- ClinicSettingsService管理诊所配置
+
+**新增文件:**
+- PrescriptionPrintTemplate.xaml/xaml.cs - XAML打印模板
+- ClinicSettings.cs - 诊所配置模型
+- IClinicSettingsService/ClinicSettingsService - 诊所配置服务
+
 #### 重复药材提醒逐个确认 (OpenSpec: enhance-duplicate-herb-dialog) - 2025-12-14
 
 **功能改进:**
