@@ -4,10 +4,18 @@ using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Markup;
 using System.Windows.Xps.Packaging;
+using LYBT.Desktop.Infrastructure.Interfaces;
 using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Desktop.Prescriptions.Models;
+using LYBT.Desktop.Prescriptions.Views;
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
+using LYBT.Shared.Models.Enums;
+// OpenSpec: print-prescription-slip - 使用ConsultationInputDto以匹配ViewModel输出
+// OpenSpec: enhance-prescription-print - 使用FixedDocument实现WYSIWYG打印
 using Microsoft.Extensions.Logging;
 
 namespace LYBT.Desktop.Prescriptions.Services
@@ -15,16 +23,21 @@ namespace LYBT.Desktop.Prescriptions.Services
     /// <summary>
     /// 处方打印服务实现
     /// Issue #1380: [PRINT-3] 实现处方打印服务
+    /// OpenSpec: print-prescription-slip - 支持完整上下文打印
     /// 使用FlowDocument + PrintDialog实现打印功能
     /// </summary>
     public class PrescriptionPrintService : IPrescriptionPrintService
     {
         private readonly ILogger<PrescriptionPrintService> _logger;
+        private readonly IClinicSettingsService _clinicSettingsService;
         private string? _defaultPrinterName;
 
-        public PrescriptionPrintService(ILogger<PrescriptionPrintService> logger)
+        public PrescriptionPrintService(
+            ILogger<PrescriptionPrintService> logger,
+            IClinicSettingsService clinicSettingsService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _clinicSettingsService = clinicSettingsService ?? throw new ArgumentNullException(nameof(clinicSettingsService));
         }
 
         /// <summary>
@@ -58,19 +71,29 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         /// <summary>
         /// 准备打印文档
-        /// Issue #1794: 从PrintPrescriptionAsync提取
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument
         /// </summary>
-        private async Task<FlowDocument> PreparePrintDocumentAsync(PrescriptionDto prescription)
+        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDto prescription)
         {
-            var printDto = await MapToPrintDtoAsync(prescription);
-            return BuildFlowDocument(printDto);
+            var printDto = await MapToPrintDtoAsync(prescription, null, null);
+            return BuildFixedDocument(printDto);
+        }
+
+        /// <summary>
+        /// 准备打印文档（带完整上下文）
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument
+        /// </summary>
+        private async Task<FixedDocument> PreparePrintDocumentAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        {
+            var printDto = await MapToPrintDtoAsync(prescription, patient, consultation);
+            return BuildFixedDocument(printDto);
         }
 
         /// <summary>
         /// 执行打印操作
-        /// Issue #1794: 从PrintPrescriptionAsync提取
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument
         /// </summary>
-        private bool ExecutePrint(FlowDocument document, Guid prescriptionId)
+        private bool ExecutePrint(FixedDocument document, Guid prescriptionId)
         {
             var printDialog = new PrintDialog();
             SetupDefaultPrinter(printDialog);
@@ -78,8 +101,8 @@ namespace LYBT.Desktop.Prescriptions.Services
             if (printDialog.ShowDialog() != true)
                 return false;
 
-            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-            printDialog.PrintDocument(paginator, $"处方_{prescriptionId}");
+            // 使用FixedDocument的DocumentPaginator
+            printDialog.PrintDocument(document.DocumentPaginator, $"处方_{prescriptionId}");
             return true;
         }
 
@@ -87,6 +110,44 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 预览处方
         /// </summary>
         public async Task PreviewPrescriptionAsync(PrescriptionDto prescription)
+        {
+            await PreviewPrescriptionAsync(prescription, null, null);
+        }
+
+        /// <summary>
+        /// 打印处方（带完整上下文）
+        /// OpenSpec: print-prescription-slip
+        /// </summary>
+        public async Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        {
+            if (prescription == null)
+                throw new ArgumentNullException(nameof(prescription));
+
+            try
+            {
+                _logger.LogInformation("开始打印处方 ID: {PrescriptionId}", prescription.Id);
+
+                var document = await PreparePrintDocumentAsync(prescription, patient, consultation);
+                var success = ExecutePrint(document, prescription.Id);
+
+                _logger.LogInformation(success
+                    ? "处方打印成功 ID: {PrescriptionId}"
+                    : "用户取消打印 ID: {PrescriptionId}", prescription.Id);
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "打印处方失败 ID: {PrescriptionId}", prescription.Id);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 预览处方（带完整上下文）
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument实现WYSIWYG预览
+        /// </summary>
+        public async Task PreviewPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
         {
             if (prescription == null)
                 throw new ArgumentNullException(nameof(prescription));
@@ -96,29 +157,37 @@ namespace LYBT.Desktop.Prescriptions.Services
                 _logger.LogInformation("开始预览处方 ID: {PrescriptionId}", prescription.Id);
 
                 // 1. 构建打印数据模型
-                var printDto = await MapToPrintDtoAsync(prescription);
+                var printDto = await MapToPrintDtoAsync(prescription, patient, consultation);
 
-                // 2. 使用Builder构建FlowDocument
-                var document = BuildFlowDocument(printDto);
+                // 2. 使用FixedDocument实现WYSIWYG（所见即所得）
+                var document = BuildFixedDocument(printDto);
 
-                // 3. 创建预览窗口
+                // 3. 创建预览窗口 - 左右分栏布局
                 var previewWindow = new Window
                 {
-                    Title = $"处方预览 - {prescription.Id}",
+                    Title = "处方预览",
                     Width = 900,
-                    Height = 1100,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                    Height = 700,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = System.Windows.Media.Brushes.White
                 };
 
-                // 4. 使用FlowDocumentScrollViewer显示文档
-                var viewer = new FlowDocumentScrollViewer
-                {
-                    Document = document,
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
-                };
+                // 4. 创建主布局 - 左右分栏
+                var mainGrid = new Grid();
+                mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) }); // 左侧设置面板
+                mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 右侧预览区
 
-                previewWindow.Content = viewer;
+                // ===== 右侧预览区域（先创建，以便传递给设置面板）=====
+                var (previewArea, docViewer) = CreatePreviewAreaWithViewer(document);
+                Grid.SetColumn(previewArea, 1);
+                mainGrid.Children.Add(previewArea);
+
+                // ===== 左侧设置面板（传递printDto和docViewer以支持纸张尺寸切换）=====
+                var settingsPanel = CreateSettingsPanel(document, prescription.Id, previewWindow, printDto, docViewer);
+                Grid.SetColumn(settingsPanel, 0);
+                mainGrid.Children.Add(settingsPanel);
+
+                previewWindow.Content = mainGrid;
                 previewWindow.ShowDialog();
 
                 _logger.LogInformation("处方预览完成 ID: {PrescriptionId}", prescription.Id);
@@ -128,6 +197,287 @@ namespace LYBT.Desktop.Prescriptions.Services
                 _logger.LogError(ex, "预览处方失败 ID: {PrescriptionId}", prescription.Id);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 创建左侧设置面板
+        /// OpenSpec: enhance-prescription-print - 支持FixedDocument打印和纸张尺寸选择
+        /// </summary>
+        private Border CreateSettingsPanel(
+            FixedDocument document,
+            Guid prescriptionId,
+            Window parentWindow,
+            PrescriptionPrintDto printDto,
+            DocumentViewer docViewer)
+        {
+            var settingsBorder = new Border
+            {
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 245, 245)),
+                BorderBrush = System.Windows.Media.Brushes.LightGray,
+                BorderThickness = new Thickness(0, 0, 1, 0),
+                Padding = new Thickness(15)
+            };
+
+            var settingsStack = new StackPanel();
+
+            // 标题
+            settingsStack.Children.Add(new TextBlock
+            {
+                Text = "打印设置",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+
+            // 打印机选择
+            settingsStack.Children.Add(new TextBlock { Text = "打印机", Margin = new Thickness(0, 0, 0, 5) });
+            var printerComboBox = new ComboBox
+            {
+                Margin = new Thickness(0, 0, 0, 15),
+                Height = 28
+            };
+            PopulatePrinterList(printerComboBox);
+            settingsStack.Children.Add(printerComboBox);
+
+            // 份数
+            settingsStack.Children.Add(new TextBlock { Text = "份数", Margin = new Thickness(0, 0, 0, 5) });
+            var copiesPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
+            var copiesTextBox = new TextBox
+            {
+                Text = "1",
+                Width = 60,
+                Height = 28,
+                TextAlignment = TextAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+            var decreaseBtn = new Button { Content = "-", Width = 28, Height = 28 };
+            var increaseBtn = new Button { Content = "+", Width = 28, Height = 28, Margin = new Thickness(5, 0, 0, 0) };
+
+            decreaseBtn.Click += (s, e) =>
+            {
+                if (int.TryParse(copiesTextBox.Text, out int copies) && copies > 1)
+                    copiesTextBox.Text = (copies - 1).ToString();
+            };
+            increaseBtn.Click += (s, e) =>
+            {
+                if (int.TryParse(copiesTextBox.Text, out int copies) && copies < 99)
+                    copiesTextBox.Text = (copies + 1).ToString();
+            };
+
+            copiesPanel.Children.Add(decreaseBtn);
+            copiesPanel.Children.Add(copiesTextBox);
+            copiesPanel.Children.Add(increaseBtn);
+            settingsStack.Children.Add(copiesPanel);
+
+            // 纸张尺寸（可选）
+            settingsStack.Children.Add(new TextBlock { Text = "纸张尺寸", Margin = new Thickness(0, 0, 0, 5) });
+            var paperSizeComboBox = new ComboBox
+            {
+                Margin = new Thickness(0, 0, 0, 15),
+                Height = 28
+            };
+            // 填充纸张尺寸选项
+            foreach (var paperSize in AvailablePaperSizes)
+            {
+                paperSizeComboBox.Items.Add(paperSize);
+            }
+            paperSizeComboBox.DisplayMemberPath = "DisplayName";
+            paperSizeComboBox.SelectedIndex = 0; // 默认选择A5
+
+            // 存储当前文档引用（用于打印）
+            var currentDocument = document;
+
+            // 纸张尺寸变更时重建文档
+            paperSizeComboBox.SelectionChanged += (s, e) =>
+            {
+                if (paperSizeComboBox.SelectedItem is PaperSizeInfo selectedSize)
+                {
+                    // 重建FixedDocument
+                    currentDocument = BuildFixedDocument(printDto, selectedSize.Size);
+                    // 更新DocumentViewer
+                    docViewer.Document = currentDocument;
+                }
+            };
+
+            settingsStack.Children.Add(paperSizeComboBox);
+
+            // 方向（只读）
+            settingsStack.Children.Add(new TextBlock { Text = "方向", Margin = new Thickness(0, 0, 0, 5) });
+            settingsStack.Children.Add(new TextBlock
+            {
+                Text = "纵向",
+                Foreground = System.Windows.Media.Brushes.Gray,
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            // 分隔线
+            settingsStack.Children.Add(new Border
+            {
+                BorderBrush = System.Windows.Media.Brushes.LightGray,
+                BorderThickness = new Thickness(0, 1, 0, 0),
+                Margin = new Thickness(0, 0, 0, 20)
+            });
+
+            // 按钮区
+            var printButton = new Button
+            {
+                Content = "打印",
+                Height = 35,
+                Margin = new Thickness(0, 0, 0, 10),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 212)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0)
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "取消",
+                Height = 35
+            };
+
+            // 打印按钮事件 - 使用当前文档（可能已因纸张尺寸变更而重建）
+            printButton.Click += (s, e) =>
+            {
+                if (!int.TryParse(copiesTextBox.Text, out int copies) || copies < 1)
+                    copies = 1;
+
+                var selectedPrinter = printerComboBox.SelectedItem as PrinterInfo;
+                ExecutePrintWithSettings(currentDocument, prescriptionId, selectedPrinter?.Name, copies);
+                parentWindow.Close();
+            };
+
+            cancelButton.Click += (s, e) => parentWindow.Close();
+
+            settingsStack.Children.Add(printButton);
+            settingsStack.Children.Add(cancelButton);
+
+            settingsBorder.Child = settingsStack;
+            return settingsBorder;
+        }
+
+        /// <summary>
+        /// 创建右侧预览区域（返回Border和DocumentViewer）
+        /// OpenSpec: enhance-prescription-print - 使用DocumentViewer显示FixedDocument实现WYSIWYG
+        /// </summary>
+        private (Border previewArea, DocumentViewer docViewer) CreatePreviewAreaWithViewer(FixedDocument document)
+        {
+            // 使用DocumentViewer显示FixedDocument
+            // DocumentViewer提供内置的缩放、导航和搜索功能
+            var docViewer = new DocumentViewer
+            {
+                Document = document,
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(240, 240, 240))
+            };
+
+            // 设置初始缩放以适应窗口
+            docViewer.FitToWidth();
+
+            var previewBorder = new Border
+            {
+                Child = docViewer
+            };
+
+            return (previewBorder, docViewer);
+        }
+
+        /// <summary>
+        /// 填充打印机列表
+        /// OpenSpec: enhance-prescription-print
+        /// </summary>
+        private void PopulatePrinterList(ComboBox printerComboBox)
+        {
+            try
+            {
+                var printServer = new LocalPrintServer();
+                var defaultPrinter = LocalPrintServer.GetDefaultPrintQueue();
+                var printQueues = printServer.GetPrintQueues();
+
+                foreach (var pq in printQueues)
+                {
+                    if (pq != null && !string.IsNullOrEmpty(pq.Name))
+                    {
+                        var info = new PrinterInfo
+                        {
+                            Name = pq.Name,
+                            IsDefault = pq.Name == defaultPrinter?.Name,
+                            Status = GetPrinterStatus(pq)
+                        };
+                        printerComboBox.Items.Add(info);
+
+                        if (info.IsDefault)
+                        {
+                            printerComboBox.SelectedItem = info;
+                        }
+                    }
+                }
+
+                printerComboBox.DisplayMemberPath = "DisplayName";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "获取打印机列表失败");
+            }
+        }
+
+        /// <summary>
+        /// 获取打印机状态
+        /// </summary>
+        private static string GetPrinterStatus(PrintQueue pq)
+        {
+            if (pq.IsOffline) return "脱机";
+            if (pq.IsBusy) return "忙";
+            return "就绪";
+        }
+
+        /// <summary>
+        /// 执行打印（带设置）
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument打印
+        /// </summary>
+        private void ExecutePrintWithSettings(FixedDocument document, Guid prescriptionId, string? printerName, int copies)
+        {
+            try
+            {
+                PrintQueue? printQueue = null;
+
+                if (!string.IsNullOrEmpty(printerName))
+                {
+                    printQueue = FindPrintQueue(printerName);
+                }
+
+                printQueue ??= LocalPrintServer.GetDefaultPrintQueue();
+
+                if (printQueue == null)
+                {
+                    _logger.LogError("未找到可用打印机");
+                    return;
+                }
+
+                // 使用FixedDocument的DocumentPaginator进行打印
+                var paginator = document.DocumentPaginator;
+
+                for (int i = 0; i < copies; i++)
+                {
+                    var writer = PrintQueue.CreateXpsDocumentWriter(printQueue);
+                    writer.Write(paginator);
+                }
+
+                _logger.LogInformation("处方打印成功 ID: {PrescriptionId}, 份数: {Copies}", prescriptionId, copies);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "打印失败 ID: {PrescriptionId}", prescriptionId);
+            }
+        }
+
+        /// <summary>
+        /// 打印机信息
+        /// </summary>
+        private class PrinterInfo
+        {
+            public string Name { get; set; } = string.Empty;
+            public bool IsDefault { get; set; }
+            public string Status { get; set; } = "未知";
+            public string DisplayName => IsDefault ? $"{Name} (默认)" : $"{Name} - {Status}";
         }
 
         /// <summary>
@@ -165,6 +515,7 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         /// <summary>
         /// 导出处方为PDF（MVP阶段：导出为XPS格式）
+        /// OpenSpec: enhance-prescription-print - 使用FixedDocument导出
         /// </summary>
         public async Task<bool> ExportToPdfAsync(PrescriptionDto prescription, string filePath)
         {
@@ -191,8 +542,8 @@ namespace LYBT.Desktop.Prescriptions.Services
                 // 1. 构建打印数据模型
                 var printDto = await MapToPrintDtoAsync(prescription);
 
-                // 2. 使用Builder构建FlowDocument
-                var document = BuildFlowDocument(printDto);
+                // 2. 使用FixedDocument实现WYSIWYG导出
+                var document = BuildFixedDocument(printDto);
 
                 // 3. 创建XPS文档
                 using (var package = Package.Open(filePath, FileMode.Create, FileAccess.ReadWrite))
@@ -200,8 +551,8 @@ namespace LYBT.Desktop.Prescriptions.Services
                     using (var xpsDocument = new XpsDocument(package, CompressionOption.Maximum))
                     {
                         var writer = XpsDocument.CreateXpsDocumentWriter(xpsDocument);
-                        var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-                        writer.Write(paginator);
+                        // 使用FixedDocument的DocumentPaginator
+                        writer.Write(document.DocumentPaginator);
                     }
                 }
 
@@ -298,18 +649,24 @@ namespace LYBT.Desktop.Prescriptions.Services
         }
 
         /// <summary>
-        /// 将PrescriptionDto映射到PrescriptionPrintDto
-        /// Issue #1794: 优化方法长度（48→18行），提取逻辑块
-        /// TODO: 需要依赖其他服务获取患者、医生、病例等信息
+        /// 将PrescriptionDto映射到PrescriptionPrintDto（兼容旧调用）
         /// </summary>
-        private async Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription)
+        private Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription)
+        {
+            return MapToPrintDtoAsync(prescription, null, null);
+        }
+
+        /// <summary>
+        /// 将PrescriptionDto映射到PrescriptionPrintDto（带完整上下文）
+        /// OpenSpec: print-prescription-slip
+        /// </summary>
+        private async Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
         {
             var printDto = new PrescriptionPrintDto();
 
-            // TODO: 在PRINT-4集成时，注入IPatientService、IUserService、IMedicalCaseService
             PopulateClinicInfo(printDto);
-            PopulatePatientInfo(printDto);
-            PopulateDiagnosisInfo(printDto, prescription);
+            PopulatePatientInfo(printDto, patient);
+            PopulateDiagnosisInfo(printDto, prescription, consultation);
             PopulatePrescriptionDetails(printDto, prescription);
             PopulateDoctorInfo(printDto, prescription);
 
@@ -318,55 +675,105 @@ namespace LYBT.Desktop.Prescriptions.Services
 
         /// <summary>
         /// 填充诊所信息
-        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// OpenSpec: print-prescription-slip - 从IClinicSettingsService获取配置
         /// </summary>
-        private static void PopulateClinicInfo(PrescriptionPrintDto printDto)
+        private void PopulateClinicInfo(PrescriptionPrintDto printDto)
         {
-            // TODO: 从配置或系统设置获取
-            printDto.ClinicName = "中医门诊";
-            printDto.ClinicAddress = null;
-            printDto.ClinicPhone = null;
+            var settings = _clinicSettingsService.GetSettings();
+            printDto.ClinicName = settings.Name;
+            printDto.ClinicAddress = settings.Address;
+            printDto.ClinicPhone = settings.Phone;
+            printDto.Department = settings.Department;
         }
 
         /// <summary>
         /// 填充患者信息
-        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// OpenSpec: print-prescription-slip - 从PatientDto获取患者信息
         /// </summary>
-        private static void PopulatePatientInfo(PrescriptionPrintDto printDto)
+        private static void PopulatePatientInfo(PrescriptionPrintDto printDto, PatientDto? patient)
         {
-            // TODO: 从IPatientService获取
-            printDto.PatientName = "患者姓名";
-            printDto.Gender = "男";
-            printDto.Age = 0;
+            if (patient != null)
+            {
+                printDto.PatientName = patient.Name;
+                printDto.Gender = ConvertGenderToString(patient.Gender);
+                printDto.Age = CalculateAge(patient.BirthDate);
+            }
+            else
+            {
+                printDto.PatientName = "未知患者";
+                printDto.Gender = string.Empty;
+                printDto.Age = 0;
+            }
             printDto.ConsultationDate = DateTime.Now;
         }
 
         /// <summary>
-        /// 填充四诊信息
-        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// 将性别枚举转换为中文字符串
+        /// OpenSpec: print-prescription-slip
         /// </summary>
-        private static void PopulateDiagnosisInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        private static string ConvertGenderToString(Gender gender)
         {
-            // TODO: 从IMedicalCaseService获取
-            printDto.Inspection = null;
-            printDto.AuscultationOlfaction = null;
-            printDto.Inquiry = null;
-            printDto.Palpation = null;
-            printDto.TCMDiagnosis = prescription.Indication;
-            printDto.TreatmentPrinciple = null;
+            return gender switch
+            {
+                Gender.Male => "男",
+                Gender.Female => "女",
+                _ => "未知"
+            };
+        }
+
+        /// <summary>
+        /// 计算年龄
+        /// OpenSpec: print-prescription-slip
+        /// </summary>
+        private static int CalculateAge(DateTime? birthDate)
+        {
+            if (birthDate == null) return 0;
+            var today = DateTime.Today;
+            var age = today.Year - birthDate.Value.Year;
+            if (birthDate.Value.Date > today.AddYears(-age)) age--;
+            return age;
+        }
+
+        /// <summary>
+        /// 填充四诊信息
+        /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
+        /// 字段映射: TCMDiagnosis → 诊断, TreatmentPrinciple → 诊见
+        /// </summary>
+        private static void PopulateDiagnosisInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription, ConsultationInputDto? consultation)
+        {
+            if (consultation != null)
+            {
+                printDto.Inspection = consultation.Inspection;
+                printDto.AuscultationOlfaction = consultation.AuscultationOlfaction;
+                printDto.Inquiry = consultation.Inquiry;
+                printDto.Palpation = consultation.Palpation;
+                printDto.TCMDiagnosis = consultation.TCMDiagnosis ?? prescription.Indication;
+                printDto.TreatmentPrinciple = consultation.TreatmentPrinciple;
+            }
+            else
+            {
+                printDto.Inspection = null;
+                printDto.AuscultationOlfaction = null;
+                printDto.Inquiry = null;
+                printDto.Palpation = null;
+                printDto.TCMDiagnosis = prescription.Indication;
+                printDto.TreatmentPrinciple = null;
+            }
         }
 
         /// <summary>
         /// 填充处方详情
-        /// Issue #1794: 从MapToPrintDtoAsync提取
+        /// OpenSpec: print-prescription-slip - 更新为模板格式
         /// </summary>
         private void PopulatePrescriptionDetails(PrescriptionPrintDto printDto, PrescriptionDto prescription)
         {
             printDto.Items = MapPrescriptionItems(prescription.Items);
             printDto.DosageCount = prescription.DosageCount;
-            printDto.Usage = prescription.Usage ?? "水煎服，日一剂，分早晚服";
+            printDto.Usage = prescription.Usage ?? "水煎服，日1剂，1日2次";
             printDto.SingleDosePrice = prescription.SingleDosePrice;
             printDto.TotalPrice = prescription.TotalPrice;
+            // 药费 = 单剂价格 × 剂数
+            printDto.MedicineFee = prescription.SingleDosePrice * prescription.DosageCount;
         }
 
         /// <summary>
@@ -384,21 +791,116 @@ namespace LYBT.Desktop.Prescriptions.Services
         }
 
         /// <summary>
-        /// 使用Builder构建FlowDocument
+        /// 使用Builder构建FlowDocument（A5模板格式）
+        /// OpenSpec: print-prescription-slip
         /// </summary>
         private FlowDocument BuildFlowDocument(PrescriptionPrintDto printDto)
         {
             var builder = new PrescriptionFlowDocumentBuilder(printDto);
+            return builder.Build();
+        }
 
-            return builder
-                .AddHeader()
-                .AddPatientInfo()
-                .AddFourDiagnostics()
-                .AddPrescriptionTable()
-                .AddUsageInstructions()
-                .AddPriceInfo()
-                .AddSignature()
-                .Build();
+        // ===== FixedDocument 方法（OpenSpec: enhance-prescription-print）=====
+
+        /// <summary>
+        /// A5纸张尺寸常量（96 DPI）
+        /// 148mm x 210mm = 559px x 794px
+        /// </summary>
+        private static readonly Size A5PageSize = new(559, 794);
+
+        /// <summary>
+        /// A4纸张尺寸常量（96 DPI）
+        /// 210mm x 297mm = 794px x 1123px
+        /// </summary>
+        private static readonly Size A4PageSize = new(794, 1123);
+
+        /// <summary>
+        /// 纸张尺寸信息类
+        /// </summary>
+        private class PaperSizeInfo
+        {
+            public string Name { get; set; } = string.Empty;
+            public string DisplayName { get; set; } = string.Empty;
+            public Size Size { get; set; }
+        }
+
+        /// <summary>
+        /// 可用纸张尺寸列表
+        /// </summary>
+        private static readonly PaperSizeInfo[] AvailablePaperSizes =
+        [
+            new PaperSizeInfo { Name = "A5", DisplayName = "A5 (148 × 210 mm)", Size = A5PageSize },
+            new PaperSizeInfo { Name = "A4", DisplayName = "A4 (210 × 297 mm)", Size = A4PageSize }
+        ];
+
+        /// <summary>
+        /// 创建FixedDocument用于预览和打印（默认A5）
+        /// OpenSpec: enhance-prescription-print - WYSIWYG打印
+        /// </summary>
+        private FixedDocument BuildFixedDocument(PrescriptionPrintDto printDto)
+        {
+            return BuildFixedDocument(printDto, A5PageSize);
+        }
+
+        /// <summary>
+        /// 创建FixedDocument用于预览和打印（指定纸张尺寸）
+        /// OpenSpec: enhance-prescription-print - 支持A5/A4纸张选择
+        /// </summary>
+        private FixedDocument BuildFixedDocument(PrescriptionPrintDto printDto, Size pageSize)
+        {
+            var document = new FixedDocument();
+            document.DocumentPaginator.PageSize = pageSize;
+
+            // 创建页面内容
+            var pageContent = new PageContent();
+            var fixedPage = CreateFixedPage(printDto, pageSize);
+
+            // 使用IAddChild接口添加页面（关键技巧）
+            ((IAddChild)pageContent).AddChild(fixedPage);
+            document.Pages.Add(pageContent);
+
+            return document;
+        }
+
+        /// <summary>
+        /// 将UserControl模板转换为FixedPage
+        /// OpenSpec: enhance-prescription-print - 支持A5/A4纸张选择
+        /// </summary>
+        private FixedPage CreateFixedPage(PrescriptionPrintDto printDto, Size pageSize)
+        {
+            // 1. 创建模板实例并设置DataContext
+            var template = new PrescriptionPrintTemplate
+            {
+                DataContext = printDto,
+                // 动态设置模板尺寸以适应不同纸张
+                Width = pageSize.Width,
+                Height = pageSize.Height
+            };
+
+            // 2. 强制测量和排列
+            template.Measure(pageSize);
+            template.Arrange(new Rect(pageSize));
+            template.UpdateLayout();
+
+            // 3. 创建FixedPage
+            var fixedPage = new FixedPage
+            {
+                Width = pageSize.Width,
+                Height = pageSize.Height,
+                Background = System.Windows.Media.Brushes.White
+            };
+
+            // 4. 添加模板到FixedPage
+            fixedPage.Children.Add(template);
+            FixedPage.SetLeft(template, 0);
+            FixedPage.SetTop(template, 0);
+
+            // 5. 完成布局
+            fixedPage.Measure(pageSize);
+            fixedPage.Arrange(new Rect(pageSize));
+            fixedPage.UpdateLayout();
+
+            return fixedPage;
         }
 
         /// <summary>

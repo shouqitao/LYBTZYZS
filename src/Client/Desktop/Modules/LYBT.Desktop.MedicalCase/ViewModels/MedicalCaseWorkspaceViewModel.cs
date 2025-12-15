@@ -6,8 +6,10 @@ using LYBT.Desktop.MedicalCase.Models;
 using LYBT.Desktop.MedicalCase.Services;
 using LYBT.Desktop.MedicalCase.ViewModels.Components;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Desktop.Prescriptions.Interfaces;
 using LYBT.Shared.Models.Contracts.MedicalCase;
 using LYBT.Shared.Models.Contracts.Patients;
+using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Extensions;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -39,6 +41,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
     private readonly MedicalCaseWorkspaceCoordinator _coordinator;
     private readonly MedicalCaseNavigationHandler _navigationHandler;
     private readonly MedicalCaseEditModeStateMachine _editModeStateMachine;
+    private readonly IPrescriptionPrintService? _prescriptionPrintService;
 
     #endregion
 
@@ -161,7 +164,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         ConsultationPanelViewModel consultationPanelViewModel, PrescriptionPanelViewModel prescriptionPanelViewModel,
         IActiveConsultationService activeConsultationService, ISessionManager? sessionManager = null,
         ICommonDialogService? commonDialogService = null, IDialogService? dialogService = null,
-        IAuditRequirementChecker? auditRequirementChecker = null)
+        IAuditRequirementChecker? auditRequirementChecker = null,
+        IPrescriptionPrintService? prescriptionPrintService = null)
         : base(eventAggregator, loggerFactory, regionManager, sessionManager, null, commonDialogService)
     {
         _dataManager = dataManager ?? throw new ArgumentNullException(nameof(dataManager));
@@ -176,6 +180,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         _dialogService = dialogService;
         _auditRequirementChecker = auditRequirementChecker;
         _editModeStateMachine = editModeStateMachine ?? throw new ArgumentNullException(nameof(editModeStateMachine));
+        _prescriptionPrintService = prescriptionPrintService;
 
         // 订阅事件
         _editModeStateMachine.EditStateChanged += OnEditStateChanged;
@@ -291,11 +296,92 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         return tcs.Task;
     }
 
+    /// <summary>
+    /// 执行打印处方笺
+    /// OpenSpec: print-prescription-slip
+    /// </summary>
     private async void ExecutePrintPrescription()
     {
-        try { SetIsBusy(true, "正在准备打印..."); Logger.LogInformation("打印处方笺，MedicalCaseId: {MedicalCaseId}", MedicalCaseId); await ShowSuccessMessageAsync("处方笺打印成功"); }
-        catch (Exception ex) { Logger.LogError(ex, "打印处方笺失败"); await ShowErrorMessageAsync($"打印失败：{ex.Message}"); }
-        finally { SetIsBusy(false); }
+        try
+        {
+            SetIsBusy(true, "正在准备预览...");
+            Logger.LogInformation("预览处方笺，MedicalCaseId: {MedicalCaseId}", MedicalCaseId);
+
+            if (_prescriptionPrintService == null)
+            {
+                await ShowErrorMessageAsync("打印服务未配置");
+                return;
+            }
+
+            // 获取处方数据（从缓存或当前ViewModel构建）
+            var prescription = BuildPrescriptionDto();
+            if (prescription == null)
+            {
+                await ShowErrorMessageAsync("没有可打印的处方数据");
+                return;
+            }
+
+            // 获取患者和诊断信息
+            var patient = CurrentPatient;
+            var consultation = ConsultationPanelViewModel?.GetConsultationData();
+
+            // 调用打印预览服务
+            await _prescriptionPrintService.PreviewPrescriptionAsync(prescription, patient, consultation);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "打印处方笺失败");
+            await ShowErrorMessageAsync($"打印失败：{ex.Message}");
+        }
+        finally
+        {
+            SetIsBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// 构建处方DTO用于打印
+    /// OpenSpec: print-prescription-slip
+    /// </summary>
+    private PrescriptionDto? BuildPrescriptionDto()
+    {
+        // 优先使用缓存的处方数据
+        var cachedPrescription = _dataLoader.GetCachedPrescription();
+        if (cachedPrescription != null)
+        {
+            return cachedPrescription;
+        }
+
+        // 如果没有缓存，从ViewModel构建
+        var prescriptionData = PrescriptionPanelViewModel?.GetPrescriptionData();
+        if (prescriptionData == null || !prescriptionData.NeedsPrescription || prescriptionData.Items == null || prescriptionData.Items.Count == 0)
+        {
+            return null;
+        }
+
+        // 转换药材项类型
+        var items = prescriptionData.Items.Select(item => new PrescriptionItemDto
+        {
+            Id = item.Id ?? Guid.NewGuid(),
+            HerbId = item.HerbId,
+            HerbName = item.HerbName ?? string.Empty,
+            Quantity = item.Quantity,
+            Unit = item.Unit,
+            UnitPrice = item.UnitPrice
+        }).ToList();
+
+        return new PrescriptionDto
+        {
+            Id = prescriptionData.Id ?? Guid.NewGuid(),
+            MedicalCaseId = MedicalCaseId,
+            DosageCount = prescriptionData.DosageCount,
+            Usage = prescriptionData.Usage,
+            Indication = prescriptionData.Indication,
+            Advice = prescriptionData.Advice,
+            ReferencedFormulas = prescriptionData.ReferencedFormulas,
+            Remark = prescriptionData.Remark,
+            Items = items
+        };
     }
 
     private async void ExecuteCompleteConsultation()
@@ -405,6 +491,13 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             ConsultationPanelViewModel.PropertyChanged += OnChildViewModelPropertyChanged;
         if (PrescriptionPanelViewModel != null)
             PrescriptionPanelViewModel.PropertyChanged += OnChildViewModelPropertyChanged;
+
+        // OpenSpec: print-prescription-slip - 如果已有处方数据，启用打印按钮
+        var cachedPrescription = _dataLoader.CachedPrescription;
+        if (cachedPrescription != null && cachedPrescription.Items != null && cachedPrescription.Items.Count > 0)
+        {
+            CanPrintPrescription = true;
+        }
 
         // 初始计算CanComplete状态
         UpdateCanComplete();

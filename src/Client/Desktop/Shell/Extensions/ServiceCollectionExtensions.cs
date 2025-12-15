@@ -317,6 +317,7 @@ namespace LYBT.Desktop.Shell.Extensions
             containerRegistry.RegisterSingleton<IKeyboardShortcutService, KeyboardShortcutService>();
             containerRegistry.RegisterSingleton<IFeatureToggleService, FeatureToggleService>();
             containerRegistry.RegisterSingleton<IPrescriptionSettingsService, PrescriptionSettingsService>(); // OpenSpec: enhance-duplicate-herb-dialog
+            containerRegistry.RegisterSingleton<IClinicSettingsService, ClinicSettingsService>(); // OpenSpec: print-prescription-slip
             containerRegistry.RegisterSingleton<IRoleNavigationService, RoleNavigationService>();
             containerRegistry.RegisterSingleton<ICommonDialogService, CommonDialogService>();
             containerRegistry.RegisterSingleton<IUserExperienceService>(resolver =>

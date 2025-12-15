@@ -1,47 +1,92 @@
-﻿namespace LYBT.Desktop.Prescriptions.Models
+namespace LYBT.Desktop.Prescriptions.Models
 {
     /// <summary>
-    /// 处方打印数据模型
-    /// Issue #1379: [PRINT-2] 实现标准处方模板
+    /// 处方打印数据模型 - 基于普通处方模板
+    /// OpenSpec: print-prescription-slip
     /// </summary>
     public class PrescriptionPrintDto
     {
-        // 诊所信息
+        // ===== 诊所信息 =====
+        /// <summary>诊所名称（标题）</summary>
         public string ClinicName { get; set; } = "中医门诊";
+        /// <summary>科别</summary>
+        public string Department { get; set; } = "中医科";
+
+        // ===== 患者信息 =====
+        /// <summary>姓名</summary>
+        public string PatientName { get; set; } = string.Empty;
+        /// <summary>性别</summary>
+        public string Gender { get; set; } = string.Empty;
+        /// <summary>年龄</summary>
+        public int Age { get; set; }
+        /// <summary>就诊时间</summary>
+        public DateTime ConsultationDate { get; set; } = DateTime.Now;
+        /// <summary>门诊号</summary>
+        public string? OutpatientNumber { get; set; }
+        /// <summary>患者电话</summary>
+        public string? PatientPhone { get; set; }
+        /// <summary>住址</summary>
+        public string? PatientAddress { get; set; }
+
+        // ===== 诊断信息 =====
+        /// <summary>诊断（中医诊断）</summary>
+        public string? TCMDiagnosis { get; set; }
+        /// <summary>诊见（症状描述）</summary>
+        public string? Symptoms { get; set; }
+
+        // ===== 四诊信息（可选，用于详细版打印）=====
+        /// <summary>望诊</summary>
+        public string? Inspection { get; set; }
+        /// <summary>闻诊</summary>
+        public string? AuscultationOlfaction { get; set; }
+        /// <summary>问诊</summary>
+        public string? Inquiry { get; set; }
+        /// <summary>切诊</summary>
+        public string? Palpation { get; set; }
+        /// <summary>治疗原则</summary>
+        public string? TreatmentPrinciple { get; set; }
+
+        // ===== 处方内容 =====
+        /// <summary>药材列表</summary>
+        public List<PrescriptionItemPrintDto> Items { get; set; } = new();
+        /// <summary>剂数</summary>
+        public int DosageCount { get; set; } = 7;
+        /// <summary>用法</summary>
+        public string Usage { get; set; } = "水煎服，日1剂，1日2次";
+
+        // ===== 费用信息 =====
+        /// <summary>诊疗费</summary>
+        public decimal ConsultationFee { get; set; }
+        /// <summary>药费（单剂价格 × 剂数）</summary>
+        public decimal MedicineFee { get; set; }
+        /// <summary>治疗费</summary>
+        public decimal TreatmentFee { get; set; }
+        /// <summary>单剂价格</summary>
+        public decimal SingleDosePrice { get; set; }
+        /// <summary>总价（合计）</summary>
+        public decimal TotalPrice { get; set; }
+
+        // ===== 签名区 =====
+        /// <summary>医师（开方医生）</summary>
+        public string DoctorName { get; set; } = string.Empty;
+        /// <summary>处方日期</summary>
+        public DateTime PrescriptionDate { get; set; } = DateTime.Now;
+        /// <summary>审核人</summary>
+        public string? Reviewer { get; set; }
+        /// <summary>调配人</summary>
+        public string? Dispenser { get; set; }
+
+        // ===== 可选信息 =====
+        /// <summary>处方编号</summary>
+        public string? PrescriptionNumber { get; set; }
+        /// <summary>医嘱</summary>
+        public string? Advice { get; set; }
+        /// <summary>验方来源</summary>
+        public string? FormulaSource { get; set; }
+
+        // ===== 旧字段兼容（诊所地址/电话） =====
         public string? ClinicAddress { get; set; }
         public string? ClinicPhone { get; set; }
-
-        // 患者信息
-        public string PatientName { get; set; } = string.Empty;
-        public string Gender { get; set; } = string.Empty;
-        public int Age { get; set; }
-        public DateTime ConsultationDate { get; set; } = DateTime.Now;
-
-        // 四诊信息
-        public string? Inspection { get; set; } // 望诊
-        public string? AuscultationOlfaction { get; set; } // 闻诊
-        public string? Inquiry { get; set; } // 问诊
-        public string? Palpation { get; set; } // 切诊
-        public string? TCMDiagnosis { get; set; } // 中医诊断
-        public string? TreatmentPrinciple { get; set; } // 治疗原则
-
-        // 处方内容
-        public List<PrescriptionItemPrintDto> Items { get; set; } = new();
-        public int DosageCount { get; set; } = 7; // 剂数
-        public string Usage { get; set; } = "水煎服，日一剂，分早晚服"; // 用法
-
-        // 费用信息
-        public decimal SingleDosePrice { get; set; } // 单剂价格
-        public decimal TotalPrice { get; set; } // 总价
-
-        // 医生信息
-        public string DoctorName { get; set; } = string.Empty;
-        public DateTime PrescriptionDate { get; set; } = DateTime.Now;
-
-        // 可选信息
-        public string? PrescriptionNumber { get; set; } // 处方编号
-        public string? Advice { get; set; } // 医嘱
-        public string? FormulaSource { get; set; } // 验方来源
     }
 
     /// <summary>
@@ -49,9 +94,13 @@
     /// </summary>
     public class PrescriptionItemPrintDto
     {
-        public int SequenceNumber { get; set; } // 序号
-        public string HerbName { get; set; } = string.Empty; // 药材名
-        public decimal Quantity { get; set; } // 剂量
-        public string Unit { get; set; } = "g"; // 单位
+        /// <summary>序号</summary>
+        public int SequenceNumber { get; set; }
+        /// <summary>药材名</summary>
+        public string HerbName { get; set; } = string.Empty;
+        /// <summary>剂量</summary>
+        public decimal Quantity { get; set; }
+        /// <summary>单位</summary>
+        public string Unit { get; set; } = "g";
     }
 }

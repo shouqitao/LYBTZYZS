@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Contracts.Consultation;
+using LYBT.Shared.Models.Contracts.Patients;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 
 namespace LYBT.Desktop.Prescriptions.Interfaces
@@ -5,6 +7,7 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
     /// <summary>
     /// 处方打印服务接口 - 简化版本
     /// 遵循"适度设计、拒绝过度工程"原则，提供基本的处方打印功能
+    /// OpenSpec: print-prescription-slip - 扩展支持完整上下文打印
     /// </summary>
     public interface IPrescriptionPrintService
     {
@@ -16,10 +19,29 @@ namespace LYBT.Desktop.Prescriptions.Interfaces
         Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription);
 
         /// <summary>
+        /// 打印处方（带完整上下文）
+        /// OpenSpec: print-prescription-slip
+        /// </summary>
+        /// <param name="prescription">处方信息</param>
+        /// <param name="patient">患者信息</param>
+        /// <param name="consultation">诊断信息（使用ConsultationInputDto以匹配ViewModel输出）</param>
+        /// <returns>是否打印成功</returns>
+        Task<bool> PrintPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation);
+
+        /// <summary>
         /// 预览处方
         /// </summary>
         /// <param name="prescription">处方信息</param>
         Task PreviewPrescriptionAsync(PrescriptionDto prescription);
+
+        /// <summary>
+        /// 预览处方（带完整上下文）
+        /// OpenSpec: print-prescription-slip
+        /// </summary>
+        /// <param name="prescription">处方信息</param>
+        /// <param name="patient">患者信息</param>
+        /// <param name="consultation">诊断信息（使用ConsultationInputDto以匹配ViewModel输出）</param>
+        Task PreviewPrescriptionAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation);
 
         /// <summary>
         /// 批量打印处方
