@@ -9,7 +9,8 @@ namespace LYBT.Desktop.Infrastructure.Controls
     /// <summary>高性能虚拟化列表视图控件</summary>
     public partial class VirtualizedListView : UserControl, INotifyPropertyChanged
     {
-        public VirtualizedListView() { InitializeComponent(); DataContext = this; }
+        // 注意：不设置DataContext，以便HeaderContent能继承父级的ViewModel DataContext
+        public VirtualizedListView() => InitializeComponent();
 
         public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(VirtualizedListView), new PropertyMetadata(null, OnItemsSourceChanged));
         public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(nameof(SelectedItem), typeof(object), typeof(VirtualizedListView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
