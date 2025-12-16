@@ -347,7 +347,253 @@ public void RegisterTypes(IContainerRegistry containerRegistry)
 
 ---
 
-## 7. 技术决策记录
+## 7. 控件化重构
+
+### 7.1 可复用控件识别
+
+在Master-Detail重构过程中，识别并提取以下可复用的UserControl：
+
+| 控件名称 | 功能描述 | 复用场景 |
+|----------|----------|----------|
+| SearchBox | 搜索框+搜索按钮+清除按钮 | 所有列表页面 |
+| DetailToolbar | 编辑/保存/取消/删除按钮组 | 所有详情面板 |
+| EmptyState | 空状态提示（图标+文字+可选操作） | 列表为空、未选中等 |
+| LoadingOverlay | 加载状态遮罩层 | 数据加载时 |
+| ConfirmDialog | 确认对话框 | 删除确认等危险操作 |
+| DataGridToolbar | 列表工具栏（新增+刷新+导出） | 所有列表页面 |
+
+### 7.2 SearchBox控件设计
+
+```xml
+<!-- SearchBox.xaml -->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.SearchBox">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBox Grid.Column="0"
+                 Text="{Binding SearchText, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                 Watermark="{Binding Placeholder, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+        <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}"
+                Command="{Binding ClearCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Visibility="{Binding SearchText, Converter={StaticResource NullToVisibilityConverter}}">
+            <Path Data="{StaticResource ClearIcon}"/>
+        </Button>
+
+        <Button Grid.Column="2" Style="{StaticResource PrimaryButtonStyle}"
+                Command="{Binding SearchCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Content="搜索"/>
+    </Grid>
+</UserControl>
+```
+
+**依赖属性:**
+```csharp
+public string SearchText { get; set; }
+public string Placeholder { get; set; } = "请输入搜索关键词...";
+public ICommand SearchCommand { get; set; }
+public ICommand ClearCommand { get; set; }
+public int SearchDelay { get; set; } = 300; // 毫秒，防抖延迟
+```
+
+### 7.3 DetailToolbar控件设计
+
+```xml
+<!-- DetailToolbar.xaml -->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.DetailToolbar">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <!-- 查看模式按钮 -->
+        <Button Content="编辑" Style="{StaticResource SecondaryButtonStyle}"
+                Command="{Binding EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Visibility="{Binding IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl},
+                             Converter={StaticResource InverseBoolToVisibility}}"/>
+
+        <!-- 编辑模式按钮 -->
+        <Button Content="保存" Style="{StaticResource PrimaryButtonStyle}"
+                Command="{Binding SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Visibility="{Binding IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl},
+                             Converter={StaticResource BoolToVisibility}}"/>
+
+        <Button Content="取消" Style="{StaticResource SecondaryButtonStyle}"
+                Command="{Binding CancelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Visibility="{Binding IsEditMode, RelativeSource={RelativeSource AncestorType=UserControl},
+                             Converter={StaticResource BoolToVisibility}}"
+                Margin="8,0,0,0"/>
+
+        <!-- 删除按钮 - 始终显示 -->
+        <Button Content="删除" Style="{StaticResource DangerButtonStyle}"
+                Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Margin="16,0,0,0"/>
+    </StackPanel>
+</UserControl>
+```
+
+**依赖属性:**
+```csharp
+public bool IsEditMode { get; set; }
+public ICommand EditCommand { get; set; }
+public ICommand SaveCommand { get; set; }
+public ICommand CancelCommand { get; set; }
+public ICommand DeleteCommand { get; set; }
+public bool ShowDeleteButton { get; set; } = true;
+```
+
+### 7.4 EmptyState控件设计
+
+```xml
+<!-- EmptyState.xaml -->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.EmptyState">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+        <!-- 图标 -->
+        <Path Data="{Binding Icon, RelativeSource={RelativeSource AncestorType=UserControl}}"
+              Width="64" Height="64" Fill="#CCCCCC"
+              HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+        <!-- 主标题 -->
+        <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontSize="18" FontWeight="Medium" Foreground="#666666"
+                   HorizontalAlignment="Center"/>
+
+        <!-- 副标题 -->
+        <TextBlock Text="{Binding Subtitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                   FontSize="14" Foreground="#999999"
+                   HorizontalAlignment="Center" Margin="0,8,0,0"
+                   Visibility="{Binding Subtitle, Converter={StaticResource NullToVisibilityConverter}}"/>
+
+        <!-- 操作按钮 -->
+        <Button Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                Style="{StaticResource PrimaryButtonStyle}"
+                HorizontalAlignment="Center" Margin="0,16,0,0"
+                Visibility="{Binding ActionCommand, Converter={StaticResource NullToVisibilityConverter}}"/>
+    </StackPanel>
+</UserControl>
+```
+
+**使用示例:**
+```xml
+<controls:EmptyState
+    Icon="{StaticResource NoDataIcon}"
+    Title="请选择一个患者"
+    Subtitle="从左侧列表中选择患者查看详情"/>
+
+<controls:EmptyState
+    Icon="{StaticResource EmptyListIcon}"
+    Title="暂无数据"
+    Subtitle="点击下方按钮添加第一条记录"
+    ActionText="新增记录"
+    ActionCommand="{Binding CreateCommand}"/>
+```
+
+### 7.5 LoadingOverlay控件设计
+
+```xml
+<!-- LoadingOverlay.xaml -->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.LoadingOverlay">
+    <Grid Background="#80FFFFFF"
+          Visibility="{Binding IsLoading, RelativeSource={RelativeSource AncestorType=UserControl},
+                       Converter={StaticResource BoolToVisibility}}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <ProgressBar IsIndeterminate="True" Width="200"/>
+            <TextBlock Text="{Binding LoadingText, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       HorizontalAlignment="Center" Margin="0,12,0,0"
+                       FontSize="14" Foreground="#666666"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
+```
+
+### 7.6 组件层次更新
+
+```
+LYBT.Desktop.Infrastructure
+├── Controls/
+│   ├── MasterDetailLayout.xaml       # 新增: Master-Detail容器
+│   ├── SearchBox.xaml                # 新增: 搜索框控件
+│   ├── DetailToolbar.xaml            # 新增: 详情工具栏
+│   ├── EmptyState.xaml               # 新增: 空状态控件
+│   ├── LoadingOverlay.xaml           # 新增: 加载遮罩
+│   ├── DataGridToolbar.xaml          # 新增: 列表工具栏
+│   ├── InfoCard.xaml                 # 已有: 信息卡片
+│   └── Pagination.xaml               # 已有: 分页控件
+```
+
+### 7.7 重构后的PatientMasterDetailView示例
+
+```xml
+<!-- 使用控件化后的简洁代码 -->
+<controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
+    <controls:MasterDetailLayout.MasterContent>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 使用SearchBox控件 -->
+            <controls:SearchBox Grid.Row="0"
+                                SearchText="{Binding SearchText, Mode=TwoWay}"
+                                SearchCommand="{Binding SearchCommand}"
+                                Placeholder="搜索患者姓名/手机号..."/>
+
+            <DataGrid Grid.Row="1" ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding SelectedItem}"
+                      Style="{StaticResource MasterListDataGridStyle}"/>
+
+            <controls:Pagination Grid.Row="2"
+                                 CurrentPage="{Binding CurrentPage}"
+                                 TotalPages="{Binding TotalPages}"/>
+        </Grid>
+    </controls:MasterDetailLayout.MasterContent>
+
+    <controls:MasterDetailLayout.DetailContent>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 使用DetailToolbar控件 -->
+            <controls:DetailToolbar Grid.Row="0"
+                                    IsEditMode="{Binding IsEditMode}"
+                                    EditCommand="{Binding EditCommand}"
+                                    SaveCommand="{Binding SaveCommand}"
+                                    CancelCommand="{Binding CancelCommand}"
+                                    DeleteCommand="{Binding DeleteCommand}"/>
+
+            <!-- ViewControl / EditControl -->
+            <patientControls:PatientViewControl Grid.Row="1"
+                Visibility="{Binding IsEditMode, Converter={StaticResource InverseBoolToVisibility}}"
+                .../>
+            <patientControls:PatientEditControl Grid.Row="1"
+                Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}"
+                .../>
+
+            <!-- 使用LoadingOverlay控件 -->
+            <controls:LoadingOverlay Grid.RowSpan="2"
+                                     IsLoading="{Binding IsLoading}"
+                                     LoadingText="加载中..."/>
+        </Grid>
+    </controls:MasterDetailLayout.DetailContent>
+
+    <!-- 使用EmptyState控件 -->
+    <controls:MasterDetailLayout.EmptyContent>
+        <controls:EmptyState
+            Icon="{StaticResource SelectItemIcon}"
+            Title="请选择患者"
+            Subtitle="从左侧列表中选择一位患者查看详情"/>
+    </controls:MasterDetailLayout.EmptyContent>
+</controls:MasterDetailLayout>
+```
+
+---
+
+## 8. 技术决策记录
 
 ### Decision 1: 使用自定义MasterDetailLayout而非第三方控件
 
