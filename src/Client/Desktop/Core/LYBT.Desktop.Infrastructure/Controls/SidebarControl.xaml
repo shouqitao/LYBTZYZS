@@ -1,0 +1,217 @@
+<!--
+    SidebarControl - 侧边栏控件
+    OpenSpec: refactor-role-navigation
+
+    功能：
+    - 展开/收缩切换
+    - 用户信息显示
+    - 返回主页按钮
+    - 修改个人信息/修改密码
+    - 状态信息（网络+时间）
+    - 退出登录
+
+    使用方式：
+    <controls:SidebarControl
+        IsExpanded="{Binding IsDrawerOpen}"
+        CurrentUser="{Binding CurrentUser}"
+        ApiStatus="{Binding ApiStatus}"
+        CurrentTime="{Binding CurrentTime}"
+        ToggleCommand="{Binding ToggleDrawerCommand}"
+        NavigateToHomeCommand="{Binding NavigateToHomeCommand}"
+        EditProfileCommand="{Binding EditProfileCommand}"
+        ChangePasswordCommand="{Binding ChangePasswordCommand}"
+        LogoutCommand="{Binding LogoutCommand}"/>
+-->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.SidebarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:infra="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <infra:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <infra:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <infra:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+
+            <!-- 侧边栏宽度转换器 -->
+            <infra:BoolToDoubleConverter x:Key="BoolToSidebarWidthConverter" TrueValue="200" FalseValue="56"/>
+
+            <!-- 侧边栏菜单项样式 -->
+            <Style x:Key="SidebarMenuItemStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{StaticResource SidebarTextBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Height" Value="48"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="16,0">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource SidebarHoverBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- 首字转换器 -->
+            <infra:FirstCharacterConverter x:Key="FirstCharConverter"/>
+
+            <!-- API状态转换器 -->
+            <infra:ApiHealthStatusToColorConverter x:Key="ApiHealthStatusToColorConverter"/>
+            <infra:ApiHealthStatusToTextConverter x:Key="ApiHealthStatusToTextConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource SidebarBackgroundBrush}"
+            Width="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BoolToSidebarWidthConverter}}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>  <!-- Row 0: 展开/收缩按钮 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 1: 用户信息 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 2: 分隔线 -->
+                <RowDefinition Height="*"/>     <!-- Row 3: 菜单区域 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 4: 状态信息(网络+时间) -->
+                <RowDefinition Height="Auto"/>  <!-- Row 5: 分隔线 -->
+                <RowDefinition Height="Auto"/>  <!-- Row 6: 退出登录 -->
+            </Grid.RowDefinitions>
+
+            <!-- 展开/收缩按钮 + Logo -->
+            <Button Grid.Row="0" Style="{StaticResource SidebarMenuItemStyle}"
+                    Command="{Binding ToggleCommand, ElementName=Root}" Height="56" ToolTip="展开/收缩 (Ctrl+M)">
+                <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Button}}">
+                    <StackPanel Orientation="Horizontal">
+                        <!-- 汉堡图标 -->
+                        <Path Fill="{StaticResource SidebarTextBrush}" Width="24" Height="24" Stretch="Uniform"
+                              Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                        <!-- 系统名称（展开时显示） -->
+                        <TextBlock Text="凌隐宝堂" FontSize="16" FontWeight="Bold" Foreground="{StaticResource SidebarTextBrush}"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <!-- 用户信息 -->
+            <Border Grid.Row="1" Padding="12,12">
+                <StackPanel Orientation="Horizontal">
+                    <!-- 用户头像 -->
+                    <Border Width="32" Height="32" CornerRadius="16" Background="{StaticResource SidebarAvatarBrush}">
+                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root, Converter={StaticResource FirstCharConverter}}"
+                                   FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource SidebarTextBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <!-- 用户名和角色（展开时显示） -->
+                    <StackPanel VerticalAlignment="Center" Margin="10,0,0,0"
+                                Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CurrentUser.RealName, ElementName=Root}" FontSize="13" Foreground="{StaticResource SidebarTextBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding CurrentUser.Role, ElementName=Root, Converter={StaticResource EnumDescriptionConverter}}"
+                                   FontSize="11" Foreground="{StaticResource SidebarTextSecondaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 分隔线 -->
+            <Border Grid.Row="2" Height="1" Background="{StaticResource SidebarDividerBrush}" Margin="12,0"/>
+
+            <!-- 菜单项 -->
+            <StackPanel Grid.Row="3" Margin="0,8">
+                <!-- 返回主页 - OpenSpec: refactor-role-navigation -->
+                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding NavigateToHomeCommand, ElementName=Root}" ToolTip="返回主页">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Fill="{StaticResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
+                              Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        <TextBlock Text="返回主页" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Button>
+                <!-- 修改个人信息 -->
+                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding EditProfileCommand, ElementName=Root}" ToolTip="修改个人信息">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Fill="{StaticResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
+                              Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        <TextBlock Text="修改个人信息" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Button>
+                <!-- 修改密码 -->
+                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding ChangePasswordCommand, ElementName=Root}" ToolTip="修改密码">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Fill="{StaticResource SidebarTextBrush}" Width="20" Height="20" Stretch="Uniform"
+                              Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                        <TextBlock Text="修改密码" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- 状态信息: 网络(上) + 时间(下) -->
+            <Border Grid.Row="4" Padding="8,6">
+                <Grid>
+                    <!-- 收缩状态: 垂直居中 -->
+                    <StackPanel Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                HorizontalAlignment="Center">
+                        <!-- 网络状态(上) -->
+                        <Border Width="24" Height="24" CornerRadius="12" Background="{StaticResource SidebarBackgroundBrush}" Margin="0,0,0,6"
+                                HorizontalAlignment="Center" ToolTip="{Binding ApiStatus, ElementName=Root, Converter={StaticResource ApiHealthStatusToTextConverter}}">
+                            <Ellipse Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     Fill="{Binding ApiStatus, ElementName=Root, Converter={StaticResource ApiHealthStatusToColorConverter}}"/>
+                        </Border>
+                        <!-- 时间(下): 时间+日期 -->
+                        <StackPanel HorizontalAlignment="Center" ToolTip="当前时间">
+                            <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource SidebarTextBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=MM-dd}" FontSize="9"
+                                       Foreground="{StaticResource SidebarTextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 展开状态: 水平布局 -->
+                    <StackPanel Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Margin="4,0,0,0">
+                        <!-- 网络状态(上) -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                                     Fill="{Binding ApiStatus, ElementName=Root, Converter={StaticResource ApiHealthStatusToColorConverter}}"/>
+                            <TextBlock Text="{Binding ApiStatus, ElementName=Root, Converter={StaticResource ApiHealthStatusToTextConverter}}"
+                                       FontSize="11" Foreground="{StaticResource SidebarTextSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <!-- 时间(下): 时间+日期 -->
+                        <StackPanel Orientation="Horizontal">
+                            <Path Fill="{StaticResource SidebarTextSecondaryBrush}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center"
+                                  Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+                            <StackPanel Margin="8,0,0,0">
+                                <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=HH:mm:ss}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SidebarTextBrush}"/>
+                                <TextBlock Text="{Binding CurrentTime, ElementName=Root, StringFormat=yyyy-MM-dd}" FontSize="10"
+                                           Foreground="{StaticResource SidebarTextSecondaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 分割线 -->
+            <Border Grid.Row="5" Height="1" Background="{StaticResource SidebarDividerBrush}" Margin="12,0"/>
+
+            <!-- 退出登录（底部） -->
+            <Border Grid.Row="6">
+                <Button Style="{StaticResource SidebarMenuItemStyle}" Command="{Binding LogoutCommand, ElementName=Root}" ToolTip="退出登录">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Fill="{StaticResource ErrorBrush}" Width="20" Height="20" Stretch="Uniform"
+                              Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                        <TextBlock Text="退出登录" Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Visibility="{Binding IsExpanded, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Button>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
