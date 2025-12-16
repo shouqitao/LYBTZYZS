@@ -1,6 +1,7 @@
 <!--
     MedicalCaseViewControl - 医疗案例预览控件
     OpenSpec: extract-detail-controls Task 5.1
+    OpenSpec: optimize-preview-layout - 优化布局和视觉层次
 
     独立的医疗案例预览控件，可在MedicalCaseDetailView中复用
     通过DependencyProperty接收MedicalCaseDetail对象及状态标志
@@ -10,12 +11,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:enums="clr-namespace:LYBT.Shared.Models.Enums;assembly=LYBT.Shared.Models"
              x:Name="Root">
 
     <UserControl.Resources>
         <ResourceDictionary>
             <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <infrastructure:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <infrastructure:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -23,79 +26,73 @@
     </UserControl.Resources>
 
     <StackPanel DataContext="{Binding ElementName=Root}">
-        <!-- 医疗案例基本信息卡片 -->
+        <!-- 医疗案例基本信息卡片 - 紧凑布局 -->
         <controls:InfoCard ShowTitle="False">
             <controls:InfoCard.Content>
                 <StackPanel>
-                    <!-- 标题栏 -->
-                    <Grid Margin="0,0,0,16">
+                    <!-- 头部: 案例编号 + 状态Badges -->
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}">
-                            <Run Text="医疗案例：" />
-                            <Run Text="{Binding MedicalCaseDetail.CaseNumber}" />
-                        </TextBlock>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Text="医疗案例" Style="{StaticResource PreviewTitleStyle}"/>
+                            <TextBlock Text="{Binding MedicalCaseDetail.CaseNumber, StringFormat=({0})}"
+                                       Style="{StaticResource PreviewSubtitleStyle}"/>
+                        </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Border Background="{StaticResource SuccessBrush}"
-                                    CornerRadius="4"
-                                    Padding="12,6"
-                                    Margin="8,0,0,0"
+                            <Border Style="{StaticResource PreviewBadgeSuccessStyle}"
                                     Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="已诊疗" Foreground="White" FontSize="12" />
+                                <TextBlock Text="已诊疗" Style="{StaticResource PreviewBadgeTextStyle}"/>
                             </Border>
 
-                            <Border Background="{StaticResource InfoBrush}"
-                                    CornerRadius="4"
-                                    Padding="12,6"
+                            <Border Style="{StaticResource PreviewBadgeInfoStyle}"
                                     Margin="8,0,0,0"
                                     Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock Text="已开方" Foreground="White" FontSize="12" />
+                                <TextBlock Text="已开方" Style="{StaticResource PreviewBadgeTextStyle}"/>
                             </Border>
                         </StackPanel>
                     </Grid>
 
-                    <!-- 基本信息 -->
-                    <Grid>
+                    <!-- 紧凑基本信息 -->
+                    <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="患者" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.PatientName}" Style="{StaticResource ValueDisplayStyle}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                            <TextBlock Text="医生" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.DoctorName}" Style="{StaticResource ValueDisplayStyle}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                            <TextBlock Text="创建时间" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Style="{StaticResource ValueDisplayStyle}" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="3">
-                            <TextBlock Text="状态" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.Status}" Style="{StaticResource ValueDisplayStyle}" />
-                        </StackPanel>
+                        <TextBlock Grid.Column="0" Text="患者：" FontSize="13" Foreground="#605E5C"/>
+                        <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.PatientName}" FontSize="13" Margin="0,0,16,0"/>
+                        <TextBlock Grid.Column="2" Text="医生：" FontSize="13" Foreground="#605E5C"/>
+                        <TextBlock Grid.Column="3" Text="{Binding MedicalCaseDetail.DoctorName}" FontSize="13"/>
                     </Grid>
 
-                    <!-- 备注 -->
-                    <StackPanel Margin="0,16,0,0"
-                                Visibility="{Binding MedicalCaseDetail.Remark, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock Text="备注" Style="{StaticResource FormLabelStyle}" />
-                        <TextBlock Text="{Binding MedicalCaseDetail.Remark}"
-                                   Style="{StaticResource ValueDisplayStyle}"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="创建：" FontSize="13" Foreground="#605E5C"/>
+                        <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}}" FontSize="13" Margin="0,0,16,0"/>
+                        <TextBlock Grid.Column="2" Text="状态：" FontSize="13" Foreground="#605E5C"/>
+                        <TextBlock Grid.Column="3" Text="{Binding MedicalCaseDetail.Status}" FontSize="13"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,6"
+                          Visibility="{Binding MedicalCaseDetail.Remark, Converter={StaticResource NullToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="备注：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.Remark}" FontSize="13" TextWrapping="Wrap"/>
+                    </Grid>
                 </StackPanel>
             </controls:InfoCard.Content>
         </controls:InfoCard>
@@ -104,60 +101,75 @@
         <controls:InfoCard ShowTitle="False"
                            Visibility="{Binding HasConsultation, Converter={StaticResource BooleanToVisibilityConverter}}">
             <controls:InfoCard.Content>
-                <Expander Header="诊疗信息" IsExpanded="True">
-                    <StackPanel Margin="0,16,0,0">
+                <Expander IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock Text="诊疗信息" Style="{StaticResource PreviewTitleStyle}" FontSize="16"/>
+                    </Expander.Header>
+                    <StackPanel Margin="0,12,0,0">
                         <!-- 主诉 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.ChiefComplaint, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="主诉" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.ChiefComplaint}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.ChiefComplaint, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="主诉：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.ChiefComplaint}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
                         <!-- 现病史 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.PresentIllness, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="现病史" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.PresentIllness}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.PresentIllness, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="现病史：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.PresentIllness}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
                         <!-- 既往史 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.PastHistory, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="既往史" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.PastHistory}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.PastHistory, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="既往史：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.PastHistory}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
                         <!-- 诊断 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.Diagnosis, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="诊断" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.Diagnosis}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.Diagnosis, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="诊断：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.Diagnosis}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
                         <!-- 治疗方案 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.TreatmentPlan, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="治疗方案" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.TreatmentPlan}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.TreatmentPlan, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="治疗方案：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.TreatmentPlan}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
                         <!-- 诊疗时间 -->
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="诊疗时间：" Style="{StaticResource FormLabelStyle}" VerticalAlignment="Center" Margin="0" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.ConsultationDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="诊疗时间：" FontSize="13" Foreground="#605E5C"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.ConsultationDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" FontSize="13"/>
+                        </Grid>
                     </StackPanel>
                 </Expander>
             </controls:InfoCard.Content>
@@ -167,75 +179,97 @@
         <controls:InfoCard ShowTitle="False"
                            Visibility="{Binding HasPrescription, Converter={StaticResource BooleanToVisibilityConverter}}">
             <controls:InfoCard.Content>
-                <Expander Header="处方信息" IsExpanded="True">
-                    <StackPanel Margin="0,16,0,0">
-                        <!-- 处方基本信息 -->
-                        <!-- OpenSpec: fix-history-copy-all-patients - 修正绑定路径使用Prescription导航属性 -->
-                        <Grid Margin="0,0,0,16">
+                <Expander IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock Text="处方信息" Style="{StaticResource PreviewTitleStyle}" FontSize="16"/>
+                    </Expander.Header>
+                    <StackPanel Margin="0,12,0,0">
+                        <!-- 处方基本信息 - 紧凑布局 -->
+                        <Grid Margin="0,0,0,6">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="处方编号：" FontSize="13" Foreground="#605E5C"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.Prescription.PrescriptionNumber}" FontSize="13" Margin="0,0,16,0"/>
+                            <TextBlock Grid.Column="2" Text="配方来源：" FontSize="13" Foreground="#605E5C"/>
+                            <TextBlock Grid.Column="3" Text="{Binding MedicalCaseDetail.Prescription.FormulaSource}" FontSize="13"/>
+                        </Grid>
 
-                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                <TextBlock Text="处方编号" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.PrescriptionNumber}" Style="{StaticResource ValueDisplayStyle}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                                <TextBlock Text="配方来源" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.FormulaSource}" Style="{StaticResource ValueDisplayStyle}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                                <TextBlock Text="剂数" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.DosageCount}" Style="{StaticResource ValueDisplayStyle}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="3">
-                                <TextBlock Text="总价" Style="{StaticResource FormLabelStyle}" />
-                                <TextBlock Text="{Binding MedicalCaseDetail.Prescription.TotalPrice, StringFormat=￥{0:F2}}" Style="{StaticResource ValueDisplayStyle}" />
-                            </StackPanel>
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="剂数：" FontSize="13" Foreground="#605E5C"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.Prescription.DosageCount}" FontSize="13" Margin="0,0,16,0"/>
+                            <TextBlock Grid.Column="2" Text="总价：" FontSize="13" Foreground="#605E5C"/>
+                            <TextBlock Grid.Column="3" Text="{Binding MedicalCaseDetail.Prescription.TotalPrice, StringFormat=\{0:C2\}}" FontSize="13" Foreground="#0078D4" FontWeight="Medium"/>
                         </Grid>
 
                         <!-- 用法用量 -->
-                        <StackPanel Style="{StaticResource LabelValueStyle}"
-                                    Visibility="{Binding MedicalCaseDetail.Prescription.Usage, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="用法用量" Style="{StaticResource FormLabelStyle}" />
-                            <TextBlock Text="{Binding MedicalCaseDetail.Prescription.Usage}"
-                                       Style="{StaticResource ValueDisplayStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,6"
+                              Visibility="{Binding MedicalCaseDetail.Prescription.Usage, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="用法用量：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
+                            <TextBlock Grid.Column="1" Text="{Binding MedicalCaseDetail.Prescription.Usage}" FontSize="13" TextWrapping="Wrap"/>
+                        </Grid>
 
-                        <!-- 处方明细 -->
+                        <!-- 分隔线 -->
+                        <Border Height="1" Background="#E1DFDD" Margin="0,8,0,8"
+                                Visibility="{Binding MedicalCaseDetail.Prescription.Items, Converter={StaticResource NullToVisibilityConverter}}"/>
+
+                        <!-- 处方明细 - 标签云展示 -->
                         <StackPanel Visibility="{Binding MedicalCaseDetail.Prescription.Items, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="处方明细" Style="{StaticResource FormLabelStyle}" />
+                            <TextBlock Text="处方明细" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
 
-                            <DataGrid ItemsSource="{Binding MedicalCaseDetail.Prescription.Items}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="False"
-                                      MaxHeight="200"
-                                      Margin="0,8,0,0">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="药材名称"
-                                                        Binding="{Binding HerbName}"
-                                                        Width="*" />
-                                    <DataGridTextColumn Header="剂量"
-                                                        Binding="{Binding Dosage}"
-                                                        Width="80" />
-                                    <DataGridTextColumn Header="单位"
-                                                        Binding="{Binding Unit}"
-                                                        Width="60" />
-                                    <DataGridTextColumn Header="单价"
-                                                        Binding="{Binding UnitPrice, StringFormat=￥{0:F2}}"
-                                                        Width="80" />
-                                    <DataGridTextColumn Header="小计"
-                                                        Binding="{Binding SubTotal, StringFormat=￥{0:F2}}"
-                                                        Width="100" />
-                                </DataGrid.Columns>
-                            </DataGrid>
+                            <ItemsControl ItemsSource="{Binding MedicalCaseDetail.Prescription.Items}"
+                                          Style="{StaticResource HerbTagsContainerStyle}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="4"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource HerbTagStyle}">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding HerbName}" Style="{StaticResource HerbTagNameStyle}"/>
+                                                <TextBlock Style="{StaticResource HerbTagDosageStyle}">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0}{1}">
+                                                            <Binding Path="Dosage"/>
+                                                            <Binding Path="Unit"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                                <!-- 煎法标签 - 仅非默认煎法时显示 -->
+                                                <Border>
+                                                    <Border.Style>
+                                                        <Style TargetType="Border" BasedOn="{StaticResource HerbTagDecocteStyle}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding DecocteMethod}" Value="{x:Static enums:DecocteMethod.Default}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding DecocteMethod, Converter={StaticResource EnumDescriptionConverter}}"
+                                                               Style="{StaticResource HerbTagDecocteTextStyle}"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </StackPanel>
                 </Expander>
@@ -247,7 +281,7 @@
             <controls:InfoCard.Content>
                 <TextBlock Text="{Binding MedicalCaseDetail.UpdatedAt, StringFormat=最后更新：{0:yyyy-MM-dd HH:mm}}"
                            Foreground="{StaticResource SecondaryTextBrush}"
-                           FontSize="14" />
+                           FontSize="14"/>
             </controls:InfoCard.Content>
         </controls:InfoCard>
     </StackPanel>
