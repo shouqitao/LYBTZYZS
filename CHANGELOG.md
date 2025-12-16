@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 侧边栏组件化与返回主页功能 (OpenSpec: refactor-role-navigation) - 2025-12-16
+
+**功能实现:**
+- SidebarControl组件化：从MainWindow提取约130行侧边栏UI代码
+- 返回主页按钮：在侧边栏菜单区顶部添加，支持角色感知导航
+- 角色导航映射：Admin/SuperAdmin→AdminHomeView，Doctor→ClinicalHomeView
+
+**技术要点:**
+- DependencyProperty实现控件数据绑定
+- 复用UnifiedViewModelBase.NavigateToHomeCommand避免重复代码
+- ApiHealthStatusToTextConverter从Shell下沉到Infrastructure
+
+**新增文件:**
+- SidebarControl.xaml/xaml.cs - 侧边栏控件
+- BoolToDoubleConverter.cs - 侧边栏宽度转换器
+- ApiHealthStatusToTextConverter.cs - API状态文本转换器
+
 #### 处方打印功能增强 (OpenSpec: print-prescription-slip, enhance-prescription-print) - 2025-12-15
 
 **功能实现:**
