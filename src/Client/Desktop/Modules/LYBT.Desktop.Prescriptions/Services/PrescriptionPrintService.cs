@@ -621,8 +621,9 @@ namespace LYBT.Desktop.Prescriptions.Services
             {
                 SequenceNumber = index + 1,
                 HerbName = item.HerbName,
-                Quantity = item.Quantity,
-                Unit = item.Unit
+                Dosage = item.Dosage,
+                Unit = item.Unit,
+                DecocteMethod = item.DecocteMethod
             }).ToList();
         }
 

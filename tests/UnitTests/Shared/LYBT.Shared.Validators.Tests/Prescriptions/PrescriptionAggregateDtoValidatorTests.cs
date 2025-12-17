@@ -31,7 +31,7 @@ public class PrescriptionAggregateDtoValidatorTests
             Discount = 1.0m,
             Items = new List<PrescriptionItemInputDto>
             {
-                new() { HerbId = Guid.NewGuid(), Dosage = 10, Quantity = 10 }
+                new() { HerbId = Guid.NewGuid(), Dosage = 10 }
             }
         };
 
@@ -318,8 +318,8 @@ public class PrescriptionAggregateDtoValidatorTests
             DosageCount = 7,
             Items = new List<PrescriptionItemInputDto>
             {
-                new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Dosage = 15, Quantity = 15 },
-                new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Dosage = 10, Quantity = 10 }
+                new() { HerbId = Guid.NewGuid(), HerbName = "天麻", Dosage = 15 },
+                new() { HerbId = Guid.NewGuid(), HerbName = "钩藤", Dosage = 10 }
             }
         };
 

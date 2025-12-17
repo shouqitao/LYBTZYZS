@@ -203,7 +203,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Style="{StaticResource HerbItemStyle}">
-                            <Run Text="{Binding HerbName, Mode=OneWay}"/><Run Text="{Binding Quantity, StringFormat={}{0:0.##}, Mode=OneWay}"/><Run Text="{Binding Unit, Mode=OneWay}"/>
+                            <Run Text="{Binding HerbName, Mode=OneWay}"/><Run Text="{Binding Dosage, StringFormat={}{0:0.##}, Mode=OneWay}"/><Run Text="{Binding Unit, Mode=OneWay}"/>
                         </TextBlock>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

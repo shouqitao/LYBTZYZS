@@ -2,9 +2,15 @@
     HerbViewControl - 药材预览控件
     OpenSpec: extract-detail-controls Task 2.1
     OpenSpec: optimize-preview-layout - 优化布局和视觉层次
+    OpenSpec: refactor-master-detail-layout - 详情区域UI优化
 
     独立的药材预览控件，可在HerbDetailView和其他需要展示药材信息的地方复用
     通过DependencyProperty接收数据，支持只读展示
+
+    UI优化 (2025-12-16):
+    - 采用多卡片分组布局，充分利用详情区域空间
+    - 分为：基本信息、规格信息、价格信息、功效用法、系统信息五个逻辑区域
+    - 添加：分类、性味、创建/更新时间等完整字段
 -->
 <UserControl x:Class="LYBT.Desktop.Herbs.Controls.HerbViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,98 +29,182 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel DataContext="{Binding ElementName=Root}">
-        <!-- 药材信息卡片 - 紧凑布局 -->
-        <controls:InfoCard ShowTitle="False">
-            <controls:InfoCard.Content>
-                <StackPanel>
-                    <!-- 头部: 药材名称 + 拼音码 + 状态Badge -->
-                    <Grid Margin="0,0,0,12">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding ElementName=Root}">
+        <StackPanel>
+            <!-- ========================================
+                 基本信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="基本信息" ShowTitle="True">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="{Binding HerbName}" Style="{StaticResource PreviewTitleStyle}"/>
-                            <TextBlock Text="{Binding PinYinCode, StringFormat=({0})}"
-                                       Style="{StaticResource PreviewSubtitleStyle}"
-                                       Visibility="{Binding PinYinCode, Converter={StaticResource NullToVisibilityConverter}}"/>
-                        </StackPanel>
+                        <!-- 药材名称 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="药材名称" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HerbName}" Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold"/>
 
-                        <Border Grid.Column="1"
-                                Style="{StaticResource PreviewBadgeSuccessStyle}"
-                                Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text="{Binding Status}" Style="{StaticResource PreviewBadgeTextStyle}"/>
-                        </Border>
+                        <!-- 拼音码 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="拼音码" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 分类 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="分类" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Category, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 性味 -->
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="性味" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Properties, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 产地 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="产地" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Origin, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 状态 -->
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="状态" Style="{StaticResource DetailLabelStyle}"
+                                   Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <controls:StatusBadge Grid.Row="2" Grid.Column="3"
+                                              Status="{Binding Status}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"
+                                              Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
 
-                    <!-- 紧凑信息区：基本信息 + 价格 -->
-                    <Grid Margin="0,0,0,6">
+            <!-- ========================================
+                 规格信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="规格信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="产地：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Origin}" FontSize="13" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="2" Text="规格：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="3" Text="{Binding Spec}" FontSize="13" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="4" Text="单位：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="5" Text="{Binding Unit}" FontSize="13"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6">
+                        <!-- 规格 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="规格" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Spec, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 单位 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="单位" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Unit, TargetNullValue='克'}" Style="{StaticResource DetailValueStyle}"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 价格信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="价格信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="零售价：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Price, StringFormat={}{0:F2}元}" FontSize="13" Foreground="#0078D4" FontWeight="Medium" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="2" Text="成本价：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="3" Text="{Binding CostPrice, StringFormat={}{0:F2}元}" FontSize="13"/>
+
+                        <!-- 零售价 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="零售价" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding Price, StringFormat={}{0:F2}元}"
+                                   Style="{StaticResource DetailValueStyle}"
+                                   Foreground="#0078D4"
+                                   FontWeight="Medium"/>
+
+                        <!-- 成本价 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="成本价" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3"
+                                   Text="{Binding CostPrice, StringFormat={}{0:F2}元, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
                     </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
 
-                    <!-- 功效用法区域 - 仅当有内容时显示 -->
-                    <Border Height="1" Background="#E1DFDD" Margin="0,8,0,8"
-                            Visibility="{Binding HerbEffect, Converter={StaticResource NullToVisibilityConverter}}"/>
-
-                    <Grid Margin="0,0,0,6"
-                          Visibility="{Binding HerbEffect, Converter={StaticResource NullToVisibilityConverter}}">
+            <!-- ========================================
+                 功效用法卡片
+                 ======================================== -->
+            <controls:InfoCard Title="功效用法" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="功效：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Column="1" Text="{Binding HerbEffect}" FontSize="13" TextWrapping="Wrap"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6"
-                          Visibility="{Binding Usage, Converter={StaticResource NullToVisibilityConverter}}">
+                        <!-- 功效 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="功效" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding HerbEffect, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+
+                        <!-- 用法 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="用法" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Usage, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+
+                        <!-- 备注 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="备注" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Remark, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 系统信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="用法：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Usage}" FontSize="13" TextWrapping="Wrap"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6"
-                          Visibility="{Binding Remark, Converter={StaticResource NullToVisibilityConverter}}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="备注：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Remark}" FontSize="13" TextWrapping="Wrap"/>
+                        <!-- 创建时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 更新时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3"
+                                   Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
                     </Grid>
-                </StackPanel>
-            </controls:InfoCard.Content>
-        </controls:InfoCard>
-    </StackPanel>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Components;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Prism.Mvvm;
 
 namespace LYBT.Desktop.Models.ViewModels.Base
@@ -16,9 +17,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         private Guid _herbId;
         private string _herbName = string.Empty;
-        private decimal _dosage;
+        private decimal _dosage = 1;
         private string _unit = "g";
-        private decimal _quantity = 1;
+        private DecocteMethod _decocteMethod = DecocteMethod.Default;
         private ObservableCollection<HerbDto> _filteredHerbs = new();
         private HerbDto? _selectedHerb;
 
@@ -55,7 +56,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 剂量
+        /// 剂量/用量
         /// </summary>
         [Required(ErrorMessage = "剂量不能为空")]
         [Range(0.1, 500, ErrorMessage = "剂量必须在0.1到500之间")]
@@ -82,12 +83,12 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 数量（克重）
+        /// 煎法
         /// </summary>
-        public decimal Quantity
+        public DecocteMethod DecocteMethod
         {
-            get => _quantity;
-            set => SetProperty(ref _quantity, value);
+            get => _decocteMethod;
+            set => SetProperty(ref _decocteMethod, value);
         }
 
         /// <summary>

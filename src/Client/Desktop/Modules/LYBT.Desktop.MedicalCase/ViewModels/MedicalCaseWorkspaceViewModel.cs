@@ -365,9 +365,10 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             Id = item.Id ?? Guid.NewGuid(),
             HerbId = item.HerbId,
             HerbName = item.HerbName ?? string.Empty,
-            Quantity = item.Quantity,
+            Dosage = item.Dosage,
             Unit = item.Unit,
-            UnitPrice = item.UnitPrice
+            UnitPrice = item.UnitPrice,
+            DecocteMethod = item.DecocteMethod
         }).ToList();
 
         return new PrescriptionDto

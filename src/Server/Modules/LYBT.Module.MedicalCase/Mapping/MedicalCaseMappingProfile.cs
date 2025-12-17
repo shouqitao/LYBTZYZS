@@ -168,7 +168,7 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.TotalWeight, opt => opt.Ignore())
                 .ForMember(dest => dest.Subtotal, opt => opt.Ignore())
                 .ForMember(dest => dest.Notes, opt => opt.Ignore())
-                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => (decimal)src.Quantity));
+                .ForMember(dest => dest.Dosage, opt => opt.MapFrom(src => (decimal)src.Dosage));
         }
     }
 }

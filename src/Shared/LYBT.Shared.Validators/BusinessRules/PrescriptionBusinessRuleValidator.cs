@@ -135,12 +135,12 @@ namespace LYBT.Shared.Validators.BusinessRules
                     return Task.FromResult(Failure($"{prefix}必须关联有效药材"));
                 }
 
-                if (item.Quantity <= 0)
+                if (item.Dosage <= 0)
                 {
                     return Task.FromResult(Failure($"{prefix}数量必须大于0"));
                 }
 
-                if (item.Quantity > 1000) // 假设合理上限
+                if (item.Dosage > 1000) // 假设合理上限
                 {
                     return Task.FromResult(Failure($"{prefix}数量不能超过1000"));
                 }

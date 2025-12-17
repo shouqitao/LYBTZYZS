@@ -21,13 +21,16 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         private string _busyMessage = "正在加载...";
         private CancellationTokenSource? _searchCancellationTokenSource;
 
+        /// <summary>标记是否已完成初始化，防止初始化期间属性变化触发重复查询</summary>
+        private bool _isInitialized = false;
+
         public ObservableCollection<T> Items { get => _items; set => SetProperty(ref _items, value); }
         public ObservableCollection<T> SelectedItems { get => _selectedItems; set { if (SetProperty(ref _selectedItems, value)) { HasSelection = value?.Count > 0; RefreshCanExecuteChanged(); } } }
         public T? SelectedItem { get => _selectedItem; set { if (SetProperty(ref _selectedItem, value)) RefreshCanExecuteChanged(); } }
-        public string SearchText { get => _searchText; set { if (SetProperty(ref _searchText, value)) _ = SearchWithDebounceAsync(); } }
+        public string SearchText { get => _searchText; set { if (SetProperty(ref _searchText, value) && _isInitialized) _ = SearchWithDebounceAsync(); } }
         public int TotalCount { get => _totalCount; protected set => SetProperty(ref _totalCount, value); }
-        public int CurrentPage { get => _currentPage; set { if (SetProperty(ref _currentPage, value)) _ = LoadPageAsync(); } }
-        public int PageSize { get => _pageSize; set { if (SetProperty(ref _pageSize, value)) { _currentPage = 1; RaisePropertyChanged(nameof(CurrentPage)); _ = LoadPageAsync(); } } }
+        public int CurrentPage { get => _currentPage; set { if (SetProperty(ref _currentPage, value) && _isInitialized) _ = LoadPageAsync(); } }
+        public int PageSize { get => _pageSize; set { if (SetProperty(ref _pageSize, value)) { _currentPage = 1; RaisePropertyChanged(nameof(CurrentPage)); if (_isInitialized) _ = LoadPageAsync(); } } }
         public bool HasSelection { get => _hasSelection; private set => SetProperty(ref _hasSelection, value); }
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
         public bool CanGoPreviousPage => CurrentPage > 1;
@@ -145,6 +148,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         protected void SetError(string message, string? propertyName = null) { if (!string.IsNullOrEmpty(propertyName)) AddValidationError(propertyName, message); else ErrorMessage = message; }
         protected void ClearError(string? propertyName = null) { if (!string.IsNullOrEmpty(propertyName)) ClearValidationErrors(propertyName); else ClearError(); }
 
-        protected override async Task InitializeAsync(NavigationParameters parameters) { await base.InitializeAsync(parameters); await LoadPageAsync(false); }
+        protected override async Task InitializeAsync(NavigationParameters parameters)
+        {
+            await base.InitializeAsync(parameters);
+            await LoadPageAsync(false);
+            _isInitialized = true;  // 初始化完成后设置标志，此后属性变化才触发查询
+        }
     }
 }

@@ -113,7 +113,7 @@ public class PrescriptionCalculator
                 {
                     HerbId = item.HerbId,
                     HerbName = item.HerbName,
-                    Quantity = (int)item.Dosage,
+                    Dosage = item.Dosage,
                     Unit = item.Unit,
                     UnitPrice = unitPrice,
                     Subtotal = subtotal

@@ -106,10 +106,14 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Herbs = sourceFormula.Herbs?.Select(h => new FormulaHerbItemInputDto
                     {
                         HerbId = h.HerbId,
-                        Quantity = h.Quantity,
+                        HerbName = h.HerbName,
+                        Dosage = h.Dosage,
+                        Unit = h.Unit,
                         Preparation = h.Preparation,
+                        ProcessingMethod = h.ProcessingMethod,
                         Usage = h.Usage,
-                        SortOrder = h.SortOrder
+                        SortOrder = h.SortOrder,
+                        DecocteMethod = h.DecocteMethod
                     }).ToList() ?? new List<FormulaHerbItemInputDto>()
                 };
 

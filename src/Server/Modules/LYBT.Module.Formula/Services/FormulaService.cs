@@ -140,10 +140,11 @@ namespace LYBT.Module.Formulas.Services
                     {
                         HerbId = h.HerbId,
                         HerbName = h.HerbName,
-                        Quantity = (int)h.Quantity, // decimal → int
+                        Dosage = (int)h.Dosage, // decimal → int
                         Unit = h.Unit,
                         ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod，回退到Preparation
                         Usage = h.Usage,
+                        DecocteMethod = h.DecocteMethod,
                         OriginalHerbName = h.HerbName, // 保存原始名称用于延迟绑定
                         IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
                     }).ToList() ?? new List<FormulaHerbItem>()
@@ -191,10 +192,11 @@ namespace LYBT.Module.Formulas.Services
                         {
                             HerbId = h.HerbId,
                             HerbName = h.HerbName,
-                            Quantity = (int)h.Quantity, // decimal → int
+                            Dosage = (int)h.Dosage, // decimal → int
                             Unit = h.Unit,
                             ProcessingMethod = h.ProcessingMethod ?? h.Preparation, // 优先使用ProcessingMethod
                             Usage = h.Usage,
+                            DecocteMethod = h.DecocteMethod,
                             OriginalHerbName = h.HerbName, // 保存原始名称
                             IsValidated = h.HerbId.HasValue // HerbId有值则标记为已验证
                         });
@@ -418,7 +420,7 @@ namespace LYBT.Module.Formulas.Services
                                 HerbName = herbDto.HerbName,
                                 OriginalHerbName = herbDto.HerbName, // 保存原始名称
                                 IsValidated = matchedHerb != null, // 成功匹配则标记为已验证
-                                Quantity = (int)herbDto.Quantity, // DTO是decimal，实体是int
+                                Dosage = (int)herbDto.Dosage, // DTO是decimal，实体是int
                                 Unit = herbDto.Unit ?? "g",
                                 Usage = herbDto.Usage,
                                 ProcessingMethod = herbDto.Preparation // DTO的Preparation映射到ProcessingMethod

@@ -1,5 +1,6 @@
 using LYBT.Desktop.Models.ViewModels.Base;
 using LYBT.Shared.Models.Contracts.Herbs;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
@@ -27,7 +28,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private ObservableCollection<HerbDto> _filteredHerbs = new();
         private HerbDto? _selectedHerb;
         private ObservableCollection<HerbDto>? _allHerbs; // Epic #2175 Phase 4 Task 4.3: AllHerbs backing field
-        
+        private DecocteMethod _decocteMethod = DecocteMethod.Default;
+
         // Epic #2175 Phase 4 Task 4.3: 性能优化 - 缓存小写字符串避免重复ToLower()
         private Dictionary<Guid, (string LowerName, string LowerPinyin)> _herbCacheMap = new();
 
@@ -131,6 +133,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             get => _dosageValidationMessage;
             set => SetProperty(ref _dosageValidationMessage, value);
         }
+
+        /// <summary>
+        /// 煎法 - 先煎、后下、烊化等
+        /// </summary>
+        public DecocteMethod DecocteMethod
+        {
+            get => _decocteMethod;
+            set => SetProperty(ref _decocteMethod, value);
+        }
+
+        /// <summary>
+        /// 可选煎法列表 - 用于UI下拉绑定
+        /// </summary>
+        public static IReadOnlyList<DecocteMethod> AvailableDecocteMethods { get; } =
+            Enum.GetValues<DecocteMethod>().ToList().AsReadOnly();
 
         /// <summary>
         /// 所有药材列表引用 - Epic #2175 BF-002 Task 3.6: 由父ViewModel注入

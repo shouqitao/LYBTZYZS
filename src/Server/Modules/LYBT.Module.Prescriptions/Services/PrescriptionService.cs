@@ -92,7 +92,7 @@ namespace LYBT.Module.Prescriptions.Services
             foreach (var item in items)
             {
                 // 基础价格计算：单价 × 数量 × 帖数
-                var itemTotal = item.UnitPrice * item.Quantity * dosageCount;
+                var itemTotal = item.UnitPrice * item.Dosage * dosageCount;
                 total += itemTotal;
             }
 

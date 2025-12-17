@@ -118,11 +118,12 @@ namespace LYBT.Desktop.Admin.ViewModels
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
-            // 初始化导航命令
-            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserManagementView"));
-            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbManagementView"));
-            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientManagementView"));
-            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaManagementView"));
+            // 初始化导航命令 - OpenSpec: refactor-master-detail-layout
+            // 使用新的Master-Detail布局视图
+            NavigateToUserManagementCommand = new DelegateCommand(() => NavigateTo("UserMasterDetailView"));
+            NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbMasterDetailView"));
+            NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientMasterDetailView"));
+            NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaMasterDetailView"));
             NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseManagementView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
 

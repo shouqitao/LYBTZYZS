@@ -59,7 +59,7 @@ namespace LYBT.Shared.Validators.Formula
                 .NotEmpty().WithMessage("药材名称不能为空")
                 .MaximumLength(100).WithMessage("药材名称长度不能超过100个字符");
 
-            RuleFor(x => x.Quantity)
+            RuleFor(x => x.Dosage)
                 .GreaterThan(0).WithMessage("用量必须大于0")
                 .LessThanOrEqualTo(1000).WithMessage("用量不能超过1000克");
 

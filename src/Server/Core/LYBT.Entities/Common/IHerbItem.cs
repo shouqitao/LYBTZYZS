@@ -25,7 +25,7 @@ namespace LYBT.Entities.Common
         /// 剂量（实际用量）
         /// </summary>
         [DisplayName("剂量")]
-        decimal Quantity { get; set; }
+        decimal Dosage { get; set; }
 
         /// <summary>
         /// 单位

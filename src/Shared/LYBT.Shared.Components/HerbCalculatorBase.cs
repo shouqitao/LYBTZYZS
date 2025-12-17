@@ -50,7 +50,7 @@
         protected decimal CalculateTotalPrice(IEnumerable<TItem> items)
         {
             if (items == null) return 0;
-            return items.Sum(item => item.Quantity * item.UnitPrice);
+            return items.Sum(item => item.Dosage * item.UnitPrice);
         }
 
         /// <summary>

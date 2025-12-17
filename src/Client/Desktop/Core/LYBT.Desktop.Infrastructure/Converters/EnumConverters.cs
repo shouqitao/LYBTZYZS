@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Extensions;
@@ -76,6 +77,29 @@ namespace LYBT.Desktop.Infrastructure.Converters
             }
 
             return "未知状态";
+        }
+
+        /// <inheritdoc/>
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// 煎法转可见性转换器 - 当煎法不是Default时显示
+    /// </summary>
+    public class DecocteMethodToVisibilityConverter : IValueConverter
+    {
+        /// <inheritdoc/>
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is DecocteMethod method && method != DecocteMethod.Default)
+            {
+                return Visibility.Visible;
+            }
+
+            return Visibility.Collapsed;
         }
 
         /// <inheritdoc/>

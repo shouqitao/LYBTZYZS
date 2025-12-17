@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Herbs.Controls
 {
@@ -34,14 +35,14 @@ namespace LYBT.Desktop.Herbs.Controls
         }
 
         /// <summary>
-        /// 拼音码（只读）
+        /// 拼音码（可编辑，用于修正多音字等识别错误）
         /// </summary>
         public static readonly DependencyProperty PinYinCodeProperty =
             DependencyProperty.Register(
                 nameof(PinYinCode),
                 typeof(string),
                 typeof(HerbEditControl),
-                new PropertyMetadata(string.Empty));
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public string PinYinCode
         {
@@ -135,13 +136,13 @@ namespace LYBT.Desktop.Herbs.Controls
         public static readonly DependencyProperty StatusProperty =
             DependencyProperty.Register(
                 nameof(Status),
-                typeof(string),
+                typeof(CommonStatus),
                 typeof(HerbEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(CommonStatus.Enabled, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public string Status
+        public CommonStatus Status
         {
-            get => (string)GetValue(StatusProperty);
+            get => (CommonStatus)GetValue(StatusProperty);
             set => SetValue(StatusProperty, value);
         }
 
@@ -151,13 +152,13 @@ namespace LYBT.Desktop.Herbs.Controls
         public static readonly DependencyProperty StatusOptionsProperty =
             DependencyProperty.Register(
                 nameof(StatusOptions),
-                typeof(ObservableCollection<string>),
+                typeof(ObservableCollection<CommonStatus>),
                 typeof(HerbEditControl),
                 new PropertyMetadata(null));
 
-        public ObservableCollection<string>? StatusOptions
+        public ObservableCollection<CommonStatus>? StatusOptions
         {
-            get => (ObservableCollection<string>?)GetValue(StatusOptionsProperty);
+            get => (ObservableCollection<CommonStatus>?)GetValue(StatusOptionsProperty);
             set => SetValue(StatusOptionsProperty, value);
         }
 

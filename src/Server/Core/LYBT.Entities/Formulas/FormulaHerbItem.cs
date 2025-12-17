@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Formulas
 {
@@ -60,20 +61,10 @@ namespace LYBT.Entities.Formulas
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets 剂量（整数，根据用户要求）
+        /// 剂量（整数）
         /// </summary>
         [DisplayName("剂量")]
-        public int Quantity { get; set; } = 1;
-
-        /// <summary>
-        /// Gets or sets 剂量（与Quantity同义，为兼容性保留）
-        /// </summary>
-        [NotMapped]
-        public int Dosage
-        {
-            get => Quantity;
-            set => Quantity = value;
-        }
+        public int Dosage { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets 单位（从药材库继承，如：克、钱、两等）.
@@ -102,5 +93,11 @@ namespace LYBT.Entities.Formulas
         [StringLength(100)]
         [DisplayName("炮制方法")]
         public string? ProcessingMethod { get; set; }
+
+        /// <summary>
+        /// 煎法（先煎、后下等）
+        /// </summary>
+        [DisplayName("煎法")]
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
     }
 }

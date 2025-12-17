@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Desktop.Users.Controls
 {
@@ -66,6 +67,22 @@ namespace LYBT.Desktop.Users.Controls
         }
 
         /// <summary>
+        /// 拼音码（可编辑，用于修正多音字等识别错误）
+        /// </summary>
+        public static readonly DependencyProperty PinYinCodeProperty =
+            DependencyProperty.Register(
+                nameof(PinYinCode),
+                typeof(string),
+                typeof(UserEditControl),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string PinYinCode
+        {
+            get => (string)GetValue(PinYinCodeProperty);
+            set => SetValue(PinYinCodeProperty, value);
+        }
+
+        /// <summary>
         /// 手机号码
         /// </summary>
         public static readonly DependencyProperty PhoneNumberProperty =
@@ -103,13 +120,13 @@ namespace LYBT.Desktop.Users.Controls
         public static readonly DependencyProperty RoleProperty =
             DependencyProperty.Register(
                 nameof(Role),
-                typeof(string),
+                typeof(UserRole),
                 typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(UserRole.Doctor, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public string Role
+        public UserRole Role
         {
-            get => (string)GetValue(RoleProperty);
+            get => (UserRole)GetValue(RoleProperty);
             set => SetValue(RoleProperty, value);
         }
 
@@ -119,13 +136,13 @@ namespace LYBT.Desktop.Users.Controls
         public static readonly DependencyProperty RoleOptionsProperty =
             DependencyProperty.Register(
                 nameof(RoleOptions),
-                typeof(ObservableCollection<string>),
+                typeof(ObservableCollection<UserRole>),
                 typeof(UserEditControl),
                 new PropertyMetadata(null));
 
-        public ObservableCollection<string>? RoleOptions
+        public ObservableCollection<UserRole>? RoleOptions
         {
-            get => (ObservableCollection<string>?)GetValue(RoleOptionsProperty);
+            get => (ObservableCollection<UserRole>?)GetValue(RoleOptionsProperty);
             set => SetValue(RoleOptionsProperty, value);
         }
 
@@ -135,13 +152,13 @@ namespace LYBT.Desktop.Users.Controls
         public static readonly DependencyProperty StatusProperty =
             DependencyProperty.Register(
                 nameof(Status),
-                typeof(string),
+                typeof(CommonStatus),
                 typeof(UserEditControl),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                new FrameworkPropertyMetadata(CommonStatus.Enabled, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public string Status
+        public CommonStatus Status
         {
-            get => (string)GetValue(StatusProperty);
+            get => (CommonStatus)GetValue(StatusProperty);
             set => SetValue(StatusProperty, value);
         }
 
@@ -151,13 +168,13 @@ namespace LYBT.Desktop.Users.Controls
         public static readonly DependencyProperty StatusOptionsProperty =
             DependencyProperty.Register(
                 nameof(StatusOptions),
-                typeof(ObservableCollection<string>),
+                typeof(ObservableCollection<CommonStatus>),
                 typeof(UserEditControl),
                 new PropertyMetadata(null));
 
-        public ObservableCollection<string>? StatusOptions
+        public ObservableCollection<CommonStatus>? StatusOptions
         {
-            get => (ObservableCollection<string>?)GetValue(StatusOptionsProperty);
+            get => (ObservableCollection<CommonStatus>?)GetValue(StatusOptionsProperty);
             set => SetValue(StatusOptionsProperty, value);
         }
 

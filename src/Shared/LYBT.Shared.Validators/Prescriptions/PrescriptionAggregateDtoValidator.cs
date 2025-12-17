@@ -75,7 +75,7 @@ namespace LYBT.Shared.Validators.Prescriptions
             // 当NeedsPrescription=true时，Items必须有有效项目
             RuleFor(x => x.Items)
                 .NotEmpty().WithMessage("开处方时必须添加至少一项药材")
-                .Must(items => items != null && items.Any(i => i.HerbId != Guid.Empty && i.Quantity > 0))
+                .Must(items => items != null && items.Any(i => i.HerbId != Guid.Empty && i.Dosage > 0))
                 .WithMessage("处方必须包含至少一项有效药材（药材ID和数量不能为空）")
                 .When(x => x.NeedsPrescription);
 

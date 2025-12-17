@@ -527,6 +527,14 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("DecocteMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Dosage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("FormulaId")
                         .HasColumnType("uniqueidentifier");
 
@@ -548,11 +556,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<string>("ProcessingMethod")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
 
                     b.Property<string>("Remark")
                         .HasMaxLength(200)
@@ -986,6 +989,12 @@ namespace LYBT.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("DecocteMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Dosage")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("HerbId")
                         .HasColumnType("uniqueidentifier");
 
@@ -996,9 +1005,6 @@ namespace LYBT.Infrastructure.Migrations
 
                     b.Property<Guid>("PrescriptionId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
 
                     b.Property<string>("Remark")
                         .HasMaxLength(200)

@@ -65,7 +65,7 @@ public class PrescriptionImportHandler
                 HerbId = herb.HerbId.Value,
                 HerbName = herb.HerbName ?? string.Empty,
                 CurrentDosage = existing.Dosage,
-                ImportedDosage = herb.Quantity
+                ImportedDosage = herb.Dosage
             });
         }
 
@@ -94,7 +94,7 @@ public class PrescriptionImportHandler
             {
                 HerbId = herb.HerbId.Value,
                 HerbName = herb.HerbName ?? string.Empty,
-                Dosage = herb.Quantity,
+                Dosage = herb.Dosage,
                 UnitPrice = herbInfo?.Price ?? 0m
             });
         }

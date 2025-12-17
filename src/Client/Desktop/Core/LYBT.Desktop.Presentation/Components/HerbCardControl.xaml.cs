@@ -104,6 +104,9 @@ namespace LYBT.Desktop.Presentation.Components
 
             // 订阅全局鼠标按下事件，用于点击外部时关闭Popup
             this.PreviewMouseDown += OnControlPreviewMouseDown;
+
+            // 右键菜单打开前检查编辑模式
+            this.ContextMenuOpening += OnContextMenuOpening;
         }
 
         #endregion
@@ -164,13 +167,18 @@ namespace LYBT.Desktop.Presentation.Components
         /// </summary>
         private void OnTextBoxPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // 建议框未打开或无数据时的键盘处理
             if (!SuggestionsPopup.IsOpen || SuggestionsListBox == null || SuggestionsListBox.Items.Count == 0)
             {
-                // 建议框未打开或无数据时，只处理基本键
                 if (e.Key == Key.Escape)
                 {
                     SuggestionsPopup.IsOpen = false;
                     e.Handled = true;
+                }
+                else if (e.Key == Key.Enter)
+                {
+                    // Bug修复: 建议框关闭时按回车，验证药材名称并跳转焦点
+                    HandleEnterWhenPopupClosed(e);
                 }
                 return;
             }
@@ -265,7 +273,7 @@ namespace LYBT.Desktop.Presentation.Components
         }
 
         /// <summary>
-        /// TextBox失去焦点事件 - 关闭建议框
+        /// TextBox失去焦点事件 - 关闭建议框并自动匹配药材
         /// </summary>
         private void OnTextBoxLostFocus(object sender, RoutedEventArgs e)
         {
@@ -274,7 +282,37 @@ namespace LYBT.Desktop.Presentation.Components
             {
                 // 失去焦点时关闭建议框
                 SuggestionsPopup.IsOpen = false;
+
+                // 自动匹配药材（如果HerbId未设置且药材名非空）
+                TryAutoMatchHerb();
             }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        /// <summary>
+        /// 尝试自动匹配药材 - 当用户输入完整药材名但未从列表选择时
+        /// </summary>
+        private void TryAutoMatchHerb()
+        {
+            if (DataContext is not HerbItemViewModelBase viewModel)
+                return;
+
+            // 如果已经有HerbId，说明已经选择过药材，不需要再匹配
+            if (viewModel.HerbId != Guid.Empty)
+                return;
+
+            var herbName = HerbNameTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(herbName))
+                return;
+
+            // 精确匹配药材库中的药材
+            var matchedHerb = viewModel.AllHerbs?
+                .FirstOrDefault(h => string.Equals(h.Name, herbName, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedHerb != null)
+            {
+                // 找到匹配的药材，自动设置
+                viewModel.SelectedHerb = matchedHerb;
+            }
         }
 
         #endregion
@@ -339,6 +377,44 @@ namespace LYBT.Desktop.Presentation.Components
             DosageTextBox.SelectAll();
         }
 
+        /// <summary>
+        /// 建议框关闭时处理回车键
+        /// Bug修复: 输入完整药材名称后回车应跳转焦点，无效名称应提示错误
+        /// </summary>
+        private void HandleEnterWhenPopupClosed(KeyEventArgs e)
+        {
+            if (DataContext is not HerbItemViewModelBase viewModel)
+                return;
+
+            var herbName = HerbNameTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(herbName))
+            {
+                // 空输入，不处理
+                return;
+            }
+
+            // 检查药材库中是否存在该药材（精确匹配，忽略大小写）
+            var matchedHerb = viewModel.AllHerbs?
+                .FirstOrDefault(h => string.Equals(h.Name, herbName, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedHerb != null)
+            {
+                // 药材存在 - 设置选中项并跳转到剂量输入框
+                viewModel.SelectedHerb = matchedHerb;
+                DosageTextBox.Focus();
+                DosageTextBox.SelectAll();
+                e.Handled = true;
+            }
+            else
+            {
+                // 药材不存在 - 提示错误，保持焦点在药材名称输入框
+                MessageBox.Show($"药材 \"{herbName}\" 不存在，请从建议列表中选择或输入正确的药材名称。",
+                    "药材不存在", MessageBoxButton.OK, MessageBoxImage.Warning);
+                HerbNameTextBox.SelectAll();
+                e.Handled = true;
+            }
+        }
+
         #endregion
 
         #region Event Handlers - Dosage TextBox
@@ -386,16 +462,41 @@ namespace LYBT.Desktop.Presentation.Components
 
         #endregion
 
-        #region Event Handlers - Delete Button
+        #region Event Handlers - Context Menu (Delete)
 
         /// <summary>
-        /// 删除按钮点击事件
+        /// 右键菜单打开前检查 - 非编辑模式下禁止打开
         /// </summary>
-        private void OnDeleteButtonClick(object sender, RoutedEventArgs e)
+        private void OnContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            if (DeleteCommand?.CanExecute(DataContext) == true)
+            // 非编辑模式下取消右键菜单
+            if (!IsEditMode)
             {
-                DeleteCommand.Execute(DataContext);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// 右键菜单"删除药材"点击事件
+        /// </summary>
+        private void OnDeleteMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            // 二次确认，防止误删
+            var herbName = (DataContext as HerbItemViewModelBase)?.HerbName;
+            var displayName = string.IsNullOrEmpty(herbName) ? "此药材" : $"「{herbName}」";
+
+            var result = MessageBox.Show(
+                $"确定要删除{displayName}吗？",
+                "确认删除",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                if (DeleteCommand?.CanExecute(DataContext) == true)
+                {
+                    DeleteCommand.Execute(DataContext);
+                }
             }
         }
 

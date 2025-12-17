@@ -36,9 +36,13 @@ namespace LYBT.Desktop.Herbs
             // Phase 2: 启用 Region Navigation 注册（试点模块）
             containerRegistry.RegisterForNavigation<Views.HerbManagementView>();
             containerRegistry.RegisterForNavigation<Views.HerbDetailView>();
-            
+
             // Issue #2168: CRUD统一架构 - HerbDetailView支持Create/Detail两种模式
             // HerbCreateView已删除，统一使用HerbDetailView
+
+            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
+            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
+            containerRegistry.RegisterForNavigation<Views.HerbMasterDetailView, ViewModels.HerbMasterDetailViewModel>();
         }
     }
 }

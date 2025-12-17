@@ -461,9 +461,8 @@ namespace LYBT.WebAPI.Controllers
                         Id = i.Id,
                         HerbId = i.HerbId,
                         HerbName = i.HerbName,
-                        Quantity = i.Quantity,
-                        Unit = i.Unit,
                         Dosage = i.Dosage,
+                        Unit = i.Unit,
                         UnitPrice = i.UnitPrice,
                         Subtotal = i.Subtotal,
                         Usage = i.Usage,
@@ -518,16 +517,17 @@ namespace LYBT.WebAPI.Controllers
                     Id = item.Id,
                     HerbId = item.HerbId,
                     HerbName = item.HerbName,
-                    Quantity = item.Quantity,
+                    Dosage = item.Dosage,
                     Unit = item.Unit,
                     UnitPrice = item.UnitPrice,
                     Subtotal = item.Amount, // Amount是计算属性，映射到Subtotal
                     Usage = item.Usage,
-                    Remark = item.Remark
+                    Remark = item.Remark,
+                    DecocteMethod = item.DecocteMethod
                 }).ToList() ?? new List<PrescriptionItemDto>(),
                 SingleDosePrice = entity.Items?.Sum(x => x.Amount) ?? 0,
                 TotalPrice = (entity.Items?.Sum(x => x.Amount) ?? 0) * entity.DosageCount * entity.Discount,
-                TotalWeight = entity.Items?.Sum(x => x.Quantity) ?? 0,
+                TotalWeight = entity.Items?.Sum(x => x.Dosage) ?? 0,
                 Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt
@@ -700,19 +700,19 @@ namespace LYBT.WebAPI.Controllers
                         Id = item.Id,
                         HerbId = item.HerbId,
                         HerbName = item.HerbName,
-                        Quantity = item.Quantity,
+                        Dosage = item.Dosage,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,
-                        Dosage = item.Quantity,
                         TotalPrice = item.Amount,
-                        TotalWeight = item.Quantity,
+                        TotalWeight = item.Dosage,
                         Subtotal = item.Amount,
                         Usage = item.Usage,
-                        Remark = item.Remark
+                        Remark = item.Remark,
+                        DecocteMethod = item.DecocteMethod
                     }).ToList() ?? new List<PrescriptionItemDto>(),
                     SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0,
                     TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount,
-                    TotalWeight = entity.Prescription.Items?.Sum(x => x.Quantity) ?? 0,
+                    TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0,
                     Status = CommonStatus.Enabled,
                     CreatedAt = entity.Prescription.CreatedAt,
                     UpdatedAt = entity.Prescription.UpdatedAt
@@ -1075,20 +1075,20 @@ namespace LYBT.WebAPI.Controllers
                             Id = item.Id,
                             HerbId = item.HerbId,
                             HerbName = item.HerbName,
-                            Quantity = item.Quantity,
+                            Dosage = item.Dosage,
                             Unit = item.Unit,
                             UnitPrice = item.UnitPrice,
-                            Dosage = item.Quantity, // Entity用Quantity，DTO用Dosage
                             TotalPrice = item.Amount, // Entity用Amount（计算属性），DTO用TotalPrice
-                            TotalWeight = item.Quantity, // 总重量=用量
+                            TotalWeight = item.Dosage, // 总重量=用量
                             Subtotal = item.Amount, // Entity用Amount，DTO用Subtotal
                             Usage = item.Usage,
-                            Remark = item.Remark
+                            Remark = item.Remark,
+                            DecocteMethod = item.DecocteMethod
                         }).ToList() ?? new List<PrescriptionItemDto>(),
                         // 计算属性（Entity没有这些字段，需要在映射时计算）
                         SingleDosePrice = entity.Prescription.Items?.Sum(x => x.Amount) ?? 0, // 单剂价格=所有药材小计之和
                         TotalPrice = (entity.Prescription.Items?.Sum(x => x.Amount) ?? 0) * entity.Prescription.DosageCount * entity.Prescription.Discount, // 总价=单剂×帖数×折扣
-                        TotalWeight = entity.Prescription.Items?.Sum(x => x.Quantity) ?? 0, // 总重量=所有药材用量之和
+                        TotalWeight = entity.Prescription.Items?.Sum(x => x.Dosage) ?? 0, // 总重量=所有药材用量之和
                         Status = CommonStatus.Enabled, // 子实体状态由聚合根MedicalCase控制
                         CreatedAt = entity.Prescription.CreatedAt,
                         UpdatedAt = entity.Prescription.UpdatedAt

@@ -55,7 +55,7 @@ public class NavigationManager
     public void NavigateToAddPatient()
     {
         var navigationParams = new NavigationParameters { { "Action", "AddNew" } };
-        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientManagementView", navigationParams);
+        _regionManager.RequestNavigate(RegionNames.ContentRegion, "PatientMasterDetailView", navigationParams);
     }
 
     /// <summary>快速导航到医案工作区视图</summary>

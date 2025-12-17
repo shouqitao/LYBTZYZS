@@ -1,0 +1,55 @@
+<!--
+    LoadingOverlay - 加载遮罩控件
+    OpenSpec: refactor-master-detail-layout
+
+    功能：
+    - 半透明遮罩层
+    - 加载进度指示器
+    - 可自定义加载文本
+
+    使用方式：
+    <Grid>
+        ... 内容 ...
+        <controls:LoadingOverlay
+            IsLoading="{Binding IsLoading}"
+            LoadingText="正在加载..."/>
+    </Grid>
+-->
+<UserControl x:Class="LYBT.Desktop.Infrastructure.Controls.LoadingOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:infrastructure="clr-namespace:LYBT.Desktop.Infrastructure.Converters"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <infrastructure:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="#80FFFFFF"
+          Visibility="{Binding IsLoading, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <!-- 加载动画 -->
+            <ProgressBar IsIndeterminate="True"
+                         Width="200"
+                         Height="4"
+                         BorderThickness="0">
+                <ProgressBar.Style>
+                    <Style TargetType="ProgressBar">
+                        <Setter Property="Foreground" Value="#0078D4"/>
+                        <Setter Property="Background" Value="#E0E0E0"/>
+                    </Style>
+                </ProgressBar.Style>
+            </ProgressBar>
+
+            <!-- 加载文本 -->
+            <TextBlock Text="{Binding LoadingText, ElementName=Root}"
+                       HorizontalAlignment="Center"
+                       Margin="0,16,0,0"
+                       FontSize="14"
+                       Foreground="#666666"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

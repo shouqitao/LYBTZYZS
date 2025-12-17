@@ -105,6 +105,11 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("患者姓名")]
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>拼音码（可手动修正多音字错误）</summary>
+        [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
         /// <summary>性别</summary>
         [DisplayName("性别")]
         public Gender Gender { get; set; } = Gender.Unknown;

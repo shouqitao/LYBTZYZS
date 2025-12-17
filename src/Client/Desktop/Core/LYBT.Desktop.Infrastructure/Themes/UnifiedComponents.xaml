@@ -2,6 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
+    <!-- 合并预览样式资源 -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="PreviewStyles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
     <!-- ====================================================================
          Type Ramp - 字体大小系统
          遵循WPF最佳实践，为1920x1080优化
@@ -50,6 +55,34 @@
     <CornerRadius x:Key="CornerRadiusSmall">4</CornerRadius>
     <CornerRadius x:Key="CornerRadiusMedium">8</CornerRadius>
     <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
+
+    <!-- ====================================================================
+         Elevation System - 阴影系统 (Fluent Design)
+         OpenSpec: refactor-master-detail-layout - UI优化
+         ==================================================================== -->
+    <!-- 卡片阴影效果 - 用于浮动面板 -->
+    <DropShadowEffect x:Key="CardShadow"
+                      Color="#000000"
+                      ShadowDepth="4"
+                      Direction="270"
+                      BlurRadius="12"
+                      Opacity="0.12"/>
+
+    <!-- 悬浮阴影效果 - 用于下拉菜单等 -->
+    <DropShadowEffect x:Key="FloatingShadow"
+                      Color="#000000"
+                      ShadowDepth="8"
+                      Direction="270"
+                      BlurRadius="16"
+                      Opacity="0.16"/>
+
+    <!-- 轻微阴影效果 - 用于分隔线等 -->
+    <DropShadowEffect x:Key="SubtleShadow"
+                      Color="#000000"
+                      ShadowDepth="1"
+                      Direction="270"
+                      BlurRadius="4"
+                      Opacity="0.08"/>
 
     <!-- ====================================================================
          Color System - 颜色系统
@@ -477,6 +510,79 @@
         </Style.Triggers>
     </Style>
 
+    <!-- ====================================================================
+         Master-Detail专用DataGrid行样式 - 带左侧选中指示条
+         OpenSpec: refactor-master-detail-layout - UI优化
+         ==================================================================== -->
+    <Style x:Key="MasterDetailDataGridRowStyle" TargetType="DataGridRow">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="3,0,0,1"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="MinHeight" Value="48"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridRow">
+                    <Border x:Name="RowBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            SnapsToDevicePixels="True">
+                        <SelectiveScrollingGrid>
+                            <SelectiveScrollingGrid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </SelectiveScrollingGrid.ColumnDefinitions>
+                            <SelectiveScrollingGrid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </SelectiveScrollingGrid.RowDefinitions>
+                            <DataGridCellsPresenter Grid.Column="1"
+                                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            <DataGridDetailsPresenter Grid.Column="1"
+                                                      Grid.Row="1"
+                                                      SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                      Visibility="{TemplateBinding DetailsVisibility}"/>
+                            <DataGridRowHeader Grid.RowSpan="2"
+                                               SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                               Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                        </SelectiveScrollingGrid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- 悬停状态 -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                        </Trigger>
+                        <!-- 选中状态 - 左侧蓝色指示条 -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="RowBorder" Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
+                            <Setter TargetName="RowBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <!-- 选中+悬停状态 -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="RowBorder" Property="Background" Value="{StaticResource DataGridSelectedHoverBrush}"/>
+                            <Setter TargetName="RowBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Master-Detail专用DataGrid样式 - 继承BaseDataGridStyle并应用新行样式 -->
+    <Style x:Key="MasterDetailDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGridStyle}">
+        <Setter Property="RowStyle" Value="{StaticResource MasterDetailDataGridRowStyle}"/>
+        <Setter Property="RowHeight" Value="48"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="GridLinesVisibility" Value="None"/>
+    </Style>
+
     <Style x:Key="BaseDataGridColumnHeader" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
@@ -557,6 +663,77 @@
 
     <!-- 注意: PaginationCurrentPage 和 PaginationPageNumber 样式已移至 UnifiedDesignSystem.xaml -->
     <!-- 避免样式冲突，这里不再重复定义 -->
+
+    <!-- ====================================================================
+         Master-Detail分页样式 - 紧凑现代风格
+         OpenSpec: refactor-master-detail-layout - UI优化
+         ==================================================================== -->
+    <!-- 分页容器样式 -->
+    <Style x:Key="MasterDetailPaginationPanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Padding" Value="12,8"/>
+    </Style>
+
+    <!-- 分页按钮样式 - 紧凑版 -->
+    <Style x:Key="MasterDetailPaginationButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="MinWidth" Value="32"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource CornerRadiusSmall}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DataGridHoverBrush}"/>
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource DataGridSelectedBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 分页信息文本样式 -->
+    <Style x:Key="MasterDetailPaginationInfoStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- 分页页码文本样式 -->
+    <Style x:Key="MasterDetailPaginationPageStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="8,0"/>
+    </Style>
 
     <!-- ====================================================================
          Status Badge Styles - 状态徽章样式
@@ -672,6 +849,40 @@
         <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
         <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- ====================================================================
+         Detail Panel Styles - 详情面板样式
+         OpenSpec: refactor-master-detail-layout - 详情区域UI优化
+         用于Master-Detail右侧详情区域的字段展示
+         ==================================================================== -->
+
+    <!-- 详情标签样式 - 用于字段名称 -->
+    <Style x:Key="DetailLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,8,8,8"/>
+    </Style>
+
+    <!-- 详情值样式 - 用于字段值 -->
+    <Style x:Key="DetailValueStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,8,16,8"/>
+    </Style>
+
+    <!-- 详情分组标题样式 -->
+    <Style x:Key="DetailSectionTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontFamily" Value="{StaticResource PrimaryFontFamily}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
     </Style>
 
     <!-- 加载遮罩样式 - 半透明黑色背景 -->

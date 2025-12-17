@@ -2,9 +2,15 @@
     UserViewControl - 用户预览控件
     OpenSpec: extract-detail-controls Task 4.1
     OpenSpec: optimize-preview-layout - 优化布局和视觉层次
+    OpenSpec: refactor-master-detail-layout - 详情区域UI优化
 
     独立的用户预览控件，可在UserDetailView和其他需要展示用户信息的地方复用
     通过DependencyProperty接收数据，支持只读展示
+
+    UI优化 (2025-12-16):
+    - 采用多卡片分组布局，充分利用详情区域空间
+    - 分为：基本信息、联系信息、系统信息三个逻辑区域
+    - 添加：拼音码、最后登录时间、创建/更新时间字段
 -->
 <UserControl x:Class="LYBT.Desktop.Users.Controls.UserViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,57 +29,122 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel DataContext="{Binding ElementName=Root}">
-        <!-- 用户信息卡片 - 紧凑布局 -->
-        <controls:InfoCard ShowTitle="False">
-            <controls:InfoCard.Content>
-                <StackPanel>
-                    <!-- 头部: 用户名 + 真实姓名 + 状态Badge -->
-                    <Grid Margin="0,0,0,12">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding ElementName=Root}">
+        <StackPanel>
+            <!-- ========================================
+                 基本信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="基本信息" ShowTitle="True">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="{Binding UserName}" Style="{StaticResource PreviewTitleStyle}"/>
-                            <TextBlock Text="{Binding RealName, StringFormat=({0})}"
-                                       Style="{StaticResource PreviewSubtitleStyle}"
-                                       Visibility="{Binding RealName, Converter={StaticResource NullToVisibilityConverter}}"/>
-                        </StackPanel>
+                        <!-- 用户名 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="用户名" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UserName}" Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold"/>
 
-                        <Border Grid.Column="1"
-                                Style="{StaticResource PreviewBadgeSuccessStyle}"
-                                Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text="{Binding Status}" Style="{StaticResource PreviewBadgeTextStyle}"/>
-                        </Border>
+                        <!-- 真实姓名 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="真实姓名" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding RealName}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 拼音码 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="拼音码" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 用户角色 -->
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="用户角色" Style="{StaticResource DetailLabelStyle}"/>
+                        <controls:StatusBadge Grid.Row="1" Grid.Column="3"
+                                              Status="{Binding Role}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"/>
+
+                        <!-- 账户状态 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="账户状态" Style="{StaticResource DetailLabelStyle}"
+                                   Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <controls:StatusBadge Grid.Row="2" Grid.Column="1"
+                                              Status="{Binding Status}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"
+                                              Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
 
-                    <!-- 紧凑信息区 -->
-                    <Grid Margin="0,0,0,6">
+            <!-- ========================================
+                 联系信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="联系信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="角色：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Role}" FontSize="13" Margin="0,0,20,0"/>
-                        <TextBlock Grid.Column="2" Text="手机：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="3" Text="{Binding PhoneNumber}" FontSize="13"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6"
-                          Visibility="{Binding Email, Converter={StaticResource NullToVisibilityConverter}}">
+                        <!-- 手机号码 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 邮箱地址 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="邮箱地址" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="1" Text="{Binding Email, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 系统信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="邮箱：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Email}" FontSize="13"/>
+
+                        <!-- 最后登录时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="最后登录" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding LastLoginTime, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='从未登录'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 创建时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="创建时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3"
+                                   Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 更新时间 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="更新时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
                     </Grid>
-                </StackPanel>
-            </controls:InfoCard.Content>
-        </controls:InfoCard>
-    </StackPanel>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

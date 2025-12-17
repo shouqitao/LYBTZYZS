@@ -241,7 +241,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         private void ExecuteBack()
         {
             _logger.LogInformation("执行返回");
-            _regionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+            _regionManager.RequestNavigate("ContentRegion", "PatientMasterDetailView");
         }
 
         /// <summary>

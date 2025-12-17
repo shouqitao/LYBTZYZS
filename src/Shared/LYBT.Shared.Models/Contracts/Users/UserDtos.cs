@@ -95,6 +95,11 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("真实姓名")]
         public string? RealName { get; set; }
 
+        /// <summary>拼音码（可手动修正多音字错误）</summary>
+        [StringLength(50, ErrorMessage = "拼音码长度不能超过50个字符")]
+        [DisplayName("拼音码")]
+        public string? PinYinCode { get; set; }
+
         /// <summary>手机号码</summary>
         [Phone(ErrorMessage = "电话号码格式不正确")]
         [StringLength(20, ErrorMessage = "手机号码长度不能超过20个字符")]

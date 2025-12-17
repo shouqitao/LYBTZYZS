@@ -48,12 +48,12 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,20">
-                        <TextBlock Text="拼音码（自动生成）" Style="{StaticResource FormLabelStyle}"/>
-                        <TextBox Text="{Binding PinYinCode, Mode=OneWay}"
-                                 IsReadOnly="True"
-                                 Background="{StaticResource BackgroundBrush}"
+                        <TextBlock Text="拼音码（可修正）" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource EditableTextBoxStyle}"
                                  MinHeight="44"
-                                 Padding="12,10"/>
+                                 Padding="12,10"
+                                 ToolTip="自动根据姓名生成，如有多音字错误可手动修正"/>
                     </StackPanel>
 
                     <!-- 第二行：性别、出生日期 -->

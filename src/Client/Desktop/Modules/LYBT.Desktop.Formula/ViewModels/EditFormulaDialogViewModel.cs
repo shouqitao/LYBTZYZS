@@ -151,8 +151,8 @@ namespace LYBT.Desktop.Formula.ViewModels
                     var duplicates = HerbItems.Where(h => h.HerbId == herbItem.HerbId && h != herbItem).ToList();
                     if (duplicates.Any())
                     {
-                        var maxQty = Math.Max(herbItem.Quantity, duplicates.Max(d => d.Quantity));
-                        herbItem.Quantity = maxQty;
+                        var maxQty = Math.Max(herbItem.Dosage, duplicates.Max(d => d.Dosage));
+                        herbItem.Dosage = maxQty;
                         foreach (var dup in duplicates) HerbItems.Remove(dup);
                         _ = ShowWarningMessageAsync($"{herbItem.HerbName}有重复，剂量改为{maxQty}g");
                     }

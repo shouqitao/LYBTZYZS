@@ -294,7 +294,7 @@
 
                             <!-- 用量 -->
                             <DataGridTextColumn Header="用量"
-                                                Binding="{Binding Quantity, StringFormat=F1}"
+                                                Binding="{Binding Dosage, StringFormat=F1}"
                                                 Width="70" />
 
                             <!-- 单位 -->

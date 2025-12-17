@@ -129,7 +129,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
                 PrescriptionId = Guid.NewGuid(),
                 HerbId = Guid.NewGuid(),
                 HerbName = "当归",
-                Quantity = 10,
+                Dosage = 10,
                 Unit = "g",
                 UnitPrice = 0.5m,
                 Remark = "酒制"
@@ -143,7 +143,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Id.Should().Be(prescriptionItem.Id);
             dto.HerbId.Should().Be(prescriptionItem.HerbId);
             dto.HerbName.Should().Be(prescriptionItem.HerbName);
-            dto.Quantity.Should().Be(prescriptionItem.Quantity);
+            dto.Dosage.Should().Be(prescriptionItem.Dosage);
             dto.Unit.Should().Be(prescriptionItem.Unit);
             dto.UnitPrice.Should().Be(prescriptionItem.UnitPrice);
             dto.Remark.Should().Be(prescriptionItem.Remark);
@@ -189,7 +189,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             {
                 HerbId = Guid.NewGuid(),
                 HerbName = "黄芪",
-                Quantity = 15,
+                Dosage = 15,
                 Unit = "g",
                 UnitPrice = 0.8m,
                 Usage = "炙制",
@@ -203,7 +203,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             prescriptionItem.Should().NotBeNull();
             prescriptionItem.HerbId.Should().Be(createDto.HerbId);
             prescriptionItem.HerbName.Should().Be(createDto.HerbName);
-            prescriptionItem.Quantity.Should().Be((int)createDto.Quantity);
+            prescriptionItem.Dosage.Should().Be((int)createDto.Dosage);
             prescriptionItem.Unit.Should().Be(createDto.Unit);
             prescriptionItem.UnitPrice.Should().Be(createDto.UnitPrice);
             prescriptionItem.Remark.Should().Be(createDto.Remark);
@@ -288,7 +288,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
                 PrescriptionId = Guid.NewGuid(),
                 HerbId = Guid.NewGuid(),
                 HerbName = "免费药材",
-                Quantity = 5,
+                Dosage = 5,
                 Unit = "g",
                 UnitPrice = 0.0m,
                 Remark = "免费提供"
@@ -300,7 +300,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             // Assert
             dto.Should().NotBeNull();
             dto.HerbName.Should().Be("免费药材");
-            dto.Quantity.Should().Be(5.0m);
+            dto.Dosage.Should().Be(5.0m);
             dto.UnitPrice.Should().Be(0.0m);
             dto.Remark.Should().Be("免费提供");
         }

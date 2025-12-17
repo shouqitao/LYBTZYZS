@@ -17,7 +17,7 @@ namespace LYBT.Infrastructure.Data.Configurations
 
             // 字符串长度由 Entity 的 [StringLength] 定义，遵循 DRY 原则
             entity.Property(f => f.HerbName).IsRequired();
-            entity.Property(f => f.Quantity).HasDefaultValue(1);
+            entity.Property(f => f.Dosage).HasDefaultValue(1);
             entity.Property(f => f.Unit).HasDefaultValue("g");
 
             // 配置与Herb的关系

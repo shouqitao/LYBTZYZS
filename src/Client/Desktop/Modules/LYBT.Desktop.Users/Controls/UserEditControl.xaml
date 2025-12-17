@@ -34,6 +34,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- 第一行：用户名、真实姓名 -->
@@ -54,8 +55,17 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <!-- 第二行：手机号码、邮箱地址 -->
+                    <!-- 第二行：拼音码、手机号码 -->
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
+                        <TextBlock Text="拼音码（可修正）" Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Text="{Binding PinYinCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource EditableTextBoxStyle}"
+                                 MinHeight="44"
+                                 Padding="12,10"
+                                 ToolTip="自动根据真实姓名生成，如有多音字错误可手动修正"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="手机号码" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource EditableTextBoxStyle}"
@@ -63,7 +73,8 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,20">
+                    <!-- 第三行：邮箱地址、用户角色 -->
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
                         <TextBlock Text="邮箱地址" Style="{StaticResource FormLabelStyle}"/>
                         <TextBox Text="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource EditableTextBoxStyle}"
@@ -71,8 +82,7 @@
                                  Padding="12,10"/>
                     </StackPanel>
 
-                    <!-- 第三行：用户角色、账户状态 -->
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
+                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20">
                         <TextBlock Text="用户角色 *" Style="{StaticResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Role, Mode=TwoWay}"
                                   ItemsSource="{Binding RoleOptions}"
@@ -81,7 +91,8 @@
                                   Padding="12,10"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,20"
+                    <!-- 第四行：账户状态 -->
+                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,20"
                                 Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Text="账户状态" Style="{StaticResource FormLabelStyle}"/>
                         <ComboBox SelectedItem="{Binding Status, Mode=TwoWay}"

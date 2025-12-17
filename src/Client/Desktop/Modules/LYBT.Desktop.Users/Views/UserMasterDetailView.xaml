@@ -1,0 +1,314 @@
+<!--
+    UserMasterDetailView - 用户Master-Detail视图
+    OpenSpec: refactor-master-detail-layout
+
+    重构说明：
+    - 合并UserManagementView和UserDetailView为单一视图
+    - 左侧40%显示用户列表，右侧60%显示详情/编辑
+    - 复用UserViewControl和UserEditControl
+
+    UI优化 (2025-12-16):
+    - 应用统一DataGrid样式(MasterDetailDataGridStyle)
+    - 使用StatusBadge组件显示状态
+    - 应用统一分页样式
+-->
+<UserControl x:Class="LYBT.Desktop.Users.Views.UserMasterDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:userControls="clr-namespace:LYBT.Desktop.Users.Controls"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
+        <!-- ========================================
+             Master区域: 用户列表
+             ======================================== -->
+        <controls:MasterDetailLayout.MasterContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+                    <RowDefinition Height="Auto"/>  <!-- 搜索和筛选 -->
+                    <RowDefinition Height="*"/>     <!-- 列表 -->
+                    <RowDefinition Height="Auto"/>  <!-- 分页 -->
+                </Grid.RowDefinitions>
+
+                <!-- 工具栏 -->
+                <controls:DataGridToolbar Grid.Row="0"
+                                          CreateCommand="{Binding AddCommand}"
+                                          RefreshCommand="{Binding RefreshCommand}"
+                                          ExportCommand="{Binding ExportCommand}">
+                    <controls:DataGridToolbar.AdditionalContent>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="导入"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding ImportCommand}"
+                                    Padding="12,6"
+                                    Margin="4,0,0,0"/>
+                            <Button Content="模板"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding DownloadTemplateCommand}"
+                                    Padding="12,6"
+                                    Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </controls:DataGridToolbar.AdditionalContent>
+                </controls:DataGridToolbar>
+
+                <!-- 搜索和筛选 -->
+                <Grid Grid.Row="1" Margin="12,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 搜索框 -->
+                    <controls:SearchBox Grid.Row="0"
+                                        SearchText="{Binding SearchText, Mode=TwoWay}"
+                                        SearchCommand="{Binding SearchCommand}"
+                                        Placeholder="搜索用户名/姓名..."/>
+
+                    <!-- 筛选条件 -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                        <ComboBox ItemsSource="{Binding RoleOptions}"
+                                  SelectedItem="{Binding SelectedRoleFilter}"
+                                  Width="100"
+                                  Margin="0,0,8,0"
+                                  Text="全部角色"
+                                  IsEditable="False"/>
+                        <ComboBox ItemsSource="{Binding StatusOptions}"
+                                  SelectedItem="{Binding SelectedStatusFilter}"
+                                  Width="100"
+                                  Margin="0,0,8,0"
+                                  Text="全部状态"
+                                  IsEditable="False"/>
+                        <CheckBox Content="显示已禁用"
+                                  IsChecked="{Binding ShowInactiveUsers}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,8,0"/>
+                        <Button Content="清除筛选"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ClearFiltersCommand}"
+                                Padding="8,2"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 用户列表 - 使用统一DataGrid样式 -->
+                <DataGrid Grid.Row="2"
+                          ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                          Style="{StaticResource MasterDetailDataGridStyle}"
+                          RowHeaderWidth="0"
+                          Margin="0,0,0,8">
+                    <DataGrid.Columns>
+                        <!-- 用户名 -->
+                        <DataGridTextColumn Header="用户名"
+                                            Binding="{Binding UserName}"
+                                            Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="8,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 真实姓名 -->
+                        <DataGridTextColumn Header="姓名"
+                                            Binding="{Binding RealName}"
+                                            Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 角色 -->
+                        <DataGridTextColumn Header="角色"
+                                            Binding="{Binding Role}"
+                                            Width="70">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 状态 - 使用StatusBadge组件 -->
+                        <DataGridTemplateColumn Header="状态" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:StatusBadge Status="{Binding Status}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- 手机号 -->
+                        <DataGridTextColumn Header="手机号"
+                                            Binding="{Binding PhoneNumber}"
+                                            Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+
+                    <!-- 行右键菜单 -->
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="编辑" Command="{Binding EditCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="重置密码" Command="{Binding ResetPasswordCommand}" CommandParameter="{Binding SelectedItem}"/>
+                            <MenuItem Header="切换状态" Command="{Binding ToggleUserStatusCommand}" CommandParameter="{Binding SelectedItem}"/>
+                            <Separator/>
+                            <MenuItem Header="审计日志" Command="{Binding ShowAuditLogCommand}" CommandParameter="{Binding SelectedItem}"/>
+                            <Separator/>
+                            <MenuItem Header="删除" Command="{Binding DeleteCurrentCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+
+                <!-- 分页控件 - 使用统一样式 -->
+                <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 统计信息 -->
+                        <TextBlock Grid.Column="0" Style="{StaticResource MasterDetailPaginationInfoStyle}">
+                            <Run Text="共"/>
+                            <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
+                            <Run Text="条记录"/>
+                        </TextBlock>
+
+                        <!-- 分页按钮 -->
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button Content="首页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding FirstPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <Button Content="上一页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding PreviousPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <TextBlock Style="{StaticResource MasterDetailPaginationPageStyle}">
+                                <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding TotalPages, Mode=OneWay}"/>
+                            </TextBlock>
+                            <Button Content="下一页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding NextPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <Button Content="末页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding LastPageCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 加载遮罩 -->
+                <controls:LoadingOverlay Grid.RowSpan="4"
+                                         IsLoading="{Binding IsLoading}"
+                                         LoadingText="{Binding BusyMessage}"/>
+            </Grid>
+        </controls:MasterDetailLayout.MasterContent>
+
+        <!-- ========================================
+             Detail区域: 用户详情/编辑
+             ======================================== -->
+        <controls:MasterDetailLayout.DetailContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+                    <RowDefinition Height="*"/>     <!-- 内容 -->
+                </Grid.RowDefinitions>
+
+                <!-- 详情工具栏 -->
+                <controls:DetailToolbar Grid.Row="0"
+                                        Title="{Binding DetailTitle}"
+                                        IsEditMode="{Binding IsEditMode}"
+                                        EditCommand="{Binding EditCommand}"
+                                        SaveCommand="{Binding SaveCommand}"
+                                        CancelCommand="{Binding CancelCommand}"
+                                        DeleteCommand="{Binding DeleteCurrentCommand}"/>
+
+                <!-- 查看模式内容 -->
+                <userControls:UserViewControl
+                    Grid.Row="1"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                    UserName="{Binding CurrentDetail.UserName}"
+                    RealName="{Binding CurrentDetail.RealName}"
+                    PinYinCode="{Binding CurrentDetail.PinYinCode}"
+                    PhoneNumber="{Binding CurrentDetail.PhoneNumber}"
+                    Email="{Binding CurrentDetail.Email}"
+                    Role="{Binding CurrentDetail.Role}"
+                    Status="{Binding CurrentDetail.Status}"
+                    LastLoginTime="{Binding CurrentDetail.LastLoginTime}"
+                    CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                    UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                    ShowStatus="True"
+                    Margin="16"/>
+
+                <!-- 编辑模式内容 -->
+                <userControls:UserEditControl
+                    Grid.Row="1"
+                    Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    UserName="{Binding EditUserName, Mode=TwoWay}"
+                    IsUserNameReadOnly="{Binding IsUserNameReadOnly}"
+                    RealName="{Binding EditRealName, Mode=TwoWay}"
+                    PinYinCode="{Binding EditPinYinCode, Mode=TwoWay}"
+                    PhoneNumber="{Binding EditPhoneNumber, Mode=TwoWay}"
+                    Email="{Binding EditEmail, Mode=TwoWay}"
+                    Role="{Binding EditRole, Mode=TwoWay}"
+                    RoleOptions="{Binding RoleOptions}"
+                    Status="{Binding EditStatus, Mode=TwoWay}"
+                    StatusOptions="{Binding StatusOptions}"
+                    ShowStatus="True"
+                    Margin="16"/>
+
+                <!-- 详情加载遮罩 -->
+                <controls:LoadingOverlay Grid.RowSpan="2"
+                                         IsLoading="{Binding IsLoadingDetail}"
+                                         LoadingText="加载详情中..."/>
+            </Grid>
+        </controls:MasterDetailLayout.DetailContent>
+
+        <!-- ========================================
+             空状态: 未选中用户时显示
+             ======================================== -->
+        <controls:MasterDetailLayout.EmptyContent>
+            <controls:EmptyState
+                Title="请选择用户"
+                Subtitle="从左侧列表中选择一位用户查看详情，或点击新增按钮创建新用户"
+                ActionText="新增用户"
+                ActionCommand="{Binding AddCommand}"/>
+        </controls:MasterDetailLayout.EmptyContent>
+    </controls:MasterDetailLayout>
+</UserControl>

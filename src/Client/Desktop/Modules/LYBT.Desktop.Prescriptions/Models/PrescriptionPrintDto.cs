@@ -1,3 +1,7 @@
+using System.ComponentModel;
+using System.Reflection;
+using LYBT.Shared.Models.Enums;
+
 namespace LYBT.Desktop.Prescriptions.Models
 {
     /// <summary>
@@ -99,8 +103,41 @@ namespace LYBT.Desktop.Prescriptions.Models
         /// <summary>药材名</summary>
         public string HerbName { get; set; } = string.Empty;
         /// <summary>剂量</summary>
-        public decimal Quantity { get; set; }
+        public decimal Dosage { get; set; }
         /// <summary>单位</summary>
         public string Unit { get; set; } = "g";
+        /// <summary>煎法</summary>
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
+
+        /// <summary>
+        /// 打印显示文本 - 格式: "药材名 剂量单位(煎法)"
+        /// 默认煎法不显示括号标注
+        /// </summary>
+        public string DisplayText
+        {
+            get
+            {
+                var baseText = $"{HerbName}{Dosage:0.##}{Unit}";
+                if (DecocteMethod == DecocteMethod.Default)
+                {
+                    return baseText;
+                }
+                else
+                {
+                    var decocteMethodText = GetDecocteMethodDescription(DecocteMethod);
+                    return $"{baseText}({decocteMethodText})";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取煎法的中文描述
+        /// </summary>
+        private static string GetDecocteMethodDescription(DecocteMethod method)
+        {
+            var field = method.GetType().GetField(method.ToString());
+            var attribute = field?.GetCustomAttribute<DescriptionAttribute>();
+            return attribute?.Description ?? method.ToString();
+        }
     }
 }

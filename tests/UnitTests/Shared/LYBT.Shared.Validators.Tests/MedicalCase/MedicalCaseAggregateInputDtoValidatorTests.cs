@@ -128,7 +128,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
                 DosageCount = 7,
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), Dosage = 10, Quantity = 10 }
+                    new() { HerbId = Guid.NewGuid(), Dosage = 10 }
                 }
             }
         };
@@ -229,8 +229,8 @@ public class MedicalCaseAggregateInputDtoValidatorTests
                 Advice = "忌辛辣",
                 Items = new List<PrescriptionItemInputDto>
                 {
-                    new() { HerbId = Guid.NewGuid(), Dosage = 15, Quantity = 15, HerbName = "天麻" },
-                    new() { HerbId = Guid.NewGuid(), Dosage = 10, Quantity = 10, HerbName = "钩藤" }
+                    new() { HerbId = Guid.NewGuid(), Dosage = 15, HerbName = "天麻" },
+                    new() { HerbId = Guid.NewGuid(), Dosage = 10, HerbName = "钩藤" }
                 }
             }
         };

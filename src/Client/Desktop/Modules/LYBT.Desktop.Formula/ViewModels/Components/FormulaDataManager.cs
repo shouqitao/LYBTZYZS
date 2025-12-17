@@ -318,7 +318,7 @@ namespace LYBT.Desktop.Formula.ViewModels.Components
                     Id = h.Id,
                     HerbId = h.HerbId,
                     HerbName = h.HerbName,
-                    Quantity = h.Quantity,
+                    Dosage = h.Dosage,
                     Preparation = h.Preparation,
                     Usage = h.Usage,
                     SortOrder = h.SortOrder

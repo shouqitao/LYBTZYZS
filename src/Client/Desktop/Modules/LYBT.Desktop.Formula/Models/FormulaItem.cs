@@ -397,7 +397,7 @@ public class FormulaHerbItem : BindableBase
         {
             HerbId = dto.HerbId,
             HerbName = dto.HerbName,
-            Dosage = dto.Quantity, // FormulaHerbItemDto 中是 Quantity
+            Dosage = dto.Dosage,
             Unit = dto.Unit,
             Usage = dto.Usage,
             Sequence = dto.SortOrder // FormulaHerbItemDto 中是 SortOrder
@@ -413,7 +413,7 @@ public class FormulaHerbItem : BindableBase
         {
             HerbId = HerbId,
             HerbName = HerbName,
-            Quantity = Dosage, // FormulaHerbItemDto 中是 Quantity
+            Dosage = Dosage,
             Unit = Unit,
             Usage = Usage,
             SortOrder = Sequence // FormulaHerbItemDto 中是 SortOrder

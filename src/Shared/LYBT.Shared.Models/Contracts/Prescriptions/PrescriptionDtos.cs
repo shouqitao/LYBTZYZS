@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Prescriptions
 {
@@ -294,9 +295,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [DisplayName("中药材名称")]
         public string HerbName { get; set; } = string.Empty;
 
-        [DisplayName("用量")]
-        public decimal Quantity { get; set; }
-
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
 
@@ -317,6 +315,9 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
 
         [DisplayName("用法说明")]
         public string? Usage { get; set; }
+
+        [DisplayName("煎法")]
+        public Enums.DecocteMethod DecocteMethod { get; set; } = Enums.DecocteMethod.Default;
 
         /// <inheritdoc/>
         [DisplayName("备注")]
@@ -349,11 +350,6 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [StringLength(100)]
         [DisplayName("草药名称")]
         public string? HerbName { get; set; }
-
-        /// <summary>数量</summary>
-        [Range(1, 9999)]
-        [DisplayName("数量")]
-        public int Quantity { get; set; }
 
         /// <summary>单位</summary>
         [Required]
@@ -389,6 +385,10 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         [StringLength(200)]
         [DisplayName("备注")]
         public string? Note { get; set; }
+
+        /// <summary>煎法</summary>
+        [DisplayName("煎法")]
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
     }
 
     /// <summary>

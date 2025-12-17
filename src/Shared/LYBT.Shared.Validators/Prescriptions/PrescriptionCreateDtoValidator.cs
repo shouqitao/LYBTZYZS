@@ -49,7 +49,7 @@ namespace LYBT.Shared.Validators.Prescriptions
             RuleFor(x => x.HerbId)
                 .NotEmpty().WithMessage("药材ID不能为空");
 
-            RuleFor(x => x.Quantity)
+            RuleFor(x => x.Dosage)
                 .GreaterThan(0).WithMessage("用量必须大于0")
                 .LessThanOrEqualTo(1000).WithMessage("用量不能超过1000克");
 

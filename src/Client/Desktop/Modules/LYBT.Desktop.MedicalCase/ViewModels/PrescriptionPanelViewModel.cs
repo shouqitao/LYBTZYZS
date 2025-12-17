@@ -215,6 +215,7 @@ public class PrescriptionPanelViewModel : UnifiedViewModelBase, IDataProvider
                     herbItem.HerbId = item.HerbId;
                     herbItem.HerbName = item.HerbName ?? string.Empty;
                     herbItem.Dosage = item.Dosage;
+                    herbItem.DecocteMethod = item.DecocteMethod;
                     herbItem.SetLoadedUnitPrice(item.UnitPrice);
                     HerbItems.Add(herbItem);
                 }

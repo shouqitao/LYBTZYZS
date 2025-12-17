@@ -230,10 +230,9 @@ namespace LYBT.Desktop.Prescriptions.Services
                         Id = Guid.NewGuid(),
                         HerbId = item.HerbId,
                         HerbName = item.HerbName ?? string.Empty,
-                        Quantity = item.Quantity,
                         Unit = item.Unit,
                         UnitPrice = item.UnitPrice,
-                        Dosage = item.Quantity,
+                        Dosage = item.Dosage,
                         Subtotal = item.Subtotal,
                         Usage = item.Usage,
                         Remark = item.Remark
@@ -306,7 +305,7 @@ namespace LYBT.Desktop.Prescriptions.Services
                 }
 
                 // 计算单帖价格（所有药材的小计之和）
-                var singleDosePrice = items.Sum(item => item.UnitPrice * item.Quantity);
+                var singleDosePrice = items.Sum(item => item.UnitPrice * item.Dosage);
 
                 // 计算总价格（单帖价格 × 剂数 × 折扣）
                 var totalPrice = singleDosePrice * dosageCount * discount;

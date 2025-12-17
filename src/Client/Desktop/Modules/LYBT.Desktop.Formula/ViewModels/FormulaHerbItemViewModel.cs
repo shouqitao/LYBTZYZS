@@ -44,9 +44,10 @@ namespace LYBT.Desktop.Formula.ViewModels
             {
                 HerbId = HerbId == Guid.Empty ? null : HerbId,
                 HerbName = HerbName,
-                Quantity = Dosage,
+                Dosage = Dosage,
                 Unit = Unit,
-                ProcessingMethod = Remark
+                ProcessingMethod = Remark,
+                DecocteMethod = DecocteMethod
             };
         }
 

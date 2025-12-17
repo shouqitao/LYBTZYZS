@@ -706,9 +706,10 @@ namespace LYBT.Module.MedicalCases.Services
                                             PrescriptionId = prescription.Id,
                                             HerbId = itemDto.HerbId,
                                             HerbName = itemDto.HerbName ?? string.Empty,
-                                            Quantity = itemDto.Quantity,
+                                            Dosage = (int)itemDto.Dosage,
                                             Usage = request.Prescription.Usage,
-                                            Remark = itemDto.Remark
+                                            Remark = itemDto.Remark,
+                                            DecocteMethod = itemDto.DecocteMethod
                                         };
                                         prescription.Items.Add(item);
                                     }
@@ -740,9 +741,10 @@ namespace LYBT.Module.MedicalCases.Services
                                             PrescriptionId = prescription.Id,
                                             HerbId = itemDto.HerbId,
                                             HerbName = itemDto.HerbName ?? string.Empty,
-                                            Quantity = itemDto.Quantity,
+                                            Dosage = (int)itemDto.Dosage,
                                             Usage = request.Prescription.Usage,
-                                            Remark = itemDto.Remark
+                                            Remark = itemDto.Remark,
+                                            DecocteMethod = itemDto.DecocteMethod
                                         };
                                         prescription.Items.Add(item);
                                     }

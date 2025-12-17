@@ -92,6 +92,7 @@ public class PrescriptionItemHandler
         item.HerbId = itemDto.HerbId;
         item.HerbName = itemDto.HerbName;
         item.Dosage = itemDto.Dosage;
+        item.DecocteMethod = itemDto.DecocteMethod;
         // UnitPrice通过SetLoadedUnitPrice方法设置
         item.SetLoadedUnitPrice(itemDto.UnitPrice);
 
@@ -290,9 +291,9 @@ public class PrescriptionItemHandler
                 {
                     HerbId = herbItem.HerbId,
                     HerbName = herbItem.HerbName,
-                    Quantity = (int)herbItem.Dosage,
                     Dosage = herbItem.Dosage,
-                    Unit = "g"
+                    Unit = "g",
+                    DecocteMethod = herbItem.DecocteMethod
                 });
             }
         }

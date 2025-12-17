@@ -43,6 +43,10 @@ namespace LYBT.Desktop.Formula
             // Phase 3: 启用 Prism Dialog 注册
             containerRegistry.RegisterDialog<Views.EditFormulaDialog, ViewModels.EditFormulaDialogViewModel>();
             // Issue #1802: ViewFormulaDialog已删除（改用FormulaDetailView进行只读查看）
+
+            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
+            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
+            containerRegistry.RegisterForNavigation<Views.FormulaMasterDetailView, ViewModels.FormulaMasterDetailViewModel>();
         }
     }
 }

@@ -16,19 +16,14 @@
         string HerbName { get; }
 
         /// <summary>
-        /// 剂量
-        /// </summary>
-        decimal Dosage { get; }
-
-        /// <summary>
         /// 单位
         /// </summary>
         string Unit { get; }
 
         /// <summary>
-        /// 数量（克重）
+        /// 剂量（用量）
         /// </summary>
-        decimal Quantity { get; }
+        decimal Dosage { get; }
 
         /// <summary>
         /// 单价

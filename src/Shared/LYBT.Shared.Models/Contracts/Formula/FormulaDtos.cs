@@ -78,7 +78,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
                 var herbNames = Herbs
                     .Where(h => h.Herb != null)
-                    .Select(h => $"{h.Herb!.Name}({h.Quantity}g)")
+                    .Select(h => $"{h.Herb!.Name}({h.Dosage}g)")
                     .ToList();
                 return herbNames.Any() ? string.Join("、", herbNames) : "暂无药材";
             }
@@ -95,7 +95,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
             var herbNames = Herbs
                 .Take(maxCount)
                 .Where(h => h.Herb != null)
-                .Select(h => $"{h.Herb!.Name}({h.Quantity}g)")
+                .Select(h => $"{h.Herb!.Name}({h.Dosage}g)")
                 .ToList();
             return herbNames.Any() ? string.Join("、", herbNames) : "暂无药材";
         }
@@ -147,9 +147,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string HerbName { get; set; } = string.Empty;
 
         [DisplayName("用量")]
-        public decimal Quantity { get; set; }
-
-        [DisplayName("剂量")]
         public decimal Dosage { get; set; }
 
         [DisplayName("单位")]
@@ -178,6 +175,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         [DisplayName("排序")]
         public int SortOrder { get; set; }
+
+        /// <summary>煎法（先煎、后下等）</summary>
+        [DisplayName("煎法")]
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
 
         // UltraThink导航属性 - 确保架构统一
 
@@ -278,7 +279,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [Required(ErrorMessage = "用量不能为空")]
         [Range(0.1, 1000, ErrorMessage = "用量必须在0.1~1000之间")]
         [DisplayName("用量")]
-        public decimal Quantity { get; set; }
+        public decimal Dosage { get; set; }
 
         /// <summary>单位（必填，默认"g"）⭐ Issue #2014新增</summary>
         [Required(ErrorMessage = "单位不能为空")]
@@ -304,6 +305,10 @@ namespace LYBT.Shared.Models.Contracts.Formula
         /// <summary>排序（默认0）</summary>
         [DisplayName("排序")]
         public int SortOrder { get; set; } = 0;
+
+        /// <summary>煎法（先煎、后下等）</summary>
+        [DisplayName("煎法")]
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
     }
 
     /// <summary>
@@ -485,7 +490,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [Required(ErrorMessage = "用量必须大于0")]
         [Range(0.1, 1000, ErrorMessage = "用量必须在0.1-1000之间")]
         [DisplayName("用量")]
-        public decimal Quantity { get; set; }
+        public decimal Dosage { get; set; }
 
         [StringLength(10, ErrorMessage = "单位不能超过10个字符")]
         [DisplayName("单位")]
@@ -578,7 +583,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string HerbName { get; set; } = string.Empty;
 
         [DisplayName("用量")]
-        public decimal Quantity { get; set; }
+        public decimal Dosage { get; set; }
 
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;

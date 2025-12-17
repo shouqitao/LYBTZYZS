@@ -2,9 +2,15 @@
     PatientViewControl - 患者预览控件
     OpenSpec: extract-detail-controls Task 3.1
     OpenSpec: optimize-preview-layout - 优化布局和视觉层次
+    OpenSpec: refactor-master-detail-layout - 详情区域UI优化
 
     独立的患者预览控件，可在PatientDetailView和其他需要展示患者信息的地方复用
     通过DependencyProperty接收数据，支持只读展示
+
+    UI优化 (2025-12-16):
+    - 采用多卡片分组布局，充分利用详情区域空间
+    - 分为：基本信息、联系信息、紧急联系人、病史信息、就诊信息、系统信息六个逻辑区域
+    - 添加：婚姻状态、血型、紧急联系人、病史、就诊统计等完整字段
 -->
 <UserControl x:Class="LYBT.Desktop.Patients.Controls.PatientViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,76 +29,252 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel DataContext="{Binding ElementName=Root}">
-        <!-- 患者信息卡片 - 紧凑布局 -->
-        <controls:InfoCard ShowTitle="False">
-            <controls:InfoCard.Content>
-                <StackPanel>
-                    <!-- 头部: 患者姓名 + 拼音码 + 状态Badge -->
-                    <Grid Margin="0,0,0,12">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding ElementName=Root}">
+        <StackPanel>
+            <!-- ========================================
+                 基本信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="基本信息" ShowTitle="True">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="{Binding PatientName}" Style="{StaticResource PreviewTitleStyle}"/>
-                            <TextBlock Text="{Binding PinYinCode, StringFormat=({0})}"
-                                       Style="{StaticResource PreviewSubtitleStyle}"
-                                       Visibility="{Binding PinYinCode, Converter={StaticResource NullToVisibilityConverter}}"/>
-                        </StackPanel>
+                        <!-- 患者姓名 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="患者姓名" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PatientName}" Style="{StaticResource DetailValueStyle}" FontWeight="SemiBold"/>
 
-                        <Border Grid.Column="1"
-                                Style="{StaticResource PreviewBadgeSuccessStyle}"
-                                Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBlock Text="{Binding Status}" Style="{StaticResource PreviewBadgeTextStyle}"/>
-                        </Border>
+                        <!-- 拼音码 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="拼音码" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding PinYinCode, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 性别 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="性别" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Gender}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 年龄 -->
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="年龄" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource DetailValueStyle}">
+                            <TextBlock.Text>
+                                <Binding Path="Age" StringFormat="{}{0}岁" TargetNullValue="-"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <!-- 出生日期 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="出生日期" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding BirthDate, StringFormat={}{0:yyyy-MM-dd}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 状态 -->
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="状态" Style="{StaticResource DetailLabelStyle}"
+                                   Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <controls:StatusBadge Grid.Row="2" Grid.Column="3"
+                                              Status="{Binding Status}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"
+                                              Visibility="{Binding ShowStatus, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
 
-                    <!-- 紧凑信息区：基本信息 -->
-                    <Grid Margin="0,0,0,6">
+            <!-- ========================================
+                 身份信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="身份信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="性别：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Gender}" FontSize="13" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="2" Text="年龄：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="3" Text="{Binding Age, StringFormat={}{0}岁}" FontSize="13" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="4" Text="出生：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="5" Text="{Binding BirthDate, StringFormat={}{0:yyyy-MM-dd}}" FontSize="13"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6">
+                        <!-- 身份证号 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="身份证号" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding IdNumber, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 婚姻状态 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="婚姻状态" Style="{StaticResource DetailLabelStyle}"/>
+                        <controls:StatusBadge Grid.Row="0" Grid.Column="3"
+                                              Status="{Binding MaritalStatus}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 健康信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="健康信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="手机：" FontSize="13" Foreground="#605E5C"/>
-                        <TextBlock Grid.Column="1" Text="{Binding PhoneNumber}" FontSize="13" Margin="0,0,16,0"/>
-                        <TextBlock Grid.Column="2" Text="身份证：" FontSize="13" Foreground="#605E5C"
-                                   Visibility="{Binding IdNumber, Converter={StaticResource NullToVisibilityConverter}}"/>
-                        <TextBlock Grid.Column="3" Text="{Binding IdNumber}" FontSize="13"
-                                   Visibility="{Binding IdNumber, Converter={StaticResource NullToVisibilityConverter}}"/>
-                    </Grid>
 
-                    <Grid Margin="0,0,0,6"
-                          Visibility="{Binding Address, Converter={StaticResource NullToVisibilityConverter}}">
+                        <!-- 血型 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="血型" Style="{StaticResource DetailLabelStyle}"/>
+                        <controls:StatusBadge Grid.Row="0" Grid.Column="1"
+                                              Status="{Binding BloodType}"
+                                              HorizontalAlignment="Left"
+                                              Margin="0,4,0,4"/>
+
+                        <!-- 过敏史 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="过敏史" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AllergyHistory, TargetNullValue='无'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+
+                        <!-- 既往病史 -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="既往病史" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MedicalHistory, TargetNullValue='无'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 联系信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="联系信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="地址：" FontSize="13" Foreground="#605E5C" VerticalAlignment="Top"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Address}" FontSize="13" TextWrapping="Wrap"/>
+
+                        <!-- 手机号码 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="手机号码" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PhoneNumber, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+
+                        <!-- 地址 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="地址" Style="{StaticResource DetailLabelStyle}" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Address, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap"/>
                     </Grid>
-                </StackPanel>
-            </controls:InfoCard.Content>
-        </controls:InfoCard>
-    </StackPanel>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 紧急联系人卡片
+                 ======================================== -->
+            <controls:InfoCard Title="紧急联系人" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 联系人姓名 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="姓名" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding EmergencyContactName, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 联系人关系 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="关系" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding EmergencyContactRelation, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 联系人电话 -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="电话" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EmergencyContactPhone, TargetNullValue='-'}" Style="{StaticResource DetailValueStyle}" FontFamily="Consolas"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 就诊信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="就诊统计" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 就诊次数 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="就诊次数" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource DetailValueStyle}">
+                            <TextBlock.Text>
+                                <Binding Path="VisitCount" StringFormat="{}{0}次"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <!-- 最后就诊时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="最后就诊" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3"
+                                   Text="{Binding LastVisitTime, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='从未就诊'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+
+            <!-- ========================================
+                 系统信息卡片
+                 ======================================== -->
+            <controls:InfoCard Title="系统信息" ShowTitle="True" Margin="0,12,0,0">
+                <controls:InfoCard.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 创建时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="创建时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding CreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+
+                        <!-- 更新时间 -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="更新时间" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="3"
+                                   Text="{Binding UpdatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue='-'}"
+                                   Style="{StaticResource DetailValueStyle}"/>
+                    </Grid>
+                </controls:InfoCard.Content>
+            </controls:InfoCard>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

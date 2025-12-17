@@ -268,8 +268,9 @@ namespace LYBT.Desktop.Prescriptions.Services
                 for (int col = 0; col < HerbsPerRow && rowStart + col < sortedItems.Count; col++)
                 {
                     var item = sortedItems[rowStart + col];
-                    // 格式化为 "药名+剂量+单位"，如 "黄芪10g"
-                    var herbText = $"{item.HerbName}{item.Quantity:0.##}{item.Unit}";
+                    // 使用DisplayText属性，包含煎法标注（非默认煎法显示括号标注）
+                    // 格式: "药名+剂量+单位(煎法)"，如 "附子10g(先煎)"
+                    var herbText = item.DisplayText;
 
                     // 固定宽度对齐（使用空格填充）
                     var paddedText = herbText.PadRight(12, '\u3000'); // 使用全角空格填充

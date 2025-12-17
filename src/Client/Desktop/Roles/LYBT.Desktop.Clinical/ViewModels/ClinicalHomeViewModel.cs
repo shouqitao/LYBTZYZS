@@ -179,7 +179,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到患者管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "PatientManagementView");
+                _regionManager.RequestNavigate("ContentRegion", "PatientMasterDetailView");
             }
             catch (Exception ex)
             {
@@ -212,7 +212,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到药材库视图");
-                _regionManager.RequestNavigate("ContentRegion", "HerbManagementView");
+                _regionManager.RequestNavigate("ContentRegion", "HerbMasterDetailView");
             }
             catch (Exception ex)
             {
@@ -228,7 +228,7 @@ namespace LYBT.Desktop.Clinical.ViewModels
             try
             {
                 Logger.LogInformation("导航到验方库视图");
-                _regionManager.RequestNavigate("ContentRegion", "FormulaManagementView");
+                _regionManager.RequestNavigate("ContentRegion", "FormulaMasterDetailView");
             }
             catch (Exception ex)
             {

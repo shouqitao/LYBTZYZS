@@ -135,7 +135,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             EditCommand = new DelegateCommand(EnableEdit, () => !IsBusy && Formula != null && !IsEditMode && CanEdit);
             SaveCommand = new DelegateCommand(async () => await SaveAsync(), () => !IsBusy && Formula != null && IsEditMode && !string.IsNullOrWhiteSpace(FormulaName) && !HasErrors);
             CancelEditCommand = new DelegateCommand(CancelEdit, () => !IsBusy && Formula != null && IsEditMode);
-            BackCommand = new DelegateCommand(() => NavigateTo("ContentRegion", "FormulaManagementView"));
+            BackCommand = new DelegateCommand(() => NavigateTo("ContentRegion", "FormulaMasterDetailView"));
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => !IsBusy && Formula != null && !IsEditMode);
             CopyAsMyFormulaCommand = new DelegateCommand(ExecuteCopyAsMyFormula, () => !IsBusy && Formula != null && CanCopy);
             PrintCommand = new DelegateCommand(ExecutePrint, () => !IsBusy && Formula != null);
@@ -222,9 +222,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                 {
                     HerbId = h.HerbId,
                     HerbName = h.HerbName,
-                    Quantity = h.Quantity,
+                    Dosage = h.Dosage,
                     Unit = h.Unit,
-                    ProcessingMethod = h.ProcessingMethod
+                    ProcessingMethod = h.ProcessingMethod,
+                    DecocteMethod = h.DecocteMethod
                 }).ToList() ?? new List<FormulaHerbItemDto>()
             };
 
@@ -305,9 +306,10 @@ namespace LYBT.Desktop.Formula.ViewModels
                     {
                         HerbId = herb.HerbId ?? Guid.Empty,
                         HerbName = herb.HerbName,
-                        Dosage = herb.Quantity,
+                        Dosage = herb.Dosage,
                         Unit = herb.Unit,
                         Remark = herb.ProcessingMethod,
+                        DecocteMethod = herb.DecocteMethod,
                         AllHerbs = _allHerbs
                     });
                 }
@@ -454,11 +456,11 @@ namespace LYBT.Desktop.Formula.ViewModels
                     var duplicates = HerbItems.Where(h => h.HerbId == herbItem.HerbId && h != herbItem).ToList();
                     if (duplicates.Any())
                     {
-                        var maxQty = Math.Max(herbItem.Quantity, duplicates.Max(d => d.Quantity));
-                        herbItem.Quantity = maxQty;
+                        var maxQty = Math.Max(herbItem.Dosage, duplicates.Max(d => d.Dosage));
+                        herbItem.Dosage = maxQty;
                         foreach (var dup in duplicates) HerbItems.Remove(dup);
                         _ = ShowWarningMessageAsync($"{herbItem.HerbName}有重复，剂量改为{maxQty}g（取较大值）");
-                        Logger.LogInformation("合并重复药材: {HerbName}, 剂量: {Quantity}", herbItem.HerbName, maxQty);
+                        Logger.LogInformation("合并重复药材: {HerbName}, 剂量: {Dosage}", herbItem.HerbName, maxQty);
                     }
                 }
                 RaisePropertyChanged(nameof(HerbCount));

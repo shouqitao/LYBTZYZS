@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Prescriptions
 {
@@ -42,10 +43,10 @@ namespace LYBT.Entities.Prescriptions
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 实际用量（整数剂量，根据文档要求不使用小数）
+        /// 剂量（整数）
         /// </summary>
-        [DisplayName("用量")]
-        public int Quantity { get; set; }
+        [DisplayName("剂量")]
+        public int Dosage { get; set; }
 
         /// <summary>
         /// 单位（如：克、钱、两等）
@@ -53,6 +54,12 @@ namespace LYBT.Entities.Prescriptions
         [StringLength(16)]
         [DisplayName("单位")]
         public string Unit { get; set; } = "g";
+
+        /// <summary>
+        /// 煎法（先煎、后下、烊化等）
+        /// </summary>
+        [DisplayName("煎法")]
+        public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
 
         /// <summary>
         /// 药材单价（用于收费计算）
@@ -66,7 +73,7 @@ namespace LYBT.Entities.Prescriptions
         /// </summary>
         [Column(TypeName = "decimal(18,2)")]
         [DisplayName("小计")]
-        public decimal Amount => UnitPrice * Quantity;
+        public decimal Amount => UnitPrice * Dosage;
 
         /// <summary>
         /// 用法说明（该药材的特殊用法）

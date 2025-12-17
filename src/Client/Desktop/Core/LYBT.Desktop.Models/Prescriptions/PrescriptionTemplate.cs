@@ -213,7 +213,7 @@ namespace LYBT.Desktop.Models.Prescriptions
             {
                 foreach (var item in Items)
                 {
-                    total += item.Quantity * item.EstimatedPrice;
+                    total += item.Dosage * item.EstimatedPrice;
                 }
             }
 
@@ -244,11 +244,11 @@ namespace LYBT.Desktop.Models.Prescriptions
                 {
                     HerbId = templateItem.HerbId,
                     HerbName = templateItem.HerbName,
-                    Quantity = templateItem.Quantity,
+                    Dosage = templateItem.Dosage,
                     Unit = templateItem.Unit
 
                     // Price = templateItem.EstimatedPrice, // 属性不存在：PrescriptionItemDto.Price
-                    // Subtotal = templateItem.Quantity * templateItem.EstimatedPrice
+                    // Subtotal = templateItem.Dosage * templateItem.EstimatedPrice
                 });
             }
 
@@ -292,7 +292,7 @@ namespace LYBT.Desktop.Models.Prescriptions
         private Guid _templateId = Guid.Empty;
         private Guid _herbId = Guid.Empty;
         private string _herbName = string.Empty;
-        private decimal _quantity = 0m;
+        private decimal _dosage = 0m;
         private string _unit = "g";
         private decimal _estimatedPrice = 0m;
         private string _processMethod = string.Empty;
@@ -336,14 +336,14 @@ namespace LYBT.Desktop.Models.Prescriptions
         }
 
         /// <summary>
-        /// 数量
+        /// 剂量
         /// </summary>
-        public decimal Quantity
+        public decimal Dosage
         {
-            get => _quantity;
+            get => _dosage;
             set
             {
-                if (SetProperty(ref _quantity, value))
+                if (SetProperty(ref _dosage, value))
                 {
                     OnPropertyChanged(nameof(Subtotal));
                 }
@@ -404,7 +404,7 @@ namespace LYBT.Desktop.Models.Prescriptions
         /// <summary>
         /// 小计
         /// </summary>
-        public decimal Subtotal => Quantity * EstimatedPrice;
+        public decimal Subtotal => Dosage * EstimatedPrice;
 
         /// <summary>
         /// 显示文本
@@ -413,10 +413,10 @@ namespace LYBT.Desktop.Models.Prescriptions
         {
             get
             {
-                var text = $"{HerbName} {Quantity}{Unit}";
+                var text = $"{HerbName} {Dosage}{Unit}";
                 if (!string.IsNullOrEmpty(ProcessMethod))
                 {
-                    text = $"{HerbName}({ProcessMethod}) {Quantity}{Unit}";
+                    text = $"{HerbName}({ProcessMethod}) {Dosage}{Unit}";
                 }
 
                 return text;

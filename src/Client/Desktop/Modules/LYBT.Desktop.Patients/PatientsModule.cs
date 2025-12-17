@@ -66,6 +66,9 @@ namespace LYBT.Desktop.Patients
             // Issue #2167: PatientImportWizardView已删除（改用直接API调用）
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
             containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
+            // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
+            // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
+            containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView, ViewModels.PatientMasterDetailViewModel>();
 
             // Issue #2168: CRUD统一架构 - PatientDetailView支持Create/Edit/View三种模式
             // PatientCreateView和PatientEditView已删除，统一使用PatientDetailView

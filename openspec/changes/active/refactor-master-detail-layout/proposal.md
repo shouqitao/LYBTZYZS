@@ -1,6 +1,6 @@
 # OpenSpec Proposal: 重构基础数据模块为Master-Detail布局
 
-## Status: Draft
+## Status: Approved
 ## Created: 2025-12-16
 ## Author: Claude Code
 
