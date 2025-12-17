@@ -38,17 +38,13 @@ namespace LYBT.Desktop.Prescriptions.Models
         /// <summary>诊见（症状描述）</summary>
         public string? Symptoms { get; set; }
 
-        // ===== 四诊信息（可选，用于详细版打印）=====
-        /// <summary>望诊</summary>
-        public string? Inspection { get; set; }
-        /// <summary>闻诊</summary>
-        public string? AuscultationOlfaction { get; set; }
-        /// <summary>问诊</summary>
-        public string? Inquiry { get; set; }
-        /// <summary>切诊</summary>
-        public string? Palpation { get; set; }
-        /// <summary>治疗原则</summary>
-        public string? TreatmentPrinciple { get; set; }
+        // ===== 诊断核心字段（精简版 - OpenSpec: refactor-diagnosis-fields）=====
+        /// <summary>现病史</summary>
+        public string? PresentIllness { get; set; }
+        /// <summary>舌诊</summary>
+        public string? TongueDiagnosis { get; set; }
+        /// <summary>脉诊</summary>
+        public string? PulseDiagnosis { get; set; }
 
         // ===== 处方内容 =====
         /// <summary>药材列表</summary>

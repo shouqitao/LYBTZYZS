@@ -223,18 +223,13 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 // 如果提供了诊断信息，更新Consultation
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 if (request != null && medicalCase.Consultation != null)
                 {
-                    medicalCase.Consultation.ChiefComplaint = request.ChiefComplaint;
                     medicalCase.Consultation.PresentIllness = request.PresentIllness;
-                    medicalCase.Consultation.Inspection = request.Inspection;
-                    medicalCase.Consultation.AuscultationOlfaction = request.AuscultationOlfaction;
-                    medicalCase.Consultation.Inquiry = request.Inquiry;
-                    medicalCase.Consultation.Palpation = request.Palpation;
+                    medicalCase.Consultation.TongueDiagnosis = request.TongueDiagnosis;
+                    medicalCase.Consultation.PulseDiagnosis = request.PulseDiagnosis;
                     medicalCase.Consultation.TCMDiagnosis = request.TCMDiagnosis;
-                    medicalCase.Consultation.TreatmentPrinciple = request.TreatmentPrinciple;
-                    medicalCase.Consultation.MedicalAdvice = request.MedicalAdvice;
-                    medicalCase.Remark = request.MedicalCaseRemark;
                     medicalCase.Consultation.UpdatedAt = DateTime.Now;
                 }
 

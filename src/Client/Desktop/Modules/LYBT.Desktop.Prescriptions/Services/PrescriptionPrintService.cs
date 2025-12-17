@@ -738,27 +738,23 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 填充四诊信息
         /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
-        /// 字段映射: TCMDiagnosis → 诊断, TreatmentPrinciple → 诊见
+        /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
         private static void PopulateDiagnosisInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription, ConsultationInputDto? consultation)
         {
             if (consultation != null)
             {
-                printDto.Inspection = consultation.Inspection;
-                printDto.AuscultationOlfaction = consultation.AuscultationOlfaction;
-                printDto.Inquiry = consultation.Inquiry;
-                printDto.Palpation = consultation.Palpation;
+                printDto.PresentIllness = consultation.PresentIllness;
+                printDto.TongueDiagnosis = consultation.TongueDiagnosis;
+                printDto.PulseDiagnosis = consultation.PulseDiagnosis;
                 printDto.TCMDiagnosis = consultation.TCMDiagnosis ?? prescription.Indication;
-                printDto.TreatmentPrinciple = consultation.TreatmentPrinciple;
             }
             else
             {
-                printDto.Inspection = null;
-                printDto.AuscultationOlfaction = null;
-                printDto.Inquiry = null;
-                printDto.Palpation = null;
+                printDto.PresentIllness = null;
+                printDto.TongueDiagnosis = null;
+                printDto.PulseDiagnosis = null;
                 printDto.TCMDiagnosis = prescription.Indication;
-                printDto.TreatmentPrinciple = null;
             }
         }
 

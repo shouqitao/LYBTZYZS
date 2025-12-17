@@ -36,9 +36,9 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         public void IsValid_WithValidData_ShouldReturnTrue()
         {
             // Arrange
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，TCMDiagnosis是唯一必填字段
             var validConsultation = new ConsultationDto
             {
-                ChiefComplaint = "测试主诉",
                 TCMDiagnosis = "测试诊断"
             };
             _mockDataManager.Setup(m => m.Current).Returns(validConsultation);
@@ -71,9 +71,9 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         public void CanCompleteStep1_WithValidData_ShouldReturnTrue()
         {
             // Arrange
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，TCMDiagnosis是唯一必填字段
             var validConsultation = new ConsultationDto
             {
-                ChiefComplaint = "测试主诉",
                 TCMDiagnosis = "测试诊断"
             };
             _mockDataManager.Setup(m => m.Current).Returns(validConsultation);

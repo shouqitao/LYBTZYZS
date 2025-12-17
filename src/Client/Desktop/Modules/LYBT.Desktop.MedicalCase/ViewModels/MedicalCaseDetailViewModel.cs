@@ -28,7 +28,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         private MedicalCaseDto? _medicalCase;
         private string _caseNumber = string.Empty;
         private string _patientName = string.Empty;
-        private string _chiefComplaint = string.Empty;
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         private CaseStatus _status = CaseStatus.Active;
 
         /// <summary>
@@ -72,21 +72,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             }
         }
 
-        /// <summary>
-        /// 主诉
-        /// </summary>
-        [Required(ErrorMessage = "主诉不能为空")]
-        public string ChiefComplaint
-        {
-            get => _chiefComplaint;
-            set
-            {
-                if (SetProperty(ref _chiefComplaint, value))
-                {
-                    ValidateProperty();
-                }
-            }
-        }
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint属性
 
         /// <summary>
         /// 案例状态
@@ -232,8 +218,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 }
 
                 // 更新案例信息
+                // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
                 MedicalCase.CaseNumber = CaseNumber.Trim();
-                MedicalCase.ChiefComplaint = ChiefComplaint.Trim();
 
                 // Epic #1961: 使用统一的 MedicalCaseInputDto
                 var updateDto = new MedicalCaseInputDto
@@ -242,11 +228,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     PatientId = MedicalCase.PatientId,
                     DoctorId = MedicalCase.DoctorId,
                     VisitDate = MedicalCase.ConsultationDate, // 使用原有就诊日期
-                    ChiefComplaint = MedicalCase.ChiefComplaint,
-                    PresentIllnessHistory = MedicalCase.ChiefComplaint, // 使用主诉作为现病史
                     Remark = MedicalCase.Remark
-                    // 注意：旧DTO的 PhysicalExamination, AuxiliaryExamination, PrescriptionInfo, FollowUpPlan
-                    // 在 MedicalCaseInputDto 中不存在，已移除
+                    // 注意：ChiefComplaint已移除，诊断信息通过Consultation管理
                 };
 
                 // Issue #1783: 使用DataManager更新
@@ -255,8 +238,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                 if (updatedCase != null)
                 {
                     await ShowSuccessMessageAsync("医疗案例保存成功");
-                    // Issue #1799: 更新导航目标为MedicalCaseManagementView
-                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                    // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+                    RegionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
                 }
                 else
                 {
@@ -276,6 +259,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 检查是否可以保存（Issue #1423 RULE-4: 只读模式禁止保存）
+        /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint验证
         /// </summary>
         private bool CanSave()
         {
@@ -283,7 +267,6 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                    !IsBusy &&
                    !string.IsNullOrWhiteSpace(CaseNumber) &&
                    !string.IsNullOrWhiteSpace(PatientName) &&
-                   !string.IsNullOrWhiteSpace(ChiefComplaint) &&
                    !HasErrors;
         }
 
@@ -300,8 +283,8 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// </summary>
         private void ExecuteBack()
         {
-            // Issue #1799: 更新导航目标为MedicalCaseManagementView
-            NavigateTo("MainRegion", "MedicalCaseManagementView");
+            // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+            NavigateTo("MainRegion", "MedicalCaseMasterDetailView");
         }
 
         /// <summary>
@@ -484,13 +467,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 加载医疗案例
         /// Issue #1423 RULE-4: 添加只读模式检测
+        /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         /// </summary>
         private void LoadMedicalCase(MedicalCaseDto medicalCase)
         {
             MedicalCase = medicalCase;
             CaseNumber = medicalCase.CaseNumber ?? string.Empty;
             PatientName = medicalCase.PatientName ?? string.Empty;
-            ChiefComplaint = medicalCase.ChiefComplaint ?? string.Empty;
             Status = (CaseStatus)medicalCase.CaseStatus;
 
             // RULE-4: 检查是否为创建当天，隔日后进入只读模式

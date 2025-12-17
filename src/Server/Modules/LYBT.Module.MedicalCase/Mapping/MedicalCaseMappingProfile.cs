@@ -19,6 +19,7 @@ namespace LYBT.Module.MedicalCases.Mapping
 
             // MedicalCase -> MedicalCaseDto
             // OpenSpec: fix-history-copy-all-patients - 添加PrescriptionId和ConsultationId映射
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
             CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDto>()
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
                 .ForMember(dest => dest.PrescriptionId, opt => opt.MapFrom(src =>
@@ -26,22 +27,19 @@ namespace LYBT.Module.MedicalCases.Mapping
                 .ForMember(dest => dest.ConsultationId, opt => opt.MapFrom(src =>
                     src.Consultation != null && !src.Consultation.IsDeleted ? src.Consultation.Id : (Guid?)null))
                 .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
                 .ForMember(dest => dest.Diagnosis, opt => opt.Ignore());
 
             // MedicalCase -> MedicalCaseDetailDto
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
             CreateMap<LYBT.Entities.MedicalCases.MedicalCase, MedicalCaseDetailDto>()
                 .ForMember(dest => dest.CaseStatus, opt => opt.MapFrom(src => src.CaseStatus))
                 .ForMember(dest => dest.CaseNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.ChiefComplaint, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientGender, opt => opt.Ignore())
                 .ForMember(dest => dest.PatientAge, opt => opt.Ignore())
                 .ForMember(dest => dest.Diagnosis, opt => opt.Ignore())
                 .ForMember(dest => dest.PresentIllness, opt => opt.Ignore())
-                .ForMember(dest => dest.DiagnosisResult, opt => opt.Ignore())
-                .ForMember(dest => dest.TreatmentPlan, opt => opt.Ignore())
                 .ForMember(dest => dest.Prescription, opt => opt.Ignore());
 
             // ========== Epic #1961: FluentValidation统一设计 ==========
@@ -75,11 +73,11 @@ namespace LYBT.Module.MedicalCases.Mapping
 
             // Request映射: ConsultationInputDto -> Consultation (Shared层)
             // Issue #2231: Consultation使用共享主键，必须忽略Id相关字段以避免EF Core键修改错误
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())  // 共享主键，不可修改
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())  // 导航属性，不可修改
                 .ForMember(dest => dest.PrescriptionEnabled, opt => opt.Ignore())
-                .ForMember(dest => dest.Remark, opt => opt.Ignore())  // Remark在MedicalCase级别管理
                 // BaseEntity 审计字段
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())

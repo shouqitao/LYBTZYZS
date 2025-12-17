@@ -84,7 +84,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         /// <summary>
         /// 剂量变更后的回调 - 更新价格计算
         /// </summary>
-        protected override void OnDosageChanged(decimal newDosage)
+        protected override void OnDosageChanged(int newDosage)
         {
             ValidateDosage();
             CalculateItemTotal();
@@ -104,12 +104,20 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 验证剂量范围
-        /// 标准范围：0.1g - 500g
+        /// 标准范围：1g - 500g（空行Dosage=0不参与验证）
         /// </summary>
         private void ValidateDosage()
         {
-            const decimal MinDosage = 0.1m;
-            const decimal MaxDosage = 500m;
+            const int MinDosage = 1;
+            const int MaxDosage = 500;
+
+            // 空行（未选药材）不验证
+            if (HerbId == Guid.Empty)
+            {
+                IsDosageValid = true;
+                DosageValidationMessage = string.Empty;
+                return;
+            }
 
             if (Dosage < MinDosage)
             {

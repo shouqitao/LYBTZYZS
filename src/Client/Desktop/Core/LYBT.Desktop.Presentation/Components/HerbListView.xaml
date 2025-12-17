@@ -1,0 +1,56 @@
+<UserControl x:Class="LYBT.Desktop.Presentation.Components.HerbListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:LYBT.Desktop.Presentation.Components"
+             mc:Ignorable="d"
+             d:DesignHeight="200" d:DesignWidth="800">
+    <!--
+    HerbListView - 药材列表只读预览控件
+    OpenSpec: unify-herb-list-controls
+
+    功能：
+    - 使用ItemsControl + UniformGrid(Columns=4)展示药材卡片
+    - 内部复用HerbCardControl作为ItemTemplate (IsEditMode=False)
+    - 固定为只读模式，用于预览场景
+    - 可配置是否显示价格
+
+    使用方式：
+    <components:HerbListView
+        HerbItems="{Binding HerbItems}"
+        ShowPrice="False" />
+    -->
+
+    <Grid>
+        <!-- 药材列表 -->
+        <ItemsControl x:Name="HerbItemsControl"
+                      ItemsSource="{Binding HerbItems, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!-- 4列均匀分布，VerticalAlignment=Top防止拉伸 -->
+                    <UniformGrid Columns="4" VerticalAlignment="Top" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- 复用HerbCardControl - 固定为只读模式 -->
+                    <local:HerbCardControl
+                        Margin="2"
+                        Height="46"
+                        IsEditMode="False"
+                        ShowPrice="{Binding ShowPrice, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- 空状态提示 -->
+        <TextBlock x:Name="EmptyPlaceholder"
+                   Text="暂无药材"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="14"
+                   Foreground="#999"
+                   Visibility="Collapsed" />
+    </Grid>
+</UserControl>

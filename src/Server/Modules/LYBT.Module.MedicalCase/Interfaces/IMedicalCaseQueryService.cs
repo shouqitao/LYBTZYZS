@@ -38,7 +38,8 @@ namespace LYBT.Module.MedicalCases.Interfaces
             int page,
             int pageSize,
             Guid? currentDoctorId = null,
-            bool isAdmin = false);
+            bool isAdmin = false,
+            string? keyword = null);
 
         /// <summary>
         /// 查询辨证记录列表

@@ -81,13 +81,8 @@
                 <infraControls:InfoCard Grid.Column="0" Title="诊断信息">
                     <infraControls:InfoCard.Content>
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <!-- OpenSpec: refactor-diagnosis-fields - 仅保留4个核心诊断字段 -->
                             <StackPanel Margin="0,8,0,0">
-                                <!-- 主诉 -->
-                                <StackPanel Style="{StaticResource LabelValueStyle}">
-                                    <TextBlock Text="主诉" Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBlock Text="{Binding ConsultationPanelViewModel.ChiefComplaint}" Style="{StaticResource ReadOnlyTextStyle}"/>
-                                </StackPanel>
-
                                 <!-- 现病史 -->
                                 <StackPanel Style="{StaticResource LabelValueStyle}">
                                     <TextBlock Text="现病史" Style="{StaticResource FormLabelStyle}"/>
@@ -96,39 +91,25 @@
 
                                 <!-- 四诊合参 -->
                                 <TextBlock Text="四诊合参" Style="{StaticResource FormLabelStyle}" Margin="0,8,0,8"/>
+
+                                <!-- 舌诊 + 脉诊 -->
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="16"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
 
-                                    <!-- 望诊 -->
-                                    <StackPanel Grid.Row="0" Grid.Column="0">
-                                        <TextBlock Text="望诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding ConsultationPanelViewModel.Inspection}" Style="{StaticResource FourExamTextStyle}"/>
+                                    <!-- 舌诊 -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="舌诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding ConsultationPanelViewModel.TongueDiagnosis}" Style="{StaticResource FourExamTextStyle}"/>
                                     </StackPanel>
 
-                                    <!-- 闻诊 -->
-                                    <StackPanel Grid.Row="0" Grid.Column="2">
-                                        <TextBlock Text="闻诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding ConsultationPanelViewModel.AuscultationOlfaction}" Style="{StaticResource FourExamTextStyle}"/>
-                                    </StackPanel>
-
-                                    <!-- 问诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="0">
-                                        <TextBlock Text="问诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding ConsultationPanelViewModel.Inquiry}" Style="{StaticResource FourExamTextStyle}"/>
-                                    </StackPanel>
-
-                                    <!-- 切诊 -->
-                                    <StackPanel Grid.Row="1" Grid.Column="2">
-                                        <TextBlock Text="切诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
-                                        <TextBlock Text="{Binding ConsultationPanelViewModel.Palpation}" Style="{StaticResource FourExamTextStyle}"/>
+                                    <!-- 脉诊 -->
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="脉诊" FontSize="12" Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,0,2"/>
+                                        <TextBlock Text="{Binding ConsultationPanelViewModel.PulseDiagnosis}" Style="{StaticResource FourExamTextStyle}"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -136,12 +117,6 @@
                                 <StackPanel Style="{StaticResource LabelValueStyle}">
                                     <TextBlock Text="中医诊断（辩证）" Style="{StaticResource FormLabelStyle}"/>
                                     <TextBlock Text="{Binding ConsultationPanelViewModel.TCMDiagnosis}" Style="{StaticResource ReadOnlyTextStyle}" FontWeight="SemiBold"/>
-                                </StackPanel>
-
-                                <!-- 治疗原则 -->
-                                <StackPanel Style="{StaticResource LabelValueStyle}">
-                                    <TextBlock Text="治疗原则" Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBlock Text="{Binding ConsultationPanelViewModel.TreatmentPrinciple}" Style="{StaticResource ReadOnlyTextStyle}"/>
                                 </StackPanel>
 
                                 <!-- 是否开处方 -->
@@ -182,22 +157,10 @@
                                     </StackPanel>
 
                                     <!-- 药材卡片列表（只读） -->
-                                    <ItemsControl ItemsSource="{Binding PrescriptionPanelViewModel.HerbItems}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <UniformGrid Columns="4"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <sharedControls:HerbCardControl
-                                                    Margin="2"
-                                                    Height="46"
-                                                    ShowPrice="False"
-                                                    IsEditMode="False"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    <!-- OpenSpec: unify-herb-list-controls - 统一使用HerbListView控件 -->
+                                    <sharedControls:HerbListView
+                                        HerbItems="{Binding PrescriptionPanelViewModel.HerbItems}"
+                                        ShowPrice="False" />
                                 </StackPanel>
                             </ScrollViewer>
 

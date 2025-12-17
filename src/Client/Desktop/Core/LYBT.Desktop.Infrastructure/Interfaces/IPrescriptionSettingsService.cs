@@ -18,9 +18,9 @@ namespace LYBT.Desktop.Infrastructure.Interfaces
         /// <summary>
         /// 计算合并后的剂量
         /// </summary>
-        /// <param name="currentDosage">当前剂量</param>
-        /// <param name="importedDosage">导入剂量</param>
-        /// <returns>根据合并策略计算的剂量</returns>
-        decimal CalculateMergedDosage(decimal currentDosage, decimal importedDosage);
+        /// <param name="currentDosage">当前剂量（整数克）</param>
+        /// <param name="importedDosage">导入剂量（整数克）</param>
+        /// <returns>根据合并策略计算的剂量（整数克）</returns>
+        int CalculateMergedDosage(int currentDosage, int importedDosage);
     }
 }

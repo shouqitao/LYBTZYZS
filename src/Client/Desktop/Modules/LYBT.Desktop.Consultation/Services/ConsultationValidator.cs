@@ -176,12 +176,7 @@ namespace LYBT.Desktop.Consultation.Services
             }
 
             // 检查必填字段
-            if (string.IsNullOrWhiteSpace(_dataManager.Current.ChiefComplaint))
-            {
-                errorMessage = "主诉不能为空";
-                return false;
-            }
-
+            // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
             if (string.IsNullOrWhiteSpace(_dataManager.Current.TCMDiagnosis))
             {
                 errorMessage = "中医诊断不能为空";
@@ -205,11 +200,7 @@ namespace LYBT.Desktop.Consultation.Services
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(_dataManager.Current.ChiefComplaint))
-            {
-                errors.Add("主诉不能为空");
-            }
-
+            // OpenSpec: refactor-diagnosis-fields - 只需验证TCMDiagnosis
             if (string.IsNullOrWhiteSpace(_dataManager.Current.TCMDiagnosis))
             {
                 errors.Add("中医诊断不能为空");

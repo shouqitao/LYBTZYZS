@@ -58,7 +58,8 @@ namespace LYBT.Module.MedicalCases.Services
             int page,
             int pageSize,
             Guid? currentDoctorId = null,
-            bool isAdmin = false)
+            bool isAdmin = false,
+            string? keyword = null)
         {
             try
             {
@@ -77,6 +78,15 @@ namespace LYBT.Module.MedicalCases.Services
                 if (patientId.HasValue)
                 {
                     filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
+                }
+
+                // OpenSpec: refactor-medicalcase-management - 关键字过滤
+                // 支持按患者姓名或中医诊断搜索
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    filteredItems = filteredItems.Where(m =>
+                        (m.PatientName != null && m.PatientName.Contains(keyword)) ||
+                        (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
                 }
 
                 // OpenSpec: optimize-module-list-ui - 角色过滤

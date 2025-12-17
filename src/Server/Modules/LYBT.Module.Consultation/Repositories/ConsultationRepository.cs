@@ -54,10 +54,11 @@ namespace LYBT.Module.Consultations.Repositories
                 .Where(c => !c.IsDeleted);
 
             // 关键字搜索
+            // OpenSpec: refactor-diagnosis-fields - 更新为4个核心字段
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 query = query.Where(c =>
-                    (c.ChiefComplaint != null && c.ChiefComplaint.Contains(keyword)) ||
+                    (c.PresentIllness != null && c.PresentIllness.Contains(keyword)) ||
                     (c.TCMDiagnosis != null && c.TCMDiagnosis.Contains(keyword)) ||
                     c.MedicalCase.PatientName.Contains(keyword) ||
                     c.MedicalCase.DoctorName.Contains(keyword));

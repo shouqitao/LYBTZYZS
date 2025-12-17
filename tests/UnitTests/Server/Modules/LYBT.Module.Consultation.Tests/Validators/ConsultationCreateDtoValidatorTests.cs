@@ -22,14 +22,11 @@ public class ConsultationInputDtoValidatorTests
     public void Validate_WithValidData_PassesValidation()
     {
         // Arrange
-        var dto = new ConsultationInputDto
-        {
-            MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            ChiefComplaint = "头痛"
-            // Issue #1562 Phase 5: 已删除StartTime字段
-        };
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
+            var dto = new ConsultationInputDto
+            {
+                TCMDiagnosis = "外感风寒" // 唯一必填字段
+            };
 
         // Act
         var result = _validator.TestValidate(dto);
@@ -46,13 +43,11 @@ public class ConsultationInputDtoValidatorTests
     public void Validate_WithEmptyPatientId_PassesValidation()
     {
         // Arrange
-        var dto = new ConsultationInputDto
-        {
-            MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.Empty, // Issue #2231: 不再验证必填
-            UserId = Guid.NewGuid(),
-            ChiefComplaint = "测试"
-        };
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
+            var dto = new ConsultationInputDto
+            {
+                TCMDiagnosis = "测试诊断"
+            };
 
         // Act
         var result = _validator.TestValidate(dto);
@@ -61,22 +56,20 @@ public class ConsultationInputDtoValidatorTests
         result.ShouldNotHaveValidationErrorFor(x => x.PatientId);
     }
 
+    // OpenSpec: refactor-diagnosis-fields - ChiefComplaint已移除，测试TCMDiagnosis长度验证
     [Fact]
-    public void Validate_WithChiefComplaintTooLong_FailsValidation()
+    public void Validate_WithTCMDiagnosisTooLong_FailsValidation()
     {
         // Arrange
         var dto = new ConsultationInputDto
         {
-            MedicalCaseId = Guid.NewGuid(),
-            PatientId = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
-            ChiefComplaint = new string('a', 501) // 超过 500 字符限制
+            TCMDiagnosis = new string('a', 501) // 超过 500 字符限制
         };
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.ChiefComplaint);
+        result.ShouldHaveValidationErrorFor(x => x.TCMDiagnosis);
     }
 }

@@ -103,34 +103,30 @@ public class ConsultationItem : BindableBase
         set => SetProperty(ref _allergyHistory, value);
     }
 
-    // 中医四诊
-    private string? _inspection;
-    public string? Inspection
+    // 中医四诊（重构版）
+    private string? _fourDiagnosis;
+    /// <summary>四诊（合并望闻问切）</summary>
+    public string? FourDiagnosis
     {
-        get => _inspection;
-        set => SetProperty(ref _inspection, value);
-    } // 望诊
+        get => _fourDiagnosis;
+        set => SetProperty(ref _fourDiagnosis, value);
+    }
 
-    private string? _auscultation;
-    public string? Auscultation
+    private string? _tongueDiagnosis;
+    /// <summary>舌诊</summary>
+    public string? TongueDiagnosis
     {
-        get => _auscultation;
-        set => SetProperty(ref _auscultation, value);
-    } // 闻诊
+        get => _tongueDiagnosis;
+        set => SetProperty(ref _tongueDiagnosis, value);
+    }
 
-    private string? _inquiry;
-    public string? Inquiry
+    private string? _pulseDiagnosis;
+    /// <summary>脉诊</summary>
+    public string? PulseDiagnosis
     {
-        get => _inquiry;
-        set => SetProperty(ref _inquiry, value);
-    } // 问诊
-
-    private string? _palpation;
-    public string? Palpation
-    {
-        get => _palpation;
-        set => SetProperty(ref _palpation, value);
-    } // 切诊
+        get => _pulseDiagnosis;
+        set => SetProperty(ref _pulseDiagnosis, value);
+    }
 
     private string? _tcmDiagnosis;
     public string? TcmDiagnosis
@@ -204,6 +200,7 @@ public class ConsultationItem : BindableBase
     /// </summary>
     public static ConsultationItem FromDto(ConsultationDto dto)
     {
+        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         return new ConsultationItem
         {
             Id = dto.Id,
@@ -212,25 +209,22 @@ public class ConsultationItem : BindableBase
             PatientName = dto.PatientName ?? string.Empty,
             PatientGender = string.Empty, // ConsultationDto中没有此属性
             PatientAge = null, // ConsultationDto中没有此属性
-            ChiefComplaint = dto.ChiefComplaint!,
+            ChiefComplaint = string.Empty, // 已从DTO移除，使用空值
             PresentIllness = dto.PresentIllness,
             PastHistory = null, // ConsultationDto中没有此属性
             PersonalHistory = null, // ConsultationDto中没有此属性
             FamilyHistory = null, // ConsultationDto中没有此属性
             AllergyHistory = null, // ConsultationDto中没有此属性
-            Inspection = dto.Inspection,
-            Auscultation = dto.AuscultationOlfaction, // ConsultationDto中是AuscultationOlfaction
-            Inquiry = dto.Inquiry,
-            Palpation = dto.Palpation,
-            TcmDiagnosis = dto.TCMDiagnosis, // ConsultationDto中是TCMDiagnosis
+            FourDiagnosis = null, // 已从DTO移除
+            TongueDiagnosis = dto.TongueDiagnosis,
+            PulseDiagnosis = dto.PulseDiagnosis,
+            TcmDiagnosis = dto.TCMDiagnosis,
             Syndrome = null, // ConsultationDto中没有此属性
-            TreatmentPrinciple = dto.TreatmentPrinciple,
-            // DD-002: ConsultationDto已删除Status字段，状态从聚合根MedicalCase派生
-            // Step时间戳已移除，状态默认为InProgress，实际状态由MedicalCase聚合根决定
+            TreatmentPrinciple = null, // 已从DTO移除
             Status = ConsultationStatus.InProgress,
-            CreatedAt = dto.CreatedAt, // ConsultationDto继承的属性
-            CompletedAt = null, // EndTime已删除
-            PrescriptionId = null // ConsultationDto中没有此属性
+            CreatedAt = dto.CreatedAt,
+            CompletedAt = null,
+            PrescriptionId = null
         };
     }
 
@@ -239,25 +233,19 @@ public class ConsultationItem : BindableBase
     /// </summary>
     public ConsultationDto ToDto()
     {
+        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         return new ConsultationDto
         {
             Id = Id,
             MedicalCaseId = MedicalCaseId,
             PatientId = PatientId,
             PatientName = PatientName,
-            DoctorName = string.Empty, // 需要从其他地方获取
-            UserId = Guid.Empty, // 需要从其他地方获取
-            ChiefComplaint = ChiefComplaint,
+            DoctorName = string.Empty,
+            UserId = Guid.Empty,
             PresentIllness = PresentIllness,
-            Inspection = Inspection,
-            AuscultationOlfaction = Auscultation, // ConsultationDto中是AuscultationOlfaction
-            Inquiry = Inquiry,
-            Palpation = Palpation,
-            TCMDiagnosis = TcmDiagnosis, // ConsultationDto中是TCMDiagnosis
-            TreatmentPrinciple = TreatmentPrinciple,
-            // DD-002: ConsultationDto已删除Status字段，状态从聚合根MedicalCase派生
-            Remark = null, // ConsultationItem中没有Note属性
-            // DD-002: 移除Status赋值
+            TongueDiagnosis = TongueDiagnosis,
+            PulseDiagnosis = PulseDiagnosis,
+            TCMDiagnosis = TcmDiagnosis,
             CreatedAt = CreatedAt,
             UpdatedAt = DateTime.Now
         };
@@ -309,10 +297,7 @@ public class ConsultationItem : BindableBase
     /// 四诊是否完整
     /// </summary>
     public bool IsFourDiagnosisComplete =>
-        !string.IsNullOrWhiteSpace(Inspection) &&
-        !string.IsNullOrWhiteSpace(Auscultation) &&
-        !string.IsNullOrWhiteSpace(Inquiry) &&
-        !string.IsNullOrWhiteSpace(Palpation);
+        !string.IsNullOrWhiteSpace(FourDiagnosis);
 
     /// <summary>
     /// 诊断是否完整

@@ -43,7 +43,7 @@ namespace LYBT.Entities.Prescriptions
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 剂量（整数）
+        /// 剂量（整数克）
         /// </summary>
         [DisplayName("剂量")]
         public int Dosage { get; set; }

@@ -64,8 +64,9 @@ namespace LYBT.Desktop.MedicalCase.Services
         /// <summary>
         /// 执行返回导航
         /// Clinical: 显示三选项对话框后返回PatientSelectionView
-        /// Management只读: 直接返回MedicalCaseManagementView
+        /// Management只读: 直接返回MedicalCaseMasterDetailView
         /// Management编辑: 显示UnsavedChangesDialog后返回
+        /// OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
         /// </summary>
         /// <param name="workspaceMode">工作区模式</param>
         /// <param name="isReadOnly">是否只读</param>
@@ -79,7 +80,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                     // Management只读模式: 直接返回
                     if (isReadOnly)
                     {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
                         return;
                     }
 
@@ -87,7 +88,7 @@ namespace LYBT.Desktop.MedicalCase.Services
                     var shouldNavigate = await HandleManagementLeaveRequestAsync();
                     if (shouldNavigate)
                     {
-                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                        _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
                     }
                     return;
                 }

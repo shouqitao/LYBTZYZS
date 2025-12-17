@@ -19,10 +19,10 @@ namespace LYBT.Shared.Models.Extensions
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
             return new MedicalCaseDto
             {
                 Id = dto.Id ?? Guid.Empty,
-                ChiefComplaint = dto.ChiefComplaint,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
                 CaseStatus = MedicalCaseStatus.Active,
@@ -49,13 +49,13 @@ namespace LYBT.Shared.Models.Extensions
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
             return new MedicalCaseInputDto
             {
                 Id = dto.Id,
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
                 VisitDate = dto.ConsultationDate,
-                ChiefComplaint = dto.ChiefComplaint,
                 Remark = dto.Remark
             };
         }
@@ -64,6 +64,7 @@ namespace LYBT.Shared.Models.Extensions
         /// 将MedicalCaseDetailDto转换为MedicalCaseInputDto
         /// Epic #1961: 使用统一的 MedicalCaseInputDto
         /// </summary>
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
         public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
         {
             if (dto == null)
@@ -75,7 +76,6 @@ namespace LYBT.Shared.Models.Extensions
                 PatientId = dto.PatientId,
                 DoctorId = dto.DoctorId,
                 VisitDate = dto.ConsultationDate,
-                ChiefComplaint = dto.ChiefComplaint,
                 PresentIllnessHistory = dto.PresentIllness,
                 Remark = dto.Remark
             };
@@ -94,13 +94,13 @@ namespace LYBT.Shared.Models.Extensions
                 throw new ArgumentNullException(nameof(dto));
 
             // 只更新MedicalCaseDto中实际存在的字段
+            // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
             existing.PatientId = dto.PatientId;
             existing.DoctorId = dto.DoctorId;
             existing.ConsultationDate = dto.VisitDate;
-            existing.ChiefComplaint = dto.ChiefComplaint;
             existing.Remark = dto.Remark;
             existing.UpdatedAt = DateTime.UtcNow;
-            // 注意：InputDto中的中医诊疗字段（四诊、辨证等）在MedicalCaseDto中不存在，无法映射
+            // 注意：InputDto中的中医诊疗字段在MedicalCaseDto中不存在，无法映射
         }
     }
 }

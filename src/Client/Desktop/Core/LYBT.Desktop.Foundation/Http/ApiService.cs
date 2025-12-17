@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Exceptions;
 using Microsoft.Extensions.Caching.Memory;
@@ -63,6 +64,8 @@ namespace LYBT.Desktop.Foundation.Http
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false
             };
+            // 枚举以字符串形式序列化/反序列化，与服务器端保持一致
+            _jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
             // 初始化重试策略
             _retryPolicy = RetryPolicyExtensions.CreateCompositePolicy(

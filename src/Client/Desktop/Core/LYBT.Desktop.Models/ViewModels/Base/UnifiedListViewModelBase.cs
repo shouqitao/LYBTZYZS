@@ -32,6 +32,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         public int CurrentPage { get => _currentPage; set { if (SetProperty(ref _currentPage, value) && _isInitialized) _ = LoadPageAsync(); } }
         public int PageSize { get => _pageSize; set { if (SetProperty(ref _pageSize, value)) { _currentPage = 1; RaisePropertyChanged(nameof(CurrentPage)); if (_isInitialized) _ = LoadPageAsync(); } } }
         public bool HasSelection { get => _hasSelection; private set => SetProperty(ref _hasSelection, value); }
+
+        /// <summary>可选的分页大小列表</summary>
+        public int[] PageSizes { get; } = [10, 20, 50, 100];
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
         public bool CanGoPreviousPage => CurrentPage > 1;
         public bool CanGoNextPage => CurrentPage < TotalPages;

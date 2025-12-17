@@ -1,0 +1,258 @@
+<!--
+    MedicalCaseMasterDetailView - 医案Master-Detail视图
+    OpenSpec: refactor-medicalcase-management
+
+    设计决策：
+    - 左侧40%显示医案列表，右侧60%显示详情
+    - 工具栏仅有刷新按钮（无新建按钮）
+    - 详情区域支持诊断字段编辑（现病史、舌诊、脉诊、中医诊断、备注）
+    - 空状态提示选择医案，不显示新建按钮
+    - 使用独立的ViewControl和EditControl组件
+-->
+<UserControl x:Class="LYBT.Desktop.MedicalCase.Views.MedicalCaseMasterDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:local="clr-namespace:LYBT.Desktop.MedicalCase.Controls"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LYBT.Desktop.Infrastructure;component/Themes/UnifiedComponents.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <controls:MasterDetailLayout HasSelection="{Binding HasSelection}">
+        <!-- ========================================
+             Master区域: 医案列表
+             ======================================== -->
+        <controls:MasterDetailLayout.MasterContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+                    <RowDefinition Height="Auto"/>  <!-- 搜索 -->
+                    <RowDefinition Height="*"/>     <!-- 列表 -->
+                    <RowDefinition Height="Auto"/>  <!-- 分页 -->
+                </Grid.RowDefinitions>
+
+                <!-- 工具栏 - 刷新按钮和批量删除按钮 -->
+                <controls:DataGridToolbar Grid.Row="0"
+                                          RefreshCommand="{Binding RefreshCommand}"
+                                          BatchDeleteCommand="{Binding BatchDeleteCommand}"/>
+
+                <!-- 搜索框 -->
+                <controls:SearchBox Grid.Row="1"
+                                    SearchText="{Binding SearchText, Mode=TwoWay}"
+                                    SearchCommand="{Binding SearchCommand}"
+                                    Placeholder="搜索患者姓名/诊断..."
+                                    Margin="12,8"/>
+
+                <!-- 医案列表 - 使用统一DataGrid样式，支持批量选择 -->
+                <DataGrid Grid.Row="2"
+                          ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                          behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
+                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+                          Style="{StaticResource MasterDetailDataGridStyle}"
+                          RowHeaderWidth="0"
+                          Margin="0,0,0,8">
+                    <DataGrid.Columns>
+                        <!-- 患者姓名 -->
+                        <DataGridTextColumn Header="患者"
+                                            Binding="{Binding PatientName}"
+                                            Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="8,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 就诊日期 -->
+                        <DataGridTextColumn Header="日期"
+                                            Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd}"
+                                            Width="90">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 中医诊断 -->
+                        <DataGridTextColumn Header="诊断"
+                                            Binding="{Binding Diagnosis}"
+                                            Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- 状态 - 使用StatusBadge组件 -->
+                        <DataGridTemplateColumn Header="状态" Width="70">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <controls:StatusBadge Status="{Binding Status}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+
+                    <!-- 行右键菜单 -->
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="查看详情" Command="{Binding EditCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="删除" Command="{Binding DeleteCurrentCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
+
+                <!-- 分页控件 - 使用统一样式 -->
+                <Border Grid.Row="3" Style="{StaticResource MasterDetailPaginationPanelStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 统计信息 -->
+                        <TextBlock Grid.Column="0" Style="{StaticResource MasterDetailPaginationInfoStyle}">
+                            <Run Text="共"/>
+                            <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Medium"/>
+                            <Run Text="条记录"/>
+                        </TextBlock>
+
+                        <!-- 每页条数选择 -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding PageSizes}"
+                                      SelectedItem="{Binding PageSize, Mode=TwoWay}"
+                                      Width="60"
+                                      Margin="6,0"
+                                      VerticalAlignment="Center"/>
+                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        </StackPanel>
+
+                        <!-- 分页按钮 -->
+                        <StackPanel Grid.Column="3"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button Content="首页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding FirstPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <Button Content="上一页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding PreviousPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <TextBlock Style="{StaticResource MasterDetailPaginationPageStyle}">
+                                <Run Text="{Binding CurrentPage, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding TotalPages, Mode=OneWay}"/>
+                            </TextBlock>
+                            <Button Content="下一页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding NextPageCommand}"
+                                    Margin="0,0,4,0"/>
+                            <Button Content="末页"
+                                    Style="{StaticResource MasterDetailPaginationButtonStyle}"
+                                    Command="{Binding LastPageCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 加载遮罩 -->
+                <controls:LoadingOverlay Grid.RowSpan="4"
+                                         IsLoading="{Binding IsLoading}"
+                                         LoadingText="{Binding BusyMessage}"/>
+            </Grid>
+        </controls:MasterDetailLayout.MasterContent>
+
+        <!-- ========================================
+             Detail区域: 医案详情
+             使用独立的ViewControl和EditControl组件
+             ======================================== -->
+        <controls:MasterDetailLayout.DetailContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>  <!-- 工具栏 -->
+                    <RowDefinition Height="*"/>     <!-- 内容 -->
+                </Grid.RowDefinitions>
+
+                <!-- 详情工具栏 -->
+                <controls:DetailToolbar Grid.Row="0"
+                                        Title="{Binding DetailTitle}"
+                                        IsEditMode="{Binding IsEditMode}"
+                                        EditCommand="{Binding EditCommand}"
+                                        SaveCommand="{Binding SaveCommand}"
+                                        CancelCommand="{Binding CancelCommand}"
+                                        DeleteCommand="{Binding DeleteCurrentCommand}"/>
+
+                <!-- 详情内容 - 查看模式 -->
+                <local:MedicalCaseViewControl Grid.Row="1"
+                                              Detail="{Binding CurrentDetail}"
+                                              ShowAuditInfo="True"
+                                              Margin="16"
+                                              Visibility="{Binding IsEditMode, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+
+                <!-- 详情内容 - 编辑模式 -->
+                <!-- OpenSpec: unify-herb-list-controls - 统一使用HerbListEditor编辑处方 -->
+                <local:MedicalCaseEditControl Grid.Row="1"
+                                              PatientName="{Binding CurrentDetail.PatientName}"
+                                              ConsultationDate="{Binding CurrentDetail.ConsultationDate}"
+                                              DoctorName="{Binding CurrentDetail.DoctorName}"
+                                              Status="{Binding CurrentDetail.Status}"
+                                              PresentIllness="{Binding CurrentDetail.PresentIllness, Mode=TwoWay}"
+                                              TongueDiagnosis="{Binding CurrentDetail.TongueDiagnosis, Mode=TwoWay}"
+                                              PulseDiagnosis="{Binding CurrentDetail.PulseDiagnosis, Mode=TwoWay}"
+                                              TCMDiagnosis="{Binding CurrentDetail.TCMDiagnosis, Mode=TwoWay}"
+                                              Remark="{Binding CurrentDetail.Remark, Mode=TwoWay}"
+                                              HerbCount="{Binding HerbCount}"
+                                              DoseCount="{Binding CurrentDetail.DoseCount}"
+                                              FormulaSource="{Binding CurrentDetail.FormulaSource}"
+                                              HerbItems="{Binding HerbItems}"
+                                              DeleteHerbCommand="{Binding DeleteHerbCommand}"
+                                              DosageCompletedCommand="{Binding DosageCompletedCommand}"
+                                              AddNewRowCommand="{Binding AddNewRowCommand}"
+                                              CreatedAt="{Binding CurrentDetail.CreatedAt}"
+                                              UpdatedAt="{Binding CurrentDetail.UpdatedAt}"
+                                              Margin="16"
+                                              Visibility="{Binding IsEditMode, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                <!-- 详情加载遮罩 -->
+                <controls:LoadingOverlay Grid.RowSpan="2"
+                                         IsLoading="{Binding IsLoadingDetail}"
+                                         LoadingText="加载详情中..."/>
+            </Grid>
+        </controls:MasterDetailLayout.DetailContent>
+
+        <!-- ========================================
+             空状态: 未选中医案时显示
+             OpenSpec: UI-LAYOUT-011 - 不显示新建按钮
+             ======================================== -->
+        <controls:MasterDetailLayout.EmptyContent>
+            <controls:EmptyState
+                Title="请选择医案"
+                Subtitle="从左侧列表中选择一个医案查看详情"/>
+        </controls:MasterDetailLayout.EmptyContent>
+    </controls:MasterDetailLayout>
+</UserControl>

@@ -223,16 +223,16 @@ namespace LYBT.Desktop.Prescriptions.Services
             };
 
             paragraph.Inlines.Add(new Run("诊见："));
-            // 合并四诊信息作为诊见
+            // OpenSpec: refactor-diagnosis-fields - 合并诊断信息作为诊见
             var symptoms = _prescription.Symptoms;
             if (string.IsNullOrEmpty(symptoms))
             {
-                // 如果没有专门的症状字段，尝试合并四诊信息
+                // 合并诊断信息：现病史 + 舌诊 + 脉诊
                 var parts = new List<string>();
-                if (!string.IsNullOrEmpty(_prescription.Inspection)) parts.Add(_prescription.Inspection);
-                if (!string.IsNullOrEmpty(_prescription.Inquiry)) parts.Add(_prescription.Inquiry);
-                if (!string.IsNullOrEmpty(_prescription.Palpation)) parts.Add(_prescription.Palpation);
-                symptoms = string.Join("，", parts);
+                if (!string.IsNullOrEmpty(_prescription.PresentIllness)) parts.Add(_prescription.PresentIllness);
+                if (!string.IsNullOrEmpty(_prescription.TongueDiagnosis)) parts.Add($"舌诊：{_prescription.TongueDiagnosis}");
+                if (!string.IsNullOrEmpty(_prescription.PulseDiagnosis)) parts.Add($"脉诊：{_prescription.PulseDiagnosis}");
+                symptoms = string.Join("；", parts);
             }
             paragraph.Inlines.Add(CreateUnderlinedValue(symptoms ?? "", 0));
 

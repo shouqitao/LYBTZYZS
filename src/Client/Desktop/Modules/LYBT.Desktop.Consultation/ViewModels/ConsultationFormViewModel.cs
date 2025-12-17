@@ -26,10 +26,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         private string _presentIllness = string.Empty;
         private string _tcmDiagnosis = string.Empty;
         private string _treatmentPrinciple = string.Empty;
-        private string _inspection = string.Empty;
-        private string _auscultationOlfaction = string.Empty;
-        private string _inquiry = string.Empty;
-        private string _palpation = string.Empty;
+        private string _fourDiagnosis = string.Empty;
+        private string _tongueDiagnosis = string.Empty;
+        private string _pulseDiagnosis = string.Empty;
         private string _remark = string.Empty;
         private bool _prescriptionEnabled = true;
         private string _validationMessage = string.Empty;
@@ -41,10 +40,9 @@ namespace LYBT.Desktop.Consultation.ViewModels
         public string PresentIllness { get => _presentIllness; set => SetProperty(ref _presentIllness, value); }
         public string TCMDiagnosis { get => _tcmDiagnosis; set { if (SetProperty(ref _tcmDiagnosis, value)) RaisePropertyChanged(nameof(HasTCMDiagnosis)); } }
         public string TreatmentPrinciple { get => _treatmentPrinciple; set => SetProperty(ref _treatmentPrinciple, value); }
-        public string Inspection { get => _inspection; set => SetProperty(ref _inspection, value); }
-        public string AuscultationOlfaction { get => _auscultationOlfaction; set => SetProperty(ref _auscultationOlfaction, value); }
-        public string Inquiry { get => _inquiry; set => SetProperty(ref _inquiry, value); }
-        public string Palpation { get => _palpation; set => SetProperty(ref _palpation, value); }
+        public string FourDiagnosis { get => _fourDiagnosis; set => SetProperty(ref _fourDiagnosis, value); }
+        public string TongueDiagnosis { get => _tongueDiagnosis; set => SetProperty(ref _tongueDiagnosis, value); }
+        public string PulseDiagnosis { get => _pulseDiagnosis; set => SetProperty(ref _pulseDiagnosis, value); }
         public string Remark { get => _remark; set => SetProperty(ref _remark, value); }
 
         public bool PrescriptionEnabled { get => _prescriptionEnabled; set { if (SetProperty(ref _prescriptionEnabled, value)) RaisePropertyChanged(nameof(PrescriptionDisabled)); } }
@@ -153,24 +151,20 @@ namespace LYBT.Desktop.Consultation.ViewModels
         {
             if (_dataManager.Current == null) return;
             var c = _dataManager.Current;
-            ChiefComplaint = c.ChiefComplaint ?? string.Empty; PresentIllness = c.PresentIllness ?? string.Empty;
-            Inspection = c.Inspection ?? string.Empty; AuscultationOlfaction = c.AuscultationOlfaction ?? string.Empty;
-            Inquiry = c.Inquiry ?? string.Empty; Palpation = c.Palpation ?? string.Empty;
-            TCMDiagnosis = c.TCMDiagnosis ?? string.Empty; TreatmentPrinciple = c.TreatmentPrinciple ?? string.Empty;
-            Remark = c.Remark ?? string.Empty;
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+            PresentIllness = c.PresentIllness ?? string.Empty;
+            TongueDiagnosis = c.TongueDiagnosis ?? string.Empty;
+            PulseDiagnosis = c.PulseDiagnosis ?? string.Empty;
+            TCMDiagnosis = c.TCMDiagnosis ?? string.Empty;
         }
 
         private void SyncToDataManager()
         {
-            _dataManager.UpdateField(nameof(ConsultationDto.ChiefComplaint), ChiefComplaint);
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             _dataManager.UpdateField(nameof(ConsultationDto.PresentIllness), PresentIllness);
-            _dataManager.UpdateField(nameof(ConsultationDto.Inspection), Inspection);
-            _dataManager.UpdateField(nameof(ConsultationDto.AuscultationOlfaction), AuscultationOlfaction);
-            _dataManager.UpdateField(nameof(ConsultationDto.Inquiry), Inquiry);
-            _dataManager.UpdateField(nameof(ConsultationDto.Palpation), Palpation);
+            _dataManager.UpdateField(nameof(ConsultationDto.TongueDiagnosis), TongueDiagnosis);
+            _dataManager.UpdateField(nameof(ConsultationDto.PulseDiagnosis), PulseDiagnosis);
             _dataManager.UpdateField(nameof(ConsultationDto.TCMDiagnosis), TCMDiagnosis);
-            _dataManager.UpdateField(nameof(ConsultationDto.TreatmentPrinciple), TreatmentPrinciple);
-            _dataManager.UpdateField(nameof(ConsultationDto.Remark), Remark);
         }
     }
 }

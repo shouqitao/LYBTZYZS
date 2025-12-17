@@ -300,7 +300,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             // Assert
             dto.Should().NotBeNull();
             dto.HerbName.Should().Be("免费药材");
-            dto.Dosage.Should().Be(5.0m);
+            dto.Dosage.Should().Be(5);
             dto.UnitPrice.Should().Be(0.0m);
             dto.Remark.Should().Be("免费提供");
         }

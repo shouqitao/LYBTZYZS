@@ -21,9 +21,9 @@
         string Unit { get; }
 
         /// <summary>
-        /// 剂量（用量）
+        /// 剂量（整数克）
         /// </summary>
-        decimal Dosage { get; }
+        int Dosage { get; }
 
         /// <summary>
         /// 单价

@@ -53,12 +53,8 @@ public class MedicalCaseItem : BindableBase
         set => SetProperty(ref _caseNumber, value);
     }
 
-    private string _chiefComplaint = string.Empty;
-    public string ChiefComplaint
-    {
-        get => _chiefComplaint;
-        set => SetProperty(ref _chiefComplaint, value);
-    }
+    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, TreatmentPlan
+    // 保留PresentIllness和Diagnosis用于显示
 
     private string? _presentIllness;
     public string? PresentIllness
@@ -72,13 +68,6 @@ public class MedicalCaseItem : BindableBase
     {
         get => _diagnosis;
         set => SetProperty(ref _diagnosis, value);
-    }
-
-    private string? _treatmentPlan;
-    public string? TreatmentPlan
-    {
-        get => _treatmentPlan;
-        set => SetProperty(ref _treatmentPlan, value);
     }
 
     private MedicalCaseStatus _status;
@@ -146,6 +135,7 @@ public class MedicalCaseItem : BindableBase
 
     /// <summary>
     /// 从MedicalCaseDetailDto创建MedicalCaseItem
+    /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
     /// </summary>
     public static MedicalCaseItem FromDto(MedicalCaseDetailDto dto)
     {
@@ -157,10 +147,8 @@ public class MedicalCaseItem : BindableBase
             PatientGender = "未知", // DTO中没有此属性，使用默认值
             PatientAge = null, // DTO中没有此属性
             CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(), // 使用ID前8位作为案例编号
-            ChiefComplaint = dto.ChiefComplaint ?? string.Empty,
             PresentIllness = dto.PresentIllness,
-            Diagnosis = dto.DiagnosisResult,
-            TreatmentPlan = dto.TreatmentPlan,
+            Diagnosis = dto.Consultation?.TCMDiagnosis, // 从Consultation获取中医诊断
             Status = dto.CaseStatus,
             ConsultationId = dto.ConsultationId,
             PrescriptionId = dto.PrescriptionId,
@@ -172,6 +160,7 @@ public class MedicalCaseItem : BindableBase
 
     /// <summary>
     /// 转换为MedicalCaseDetailDto（用于API调用）
+    /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
     /// </summary>
     public MedicalCaseDetailDto ToDto()
     {
@@ -186,10 +175,7 @@ public class MedicalCaseItem : BindableBase
             PrescriptionId = PrescriptionId,
             ConsultationDate = CreatedAt,
             CaseStatus = Status,
-            ChiefComplaint = ChiefComplaint,
             PresentIllness = PresentIllness,
-            DiagnosisResult = Diagnosis,
-            TreatmentPlan = TreatmentPlan,
             CreatedAt = CreatedAt,
             UpdatedAt = CompletedAt ?? DateTime.Now,
             Remark = CompletionReason
@@ -198,6 +184,7 @@ public class MedicalCaseItem : BindableBase
 
     /// <summary>
     /// 从MedicalCaseDetailDto更新当前项
+    /// OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint, DiagnosisResult, TreatmentPlan
     /// </summary>
     public void UpdateFromDto(MedicalCaseDetailDto dto)
     {
@@ -207,10 +194,8 @@ public class MedicalCaseItem : BindableBase
         PatientGender = "未知"; // DTO中没有此属性，使用默认值
         PatientAge = null; // DTO中没有此属性
         CaseNumber = dto.Id.ToString().Substring(0, 8).ToUpper(); // 使用ID前8位作为案例编号
-        ChiefComplaint = dto.ChiefComplaint!;
         PresentIllness = dto.PresentIllness;
-        Diagnosis = dto.DiagnosisResult;
-        TreatmentPlan = dto.TreatmentPlan;
+        Diagnosis = dto.Consultation?.TCMDiagnosis; // 从Consultation获取中医诊断
         Status = dto.CaseStatus;
         ConsultationId = dto.ConsultationId;
         PrescriptionId = dto.PrescriptionId;

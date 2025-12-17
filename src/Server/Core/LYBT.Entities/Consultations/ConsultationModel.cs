@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LYBT.Entities.Common;
-using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Entities.Consultations
 {
@@ -24,59 +23,27 @@ namespace LYBT.Entities.Consultations
         /// <summary>创建人ID（医生用户ID）</summary>
         // 审计字段（CreatedBy等）继承自BaseEntity
 
-        /// <summary>主诉</summary>
-        [StringLength(500)]
-        [DisplayName("主诉")]
-        public string? ChiefComplaint { get; set; }
+        // 诊断核心字段（精简版 - OpenSpec: refactor-diagnosis-fields）
 
         /// <summary>现病史</summary>
-        [StringLength(1000)]
+        [StringLength(2000)]
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }
 
-        // 中医四诊
-
-        /// <summary>望诊</summary>
+        /// <summary>舌诊</summary>
         [StringLength(500)]
-        [DisplayName("望诊")]
-        public string? Inspection { get; set; }
+        [DisplayName("舌诊")]
+        public string? TongueDiagnosis { get; set; }
 
-        /// <summary>闻诊</summary>
+        /// <summary>脉诊</summary>
         [StringLength(500)]
-        [DisplayName("闻诊")]
-        public string? AuscultationOlfaction { get; set; }
+        [DisplayName("脉诊")]
+        public string? PulseDiagnosis { get; set; }
 
-        /// <summary>问诊</summary>
-        [StringLength(1000)] // 问诊内容较多，统一为1000
-        [DisplayName("问诊")]
-        public string? Inquiry { get; set; }
-
-        /// <summary>切诊（包含脉诊、舌诊等）</summary>
-        [StringLength(500)]
-        [DisplayName("切诊")]
-        public string? Palpation { get; set; }
-
-        // 中医诊断结果
-
-        /// <summary>中医辨证</summary>
+        /// <summary>中医辨证（必填）</summary>
         [StringLength(500)]
         [DisplayName("中医辨证")]
         public string? TCMDiagnosis { get; set; }
-
-        /// <summary>治疗原则</summary>
-        [StringLength(500)]
-        [DisplayName("治疗原则")]
-        public string? TreatmentPrinciple { get; set; }
-
-        /// <summary>医嘱</summary>
-        [StringLength(1000)]
-        [DisplayName("医嘱")]
-        public string? MedicalAdvice { get; set; }
-
-        /// <summary>备注信息</summary>
-        [StringLength(1000)] // 统一为1000
-        [DisplayName("备注")]
-        public string? Remark { get; set; }
 
         /// <summary>
         /// 处方开关（true=开处方，false=不开处方）

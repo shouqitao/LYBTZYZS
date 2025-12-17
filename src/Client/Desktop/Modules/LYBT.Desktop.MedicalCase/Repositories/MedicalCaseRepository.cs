@@ -385,11 +385,54 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
                 throw new InvalidOperationException($"聚合保存医案失败: {response.Message}");
             }
+            catch (Refit.ApiException apiEx) when (apiEx.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity ||
+                                                    apiEx.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                // 422/400 表示验证失败，从响应体中提取实际错误消息
+                var errorMessage = ExtractErrorMessage(apiEx);
+                _logger.LogWarning(apiEx, "聚合保存医案验证失败，MedicalCaseId: {MedicalCaseId}, StatusCode: {StatusCode}, Message: {Message}",
+                    medicalCaseId, apiEx.StatusCode, errorMessage);
+                throw new InvalidOperationException(errorMessage, apiEx);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "聚合保存医案失败，MedicalCaseId: {MedicalCaseId}", medicalCaseId);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 从Refit ApiException中提取错误消息
+        /// </summary>
+        private string ExtractErrorMessage(Refit.ApiException apiEx)
+        {
+            const string defaultMessage = "保存失败，请稍后重试";
+
+            try
+            {
+                if (apiEx.Content == null)
+                    return defaultMessage;
+
+                // 尝试解析ApiResponse格式的错误响应
+                var errorResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<object>>(
+                    apiEx.Content,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (errorResponse != null && !string.IsNullOrWhiteSpace(errorResponse.Message))
+                {
+                    return errorResponse.Message;
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // JSON解析失败，返回原始内容（如果是简短的错误消息）
+                if (!string.IsNullOrWhiteSpace(apiEx.Content) && apiEx.Content.Length < 200)
+                {
+                    return apiEx.Content;
+                }
+            }
+
+            return defaultMessage;
         }
 
         protected override Task<ApiResponse<MedicalCaseDto>> CallApiGetByIdAsync(Guid id)

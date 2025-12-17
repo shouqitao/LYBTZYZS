@@ -302,7 +302,7 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public decimal UnitPrice { get; set; }
 
         [DisplayName("剂量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         [DisplayName("总价")]
         public decimal TotalPrice { get; set; }
@@ -352,14 +352,14 @@ namespace LYBT.Shared.Models.Contracts.Prescriptions
         public string? HerbName { get; set; }
 
         /// <summary>单位</summary>
-        [Required]
+        [Required(ErrorMessage = "单位不能为空")]
         [StringLength(20)]
         [DisplayName("单位")]
-        public string Unit { get; set; } = "g";
+        public string Unit { get; set; } = string.Empty;
 
-        /// <summary>剂量（更新时使用）</summary>
+        /// <summary>剂量（整数克）</summary>
         [DisplayName("剂量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         /// <summary>单价（创建时使用）</summary>
         [Range(0, 10000)]

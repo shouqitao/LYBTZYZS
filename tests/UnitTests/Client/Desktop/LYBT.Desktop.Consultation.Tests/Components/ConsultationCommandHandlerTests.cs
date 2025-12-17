@@ -65,9 +65,12 @@ namespace LYBT.Desktop.Consultation.Tests.Components
         public void ClearForm_ShouldClearAllFields()
         {
             // Arrange
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             var mockConsultation = new ConsultationDto
             {
-                ChiefComplaint = "测试主诉",
+                PresentIllness = "测试现病史",
+                TongueDiagnosis = "测试舌诊",
+                PulseDiagnosis = "测试脉诊",
                 TCMDiagnosis = "测试诊断"
             };
             _mockDataManager.Setup(m => m.Current).Returns(mockConsultation);
@@ -75,8 +78,10 @@ namespace LYBT.Desktop.Consultation.Tests.Components
             // Act
             _commandHandler.ClearForm();
 
-            // Assert
-            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.ChiefComplaint), string.Empty), Times.Once);
+            // Assert - 验证4个核心字段被清空
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.PresentIllness), null), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.TongueDiagnosis), null), Times.Once);
+            _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.PulseDiagnosis), null), Times.Once);
             _mockDataManager.Verify(m => m.UpdateField(nameof(ConsultationDto.TCMDiagnosis), string.Empty), Times.Once);
         }
 

@@ -51,7 +51,6 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = consultationId,
-            ChiefComplaint = "头痛发热",
             TCMDiagnosis = "外感风寒",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase
@@ -67,7 +66,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(consultationId);
-        result.ChiefComplaint.Should().Be("头痛发热");
+        result.TCMDiagnosis.Should().Be("外感风寒");
         result.MedicalCase.Should().NotBeNull();
         result.MedicalCase.PatientName.Should().Be("测试患者");
     }
@@ -103,7 +102,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCaseId,  // 共享主键
-            ChiefComplaint = "咳嗽",
+            TCMDiagnosis = "咳嗽",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase
         };
@@ -118,7 +117,7 @@ public class ConsultationRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(medicalCaseId);
-        result.ChiefComplaint.Should().Be("咳嗽");
+        result.TCMDiagnosis.Should().Be("咳嗽");
     }
 
     [Fact]
@@ -140,7 +139,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,
-            ChiefComplaint = "主诉1",
+            TCMDiagnosis = "诊断1",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase1
         };
@@ -163,7 +162,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,
-            ChiefComplaint = "主诉2",
+            TCMDiagnosis = "诊断2",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase2
         };
@@ -178,8 +177,8 @@ public class ConsultationRepositoryTests : IDisposable
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].ChiefComplaint.Should().Be("主诉2"); // 最新的在前（后插入的）
-        result[1].ChiefComplaint.Should().Be("主诉1");
+        result[0].TCMDiagnosis.Should().Be("诊断2"); // 最新的在前（后插入的）
+        result[1].TCMDiagnosis.Should().Be("诊断1");
     }
 
     #endregion
@@ -203,7 +202,7 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase.Id,
-            ChiefComplaint = "感冒",
+            TCMDiagnosis = "感冒",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase
         };
@@ -240,7 +239,6 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation1 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase1.Id,
-            ChiefComplaint = "头痛",
             TCMDiagnosis = "风寒感冒",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase1
@@ -259,7 +257,6 @@ public class ConsultationRepositoryTests : IDisposable
         var consultation2 = new LYBT.Entities.Consultations.Consultation
         {
             Id = medicalCase2.Id,
-            ChiefComplaint = "咳嗽",
             TCMDiagnosis = "痰热咳嗽",
             CreatedBy = Guid.NewGuid(),
             MedicalCase = medicalCase2
@@ -270,12 +267,12 @@ public class ConsultationRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _sut.GetPagedWithDetailsAsync(1, 20, "头痛");
+        var result = await _sut.GetPagedWithDetailsAsync(1, 20, "风寒");
 
         // Assert
         result.Should().NotBeNull();
         result.Items.Should().HaveCount(1);
-        result.Items[0].ChiefComplaint.Should().Be("头痛");
+        result.Items[0].TCMDiagnosis.Should().Be("风寒感冒");
     }
 
     [Fact]
@@ -297,7 +294,7 @@ public class ConsultationRepositoryTests : IDisposable
             var consultation = new LYBT.Entities.Consultations.Consultation
             {
                 Id = medicalCase.Id,
-                ChiefComplaint = $"主诉{i}",
+                TCMDiagnosis = $"诊断{i}",
                 CreatedBy = Guid.NewGuid(),
                 MedicalCase = medicalCase
             };

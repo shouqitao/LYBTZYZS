@@ -205,35 +205,18 @@ namespace LYBT.Desktop.Consultation.Services
 
             switch (fieldName)
             {
-                case nameof(ConsultationDto.ChiefComplaint):
-                    _currentConsultation.ChiefComplaint = value ?? string.Empty;
-                    break;
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 case nameof(ConsultationDto.PresentIllness):
                     _currentConsultation.PresentIllness = value;
                     break;
-                case nameof(ConsultationDto.Inspection):
-                    _currentConsultation.Inspection = value;
+                case nameof(ConsultationDto.TongueDiagnosis):
+                    _currentConsultation.TongueDiagnosis = value;
                     break;
-                case nameof(ConsultationDto.AuscultationOlfaction):
-                    _currentConsultation.AuscultationOlfaction = value;
-                    break;
-                case nameof(ConsultationDto.Inquiry):
-                    _currentConsultation.Inquiry = value;
-                    break;
-                case nameof(ConsultationDto.Palpation):
-                    _currentConsultation.Palpation = value;
+                case nameof(ConsultationDto.PulseDiagnosis):
+                    _currentConsultation.PulseDiagnosis = value;
                     break;
                 case nameof(ConsultationDto.TCMDiagnosis):
                     _currentConsultation.TCMDiagnosis = value ?? string.Empty;
-                    break;
-                case nameof(ConsultationDto.TreatmentPrinciple):
-                    _currentConsultation.TreatmentPrinciple = value;
-                    break;
-                case nameof(ConsultationDto.MedicalAdvice):
-                    _currentConsultation.MedicalAdvice = value;
-                    break;
-                case nameof(ConsultationDto.Remark):
-                    _currentConsultation.Remark = value;
                     break;
                 default:
                     _logger.LogWarning("未知字段: {FieldName}", fieldName);
@@ -252,16 +235,11 @@ namespace LYBT.Desktop.Consultation.Services
             if (_currentConsultation == null || _originalConsultation == null)
                 return false;
 
-            return _currentConsultation.ChiefComplaint != _originalConsultation.ChiefComplaint ||
-                   _currentConsultation.PresentIllness != _originalConsultation.PresentIllness ||
-                   _currentConsultation.Inspection != _originalConsultation.Inspection ||
-                   _currentConsultation.AuscultationOlfaction != _originalConsultation.AuscultationOlfaction ||
-                   _currentConsultation.Inquiry != _originalConsultation.Inquiry ||
-                   _currentConsultation.Palpation != _originalConsultation.Palpation ||
-                   _currentConsultation.TCMDiagnosis != _originalConsultation.TCMDiagnosis ||
-                   _currentConsultation.TreatmentPrinciple != _originalConsultation.TreatmentPrinciple ||
-                   _currentConsultation.MedicalAdvice != _originalConsultation.MedicalAdvice ||
-                   _currentConsultation.Remark != _originalConsultation.Remark;
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+            return _currentConsultation.PresentIllness != _originalConsultation.PresentIllness ||
+                   _currentConsultation.TongueDiagnosis != _originalConsultation.TongueDiagnosis ||
+                   _currentConsultation.PulseDiagnosis != _originalConsultation.PulseDiagnosis ||
+                   _currentConsultation.TCMDiagnosis != _originalConsultation.TCMDiagnosis;
         }
 
         #endregion
@@ -270,6 +248,7 @@ namespace LYBT.Desktop.Consultation.Services
 
         private ConsultationDto CloneConsultation(ConsultationDto source)
         {
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             return new ConsultationDto
             {
                 Id = source.Id,
@@ -278,17 +257,10 @@ namespace LYBT.Desktop.Consultation.Services
                 UserId = source.UserId,
                 PatientName = source.PatientName,
                 DoctorName = source.DoctorName,
-                ChiefComplaint = source.ChiefComplaint,
                 PresentIllness = source.PresentIllness,
-                Inspection = source.Inspection,
-                AuscultationOlfaction = source.AuscultationOlfaction,
-                Inquiry = source.Inquiry,
-                Palpation = source.Palpation,
+                TongueDiagnosis = source.TongueDiagnosis,
+                PulseDiagnosis = source.PulseDiagnosis,
                 TCMDiagnosis = source.TCMDiagnosis,
-                TreatmentPrinciple = source.TreatmentPrinciple,
-                MedicalAdvice = source.MedicalAdvice,
-                Remark = source.Remark,
-                // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                 CreatedAt = source.CreatedAt,
                 UpdatedAt = source.UpdatedAt
             };

@@ -124,7 +124,8 @@ namespace LYBT.Desktop.Admin.ViewModels
             NavigateToHerbManagementCommand = new DelegateCommand(() => NavigateTo("HerbMasterDetailView"));
             NavigateToPatientManagementCommand = new DelegateCommand(() => NavigateTo("PatientMasterDetailView"));
             NavigateToFormulaManagementCommand = new DelegateCommand(() => NavigateTo("FormulaMasterDetailView"));
-            NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseManagementView"));
+            // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+            NavigateToMedicalCaseManagementCommand = new DelegateCommand(() => NavigateTo("MedicalCaseMasterDetailView"));
             NavigateToSystemSettingsCommand = new DelegateCommand(() => NavigateTo("SystemSettingsView"));
 
             // Issue #1887-1892: 初始化修改信息和修改密码命令

@@ -360,8 +360,8 @@ public class FormulaHerbItem : BindableBase
         set => SetProperty(ref _herbName, value);
     }
 
-    private decimal _dosage;
-    public decimal Dosage
+    private int _dosage;
+    public int Dosage
     {
         get => _dosage;
         set => SetProperty(ref _dosage, value);

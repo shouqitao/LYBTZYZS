@@ -23,10 +23,10 @@ namespace LYBT.Module.Consultations.Mapping
 
             // ConsultationInputDto -> Consultation
             // Issue #1562 Phase 2: 已删除ConsultationStatus/EndTime字段映射
+            // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
             CreateMap<ConsultationInputDto, LYBT.Entities.Consultations.Consultation>()
                 .ForMember(dest => dest.TCMDiagnosis, opt => opt.MapFrom(src => src.TCMDiagnosis))
                 .ForMember(dest => dest.MedicalCase, opt => opt.Ignore())
-                .ForMember(dest => dest.Remark, opt => opt.Ignore())  // Remark在MedicalCase级别管理
                 .ForMember(dest => dest.PrescriptionEnabled, opt => opt.Ignore())
                 .ForSourceMember(src => src.PatientName, opt => opt.DoNotValidate())
                 .ForSourceMember(src => src.DoctorName, opt => opt.DoNotValidate())

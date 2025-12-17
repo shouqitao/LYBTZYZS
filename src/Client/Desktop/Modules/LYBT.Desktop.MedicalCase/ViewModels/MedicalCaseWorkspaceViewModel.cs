@@ -218,7 +218,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
         {
             SetIsBusy(true, "正在保存...");
             // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 使用聚合保存
-            SyncRemarkToPanel();
+            // OpenSpec: refactor-diagnosis-fields - 移除SyncRemarkToPanel调用
             var result = await _coordinator.SaveAggregateAsync(MedicalCaseId, GetConsultationProvider(), GetPrescriptionProvider(), Remark, EditReason);
             if (result.IsSuccess) { if (IsHistoricalEditMode && !string.IsNullOrWhiteSpace(EditReason)) Logger.LogInformation("历史修改保存，原因: {EditReason}", EditReason); await ShowSuccessMessageAsync("保存成功"); }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "保存失败");
@@ -235,7 +235,7 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
 
     private async Task ExecuteBackAsync() => await _navigationHandler.ExecuteBackAsync(WorkspaceMode, IsReadOnly);
 
-    private void SyncRemarkToPanel() { if (ConsultationPanelViewModel != null) ConsultationPanelViewModel.MedicalCaseRemark = Remark; }
+    // OpenSpec: refactor-diagnosis-fields - 移除SyncRemarkToPanel方法，MedicalCaseRemark已从ConsultationPanelViewModel移除
 
     // OpenSpec: refactor-medicalcase-aggregate-crud (Phase 4.1) - 迁移到IDataProvider
     private IDataProvider? GetConsultationProvider() => ConsultationPanelViewModel as IDataProvider;
@@ -397,7 +397,8 @@ public class MedicalCaseWorkspaceViewModel : UnifiedViewModelBase
             if (result.IsSuccess)
             {
                 await ShowSuccessMessageAsync("看诊已完成");
-                _regionManager.RequestNavigate("ContentRegion", WorkspaceMode == WorkspaceMode.Management ? "MedicalCaseManagementView" : "PatientSelectionView");
+                // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+                _regionManager.RequestNavigate("ContentRegion", WorkspaceMode == WorkspaceMode.Management ? "MedicalCaseMasterDetailView" : "PatientSelectionView");
             }
             else await ShowErrorMessageAsync(result.ErrorMessage ?? "完成失败");
         }

@@ -574,13 +574,31 @@
         </Setter>
     </Style>
 
+    <!-- Master-Detail专用DataGrid单元格样式 - 去掉选中时的黑色边框 -->
+    <Style x:Key="MasterDetailDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource BaseDataGridCell}">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Master-Detail专用DataGrid样式 - 继承BaseDataGridStyle并应用新行样式 -->
     <Style x:Key="MasterDetailDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource BaseDataGridStyle}">
         <Setter Property="RowStyle" Value="{StaticResource MasterDetailDataGridRowStyle}"/>
+        <Setter Property="CellStyle" Value="{StaticResource MasterDetailDataGridCellStyle}"/>
         <Setter Property="RowHeight" Value="48"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="GridLinesVisibility" Value="None"/>
+        <Setter Property="IsReadOnly" Value="True"/>
     </Style>
 
     <Style x:Key="BaseDataGridColumnHeader" TargetType="DataGridColumnHeader">

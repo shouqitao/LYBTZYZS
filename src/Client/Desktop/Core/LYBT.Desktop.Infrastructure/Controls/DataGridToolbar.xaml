@@ -88,34 +88,13 @@
 
                 <!-- 附加内容插槽 -->
                 <ContentPresenter Content="{Binding AdditionalContent, ElementName=Root}"/>
-            </StackPanel>
 
-            <!-- 右侧按钮组 -->
-            <StackPanel Grid.Column="2"
-                        Orientation="Horizontal">
-                <!-- 批量删除按钮 -->
-                <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
-                        Style="{StaticResource DangerButtonStyle}"
-                        Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
-                        ToolTip="批量删除"
-                        Margin="0,0,8,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource DeleteIcon}"
-                              Fill="White"
-                              Width="16" Height="16"
-                              Stretch="Uniform"
-                              VerticalAlignment="Center"/>
-                        <TextBlock Text="批量删除"
-                                   Margin="6,0,0,0"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- 导出按钮 -->
+                <!-- 导出按钮 - 放在导入等附加按钮后面 -->
                 <Button Command="{Binding ExportCommand, ElementName=Root}"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Visibility="{Binding ExportCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
-                        ToolTip="导出">
+                        ToolTip="导出"
+                        Margin="4,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource ExportIcon}"
                               Fill="{StaticResource TextSecondaryBrush}"
@@ -123,6 +102,27 @@
                               Stretch="Uniform"
                               VerticalAlignment="Center"/>
                         <TextBlock Text="导出"
+                                   Margin="6,0,0,0"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- 右侧按钮组 - 批量删除单独放右侧 -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal">
+                <!-- 批量删除按钮 -->
+                <Button Command="{Binding BatchDeleteCommand, ElementName=Root}"
+                        Style="{StaticResource DangerButtonStyle}"
+                        Visibility="{Binding BatchDeleteCommand, ElementName=Root, Converter={StaticResource NullToVisibilityConverter}}"
+                        ToolTip="批量删除">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource DeleteIcon}"
+                              Fill="White"
+                              Width="16" Height="16"
+                              Stretch="Uniform"
+                              VerticalAlignment="Center"/>
+                        <TextBlock Text="批量删除"
                                    Margin="6,0,0,0"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

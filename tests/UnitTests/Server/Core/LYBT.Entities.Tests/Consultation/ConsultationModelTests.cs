@@ -156,17 +156,16 @@ namespace LYBT.UnitTests.Core.Entities
             // Arrange
             var consultation = new Consultation();
 
-            // Act
-            consultation.Inspection = "面色红润，舌淡红，苔薄白";
-            consultation.Auscultation = "声音洪亮，无异常";
-            consultation.Inquiry = "主诉头痛，睡眠欠佳";
-            consultation.Palpation = "脉象浮数";
+            // Act - 新字段结构：四诊、舌诊、脉诊
+            consultation.FourDiagnosis = "面色红润，声音洪亮，主诉头痛，睡眠欠佳";
+            consultation.TongueDiagnosis = "舌淡红，苔薄白";
+            consultation.PulseDiagnosis = "脉象浮数";
 
             // Assert
-            consultation.Inspection.Should().Contain("舌");
-            consultation.Auscultation.Should().Contain("声音");
-            consultation.Inquiry.Should().Contain("主诉");
-            consultation.Palpation.Should().Contain("脉");
+            consultation.FourDiagnosis.Should().Contain("面色");
+            consultation.FourDiagnosis.Should().Contain("主诉");
+            consultation.TongueDiagnosis.Should().Contain("舌");
+            consultation.PulseDiagnosis.Should().Contain("脉");
         }
 
         [Fact]

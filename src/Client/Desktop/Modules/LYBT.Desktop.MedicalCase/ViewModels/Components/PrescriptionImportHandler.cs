@@ -218,7 +218,7 @@ public class HerbItemToAdd
 {
     public Guid HerbId { get; init; }
     public string HerbName { get; init; } = string.Empty;
-    public decimal Dosage { get; init; }
+    public int Dosage { get; init; }
     public decimal UnitPrice { get; init; }
 }
 

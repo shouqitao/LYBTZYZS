@@ -348,8 +348,8 @@ namespace LYBT.Desktop.MedicalCase.Services
                     { "PatientId", patientId }
                 };
 
-                // Issue #1799: 更新导航目标为MedicalCaseManagementView
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView", parameters);
+                // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView", parameters);
                 await Task.CompletedTask;
                 return true;
             }
@@ -369,8 +369,8 @@ namespace LYBT.Desktop.MedicalCase.Services
             try
             {
                 _logger.LogInformation("导航到病案列表");
-                // Issue #1799: 更新导航目标为MedicalCaseManagementView
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                // OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
                 await Task.CompletedTask;
                 return true;
             }

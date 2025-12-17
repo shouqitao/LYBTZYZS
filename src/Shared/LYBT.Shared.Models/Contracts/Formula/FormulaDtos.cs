@@ -147,7 +147,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string HerbName { get; set; } = string.Empty;
 
         [DisplayName("用量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;
@@ -275,11 +275,11 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("药材名称")]
         public string HerbName { get; set; } = string.Empty;
 
-        /// <summary>用量（必填）</summary>
+        /// <summary>用量（必填，整数克）</summary>
         [Required(ErrorMessage = "用量不能为空")]
-        [Range(0.1, 1000, ErrorMessage = "用量必须在0.1~1000之间")]
+        [Range(1, 500, ErrorMessage = "用量必须在1~500之间")]
         [DisplayName("用量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         /// <summary>单位（必填，默认"g"）⭐ Issue #2014新增</summary>
         [Required(ErrorMessage = "单位不能为空")]
@@ -488,9 +488,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string HerbName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "用量必须大于0")]
-        [Range(0.1, 1000, ErrorMessage = "用量必须在0.1-1000之间")]
+        [Range(1, 500, ErrorMessage = "用量必须在1-500之间")]
         [DisplayName("用量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         [StringLength(10, ErrorMessage = "单位不能超过10个字符")]
         [DisplayName("单位")]
@@ -583,7 +583,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         public string HerbName { get; set; } = string.Empty;
 
         [DisplayName("用量")]
-        public decimal Dosage { get; set; }
+        public int Dosage { get; set; }
 
         [DisplayName("单位")]
         public string Unit { get; set; } = string.Empty;

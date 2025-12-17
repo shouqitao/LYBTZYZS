@@ -61,6 +61,9 @@
         /// <summary>诊断最大长度</summary>
         public const int DiagnosisMaxLength = 500;
 
+        /// <summary>四诊最大长度（合并望闻问切）</summary>
+        public const int FourDiagnosisMaxLength = 2000;
+
         #endregion
 
         #region 数值范围限制

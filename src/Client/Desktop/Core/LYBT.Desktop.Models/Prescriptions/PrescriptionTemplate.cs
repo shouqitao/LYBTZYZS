@@ -292,7 +292,7 @@ namespace LYBT.Desktop.Models.Prescriptions
         private Guid _templateId = Guid.Empty;
         private Guid _herbId = Guid.Empty;
         private string _herbName = string.Empty;
-        private decimal _dosage = 0m;
+        private int _dosage = 0;
         private string _unit = "g";
         private decimal _estimatedPrice = 0m;
         private string _processMethod = string.Empty;
@@ -336,9 +336,9 @@ namespace LYBT.Desktop.Models.Prescriptions
         }
 
         /// <summary>
-        /// 剂量
+        /// 剂量（整数克）
         /// </summary>
-        public decimal Dosage
+        public int Dosage
         {
             get => _dosage;
             set

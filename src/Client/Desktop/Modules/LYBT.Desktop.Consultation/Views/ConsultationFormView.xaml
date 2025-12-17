@@ -223,9 +223,9 @@
                         <RowDefinition Height="Auto" />  
                         <!--  分组标题  -->
                         <RowDefinition Height="Auto" />  
-                        <!--  望诊 + 闻诊  -->
+                        <!--  四诊  -->
                         <RowDefinition Height="Auto" />  
-                        <!--  问诊 + 切诊  -->
+                        <!--  舌诊 + 脉诊  -->
                     </Grid.RowDefinitions>
 
                     <!--  分组标题  -->
@@ -234,35 +234,16 @@
                         Style="{StaticResource GroupHeaderStyle}"
                         Text="四诊合参" />
 
-                    <!--  Row 1: 望诊 + 闻诊（2列）  -->
-                    <Grid Grid.Row="1" Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />  
-                            <!--  间距  -->
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                    <!--  Row 1: 四诊（合并望闻问切）  -->
+                    <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="四诊（望诊、闻诊、问诊、切诊）" />
+                        <TextBox
+                            Height="100"
+                            Style="{StaticResource MultiLineTextBoxStyle}"
+                            Text="{Binding FourDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-                        <!--  左列：望诊  -->
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="望诊（神色、形体、舌象）" />
-                            <TextBox
-                                Height="70"
-                                Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding Inspection, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-
-                        <!--  右列：闻诊  -->
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="闻诊（语声、呼吸、口气）" />
-                            <TextBox
-                                Height="70"
-                                Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding AuscultationOlfaction, UpdateSourceTrigger=PropertyChanged}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!--  Row 2: 问诊 + 切诊（2列）  -->
+                    <!--  Row 2: 舌诊 + 脉诊（2列）  -->
                     <Grid Grid.Row="2" Margin="0,15,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -271,22 +252,22 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <!--  左列：问诊  -->
+                        <!--  左列：舌诊  -->
                         <StackPanel Grid.Column="0">
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="问诊（主诉、病史等）" />
+                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="舌诊（舌质、舌苔）" />
                             <TextBox
                                 Height="70"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding Inquiry, UpdateSourceTrigger=PropertyChanged}" />
+                                Text="{Binding TongueDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
-                        <!--  右列：切诊  -->
+                        <!--  右列：脉诊  -->
                         <StackPanel Grid.Column="2">
-                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="切诊（脉象、腹诊）" />
+                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="脉诊（脉象描述）" />
                             <TextBox
                                 Height="70"
                                 Style="{StaticResource MultiLineTextBoxStyle}"
-                                Text="{Binding Palpation, UpdateSourceTrigger=PropertyChanged}" />
+                                Text="{Binding PulseDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
                 </Grid>

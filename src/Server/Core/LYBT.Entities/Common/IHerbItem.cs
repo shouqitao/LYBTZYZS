@@ -22,10 +22,10 @@ namespace LYBT.Entities.Common
         string HerbName { get; set; }
 
         /// <summary>
-        /// 剂量（实际用量）
+        /// 剂量（整数克）
         /// </summary>
         [DisplayName("剂量")]
-        decimal Dosage { get; set; }
+        int Dosage { get; set; }
 
         /// <summary>
         /// 单位

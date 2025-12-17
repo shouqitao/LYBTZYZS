@@ -63,77 +63,68 @@
                      Text="{Binding PresentIllness, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
-        <!-- Row 2: 四诊合参（两行两列布局，固定高度） -->
+        <!-- Row 2: 四诊合参（新布局：四诊 + 舌诊/脉诊） -->
         <Grid Grid.Row="2" Margin="0,0,0,4" Height="260">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="6"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="12" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
 
-            <!-- 望诊 -->
-            <Grid Grid.Row="0" Grid.Column="0">
+            <!-- 四诊（合并望闻问切） -->
+            <Grid Grid.Row="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="望诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
+                <TextBlock Grid.Row="0" Text="四诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
                 <TextBox Grid.Row="1"
                          Style="{StaticResource FormTextAreaStyle}"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
-                         Text="{Binding Inspection, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding FourDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
             </Grid>
 
-            <!-- 闻诊 -->
-            <Grid Grid.Row="0" Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="闻诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
-                <TextBox Grid.Row="1"
-                         Style="{StaticResource FormTextAreaStyle}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         Text="{Binding AuscultationOlfaction, UpdateSourceTrigger=PropertyChanged}" />
-            </Grid>
+            <!-- 舌诊 + 脉诊（并排） -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <!-- 问诊 -->
-            <Grid Grid.Row="2" Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="问诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
-                <TextBox Grid.Row="1"
-                         Style="{StaticResource FormTextAreaStyle}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         Text="{Binding Inquiry, UpdateSourceTrigger=PropertyChanged}" />
-            </Grid>
+                <!-- 舌诊 -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="舌诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
+                    <TextBox Grid.Row="1"
+                             Style="{StaticResource FormTextAreaStyle}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="60"
+                             VerticalScrollBarVisibility="Auto"
+                             Text="{Binding TongueDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
 
-            <!-- 切诊 -->
-            <Grid Grid.Row="2" Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="切诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
-                <TextBox Grid.Row="1"
-                         Style="{StaticResource FormTextAreaStyle}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         Text="{Binding Palpation, UpdateSourceTrigger=PropertyChanged}" />
+                <!-- 脉诊 -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="脉诊" Style="{StaticResource FieldLabelStyle}" Margin="0,0,0,2" />
+                    <TextBox Grid.Row="1"
+                             Style="{StaticResource FormTextAreaStyle}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="60"
+                             VerticalScrollBarVisibility="Auto"
+                             Text="{Binding PulseDiagnosis, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
             </Grid>
         </Grid>
 

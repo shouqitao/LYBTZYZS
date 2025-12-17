@@ -18,6 +18,7 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:controls="clr-namespace:LYBT.Desktop.Infrastructure.Controls;assembly=LYBT.Desktop.Infrastructure"
              xmlns:converters="clr-namespace:LYBT.Desktop.Infrastructure.Converters;assembly=LYBT.Desktop.Infrastructure"
+             xmlns:behaviors="clr-namespace:LYBT.Desktop.Infrastructure.Behaviors;assembly=LYBT.Desktop.Infrastructure"
              xmlns:formulaControls="clr-namespace:LYBT.Desktop.Formula.Controls"
              prism:ViewModelLocator.AutoWireViewModel="True">
 
@@ -48,7 +49,8 @@
                 <!-- 工具栏 -->
                 <controls:DataGridToolbar Grid.Row="0"
                                           CreateCommand="{Binding AddCommand}"
-                                          RefreshCommand="{Binding RefreshCommand}"/>
+                                          RefreshCommand="{Binding RefreshCommand}"
+                                          BatchDeleteCommand="{Binding BatchDeleteCommand}"/>
 
                 <!-- 搜索框 -->
                 <controls:SearchBox Grid.Row="1"
@@ -57,10 +59,12 @@
                                     Placeholder="搜索验方名称..."
                                     Margin="12,8"/>
 
-                <!-- 验方列表 - 使用统一DataGrid样式 -->
+                <!-- 验方列表 - 使用统一DataGrid样式，支持批量选择 -->
                 <DataGrid Grid.Row="2"
                           ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                          behaviors:DataGridSelectionBehavior.ShowCheckBoxColumn="True"
+                          behaviors:DataGridSelectionBehavior.SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
                           Style="{StaticResource MasterDetailDataGridStyle}"
                           RowHeaderWidth="0"
                           Margin="0,0,0,8">
@@ -144,6 +148,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
@@ -155,8 +160,20 @@
                             <Run Text="条记录"/>
                         </TextBlock>
 
+                        <!-- 每页条数选择 -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="每页" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding PageSizes}"
+                                      SelectedItem="{Binding PageSize, Mode=TwoWay}"
+                                      Width="60"
+                                      Margin="6,0"
+                                      VerticalAlignment="Center"
+                                      IsEditable="False"/>
+                            <TextBlock Text="条" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12"/>
+                        </StackPanel>
+
                         <!-- 分页按钮 -->
-                        <StackPanel Grid.Column="2"
+                        <StackPanel Grid.Column="3"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right">
                             <Button Content="首页"

@@ -89,10 +89,9 @@ namespace LYBT.Module.Consultations.Tests.Mapping
                 MedicalCaseId = Guid.NewGuid(),
                 ChiefComplaint = "胃痛",
                 PresentIllness = "胃痛1周",
-                Inspection = "面色萎黄",
-                AuscultationOlfaction = "口中有异味",
-                Inquiry = "饮食不规律",
-                Palpation = "脉弦细",
+                FourDiagnosis = "面色萎黄，口中有异味，饮食不规律",
+                TongueDiagnosis = "舌淡红，苔薄白",
+                PulseDiagnosis = "脉弦细",
                 TCMDiagnosis = "胃气郁滞",
                 TreatmentPrinciple = "理气和胃",
                 MedicalAdvice = "建议戒烟",
@@ -110,10 +109,9 @@ namespace LYBT.Module.Consultations.Tests.Mapping
             detailDto.MedicalCaseId.Should().Be(consultation.MedicalCaseId);
             detailDto.ChiefComplaint.Should().Be(consultation.ChiefComplaint);
             detailDto.PresentIllness.Should().Be(consultation.PresentIllness);
-            detailDto.Inspection.Should().Be(consultation.Inspection);
-            detailDto.AuscultationOlfaction.Should().Be(consultation.AuscultationOlfaction);
-            detailDto.Inquiry.Should().Be(consultation.Inquiry);
-            detailDto.Palpation.Should().Be(consultation.Palpation);
+            detailDto.FourDiagnosis.Should().Be(consultation.FourDiagnosis);
+            detailDto.TongueDiagnosis.Should().Be(consultation.TongueDiagnosis);
+            detailDto.PulseDiagnosis.Should().Be(consultation.PulseDiagnosis);
             detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
             detailDto.TCMDiagnosis.Should().Be(consultation.TCMDiagnosis);
             detailDto.TreatmentPrinciple.Should().Be(consultation.TreatmentPrinciple);

@@ -189,14 +189,14 @@ namespace LYBT.Desktop.Clinical.ViewModels
 
         /// <summary>
         /// 导航到病历查询 - Issue #1827
-        /// 修复: MedicalCaseQueryView不存在，使用MedicalCaseManagementView
+        /// OpenSpec: refactor-medicalcase-management - 使用新的Master-Detail视图
         /// </summary>
         private void ExecuteNavigateToMedicalCaseQuery()
         {
             try
             {
                 Logger.LogInformation("导航到医案管理视图");
-                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseManagementView");
+                _regionManager.RequestNavigate("ContentRegion", "MedicalCaseMasterDetailView");
             }
             catch (Exception ex)
             {

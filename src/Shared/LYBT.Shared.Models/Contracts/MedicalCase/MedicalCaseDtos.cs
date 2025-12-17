@@ -19,9 +19,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
         public string? CaseNumber { get; set; }
 
-        [DisplayName("主诉")]
-        [StringLength(500, ErrorMessage = "主诉长度不能超过500个字符")]
-        public string? ChiefComplaint { get; set; }
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint，改用Consultation.PresentIllness
 
         [DisplayName("患者ID")]
         public Guid PatientId { get; set; }
@@ -77,18 +75,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
     /// </summary>
     public class MedicalCaseDetailDto : MedicalCaseDto
     {
-
-        [DisplayName("主诉")]
-        public new string? ChiefComplaint { get; set; }
+        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段，通过Consultation获取
+        // 移除：ChiefComplaint, DiagnosisResult, TreatmentPlan
+        // 保留：PresentIllness (映射自Consultation.PresentIllness)
 
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }
-
-        [DisplayName("诊断结果")]
-        public string? DiagnosisResult { get; set; }
-
-        [DisplayName("治疗方案")]
-        public string? TreatmentPlan { get; set; }
 
         /// <summary>
         /// 诊疗记录（Epic #1583 Phase 3: 继续看诊时加载）
@@ -139,25 +131,12 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("诊断摘要")]
         public string? DiagnosisSummary { get; set; }
 
-        [StringLength(1000, ErrorMessage = "主诉长度不能超过1000个字符")]
-        [DisplayName("主诉")]
-        public string? ChiefComplaint { get; set; }
+        // OpenSpec: refactor-diagnosis-fields - 诊断字段精简到Consultation
+        // 移除：ChiefComplaint, PastHistory, DiagnosisResult, TreatmentPlan
 
         [StringLength(2000, ErrorMessage = "现病史长度不能超过2000个字符")]
         [DisplayName("现病史")]
         public string? PresentIllness { get; set; }
-
-        [StringLength(1000, ErrorMessage = "既往史长度不能超过1000个字符")]
-        [DisplayName("既往史")]
-        public string? PastHistory { get; set; }
-
-        [StringLength(1000, ErrorMessage = "诊断结果长度不能超过1000个字符")]
-        [DisplayName("诊断结果")]
-        public string? DiagnosisResult { get; set; }
-
-        [StringLength(1000, ErrorMessage = "治疗方案长度不能超过1000个字符")]
-        [DisplayName("治疗方案")]
-        public string? TreatmentPlan { get; set; }
 
         [DisplayName("状态")]
         public string? Status { get; set; }
@@ -203,9 +182,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("结束日期")]
         public DateTime? EndDate { get; set; }
 
-        /// <summary>主诉关键词</summary>
-        [DisplayName("主诉")]
-        public string? ChiefComplaint { get; set; }
+        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint搜索字段
 
         /// <summary>挂号ID</summary>
         [DisplayName("挂号ID")]

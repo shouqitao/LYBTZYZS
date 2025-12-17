@@ -104,7 +104,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
             {
                 MedicalCaseId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                ChiefComplaint = "头痛"
+                TCMDiagnosis = "肝阳上亢"  // OpenSpec: refactor-diagnosis-fields
             }
         };
 
@@ -151,7 +151,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
             {
                 MedicalCaseId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                ChiefComplaint = "测试"
+                TCMDiagnosis = "测试诊断"  // OpenSpec: refactor-diagnosis-fields
             },
             Prescription = new PrescriptionAggregateDto
             {
@@ -218,7 +218,7 @@ public class MedicalCaseAggregateInputDtoValidatorTests
             {
                 MedicalCaseId = Guid.NewGuid(),
                 UserId = Guid.NewGuid(),
-                ChiefComplaint = "头痛三天",
+                PresentIllness = "头痛三天",  // OpenSpec: refactor-diagnosis-fields
                 TCMDiagnosis = "肝阳上亢"
             },
             Prescription = new PrescriptionAggregateDto

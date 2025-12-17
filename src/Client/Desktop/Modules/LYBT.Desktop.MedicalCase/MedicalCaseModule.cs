@@ -83,6 +83,9 @@ namespace LYBT.Desktop.MedicalCase
             containerRegistry.Register<ViewModels.MedicalCaseManagementViewModel>();  // Issue #1799: 保留作为唯一医案管理入口
             containerRegistry.Register<ViewModels.MedicalCaseDetailViewModel>();  // Issue #2167: 医案详情视图模型
 
+            // OpenSpec: refactor-medicalcase-management - Master-Detail视图模型
+            containerRegistry.Register<ViewModels.MedicalCaseMasterDetailViewModel>();
+
             // [已删除] FormulaSelectionDialog - 过时代码，已被FormulaImportDialog替代
 
             // Epic #2175 BF-002 Task 3.9: 注册历史处方选择对话框
@@ -116,6 +119,9 @@ namespace LYBT.Desktop.MedicalCase
             // Issue #1799: 删除MedicalCaseListView（功能与ManagementView重复）
             containerRegistry.RegisterForNavigation<Views.MedicalCaseManagementView>();  // Issue #1799: 保留作为唯一医案管理入口
             containerRegistry.RegisterForNavigation<Views.MedicalCaseDetailView>();  // Issue #2167: 医案详情视图
+
+            // OpenSpec: refactor-medicalcase-management - Master-Detail视图（新的主入口）
+            containerRegistry.RegisterForNavigation<Views.MedicalCaseMasterDetailView>();
         }
     }
 }

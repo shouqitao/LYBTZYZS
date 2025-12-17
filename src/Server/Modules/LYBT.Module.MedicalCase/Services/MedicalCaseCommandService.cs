@@ -113,11 +113,11 @@ namespace LYBT.Module.MedicalCases.Services
                 };
 
                 // 聚合根模式：自动创建关联的Consultation（共享主键）
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 var consultation = new Consultation
                 {
                     Id = medicalCase.Id, // 共享主键（Consultation.Id == MedicalCase.Id）
                     MedicalCase = medicalCase, // 设置Required导航属性
-                    ChiefComplaint = string.Empty, // 初始化为空，待用户填写
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -174,21 +174,18 @@ namespace LYBT.Module.MedicalCases.Services
                 // OpenSpec: refactor-medicalcase-management (LIFECYCLE-008) - 保存变更前的状态用于审计
                 var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-                // Epic #1731: 权限检查 - 集成CanEdit规则
+                // Epic #1731: 权限检查 - 集成CanEdit规则（包含管理员权限和状态验证）
+                // MedicalCaseRules.CanEdit已完整处理：
+                // - 管理员可以编辑所有状态的医案
+                // - 医生只能编辑自己的Draft/Active状态医案
                 if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
                 {
-                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
-                        medicalCaseId, currentUserId);
-                    throw new UnauthorizedAccessException("无权限编辑此病案");
-                }
-
-                // 业务规则验证：BF-002（Draft和Active状态可编辑）
-                // Bug Fix: Draft状态也需要允许编辑，因为Draft就是用于保存未完成工作的
-                if (medicalCase.CaseStatus != MedicalCaseStatus.Draft && medicalCase.CaseStatus != MedicalCaseStatus.Active)
-                {
-                    _logger.LogWarning("病案状态不允许编辑，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                        medicalCaseId, medicalCase.CaseStatus);
-                    throw new InvalidOperationException($"病案状态为{medicalCase.CaseStatus}，不允许编辑");
+                    var reason = isAdmin ? "权限不足" :
+                        (medicalCase.DoctorId != currentUserId ? "非创建医生" :
+                        $"医案状态为{medicalCase.CaseStatus}");
+                    _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
+                        medicalCaseId, currentUserId, reason);
+                    throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
                 }
 
                 // 确保Consultation存在
@@ -199,19 +196,12 @@ namespace LYBT.Module.MedicalCases.Services
                 }
 
                 // Issue #2231: 手动映射属性以避免EF Core共享主键冲突
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 var consultation = medicalCase.Consultation;
-                consultation.ChiefComplaint = request.ChiefComplaint;
                 consultation.PresentIllness = request.PresentIllness;
-                consultation.Inspection = request.Inspection;
-                consultation.AuscultationOlfaction = request.AuscultationOlfaction;
-                consultation.Inquiry = request.Inquiry;
-                consultation.Palpation = request.Palpation;
+                consultation.TongueDiagnosis = request.TongueDiagnosis;
+                consultation.PulseDiagnosis = request.PulseDiagnosis;
                 consultation.TCMDiagnosis = request.TCMDiagnosis;
-                consultation.TreatmentPrinciple = request.TreatmentPrinciple;
-                consultation.MedicalAdvice = request.MedicalAdvice;
-                // OpenSpec: clarify-cancel-consultation-logic
-                // 诊断不需要独立备注，备注统一保存到MedicalCase
-                medicalCase.Remark = request.MedicalCaseRemark;
                 consultation.UpdatedAt = DateTime.Now;
 
                 // 通过聚合根保存（EF Core会跟踪子实体变更）
@@ -621,20 +611,18 @@ namespace LYBT.Module.MedicalCases.Services
                     // 保存变更前的状态用于审计
                     var beforeState = CloneMedicalCaseForAudit(medicalCase);
 
-                    // 权限检查 - 集成CanEdit规则
+                    // 权限检查 - 集成CanEdit规则（包含管理员权限和状态验证）
+                    // MedicalCaseRules.CanEdit已完整处理：
+                    // - 管理员可以编辑所有状态的医案
+                    // - 医生只能编辑自己的Draft/Active状态医案
                     if (!MedicalCaseRules.CanEdit(medicalCase, currentUserId, isAdmin))
                     {
-                        _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}",
-                            request.Id, currentUserId);
-                        throw new UnauthorizedAccessException("无权限编辑此病案");
-                    }
-
-                    // 业务规则验证：Draft和Active状态可编辑
-                    if (medicalCase.CaseStatus != MedicalCaseStatus.Draft && medicalCase.CaseStatus != MedicalCaseStatus.Active)
-                    {
-                        _logger.LogWarning("病案状态不允许编辑，MedicalCaseId: {MedicalCaseId}, Status: {Status}",
-                            request.Id, medicalCase.CaseStatus);
-                        throw new InvalidOperationException($"病案状态为{medicalCase.CaseStatus}，不允许编辑");
+                        var reason = isAdmin ? "权限不足" :
+                            (medicalCase.DoctorId != currentUserId ? "非创建医生" :
+                            $"医案状态为{medicalCase.CaseStatus}");
+                        _logger.LogWarning("无权限编辑病案，MedicalCaseId: {MedicalCaseId}, UserId: {UserId}, Reason: {Reason}",
+                            request.Id, currentUserId, reason);
+                        throw new UnauthorizedAccessException($"无权限编辑此病案：{reason}");
                     }
 
                     // 更新MedicalCase基础字段
@@ -645,18 +633,14 @@ namespace LYBT.Module.MedicalCases.Services
                     medicalCase.UpdatedAt = DateTime.Now;
 
                     // PERSIST-001: 更新Consultation（诊断部分）
+                    // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                     if (request.Consultation != null && medicalCase.Consultation != null)
                     {
                         var consultation = medicalCase.Consultation;
-                        consultation.ChiefComplaint = request.Consultation.ChiefComplaint;
                         consultation.PresentIllness = request.Consultation.PresentIllness;
-                        consultation.Inspection = request.Consultation.Inspection;
-                        consultation.AuscultationOlfaction = request.Consultation.AuscultationOlfaction;
-                        consultation.Inquiry = request.Consultation.Inquiry;
-                        consultation.Palpation = request.Consultation.Palpation;
+                        consultation.TongueDiagnosis = request.Consultation.TongueDiagnosis;
+                        consultation.PulseDiagnosis = request.Consultation.PulseDiagnosis;
                         consultation.TCMDiagnosis = request.Consultation.TCMDiagnosis;
-                        consultation.TreatmentPrinciple = request.Consultation.TreatmentPrinciple;
-                        consultation.MedicalAdvice = request.Consultation.MedicalAdvice;
                         consultation.UpdatedAt = DateTime.Now;
 
                         _logger.LogInformation("已更新诊断信息，MedicalCaseId: {MedicalCaseId}", request.Id);
@@ -706,7 +690,9 @@ namespace LYBT.Module.MedicalCases.Services
                                             PrescriptionId = prescription.Id,
                                             HerbId = itemDto.HerbId,
                                             HerbName = itemDto.HerbName ?? string.Empty,
-                                            Dosage = (int)itemDto.Dosage,
+                                            Dosage = itemDto.Dosage,
+                                            Unit = itemDto.Unit,
+                                            UnitPrice = itemDto.UnitPrice,
                                             Usage = request.Prescription.Usage,
                                             Remark = itemDto.Remark,
                                             DecocteMethod = itemDto.DecocteMethod
@@ -741,7 +727,9 @@ namespace LYBT.Module.MedicalCases.Services
                                             PrescriptionId = prescription.Id,
                                             HerbId = itemDto.HerbId,
                                             HerbName = itemDto.HerbName ?? string.Empty,
-                                            Dosage = (int)itemDto.Dosage,
+                                            Dosage = itemDto.Dosage,
+                                            Unit = itemDto.Unit,
+                                            UnitPrice = itemDto.UnitPrice,
                                             Usage = request.Prescription.Usage,
                                             Remark = itemDto.Remark,
                                             DecocteMethod = itemDto.DecocteMethod

@@ -44,7 +44,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>
         /// 计算合并后的剂量
         /// </summary>
-        public decimal CalculateMergedDosage(decimal currentDosage, decimal importedDosage)
+        public int CalculateMergedDosage(int currentDosage, int importedDosage)
         {
             return DuplicateHerbMergeStrategy switch
             {
@@ -60,7 +60,7 @@ namespace LYBT.Desktop.Infrastructure.Services
         /// <summary>
         /// 静态方法 - 计算合并后的剂量（供POCO类使用）
         /// </summary>
-        public static decimal GetMergedDosage(decimal currentDosage, decimal importedDosage)
+        public static int GetMergedDosage(int currentDosage, int importedDosage)
         {
             return Current?.CalculateMergedDosage(currentDosage, importedDosage)
                    ?? Math.Max(currentDosage, importedDosage); // 默认取最大值

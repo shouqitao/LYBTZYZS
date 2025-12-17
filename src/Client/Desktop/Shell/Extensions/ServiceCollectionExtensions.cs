@@ -1,4 +1,6 @@
 ﻿using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using LYBT.Desktop.Admin;
 using LYBT.Desktop.Admin.Services;
 using LYBT.Desktop.Auth;
@@ -51,6 +53,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Prism.Ioc;
+using Refit;
 using Serilog;
 
 namespace LYBT.Desktop.Shell.Extensions
@@ -255,15 +258,24 @@ namespace LYBT.Desktop.Shell.Extensions
                 return new HttpClient(correlationIdHandler) { BaseAddress = new Uri(apiBaseUrl), Timeout = TimeSpan.FromSeconds(30) };
             });
 
-            // Refit客户端共享HttpClient实例
-            containerRegistry.RegisterSingleton<IAuthApi>(r => Refit.RestService.For<IAuthApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IPatientApi>(r => Refit.RestService.For<IPatientApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IUserApi>(r => Refit.RestService.For<IUserApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IConsultationApi>(r => Refit.RestService.For<IConsultationApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IHerbApi>(r => Refit.RestService.For<IHerbApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IFormulaApi>(r => Refit.RestService.For<IFormulaApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IMedicalCaseApi>(r => Refit.RestService.For<IMedicalCaseApi>(r.Resolve<HttpClient>()));
-            containerRegistry.RegisterSingleton<IPrescriptionApi>(r => Refit.RestService.For<IPrescriptionApi>(r.Resolve<HttpClient>()));
+            // Refit客户端共享HttpClient实例 - 配置JSON序列化以支持枚举字符串转换
+            var refitSettings = new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters = { new JsonStringEnumConverter() }
+                })
+            };
+            containerRegistry.RegisterSingleton<IAuthApi>(r => RestService.For<IAuthApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IPatientApi>(r => RestService.For<IPatientApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IUserApi>(r => RestService.For<IUserApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IConsultationApi>(r => RestService.For<IConsultationApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IHerbApi>(r => RestService.For<IHerbApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IFormulaApi>(r => RestService.For<IFormulaApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IMedicalCaseApi>(r => RestService.For<IMedicalCaseApi>(r.Resolve<HttpClient>(), refitSettings));
+            containerRegistry.RegisterSingleton<IPrescriptionApi>(r => RestService.For<IPrescriptionApi>(r.Resolve<HttpClient>(), refitSettings));
         }
 
         /// <summary>注册Foundation层服务</summary>

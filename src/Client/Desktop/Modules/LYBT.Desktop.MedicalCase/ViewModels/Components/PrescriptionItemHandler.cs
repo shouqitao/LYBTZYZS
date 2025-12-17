@@ -292,7 +292,7 @@ public class PrescriptionItemHandler
                     HerbId = herbItem.HerbId,
                     HerbName = herbItem.HerbName,
                     Dosage = herbItem.Dosage,
-                    Unit = "g",
+                    Unit = herbItem.Unit,  // 使用药材数据库中的单位
                     DecocteMethod = herbItem.DecocteMethod
                 });
             }

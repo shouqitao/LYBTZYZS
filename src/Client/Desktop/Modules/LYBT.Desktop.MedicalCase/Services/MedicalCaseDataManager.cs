@@ -285,18 +285,20 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 私有方法 - 变更检测
 
+    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     private bool IsMedicalCaseChanged() => _currentDetail != null && _originalDetail != null &&
-        (_currentDetail.CaseNumber != _originalDetail.CaseNumber || _currentDetail.ChiefComplaint != _originalDetail.ChiefComplaint ||
+        (_currentDetail.CaseNumber != _originalDetail.CaseNumber ||
          _currentDetail.PatientId != _originalDetail.PatientId || _currentDetail.DoctorId != _originalDetail.DoctorId ||
          _currentDetail.CaseStatus != _originalDetail.CaseStatus || _currentDetail.Remark != _originalDetail.Remark);
 
+    // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
     private bool IsConsultationChanged()
     {
         if (_currentDetail?.Consultation == null || _originalDetail?.Consultation == null) return false;
         var c = _currentDetail.Consultation; var o = _originalDetail.Consultation;
-        return c.ChiefComplaint != o.ChiefComplaint || c.PresentIllness != o.PresentIllness || c.Inspection != o.Inspection ||
-               c.AuscultationOlfaction != o.AuscultationOlfaction || c.Inquiry != o.Inquiry || c.Palpation != o.Palpation ||
-               c.TCMDiagnosis != o.TCMDiagnosis || c.TreatmentPrinciple != o.TreatmentPrinciple || c.MedicalAdvice != o.MedicalAdvice || c.Remark != o.Remark;
+        return c.PresentIllness != o.PresentIllness ||
+               c.TongueDiagnosis != o.TongueDiagnosis || c.PulseDiagnosis != o.PulseDiagnosis ||
+               c.TCMDiagnosis != o.TCMDiagnosis;
     }
 
     private bool IsPrescriptionChanged()
@@ -311,9 +313,10 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
 
     #region 私有方法 - 深拷贝
 
+    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     private MedicalCaseDetailDto CloneMedicalCaseDetail(MedicalCaseDetailDto s) => new()
     {
-        Id = s.Id, CaseNumber = s.CaseNumber, ChiefComplaint = s.ChiefComplaint, PatientId = s.PatientId,
+        Id = s.Id, CaseNumber = s.CaseNumber, PatientId = s.PatientId,
         PatientName = s.PatientName, PatientGender = s.PatientGender, PatientAge = s.PatientAge,
         DoctorId = s.DoctorId, DoctorName = s.DoctorName, ConsultationId = s.ConsultationId,
         PrescriptionId = s.PrescriptionId, ConsultationDate = s.ConsultationDate, CaseStatus = s.CaseStatus,
@@ -322,13 +325,13 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         Prescription = s.Prescription != null ? ClonePrescription(s.Prescription) : null
     };
 
+    // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
     private ConsultationDto CloneConsultation(ConsultationDto s) => new()
     {
         Id = s.Id, MedicalCaseId = s.MedicalCaseId, PatientId = s.PatientId, UserId = s.UserId,
-        PatientName = s.PatientName, DoctorName = s.DoctorName, ChiefComplaint = s.ChiefComplaint,
-        PresentIllness = s.PresentIllness, Inspection = s.Inspection, AuscultationOlfaction = s.AuscultationOlfaction,
-        Inquiry = s.Inquiry, Palpation = s.Palpation, TCMDiagnosis = s.TCMDiagnosis,
-        TreatmentPrinciple = s.TreatmentPrinciple, MedicalAdvice = s.MedicalAdvice, Remark = s.Remark,
+        PatientName = s.PatientName, DoctorName = s.DoctorName,
+        PresentIllness = s.PresentIllness, TongueDiagnosis = s.TongueDiagnosis,
+        PulseDiagnosis = s.PulseDiagnosis, TCMDiagnosis = s.TCMDiagnosis,
         CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt
     };
 
@@ -342,9 +345,10 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt, Items = s.Items
     };
 
+    // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
     private void UpdateMedicalCaseFields(MedicalCaseDetailDto target, MedicalCaseDto source)
     {
-        target.CaseNumber = source.CaseNumber; target.ChiefComplaint = source.ChiefComplaint;
+        target.CaseNumber = source.CaseNumber;
         target.PatientId = source.PatientId; target.PatientName = source.PatientName;
         target.PatientGender = source.PatientGender; target.PatientAge = source.PatientAge;
         target.DoctorId = source.DoctorId; target.DoctorName = source.DoctorName;

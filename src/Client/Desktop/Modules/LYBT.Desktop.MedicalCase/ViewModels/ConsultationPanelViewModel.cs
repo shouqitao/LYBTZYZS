@@ -27,16 +27,9 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #endregion
 
         #region 诊断属性
-
-        private string _chiefComplaint = string.Empty;
-        /// <summary>
-        /// 主诉（必填）
-        /// </summary>
-        public string ChiefComplaint
-        {
-            get => _chiefComplaint;
-            set => SetProperty(ref _chiefComplaint, value);
-        }
+        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+        // 移除: ChiefComplaint (主诉), FourDiagnosis (四诊), TreatmentPrinciple (治疗原则), MedicalCaseRemark (备注)
+        // 保留: PresentIllness (现病史), TongueDiagnosis (舌诊), PulseDiagnosis (脉诊), TCMDiagnosis (中医诊断-必填)
 
         private string _presentIllness = string.Empty;
         /// <summary>
@@ -58,61 +51,25 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
             set => SetProperty(ref _tcmDiagnosis, value);
         }
 
-        private string _treatmentPrinciple = string.Empty;
+        private string _tongueDiagnosis = string.Empty;
         /// <summary>
-        /// 治疗原则
+        /// 舌诊
         /// </summary>
-        public string TreatmentPrinciple
+        public string TongueDiagnosis
         {
-            get => _treatmentPrinciple;
-            set => SetProperty(ref _treatmentPrinciple, value);
+            get => _tongueDiagnosis;
+            set => SetProperty(ref _tongueDiagnosis, value);
         }
 
-        private string _inspection = string.Empty;
+        private string _pulseDiagnosis = string.Empty;
         /// <summary>
-        /// 望诊
+        /// 脉诊
         /// </summary>
-        public string Inspection
+        public string PulseDiagnosis
         {
-            get => _inspection;
-            set => SetProperty(ref _inspection, value);
+            get => _pulseDiagnosis;
+            set => SetProperty(ref _pulseDiagnosis, value);
         }
-
-        private string _auscultationOlfaction = string.Empty;
-        /// <summary>
-        /// 闻诊
-        /// </summary>
-        public string AuscultationOlfaction
-        {
-            get => _auscultationOlfaction;
-            set => SetProperty(ref _auscultationOlfaction, value);
-        }
-
-        private string _inquiry = string.Empty;
-        /// <summary>
-        /// 问诊
-        /// </summary>
-        public string Inquiry
-        {
-            get => _inquiry;
-            set => SetProperty(ref _inquiry, value);
-        }
-
-        private string _palpation = string.Empty;
-        /// <summary>
-        /// 切诊
-        /// </summary>
-        public string Palpation
-        {
-            get => _palpation;
-            set => SetProperty(ref _palpation, value);
-        }
-
-        /// <summary>
-        /// 医案备注（保存时传递到服务端更新MedicalCase.Remark）
-        /// OpenSpec: clarify-cancel-consultation-logic
-        /// </summary>
-        public string? MedicalCaseRemark { get; set; }
 
         private bool _needsPrescription = true;
         /// <summary>
@@ -148,13 +105,7 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         public bool Validate()
         {
-            // 验证必填字段
-            if (string.IsNullOrWhiteSpace(ChiefComplaint))
-            {
-                ValidationMessage = "请填写主诉";
-                return false;
-            }
-
+            // OpenSpec: refactor-diagnosis-fields - 只有TCMDiagnosis是必填字段
             if (string.IsNullOrWhiteSpace(TCMDiagnosis))
             {
                 ValidationMessage = "请填写中医诊断";
@@ -213,19 +164,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
 
         /// <summary>
         /// 从DTO加载数据
+        /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
         private void LoadFromDto(ConsultationDto dto)
         {
-            ChiefComplaint = dto.ChiefComplaint ?? string.Empty;
             PresentIllness = dto.PresentIllness ?? string.Empty;
             TCMDiagnosis = dto.TCMDiagnosis ?? string.Empty;
-            TreatmentPrinciple = dto.TreatmentPrinciple ?? string.Empty;
-            Inspection = dto.Inspection ?? string.Empty;
-            AuscultationOlfaction = dto.AuscultationOlfaction ?? string.Empty;
-            Inquiry = dto.Inquiry ?? string.Empty;
-            Palpation = dto.Palpation ?? string.Empty;
-            // OpenSpec: clarify-cancel-consultation-logic
-            // 诊断不需要独立备注，MedicalCaseRemark由父ViewModel在保存前设置
+            TongueDiagnosis = dto.TongueDiagnosis ?? string.Empty;
+            PulseDiagnosis = dto.PulseDiagnosis ?? string.Empty;
         }
 
         #endregion
@@ -247,17 +193,13 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
                     return false;
                 }
 
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 var request = new ConsultationInputDto
                 {
-                    ChiefComplaint = ChiefComplaint,
                     PresentIllness = PresentIllness,
                     TCMDiagnosis = TCMDiagnosis,
-                    TreatmentPrinciple = TreatmentPrinciple,
-                    Inspection = Inspection,
-                    AuscultationOlfaction = AuscultationOlfaction,
-                    Inquiry = Inquiry,
-                    Palpation = Palpation,
-                    MedicalCaseRemark = MedicalCaseRemark
+                    TongueDiagnosis = TongueDiagnosis,
+                    PulseDiagnosis = PulseDiagnosis
                 };
 
                 var result = await _medicalCaseRepository.UpdateConsultationAsync(_medicalCaseId, request);
@@ -284,23 +226,18 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         #region IDataProvider
 
         /// <summary>
-        /// 获取诊断数据（四诊信息）
-        /// OpenSpec: refactor-medicalcase-aggregate-crud (Phase 3.2)
+        /// 获取诊断数据
+        /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
         /// <returns>诊断数据DTO</returns>
         public ConsultationInputDto? GetConsultationData()
         {
             return new ConsultationInputDto
             {
-                ChiefComplaint = ChiefComplaint,
                 PresentIllness = PresentIllness,
                 TCMDiagnosis = TCMDiagnosis,
-                TreatmentPrinciple = TreatmentPrinciple,
-                Inspection = Inspection,
-                AuscultationOlfaction = AuscultationOlfaction,
-                Inquiry = Inquiry,
-                Palpation = Palpation,
-                MedicalCaseRemark = MedicalCaseRemark
+                TongueDiagnosis = TongueDiagnosis,
+                PulseDiagnosis = PulseDiagnosis
             };
         }
 

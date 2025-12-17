@@ -28,18 +28,19 @@ namespace LYBT.Desktop.Prescriptions.Views
         }
 
         /// <summary>
-        /// 更新诊见显示 - 合并四诊信息
+        /// 更新诊见显示 - 合并诊断信息
+        /// OpenSpec: refactor-diagnosis-fields - 移除FourDiagnosis，使用PresentIllness+TongueDiagnosis+PulseDiagnosis
         /// </summary>
         private void UpdateSymptomsDisplay(PrescriptionPrintDto dto)
         {
             var symptoms = dto.Symptoms;
             if (string.IsNullOrEmpty(symptoms))
             {
-                // 如果没有专门的症状字段，尝试合并四诊信息
+                // 合并诊断信息：现病史 + 舌诊 + 脉诊
                 var parts = new List<string>();
-                if (!string.IsNullOrEmpty(dto.Inspection)) parts.Add(dto.Inspection);
-                if (!string.IsNullOrEmpty(dto.Inquiry)) parts.Add(dto.Inquiry);
-                if (!string.IsNullOrEmpty(dto.Palpation)) parts.Add(dto.Palpation);
+                if (!string.IsNullOrEmpty(dto.PresentIllness)) parts.Add(dto.PresentIllness);
+                if (!string.IsNullOrEmpty(dto.TongueDiagnosis)) parts.Add($"舌诊：{dto.TongueDiagnosis}");
+                if (!string.IsNullOrEmpty(dto.PulseDiagnosis)) parts.Add($"脉诊：{dto.PulseDiagnosis}");
                 symptoms = string.Join("，", parts);
             }
             SymptomsText.Text = symptoms ?? string.Empty;

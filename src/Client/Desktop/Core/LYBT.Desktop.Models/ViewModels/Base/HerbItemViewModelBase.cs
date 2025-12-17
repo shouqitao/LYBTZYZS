@@ -10,6 +10,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
     /// <summary>
     /// 药材项基类 - 封装药材选择、剂量输入和拼音码过滤的共享逻辑
     /// Issue: unify-herb-card-control - 统一经验方和处方的药材编辑体验
+    /// OpenSpec: unify-herb-list-controls - 修复Unit默认值
     /// </summary>
     public abstract class HerbItemViewModelBase : BindableBase, IHerbItem
     {
@@ -17,8 +18,9 @@ namespace LYBT.Desktop.Models.ViewModels.Base
 
         private Guid _herbId;
         private string _herbName = string.Empty;
-        private decimal _dosage = 1;
-        private string _unit = "g";
+        private int _dosage = 0;
+        // OpenSpec: unify-herb-list-controls - Unit默认为空，由SelectedHerb赋值时从药材数据获取
+        private string _unit = string.Empty;
         private DecocteMethod _decocteMethod = DecocteMethod.Default;
         private ObservableCollection<HerbDto> _filteredHerbs = new();
         private HerbDto? _selectedHerb;
@@ -56,11 +58,11 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         }
 
         /// <summary>
-        /// 剂量/用量
+        /// 剂量/用量（整数克）
         /// </summary>
         [Required(ErrorMessage = "剂量不能为空")]
-        [Range(0.1, 500, ErrorMessage = "剂量必须在0.1到500之间")]
-        public decimal Dosage
+        [Range(1, 500, ErrorMessage = "剂量必须在1到500之间")]
+        public int Dosage
         {
             get => _dosage;
             set
@@ -150,7 +152,7 @@ namespace LYBT.Desktop.Models.ViewModels.Base
         /// 剂量变更后的回调 - 子类可重写以更新价格计算
         /// </summary>
         /// <param name="newDosage">新的剂量值</param>
-        protected virtual void OnDosageChanged(decimal newDosage)
+        protected virtual void OnDosageChanged(int newDosage)
         {
             // 子类可重写
         }

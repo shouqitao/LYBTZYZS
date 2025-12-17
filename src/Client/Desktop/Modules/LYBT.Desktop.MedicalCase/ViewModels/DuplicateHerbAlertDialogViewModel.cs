@@ -102,21 +102,21 @@ namespace LYBT.Desktop.MedicalCase.ViewModels
         public string HerbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 当前剂量
+        /// 当前剂量（整数克）
         /// </summary>
-        public decimal CurrentDosage { get; set; }
+        public int CurrentDosage { get; set; }
 
         /// <summary>
-        /// 导入剂量
+        /// 导入剂量（整数克）
         /// </summary>
-        public decimal ImportedDosage { get; set; }
+        public int ImportedDosage { get; set; }
 
         /// <summary>
         /// 合并后剂量（根据appsettings.json配置策略）
         /// 配置项: Prescription.DuplicateHerbMergeStrategy
         /// 通过PrescriptionSettingsService静态方法获取
         /// </summary>
-        public decimal MergedDosage => PrescriptionSettingsService.GetMergedDosage(CurrentDosage, ImportedDosage);
+        public int MergedDosage => PrescriptionSettingsService.GetMergedDosage(CurrentDosage, ImportedDosage);
 
         /// <summary>
         /// 显示文本

@@ -167,22 +167,17 @@ namespace LYBT.WebAPI.Controllers
                 var result = await _commandService.UpdateConsultationAsync(id, request, operatorId, isAdmin);
 
                 // Bug Fix: 转换为ConsultationDto以匹配客户端期望
+                // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
                 var consultationDto = result?.Consultation != null ? new ConsultationDto
                 {
                     Id = result.Consultation.Id,
                     MedicalCaseId = result.Id,
                     PatientId = result.PatientId,
                     UserId = result.DoctorId,
-                    ChiefComplaint = result.Consultation.ChiefComplaint,
                     PresentIllness = result.Consultation.PresentIllness,
-                    Inspection = result.Consultation.Inspection,
-                    AuscultationOlfaction = result.Consultation.AuscultationOlfaction,
-                    Inquiry = result.Consultation.Inquiry,
-                    Palpation = result.Consultation.Palpation,
+                    TongueDiagnosis = result.Consultation.TongueDiagnosis,
+                    PulseDiagnosis = result.Consultation.PulseDiagnosis,
                     TCMDiagnosis = result.Consultation.TCMDiagnosis,
-                    TreatmentPrinciple = result.Consultation.TreatmentPrinciple,
-                    MedicalAdvice = result.Consultation.MedicalAdvice,
-                    Remark = result.Consultation.Remark,
                     // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                     CreatedAt = result.Consultation.CreatedAt,
                     UpdatedAt = result.Consultation.UpdatedAt
@@ -651,13 +646,10 @@ namespace LYBT.WebAPI.Controllers
                 Diagnosis = entity.Consultation?.TCMDiagnosis,
                 CreatedAt = entity.CreatedAt,
 
-                // 详细字段
-                ChiefComplaint = entity.Consultation?.ChiefComplaint,
+                // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
                 PresentIllness = entity.Consultation?.PresentIllness,
-                DiagnosisResult = entity.Consultation?.TCMDiagnosis,
-                TreatmentPlan = entity.Consultation?.TreatmentPrinciple,
 
-                // Consultation
+                // Consultation - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
                 Consultation = entity.Consultation != null ? new ConsultationDto
                 {
                     Id = entity.Consultation.Id,
@@ -666,16 +658,10 @@ namespace LYBT.WebAPI.Controllers
                     UserId = entity.DoctorId,
                     PatientName = entity.PatientName,
                     DoctorName = entity.DoctorName,
-                    ChiefComplaint = entity.Consultation.ChiefComplaint,
                     PresentIllness = entity.Consultation.PresentIllness,
-                    Inspection = entity.Consultation.Inspection,
-                    AuscultationOlfaction = entity.Consultation.AuscultationOlfaction,
-                    Inquiry = entity.Consultation.Inquiry,
-                    Palpation = entity.Consultation.Palpation,
+                    TongueDiagnosis = entity.Consultation.TongueDiagnosis,
+                    PulseDiagnosis = entity.Consultation.PulseDiagnosis,
                     TCMDiagnosis = entity.Consultation.TCMDiagnosis,
-                    TreatmentPrinciple = entity.Consultation.TreatmentPrinciple,
-                    MedicalAdvice = entity.Consultation.MedicalAdvice,
-                    Remark = entity.Consultation.Remark,
                     CreatedAt = entity.Consultation.CreatedAt,
                     UpdatedAt = entity.Consultation.UpdatedAt
                 } : null,
@@ -1025,13 +1011,10 @@ namespace LYBT.WebAPI.Controllers
                     Diagnosis = entity.Consultation?.TCMDiagnosis,
                     CreatedAt = entity.CreatedAt,
 
-                    // 详细字段（MedicalCaseDetailDto扩展）
-                    ChiefComplaint = entity.Consultation?.ChiefComplaint,
+                    // 详细字段 - OpenSpec: refactor-diagnosis-fields 精简
                     PresentIllness = entity.Consultation?.PresentIllness,
-                    DiagnosisResult = entity.Consultation?.TCMDiagnosis,
-                    TreatmentPlan = entity.Consultation?.TreatmentPrinciple,
 
-                    // 关联数据
+                    // 关联数据 - OpenSpec: refactor-diagnosis-fields 精简为4个核心字段
                     Consultation = entity.Consultation != null ? new ConsultationDto
                     {
                         Id = entity.Consultation.Id,
@@ -1040,16 +1023,10 @@ namespace LYBT.WebAPI.Controllers
                         UserId = entity.DoctorId,
                         PatientName = entity.PatientName,
                         DoctorName = entity.DoctorName,
-                        ChiefComplaint = entity.Consultation.ChiefComplaint,
                         PresentIllness = entity.Consultation.PresentIllness,
-                        Inspection = entity.Consultation.Inspection,
-                        AuscultationOlfaction = entity.Consultation.AuscultationOlfaction,
-                        Inquiry = entity.Consultation.Inquiry,
-                        Palpation = entity.Consultation.Palpation,
+                        TongueDiagnosis = entity.Consultation.TongueDiagnosis,
+                        PulseDiagnosis = entity.Consultation.PulseDiagnosis,
                         TCMDiagnosis = entity.Consultation.TCMDiagnosis,
-                        TreatmentPrinciple = entity.Consultation.TreatmentPrinciple,
-                        MedicalAdvice = entity.Consultation.MedicalAdvice,
-                        Remark = entity.Consultation.Remark,
                         // DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
                         CreatedAt = entity.Consultation.CreatedAt,
                         UpdatedAt = entity.Consultation.UpdatedAt
@@ -1213,6 +1190,7 @@ namespace LYBT.WebAPI.Controllers
         /// Epic #1612: 支持按状态、患者ID过滤
         /// OpenSpec: optimize-module-list-ui - 添加角色过滤，Doctor只能看到自己的医案
         /// OpenSpec: fix-history-copy-all-patients - 添加includeAllDoctors参数支持历史医案复制
+        /// OpenSpec: refactor-medicalcase-management - 添加keyword搜索参数
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseDto>>), 200)]
@@ -1221,7 +1199,8 @@ namespace LYBT.WebAPI.Controllers
             [FromQuery] Guid? patientId = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
-            [FromQuery] bool includeAllDoctors = false)
+            [FromQuery] bool includeAllDoctors = false,
+            [FromQuery] string? keyword = null)
         {
             try
             {
@@ -1239,7 +1218,8 @@ namespace LYBT.WebAPI.Controllers
                 var entityResult = await _queryService.GetListAsync(
                     status, patientId, page, pageSize,
                     currentDoctorId: operatorId,
-                    isAdmin: isAdmin);
+                    isAdmin: isAdmin,
+                    keyword: keyword);
 
                 // Entity → DTO映射
                 // OpenSpec: fix-history-copy-all-patients - 添加ConsultationId/PrescriptionId映射
