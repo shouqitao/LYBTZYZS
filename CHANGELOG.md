@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 统一枚举定义到Shared层 (OpenSpec: unify-enums-to-shared) - 2025-12-17
+
+**重构内容:**
+- 合并重复的ErrorCategory/ErrorSeverity枚举定义到ErrorEnums.cs
+- 迁移分散枚举：MedicalCaseUpdateMode、BusinessOperation、PasswordStrength
+- 清理所有枚举的冗余[JsonConverter]属性（已全局配置JsonStringEnumConverter）
+- 移除ToChinese()扩展方法，统一使用GetDescription()
+
+**新增文件:**
+- ErrorEnums.cs - ErrorCategory和ErrorSeverity枚举
+- SecurityEnums.cs - PasswordStrength枚举
+- ValidationEnums.cs - BusinessOperation枚举
+
+**删除文件:**
+- Contracts/Common/ErrorCategory.cs
+- Contracts/Common/ErrorSeverity.cs
+- Errors/ErrorCategory.cs
+
+**技术决策:**
+- 中文显示统一使用[Description]属性
+- JSON序列化通过全局配置，无需单独标注
+- 完整重构而非别名兼容模式
+
 #### 侧边栏组件化与返回主页功能 (OpenSpec: refactor-role-navigation) - 2025-12-16
 
 **功能实现:**
