@@ -1,14 +1,11 @@
-﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace LYBT.Shared.Models.Enums
 {
-
     /// <summary>
     /// 医疗案例状态枚举 - Issue #2242简化版
     /// 简化状态机：Draft ↔ Active → Completed，取消操作使用软删除（IsDeleted）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum MedicalCaseStatus
     {
         /// <summary>暂存（用户暂时保存，稍后继续）- Issue #1647</summary>
@@ -29,30 +26,9 @@ namespace LYBT.Shared.Models.Enums
     }
 
     /// <summary>
-    /// 待看诊类型（预留，用于未来挂号集成）
-    /// Epic #1583 - Phase 5
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum PendingType
-    {
-        /// <summary>
-        /// 未完成医案
-        /// </summary>
-        [Description("未完成医案")]
-        Incomplete = 1,
-
-        /// <summary>
-        /// 已挂号（预留）
-        /// </summary>
-        [Description("已挂号")]
-        Appointment = 2
-    }
-
-    /// <summary>
     /// 审计操作类型枚举
     /// OpenSpec: refactor-medicalcase-management (LIFECYCLE-008)
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AuditOperationType
     {
         /// <summary>创建</summary>
@@ -74,5 +50,29 @@ namespace LYBT.Shared.Models.Enums
         /// <summary>取消</summary>
         [Description("取消")]
         Cancel = 5
+    }
+
+
+    /// <summary>
+    /// 病例更新模式枚举
+    /// OpenSpec: unify-enums-to-shared - 从MedicalCaseDtos.cs迁移
+    /// </summary>
+    public enum MedicalCaseUpdateMode
+    {
+        /// <summary>更新所有提供的字段</summary>
+        [Description("全部更新")]
+        UpdateAll = 0,
+
+        /// <summary>仅更新提供的字段，其他保持不变</summary>
+        [Description("部分更新")]
+        UpdateOnly = 1,
+
+        /// <summary>仅验证，不执行更新</summary>
+        [Description("仅验证")]
+        ValidateOnly = 2,
+
+        /// <summary>事务模式：要么全部成功，要么全部回滚</summary>
+        [Description("事务模式")]
+        Transactional = 3
     }
 }

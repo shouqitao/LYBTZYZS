@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Utilities.Security
 {

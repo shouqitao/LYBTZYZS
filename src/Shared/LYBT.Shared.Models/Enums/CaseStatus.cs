@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
     /// 案例状态枚举 - Epic #1612修正版别名
     /// 为MedicalCaseStatus提供简化的别名访问
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum CaseStatus
     {
         /// <summary>暂存</summary>

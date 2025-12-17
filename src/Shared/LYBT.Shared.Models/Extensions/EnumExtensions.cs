@@ -65,13 +65,6 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 获取枚举值的中文描述（别名方法）
-        /// </summary>
-        /// <param name="value">枚举值</param>
-        /// <returns>中文描述</returns>
-        public static string ToChinese(this Enum value) => value.GetDescription();
-
-        /// <summary>
         /// 检查枚举值是否有效
         /// </summary>
         /// <typeparam name="T">枚举类型</typeparam>

@@ -1,9 +1,10 @@
 ﻿using System.Windows;
 using LYBT.Desktop.Models.ViewModels.Base;
+using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Events;
-using SharedCommon = LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Desktop.Shell.Dialogs.ViewModels
 {
@@ -26,19 +27,19 @@ namespace LYBT.Desktop.Shell.Dialogs.ViewModels
         }
 
         // 显示属性
-        public string Id => HandledError?.Id ?? string.Empty;
+        public string Id => HandledError?.Id.ToString() ?? string.Empty;
 
         public string UserMessage => HandledError?.UserMessage ?? string.Empty;
-        public SharedCommon.ErrorCategory Category => HandledError?.Category ?? SharedCommon.ErrorCategory.Unknown;
-        public SharedCommon.ErrorSeverity Severity => HandledError?.Severity ?? SharedCommon.ErrorSeverity.Error;
-        public DateTime Timestamp => HandledError?.OccurredAt ?? DateTime.Now;
-        public string TechnicalDetails => HandledError?.TechnicalDetails ?? string.Empty;
+        public ErrorCategory Category => HandledError?.Category ?? ErrorCategory.Unknown;
+        public ErrorSeverity Severity => HandledError?.Severity ?? ErrorSeverity.Error;
+        public DateTime Timestamp => HandledError?.Timestamp ?? DateTime.Now;
+        public string TechnicalDetails => HandledError?.TechnicalMessage ?? string.Empty;
         public bool CanRetry => HandledError?.CanRetry ?? false;
-        public List<string> SuggestedActions => HandledError?.SuggestedActions ?? new List<string>();
+        public List<string> SuggestedActions => HandledError?.SuggestedActions?.ToList() ?? new List<string>();
         public bool HasSuggestedActions => SuggestedActions.Any();
 
         // 上下文信息
-        public string Module => HandledError?.Module ?? string.Empty;
+        public string Module => HandledError?.Context?.Module ?? string.Empty;
 
         public List<KeyValuePair<string, string>> ContextData => GetContextData();
 

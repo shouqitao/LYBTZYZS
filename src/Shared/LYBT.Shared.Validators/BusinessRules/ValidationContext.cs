@@ -96,39 +96,5 @@ namespace LYBT.Shared.Validators.BusinessRules
         }
     }
 
-    /// <summary>
-    /// 业务操作类型
-    /// </summary>
-    public enum BusinessOperation
-    {
-        /// <summary>
-        /// 创建操作
-        /// </summary>
-        Create,
-
-        /// <summary>
-        /// 更新操作
-        /// </summary>
-        Update,
-
-        /// <summary>
-        /// 删除操作
-        /// </summary>
-        Delete,
-
-        /// <summary>
-        /// 查询操作
-        /// </summary>
-        Read,
-
-        /// <summary>
-        /// 状态切换操作
-        /// </summary>
-        ToggleStatus,
-
-        /// <summary>
-        /// 自定义操作
-        /// </summary>
-        Custom
-    }
+    // OpenSpec: unify-enums-to-shared - BusinessOperation已迁移到LYBT.Shared.Models.Enums.ValidationEnums.cs
 }

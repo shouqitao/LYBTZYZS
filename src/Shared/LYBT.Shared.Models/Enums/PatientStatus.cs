@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
 
     /// <summary>
     /// 患者状态枚举 - Record-Only模式简化版本（仅Active/Inactive）
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
     [Description("患者状态")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PatientStatus
     {
 

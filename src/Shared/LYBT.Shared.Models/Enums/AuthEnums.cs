@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
     /// 登录类型枚举（简化版本，仅保留基础功能）
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum LoginType
     {
         /// <summary>密码登录</summary>
@@ -17,8 +16,8 @@ namespace LYBT.Shared.Models.Enums
 
     /// <summary>
     /// 认证会话状态枚举
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AuthSessionStatus
     {
         /// <summary>活跃状态</summary>
@@ -41,8 +40,8 @@ namespace LYBT.Shared.Models.Enums
     /// <summary>
     /// 用户角色枚举 - 三角色体系（SuperAdmin/Admin/Doctor）
     /// Issue #1909: 重构为三角色体系以解决权限管理严谨性问题
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum UserRole
     {
         /// <summary>超级管理员（最高权限，可以管理Admin，系统初始化创建）</summary>
@@ -61,8 +60,8 @@ namespace LYBT.Shared.Models.Enums
     /// <summary>
     /// 认证错误码枚举
     /// Issue #1864: 统一错误码体系，便于客户端处理和国际化
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AuthErrorCode
     {
         /// <summary>无错误</summary>

@@ -1,8 +1,10 @@
-﻿namespace LYBT.Shared.Models.Contracts.Common
-{
+﻿using LYBT.Shared.Models.Enums;
 
+namespace LYBT.Shared.Models.Contracts.Common
+{
     /// <summary>
     /// 处理后的错误信息
+    /// OpenSpec: unify-enums-to-shared - 使用统一的LYBT.Shared.Models.Enums.ErrorCategory/ErrorSeverity
     /// </summary>
     public class HandledError
     {

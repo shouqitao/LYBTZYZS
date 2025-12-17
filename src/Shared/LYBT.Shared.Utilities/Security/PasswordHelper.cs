@@ -7,41 +7,7 @@ using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Utilities.Security
 {
-    /// <summary>
-    /// 密码强度等级
-    /// </summary>
-    public enum PasswordStrength
-    {
-        /// <summary>
-        /// 弱密码
-        /// </summary>
-        [Description("弱")]
-        Weak = 1,
-
-        /// <summary>
-        /// 一般密码
-        /// </summary>
-        [Description("一般")]
-        Fair = 2,
-
-        /// <summary>
-        /// 良好密码
-        /// </summary>
-        [Description("良好")]
-        Good = 3,
-
-        /// <summary>
-        /// 强密码
-        /// </summary>
-        [Description("强")]
-        Strong = 4,
-
-        /// <summary>
-        /// 很强密码
-        /// </summary>
-        [Description("很强")]
-        VeryStrong = 5
-    }
+    // OpenSpec: unify-enums-to-shared - PasswordStrength已迁移到LYBT.Shared.Models.Enums.SecurityEnums.cs
 
     /// <summary>
     /// 统一密码帮助类 - 集成密码哈希、验证、强度检查和生成功能

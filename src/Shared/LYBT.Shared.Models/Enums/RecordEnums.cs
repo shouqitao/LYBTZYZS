@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
 
     /// <summary>
     /// 诊疗状态枚举 - 前后端共享
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
     [Description("诊疗状态")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ConsultationStatus
     {
         /// <summary>等待开始</summary>

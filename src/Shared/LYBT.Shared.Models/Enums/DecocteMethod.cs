@@ -1,13 +1,12 @@
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
     /// <summary>
     /// 煎法枚举 - 中药材的煎煮方法
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
     [Description("煎法")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DecocteMethod
     {
         /// <summary>默认煎法（与其他药材一起煎煮）</summary>

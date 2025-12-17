@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace LYBT.Shared.Models.Enums
 {
 
     /// <summary>
     /// 性别枚举 - 前后端共享
+    /// OpenSpec: unify-enums-to-shared - 移除冗余JsonConverter（已全局配置）
     /// </summary>
     [Description("性别")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Gender
     {
 

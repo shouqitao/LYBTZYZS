@@ -1,3 +1,5 @@
+using LYBT.Shared.Models.Enums;
+
 namespace LYBT.Shared.Models.Errors;
 
 /// <summary>

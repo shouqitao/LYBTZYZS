@@ -1,3 +1,4 @@
+using LYBT.Shared.Models.Enums;
 using LYBT.Shared.Models.Errors;
 using Microsoft.Extensions.Configuration;
 

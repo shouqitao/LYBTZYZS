@@ -1,8 +1,11 @@
-﻿namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
+﻿using LYBT.Shared.Models.Enums;
+
+namespace LYBT.Desktop.Infrastructure.Services.ErrorHandling
 {
     /// <summary>
     /// 错误上下文信息
     /// 用于记录错误发生时的详细信息
+    /// OpenSpec: unify-enums-to-shared - 移除本地ErrorSeverity定义，使用统一的LYBT.Shared.Models.Enums.ErrorSeverity
     /// </summary>
     public class ErrorContext
     {
@@ -40,31 +43,5 @@
         /// 是否需要重试
         /// </summary>
         public bool IsRetryable { get; set; } = false;
-    }
-
-    /// <summary>
-    /// 错误严重级别枚举
-    /// </summary>
-    public enum ErrorSeverity
-    {
-        /// <summary>
-        /// 信息
-        /// </summary>
-        Info,
-
-        /// <summary>
-        /// 警告
-        /// </summary>
-        Warning,
-
-        /// <summary>
-        /// 错误
-        /// </summary>
-        Error,
-
-        /// <summary>
-        /// 严重错误
-        /// </summary>
-        Critical
     }
 }

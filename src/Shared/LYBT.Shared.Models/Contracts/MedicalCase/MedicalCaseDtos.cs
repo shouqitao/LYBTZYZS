@@ -651,32 +651,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         #endregion
     }
 
-    /// <summary>
-    /// 更新模式枚举
-    /// OpenSpec: consolidate-medicalcase-dtos - 从Server模块层迁移到Shared层
-    /// </summary>
-    public enum MedicalCaseUpdateMode
-    {
-        /// <summary>
-        /// 更新所有提供的字段
-        /// </summary>
-        UpdateAll,
-
-        /// <summary>
-        /// 仅更新提供的字段，其他保持不变
-        /// </summary>
-        UpdateOnly,
-
-        /// <summary>
-        /// 仅验证，不执行更新
-        /// </summary>
-        ValidateOnly,
-
-        /// <summary>
-        /// 事务模式：要么全部成功，要么全部回滚
-        /// </summary>
-        Transactional
-    }
+    // OpenSpec: unify-enums-to-shared - MedicalCaseUpdateMode已迁移到LYBT.Shared.Models.Enums.MedicalCaseEnums.cs
 
     /// <summary>
     /// 处方更新请求

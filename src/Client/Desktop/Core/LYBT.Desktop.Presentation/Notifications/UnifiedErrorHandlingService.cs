@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using LYBT.Shared.Models.Contracts.Common;
+using LYBT.Shared.Models.Enums;
 using Microsoft.Extensions.Logging;
-using SharedCommon = LYBT.Shared.Models.Contracts.Common.SharedCommon;
 
 namespace LYBT.Desktop.Presentation.Notifications
 {
@@ -17,8 +17,8 @@ namespace LYBT.Desktop.Presentation.Notifications
         Task LogErrorAsync(SharedCommon.HandledError handledError);
         string GetUserFriendlyMessage(Exception exception, string? defaultMessage = null);
         bool CanRetry(Exception exception);
-        SharedCommon.ErrorCategory GetErrorCategory(Exception exception);
-        SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception);
+        ErrorCategory GetErrorCategory(Exception exception);
+        ErrorSeverity GetErrorSeverity(Exception exception);
         string[] GetSuggestedActions(Exception exception);
         Task<bool> ExecuteSafelyAsync(Func<Task> operation, ErrorContext? context = null, bool showErrorDialog = true);
         Task<T?> ExecuteSafelyAsync<T>(Func<Task<T>> operation, ErrorContext? context = null, bool showErrorDialog = true);
@@ -73,7 +73,7 @@ namespace LYBT.Desktop.Presentation.Notifications
 
             // 触发事件
             ErrorOccurred?.Invoke(this, handledError);
-            if (handledError.Severity == SharedCommon.ErrorSeverity.Critical)
+            if (handledError.Severity == ErrorSeverity.Critical)
             {
                 CriticalErrorOccurred?.Invoke(this, handledError);
             }
@@ -96,8 +96,8 @@ namespace LYBT.Desktop.Presentation.Notifications
 
             var title = handledError.Severity switch
             {
-                SharedCommon.ErrorSeverity.Warning => "警告",
-                SharedCommon.ErrorSeverity.Critical => "严重错误",
+                ErrorSeverity.Warning => "警告",
+                ErrorSeverity.Critical => "严重错误",
                 _ => "错误"
             };
 
@@ -111,9 +111,9 @@ namespace LYBT.Desktop.Presentation.Notifications
             {
                 var logLevel = handledError.Severity switch
                 {
-                    SharedCommon.ErrorSeverity.Information => LogLevel.Information,
-                    SharedCommon.ErrorSeverity.Warning => LogLevel.Warning,
-                    SharedCommon.ErrorSeverity.Critical => LogLevel.Critical,
+                    ErrorSeverity.Info => LogLevel.Information,
+                    ErrorSeverity.Warning => LogLevel.Warning,
+                    ErrorSeverity.Critical => LogLevel.Critical,
                     _ => LogLevel.Error
                 };
 
@@ -148,29 +148,29 @@ namespace LYBT.Desktop.Presentation.Notifications
         }
 
         /// <inheritdoc/>
-        public SharedCommon.ErrorCategory GetErrorCategory(Exception exception)
+        public ErrorCategory GetErrorCategory(Exception exception)
         {
             return exception switch
             {
-                ValidationException => SharedCommon.ErrorCategory.Validation,
-                UnauthorizedAccessException => SharedCommon.ErrorCategory.Authorization,
-                HttpRequestException or TimeoutException => SharedCommon.ErrorCategory.Network,
-                InvalidOperationException => SharedCommon.ErrorCategory.Business,
-                ArgumentException => SharedCommon.ErrorCategory.Validation,
-                NotSupportedException or OutOfMemoryException => SharedCommon.ErrorCategory.System,
-                _ => SharedCommon.ErrorCategory.Unknown
+                ValidationException => ErrorCategory.Validation,
+                UnauthorizedAccessException => ErrorCategory.Authorization,
+                HttpRequestException or TimeoutException => ErrorCategory.Network,
+                InvalidOperationException => ErrorCategory.Business,
+                ArgumentException => ErrorCategory.Validation,
+                NotSupportedException or OutOfMemoryException => ErrorCategory.System,
+                _ => ErrorCategory.Unknown
             };
         }
 
         /// <inheritdoc/>
-        public SharedCommon.ErrorSeverity GetErrorSeverity(Exception exception)
+        public ErrorSeverity GetErrorSeverity(Exception exception)
         {
             return exception switch
             {
-                ValidationException => SharedCommon.ErrorSeverity.Warning,
-                TaskCanceledException => SharedCommon.ErrorSeverity.Information,
-                OutOfMemoryException or AccessViolationException or StackOverflowException => SharedCommon.ErrorSeverity.Critical,
-                _ => SharedCommon.ErrorSeverity.Error
+                ValidationException => ErrorSeverity.Warning,
+                TaskCanceledException => ErrorSeverity.Info,
+                OutOfMemoryException or AccessViolationException or StackOverflowException => ErrorSeverity.Critical,
+                _ => ErrorSeverity.Error
             };
         }
 
