@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Consultation;
 using LYBT.Shared.Models.Contracts.Prescriptions;
 using LYBT.Shared.Models.Enums;
@@ -8,13 +7,31 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
     /// <summary>
-    /// 医疗案例详情DTO - 聚合DTO（包含嵌套的Consultation和Prescription）
-    /// OpenSpec: refactor-dto-simplification - 独立定义，不再继承MedicalCaseDto
+    /// 医疗案例详情DTO - 扁平化设计（聚合DTO包含嵌套的Consultation和Prescription）
+    /// OpenSpec: refactor-dto-simplification - 移除继承，直接定义所有字段
     /// 用于Desktop端聚合根模式，需要嵌套的子实体DTO
     /// </summary>
-    public class MedicalCaseDetailDto : TimestampDto, IRemarkable
+    public class MedicalCaseDetailDto
     {
-        // ========== 基础字段（原MedicalCaseDto字段） ==========
+        // ========== 基础标识字段 ==========
+
+        /// <summary>唯一标识符</summary>
+        [DisplayName("ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>创建者ID</summary>
+        [DisplayName("创建者")]
+        public Guid? CreatedBy { get; set; }
+
+        // ========== 案例基础字段 ==========
 
         [DisplayName("案例编号")]
         [StringLength(50, ErrorMessage = "案例编号长度不能超过50个字符")]
@@ -51,7 +68,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         [DisplayName("案例状态")]
         public MedicalCaseStatus CaseStatus { get; set; } = MedicalCaseStatus.Active;
 
-        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }

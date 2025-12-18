@@ -1,17 +1,34 @@
 using System.ComponentModel;
-using LYBT.Shared.Models.Contracts.Common;
 
 namespace LYBT.Shared.Models.Contracts.Consultation
 {
     /// <summary>
-    /// 诊疗详情DTO - 简化版（Issue #1562 Phase 2）
-    /// OpenSpec: refactor-dto-simplification - 重命名为ConsultationDetailDto符合DTO规范
+    /// 诊疗详情DTO - 扁平化设计
+    /// OpenSpec: refactor-dto-simplification - 移除继承，直接定义所有字段
     /// 与Consultation实体对齐，仅包含四诊信息和基础字段
-    /// 移除了时间跟踪字段（StartTime/EndTime）和工作流状态（ConsultationStatus）
-    /// DD-002: 移除Status字段，Consultation状态从聚合根MedicalCase派生
     /// </summary>
-    public class ConsultationDetailDto : TimestampDto
+    public class ConsultationDetailDto
     {
+        // ========== 基础标识字段 ==========
+
+        /// <summary>唯一标识符</summary>
+        [DisplayName("ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>创建者ID</summary>
+        [DisplayName("创建者")]
+        public Guid? CreatedBy { get; set; }
+
+        // ========== 关联字段 ==========
+
         /// <summary>医疗案例ID（共享主键）</summary>
         [DisplayName("医疗案例ID")]
         public Guid MedicalCaseId { get; set; }
@@ -32,7 +49,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("医生姓名")]
         public string? DoctorName { get; set; }
 
-        // 诊断核心字段（精简版 - OpenSpec: refactor-diagnosis-fields）
+        // ========== 诊断核心字段 ==========
 
         /// <summary>现病史</summary>
         [DisplayName("现病史")]

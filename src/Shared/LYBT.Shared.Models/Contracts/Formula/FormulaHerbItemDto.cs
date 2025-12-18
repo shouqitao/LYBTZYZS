@@ -1,16 +1,20 @@
 using System.ComponentModel;
-using LYBT.Shared.Models.Contracts.Common;
 using LYBT.Shared.Models.Contracts.Herbs;
 using LYBT.Shared.Models.Enums;
 
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>
-    /// 验方中药材组成项DTO - 继承基础DTO提供ID
+    /// 验方中药材组成项DTO - 扁平化设计
+    /// OpenSpec: refactor-dto-simplification - 移除继承，直接定义Id字段
     /// 支持延迟绑定：允许先保存原始药材名称，稍后再绑定到药材库
     /// </summary>
-    public class FormulaHerbItemDto : BaseDto
+    public class FormulaHerbItemDto
     {
+        /// <summary>唯一标识符</summary>
+        [DisplayName("ID")]
+        public Guid Id { get; set; }
+
         /// <summary>
         /// 药材ID（可空，支持延迟绑定）
         /// </summary>
@@ -65,8 +69,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         /// <summary>煎法（先煎、后下等）</summary>
         [DisplayName("煎法")]
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
-
-        // UltraThink导航属性 - 确保架构统一
 
         /// <summary>中药材导航属性</summary>
         [DisplayName("中药材")]

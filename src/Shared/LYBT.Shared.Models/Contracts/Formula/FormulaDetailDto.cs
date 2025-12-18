@@ -6,11 +6,40 @@ using LYBT.Shared.Models.Enums;
 namespace LYBT.Shared.Models.Contracts.Formula
 {
     /// <summary>
-    /// 验方信息DTO - UltraThink v2.0简化版
-    /// 与Formula实体对齐，删除时间和创建者字段
+    /// 验方信息DTO - 扁平化设计
+    /// OpenSpec: refactor-dto-simplification - 移除继承，直接定义所有字段
+    /// 与Formula实体对齐
     /// </summary>
-    public class FormulaDetailDto : StatusDto, IRemarkable
+    public class FormulaDetailDto : ICreatorTrackable
     {
+        // ========== 基础标识字段 ==========
+
+        /// <summary>唯一标识符</summary>
+        [DisplayName("ID")]
+        public Guid Id { get; set; }
+
+        /// <summary>创建时间</summary>
+        [DisplayName("创建时间")]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>更新时间</summary>
+        [DisplayName("更新时间")]
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>创建者ID</summary>
+        [DisplayName("创建者")]
+        public Guid? CreatedBy { get; set; }
+
+        /// <summary>状态</summary>
+        [DisplayName("状态")]
+        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+
+        /// <summary>是否启用</summary>
+        [DisplayName("是否启用")]
+        public bool IsEnabled => Status == CommonStatus.Enabled;
+
+        // ========== 业务字段 ==========
+
         [DisplayName("验方名称")]
         public string Name { get; set; } = string.Empty;
 
@@ -35,7 +64,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
 
         /// <summary>
         /// 验证状态 - 标识验方是否已验证（Draft=草稿/未验证，Validated=已验证）
-        /// 从老系统导入的验方初始为Draft状态，经过医生审核后标记为Validated
         /// </summary>
         [DisplayName("验证状态")]
         public FormulaValidationStatus ValidationStatus { get; set; } = FormulaValidationStatus.Draft;
@@ -44,7 +72,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [StringLength(100, ErrorMessage = "来源长度不能超过100个字符")]
         public string? Source { get; set; }
 
-        /// <inheritdoc/>
         [DisplayName("备注")]
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Remark { get; set; }

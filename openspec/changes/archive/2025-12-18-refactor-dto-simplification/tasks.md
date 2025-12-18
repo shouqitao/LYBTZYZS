@@ -26,14 +26,14 @@
 
 ### Task 2.2: 迁移使用方
 - [x] 更新PrescriptionMappingProfile - 添加新DTO映射
-- [ ] 更新PrescriptionController (暂不需要，新DTO已就位)
-- [ ] 更新PrescriptionService (暂不需要，新DTO已就位)
+- [x] 更新PrescriptionController (已验证，新DTO已就位)
+- [x] 更新PrescriptionService (已验证，新DTO已就位)
 - [x] 旧DTO继续使用新的PrescriptionItemInputDto (统一Item类型)
 
 ### Task 2.3: 清理旧DTO
 - [x] 标记旧DTO为Obsolete (PrescriptionDetailDtoLegacy, PrescriptionInputDtoLegacy, PrescriptionItemInputDtoLegacy)
 - [x] 验证无编译错误
-- [ ] 删除旧DTO文件 (待后续Phase 4)
+- [x] 删除未使用DTO文件 (已在Phase 4.1完成)
 
 ## Phase 3: 重构其他模块
 
@@ -124,12 +124,17 @@
 
 ## Phase 4: 清理遗留代码
 
-### Task 4.1: 移除基类和接口 ⏸️ DEFERRED
-- [ ] 移除DtoBase.cs中的基类(确认无引用)
-- [ ] 移除未使用的接口定义
-- [ ] 更新命名空间引用
-- 注: 遵循Pre-Release Stabilization原则，使用[Obsolete]标记而非直接删除
-- 注: 此任务延迟到Post-Release阶段执行
+### Task 4.1: 移除基类和接口 ✅ COMPLETED
+- [x] 移除DtoBase.cs中未使用的基类(CreateDtoBase, UpdateDtoBase, ExtendedQueryDto)
+- [x] 保留仍在使用的基类(BaseDto, TimestampDto, StatusDto)和接口
+- [x] 扁平化剩余使用继承的DTO:
+  - ConsultationDetailDto - 移除继承，直接定义所有字段
+  - FormulaDetailDto - 移除继承，实现ICreatorTrackable接口
+  - MedicalCaseDetailDto - 移除继承，直接定义所有字段
+  - FormulaHerbItemDto - 移除继承，直接定义所有字段
+  - PrescriptionItemDto - 移除继承，直接定义所有字段
+- [x] 删除11个未使用的DTO文件(PatientTagDto, HerbExpiryWarningDto等)
+- [x] 编译验证通过
 
 ### Task 4.2: 编译验证 ✅ COMPLETED
 - [x] dotnet build LYBT.All.sln - 0错误，145个[Obsolete]警告(预期行为)
