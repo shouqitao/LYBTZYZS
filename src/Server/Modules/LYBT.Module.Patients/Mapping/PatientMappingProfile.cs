@@ -7,14 +7,26 @@ namespace LYBT.Module.Patients.Mapping
 
     /// <summary>
     /// 患者实体与DTO之间的AutoMapper映射配置
-    /// 更新以支持共享契约模型和基础模型继承
+    /// OpenSpec: refactor-dto-simplification - 添加简化DTO映射
     /// </summary>
     public class PatientMappingProfile : Profile
     {
 
         public PatientMappingProfile()
         {
-            // ==================== Epic #1934批量导入映射优化 ====================
+            // ============================================
+            // 新简化DTO映射 (OpenSpec: refactor-dto-simplification)
+            // ============================================
+
+            // Patient -> PatientListDto (新)
+            CreateMap<Patient, PatientListDto>();
+
+            // Patient -> PatientDetailDtoNew (新-简化版)
+            CreateMap<Patient, PatientDetailDtoNew>();
+
+            // ============================================
+            // 旧DTO映射 (保持向后兼容，后续移除)
+            // ============================================
 
             // 患者实体 → PatientDto（API响应）
             CreateMap<Patient, PatientDto>()

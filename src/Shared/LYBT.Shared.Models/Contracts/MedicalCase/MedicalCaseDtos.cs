@@ -9,6 +9,29 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 {
 
     /// <summary>
+    /// 医疗案例详情DTO - 聚合DTO（包含嵌套的Consultation和Prescription）
+    /// 继承自MedicalCaseDto，支持隐式类型转换和扩展方法
+    /// 用于Desktop端聚合根模式，需要嵌套的子实体DTO
+    /// 注：MedicalCaseDetailDtoNew 是扁平化设计，仅包含ID引用
+    /// </summary>
+    public class MedicalCaseDetailDto : MedicalCaseDto
+    {
+        /// <summary>现病史</summary>
+        [DisplayName("现病史")]
+        public string? PresentIllness { get; set; }
+
+        // ========== 聚合DTO嵌套属性 ==========
+
+        /// <summary>诊疗记录详情（嵌套DTO）</summary>
+        [DisplayName("诊疗记录")]
+        public ConsultationDto? Consultation { get; set; }
+
+        /// <summary>处方详情（嵌套DTO）</summary>
+        [DisplayName("处方")]
+        public PrescriptionDto? Prescription { get; set; }
+    }
+
+    /// <summary>
     /// 医疗案例DTO - UltraThink v2.0简化版
     /// 与MedicalCase实体对齐，保留ConsultationDate
     /// 注：MedicalCase使用CaseStatus管理业务状态，不再使用CommonStatus
@@ -67,32 +90,6 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>是否有处方（计算属性）</summary>
         public bool HasPrescription => PrescriptionId.HasValue;
-    }
-
-    /// <summary>
-    /// 医疗案例详情DTO - 继承基础DTO，添加详细信息
-    /// Epic #1583 Phase 3: 添加Consultation和Prescription关联数据
-    /// </summary>
-    public class MedicalCaseDetailDto : MedicalCaseDto
-    {
-        // OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段，通过Consultation获取
-        // 移除：ChiefComplaint, DiagnosisResult, TreatmentPlan
-        // 保留：PresentIllness (映射自Consultation.PresentIllness)
-
-        [DisplayName("现病史")]
-        public string? PresentIllness { get; set; }
-
-        /// <summary>
-        /// 诊疗记录（Epic #1583 Phase 3: 继续看诊时加载）
-        /// </summary>
-        [DisplayName("诊疗记录")]
-        public ConsultationDto? Consultation { get; set; }
-
-        /// <summary>
-        /// 处方信息（Epic #1583 Phase 3: 继续看诊时加载）
-        /// </summary>
-        [DisplayName("处方信息")]
-        public PrescriptionDto? Prescription { get; set; }
     }
 
     /// <summary>
@@ -349,7 +346,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>处方信息（可选）</summary>
         [DisplayName("处方信息")]
-        public PrescriptionCreateDto? Prescription { get; set; }
+        public PrescriptionInputDto? Prescription { get; set; }
     }
 
     /// <summary>
@@ -366,7 +363,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
 
         /// <summary>处方创建信息（可选）</summary>
         [DisplayName("处方信息")]
-        public PrescriptionCreateDto? Prescription { get; set; }
+        public PrescriptionInputDto? Prescription { get; set; }
 
         /// <summary>是否立即创建处方</summary>
         [DisplayName("立即创建处方")]
@@ -612,7 +609,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         /// <summary>
         /// 创建处方请求（三步流程Step 3a）
         /// </summary>
-        public PrescriptionCreateDto? CreatePrescription { get; set; }
+        public PrescriptionInputDto? CreatePrescription { get; set; }
 
         /// <summary>
         /// 更新处方请求（三步流程Step 3b）
@@ -663,7 +660,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public Guid PrescriptionId { get; set; }
 
         /// <summary>处方数据</summary>
-        public PrescriptionEditDto PrescriptionData { get; set; } = new();
+        public PrescriptionInputDto PrescriptionData { get; set; } = new();
     }
 
     /// <summary>

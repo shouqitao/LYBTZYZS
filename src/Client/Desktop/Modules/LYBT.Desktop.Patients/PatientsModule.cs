@@ -58,14 +58,12 @@ namespace LYBT.Desktop.Patients
             containerRegistry.Register<ViewModels.PatientDetailViewModel>();
             // Issue #2167: PatientImportWizardViewModel已删除（改用直接API调用）
             containerRegistry.Register<ViewModels.PatientSelectionViewModel>();  // Issue #1557: 看诊流程Step 1
-            containerRegistry.Register<ViewModels.PatientManagementViewModel>();  // 患者管理视图模型
             // Issue #2168: CRUD统一架构 - PatientCreateViewModel和PatientEditViewModel已删除
 
             // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.PatientDetailView>();
             // Issue #2167: PatientImportWizardView已删除（改用直接API调用）
             containerRegistry.RegisterForNavigation<Views.PatientSelectionView>();  // Issue #1557: 看诊流程Step 1（Region导航）
-            containerRegistry.RegisterForNavigation<Views.PatientManagementView>();  // 患者管理视图
             // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图
             // 显式指定View-ViewModel映射，确保正确的ViewModel绑定
             containerRegistry.RegisterForNavigation<Views.PatientMasterDetailView, ViewModels.PatientMasterDetailViewModel>();

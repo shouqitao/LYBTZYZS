@@ -70,6 +70,43 @@ namespace LYBT.Module.Patients.Services
             }
         }
 
+        /// <summary>
+        /// 分页查询患者列表（返回PatientListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            try
+            {
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+                var dtos = _mapper.Map<List<PatientListDto>>(pagedResult.Items);
+
+                // 确保Age属性正确计算
+                foreach (var dto in dtos)
+                {
+                    var entity = pagedResult.Items.FirstOrDefault(e => e.Id == dto.Id);
+                    if (entity != null)
+                    {
+                        dto.Age = entity.Age;
+                    }
+                }
+
+                var result = new PagedResult<PatientListDto>
+                {
+                    Items = dtos,
+                    TotalCount = pagedResult.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+                return Result<PagedResult<PatientListDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者列表失败，关键字：{Keyword}", keyword);
+                return Result<PagedResult<PatientListDto>>.Failure("获取患者列表失败");
+            }
+        }
+
         public async Task<Result<PatientDto>> GetByIdAsync(Guid id)
         {
             try

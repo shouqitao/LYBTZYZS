@@ -112,14 +112,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
     }
 
     /// <summary>
-    /// 验方详情DTO
-    /// </summary>
-    public class FormulaDetailDto : FormulaDto
-    {
-        public new List<FormulaHerbItemDto> Herbs { get; set; } = new();
-    }
-
-    /// <summary>
     /// 验方中药材组成项DTO - 继承基础DTO提供ID
     /// 支持延迟绑定：允许先保存原始药材名称，稍后再绑定到药材库
     /// </summary>
@@ -190,8 +182,9 @@ namespace LYBT.Shared.Models.Contracts.Formula
     /// <summary>
     /// 验方输入DTO - 统一创建和更新
     /// Phase 3: 合并FormulaCreateDto和FormulaUpdateDto
+    /// OpenSpec: refactor-dto-simplification - 移除接口继承，直接声明Remark字段
     /// </summary>
-    public class FormulaInputDto : IRemarkable
+    public class FormulaInputDto
     {
 
         [Required(ErrorMessage = "验方名称不能为空")]
@@ -236,7 +229,7 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("制备方法")]
         public string? Preparation { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>备注</summary>
         [StringLength(500, ErrorMessage = "备注不能超过500个字符")]
         [DisplayName("备注")]
         public string? Remark { get; set; }
@@ -245,9 +238,8 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("验方ID")]
         public Guid? Id { get; set; }
 
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+        // OpenSpec: refactor-dto-simplification - Status字段已移除
+        // InputDto不应包含Status字段，状态变更应通过专用API进行
 
         /// <summary>中药材组成</summary>
         [Required(ErrorMessage = "必须包含至少一味中药材")]
@@ -310,67 +302,6 @@ namespace LYBT.Shared.Models.Contracts.Formula
         [DisplayName("煎法")]
         public DecocteMethod DecocteMethod { get; set; } = DecocteMethod.Default;
     }
-
-    /// <summary>
-    /// 验方查询DTO - 基础查询条件
-    /// </summary>
-    public class FormulaQueryDto : PagedQueryBaseDto
-    {
-        /// <summary>验方名称</summary>
-        [DisplayName("验方名称")]
-        public string? Name { get; set; }
-
-        /// <summary>功效关键词</summary>
-        [DisplayName("功效")]
-        public string? Effect { get; set; }
-
-        /// <summary>是否共享</summary>
-        [DisplayName("是否共享")]
-        public bool? IsShared { get; set; }
-
-        /// <summary>关键词搜索</summary>
-        [DisplayName("关键词")]
-        public new string? Keyword { get; set; }
-
-        /// <summary>状态（兼容旧代码）</summary>
-        [DisplayName("状态")]
-        public CommonStatus? Status { get; set; }
-    }
-
-    /// <summary>
-    /// 验方搜索DTO - 高级搜索条件
-    /// </summary>
-    public class FormulaSearchDto : FormulaQueryDto
-    {
-        /// <summary>创建者ID</summary>
-        [DisplayName("创建者ID")]
-        public Guid? CreatedById { get; set; }
-
-        /// <summary>主治症状</summary>
-        [DisplayName("主治症状")]
-        public string? Indications { get; set; }
-
-        /// <summary>来源</summary>
-        [DisplayName("来源")]
-        public string? Source { get; set; }
-
-        /// <summary>创建日期范围-开始日期</summary>
-        [DisplayName("开始日期")]
-        public DateTime? StartDate { get; set; }
-
-        /// <summary>创建日期范围-结束日期</summary>
-        [DisplayName("结束日期")]
-        public DateTime? EndDate { get; set; }
-
-        /// <summary>排序字段</summary>
-        [DisplayName("排序字段")]
-        public string OrderBy { get; set; } = "CreateTime";
-
-        /// <summary>升序排序</summary>
-        [DisplayName("升序排序")]
-        public bool IsAscending { get; set; } = false;
-    }
-
 
     /// <summary>
     /// 从处方创建验方DTO - 继承验方输入基础DTO

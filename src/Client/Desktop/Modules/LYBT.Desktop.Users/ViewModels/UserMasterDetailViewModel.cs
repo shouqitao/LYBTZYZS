@@ -21,10 +21,11 @@ namespace LYBT.Desktop.Users.ViewModels
     /// <summary>
     /// 用户Master-Detail视图模型
     /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: optimize-entity-data-flow - 列表使用UserListDto
     ///
     /// 合并UserManagementViewModel和UserDetailViewModel功能
     /// </summary>
-    public class UserMasterDetailViewModel : MasterDetailViewModelBase<UserDto, UserDetailModel>
+    public class UserMasterDetailViewModel : MasterDetailViewModelBase<UserListDto, UserDetailModel>
     {
         private readonly UserCommandHandler _commandHandler;
         private readonly IUserRepository _userRepository;
@@ -160,10 +161,10 @@ namespace LYBT.Desktop.Users.ViewModels
         #region 扩展命令
 
         /// <summary>重置密码命令</summary>
-        public DelegateCommand<UserDto> ResetPasswordCommand { get; private set; } = null!;
+        public DelegateCommand<UserListDto> ResetPasswordCommand { get; private set; } = null!;
 
         /// <summary>切换用户状态命令</summary>
-        public DelegateCommand<UserDto> ToggleUserStatusCommand { get; private set; } = null!;
+        public DelegateCommand<UserListDto> ToggleUserStatusCommand { get; private set; } = null!;
 
         /// <summary>清除筛选命令</summary>
         public DelegateCommand ClearFiltersCommand { get; private set; } = null!;
@@ -178,10 +179,10 @@ namespace LYBT.Desktop.Users.ViewModels
         public DelegateCommand DownloadTemplateCommand { get; private set; } = null!;
 
         /// <summary>查看审计日志命令</summary>
-        public DelegateCommand<UserDto> ShowAuditLogCommand { get; private set; } = null!;
+        public DelegateCommand<UserListDto> ShowAuditLogCommand { get; private set; } = null!;
 
         /// <summary>恢复命令</summary>
-        public DelegateCommand<UserDto> RestoreCommand { get; private set; } = null!;
+        public DelegateCommand<UserListDto> RestoreCommand { get; private set; } = null!;
 
         #endregion
 
@@ -215,16 +216,16 @@ namespace LYBT.Desktop.Users.ViewModels
 
         private void InitializeExtendedCommands()
         {
-            ResetPasswordCommand = new DelegateCommand<UserDto>(async u => await ExecuteResetPasswordAsync(u),
+            ResetPasswordCommand = new DelegateCommand<UserListDto>(async u => await ExecuteResetPasswordAsync(u),
                 u => u != null && !IsLoading && u.Status == CommonStatus.Enabled);
-            ToggleUserStatusCommand = new DelegateCommand<UserDto>(async u => await ExecuteToggleUserStatusAsync(u),
+            ToggleUserStatusCommand = new DelegateCommand<UserListDto>(async u => await ExecuteToggleUserStatusAsync(u),
                 u => u != null && !IsLoading);
             ClearFiltersCommand = new DelegateCommand(ExecuteClearFilters, () => HasActiveFilters);
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
-            ShowAuditLogCommand = new DelegateCommand<UserDto>(ExecuteShowAuditLog, u => u != null);
-            RestoreCommand = new DelegateCommand<UserDto>(async u => await RestoreAsync(u),
+            ShowAuditLogCommand = new DelegateCommand<UserListDto>(ExecuteShowAuditLog, u => u != null);
+            RestoreCommand = new DelegateCommand<UserListDto>(async u => await RestoreAsync(u),
                 u => u != null && !IsLoading && IsAdmin);
         }
 
@@ -232,11 +233,12 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 列表数据加载
 
-        protected override async Task<IEnumerable<UserDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<UserListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
             try
             {
-                var result = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
+                // OpenSpec: optimize-entity-data-flow - 使用UserListDto轻量DTO
+                var result = await _commandHandler.GetPagedListAsync(page, pageSize, searchText);
                 if (result.success && result.data != null)
                 {
                     TotalCount = result.data.TotalCount;
@@ -245,7 +247,7 @@ namespace LYBT.Desktop.Users.ViewModels
                 else
                 {
                     TotalCount = 0;
-                    return new List<UserDto>();
+                    return new List<UserListDto>();
                 }
             }
             catch (Exception ex)
@@ -253,11 +255,11 @@ namespace LYBT.Desktop.Users.ViewModels
                 Logger.LogError(ex, "获取用户列表时发生异常");
                 await UserNotificationService!.HandleExceptionAsync(ex, $"获取用户列表 - 模块:{nameof(UserMasterDetailViewModel)}");
                 TotalCount = 0;
-                return new List<UserDto>();
+                return new List<UserListDto>();
             }
         }
 
-        private IEnumerable<UserDto> ApplyFilters(IEnumerable<UserDto> items)
+        private IEnumerable<UserListDto> ApplyFilters(IEnumerable<UserListDto> items)
         {
             var filteredItems = items.AsEnumerable();
             if (SelectedRoleFilter.HasValue) filteredItems = filteredItems.Where(u => u.Role == SelectedRoleFilter.Value);
@@ -280,7 +282,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region Master-Detail抽象方法实现
 
-        protected override async Task<UserDetailModel?> LoadDetailAsync(UserDto item)
+        protected override async Task<UserDetailModel?> LoadDetailAsync(UserListDto item)
         {
             if (item == null) return null;
 
@@ -388,7 +390,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 删除操作
 
-        protected override async Task OnExecuteDeleteAsync(UserDto item)
+        protected override async Task OnExecuteDeleteAsync(UserListDto item)
         {
             if (item == null) return;
 
@@ -421,7 +423,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }
         }
 
-        protected override async Task OnExecuteBatchDeleteAsync(List<UserDto> items)
+        protected override async Task OnExecuteBatchDeleteAsync(List<UserListDto> items)
         {
             if (items == null || items.Count == 0) return;
 
@@ -465,7 +467,7 @@ namespace LYBT.Desktop.Users.ViewModels
 
         #region 扩展功能
 
-        private async Task ExecuteResetPasswordAsync(UserDto user)
+        private async Task ExecuteResetPasswordAsync(UserListDto user)
         {
             if (user == null) return;
             await ExecuteSafelyAsync(async () =>
@@ -487,7 +489,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }, "重置密码");
         }
 
-        private async Task ExecuteToggleUserStatusAsync(UserDto user)
+        private async Task ExecuteToggleUserStatusAsync(UserListDto user)
         {
             if (user == null) return;
             await ExecuteSafelyAsync(async () =>
@@ -495,14 +497,22 @@ namespace LYBT.Desktop.Users.ViewModels
                 var newStatus = user.Status == CommonStatus.Enabled ? CommonStatus.Disabled : CommonStatus.Enabled;
                 var action = newStatus == CommonStatus.Enabled ? "启用" : "禁用";
 
+                // OpenSpec: optimize-entity-data-flow - UserListDto是轻量DTO，需先获取完整数据
+                var fullUserResult = await _commandHandler.GetByIdAsync(user.Id);
+                if (!fullUserResult.success || fullUserResult.user == null)
+                {
+                    throw new InvalidOperationException("无法获取用户详细信息");
+                }
+
+                var fullUser = fullUserResult.user;
                 var updateDto = new UserInputDto
                 {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    RealName = user.RealName,
-                    PhoneNumber = user.PhoneNumber,
-                    Email = user.Email,
-                    Role = user.Role,
+                    Id = fullUser.Id,
+                    UserName = fullUser.UserName,
+                    RealName = fullUser.RealName,
+                    PhoneNumber = fullUser.PhoneNumber,
+                    Email = fullUser.Email,
+                    Role = fullUser.Role,
                     Status = newStatus
                 };
 
@@ -519,7 +529,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }, user.Status == CommonStatus.Enabled ? "禁用用户" : "启用用户");
         }
 
-        private void ExecuteShowAuditLog(UserDto? user)
+        private void ExecuteShowAuditLog(UserListDto? user)
         {
             if (user == null) return;
             _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters
@@ -530,7 +540,7 @@ namespace LYBT.Desktop.Users.ViewModels
             }, _ => { });
         }
 
-        private async Task RestoreAsync(UserDto user)
+        private async Task RestoreAsync(UserListDto user)
         {
             if (user == null) return;
             try

@@ -67,6 +67,41 @@ namespace LYBT.Module.Herbs.Services
             }
         }
 
+        /// <summary>
+        /// 分页查询药材列表（返回HerbListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<Result<PagedResult<HerbListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        {
+            try
+            {
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize, keyword);
+                var dtos = _mapper.Map<List<HerbListDto>>(pagedResult.Items);
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    dtos = dtos.Where(h =>
+                        !string.IsNullOrEmpty(h.Category) &&
+                        h.Category.Contains(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                }
+
+                var result = new PagedResult<HerbListDto>
+                {
+                    Items = dtos,
+                    TotalCount = !string.IsNullOrWhiteSpace(category) ? dtos.Count : pagedResult.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+                return Result<PagedResult<HerbListDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取药材列表失败");
+                return Result<PagedResult<HerbListDto>>.Failure("获取药材列表失败");
+            }
+        }
+
         public async Task<Result<HerbDto>> GetByIdAsync(Guid id)
         {
             try

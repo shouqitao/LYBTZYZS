@@ -75,13 +75,15 @@ namespace LYBT.Module.Prescriptions.Repositories
 
         /// <summary>
         /// 根据患者ID获取处方列表
+        /// OpenSpec: optimize-entity-data-flow - 通过MedicalCase关联获取PatientId
         /// </summary>
         public async Task<List<Prescription>> GetByPatientIdAsync(Guid patientId)
         {
             return await DbSet
                 .AsNoTracking()
                 .Include(p => p.Items)
-                .Where(p => p.PatientId == patientId && !p.IsDeleted)
+                .Include(p => p.MedicalCase)
+                .Where(p => p.MedicalCase != null && p.MedicalCase.PatientId == patientId && !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }

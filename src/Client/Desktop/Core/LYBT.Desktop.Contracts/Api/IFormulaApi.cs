@@ -18,6 +18,17 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] string? keyword = null);
 
         /// <summary>
+        /// 获取验方列表（返回FormulaListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [Refit.Get("/api/v1/formulas/list")]
+        Task<ApiResponse<PagedResult<FormulaListDto>>> GetFormulasListAsync(
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20,
+            [Refit.Query] string? keyword = null,
+            [Refit.Query] string? category = null);
+
+        /// <summary>
         /// 获取验方详情
         /// </summary>
         [Refit.Get("/api/v1/formulas/{id}")]

@@ -490,6 +490,7 @@ namespace LYBT.WebAPI.Controllers
 
         /// <summary>
         /// 将处方实体映射为DTO
+        /// OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
         /// </summary>
         private static PrescriptionDto MapToPrescriptionDto(Prescription entity, Guid medicalCaseId)
         {
@@ -497,8 +498,7 @@ namespace LYBT.WebAPI.Controllers
             {
                 Id = entity.Id,
                 MedicalCaseId = medicalCaseId,
-                PatientId = entity.PatientId ?? Guid.Empty,
-                UserId = entity.UserId ?? Guid.Empty,
+                // OpenSpec: PatientId/UserId已移除，客户端通过MedicalCaseId获取
                 PrescriptionNumber = entity.PrescriptionNumber,
                 Indication = entity.Indication,
                 DosageCount = entity.DosageCount,
@@ -667,12 +667,11 @@ namespace LYBT.WebAPI.Controllers
                 } : null,
 
                 // Prescription
+                // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
                 Prescription = entity.Prescription != null && !entity.Prescription.IsDeleted ? new PrescriptionDto
                 {
                     Id = entity.Prescription.Id,
                     MedicalCaseId = entity.Id,
-                    PatientId = entity.PatientId,
-                    UserId = entity.DoctorId,
                     PrescriptionNumber = entity.Prescription.PrescriptionNumber,
                     Indication = entity.Prescription.Indication,
                     DosageCount = entity.Prescription.DosageCount,
@@ -1032,12 +1031,11 @@ namespace LYBT.WebAPI.Controllers
                         UpdatedAt = entity.Consultation.UpdatedAt
                     } : null,
 
+                    // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
                     Prescription = entity.Prescription != null ? new PrescriptionDto
                     {
                         Id = entity.Prescription.Id,
                         MedicalCaseId = entity.Id,
-                        PatientId = entity.PatientId,
-                        UserId = entity.DoctorId,
                         PrescriptionNumber = entity.Prescription.PrescriptionNumber,
                         Indication = entity.Prescription.Indication,
                         DosageCount = entity.Prescription.DosageCount,
@@ -1249,6 +1247,46 @@ namespace LYBT.WebAPI.Controllers
                 };
 
                 return Ok(ApiResponse<PagedResult<MedicalCaseDto>>.CreateSuccess(dtoResult, "查询成功"));
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "获取病案列表",
+                    new { status, patientId, page, pageSize });
+            }
+        }
+
+        /// <summary>
+        /// 获取病案列表（分页，返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [HttpGet("list")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<MedicalCaseListDto>>), 200)]
+        public async Task<IActionResult> GetMedicalCasesList(
+            [FromQuery] MedicalCaseStatus? status = null,
+            [FromQuery] Guid? patientId = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] bool includeAllDoctors = false,
+            [FromQuery] string? keyword = null)
+        {
+            try
+            {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return BadRequest(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateFail(
+                        "页码和页大小参数无效（页码>0，页大小1-100）"));
+                }
+
+                var (operatorId, _, operatorRole) = GetOperator();
+                var isAdmin = operatorRole is UserRole.SuperAdmin or UserRole.Admin || includeAllDoctors;
+
+                var result = await _queryService.GetListDtoAsync(
+                    status, patientId, page, pageSize,
+                    currentDoctorId: operatorId,
+                    isAdmin: isAdmin,
+                    keyword: keyword);
+
+                return Ok(ApiResponse<PagedResult<MedicalCaseListDto>>.CreateSuccess(result, "查询成功"));
             }
             catch (Exception ex)
             {

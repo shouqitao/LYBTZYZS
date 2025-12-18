@@ -42,6 +42,19 @@ namespace LYBT.Module.MedicalCases.Interfaces
             string? keyword = null);
 
         /// <summary>
+        /// 查询病案列表（分页，返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
+            MedicalCaseStatus? status,
+            Guid? patientId,
+            int page,
+            int pageSize,
+            Guid? currentDoctorId = null,
+            bool isAdmin = false,
+            string? keyword = null);
+
+        /// <summary>
         /// 查询辨证记录列表
         /// </summary>
         /// <param name="medicalCaseId">病案ID</param>

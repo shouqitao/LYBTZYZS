@@ -60,7 +60,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            var detailDto = _mapper.Map<HerbDetailDto>(herb);
+            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDtoNew
+            var detailDto = _mapper.Map<HerbDetailDtoNew>(herb);
 
             // Assert
             detailDto.Should().NotBeNull();
@@ -72,7 +73,6 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             detailDto.Effect.Should().Be(herb.Effect);
             detailDto.Usage.Should().Be(herb.Usage);
             detailDto.Price.Should().Be(herb.Price);
-            // CostPrice 不在 HerbDetailDto 中
             detailDto.Unit.Should().Be(herb.Unit);
             detailDto.Remark.Should().Be(herb.Remark);
         }
@@ -118,6 +118,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         public void Map_HerbInputDto_For_Update_To_Herb_Should_Success()
         {
             // Arrange - 测试更新场景（带Id）
+            // OpenSpec: refactor-dto-simplification - Status字段已从HerbInputDto移除
             var updateDto = new HerbInputDto
             {
                 Id = Guid.NewGuid(),
@@ -129,8 +130,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Usage = "煎服，3-9g",
                 Price = 15.0m,
                 Unit = "g",
-                Remark = "野山参效果最佳",
-                Status = CommonStatus.Enabled
+                Remark = "野山参效果最佳"
             };
 
             // Act
@@ -272,7 +272,8 @@ namespace LYBT.Module.Herbs.Tests.Mapping
             };
 
             // Act
-            var detailDto = _mapper.Map<HerbDetailDto>(herb);
+            // OpenSpec: refactor-dto-simplification - 使用HerbDetailDtoNew
+            var detailDto = _mapper.Map<HerbDetailDtoNew>(herb);
 
             // Assert
             detailDto.Should().NotBeNull();
@@ -353,6 +354,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
         public void Map_HerbInputDto_With_HighPrice_Should_Success()
         {
             // Arrange
+            // OpenSpec: refactor-dto-simplification - Status字段已从HerbInputDto移除
             var updateDto = new HerbInputDto
             {
                 Id = Guid.NewGuid(),
@@ -362,8 +364,7 @@ namespace LYBT.Module.Herbs.Tests.Mapping
                 Effect = "补肺益肾，止血化痰",
                 Price = 500.0m,
                 CostPrice = 400.0m,
-                Unit = "g",
-                Status = CommonStatus.Enabled
+                Unit = "g"
             };
 
             // Act

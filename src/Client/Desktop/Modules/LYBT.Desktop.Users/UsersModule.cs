@@ -29,11 +29,7 @@ namespace LYBT.Desktop.Users
             // Issue #1785: 注册Users模块组件化组件（Epic #1773 Component-Based架构）
             containerRegistry.Register<ViewModels.Components.UserCommandHandler>();
 
-            // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<UserManagementViewModel>();
-
-            // 注册实际存在的视图用于导航
-            containerRegistry.RegisterForNavigation<Views.UserManagementView>();
+            // 注册视图用于导航
             containerRegistry.RegisterForNavigation<Views.UserDetailView>();
 
             // OpenSpec: refactor-master-detail-layout - Master-Detail合并视图

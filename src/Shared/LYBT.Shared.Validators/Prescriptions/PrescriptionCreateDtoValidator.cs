@@ -10,21 +10,18 @@ namespace LYBT.Shared.Validators.Prescriptions
     {
         public PrescriptionCreateDtoValidator()
         {
-            RuleFor(x => x.PatientId)
-                .NotEmpty().WithMessage("患者ID不能为空");
-
-            RuleFor(x => x.DoctorId)
-                .NotEmpty().WithMessage("医生ID不能为空");
+            // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId验证已移除
+            // 这些字段通过MedicalCase聚合根获取，无需在处方层验证
 
             RuleFor(x => x.Diagnosis)
                 .MaximumLength(500).WithMessage("诊断长度不能超过500个字符")
                 .When(x => !string.IsNullOrEmpty(x.Diagnosis));
 
-            RuleFor(x => x.Notes)
+            RuleFor(x => x.Remark)
                 .MaximumLength(1000).WithMessage("备注长度不能超过1000个字符")
-                .When(x => !string.IsNullOrEmpty(x.Notes));
+                .When(x => !string.IsNullOrEmpty(x.Remark));
 
-            RuleFor(x => x.DosageCount)
+            RuleFor(x => x.Quantity)
                 .GreaterThan(0).WithMessage("剂数必须大于0")
                 .LessThanOrEqualTo(100).WithMessage("剂数不能超过100");
 

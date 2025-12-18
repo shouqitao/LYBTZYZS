@@ -11,6 +11,12 @@ namespace LYBT.Desktop.Herbs.Interfaces
     public interface IHerbRepository
     {
         Task<PagedResult<HerbDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
+        /// 获取草药列表（返回HerbListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<HerbListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
         Task<HerbDto?> GetByIdAsync(Guid id);
         Task<HerbDto> CreateAsync(HerbInputDto dto);
         Task<HerbDto> UpdateAsync(HerbInputDto dto);

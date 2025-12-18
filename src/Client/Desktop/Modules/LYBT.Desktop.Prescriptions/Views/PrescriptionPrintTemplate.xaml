@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:LYBT.Desktop.Prescriptions.Models"
              mc:Ignorable="d"
              Width="559" Height="794"
-             d:DataContext="{d:DesignInstance Type=models:PrescriptionPrintDto, IsDesignTimeCreatable=True}"
+             d:DataContext="{d:DesignInstance Type=models:PrescriptionPrintModel, IsDesignTimeCreatable=True}"
              Background="White">
     <!--
     A5纸张尺寸: 148mm x 210mm

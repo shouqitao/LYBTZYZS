@@ -97,6 +97,60 @@ namespace LYBT.Module.Formulas.Services
             }
         }
 
+        /// <summary>
+        /// 分页查询验方列表（返回FormulaListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<Result<PagedResult<FormulaListDto>>> GetPagedListAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            string? category = null,
+            Guid? currentUserId = null,
+            bool isAdmin = false)
+        {
+            try
+            {
+                var pagedResult = await _repository.GetPagedWithDetailsAsync(page, pageSize, keyword);
+                var dtos = _mapper.Map<List<FormulaListDto>>(pagedResult.Items);
+
+                // 应用角色过滤
+                if (!isAdmin && currentUserId.HasValue)
+                {
+                    dtos = dtos.Where(f =>
+                        pagedResult.Items.Any(e => e.Id == f.Id &&
+                            (e.UserId == currentUserId.Value ||
+                             e.CreatedBy == currentUserId.Value ||
+                             e.IsShared))).ToList();
+                }
+
+                // 应用分类筛选
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    dtos = dtos.Where(f =>
+                        !string.IsNullOrEmpty(f.Category) &&
+                        f.Category.Contains(category, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+
+                var needsRecalculateTotal = (!isAdmin && currentUserId.HasValue) || !string.IsNullOrWhiteSpace(category);
+
+                var result = new PagedResult<FormulaListDto>
+                {
+                    Items = dtos,
+                    TotalCount = needsRecalculateTotal ? dtos.Count : pagedResult.TotalCount,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                return Result<PagedResult<FormulaListDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取验方列表失败");
+                return Result<PagedResult<FormulaListDto>>.Failure("获取验方列表失败");
+            }
+        }
+
         public async Task<Result<FormulaDto>> GetByIdAsync(Guid id)
         {
             try

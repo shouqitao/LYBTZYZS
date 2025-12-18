@@ -11,6 +11,13 @@ namespace LYBT.Desktop.Users.Interfaces
     {
         Task<List<UserDto>> GetAllAsync();
         Task<PagedResult<UserDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
+        /// 分页获取用户列表（返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<UserListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
         Task<UserDto?> GetByIdAsync(Guid id);
         Task<UserDto> CreateAsync(UserInputDto user);
         Task<UserDto> UpdateAsync(UserInputDto user);

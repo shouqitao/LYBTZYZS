@@ -93,7 +93,7 @@ namespace LYBT.Shared.Models.Contracts.MedicalCase
         public ConsultationInputDto Consultation { get; set; } = new();
 
         [DisplayName("处方信息")]
-        public PrescriptionCreateDto? Prescription { get; set; }
+        public PrescriptionInputDto? Prescription { get; set; }
     }
 
     /// <summary>

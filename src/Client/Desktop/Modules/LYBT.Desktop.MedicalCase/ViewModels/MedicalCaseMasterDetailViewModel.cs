@@ -18,13 +18,14 @@ namespace LYBT.Desktop.MedicalCase.ViewModels;
 /// 医案Master-Detail视图模型
 /// OpenSpec: refactor-medicalcase-management
 /// OpenSpec: unify-herb-list-controls - 支持处方药材编辑
+/// OpenSpec: optimize-entity-data-flow - 使用MedicalCaseListDto优化列表加载
 ///
 /// 设计决策：
 /// - 工具栏无新建按钮（新建医案通过看诊入口创建）
 /// - 可编辑字段：诊断信息（现病史、舌诊、脉诊、中医诊断）、处方药材、备注
 /// - 与其他模块（Formula/Herbs/Patients）保持布局一致
 /// </summary>
-public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<MedicalCaseItem, MedicalCaseDetailModel>
+public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<MedicalCaseListDto, MedicalCaseDetailModel>
 {
     private readonly IMedicalCaseRepository _repository;
     private readonly IHerbRepository _herbRepository;
@@ -63,6 +64,11 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     public string DetailTitle => CurrentDetail == null ? "医案详情" :
         IsEditMode ? $"编辑医案 - {CurrentDetail.PatientName}" :
         $"医案详情 - {CurrentDetail.PatientName}";
+
+    /// <summary>
+    /// 选中项的患者姓名 - 用于列表显示
+    /// </summary>
+    public string SelectedPatientName => SelectedItem?.PatientName ?? string.Empty;
 
     #endregion
 
@@ -113,27 +119,19 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
 
     #region 基类抽象方法实现
 
-    protected override async Task<IEnumerable<MedicalCaseItem>> GetItemsAsync(int page, int pageSize, string? searchText)
+    protected override async Task<IEnumerable<MedicalCaseListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
     {
-        var result = await _repository.GetPagedAsync(page, pageSize, searchText);
+        // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto，不再为每个列表项加载完整详情
+        var result = await _repository.GetPagedListAsync(page, pageSize, searchText);
 
         TotalCount = result.TotalCount;
         CurrentPage = result.CurrentPage;
         PageSize = result.PageSize;
 
-        // 转换为MedicalCaseItem
-        var items = new List<MedicalCaseItem>();
-        foreach (var dto in result.Items)
-        {
-            // 需要获取详情来创建完整的MedicalCaseItem
-            var detailDto = await _repository.GetByIdWithDetailsAsync(dto.Id);
-            items.Add(MedicalCaseItem.FromDto(detailDto));
-        }
-
-        return items;
+        return result.Items ?? Enumerable.Empty<MedicalCaseListDto>();
     }
 
-    protected override async Task<MedicalCaseDetailModel?> LoadDetailAsync(MedicalCaseItem item)
+    protected override async Task<MedicalCaseDetailModel?> LoadDetailAsync(MedicalCaseListDto item)
     {
         try
         {
@@ -272,7 +270,7 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
     /// <summary>
     /// 批量删除医案
     /// </summary>
-    protected override async Task OnExecuteBatchDeleteAsync(List<MedicalCaseItem> items)
+    protected override async Task OnExecuteBatchDeleteAsync(List<MedicalCaseListDto> items)
     {
         if (items == null || items.Count == 0) return;
 
@@ -289,13 +287,13 @@ public class MedicalCaseMasterDetailViewModel : MasterDetailViewModelBase<Medica
                 else
                 {
                     failureCount++;
-                    failedItems.Add(item.PatientName);
+                    failedItems.Add(item.PatientName ?? item.CaseNumber);
                 }
             }
             catch
             {
                 failureCount++;
-                failedItems.Add(item.PatientName);
+                failedItems.Add(item.PatientName ?? item.CaseNumber);
             }
         }
 

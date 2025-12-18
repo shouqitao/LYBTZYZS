@@ -12,6 +12,10 @@ namespace LYBT.Shared.Models.Contracts.Users
     /// 用户信息DTO - UltraThink v2.0简化版
     /// 与User实体对齐，删除时间字段和不存在字段
     /// </summary>
+    /// <remarks>
+    /// OpenSpec: refactor-dto-simplification - 已标记为过时，请使用UserDetailDtoNew
+    /// </remarks>
+    [Obsolete("使用UserDetailDtoNew替代，此类将在后续版本移除")]
     public class UserDto : StatusDto
     {
 
@@ -120,60 +124,6 @@ namespace LYBT.Shared.Models.Contracts.Users
         [DisplayName("状态")]
         public CommonStatus Status { get; set; } = CommonStatus.Enabled;
     }
-
-    #endregion
-
-    #region 查询DTO
-
-    /// <summary>
-    /// 用户查询DTO - 基础查询条件
-    /// </summary>
-    public class UserQueryDto : PagedQueryBaseDto
-    {
-        /// <summary>用户名关键词</summary>
-        [DisplayName("用户名")]
-        public string? Username { get; set; }
-
-        /// <summary>真实姓名关键词</summary>
-        [DisplayName("真实姓名")]
-        public string? RealName { get; set; }
-
-        /// <summary>角色筛选</summary>
-        [DisplayName("用户角色")]
-        public UserRole? Role { get; set; }
-
-        /// <summary>状态筛选</summary>
-        [DisplayName("状态")]
-        public CommonStatus? Status { get; set; }
-
-        /// <summary>关键词搜索（同时搜索用户名和真实姓名）</summary>
-        [DisplayName("关键词")]
-        public new string? Keyword { get; set; }
-    }
-
-    /// <summary>
-    /// 用户搜索DTO - 高级搜索条件
-    /// Issue #1008: 简化为MVP必需字段（移除WuBiCode/StartDate/EndDate）
-    /// </summary>
-    public class UserSearchDto : UserQueryDto
-    {
-        /// <summary>邮箱关键词</summary>
-        [DisplayName("邮箱")]
-        public string? Email { get; set; }
-
-        /// <summary>电话关键词</summary>
-        [DisplayName("电话")]
-        public string? PhoneNumber { get; set; }
-
-        /// <summary>按拼音码搜索</summary>
-        [DisplayName("拼音码")]
-        public string? PinYinCode { get; set; }
-
-        /// <summary>是否包含已禁用项</summary>
-        [DisplayName("包含已禁用")]
-        public bool IncludeInactive { get; set; } = false;
-    }
-
 
     #endregion
 

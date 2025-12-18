@@ -9,6 +9,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 实体数据流优化 (OpenSpec: optimize-entity-data-flow) - 2025-12-18
+
+**Phase 1: MasterDetail完整性验证 (已完成)**
+- 验证5个模块MasterDetail视图功能完整性：Formula, Herb, Patient, User, MedicalCase
+- 确认所有CRUD操作正常：列表加载、新增、编辑、删除、搜索筛选
+- 确认AdminHome已指向MasterDetail视图而非Management视图
+
+**Phase 2: Management组件标记过时 (已完成)**
+- 标记10个Management组件为[Obsolete]：
+  - FormulaManagementViewModel/View
+  - HerbManagementViewModel/View
+  - PatientManagementViewModel/View
+  - UserManagementViewModel/View
+  - MedicalCaseManagementViewModel/View
+- 编译验证通过 (0 错误)
+
+**Phase 3: User模块DTO迁移 (已完成)**
+- Server端:
+  - IUserService添加GetPagedListAsync方法返回UserListDto
+  - UserService实现GetPagedListAsync方法
+  - UsersController添加GET /api/v1/users/list端点
+- Client端:
+  - IUserApi添加GetUsersListAsync (Refit接口)
+  - IUserRepository/UserRepository添加GetPagedListAsync方法
+  - UserCommandHandler添加GetPagedListAsync方法
+  - UserMasterDetailViewModel泛型参数从UserDto迁移到UserListDto
+- 采用增量API策略，原有方法保持不变确保向后兼容
+- 编译验证通过 (0 错误)
+
+**HttpClient层评估结论:**
+- 当前架构已规范化：Refit + Repository模式
+- 无需预先重构，采用增量扩展策略支持ListDto
+
+**技术决策:**
+- 遵循Pre-Release Stabilization原则，使用[Obsolete]保持向后兼容
+- Phase 3.1完成：User模块列表视图使用轻量级UserListDto
+- 保持程序可随时运行，渐进式迁移
+
+#### DTO简化重构 (OpenSpec: refactor-dto-simplification) - 2025-12-18
+
+**重构目标:**
+- 消除DTO继承链，采用扁平化设计
+- 统一四种核心DTO类型：ListDto, DetailDto, InputDto, Statistics
+- InputDto设计原则：排除Status/系统字段/展示字段
+- Desktop本地Model不使用Dto后缀(消除命名歧义)
+
+**Phase 3完成项:**
+- Prescription模块: 新扁平化DTO就位，旧继承链类标记[Obsolete]
+- Formula模块: 移除FormulaInputDto的IRemarkable接口继承
+- Query/Search DTO: 标记6个DTO为[Obsolete]（Prescription/Formula/Herb各2个）
+- Patient模块: 修复Desktop层9处PatientInputDto.Status引用
+- Consultation模块: 创建ConsultationListDto，ConsultationInputDto移除展示字段
+- User模块: 创建UserListDto/UserDetailDtoNew/UserStatistics，保留UserInputDto.Status(安全例外)
+
+**Phase 4完成项:**
+- Desktop层命名消歧: PrescriptionPrintDto → PrescriptionPrintModel
+- Desktop层命名消歧: PrescriptionItemPrintDto → PrescriptionItemPrintModel
+
+**标记[Obsolete]的类:**
+- PrescriptionInputBaseDto, PrescriptionCreateDto, PrescriptionEditDto
+- PrescriptionQueryDto, PrescriptionSearchDto
+- FormulaQueryDto, FormulaSearchDto
+- HerbQueryDto, HerbSearchDto
+- UserDto, UserQueryDto, UserSearchDto
+
+**新增文件:**
+- ConsultationListDto.cs - 诊疗列表视图DTO
+- UserListDto.cs - 用户列表视图DTO
+- UserDetailDtoNew.cs - 用户详情DTO(扁平化)
+- UserStatistics.cs - 用户统计DTO(record)
+
+**重命名文件:**
+- PrescriptionPrintDto.cs → PrescriptionPrintModel.cs
+
+**技术决策:**
+- 遵循Pre-Release Stabilization原则，使用[Obsolete]保持向后兼容
+- InputDto排除展示字段(PatientName/DoctorName)，由服务层填充
+- Desktop本地Model不使用Dto后缀，避免与Shared层DTO混淆
+- UserInputDto.Status为安全例外（用户账户启用/禁用功能需要前端可控）
+
 #### 统一枚举定义到Shared层 (OpenSpec: unify-enums-to-shared) - 2025-12-17
 
 **重构内容:**
@@ -549,4 +629,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**最后更新**: 2025-12-11
+**最后更新**: 2025-12-18

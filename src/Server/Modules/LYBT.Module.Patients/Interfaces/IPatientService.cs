@@ -17,6 +17,12 @@ namespace LYBT.Module.Patients.Interfaces
         Task<Result<PagedResult<PatientDto>>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
+        /// 分页查询患者列表（返回PatientListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<Result<PagedResult<PatientListDto>>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
         /// 根据ID获取患者详情
         /// </summary>
         Task<Result<PatientDto>> GetByIdAsync(Guid id);

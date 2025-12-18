@@ -240,6 +240,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
         /// <summary>
         /// 转换为InputDto
         /// </summary>
+        // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
         private PatientInputDto ConvertToInputDto(PatientDto patient)
         {
             return new PatientInputDto
@@ -258,8 +259,7 @@ namespace LYBT.Desktop.Patients.ViewModels.Components
                 AllergyHistory = patient.AllergyHistory,
                 EmergencyContactName = patient.EmergencyContactName,
                 EmergencyContactPhone = patient.EmergencyContactPhone,
-                EmergencyContactRelation = patient.EmergencyContactRelation,
-                Status = patient.Status
+                EmergencyContactRelation = patient.EmergencyContactRelation
             };
         }
 

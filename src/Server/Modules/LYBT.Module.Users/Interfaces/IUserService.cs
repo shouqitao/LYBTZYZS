@@ -30,6 +30,17 @@ namespace LYBT.Module.Users.Interfaces
             CommonStatus? status = null);
 
         /// <summary>
+        /// 分页获取用户列表（返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<Result<PagedResult<UserListDto>>> GetPagedListAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            UserRole? role = null,
+            CommonStatus? status = null);
+
+        /// <summary>
         /// 根据ID获取用户详情
         /// </summary>
         Task<Result<UserDto>> GetByIdAsync(Guid id);

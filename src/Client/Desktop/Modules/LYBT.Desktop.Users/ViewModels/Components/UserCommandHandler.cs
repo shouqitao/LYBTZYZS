@@ -159,6 +159,31 @@ namespace LYBT.Desktop.Users.ViewModels.Components
         }
 
         /// <summary>
+        /// 分页查询用户（返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<(bool success, PagedResult<UserListDto>? data, string? errorMessage)> GetPagedListAsync(
+            int page, int pageSize, string? searchText = null)
+        {
+            using var _ = CorrelationIdContext.BeginScope();
+            try
+            {
+                _logger.LogInformation("分页查询用户列表: Page={Page}, PageSize={PageSize}, SearchText={SearchText}",
+                    page, pageSize, searchText);
+
+                var result = await _repository.GetPagedListAsync(page, pageSize, searchText);
+
+                _logger.LogInformation("查询成功，共{TotalCount}条数据", result.TotalCount);
+                return (true, result, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "分页查询用户列表时发生异常");
+                return (false, null, "查询用户时发生系统错误");
+            }
+        }
+
+        /// <summary>
         /// 获取所有用户
         /// </summary>
         public async Task<(bool success, List<UserDto>? users, string? errorMessage)> GetAllAsync()

@@ -12,6 +12,7 @@ namespace LYBT.Shared.Models.Extensions
         /// <summary>
         /// 将ConsultationInputDto转换为ConsultationDto
         /// Issue #1152: 替代AutoMapper
+        /// OpenSpec: refactor-dto-simplification - PatientName/DoctorName由服务层填充
         /// </summary>
         public static ConsultationDto ToDto(this ConsultationInputDto dto)
         {
@@ -23,8 +24,7 @@ namespace LYBT.Shared.Models.Extensions
                 MedicalCaseId = dto.MedicalCaseId ?? throw new ArgumentException("MedicalCaseId不能为空", nameof(dto)),
                 PatientId = dto.PatientId ?? throw new ArgumentException("PatientId不能为空", nameof(dto)),
                 UserId = dto.UserId ?? throw new ArgumentException("UserId不能为空", nameof(dto)),
-                PatientName = dto.PatientName,
-                DoctorName = dto.DoctorName,
+                // PatientName/DoctorName由服务层从关联实体填充
                 // 诊断核心字段（精简版）
                 PresentIllness = dto.PresentIllness,
                 TongueDiagnosis = dto.TongueDiagnosis,
@@ -38,6 +38,7 @@ namespace LYBT.Shared.Models.Extensions
         /// <summary>
         /// 将ConsultationDto转换为ConsultationInputDto
         /// Issue #1778: 组件化架构需要
+        /// OpenSpec: refactor-dto-simplification - InputDto仅含可写字段
         /// </summary>
         public static ConsultationInputDto ToInputDto(this ConsultationDto dto)
         {
@@ -49,8 +50,7 @@ namespace LYBT.Shared.Models.Extensions
                 MedicalCaseId = dto.MedicalCaseId,
                 PatientId = dto.PatientId,
                 UserId = dto.UserId,
-                PatientName = dto.PatientName,
-                DoctorName = dto.DoctorName,
+                // PatientName/DoctorName为展示字段，不包含在InputDto中
                 // 诊断核心字段（精简版）
                 PresentIllness = dto.PresentIllness,
                 TongueDiagnosis = dto.TongueDiagnosis,

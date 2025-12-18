@@ -59,12 +59,12 @@ namespace LYBT.Desktop.MedicalCase.Repositories
 
         /// <summary>
         /// 创建完整的医疗案例（包含诊疗和可选处方）
-        /// Epic #1961: 使用统一的 MedicalCaseInputDto
+        /// Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto
         /// </summary>
         public async Task<MedicalCaseDto> CreateWithDetailsAsync(
             MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
-            PrescriptionCreateDto? prescriptionDto = null)
+            PrescriptionInputDto? prescriptionDto = null)
         {
             if (caseDto == null)
                 throw new ArgumentNullException(nameof(caseDto));
@@ -443,6 +443,30 @@ namespace LYBT.Desktop.MedicalCase.Repositories
         protected override Task<ApiResponse<PagedResult<MedicalCaseDto>>> CallApiGetPagedAsync(int page, int pageSize, string? keyword)
         {
             return _api.GetMedicalCasesAsync(page, pageSize, keyword);
+        }
+
+        /// <summary>
+        /// 获取医案列表（返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            try
+            {
+                var response = await _api.GetMedicalCasesListAsync(page, pageSize, keyword);
+                return response.Data ?? new PagedResult<MedicalCaseListDto>
+                {
+                    Items = new List<MedicalCaseListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取医案列表失败");
+                throw;
+            }
         }
 
         /// <summary>

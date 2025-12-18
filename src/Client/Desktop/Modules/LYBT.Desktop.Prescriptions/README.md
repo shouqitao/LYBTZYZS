@@ -20,7 +20,7 @@ LYBT.Desktop.Prescriptions/
 │   └── IPrescriptionRepository.cs   # 处方仓储接口
 ├── Models/
 │   ├── PrescriptionItem.cs          # 处方条目模型
-│   └── PrescriptionPrintDto.cs      # 打印DTO
+│   └── PrescriptionPrintModel.cs    # 打印模型
 ├── Services/
 │   ├── IPrescriptionPrintService.cs # 打印服务接口
 │   ├── PrescriptionEditorService.cs # 编辑服务

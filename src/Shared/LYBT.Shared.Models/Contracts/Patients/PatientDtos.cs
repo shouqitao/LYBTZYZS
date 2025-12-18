@@ -171,9 +171,8 @@ namespace LYBT.Shared.Models.Contracts.Patients
         [DisplayName("紧急联系人关系")]
         public string? EmergencyContactRelation { get; set; }
 
-        /// <summary>状态</summary>
-        [DisplayName("状态")]
-        public CommonStatus Status { get; set; } = CommonStatus.Enabled;
+        // OpenSpec: refactor-dto-simplification - Status字段已移除
+        // InputDto不应包含Status字段，状态变更应通过专用API进行
 
         /// <summary>患者ID（更新时必填，创建时为null）</summary>
         [DisplayName("患者ID")]

@@ -68,11 +68,10 @@ public class PrescriptionSaveHandler
             else
             {
                 // 创建新处方
+                // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
                 var createRequest = new PrescriptionCreateDto
                 {
-                    PatientId = context.PatientId,
-                    DoctorId = context.DoctorId,
-                    DosageCount = context.DosageCount,
+                    Quantity = context.DosageCount,
                     Usage = context.Usage,
                     Items = context.Items
                 };
@@ -138,16 +137,15 @@ public class PrescriptionSaveHandler
             else
             {
                 // 创建新处方
+                // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，通过MedicalCaseId关联获取
                 var createRequest = new PrescriptionCreateDto
                 {
-                    PatientId = context.PatientId,
-                    DoctorId = context.DoctorId,
-                    DosageCount = context.DosageCount,
+                    Quantity = context.DosageCount,
                     Usage = context.Usage,
                     Items = context.Items
                 };
-                _logger.LogInformation("[处方诊断] 准备调用CreatePrescriptionAsync，MedicalCaseId: {MedicalCaseId}, PatientId: {PatientId}, Items: {Count}",
-                    context.MedicalCaseId, context.PatientId, context.Items.Count);
+                _logger.LogInformation("[处方诊断] 准备调用CreatePrescriptionAsync，MedicalCaseId: {MedicalCaseId}, Items: {Count}",
+                    context.MedicalCaseId, context.Items.Count);
                 result = await _medicalCaseRepository.CreatePrescriptionAsync(context.MedicalCaseId, createRequest);
                 _logger.LogInformation("[处方诊断] CreatePrescriptionAsync返回: {Result}", result != null ? $"成功,Id={result.Id}" : "null");
             }

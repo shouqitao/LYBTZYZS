@@ -122,6 +122,60 @@ namespace LYBT.Module.Users.Services
         #region 查询操作
 
         /// <summary>
+        /// 分页获取用户列表（返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<Result<PagedResult<UserListDto>>> GetPagedListAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            UserRole? role = null,
+            CommonStatus? status = null)
+        {
+            try
+            {
+                var pagedResult = await _repository.GetPagedAsync(page, pageSize);
+                var dtos = _mapper.Map<List<UserListDto>>(pagedResult.Items);
+
+                // 应用筛选条件（MVP阶段内存过滤）
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    dtos = dtos.Where(u =>
+                        u.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                        u.RealName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                }
+
+                if (role.HasValue)
+                {
+                    dtos = dtos.Where(u => u.Role == role.Value).ToList();
+                }
+
+                if (status.HasValue)
+                {
+                    dtos = dtos.Where(u => u.Status == status.Value).ToList();
+                }
+
+                var result = new PagedResult<UserListDto>
+                {
+                    Items = dtos,
+                    TotalCount = keyword == null && !role.HasValue && !status.HasValue
+                        ? pagedResult.TotalCount
+                        : dtos.Count,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+
+                return Result<PagedResult<UserListDto>>.Success(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取用户列表失败");
+                return Result<PagedResult<UserListDto>>.Failure("获取用户列表失败");
+            }
+        }
+
+        /// <summary>
         /// 分页获取用户列表（Issue #1162: 扩展支持角色和状态筛选）
         /// </summary>
         public async Task<Result<PagedResult<UserDto>>> GetPagedAsync(

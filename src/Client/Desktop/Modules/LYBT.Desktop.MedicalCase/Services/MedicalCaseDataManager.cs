@@ -335,10 +335,11 @@ public class MedicalCaseDataManager : IDataManager<MedicalCaseDto>
         CreatedAt = s.CreatedAt, UpdatedAt = s.UpdatedAt
     };
 
+    // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
     private PrescriptionDto ClonePrescription(PrescriptionDto s) => new()
     {
         Id = s.Id, PrescriptionNumber = s.PrescriptionNumber, MedicalCaseId = s.MedicalCaseId,
-        PatientId = s.PatientId, UserId = s.UserId, Indication = s.Indication, DosageCount = s.DosageCount,
+        Indication = s.Indication, DosageCount = s.DosageCount,
         Usage = s.Usage, Discount = s.Discount, Advice = s.Advice, FormulaSource = s.FormulaSource,
         ReferencedFormulas = s.ReferencedFormulas, Remark = s.Remark, SingleDosePrice = s.SingleDosePrice,
         TotalPrice = s.TotalPrice, TotalWeight = s.TotalWeight, Status = s.Status,

@@ -7,8 +7,9 @@ namespace LYBT.Desktop.Prescriptions.Models
     /// <summary>
     /// 处方打印数据模型 - 基于普通处方模板
     /// OpenSpec: print-prescription-slip
+    /// OpenSpec: refactor-dto-simplification - Desktop本地Model不使用Dto后缀
     /// </summary>
-    public class PrescriptionPrintDto
+    public class PrescriptionPrintModel
     {
         // ===== 诊所信息 =====
         /// <summary>诊所名称（标题）</summary>
@@ -48,7 +49,7 @@ namespace LYBT.Desktop.Prescriptions.Models
 
         // ===== 处方内容 =====
         /// <summary>药材列表</summary>
-        public List<PrescriptionItemPrintDto> Items { get; set; } = new();
+        public List<PrescriptionItemPrintModel> Items { get; set; } = new();
         /// <summary>剂数</summary>
         public int DosageCount { get; set; } = 7;
         /// <summary>用法</summary>
@@ -91,8 +92,9 @@ namespace LYBT.Desktop.Prescriptions.Models
 
     /// <summary>
     /// 处方药材打印数据模型
+    /// OpenSpec: refactor-dto-simplification - Desktop本地Model不使用Dto后缀
     /// </summary>
-    public class PrescriptionItemPrintDto
+    public class PrescriptionItemPrintModel
     {
         /// <summary>序号</summary>
         public int SequenceNumber { get; set; }

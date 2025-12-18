@@ -14,6 +14,12 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<PagedResult<MedicalCaseDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
         /// <summary>
+        /// 获取医案列表（返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<MedicalCaseListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
         /// 获取医案分页列表（包含所有医生的数据）
         /// OpenSpec: fix-history-copy-all-patients - 用于历史医案复制查看全部患者功能
         /// </summary>
@@ -26,10 +32,10 @@ namespace LYBT.Desktop.MedicalCase.Interfaces
         Task<MedicalCaseDto> UpdateAsync(MedicalCaseInputDto dto);
         Task<bool> DeleteAsync(Guid id);
         Task<List<MedicalCaseDto>> GetByPatientIdAsync(Guid patientId);
-        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto</summary>
+        /// <summary>Epic #1961: 使用统一的 MedicalCaseInputDto 和 PrescriptionInputDto</summary>
         Task<MedicalCaseDto> CreateWithDetailsAsync(MedicalCaseInputDto caseDto,
             ConsultationInputDto consultationDto,
-            PrescriptionCreateDto? prescriptionDto = null);
+            PrescriptionInputDto? prescriptionDto = null);
         Task<MedicalCaseDetailDto> GetByIdWithDetailsAsync(Guid id);
 
         /// <summary>

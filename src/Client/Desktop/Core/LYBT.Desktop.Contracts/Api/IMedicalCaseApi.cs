@@ -22,6 +22,16 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] bool includeAllDoctors = false);
 
         /// <summary>
+        /// 获取医疗案例列表（返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [Refit.Get("/api/v1/medicalcases/list")]
+        Task<ApiResponse<PagedResult<MedicalCaseListDto>>> GetMedicalCasesListAsync(
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20,
+            [Refit.Query] string? keyword = null);
+
+        /// <summary>
         /// 获取医疗案例详情
         /// </summary>
         [Refit.Get("/api/v1/medicalcases/{id}")]

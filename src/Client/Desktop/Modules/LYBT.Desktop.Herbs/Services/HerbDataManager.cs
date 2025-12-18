@@ -122,10 +122,11 @@ namespace LYBT.Desktop.Herbs.Services
             Status = source.Status, CreatedAt = source.CreatedAt, UpdatedAt = source.UpdatedAt
         };
 
+        // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
         private HerbInputDto ToInputDto(HerbDto dto) => new()
         {
             Id = dto.Id == Guid.Empty ? null : dto.Id, Name = dto.Name, PinYinCode = dto.PinYinCode, Origin = dto.Origin, Spec = dto.Spec,
-            Unit = dto.Unit, Price = dto.Price, CostPrice = dto.CostPrice, Effect = dto.Effect, Usage = dto.Usage, Status = dto.Status
+            Unit = dto.Unit, Price = dto.Price, CostPrice = dto.CostPrice, Effect = dto.Effect, Usage = dto.Usage
         };
     }
 }

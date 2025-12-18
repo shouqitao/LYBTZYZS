@@ -83,6 +83,33 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取患者列表（分页，返回PatientListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [HttpGet("list")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<PatientListDto>>), 200)]
+        public async Task<IActionResult> GetPatientsList(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? keyword = null)
+        {
+            try
+            {
+                if (page <= 0 || pageSize <= 0 || pageSize > 100)
+                {
+                    return ValidationFail("页码和页大小参数无效（页码>0，页大小1-100）");
+                }
+
+                var result = await _service.GetPagedListAsync(page, pageSize, keyword);
+                return HandlePagedResult(result, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "获取患者列表", new { page, pageSize, keyword });
+            }
+        }
+
+        /// <summary>
         /// 获取患者详情
         /// </summary>
         [HttpGet("{id}")]

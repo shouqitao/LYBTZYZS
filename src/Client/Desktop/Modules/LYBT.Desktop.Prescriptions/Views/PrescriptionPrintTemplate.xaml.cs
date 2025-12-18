@@ -8,7 +8,7 @@ namespace LYBT.Desktop.Prescriptions.Views
     /// OpenSpec: enhance-prescription-print
     /// </summary>
     /// <remarks>
-    /// 此UserControl作为打印模板，通过DataBinding绑定PrescriptionPrintDto数据。
+    /// 此UserControl作为打印模板，通过DataBinding绑定PrescriptionPrintModel数据。
     /// 使用FixedDocument机制转换后进行打印，确保WYSIWYG效果。
     /// </remarks>
     public partial class PrescriptionPrintTemplate : UserControl
@@ -21,7 +21,7 @@ namespace LYBT.Desktop.Prescriptions.Views
 
         private void OnDataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is PrescriptionPrintDto dto)
+            if (e.NewValue is PrescriptionPrintModel dto)
             {
                 UpdateSymptomsDisplay(dto);
             }
@@ -31,7 +31,7 @@ namespace LYBT.Desktop.Prescriptions.Views
         /// 更新诊见显示 - 合并诊断信息
         /// OpenSpec: refactor-diagnosis-fields - 移除FourDiagnosis，使用PresentIllness+TongueDiagnosis+PulseDiagnosis
         /// </summary>
-        private void UpdateSymptomsDisplay(PrescriptionPrintDto dto)
+        private void UpdateSymptomsDisplay(PrescriptionPrintModel dto)
         {
             var symptoms = dto.Symptoms;
             if (string.IsNullOrEmpty(symptoms))

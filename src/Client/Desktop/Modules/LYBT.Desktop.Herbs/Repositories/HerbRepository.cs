@@ -53,6 +53,30 @@ namespace LYBT.Desktop.Herbs.Repositories
             return _api.GetHerbsAsync(page, pageSize, keyword);
         }
 
+        /// <summary>
+        /// 获取草药列表（返回HerbListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<PagedResult<HerbListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null)
+        {
+            try
+            {
+                var response = await _api.GetHerbsListAsync(page, pageSize, keyword, category);
+                return response.Data ?? new PagedResult<HerbListDto>
+                {
+                    Items = new List<HerbListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取草药列表失败");
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<HerbDto>> CallApiCreateAsync(HerbInputDto dto)
         {
             return _api.CreateHerbAsync(dto);

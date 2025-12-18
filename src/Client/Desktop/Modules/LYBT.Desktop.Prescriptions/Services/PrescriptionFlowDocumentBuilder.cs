@@ -11,7 +11,7 @@ namespace LYBT.Desktop.Prescriptions.Services
     /// </summary>
     public class PrescriptionFlowDocumentBuilder
     {
-        private readonly PrescriptionPrintDto _prescription;
+        private readonly PrescriptionPrintModel _prescription;
         private readonly FlowDocument _document;
 
         // 字体定义 - 使用华文楷体
@@ -28,7 +28,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         // 每行显示的药材列数
         private const int HerbsPerRow = 4;
 
-        public PrescriptionFlowDocumentBuilder(PrescriptionPrintDto prescription)
+        public PrescriptionFlowDocumentBuilder(PrescriptionPrintModel prescription)
         {
             _prescription = prescription ?? throw new ArgumentNullException(nameof(prescription));
 

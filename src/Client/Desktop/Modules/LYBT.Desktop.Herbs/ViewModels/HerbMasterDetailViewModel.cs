@@ -23,7 +23,8 @@ namespace LYBT.Desktop.Herbs.ViewModels
     /// 合并HerbManagementViewModel和HerbDetailViewModel的功能
     /// 左侧40%显示药材列表，右侧60%显示详情/编辑
     /// </summary>
-    public class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbDto, HerbDetailModel>
+    /// OpenSpec: optimize-entity-data-flow - 使用HerbListDto优化列表加载
+    public class HerbMasterDetailViewModel : MasterDetailViewModelBase<HerbListDto, HerbDetailModel>
     {
         private readonly HerbDataManager _dataManager;
         private readonly IHerbRepository _herbRepository;
@@ -252,31 +253,26 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region 基类重写 - 列表操作
 
-        protected override async Task<IEnumerable<HerbDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<HerbListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
+            // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
             Logger.LogInformation("药材搜索: 第{Page}页, 每页{PageSize}条, 关键词: '{SearchText}'", page, pageSize, searchText);
             try
             {
-                var pagedData = await _dataManager.GetPagedAsync(page, pageSize, searchText);
-                if (pagedData != null)
-                {
-                    TotalCount = pagedData.TotalCount;
-                    return pagedData.Items;
-                }
-                Logger.LogWarning("获取药材列表失败: DataManager返回null");
-                TotalCount = 0;
-                return new List<HerbDto>();
+                var pagedData = await _herbRepository.GetPagedListAsync(page, pageSize, searchText);
+                TotalCount = pagedData.TotalCount;
+                return pagedData.Items ?? Enumerable.Empty<HerbListDto>();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取药材列表时发生异常");
                 await UserNotificationService!.HandleExceptionAsync(ex, $"获取药材列表 - 模块:{nameof(HerbMasterDetailViewModel)}");
                 TotalCount = 0;
-                return new List<HerbDto>();
+                return Enumerable.Empty<HerbListDto>();
             }
         }
 
-        protected override async Task OnExecuteBatchDeleteAsync(List<HerbDto> items)
+        protected override async Task OnExecuteBatchDeleteAsync(List<HerbListDto> items)
         {
             if (items == null || items.Count == 0) return;
 
@@ -311,7 +307,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
 
         #region 基类重写 - 详情操作
 
-        protected override async Task<HerbDetailModel?> LoadDetailAsync(HerbDto item)
+        protected override async Task<HerbDetailModel?> LoadDetailAsync(HerbListDto item)
         {
             try
             {
@@ -417,6 +413,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     return false;
                 }
 
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端管理
                 var dto = new HerbInputDto
                 {
                     Id = detail.Id,
@@ -429,8 +426,7 @@ namespace LYBT.Desktop.Herbs.ViewModels
                     CostPrice = EditCostPrice > 0 ? EditCostPrice : null,
                     Effect = EditEffect?.Trim(),
                     Usage = EditUsage?.Trim(),
-                    Remark = EditRemark?.Trim(),
-                    Status = detail.IsNew ? CommonStatus.Enabled : EditStatus
+                    Remark = EditRemark?.Trim()
                 };
 
                 HerbDto? result;

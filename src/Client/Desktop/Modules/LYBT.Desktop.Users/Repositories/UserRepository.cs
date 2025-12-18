@@ -91,6 +91,46 @@ namespace LYBT.Desktop.Users.Repositories
             }
         }
 
+        /// <summary>
+        /// 分页获取用户列表（返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<PagedResult<UserListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            try
+            {
+                _logger.LogDebug("获取用户列表: Page={Page}, PageSize={PageSize}, Keyword={Keyword}", page, pageSize, keyword);
+
+                var response = await _api.GetUsersListAsync(page, pageSize, keyword);
+
+                if (response.Success && response.Data != null)
+                {
+                    _logger.LogDebug("获取用户列表成功，共{Count}条", response.Data.TotalCount);
+                    return response.Data;
+                }
+
+                _logger.LogWarning("获取用户列表失败: {Message}", response.Message);
+                return new PagedResult<UserListDto>
+                {
+                    Items = new List<UserListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取用户列表异常");
+                return new PagedResult<UserListDto>
+                {
+                    Items = new List<UserListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+        }
+
         #region RepositoryBase抽象方法实现
 
         protected override Task<ApiResponse<UserDto>> CallApiGetByIdAsync(Guid id)

@@ -7,12 +7,39 @@ namespace LYBT.Module.Formulas.Mapping
 
     /// <summary>
     /// 简化的验方管理AutoMapper映射配置
+    /// OpenSpec: refactor-dto-simplification - 添加简化DTO映射
     /// </summary>
     public class FormulaMappingProfile : Profile
     {
 
         public FormulaMappingProfile()
         {
+            // ============================================
+            // 新简化DTO映射 (OpenSpec: refactor-dto-simplification)
+            // ============================================
+
+            // Formula -> FormulaListDto (新)
+            CreateMap<LYBT.Entities.Formulas.Formula, FormulaListDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication))
+                .ForMember(dest => dest.HerbCount, opt => opt.MapFrom(src => src.Herbs != null ? src.Herbs.Count : 0))
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // 由Service计算
+
+            // Formula -> FormulaDetailDtoNew (新-简化版)
+            CreateMap<LYBT.Entities.Formulas.Formula, FormulaDetailDtoNew>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication))
+                .ForMember(dest => dest.HerbCount, opt => opt.Ignore()) // 由Service计算
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()) // 由Service计算
+                .ForMember(dest => dest.Herbs, opt => opt.Ignore()); // 单独映射子项
+
+            // FormulaHerbItem -> FormulaHerbItemDetailDto (新)
+            CreateMap<LYBT.Entities.Formulas.FormulaHerbItem, FormulaHerbItemDetailDto>();
+
+            // ============================================
+            // 旧DTO映射 (保持向后兼容，后续移除)
+            // ============================================
+
             // Formula -> FormulaDto
             CreateMap<LYBT.Entities.Formulas.Formula, FormulaDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -22,13 +49,6 @@ namespace LYBT.Module.Formulas.Mapping
 
             // FormulaHerbItem -> FormulaHerbItemDto
             CreateMap<LYBT.Entities.Formulas.FormulaHerbItem, FormulaHerbItemDto>();
-
-            // Formula -> FormulaDetailDto
-            CreateMap<LYBT.Entities.Formulas.Formula, FormulaDetailDto>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.Indications, opt => opt.MapFrom(src => src.Indication)) // Issue #2014: Entity.Indication → DTO.Indications
-                .ForMember(dest => dest.HerbCount, opt => opt.MapFrom(src => src.Herbs != null ? src.Herbs.Count : 0))
-                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore()); // FormulaHerbItem没有Herb导航属性，无法计算总价
 
             // FormulaInputDto -> Formula (用于更新场景，null值不覆盖)
             CreateMap<FormulaInputDto, LYBT.Entities.Formulas.Formula>()

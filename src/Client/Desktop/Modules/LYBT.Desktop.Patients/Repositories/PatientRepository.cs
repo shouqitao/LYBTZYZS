@@ -50,6 +50,30 @@ namespace LYBT.Desktop.Patients.Repositories
             return _api.GetPatientsAsync(page, pageSize, keyword);
         }
 
+        /// <summary>
+        /// 获取患者列表（返回PatientListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<PagedResult<PatientListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null)
+        {
+            try
+            {
+                var response = await _api.GetPatientsListAsync(page, pageSize, keyword);
+                return response.Data ?? new PagedResult<PatientListDto>
+                {
+                    Items = new List<PatientListDto>(),
+                    TotalCount = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取患者列表失败");
+                throw;
+            }
+        }
+
         protected override Task<ApiResponse<PatientDto>> CallApiCreateAsync(PatientInputDto dto)
         {
             return _api.CreatePatientAsync(dto);

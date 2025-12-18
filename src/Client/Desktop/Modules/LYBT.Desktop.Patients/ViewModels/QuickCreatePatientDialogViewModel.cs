@@ -210,14 +210,14 @@ namespace LYBT.Desktop.Patients.ViewModels
                 SetIsBusy(true, "正在保存...");
 
                 // 创建患者DTO
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
                 var createDto = new PatientInputDto
                 {
                     Name = Name.Trim(),
                     Gender = Gender,
                     BirthDate = BirthDate, // Issue #2240: 直接使用BirthDate
-                    PhoneNumber = PhoneNumber.Trim(),
+                    PhoneNumber = PhoneNumber.Trim()
                     // TODO: 拼音码功能待后续扩展（需要扩展PatientInputDto）
-                    Status = Shared.Models.Enums.CommonStatus.Enabled
                 };
 
                 // Issue #1788: 使用CommandHandler创建患者

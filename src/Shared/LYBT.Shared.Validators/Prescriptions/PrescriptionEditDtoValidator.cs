@@ -13,11 +13,8 @@ namespace LYBT.Shared.Validators.Prescriptions
             RuleFor(x => x.Id)
                 .NotEmpty().WithMessage("处方ID不能为空");
 
-            RuleFor(x => x.PatientId)
-                .NotEmpty().WithMessage("患者ID不能为空");
-
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("用户ID不能为空");
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId验证已移除
+            // 这些字段通过MedicalCase聚合根获取，无需在处方层验证
 
             RuleFor(x => x.Diagnosis)
                 .MaximumLength(500).WithMessage("诊断长度不能超过500个字符")

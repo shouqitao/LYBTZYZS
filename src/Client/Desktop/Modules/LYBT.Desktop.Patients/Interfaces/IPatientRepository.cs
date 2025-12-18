@@ -31,6 +31,12 @@ namespace LYBT.Desktop.Patients.Interfaces
         /// </summary>
         Task<PagedResult<PatientDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
 
+        /// <summary>
+        /// 获取患者列表（返回PatientListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<PatientListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
         // ========== Epic #1934: 批量导入/导出功能 ==========
 
         /// <summary>

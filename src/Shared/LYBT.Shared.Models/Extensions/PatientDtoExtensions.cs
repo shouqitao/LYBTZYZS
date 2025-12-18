@@ -114,10 +114,10 @@ namespace LYBT.Shared.Models.Extensions
                 // 紧急联系人
                 EmergencyContactName = dto.EmergencyContactName,
                 EmergencyContactPhone = dto.EmergencyContactPhone,
-                EmergencyContactRelation = dto.EmergencyContactRelation,
+                EmergencyContactRelation = dto.EmergencyContactRelation
 
-                // Status字段
-                Status = dto.Status
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除
+                // PatientDto的Status默认为Enabled，实际状态由Service层管理
             };
         }
     }

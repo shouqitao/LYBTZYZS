@@ -28,6 +28,18 @@ namespace LYBT.Module.Formulas.Interfaces
             bool isAdmin = false);
 
         /// <summary>
+        /// 分页查询验方列表（返回FormulaListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<Result<PagedResult<FormulaListDto>>> GetPagedListAsync(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            string? category = null,
+            Guid? currentUserId = null,
+            bool isAdmin = false);
+
+        /// <summary>
         /// 根据ID获取验方详情
         /// </summary>
         Task<Result<FormulaDto>> GetByIdAsync(Guid id);

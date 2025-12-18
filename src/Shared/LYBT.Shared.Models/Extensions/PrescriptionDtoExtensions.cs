@@ -10,27 +10,28 @@ namespace LYBT.Shared.Models.Extensions
     public static class PrescriptionDtoExtensions
     {
         /// <summary>
-        /// 将PrescriptionCreateDto转换为PrescriptionDto
+        /// 将PrescriptionInputDto转换为PrescriptionDto
         /// Issue #1152: 替代AutoMapper
-        /// 字段映射: DoctorId→UserId, Quantity→DosageCount
+        /// OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
+        /// OpenSpec: refactor-dto-simplification - 更新为使用PrescriptionInputDto
         /// </summary>
-        public static PrescriptionDto ToDto(this PrescriptionCreateDto dto)
+        public static PrescriptionDto ToDto(this PrescriptionInputDto dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
             return new PrescriptionDto
             {
-                PatientId = dto.PatientId,
-                UserId = dto.DoctorId,  // DoctorId → UserId
-                DosageCount = dto.Quantity,  // Quantity → DosageCount
+                Id = dto.Id ?? Guid.Empty,
+                MedicalCaseId = dto.MedicalCaseId,
+                DosageCount = dto.DosageCount,
                 Usage = dto.Usage,
-                Discount = 1.0m,
+                Discount = dto.Discount,
                 Advice = dto.Advice,
                 FormulaSource = dto.FormulaSource,
+                Indication = dto.Indication,
                 Remark = dto.Remark,
-                MedicalCaseId = Guid.Empty,  // 需要在Service层设置
-                Indication = null,  // 需要在Service层设置
+                TotalPrice = dto.TotalPrice,
                 Items = new List<PrescriptionItemDto>(),  // 需要在Service层单独处理
                 Status = CommonStatus.Enabled,
                 CreatedAt = DateTime.UtcNow,

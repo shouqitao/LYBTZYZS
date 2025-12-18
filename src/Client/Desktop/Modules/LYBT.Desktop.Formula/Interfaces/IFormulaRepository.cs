@@ -10,6 +10,12 @@ namespace LYBT.Desktop.Formula.Interfaces
     public interface IFormulaRepository
     {
         Task<PagedResult<FormulaDto>> GetPagedAsync(int page = 1, int pageSize = 20, string? keyword = null);
+
+        /// <summary>
+        /// 获取验方列表（返回FormulaListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        Task<PagedResult<FormulaListDto>> GetPagedListAsync(int page = 1, int pageSize = 20, string? keyword = null, string? category = null);
         Task<FormulaDto?> GetByIdAsync(Guid id);
         Task<FormulaDto> CreateAsync(FormulaInputDto dto);
         Task<FormulaDto> UpdateAsync(FormulaInputDto dto);

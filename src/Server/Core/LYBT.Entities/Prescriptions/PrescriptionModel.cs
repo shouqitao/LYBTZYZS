@@ -31,16 +31,8 @@ namespace LYBT.Entities.Prescriptions
         [DisplayName("处方编号")]
         public string? PrescriptionNumber { get; set; }
 
-        // PatientId和UserId通过MedicalCase获取，保留以保持兼容性
-        /// <summary>患者ID（冗余，通过MedicalCase获取）</summary>
-        [DisplayName("患者ID")]
-        public Guid? PatientId { get; set; }
-
-        /// <summary>关联用户ID（医生，冗余，通过MedicalCase获取）</summary>
-        [DisplayName("关联用户ID")]
-        public Guid? UserId { get; set; }
-
-        /// <summary>创建人ID（医生用户ID）</summary>
+        // PatientId和UserId已移除，通过MedicalCase获取
+        // OpenSpec: optimize-entity-data-flow - 删除冗余字段
         // 审计字段（CreatedBy等）继承自BaseEntity
 
         /// <summary>主治（适应症/主要症状描述）</summary>

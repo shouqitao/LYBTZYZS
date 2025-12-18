@@ -213,16 +213,16 @@ namespace LYBT.Desktop.Prescriptions.Services
                 _logger.LogInformation("构建处方草稿");
 
                 // 将PrescriptionCreateDto转换为PrescriptionDto
+                // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
                 var prescription = new PrescriptionDto
                 {
                     Id = Guid.NewGuid(),
-                    PatientId = dto.PatientId,
-                    UserId = dto.DoctorId,
-                    MedicalCaseId = dto.ConsultationId ?? Guid.Empty,
+                    // MedicalCaseId需要从上下文获取，此处暂设为Empty
+                    MedicalCaseId = Guid.Empty,
                     DosageCount = dto.Quantity,
                     Usage = dto.Usage,
                     Advice = dto.Advice,
-                    Remark = dto.Notes,
+                    Remark = dto.Remark,
                     FormulaSource = dto.FormulaSource,
                     Discount = 1.0m,
                     Items = dto.Items.Select(item => new PrescriptionItemDto

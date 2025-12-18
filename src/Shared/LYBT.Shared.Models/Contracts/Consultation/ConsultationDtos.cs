@@ -59,7 +59,14 @@ namespace LYBT.Shared.Models.Contracts.Consultation
     /// 诊疗输入DTO - 统一创建和更新
     /// Phase 3: 合并ConsultationCreateDto和ConsultationUpdateDto
     /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
+    /// OpenSpec: refactor-dto-simplification - 移除展示字段(PatientName/DoctorName)
     /// </summary>
+    /// <remarks>
+    /// InputDto设计原则：
+    /// - 只含可写字段，排除展示字段
+    /// - PatientName/DoctorName移至ConsultationDto/ConsultationListDto
+    /// - Id可空：null=创建，有值=更新
+    /// </remarks>
     public class ConsultationInputDto
     {
         // 诊断核心字段（精简版）
@@ -102,13 +109,7 @@ namespace LYBT.Shared.Models.Contracts.Consultation
         [DisplayName("关联用户ID")]
         public Guid? UserId { get; set; }
 
-        /// <summary>患者姓名（展示用）</summary>
-        [DisplayName("患者姓名")]
-        public string? PatientName { get; set; }
-
-        /// <summary>医生姓名（展示用）</summary>
-        [DisplayName("医生姓名")]
-        public string? DoctorName { get; set; }
+        // OpenSpec: refactor-dto-simplification - PatientName/DoctorName已移至ConsultationDto/ConsultationListDto
     }
 
     /// <summary>

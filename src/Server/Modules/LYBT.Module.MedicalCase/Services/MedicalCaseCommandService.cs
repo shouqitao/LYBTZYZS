@@ -339,11 +339,10 @@ namespace LYBT.Module.MedicalCases.Services
                     }
 
                     // 创建Prescription实体（不包含Items，需手动处理）
+                    // OpenSpec: optimize-entity-data-flow - PatientId/UserId通过MedicalCase获取
                     var prescription = _mapper.Map<Prescription>(request);
                     prescription.Id = Guid.NewGuid();
                     prescription.MedicalCaseId = medicalCaseId;
-                    prescription.PatientId = medicalCase.PatientId;
-                    prescription.UserId = medicalCase.DoctorId;
                     prescription.CreatedAt = DateTime.Now;
                     prescription.UpdatedAt = DateTime.Now;
 
@@ -664,12 +663,11 @@ namespace LYBT.Module.MedicalCases.Services
                             if (medicalCase.Prescription == null || medicalCase.Prescription.IsDeleted)
                             {
                                 // 创建新处方
+                                // OpenSpec: optimize-entity-data-flow - PatientId/UserId通过MedicalCase获取
                                 var prescription = new Prescription
                                 {
                                     Id = Guid.NewGuid(),
                                     MedicalCaseId = request.Id,
-                                    PatientId = medicalCase.PatientId,
-                                    UserId = medicalCase.DoctorId,
                                     DosageCount = request.Prescription.DosageCount,
                                     Advice = request.Prescription.Advice,
                                     FormulaSource = request.Prescription.FormulaSource,

@@ -130,7 +130,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             try
             {
                 IsLoading = true; StatusMessage = PatientId == Guid.Empty ? "正在创建患者..." : "正在保存修改...";
-                var dto = new PatientInputDto { Id = PatientId, Name = Name.Trim(), Gender = SelectedGender, BirthDate = BirthDate, IdNumber = IdNumber?.Trim(), PhoneNumber = PhoneNumber?.Trim(), Address = Address?.Trim(), Status = PatientId == Guid.Empty ? CommonStatus.Enabled : Status };
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
+                var dto = new PatientInputDto { Id = PatientId, Name = Name.Trim(), Gender = SelectedGender, BirthDate = BirthDate, IdNumber = IdNumber?.Trim(), PhoneNumber = PhoneNumber?.Trim(), Address = Address?.Trim() };
                 var result = PatientId == Guid.Empty ? await _patientRepository.CreateAsync(dto) : await _patientRepository.UpdateAsync(dto);
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
                 else await ShowErrorMessageAsync(PatientId == Guid.Empty ? "创建患者失败" : "更新患者失败");

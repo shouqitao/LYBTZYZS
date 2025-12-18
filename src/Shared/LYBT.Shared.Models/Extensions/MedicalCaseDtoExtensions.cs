@@ -61,11 +61,11 @@ namespace LYBT.Shared.Models.Extensions
         }
 
         /// <summary>
-        /// 将MedicalCaseDetailDto转换为MedicalCaseInputDto
+        /// 将MedicalCaseDetailDtoNew转换为MedicalCaseInputDto
         /// Epic #1961: 使用统一的 MedicalCaseInputDto
+        /// OpenSpec: refactor-dto-simplification - 更新为使用MedicalCaseDetailDtoNew
         /// </summary>
-        // OpenSpec: refactor-diagnosis-fields - 移除ChiefComplaint
-        public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDto dto)
+        public static MedicalCaseInputDto ToInputDto(this MedicalCaseDetailDtoNew dto)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));

@@ -54,6 +54,31 @@ namespace LYBT.WebAPI.Controllers
         }
 
         /// <summary>
+        /// 获取用户列表（分页，返回UserListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [HttpGet("list")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResult<UserListDto>>), 200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> GetUsersList(
+            int page = 1,
+            int pageSize = 20,
+            string? keyword = null,
+            UserRole? role = null,
+            CommonStatus? status = null)
+        {
+            try
+            {
+                var result = await _userService.GetPagedListAsync(page, pageSize, keyword, role, status);
+                return SuccessPaged(result.Data!, "查询成功");
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, "获取用户列表");
+            }
+        }
+
+        /// <summary>
         /// 获取当前登录用户信息
         /// </summary>
         [HttpGet("current")]

@@ -113,6 +113,63 @@ namespace LYBT.Module.MedicalCases.Services
         }
 
         /// <summary>
+        /// 查询病案列表（分页，返回MedicalCaseListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        public async Task<PagedResult<MedicalCaseListDto>> GetListDtoAsync(
+            MedicalCaseStatus? status,
+            Guid? patientId,
+            int page,
+            int pageSize,
+            Guid? currentDoctorId = null,
+            bool isAdmin = false,
+            string? keyword = null)
+        {
+            try
+            {
+                var result = await _repository.GetPagedWithDetailsAsync(page, pageSize);
+                var filteredItems = result.Items.AsQueryable();
+
+                if (status.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.CaseStatus == status.Value);
+                }
+
+                if (patientId.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.PatientId == patientId.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    filteredItems = filteredItems.Where(m =>
+                        (m.PatientName != null && m.PatientName.Contains(keyword)) ||
+                        (m.Consultation != null && m.Consultation.TCMDiagnosis != null && m.Consultation.TCMDiagnosis.Contains(keyword)));
+                }
+
+                if (!isAdmin && currentDoctorId.HasValue)
+                {
+                    filteredItems = filteredItems.Where(m => m.DoctorId == currentDoctorId.Value);
+                }
+
+                var dtos = _mapper.Map<List<MedicalCaseListDto>>(filteredItems.ToList());
+
+                return new PagedResult<MedicalCaseListDto>
+                {
+                    Items = dtos,
+                    TotalCount = dtos.Count,
+                    CurrentPage = page,
+                    PageSize = pageSize
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查询病案列表失败");
+                throw;
+            }
+        }
+
+        /// <summary>
         /// 查询辨证记录列表
         /// Epic #1612: 返回病案的所有历史辨证记录
         /// </summary>

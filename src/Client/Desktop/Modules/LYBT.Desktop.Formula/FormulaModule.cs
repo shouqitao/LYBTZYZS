@@ -31,12 +31,10 @@ namespace LYBT.Desktop.Formula
             containerRegistry.Register<ViewModels.Components.FormulaCalculator>();
 
             // 注册视图模型 - MVP核心功能
-            containerRegistry.Register<ViewModels.FormulaManagementViewModel>();
             containerRegistry.Register<ViewModels.FormulaDetailViewModel>();
             containerRegistry.Register<ViewModels.FormulaValidationViewModel>(); // FORMULA-10: 验方校验视图模型
 
             // Phase 2: 启用 Region Navigation 注册
-            containerRegistry.RegisterForNavigation<Views.FormulaManagementView>();
             containerRegistry.RegisterForNavigation<Views.FormulaDetailView>();
             containerRegistry.RegisterForNavigation<Views.FormulaValidationView>(); // FORMULA-10: 验方校验视图
 

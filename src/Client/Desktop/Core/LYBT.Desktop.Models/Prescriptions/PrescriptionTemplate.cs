@@ -222,13 +222,14 @@ namespace LYBT.Desktop.Models.Prescriptions
 
         /// <summary>
         /// 应用模板到处方
+        /// OpenSpec: optimize-entity-data-flow - PatientId通过MedicalCase获取
         /// </summary>
-        public PrescriptionDto ApplyToNewPrescription(Guid patientId)
+        public PrescriptionDto ApplyToNewPrescription()
         {
             var prescription = new PrescriptionDto
             {
                 Id = Guid.NewGuid(),
-                PatientId = patientId,
+                // OpenSpec: PatientId已移除，通过MedicalCaseId关联获取
                 Indication = Diagnosis,
                 DosageCount = DosageCount,
                 Advice = Usage,

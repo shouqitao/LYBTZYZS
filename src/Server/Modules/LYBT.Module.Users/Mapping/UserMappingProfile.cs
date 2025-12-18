@@ -14,7 +14,35 @@ namespace LYBT.Module.Users.Mapping
 
         public UserMappingProfile()
         {
-            // ==================== 现代化映射配置（UserMutationDto） ====================
+            // ==================== 新DTO映射配置（扁平化设计） ====================
+            // OpenSpec: refactor-dto-simplification
+
+            // 用户实体转UserListDto（列表视图）
+            CreateMap<User, UserListDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
+            // 用户实体转UserDetailDtoNew（详情视图）
+            CreateMap<User, UserDetailDtoNew>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.RealName, opt => opt.MapFrom(src => src.RealName))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.PinYinCode, opt => opt.MapFrom(src => src.PinYinCode))
+                .ForMember(dest => dest.LastLoginTime, opt => opt.MapFrom(src => src.LastLoginTime))
+                .ForMember(dest => dest.FailedLoginCount, opt => opt.MapFrom(src => src.FailedLoginCount))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
+
+            // ==================== 旧DTO映射配置（保持向后兼容） ====================
 
             // 用户实体转UserDto（API响应和业务逻辑）
             // Issue #1262: 显式映射所有字段，确保序列化成功

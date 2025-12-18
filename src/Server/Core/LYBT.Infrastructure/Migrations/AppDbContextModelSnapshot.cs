@@ -915,9 +915,6 @@ namespace LYBT.Infrastructure.Migrations
                     b.Property<Guid>("MedicalCaseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("PrescriptionNumber")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -945,9 +942,6 @@ namespace LYBT.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");

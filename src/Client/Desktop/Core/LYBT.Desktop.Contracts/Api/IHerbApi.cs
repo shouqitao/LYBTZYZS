@@ -18,7 +18,17 @@ namespace LYBT.Desktop.Contracts.Api
             [Refit.Query] int pageSize = 20,
             [Refit.Query] string? keyword = null);
 
-  
+        /// <summary>
+        /// 获取草药列表（返回HerbListDto，用于列表视图）
+        /// OpenSpec: optimize-entity-data-flow - 增量API方法
+        /// </summary>
+        [Refit.Get("/api/v1/herbs/list")]
+        Task<ApiResponse<PagedResult<HerbListDto>>> GetHerbsListAsync(
+            [Refit.Query] int page = 1,
+            [Refit.Query] int pageSize = 20,
+            [Refit.Query] string? keyword = null,
+            [Refit.Query] string? category = null);
+
         /// <summary>
         /// 获取草药详情
         /// </summary>

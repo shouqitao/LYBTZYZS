@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using AutoMapper;
 using FluentAssertions;
 using LYBT.Entities.Prescriptions;
@@ -11,6 +11,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
     /// <summary>
     /// Prescriptions模块AutoMapper映射配置单元测试
     /// 测试所有映射配置的有效性和正确性
+    /// OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除，通过MedicalCaseId关联获取
     /// </summary>
     public class PrescriptionMappingProfileTests
     {
@@ -43,12 +44,11 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_Prescription_To_PrescriptionDto_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
                 Indication = "清热解毒",
                 DosageCount = 7,
                 Discount = 0.8m,
@@ -64,8 +64,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
-            dto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             dto.Indication.Should().Be(prescription.Indication);
             dto.DosageCount.Should().Be(prescription.DosageCount);
             dto.Discount.Should().Be(prescription.Discount);
@@ -83,12 +81,11 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_Prescription_To_PrescriptionDetailDto_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
                 Indication = "温中健脾",
                 DosageCount = 14,
                 Discount = 0.9m,
@@ -104,8 +101,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             detailDto.Should().NotBeNull();
             detailDto.Id.Should().Be(prescription.Id);
             detailDto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            detailDto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
-            detailDto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             detailDto.Indication.Should().Be(prescription.Indication);
             detailDto.DosageCount.Should().Be(prescription.DosageCount);
             detailDto.Discount.Should().Be(prescription.Discount);
@@ -153,13 +148,10 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_PrescriptionCreateDto_To_Prescription_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId/ConsultationId已移除，通过MedicalCaseId关联获取
             var createDto = new PrescriptionCreateDto
             {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
-                ConsultationId = Guid.NewGuid(),
                 Diagnosis = "脾胃虚弱",
-                DosageCount = 5,
                 Quantity = 5,
                 Usage = "水煎服",
                 TotalAmount = 125.50m,
@@ -173,9 +165,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
 
             // Assert
             prescription.Should().NotBeNull();
-            prescription.PatientId.Should().Be(createDto.PatientId);
-            // 注意：DoctorId映射到UserId
-            // 其他字段根据映射配置来验证
+            prescription.DosageCount.Should().Be(createDto.Quantity);
 
             // 验证忽略字段 - BaseEntity.Id 有默认初始化为 Guid.NewGuid()
             prescription.Id.Should().NotBe(Guid.Empty);
@@ -216,11 +206,10 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_PrescriptionEditDto_To_Prescription_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
             var editDto = new PrescriptionEditDto
             {
                 Id = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
                 Diagnosis = "修改后的诊断",
                 DosageCount = 10,
                 TotalPrice = 200.0m,
@@ -234,8 +223,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
 
             // Assert
             prescription.Should().NotBeNull();
-            prescription.PatientId.Should().Be(editDto.PatientId);
-            prescription.UserId.Should().Be(editDto.UserId);
             prescription.DosageCount.Should().Be(editDto.DosageCount);
             prescription.Discount.Should().Be(editDto.Discount);
             prescription.Advice.Should().Be(editDto.Advice);
@@ -249,12 +236,11 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_Prescription_With_NullOptionalFields_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
                 Indication = null,
                 Advice = null,
                 FormulaSource = null,
@@ -269,8 +255,6 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
             dto.Should().NotBeNull();
             dto.Id.Should().Be(prescription.Id);
             dto.MedicalCaseId.Should().Be(prescription.MedicalCaseId);
-            dto.PatientId.Should().Be(prescription.PatientId ?? Guid.Empty);
-            dto.UserId.Should().Be(prescription.UserId ?? Guid.Empty);
             dto.Indication.Should().BeNull();
             dto.Advice.Should().BeNull();
             dto.FormulaSource.Should().BeNull();
@@ -309,12 +293,11 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_Prescription_With_HighDiscount_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/UserId已移除
             var prescription = new Prescription
             {
                 Id = Guid.NewGuid(),
                 MedicalCaseId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
                 Discount = 0.5m, // 5折
                 DosageCount = 20,
                 Indication = "长期调理处方"
@@ -334,12 +317,10 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
         public void Map_PrescriptionCreateDto_With_MinimalData_Should_Success()
         {
             // Arrange
+            // OpenSpec: optimize-entity-data-flow - PatientId/DoctorId已移除，Quantity替代DosageCount
             var createDto = new PrescriptionCreateDto
             {
-                PatientId = Guid.NewGuid(),
-                DoctorId = Guid.NewGuid(),
                 Diagnosis = "最简诊断",
-                DosageCount = 1,
                 Quantity = 1,
                 TotalAmount = 10.0m
             };
@@ -349,8 +330,7 @@ namespace LYBT.Module.Prescriptions.Tests.Mapping
 
             // Assert
             prescription.Should().NotBeNull();
-            prescription.PatientId.Should().Be(createDto.PatientId);
-            prescription.DosageCount.Should().Be(createDto.DosageCount);
+            prescription.DosageCount.Should().Be(createDto.Quantity);
         }
     }
 }

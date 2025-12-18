@@ -207,7 +207,7 @@ namespace LYBT.Desktop.Prescriptions.Services
             FixedDocument document,
             Guid prescriptionId,
             Window parentWindow,
-            PrescriptionPrintDto printDto,
+            PrescriptionPrintModel printDto,
             DocumentViewer docViewer)
         {
             var settingsBorder = new Border
@@ -615,9 +615,9 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// <summary>
         /// 映射处方药品项到打印模型
         /// </summary>
-        private List<PrescriptionItemPrintDto> MapPrescriptionItems(IList<PrescriptionItemDto> items)
+        private List<PrescriptionItemPrintModel> MapPrescriptionItems(IList<PrescriptionItemDto> items)
         {
-            return items.Select((item, index) => new PrescriptionItemPrintDto
+            return items.Select((item, index) => new PrescriptionItemPrintModel
             {
                 SequenceNumber = index + 1,
                 HerbName = item.HerbName,
@@ -650,20 +650,20 @@ namespace LYBT.Desktop.Prescriptions.Services
         }
 
         /// <summary>
-        /// 将PrescriptionDto映射到PrescriptionPrintDto（兼容旧调用）
+        /// 将PrescriptionDto映射到PrescriptionPrintModel（兼容旧调用）
         /// </summary>
-        private Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription)
+        private Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDto prescription)
         {
             return MapToPrintDtoAsync(prescription, null, null);
         }
 
         /// <summary>
-        /// 将PrescriptionDto映射到PrescriptionPrintDto（带完整上下文）
+        /// 将PrescriptionDto映射到PrescriptionPrintModel（带完整上下文）
         /// OpenSpec: print-prescription-slip
         /// </summary>
-        private async Task<PrescriptionPrintDto> MapToPrintDtoAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
+        private async Task<PrescriptionPrintModel> MapToPrintDtoAsync(PrescriptionDto prescription, PatientDto? patient, ConsultationInputDto? consultation)
         {
-            var printDto = new PrescriptionPrintDto();
+            var printDto = new PrescriptionPrintModel();
 
             PopulateClinicInfo(printDto);
             PopulatePatientInfo(printDto, patient);
@@ -678,7 +678,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充诊所信息
         /// OpenSpec: print-prescription-slip - 从IClinicSettingsService获取配置
         /// </summary>
-        private void PopulateClinicInfo(PrescriptionPrintDto printDto)
+        private void PopulateClinicInfo(PrescriptionPrintModel printDto)
         {
             var settings = _clinicSettingsService.GetSettings();
             printDto.ClinicName = settings.Name;
@@ -691,7 +691,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充患者信息
         /// OpenSpec: print-prescription-slip - 从PatientDto获取患者信息
         /// </summary>
-        private static void PopulatePatientInfo(PrescriptionPrintDto printDto, PatientDto? patient)
+        private static void PopulatePatientInfo(PrescriptionPrintModel printDto, PatientDto? patient)
         {
             if (patient != null)
             {
@@ -740,7 +740,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// OpenSpec: print-prescription-slip - 从ConsultationInputDto获取诊断信息
         /// OpenSpec: refactor-diagnosis-fields - 精简为4个核心字段
         /// </summary>
-        private static void PopulateDiagnosisInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription, ConsultationInputDto? consultation)
+        private static void PopulateDiagnosisInfo(PrescriptionPrintModel printDto, PrescriptionDto prescription, ConsultationInputDto? consultation)
         {
             if (consultation != null)
             {
@@ -762,7 +762,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充处方详情
         /// OpenSpec: print-prescription-slip - 更新为模板格式
         /// </summary>
-        private void PopulatePrescriptionDetails(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        private void PopulatePrescriptionDetails(PrescriptionPrintModel printDto, PrescriptionDto prescription)
         {
             printDto.Items = MapPrescriptionItems(prescription.Items);
             printDto.DosageCount = prescription.DosageCount;
@@ -777,7 +777,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 填充医生信息和可选信息
         /// Issue #1794: 从MapToPrintDtoAsync提取
         /// </summary>
-        private static void PopulateDoctorInfo(PrescriptionPrintDto printDto, PrescriptionDto prescription)
+        private static void PopulateDoctorInfo(PrescriptionPrintModel printDto, PrescriptionDto prescription)
         {
             // TODO: 从IUserService获取
             printDto.DoctorName = "医生姓名";
@@ -791,7 +791,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 使用Builder构建FlowDocument（A5模板格式）
         /// OpenSpec: print-prescription-slip
         /// </summary>
-        private FlowDocument BuildFlowDocument(PrescriptionPrintDto printDto)
+        private FlowDocument BuildFlowDocument(PrescriptionPrintModel printDto)
         {
             var builder = new PrescriptionFlowDocumentBuilder(printDto);
             return builder.Build();
@@ -834,7 +834,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 创建FixedDocument用于预览和打印（默认A5）
         /// OpenSpec: enhance-prescription-print - WYSIWYG打印
         /// </summary>
-        private FixedDocument BuildFixedDocument(PrescriptionPrintDto printDto)
+        private FixedDocument BuildFixedDocument(PrescriptionPrintModel printDto)
         {
             return BuildFixedDocument(printDto, A5PageSize);
         }
@@ -843,7 +843,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 创建FixedDocument用于预览和打印（指定纸张尺寸）
         /// OpenSpec: enhance-prescription-print - 支持A5/A4纸张选择
         /// </summary>
-        private FixedDocument BuildFixedDocument(PrescriptionPrintDto printDto, Size pageSize)
+        private FixedDocument BuildFixedDocument(PrescriptionPrintModel printDto, Size pageSize)
         {
             var document = new FixedDocument();
             document.DocumentPaginator.PageSize = pageSize;
@@ -863,7 +863,7 @@ namespace LYBT.Desktop.Prescriptions.Services
         /// 将UserControl模板转换为FixedPage
         /// OpenSpec: enhance-prescription-print - 支持A5/A4纸张选择
         /// </summary>
-        private FixedPage CreateFixedPage(PrescriptionPrintDto printDto, Size pageSize)
+        private FixedPage CreateFixedPage(PrescriptionPrintModel printDto, Size pageSize)
         {
             // 1. 创建模板实例并设置DataContext
             var template = new PrescriptionPrintTemplate

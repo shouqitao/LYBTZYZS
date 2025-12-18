@@ -18,10 +18,11 @@ namespace LYBT.Desktop.Formula.ViewModels
     /// <summary>
     /// 验方Master-Detail视图模型
     /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: optimize-entity-data-flow - 使用FormulaListDto优化列表加载
     ///
     /// 合并FormulaManagementViewModel和FormulaDetailViewModel功能
     /// </summary>
-    public class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaDto, FormulaDetailModel>
+    public class FormulaMasterDetailViewModel : MasterDetailViewModelBase<FormulaListDto, FormulaDetailModel>
     {
         private readonly IFormulaRepository _formulaRepository;
         private readonly IFormulaCommandHandler _commandHandler;
@@ -55,8 +56,8 @@ namespace LYBT.Desktop.Formula.ViewModels
             PageTitle = "验方管理";
 
             // 初始化扩展命令
-            ToggleStatusCommand = new DelegateCommand<FormulaDto>(async f => await ToggleStatusAsync(f), f => f != null && !IsBusy);
-            RestoreCommand = new DelegateCommand<FormulaDto>(async f => await RestoreAsync(f), f => f != null && !IsBusy && IsAdmin);
+            ToggleStatusCommand = new DelegateCommand<FormulaListDto>(async f => await ToggleStatusAsync(f), f => f != null && !IsBusy);
+            RestoreCommand = new DelegateCommand<FormulaListDto>(async f => await RestoreAsync(f), f => f != null && !IsBusy && IsAdmin);
             CopyFormulaCommand = new DelegateCommand(async () => await CopyFormulaAsync(), () => HasSelection && !IsBusy);
             ShowAuditLogCommand = new DelegateCommand(ExecuteShowAuditLog, () => HasSelection);
 
@@ -127,8 +128,8 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 扩展命令
 
-        public DelegateCommand<FormulaDto> ToggleStatusCommand { get; }
-        public DelegateCommand<FormulaDto> RestoreCommand { get; }
+        public DelegateCommand<FormulaListDto> ToggleStatusCommand { get; }
+        public DelegateCommand<FormulaListDto> RestoreCommand { get; }
         public DelegateCommand CopyFormulaCommand { get; }
         public DelegateCommand ShowAuditLogCommand { get; }
         public DelegateCommand AddHerbCommand { get; }
@@ -144,23 +145,23 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 基类抽象方法实现
 
-        protected override async Task<IEnumerable<FormulaDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<FormulaListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
-            var result = await _commandHandler.GetPagedAsync(page, pageSize, searchText);
-            if (!result.success || result.data == null)
-                throw new InvalidOperationException(result.errorMessage ?? "查询验方失败");
+            // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
+            var result = await _formulaRepository.GetPagedListAsync(page, pageSize, searchText);
 
-            TotalCount = result.data.TotalCount;
-            CurrentPage = result.data.CurrentPage;
-            PageSize = result.data.PageSize;
+            TotalCount = result.TotalCount;
+            CurrentPage = result.CurrentPage;
+            PageSize = result.PageSize;
 
-            return result.data.Items;
+            return result.Items ?? Enumerable.Empty<FormulaListDto>();
         }
 
-        protected override async Task<FormulaDetailModel?> LoadDetailAsync(FormulaDto item)
+        protected override async Task<FormulaDetailModel?> LoadDetailAsync(FormulaListDto item)
         {
             try
             {
+                // OpenSpec: optimize-entity-data-flow - 从ListDto加载完整详情
                 var dto = await _formulaRepository.GetByIdAsync(item.Id);
                 if (dto == null)
                 {
@@ -212,6 +213,7 @@ namespace LYBT.Desktop.Formula.ViewModels
                     });
                 }
 
+                // OpenSpec: refactor-dto-simplification - Status字段已从FormulaInputDto移除
                 var dto = detail.ToDto();
                 var inputDto = new FormulaInputDto
                 {
@@ -223,7 +225,6 @@ namespace LYBT.Desktop.Formula.ViewModels
                     Remark = dto.Remark,
                     IsShared = dto.IsShared,
                     Category = dto.Category,
-                    Status = dto.Status,
                     Herbs = detail.Herbs.Select(h => new FormulaHerbItemInputDto
                     {
                         HerbId = h.HerbId,
@@ -286,7 +287,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        protected override async Task OnExecuteBatchDeleteAsync(List<FormulaDto> items)
+        protected override async Task OnExecuteBatchDeleteAsync(List<FormulaListDto> items)
         {
             if (items == null || items.Count == 0) return;
 
@@ -370,7 +371,7 @@ namespace LYBT.Desktop.Formula.ViewModels
 
         #region 扩展命令实现
 
-        private async Task ToggleStatusAsync(FormulaDto? formula)
+        private async Task ToggleStatusAsync(FormulaListDto? formula)
         {
             if (formula == null) return;
 
@@ -399,7 +400,7 @@ namespace LYBT.Desktop.Formula.ViewModels
             }
         }
 
-        private async Task RestoreAsync(FormulaDto? formula)
+        private async Task RestoreAsync(FormulaListDto? formula)
         {
             if (formula == null) return;
 

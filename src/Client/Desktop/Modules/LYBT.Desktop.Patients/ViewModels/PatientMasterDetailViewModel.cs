@@ -22,10 +22,11 @@ namespace LYBT.Desktop.Patients.ViewModels
     /// <summary>
     /// 患者Master-Detail视图模型
     /// OpenSpec: refactor-master-detail-layout
+    /// OpenSpec: optimize-entity-data-flow - 使用PatientListDto优化列表加载
     ///
     /// 合并PatientManagementViewModel和PatientDetailViewModel功能
     /// </summary>
-    public class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientDto, PatientDetailModel>
+    public class PatientMasterDetailViewModel : MasterDetailViewModelBase<PatientListDto, PatientDetailModel>
     {
         private readonly PatientCommandHandler _commandHandler;
         private readonly IPatientRepository _patientRepository;
@@ -143,10 +144,10 @@ namespace LYBT.Desktop.Patients.ViewModels
         public bool IsAdmin => SessionManager?.HasPermission(UserRole.Admin) == true;
 
         /// <summary>审计日志命令</summary>
-        public DelegateCommand<PatientDto> ShowAuditLogCommand { get; private set; } = null!;
+        public DelegateCommand<PatientListDto> ShowAuditLogCommand { get; private set; } = null!;
 
         /// <summary>恢复软删除数据命令</summary>
-        public DelegateCommand<PatientDto> RestoreCommand { get; private set; } = null!;
+        public DelegateCommand<PatientListDto> RestoreCommand { get; private set; } = null!;
 
         /// <summary>导入命令</summary>
         public DelegateCommand ImportCommand { get; private set; } = null!;
@@ -194,8 +195,8 @@ namespace LYBT.Desktop.Patients.ViewModels
             StatusOptions = new ObservableCollection<CommonStatus>(Enum.GetValues<CommonStatus>());
 
             // 初始化扩展命令
-            ShowAuditLogCommand = new DelegateCommand<PatientDto>(ExecuteShowAuditLog, p => p != null);
-            RestoreCommand = new DelegateCommand<PatientDto>(async p => await RestoreAsync(p), p => p != null && !IsBusy && IsAdmin);
+            ShowAuditLogCommand = new DelegateCommand<PatientListDto>(ExecuteShowAuditLog, p => p != null);
+            RestoreCommand = new DelegateCommand<PatientListDto>(async p => await RestoreAsync(p), p => p != null && !IsBusy && IsAdmin);
             ImportCommand = new DelegateCommand(async () => await ExecuteImportAsync());
             ExportCommand = new DelegateCommand(async () => await ExecuteExportAsync());
             DownloadTemplateCommand = new DelegateCommand(async () => await ExecuteDownloadTemplateAsync());
@@ -209,28 +210,21 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 列表数据加载
 
-        protected override async Task<IEnumerable<PatientDto>> GetItemsAsync(int page, int pageSize, string? searchText)
+        protected override async Task<IEnumerable<PatientListDto>> GetItemsAsync(int page, int pageSize, string? searchText)
         {
+            // OpenSpec: optimize-entity-data-flow - 使用轻量级ListDto
             try
             {
-                var result = await _commandHandler.GetPatientsPagedAsync(page, pageSize, searchText);
-                if (result.IsSuccess && result.Data != null)
-                {
-                    TotalCount = result.Data.TotalCount;
-                    return result.Data.Items;
-                }
-                else
-                {
-                    TotalCount = 0;
-                    return new List<PatientDto>();
-                }
+                var result = await _patientRepository.GetPagedListAsync(page, pageSize, searchText);
+                TotalCount = result.TotalCount;
+                return result.Items ?? Enumerable.Empty<PatientListDto>();
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "获取患者列表时发生异常");
                 await UserNotificationService!.HandleExceptionAsync(ex, $"获取患者列表 - 模块:{nameof(PatientMasterDetailViewModel)}");
                 TotalCount = 0;
-                return new List<PatientDto>();
+                return Enumerable.Empty<PatientListDto>();
             }
         }
 
@@ -238,7 +232,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region Master-Detail抽象方法实现
 
-        protected override async Task<PatientDetailModel?> LoadDetailAsync(PatientDto item)
+        protected override async Task<PatientDetailModel?> LoadDetailAsync(PatientListDto item)
         {
             if (item == null) return null;
 
@@ -269,6 +263,7 @@ namespace LYBT.Desktop.Patients.ViewModels
         {
             if (detail == null) return false;
 
+            // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
             var dto = new PatientInputDto
             {
                 Id = detail.Id,
@@ -278,8 +273,7 @@ namespace LYBT.Desktop.Patients.ViewModels
                 BirthDate = EditBirthDate,
                 IdNumber = EditIdNumber?.Trim(),
                 PhoneNumber = EditPhoneNumber?.Trim(),
-                Address = EditAddress?.Trim(),
-                Status = detail.IsNew ? CommonStatus.Enabled : EditStatus
+                Address = EditAddress?.Trim()
             };
 
             var result = detail.IsNew
@@ -355,7 +349,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 删除操作
 
-        protected override async Task OnExecuteDeleteAsync(PatientDto item)
+        protected override async Task OnExecuteDeleteAsync(PatientListDto item)
         {
             if (item == null) return;
 
@@ -381,7 +375,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }
         }
 
-        protected override async Task OnExecuteBatchDeleteAsync(List<PatientDto> items)
+        protected override async Task OnExecuteBatchDeleteAsync(List<PatientListDto> items)
         {
             if (items == null || items.Count == 0) return;
 
@@ -433,7 +427,7 @@ namespace LYBT.Desktop.Patients.ViewModels
 
         #region 扩展命令实现
 
-        private void ExecuteShowAuditLog(PatientDto? patient)
+        private void ExecuteShowAuditLog(PatientListDto? patient)
         {
             if (patient == null) return;
             _prismDialogService.ShowDialog("EntityAuditLogDialog", new DialogParameters
@@ -444,7 +438,7 @@ namespace LYBT.Desktop.Patients.ViewModels
             }, _ => { });
         }
 
-        private async Task RestoreAsync(PatientDto? patient)
+        private async Task RestoreAsync(PatientListDto? patient)
         {
             if (patient == null) return;
             try
@@ -545,10 +539,11 @@ namespace LYBT.Desktop.Patients.ViewModels
                     defaultFileName: $"患者导入模板_{DateTime.Now:yyyyMMdd}.xlsx");
                 if (string.IsNullOrEmpty(filePath)) return;
 
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除
                 var sampleData = new List<PatientInputDto>
                 {
-                    new() { Name = "张三", Gender = Gender.Male, BirthDate = new DateTime(1980, 1, 1), PhoneNumber = "13800138000", Address = "北京市朝阳区", Status = CommonStatus.Enabled },
-                    new() { Name = "李四", Gender = Gender.Female, BirthDate = new DateTime(1990, 5, 15), PhoneNumber = "13800138001", Address = "上海市浦东新区", Status = CommonStatus.Enabled }
+                    new() { Name = "张三", Gender = Gender.Male, BirthDate = new DateTime(1980, 1, 1), PhoneNumber = "13800138000", Address = "北京市朝阳区" },
+                    new() { Name = "李四", Gender = Gender.Female, BirthDate = new DateTime(1990, 5, 15), PhoneNumber = "13800138001", Address = "上海市浦东新区" }
                 };
                 await Infrastructure.Helpers.ExcelHelper.GenerateTemplateAsync(filePath, "患者导入模板", sampleData);
                 await CommonDialogService.ShowInfoAsync($"成功保存模板到：\n{filePath}\n\n请填写数据后使用「导入患者」功能导入。", "下载成功");

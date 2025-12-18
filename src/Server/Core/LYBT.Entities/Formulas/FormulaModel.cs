@@ -81,15 +81,4 @@ namespace LYBT.Entities.Formulas
         [DisplayName("药材组成")]
         public virtual ICollection<FormulaHerbItem> Herbs { get; set; } = new List<FormulaHerbItem>();
     }
-
-    /// <summary>
-    /// 方剂类型枚举
-    /// </summary>
-    public enum FormulaType
-    {
-        /// <summary>经典方</summary>
-        Classic = 1,
-        /// <summary>经验方</summary>
-        Experience = 2
-    }
 }

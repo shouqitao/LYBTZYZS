@@ -163,11 +163,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端默认为Enabled
                 var createDto = new HerbInputDto
                 {
                     Name = Name.Trim(), PinYinCode = PinYinCode?.Trim(), Origin = Origin?.Trim(), Spec = Spec?.Trim(),
                     Unit = Unit.Trim(), Price = Price, CostPrice = CostPrice, Effect = Effect?.Trim(),
-                    Usage = Usage?.Trim(), Remark = Remark?.Trim(), Status = CommonStatus.Enabled
+                    Usage = Usage?.Trim(), Remark = Remark?.Trim()
                 };
                 var result = await _herbRepository.CreateAsync(createDto);
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
@@ -180,11 +181,12 @@ namespace LYBT.Desktop.Herbs.ViewModels
         {
             try
             {
+                // OpenSpec: refactor-dto-simplification - Status字段已从InputDto移除，由服务端保持原值
                 var updateDto = new HerbInputDto
                 {
                     Id = HerbId, Name = Name.Trim(), PinYinCode = PinYinCode?.Trim(), Origin = Origin?.Trim(),
                     Spec = Spec?.Trim(), Unit = Unit.Trim(), Price = Price, CostPrice = CostPrice,
-                    Effect = Effect?.Trim(), Usage = Usage?.Trim(), Remark = Remark?.Trim(), Status = Status
+                    Effect = Effect?.Trim(), Usage = Usage?.Trim(), Remark = Remark?.Trim()
                 };
                 var result = await _herbRepository.UpdateAsync(updateDto);
                 if (result != null) NavigateBack("ContentRegion", new NavigationParameters { { "RefreshList", true } });
