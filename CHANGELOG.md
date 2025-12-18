@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### DTO设计简化重构 (OpenSpec: refactor-dto-simplification) - 2025-12-18 [已归档]
+
+**状态**: ✅ 100%完成，已归档
+
+**Phase 1-3: DTO规范建立与模块重构**
+- 建立DTO设计规范：每模块最多4个核心类型(ListDto, DetailDto, InputDto, Statistics)
+- 重构7个模块DTO：Prescription, Formula, Herb, Patient, MedicalCase, User, Consultation
+- Statistics DTO改为record定义，移除继承关系
+
+**Phase 4: 清理遗留代码**
+- 扁平化5个DTO：ConsultationDetailDto, FormulaDetailDto, MedicalCaseDetailDto, FormulaHerbItemDto, PrescriptionItemDto
+- 删除11个未使用DTO文件（PatientTagDto, HerbExpiryWarningDto等）
+- 从DtoBase.cs移除3个未使用基类（CreateDtoBase, UpdateDtoBase, ExtendedQueryDto）
+- Desktop层命名消歧：PrescriptionPrintDto → PrescriptionPrintModel
+
+**技术决策**:
+- 保留ICreatorTrackable接口用于所有权检查
+- 保留BaseDto/TimestampDto/StatusDto基类（仍有模块使用）
+- UserInputDto.Status保留（用户账户状态有特殊安全需求）
+
+---
+
 #### 批量操作优化与DTO命名规范化 (OpenSpec: optimize-batch-operations) - 2025-12-18 [已归档]
 
 **状态**: ✅ 100%完成，已归档
