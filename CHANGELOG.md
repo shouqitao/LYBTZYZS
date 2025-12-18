@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 批量操作优化与DTO命名规范化 (OpenSpec: optimize-batch-operations) - 2025-12-18 [已归档]
+
+**状态**: ✅ 100%完成，已归档
+
+**Phase 1: DTO命名规范化**
+- 重命名15个批量相关DTO (Request→Input, 添加Item后缀)
+- 统一ImportFailureDto命名规范
+- BatchImportResultDto继承规范化（消除重复字段）
+
+**Phase 2: 批量操作API优化**
+- Server端: 新增batch-delete/enable/disable端点 (Users/Patients/Herbs/Formulas/MedicalCases)
+- Service层: 使用EF Core ExecuteUpdate实现数据库级批量操作
+- Desktop层: ViewModel批量操作从N+1模式优化为单次API调用
+- 测试: BatchOperationsTests.cs集成测试 + BatchOperationsBenchmark.cs性能测试
+
+**性能提升**: 批量模式比N+1模式快约8-9倍
+
+**技术决策**:
+- 使用ExecuteUpdate替代逐条更新，解决N+1性能问题
+- 批量端点统一使用BatchDeleteInputDto和BatchOperationResultDto
+
+---
+
 #### Master-Detail布局重构 (OpenSpec: refactor-master-detail-layout) - 2025-12-18 [已归档]
 
 **状态**: ✅ 100%完成，已归档
