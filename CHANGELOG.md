@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### 整合医案查询到聚合根模式 (OpenSpec: consolidate-medicalcase-queries) - 2025-12-19 [已归档]
+
+**状态**: ✅ Phase 1-6完成 + Phase 7.A死代码清理完成，已归档
+
+**Phase 1-2: 查询能力扩展**
+- MedicalCaseQueryService添加SearchMedicalCasesAsync和GetPatientRecentMedicalCasesAsync
+- MedicalCaseController添加/search和/patient/{id}/recent端点
+- IMedicalCaseApi添加对应Refit方法
+
+**Phase 3: WebApi清理**
+- 删除ConsultationController.cs和PrescriptionsController.cs
+- 删除IConsultationApi.cs和IPrescriptionApi.cs
+- 移除DI容器中的相关注册
+
+**Phase 4-6: Service层与DTO清理**
+- PrescriptionService删除跨医案查询方法
+- 删除MedicalCaseBasicDto.cs
+- ICrossModuleQueryService删除MedicalCase相关方法
+
+**Phase 7.A: Client API死代码清理**
+- 删除CreateMedicalCaseWithDetailsAsync、SoftDeleteMedicalCaseAsync方法
+- 删除MedicalCaseCreateInputDto.cs文件
+- 清理Repository层相关方法
+
+**架构影响**:
+- 强化DDD聚合根模式：Consultation和Prescription操作必须通过MedicalCase
+- 符合CQRS原则：读操作集中到MedicalCaseQueryService
+- 减少API表面积：删除2个独立Controller
+
+**延迟事项**: Phase 7.B DTO统一重构（需单独OpenSpec提案）
+
+---
+
 #### DTO设计简化重构 (OpenSpec: refactor-dto-simplification) - 2025-12-18 [已归档]
 
 **状态**: ✅ 100%完成，已归档
